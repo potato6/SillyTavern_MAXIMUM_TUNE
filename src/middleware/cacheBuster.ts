@@ -25,13 +25,10 @@ class CacheBuster {
     #isEnabled = null;
 
     constructor() {
-        // @ts-expect-error TS(2322): Type 'boolean' is not assignable to type 'null'.
         this.#isEnabled = !!getConfigValue('cacheBuster.enabled', false, 'boolean');
-        // @ts-expect-error TS(2345): Argument of type '""' is not assignable to paramet... Remove this comment to see the full error message
         const userAgentPattern = getConfigValue('cacheBuster.userAgentPattern', '');
         if (userAgentPattern) {
             try {
-                // @ts-expect-error TS(2322): Type 'RegExp' is not assignable to type 'null'.
                 this.#userAgentRegex = new RegExp(userAgentPattern, 'i');
             } catch {
                 console.error('[Cache Buster] Invalid user agent pattern:', userAgentPattern);
@@ -65,7 +62,6 @@ class CacheBuster {
             return true;
         }
 
-        // @ts-expect-error TS(2339): Property 'test' does not exist on type 'never'.
         return this.#userAgentRegex.test(userAgent);
     }
 

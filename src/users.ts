@@ -13,7 +13,9 @@ import mime from 'mime-types';
 import archiver from 'archiver';
 import _ from 'lodash';
 import { sync as writeFileAtomicSync } from 'write-file-atomic';
+// @ts-expect-error TS(2792): Cannot find module 'sanitize-filename'. Did you me... Remove this comment to see the full error message
 import sanitize from 'sanitize-filename';
+// @ts-expect-error TS(2792): Cannot find module 'ip-matching'. Did you mean to ... Remove this comment to see the full error message
 import ipMatching from 'ip-matching';
 
 import { USER_DIRECTORY_TEMPLATE, DEFAULT_USER, PUBLIC_DIRECTORIES, SETTINGS_FILE, UPLOADS_DIRECTORY } from './constants.js';
@@ -26,16 +28,11 @@ import { extensionsEnabledFeatureGuard } from './endpoints/extensions.js';
 
 export const KEY_PREFIX = 'user:';
 const AVATAR_PREFIX = 'avatar:';
-// @ts-expect-error TS(2345): Argument of type 'false' is not assignable to para... Remove this comment to see the full error message
 const ENABLE_ACCOUNTS = getConfigValue('enableUserAccounts', false, 'boolean');
-// @ts-expect-error TS(2345): Argument of type 'false' is not assignable to para... Remove this comment to see the full error message
 const AUTHELIA_AUTH = getConfigValue('sso.autheliaAuth', false, 'boolean');
-// @ts-expect-error TS(2345): Argument of type 'false' is not assignable to para... Remove this comment to see the full error message
 const AUTHENTIK_AUTH = getConfigValue('sso.authentikAuth', false, 'boolean');
-// @ts-expect-error TS(2345): Argument of type 'false' is not assignable to para... Remove this comment to see the full error message
 const PER_USER_BASIC_AUTH = getConfigValue('perUserBasicAuth', false, 'boolean');
 const ANON_CSRF_SECRET = crypto.randomBytes(64).toString('base64');
-// @ts-expect-error TS(2345): Argument of type 'string[]' is not assignable to p... Remove this comment to see the full error message
 const TRUSTED_PROXIES = filterValidIpPatterns(getConfigValue('sso.trustedProxies', ['127.0.0.1', '::1']) ?? [], (entry: any, message: any) => `${color.red('Warning')}: Ignoring invalid sso.trustedProxies entry ${color.yellow(entry)} - ${message}`);
 
 /**
@@ -142,11 +139,9 @@ export async function ensurePublicDirectoriesExist() {
  * @returns {void}
  */
 function logSecurityAlert(message: any) {
-    // @ts-expect-error TS(7017): Element implicitly has an 'any' type because type ... Remove this comment to see the full error message
     const { basicAuthMode, whitelistMode } = globalThis.COMMAND_LINE_ARGS;
     if (basicAuthMode || whitelistMode) return; // safe!
     console.error(color.red(message));
-    // @ts-expect-error TS(2345): Argument of type 'false' is not assignable to para... Remove this comment to see the full error message
     if (getConfigValue('securityOverride', false, 'boolean')) {
         console.warn(color.red('Security has been overridden. If it\'s not a trusted network, change the settings.'));
         return;
@@ -159,7 +154,6 @@ function logSecurityAlert(message: any) {
  * @returns {Promise<void>}
  */
 export async function verifySecuritySettings() {
-    // @ts-expect-error TS(7017): Element implicitly has an 'any' type because type ... Remove this comment to see the full error message
     const { listen, basicAuthMode } = globalThis.COMMAND_LINE_ARGS;
 
     // Skip all security checks as listen is set to false
@@ -188,16 +182,13 @@ export async function verifySecuritySettings() {
     }
 
     if (basicAuthMode) {
-        // @ts-expect-error TS(2345): Argument of type 'false' is not assignable to para... Remove this comment to see the full error message
         const perUserBasicAuth = getConfigValue('perUserBasicAuth', false, 'boolean');
         if (perUserBasicAuth && !ENABLE_ACCOUNTS) {
             console.error(color.red(
                 'Per-user basic authentication is enabled, but user accounts are disabled. This configuration may be insecure.',
             ));
         } else if (!perUserBasicAuth) {
-            // @ts-expect-error TS(2345): Argument of type '""' is not assignable to paramet... Remove this comment to see the full error message
             const basicAuthUserName = getConfigValue('basicAuthUser.username', '');
-            // @ts-expect-error TS(2345): Argument of type '""' is not assignable to paramet... Remove this comment to see the full error message
             const basicAuthUserPassword = getConfigValue('basicAuthUser.password', '');
             if (!basicAuthUserName || !basicAuthUserPassword) {
                 console.warn(color.yellow(
@@ -210,7 +201,6 @@ export async function verifySecuritySettings() {
 
 export function cleanUploads() {
     try {
-        // @ts-expect-error TS(7017): Element implicitly has an 'any' type because type ... Remove this comment to see the full error message
         const uploadsPath = path.join(globalThis.DATA_ROOT, UPLOADS_DIRECTORY);
         if (fs.existsSync(uploadsPath)) {
             const uploads = fs.readdirSync(uploadsPath);
@@ -255,7 +245,6 @@ export async function migrateUserData() {
 
     console.log();
     console.log(color.magenta('Preparing to migrate user data...'));
-    // @ts-expect-error TS(7017): Element implicitly has an 'any' type because type ... Remove this comment to see the full error message
     console.log(`All public data will be moved to the ${globalThis.DATA_ROOT} directory.`);
     console.log('This process may take a while depending on the amount of data to move.');
     console.log(`Backups will be placed in the ${PUBLIC_DIRECTORIES.backups} directory.`);
@@ -394,7 +383,6 @@ export async function migrateUserData() {
     ];
 
     const currentDate = new Date().toISOString().split('T')[0];
-    // @ts-expect-error TS(2345): Argument of type 'string | undefined' is not assig... Remove this comment to see the full error message
     const backupDirectory = path.join(process.cwd(), PUBLIC_DIRECTORIES.backups, '_migration', currentDate);
 
     if (!fs.existsSync(backupDirectory)) {
@@ -434,7 +422,6 @@ export async function migrateUserData() {
                 fs.rmSync(migration.old, { recursive: true, force: true });
             }
         } catch (error) {
-            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             console.error(color.red(`Error migrating ${migration.old} to ${migration.new}:`), error.message);
             errors.push(migration.old);
         }
@@ -509,27 +496,22 @@ export async function migratePublicOverrides() {
     const migrationMap = [
         {
             oldPath: path.join(serverDirectory, 'public', 'error', 'forbidden-by-whitelist.html'),
-            // @ts-expect-error TS(7017): Element implicitly has an 'any' type because type ... Remove this comment to see the full error message
             newPath: path.join(globalThis.DATA_ROOT, '_errors', 'forbidden-by-whitelist.html'),
         },
         {
             oldPath: path.join(serverDirectory, 'public', 'error', 'host-not-allowed.html'),
-            // @ts-expect-error TS(7017): Element implicitly has an 'any' type because type ... Remove this comment to see the full error message
             newPath: path.join(globalThis.DATA_ROOT, '_errors', 'host-not-allowed.html'),
         },
         {
             oldPath: path.join(serverDirectory, 'public', 'error', 'unauthorized.html'),
-            // @ts-expect-error TS(7017): Element implicitly has an 'any' type because type ... Remove this comment to see the full error message
             newPath: path.join(globalThis.DATA_ROOT, '_errors', 'unauthorized.html'),
         },
         {
             oldPath: path.join(serverDirectory, 'public', 'error', 'url-not-found.html'),
-            // @ts-expect-error TS(7017): Element implicitly has an 'any' type because type ... Remove this comment to see the full error message
             newPath: path.join(globalThis.DATA_ROOT, '_errors', 'url-not-found.html'),
         },
         {
             oldPath: path.join(serverDirectory, 'public', 'css', 'user.css'),
-            // @ts-expect-error TS(7017): Element implicitly has an 'any' type because type ... Remove this comment to see the full error message
             newPath: path.join(globalThis.DATA_ROOT, '_css', 'user.css'),
         },
     ];
@@ -640,7 +622,6 @@ export function getCookieSessionName() {
 
 export function getSessionCookieAge() {
     // Defaults to "no expiration" if not set
-    // @ts-expect-error TS(2345): Argument of type '-1' is not assignable to paramet... Remove this comment to see the full error message
     const configValue = getConfigValue('sessionTimeout', -1, 'number');
 
     // Convert to milliseconds
@@ -713,7 +694,6 @@ export function getUserDirectories(handle: any) {
 
     const directories = structuredClone(USER_DIRECTORY_TEMPLATE);
     for (const key in directories) {
-        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         directories[key] = path.join(globalThis.DATA_ROOT, handle, USER_DIRECTORY_TEMPLATE[key]);
     }
     DIRECTORIES_CACHE.set(handle, directories);
@@ -1068,7 +1048,6 @@ export async function loginPageMiddleware(request: any, response: any) {
     }
 
     try {
-        // @ts-expect-error TS(7017): Element implicitly has an 'any' type because type ... Remove this comment to see the full error message
         const { basicAuthMode } = globalThis.COMMAND_LINE_ARGS;
         const autoLogin = await tryAutoLogin(request, basicAuthMode);
 

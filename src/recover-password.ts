@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+// @ts-expect-error TS(2792): Cannot find module 'yaml'. Did you mean to set the... Remove this comment to see the full error message
 import yaml from 'yaml';
 import storage from 'node-persist';
 import {

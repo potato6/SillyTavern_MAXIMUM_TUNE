@@ -3,6 +3,7 @@ import path from 'node:path';
 import { Buffer } from 'node:buffer';
 
 import express from 'express';
+// @ts-expect-error TS(2792): Cannot find module 'sanitize-filename'. Did you me... Remove this comment to see the full error message
 import sanitize from 'sanitize-filename';
 
 import { clientRelativePath, removeFileExtension, getImages, isPathUnderParent } from '../util.js';
@@ -14,6 +15,7 @@ import { MEDIA_EXTENSIONS, MEDIA_REQUEST_TYPE } from '../constants.js';
  *
  * @param {string} filePath - The full path of the file for which the directory should be ensured.
  */
+// @ts-expect-error TS(7030): Not all code paths return a value.
 function ensureDirectoryExistence(filePath: any) {
     const dirname = path.dirname(filePath);
     if (fs.existsSync(dirname)) {
@@ -36,6 +38,7 @@ export const router = express.Router();
  * @param {string} [request.body.ch_name] - Optional character name to determine the sub-directory.
  * @returns {Object} response - The response object containing the path where the image was saved.
  */
+// @ts-expect-error TS(7030): Not all code paths return a value.
 router.post('/upload', async (request, response) => {
     try {
         if (!request.body) {
@@ -62,17 +65,14 @@ router.post('/upload', async (request, response) => {
         }
 
         // if character is defined, save to a sub folder for that character
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         let pathToNewFile = path.join(request.user.directories.userImages, sanitize(filename));
         if (request.body.ch_name) {
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             pathToNewFile = path.join(request.user.directories.userImages, sanitize(request.body.ch_name), sanitize(filename));
         }
 
         ensureDirectoryExistence(pathToNewFile);
         const imageBuffer = Buffer.from(image, 'base64');
         await fs.promises.writeFile(pathToNewFile, new Uint8Array(imageBuffer));
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         response.send({ path: clientRelativePath(request.user.directories.root, pathToNewFile) });
     } catch (error) {
         console.error(error);
@@ -95,7 +95,6 @@ router.post('/list/:folder?', (request, response) => {
             return response.status(400).send({ error: 'No folder specified' });
         }
 
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{ ... Remove this comment to see the full error message
         const directoryPath = path.join(request.user.directories.userImages, sanitize(request.body.folder));
         const type = Number(request.body.type ?? MEDIA_REQUEST_TYPE.IMAGE);
         const sort = request.body.sortField || 'date';
@@ -118,7 +117,6 @@ router.post('/list/:folder?', (request, response) => {
 
 router.post('/folders', (request, response) => {
     try {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const directoryPath = request.user.directories.userImages;
         if (!fs.existsSync(directoryPath)) {
             fs.mkdirSync(directoryPath, { recursive: true });
@@ -141,9 +139,7 @@ router.post('/delete', async (request, response) => {
             return response.status(400).send('No path specified');
         }
 
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const pathToDelete = path.join(request.user.directories.root, request.body.path);
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         if (!isPathUnderParent(request.user.directories.userImages, pathToDelete)) {
             return response.status(400).send('Invalid path');
         }
@@ -153,7 +149,6 @@ router.post('/delete', async (request, response) => {
         }
 
         fs.unlinkSync(pathToDelete);
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         console.info(`Deleted image: ${request.body.path} from ${request.user.profile.handle}`);
         return response.sendStatus(200);
     } catch (error) {

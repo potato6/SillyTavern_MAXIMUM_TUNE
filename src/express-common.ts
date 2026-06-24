@@ -1,5 +1,8 @@
+// @ts-expect-error TS(2792): Cannot find module 'ipaddr.js'. Did you mean to se... Remove this comment to see the full error message
 import ipaddr from 'ipaddr.js';
+// @ts-expect-error TS(2792): Cannot find module 'ip-matching'. Did you mean to ... Remove this comment to see the full error message
 import ipMatching from 'ip-matching';
+// @ts-expect-error TS(2792): Cannot find module 'rate-limiter-flexible'. Did yo... Remove this comment to see the full error message
 import { RateLimiterRes } from 'rate-limiter-flexible';
 import { getConfigValue } from './util.js';
 
@@ -36,11 +39,8 @@ export function getIpFromRequest(req: any) {
  * @returns {string|undefined} The client IP address
  */
 export function getRealOrForwardedIp(req: any) {
-    // @ts-expect-error TS(2345): Argument of type 'true' is not assignable to param... Remove this comment to see the full error message
     const xRealIpEnabled = !!getConfigValue('forwardedHeaders.xRealIp', true, 'boolean');
-    // @ts-expect-error TS(2345): Argument of type 'false' is not assignable to para... Remove this comment to see the full error message
     const cfConnectingIpEnabled = !!getConfigValue('forwardedHeaders.cfConnectingIp', false, 'boolean');
-    // @ts-expect-error TS(2345): Argument of type 'true' is not assignable to param... Remove this comment to see the full error message
     const xForwardedForEnabled = !!getConfigValue('forwardedHeaders.xForwardedFor', true, 'boolean');
 
     // Check if X-Real-IP is available
@@ -106,7 +106,6 @@ export function filterValidIpPatterns(entries: any, formatLog: any) {
             validEntries.push(entry);
         } catch (e) {
             if (typeof formatLog === 'function') {
-                // @ts-expect-error TS(2571): Object is of type 'unknown'.
                 console.warn(formatLog(entry, e?.message || 'Unknown error'));
             }
         }

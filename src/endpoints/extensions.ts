@@ -2,14 +2,15 @@ import path from 'node:path';
 import fs from 'node:fs';
 
 import express from 'express';
+// @ts-expect-error TS(2792): Cannot find module 'sanitize-filename'. Did you me... Remove this comment to see the full error message
 import sanitize from 'sanitize-filename';
+// @ts-expect-error TS(2792): Cannot find module 'simple-git'. Did you mean to s... Remove this comment to see the full error message
 import { CheckRepoActions, default as simpleGit } from 'simple-git';
 
 import { PUBLIC_DIRECTORIES } from '../constants.js';
 import { getConfigValue, isValidUrl } from '../util.js';
 import { createGitClient } from '../git/client.js';
 
-// @ts-expect-error TS(2345): Argument of type '"auto"' is not assignable to par... Remove this comment to see the full error message
 const gitBackend = getConfigValue('git.backend', 'auto');
 
 /**
@@ -60,7 +61,6 @@ async function checkIfRepoIsUpToDate(extensionPath: any) {
 
     return {
         isUpToDate: log.total === 0,
-        // @ts-expect-error TS(2532): Object is possibly 'undefined'.
         remoteUrl: remotes[0].refs.fetch, // URL of the remote repository
     };
 }
@@ -72,7 +72,6 @@ export const router = express.Router();
  * @type {import('express').RequestHandler}
  */
 export const extensionsEnabledFeatureGuard = (_: any, response: any, next: any) => {
-    // @ts-expect-error TS(2345): Argument of type 'true' is not assignable to param... Remove this comment to see the full error message
     const enabled = !!getConfigValue('extensions.enabled', true, 'boolean');
     if (!enabled) {
         response.sendStatus(404);
@@ -96,9 +95,7 @@ router.post('/install', async (request, response) => {
     try {
         const { url, global, branch } = request.body;
 
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         if (global && !request.user.profile.admin) {
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             console.error(`User ${request.user.profile.handle} does not have permission to install global extensions.`);
             return response.status(403).send('Forbidden: No permission to install global extensions.');
         }
@@ -115,9 +112,7 @@ router.post('/install', async (request, response) => {
         const git = createGitClient({ backend: gitBackend });
 
         // make sure the third-party directory exists
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         if (!fs.existsSync(path.join(request.user.directories.extensions))) {
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             fs.mkdirSync(path.join(request.user.directories.extensions));
         }
 
@@ -125,7 +120,6 @@ router.post('/install', async (request, response) => {
             fs.mkdirSync(PUBLIC_DIRECTORIES.globalExtensions);
         }
 
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const basePath = global ? PUBLIC_DIRECTORIES.globalExtensions : request.user.directories.extensions;
         const extensionNameSanitized = sanitize(path.basename(parsedUrl.pathname, '.git'));
         if (!extensionNameSanitized) {
@@ -187,14 +181,11 @@ router.post('/update', async (request, response) => {
             return response.status(400).send('Bad Request: A valid extensionName is required in the request body.');
         }
 
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         if (global && !request.user.profile.admin) {
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             console.error(`User ${request.user.profile.handle} does not have permission to update global extensions.`);
             return response.status(403).send('Forbidden: No permission to update global extensions.');
         }
 
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const basePath = global ? PUBLIC_DIRECTORIES.globalExtensions : request.user.directories.extensions;
         const extensionPath = path.join(basePath, extensionNameSanitized);
 
@@ -238,14 +229,11 @@ router.post('/branches', async (request, response) => {
             return response.status(400).send('Bad Request: A valid extensionName is required in the request body.');
         }
 
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         if (global && !request.user.profile.admin) {
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             console.error(`User ${request.user.profile.handle} does not have permission to list branches of global extensions.`);
             return response.status(403).send('Forbidden: No permission to list branches of global extensions.');
         }
 
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const basePath = global ? PUBLIC_DIRECTORIES.globalExtensions : request.user.directories.extensions;
         const extensionPath = path.join(basePath, extensionNameSanitized);
 
@@ -269,6 +257,7 @@ router.post('/branches', async (request, response) => {
         const result = [
             ...Object.values(localBranches.branches),
             ...Object.values(remoteBranches.branches),
+        // @ts-expect-error TS(2339): Property 'current' does not exist on type 'unknown... Remove this comment to see the full error message
         ].map(b => ({ current: b.current, commit: b.commit, name: b.name, label: b.label }));
 
         return response.send(result);
@@ -290,14 +279,11 @@ router.post('/switch', async (request, response) => {
             return response.status(400).send('Bad Request: A valid extensionName and branch are required in the request body.');
         }
 
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         if (global && !request.user.profile.admin) {
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             console.error(`User ${request.user.profile.handle} does not have permission to switch branches of global extensions.`);
             return response.status(403).send('Forbidden: No permission to switch branches of global extensions.');
         }
 
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const basePath = global ? PUBLIC_DIRECTORIES.globalExtensions : request.user.directories.extensions;
         const extensionPath = path.join(basePath, extensionNameSanitized);
 
@@ -356,16 +342,12 @@ router.post('/move', async (request, response) => {
             return response.status(400).send('Bad Request: A valid extensionName, source, and destination are required in the request body.');
         }
 
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         if (!request.user.profile.admin) {
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             console.error(`User ${request.user.profile.handle} does not have permission to move extensions.`);
             return response.status(403).send('Forbidden: No permission to move extensions.');
         }
 
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const sourceDirectory = source === 'global' ? PUBLIC_DIRECTORIES.globalExtensions : request.user.directories.extensions;
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const destinationDirectory = destination === 'global' ? PUBLIC_DIRECTORIES.globalExtensions : request.user.directories.extensions;
         const sourcePath = path.join(sourceDirectory, extensionNameSanitized);
         const destinationPath = path.join(destinationDirectory, extensionNameSanitized);
@@ -418,7 +400,6 @@ router.post('/version', async (request, response) => {
             return response.status(400).send('Bad Request: A valid extensionName is required in the request body.');
         }
 
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const basePath = global ? PUBLIC_DIRECTORIES.globalExtensions : request.user.directories.extensions;
         const extensionPath = path.join(basePath, extensionNameSanitized);
 
@@ -474,14 +455,11 @@ router.post('/delete', async (request, response) => {
             return response.status(400).send('Bad Request: A valid extensionName is required in the request body.');
         }
 
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         if (global && !request.user.profile.admin) {
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             console.error(`User ${request.user.profile.handle} does not have permission to delete global extensions.`);
             return response.status(403).send('Forbidden: No permission to delete global extensions.');
         }
 
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const basePath = global ? PUBLIC_DIRECTORIES.globalExtensions : request.user.directories.extensions;
         const extensionPath = path.join(basePath, extensionNameSanitized);
 
@@ -504,9 +482,7 @@ router.post('/delete', async (request, response) => {
  * If the folder is called third-party, search for subfolders instead
  */
 router.get('/discover', function (request, response) {
-    // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
     if (!fs.existsSync(path.join(request.user.directories.extensions))) {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         fs.mkdirSync(path.join(request.user.directories.extensions));
     }
 
@@ -523,9 +499,7 @@ router.get('/discover', function (request, response) {
 
     // Get all folders in local extensions folder
     const userExtensions = fs
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         .readdirSync(path.join(request.user.directories.extensions))
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         .filter(f => fs.statSync(path.join(request.user.directories.extensions, f)).isDirectory())
         .map(f => ({ type: 'local', name: `third-party/${f}` }));
 
@@ -539,7 +513,6 @@ router.get('/discover', function (request, response) {
 
     // Combine all extensions
     const allExtensions = [...builtInExtensions, ...userExtensions, ...globalExtensions];
-    // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
     console.debug('Extensions available for', request.user.profile.handle, allExtensions);
 
     return response.send(allExtensions);

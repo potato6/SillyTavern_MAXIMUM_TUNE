@@ -109,7 +109,6 @@ function parseTimestamp(timestamp: any) {
     for (const x of dateFormats) {
         const rgxMatch = timestamp.match(x.pattern);
         if (!rgxMatch) continue;
-        // @ts-expect-error TS(2556): A spread argument must either have a tuple type or... Remove this comment to see the full error message
         const isoTimestamp = x.callback(...rgxMatch);
         return new Date(isoTimestamp).getTime();
     }
@@ -172,7 +171,6 @@ export async function init() {
                 STATS.set(handle, JSON.parse(statsFileContent));
             } catch (err) {
                 // If the file doesn't exist or is invalid, initialize stats
-                // @ts-expect-error TS(2571): Object is of type 'unknown'.
                 if (err.code === 'ENOENT' || err instanceof SyntaxError) {
                     await recreateStats(handle, directories.chats, directories.characters);
                 } else {
@@ -445,7 +443,6 @@ export const router = express.Router();
  * Handle a POST request to get the stats object
  */
 router.post('/get', function (request, response) {
-    // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
     const stats = STATS.get(request.user.profile.handle) || {};
     response.send(stats);
 });
@@ -455,7 +452,6 @@ router.post('/get', function (request, response) {
  */
 router.post('/recreate', async function (request, response) {
     try {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         await recreateStats(request.user.profile.handle, request.user.directories.chats, request.user.directories.characters);
         return response.sendStatus(200);
     } catch (error) {
@@ -469,7 +465,6 @@ router.post('/recreate', async function (request, response) {
 */
 router.post('/update', function (request, response) {
     if (!request.body) return response.sendStatus(400);
-    // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
     setCharStats(request.user.profile.handle, request.body);
     return response.sendStatus(200);
 });

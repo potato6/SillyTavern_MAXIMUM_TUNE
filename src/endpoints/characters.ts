@@ -4,8 +4,10 @@ import { promises as fsPromises } from 'node:fs';
 import { Buffer } from 'node:buffer';
 
 import express from 'express';
+// @ts-expect-error TS(2792): Cannot find module 'sanitize-filename'. Did you me... Remove this comment to see the full error message
 import sanitize from 'sanitize-filename';
 import { sync as writeFileAtomicSync } from 'write-file-atomic';
+// @ts-expect-error TS(2792): Cannot find module 'yaml'. Did you mean to set the... Remove this comment to see the full error message
 import yaml from 'yaml';
 import _ from 'lodash';
 import mime from 'mime-types';
@@ -27,15 +29,12 @@ import { CharXParser, persistCharXAssets } from '../charx.js';
 import cacheBuster from '../middleware/cacheBuster.js';
 
 // With 100 MB limit it would take roughly 3000 characters to reach this limit
-// @ts-expect-error TS(2345): Argument of type '"100mb"' is not assignable to pa... Remove this comment to see the full error message
 const memoryCacheCapacity = getConfigValue('performance.memoryCacheCapacity', '100mb');
 const memoryCache = new MemoryLimitedMap(memoryCacheCapacity);
 // Some Android devices require tighter memory management
 const isAndroid = process.platform === 'android';
 // Use shallow character data for the character list
-// @ts-expect-error TS(2345): Argument of type 'false' is not assignable to para... Remove this comment to see the full error message
 const useShallowCharacters = !!getConfigValue('performance.lazyLoadCharacters', false, 'boolean');
-// @ts-expect-error TS(2345): Argument of type 'true' is not assignable to param... Remove this comment to see the full error message
 const useDiskCache = !!getConfigValue('performance.useDiskCache', true, 'boolean');
 
 class DiskCache {
@@ -52,11 +51,9 @@ class DiskCache {
     static SYNC_INTERVAL = 5 * 60 * 1000;
 
     /** @type {import('node-persist').LocalStorage} */
-    // @ts-expect-error TS(7008): Member '#instance' implicitly has an 'any' type.
     #instance;
 
     /** @type {NodeJS.Timeout} */
-    // @ts-expect-error TS(7008): Member '#syncInterval' implicitly has an 'any' typ... Remove this comment to see the full error message
     #syncInterval;
 
     /**
@@ -71,7 +68,6 @@ class DiskCache {
      * @returns {string}
      */
     get cachePath() {
-        // @ts-expect-error TS(7017): Element implicitly has an 'any' type because type ... Remove this comment to see the full error message
         return path.join(globalThis.DATA_ROOT, '_cache', DiskCache.DIRECTORY);
     }
 
@@ -365,7 +361,7 @@ const calculateChatSize = (charDir: any) => {
 
 // Calculate the total string length of the data object
 const calculateDataSize = (data: any) => {
-    // @ts-expect-error TS(2571): Object is of type 'unknown'.
+    // @ts-expect-error TS(2365): Operator '+' cannot be applied to types 'unknown' ... Remove this comment to see the full error message
     return typeof data === 'object' ? Object.values(data).reduce((acc, val) => acc + String(val).length, 0) : 0;
 };
 
@@ -724,7 +720,6 @@ function convertWorldInfoToCharacterBook(name: any, entries: any) {
             },
         };
 
-        // @ts-expect-error TS(2345): Argument of type '{ id: any; keys: any; secondary_... Remove this comment to see the full error message
         result.entries.push(originalEntry);
     }
 
@@ -863,7 +858,6 @@ async function importFromByaf(uploadPath: any, {
 
         // Update the default chat if there are any so we open to an existing chat instead of creating a new one and opening that.
         if (chats.length > 0) {
-            // @ts-expect-error TS(2345): Argument of type 'string | undefined' is not assig... Remove this comment to see the full error message
             card.chat = path.basename(chats[0], path.extname(chats[0]));
         }
 
@@ -883,7 +877,6 @@ async function importFromByaf(uploadPath: any, {
         }
     }
 
-    // @ts-expect-error TS(2532): Object is possibly 'undefined'.
     const result = await writeCharacterData(byafData.images[0].image, JSON.stringify(card), fileName, request);
 
     return result ? fileName : '';
@@ -1041,18 +1034,16 @@ async function importFromPng(uploadPath: any, {
 
 export const router = express.Router();
 
+// @ts-expect-error TS(7030): Not all code paths return a value.
 router.post('/create', getFileNameValidationFunction('file_name'), async function (request, response) {
     try {
         if (!request.body) return response.sendStatus(400);
 
         request.body.ch_name = sanitize(request.body.ch_name);
 
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const char = JSON.stringify(charaFormatData(request.body, request.user.directories));
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const internalName = request.body.file_name || getPngName(request.body.ch_name, request.user.directories);
         const avatarName = `${internalName}.png`;
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const chatsPath = path.join(request.user.directories.chats, internalName);
 
         if (!fs.existsSync(chatsPath)) fs.mkdirSync(chatsPath);
@@ -1061,6 +1052,7 @@ router.post('/create', getFileNameValidationFunction('file_name'), async functio
             await writeCharacterData(DEFAULT_AVATAR_PATH, char, internalName, request);
             return response.send(avatarName);
         } else {
+            // @ts-expect-error TS(4111): Property 'crop' comes from an index signature, so ... Remove this comment to see the full error message
             const crop = tryParse(request.query.crop);
             const uploadPath = path.join(request.file.destination, request.file.filename);
             await writeCharacterData(uploadPath, char, internalName, request, crop);
@@ -1081,16 +1073,12 @@ router.post('/rename', validateAvatarUrlMiddleware, async function (request, res
     const oldAvatarName = request.body.avatar_url;
     const newName = sanitize(request.body.new_name);
     const oldInternalName = path.parse(request.body.avatar_url).name;
-    // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
     const newInternalName = getPngName(newName, request.user.directories);
     const newAvatarName = `${newInternalName}.png`;
 
-    // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
     const oldAvatarPath = path.join(request.user.directories.characters, oldAvatarName);
 
-    // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
     const oldChatsPath = path.join(request.user.directories.chats, oldInternalName);
-    // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
     const newChatsPath = path.join(request.user.directories.chats, newInternalName);
 
     try {
@@ -1098,7 +1086,6 @@ router.post('/rename', validateAvatarUrlMiddleware, async function (request, res
         const rawOldData = await readCharacterData(oldAvatarPath);
         if (rawOldData === undefined) throw new Error('Failed to read character file');
 
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const oldData = getCharaCardV2(JSON.parse(rawOldData), request.user.directories);
         _.set(oldData, 'data.name', newName);
         _.set(oldData, 'name', newName);
@@ -1128,16 +1115,17 @@ router.post('/edit', validateAvatarUrlMiddleware, async function (request, respo
     if (!request.body) {
         console.warn('Error: no response body detected');
         response.status(400).send('Error: no response body detected');
+        // @ts-expect-error TS(7030): Not all code paths return a value.
         return;
     }
 
     if (request.body.ch_name === '' || request.body.ch_name === undefined || request.body.ch_name === '.') {
         console.warn('Error: invalid name.');
         response.status(400).send('Error: invalid name.');
+        // @ts-expect-error TS(7030): Not all code paths return a value.
         return;
     }
 
-    // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
     let char = charaFormatData(request.body, request.user.directories);
     char.chat = request.body.chat;
     char.create_date = request.body.create_date;
@@ -1146,13 +1134,12 @@ router.post('/edit', validateAvatarUrlMiddleware, async function (request, respo
 
     try {
         if (!request.file) {
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             const avatarPath = path.join(request.user.directories.characters, request.body.avatar_url);
             await writeCharacterData(avatarPath, char, targetFile, request);
         } else {
+            // @ts-expect-error TS(4111): Property 'crop' comes from an index signature, so ... Remove this comment to see the full error message
             const crop = tryParse(request.query.crop);
             const newAvatarPath = path.join(request.file.destination, request.file.filename);
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             invalidateThumbnail(request.user.directories, 'avatar', request.body.avatar_url);
             await writeCharacterData(newAvatarPath, char, targetFile, request, crop);
             fs.unlinkSync(newAvatarPath);
@@ -1182,7 +1169,6 @@ router.post('/edit-avatar', validateAvatarUrlMiddleware, async function (request
         if (!fs.existsSync(uploadPath)) {
             return response.status(400).send('Error: uploaded file does not exist');
         }
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const characterPath = path.join(request.user.directories.characters, request.body.avatar_url);
         if (!fs.existsSync(characterPath)) {
             return response.status(400).send('Error: character file does not exist');
@@ -1192,6 +1178,7 @@ router.post('/edit-avatar', validateAvatarUrlMiddleware, async function (request
             return response.status(400).send('Error: failed to read character data');
         }
 
+        // @ts-expect-error TS(4111): Property 'crop' comes from an index signature, so ... Remove this comment to see the full error message
         const crop = tryParse(request.query.crop);
         const fileName = request.body.avatar_url.replace('.png', '');
         await writeCharacterData(uploadPath, data, fileName, request, crop);
@@ -1201,7 +1188,6 @@ router.post('/edit-avatar', validateAvatarUrlMiddleware, async function (request
 
         // Reset images caches
         cacheBuster.bust(request, response);
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         invalidateThumbnail(request.user.directories, 'avatar', request.body.avatar_url);
 
         return response.sendStatus(200);
@@ -1239,7 +1225,6 @@ router.post('/edit-attribute', validateAvatarUrlMiddleware, async function (requ
     }
 
     try {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const avatarPath = path.join(request.user.directories.characters, request.body.avatar_url);
         const charJSON = await readCharacterData(avatarPath);
         if (typeof charJSON !== 'string') throw new Error('Failed to read character file');
@@ -1249,6 +1234,7 @@ router.post('/edit-attribute', validateAvatarUrlMiddleware, async function (requ
         if (char[request.body.field] === undefined && char.data[request.body.field] === undefined) {
             console.warn('Error: invalid field.');
             response.status(400).send('Error: invalid field.');
+            // @ts-expect-error TS(7030): Not all code paths return a value.
             return;
         }
         char[request.body.field] = request.body.value;
@@ -1313,7 +1299,6 @@ async function mergeCharacterUpdate(avatarPath: any, avatar: any, updateData: an
 
     let character = JSON.parse(pngStringData);
 
-    // @ts-expect-error TS(2349): This expression is not callable.
     if (typeof shouldSkip === 'function' && shouldSkip(character)) {
         return { ok: false, skipped: true };
     }
@@ -1358,6 +1343,7 @@ async function mergeCharacterUpdate(avatarPath: any, avatar: any, updateData: an
  * @param {import("express").Response} response - The HTTP response object
  * @returns {void}
  */
+// @ts-expect-error TS(7030): Not all code paths return a value.
 router.post('/merge-attributes', getFileNameValidationFunction('avatar'), async function (request, response) {
     try {
         // ── Bulk mode: avatars array is present ──────────────────
@@ -1379,7 +1365,6 @@ router.post('/merge-attributes', getFileNameValidationFunction('avatar'), async 
                 targetAvatars = avatars;
             } else {
                 // Empty array → scan all characters in the directory
-                // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
                 const files = fs.readdirSync(request.user.directories.characters);
                 targetAvatars = files.filter(file => path.extname(file).toLowerCase() === '.png');
             }
@@ -1393,7 +1378,6 @@ router.post('/merge-attributes', getFileNameValidationFunction('avatar'), async 
              * @param {string} avatar Avatar filename
              */
             const processOne = async (avatar: any) => {
-                // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
                 const avatarPath = path.join(request.user.directories.characters, avatar);
 
                 try {
@@ -1409,7 +1393,6 @@ router.post('/merge-attributes', getFileNameValidationFunction('avatar'), async 
                         };
                     }
 
-                    // @ts-expect-error TS(2345): Argument of type '() => boolean' is not assignable... Remove this comment to see the full error message
                     const result = await mergeCharacterUpdate(avatarPath, avatar, data, request, shouldSkip);
                     if (result.ok) {
                         updated.push(avatar);
@@ -1436,7 +1419,6 @@ router.post('/merge-attributes', getFileNameValidationFunction('avatar'), async 
 
         // ── Single mode (default behavior) ───────────────────────
         const update = request.body;
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const avatarPath = path.join(request.user.directories.characters, update.avatar);
 
         const result = await mergeCharacterUpdate(avatarPath, update.avatar, update, request);
@@ -1447,7 +1429,6 @@ router.post('/merge-attributes', getFileNameValidationFunction('avatar'), async 
             response.status(400).send({ message: `Validation failed for ${update.avatar}`, error: result.error });
         }
     } catch (exception) {
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         response.status(500).send({ message: 'Unexpected error while saving character.', error: exception.toString() });
     }
 });
@@ -1462,14 +1443,12 @@ router.post('/delete', validateAvatarUrlMiddleware, async function (request, res
         return response.sendStatus(403);
     }
 
-    // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
     const avatarPath = path.join(request.user.directories.characters, request.body.avatar_url);
     if (!fs.existsSync(avatarPath)) {
         return response.sendStatus(400);
     }
 
     fs.unlinkSync(avatarPath);
-    // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
     invalidateThumbnail(request.user.directories, 'avatar', request.body.avatar_url);
     let dir_name = (request.body.avatar_url.replace('.png', ''));
 
@@ -1480,7 +1459,6 @@ router.post('/delete', validateAvatarUrlMiddleware, async function (request, res
 
     if (request.body.delete_chats == true) {
         try {
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             await fs.promises.rm(path.join(request.user.directories.chats, sanitize(dir_name)), { recursive: true, force: true });
         } catch (err) {
             console.error(err);
@@ -1505,12 +1483,11 @@ router.post('/delete', validateAvatarUrlMiddleware, async function (request, res
  * @param  {import("express").Response} response The HTTP response object.
  * @return {void}
  */
+// @ts-expect-error TS(7030): Not all code paths return a value.
 router.post('/all', async function (request, response) {
     try {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const files = fs.readdirSync(request.user.directories.characters);
         const pngFiles = files.filter(file => file.endsWith('.png'));
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const processingPromises = pngFiles.map(file => processCharacter(file, request.user.directories, { shallow: useShallowCharacters }));
         const data = (await Promise.all(processingPromises)).filter(c => c.name);
         return response.send(data);
@@ -1521,18 +1498,17 @@ router.post('/all', async function (request, response) {
     }
 });
 
+// @ts-expect-error TS(7030): Not all code paths return a value.
 router.post('/get', validateAvatarUrlMiddleware, async function (request, response) {
     try {
         if (!request.body) return response.sendStatus(400);
         const item = request.body.avatar_url;
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const filePath = path.join(request.user.directories.characters, item);
 
         if (!fs.existsSync(filePath)) {
             return response.sendStatus(404);
         }
 
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const data = await processCharacter(item, request.user.directories, { shallow: false });
 
         return response.send(data);
@@ -1547,7 +1523,6 @@ router.post('/chats', validateAvatarUrlMiddleware, async function (request, resp
         if (!request.body) return response.sendStatus(400);
 
         const characterDirectory = (request.body.avatar_url).replace('.png', '');
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const chatsDirectory = path.join(request.user.directories.chats, characterDirectory);
 
         if (!fs.existsSync(chatsDirectory)) {
@@ -1567,7 +1542,6 @@ router.post('/chats', validateAvatarUrlMiddleware, async function (request, resp
 
         const jsonFilesPromise = jsonFiles.map((file) => {
             const withMetadata = !!request.body.metadata;
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             const pathToFile = path.join(request.user.directories.chats, characterDirectory, file);
             return getChatInfo(pathToFile, {}, withMetadata);
         });
@@ -1592,7 +1566,6 @@ router.post('/chats', validateAvatarUrlMiddleware, async function (request, resp
 function getPngName(file: any, directories: any) {
     file = sanitize(file);
     return getUniqueName(file, (name: any) => fs.existsSync(path.join(directories.characters, `${name}.png`)),
-        // @ts-expect-error TS(2322): Type '(base: any, i: any) => any' is not assignabl... Remove this comment to see the full error message
         { nameBuilder: (base: any, i: any) => i === 0 ? base : `${base}${i}`, startIndex: 0, maxTries: 10000 }) ?? file;
 }
 
@@ -1607,6 +1580,7 @@ function getPreservedName(request: any) {
         : undefined;
 }
 
+// @ts-expect-error TS(7030): Not all code paths return a value.
 router.post('/import', async function (request, response) {
     if (!request.body || !request.file) return response.sendStatus(400);
 
@@ -1624,7 +1598,6 @@ router.post('/import', async function (request, response) {
     };
 
     try {
-        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         const importFunction = formatImportFunctions[format];
 
         if (!importFunction) {
@@ -1639,7 +1612,6 @@ router.post('/import', async function (request, response) {
         }
 
         if (preservedFileName) {
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             invalidateThumbnail(request.user.directories, 'avatar', `${preservedFileName}.png`);
         }
 
@@ -1650,6 +1622,7 @@ router.post('/import', async function (request, response) {
     }
 });
 
+// @ts-expect-error TS(7030): Not all code paths return a value.
 router.post('/duplicate', validateAvatarUrlMiddleware, async function (request, response) {
     try {
         if (!request.body.avatar_url) {
@@ -1657,7 +1630,6 @@ router.post('/duplicate', validateAvatarUrlMiddleware, async function (request, 
             console.debug(request.body);
             return response.sendStatus(400);
         }
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         let filename = path.join(request.user.directories.characters, sanitize(request.body.avatar_url));
         if (!fs.existsSync(filename)) {
             console.error('file for dupe not found', filename);
@@ -1673,19 +1645,16 @@ router.post('/duplicate', validateAvatarUrlMiddleware, async function (request, 
         let baseName;
 
         if (!isNaN(Number(lastPart)) && nameParts.length > 1) {
-            // @ts-expect-error TS(2345): Argument of type 'string | undefined' is not assig... Remove this comment to see the full error message
             suffix = parseInt(lastPart) + 1;
             baseName = nameParts.slice(0, -1).join('_'); // construct baseName without suffix
         } else {
             baseName = nameParts.join('_'); // original filename is completely the baseName
         }
 
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         newFilename = path.join(request.user.directories.characters, `${baseName}_${suffix}${path.extname(filename)}`);
 
         while (fs.existsSync(newFilename)) {
             let suffixStr = '_' + suffix;
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             newFilename = path.join(request.user.directories.characters, `${baseName}${suffixStr}${path.extname(filename)}`);
             suffix++;
         }
@@ -1699,13 +1668,13 @@ router.post('/duplicate', validateAvatarUrlMiddleware, async function (request, 
     }
 });
 
+// @ts-expect-error TS(7030): Not all code paths return a value.
 router.post('/export', validateAvatarUrlMiddleware, async function (request, response) {
     try {
         if (!request.body.format || !request.body.avatar_url) {
             return response.sendStatus(400);
         }
 
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         let filename = path.join(request.user.directories.characters, sanitize(request.body.avatar_url));
 
         if (!fs.existsSync(filename)) {
@@ -1727,7 +1696,6 @@ router.post('/export', validateAvatarUrlMiddleware, async function (request, res
                 try {
                     const json = await readCharacterData(filename);
                     if (json === undefined) return response.sendStatus(400);
-                    // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
                     const jsonObject = getCharaCardV2(JSON.parse(json), request.user.directories);
                     unsetPrivateFields(jsonObject);
                     return response.type('json').send(JSON.stringify(jsonObject, null, 4));

@@ -1,6 +1,7 @@
 import process from 'node:process';
 import http from 'node:http';
 import https from 'node:https';
+// @ts-expect-error TS(2792): Cannot find module 'proxy-agent'. Did you mean to ... Remove this comment to see the full error message
 import { ProxyAgent } from 'proxy-agent';
 import { isValidUrl, color } from './util.js';
 
@@ -46,9 +47,11 @@ export default function initRequestProxy({
 
         // ProxyAgent uses proxy-from-env under the hood
         // Reference: https://github.com/Rob--W/proxy-from-env
+        // @ts-expect-error TS(4111): Property 'all_proxy' comes from an index signature... Remove this comment to see the full error message
         process.env.all_proxy = url;
 
         if (Array.isArray(bypass) && bypass.length > 0) {
+            // @ts-expect-error TS(4111): Property 'no_proxy' comes from an index signature,... Remove this comment to see the full error message
             process.env.no_proxy = bypass.join(',');
         }
 

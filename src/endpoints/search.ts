@@ -1,7 +1,9 @@
 import fetch from 'node-fetch';
 import express from 'express';
+// @ts-expect-error TS(2792): Cannot find module 'ip-regex'. Did you mean to set... Remove this comment to see the full error message
 import ipRegex from 'ip-regex';
 
+// @ts-expect-error TS(2792): Cannot find module 'html-entities'. Did you mean t... Remove this comment to see the full error message
 import { decode } from 'html-entities';
 import { readSecret, SECRET_KEYS } from './secrets.js';
 import { trimV1 } from '../util.js';
@@ -82,9 +84,7 @@ async function extractTranscript(videoPageBody: any, lang: any) {
     const results = [...transcriptBody.matchAll(RE_XML_TRANSCRIPT)];
     const transcript = results.map((result) => ({
         text: result[3],
-        // @ts-expect-error TS(2345): Argument of type 'string | undefined' is not assig... Remove this comment to see the full error message
         duration: parseFloat(result[2]),
-        // @ts-expect-error TS(2345): Argument of type 'string | undefined' is not assig... Remove this comment to see the full error message
         offset: parseFloat(result[1]),
         lang: lang ?? captions.captionTracks[0].languageCode,
     }));
@@ -95,7 +95,6 @@ async function extractTranscript(videoPageBody: any, lang: any) {
 
 router.post('/serpapi', async (request, response) => {
     try {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const key = readSecret(request.user.directories, SECRET_KEYS.SERPAPI);
 
         if (!key) {
@@ -220,7 +219,6 @@ router.post('/searxng', async (request, response) => {
 
 router.post('/tavily', async (request, response) => {
     try {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const apiKey = readSecret(request.user.directories, SECRET_KEYS.TAVILY);
 
         if (!apiKey) {
@@ -306,7 +304,6 @@ router.post('/koboldcpp', async (request, response) => {
 
 router.post('/serper', async (request, response) => {
     try {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const key = readSecret(request.user.directories, SECRET_KEYS.SERPER);
 
         if (!key) {
@@ -349,7 +346,6 @@ router.post('/serper', async (request, response) => {
 
 router.post('/zai', async (request, response) => {
     try {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const key = readSecret(request.user.directories, SECRET_KEYS.ZAI);
 
         if (!key) {

@@ -2,6 +2,7 @@ import path from 'node:path';
 import fs from 'node:fs';
 
 import express from 'express';
+// @ts-expect-error TS(2792): Cannot find module 'sanitize-filename'. Did you me... Remove this comment to see the full error message
 import sanitize from 'sanitize-filename';
 import { Jimp } from '../jimp.js';
 import { sync as writeFileAtomicSync } from 'write-file-atomic';
@@ -15,7 +16,6 @@ import cacheBuster from '../middleware/cacheBuster.js';
 export const router = express.Router();
 
 router.post('/get', function (request, response) {
-    // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
     const images = getImages(request.user.directories.avatars);
     response.send(images);
 });
@@ -28,12 +28,10 @@ router.post('/delete', getFileNameValidationFunction('avatar'), function (reques
         return response.sendStatus(403);
     }
 
-    // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
     const fileName = path.join(request.user.directories.avatars, sanitize(request.body.avatar));
 
     if (fs.existsSync(fileName)) {
         fs.unlinkSync(fileName);
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         invalidateThumbnail(request.user.directories, 'persona', sanitize(request.body.avatar));
         return response.send({ result: 'ok' });
     }
@@ -46,19 +44,18 @@ router.post('/upload', getFileNameValidationFunction('overwrite_name'), async (r
 
     try {
         const pathToUpload = path.join(request.file.destination, request.file.filename);
+        // @ts-expect-error TS(4111): Property 'crop' comes from an index signature, so ... Remove this comment to see the full error message
         const crop = tryParse(request.query.crop);
         const rawImg = await Jimp.read(pathToUpload);
         const image = await applyAvatarCropResize(rawImg, crop);
 
         // Remove previous thumbnail and bust cache if overwriting
         if (request.body.overwrite_name) {
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             invalidateThumbnail(request.user.directories, 'persona', sanitize(request.body.overwrite_name));
             cacheBuster.bust(request, response);
         }
 
         const filename = sanitize(request.body.overwrite_name || `${Date.now()}.png`);
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const pathToNewFile = path.join(request.user.directories.avatars, filename);
         writeFileAtomicSync(pathToNewFile, image);
         fs.unlinkSync(pathToUpload);

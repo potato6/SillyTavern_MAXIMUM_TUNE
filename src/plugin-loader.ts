@@ -3,13 +3,12 @@ import path from 'node:path';
 import url from 'node:url';
 
 import express from 'express';
+// @ts-expect-error TS(2792): Cannot find module 'simple-git'. Did you mean to s... Remove this comment to see the full error message
 import { default as git, CheckRepoActions } from 'simple-git';
 import { sync as commandExistsSync } from 'command-exists';
 import { getConfigValue, color } from './util.js';
 
-// @ts-expect-error TS(2345): Argument of type 'false' is not assignable to para... Remove this comment to see the full error message
 const enableServerPlugins = !!getConfigValue('enableServerPlugins', false, 'boolean');
-// @ts-expect-error TS(2345): Argument of type 'true' is not assignable to param... Remove this comment to see the full error message
 const enableServerPluginsAutoUpdate = !!getConfigValue('enableServerPluginsAutoUpdate', true, 'boolean');
 
 /**
@@ -84,7 +83,6 @@ export async function loadPlugins(app: any, pluginsPath: any) {
         }
 
         // Call all plugin "exit" functions at once and wait for them to finish
-        // @ts-expect-error TS(7006): Parameter 'exitFn' implicitly has an 'any' type.
         return () => Promise.all(exitHooks.map(exitFn => exitFn()));
     } catch (error) {
         console.error('Plugin loading failed.', error);
@@ -286,7 +284,6 @@ async function updatePlugins(pluginsPath: any) {
             const latestCommit = await pluginRepo.revparse(['HEAD']);
             console.log(`Plugin ${color.green(directory)} updated to commit ${color.cyan(latestCommit)}`);
         } catch (error) {
-            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             console.error(color.red(`Failed to update plugin ${directory}: ${error.message}`));
         }
     }

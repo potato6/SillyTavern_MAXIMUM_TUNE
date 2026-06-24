@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import _ from 'lodash';
+// @ts-expect-error TS(2792): Cannot find module 'sanitize-filename'. Did you me... Remove this comment to see the full error message
 import sanitize from 'sanitize-filename';
 import { sync as writeFileAtomicSync } from 'write-file-atomic';
 import { extractFileFromZipBuffer, extractFilesFromZipBuffer, normalizeZipEntryPath, ensureDirectory } from './util.js';
@@ -71,7 +72,6 @@ export class CharXParser {
             throw new Error('Failed to extract card.json from CharX file');
         }
 
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         const card = JSON.parse(cardBuffer.toString());
 
         if (card.spec === undefined) {
@@ -95,7 +95,7 @@ export class CharXParser {
 
         let extractedBuffers = new Map();
         if (archivePaths.size > 0) {
-            // @ts-expect-error TS(2322): Type 'unknown' is not assignable to type 'Map<any,... Remove this comment to see the full error message
+            // @ts-expect-error TS(2740): Type '{}' is missing the following properties from... Remove this comment to see the full error message
             extractedBuffers = await extractFilesFromZipBuffer(this.#data, [...archivePaths]);
         }
 
@@ -393,7 +393,6 @@ export function persistCharXAssets(assets: any, bufferMap: any, directories: any
                 summary.misc += 1;
             }
         } catch (error) {
-            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             console.warn(`CharX: Failed to save asset "${asset.name}": ${error.message}`);
         }
     }

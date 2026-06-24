@@ -13,7 +13,6 @@ const getAudioMimeType = (format: any) => {
         'flac': 'audio/flac',
         'aac': 'audio/aac',
     };
-    // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     return mimeTypes[format] || 'audio/mpeg';
 };
 
@@ -33,9 +32,7 @@ router.post('/generate-voice', async (request, response) => {
             language,
         } = request.body;
 
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const apiKey = readSecret(request.user.directories, SECRET_KEYS.MINIMAX);
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const groupId = readSecret(request.user.directories, SECRET_KEYS.MINIMAX_GROUP_ID);
 
         // Validate required parameters
@@ -95,7 +92,6 @@ router.post('/generate-voice', async (request, response) => {
                 console.error('MiniMax TTS API error (JSON):', errorData);
 
                 // Check for MiniMax specific error format
-                // @ts-expect-error TS(2571): Object is of type 'unknown'.
                 const baseResp = errorData?.base_resp;
                 if (baseResp && baseResp.status_code !== 0) {
                     if (baseResp.status_code === 1004) {
@@ -104,7 +100,6 @@ router.post('/generate-voice', async (request, response) => {
                         errorMessage = `API Error: ${baseResp.status_msg}`;
                     }
                 } else {
-                    // @ts-expect-error TS(2571): Object is of type 'unknown'.
                     errorMessage = errorData.error?.message || errorData.message || errorData.detail || `HTTP ${apiResponse.status}`;
                 }
             } catch (jsonError) {
@@ -139,7 +134,6 @@ router.post('/generate-voice', async (request, response) => {
         }
 
         // Check for API error codes in response data
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         const baseResp = responseData?.base_resp;
         if (baseResp && baseResp.status_code !== 0) {
             let errorMessage;
@@ -153,10 +147,8 @@ router.post('/generate-voice', async (request, response) => {
         }
 
         // Process the audio data
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         if (responseData.data && responseData.data.audio) {
             // Process hex-encoded audio data
-            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             const hexAudio = responseData.data.audio;
 
             if (!hexAudio || typeof hexAudio !== 'string') {
@@ -200,17 +192,13 @@ router.post('/generate-voice', async (request, response) => {
                 return response.send(Buffer.from(audioBytes));
             } catch (conversionError) {
                 console.error('MiniMax TTS: Audio conversion error:', conversionError);
-                // @ts-expect-error TS(2571): Object is of type 'unknown'.
                 return response.status(500).json({ error: `Audio data conversion failed: ${conversionError.message}` });
             }
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         } else if (responseData.data && responseData.data.url) {
             // Handle URL-based audio response
-            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             console.debug('MiniMax TTS: Received audio URL:', responseData.data.url);
 
             try {
-                // @ts-expect-error TS(2571): Object is of type 'unknown'.
                 const audioResponse = await fetch(responseData.data.url);
                 if (!audioResponse.ok) {
                     console.error('MiniMax TTS: Failed to fetch audio from URL:', audioResponse.status);
@@ -226,12 +214,10 @@ router.post('/generate-voice', async (request, response) => {
                 return response.send(Buffer.from(audioBuffer));
             } catch (urlError) {
                 console.error('MiniMax TTS: Error fetching audio from URL:', urlError);
-                // @ts-expect-error TS(2571): Object is of type 'unknown'.
                 return response.status(500).json({ error: `Failed to fetch audio: ${urlError.message}` });
             }
         } else {
             // Handle error response
-            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             const errorMessage = responseData.base_resp?.status_msg || responseData.error?.message || 'Unknown error';
             console.error('MiniMax TTS: No valid audio data in response:', responseData);
             return response.status(500).json({ error: `API Error: ${errorMessage}` });

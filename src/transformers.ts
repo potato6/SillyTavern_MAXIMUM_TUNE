@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import process from 'node:process';
 import { Buffer } from 'node:buffer';
 
+// @ts-expect-error TS(2792): Cannot find module 'sillytavern-transformers'. Did... Remove this comment to see the full error message
 import { pipeline, env, RawImage } from 'sillytavern-transformers';
 import { getConfigValue } from './util.js';
 import { serverDirectory } from './server-directory.js';
@@ -73,11 +74,9 @@ export async function getRawImage(image: any) {
  * @returns {string} The model to use for the given task
  */
 function getModelForTask(task: any) {
-    // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     const defaultModel = tasks[task].defaultModel;
 
     try {
-        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         const model = getConfigValue(tasks[task].configField, null);
         return model || defaultModel;
     } catch (error) {
@@ -88,7 +87,6 @@ function getModelForTask(task: any) {
 
 async function migrateCacheToDataDir() {
     const oldCacheDir = path.join(process.cwd(), 'cache');
-    // @ts-expect-error TS(7017): Element implicitly has an 'any' type because type ... Remove this comment to see the full error message
     const newCacheDir = path.join(globalThis.DATA_ROOT, '_cache');
 
     if (!fs.existsSync(newCacheDir)) {
@@ -126,30 +124,20 @@ async function migrateCacheToDataDir() {
 export async function getPipeline(task: any, forceModel = '') {
     await migrateCacheToDataDir();
 
-    // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     if (tasks[task].pipeline) {
-        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         if (forceModel === '' || tasks[task].currentModel === forceModel) {
-            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             return tasks[task].pipeline;
         }
-        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         console.log('Disposing transformers.js pipeline for for task', task, 'with model', tasks[task].currentModel);
-        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         await tasks[task].pipeline.dispose();
     }
 
-    // @ts-expect-error TS(7017): Element implicitly has an 'any' type because type ... Remove this comment to see the full error message
     const cacheDir = path.join(globalThis.DATA_ROOT, '_cache');
     const model = forceModel || getModelForTask(task);
-    // @ts-expect-error TS(2345): Argument of type 'true' is not assignable to param... Remove this comment to see the full error message
     const localOnly = !getConfigValue('extensions.models.autoDownload', true, 'boolean');
     console.log('Initializing transformers.js pipeline for task', task, 'with model', model);
-    // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     const instance = await pipeline(task, model, { cache_dir: cacheDir, quantized: tasks[task].quantized ?? true, local_files_only: localOnly });
-    // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     tasks[task].pipeline = instance;
-    // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     tasks[task].currentModel = model;
     return instance;
 }

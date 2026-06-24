@@ -105,7 +105,6 @@ const EXPORTABLE_KEYS = [
     SECRET_KEYS.DEEPLX_URL,
 ];
 
-// @ts-expect-error TS(2345): Argument of type 'false' is not assignable to para... Remove this comment to see the full error message
 export const allowKeysExposure = !!getConfigValue('allowKeysExposure', false, 'boolean');
 
 /**
@@ -356,7 +355,6 @@ export class SecretManager {
             }
             const value = secrets[key];
             if (value && Array.isArray(value) && value.length > 0) {
-                // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 state[key] = value.map(secret => ({
                     id: secret.id,
                     value: this.getMaskedValue(secret.value, key),
@@ -365,7 +363,6 @@ export class SecretManager {
                 }));
             } else {
                 // No secrets for this key
-                // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 state[key] = null;
             }
         }
@@ -403,7 +400,6 @@ export class SecretManager {
 
         for (const [key, value] of Object.entries(secrets)) {
             if (typeof value === 'string' && value.trim()) {
-                // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 migratedSecrets[key] = [{
                     id: uuidv4(),
                     value: value,
@@ -414,7 +410,6 @@ export class SecretManager {
         }
 
         // Mark as migrated
-        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         migratedSecrets[SECRET_KEYS._MIGRATED] = [];
 
         // Save backup of the old secrets file
@@ -470,7 +465,6 @@ export function readSecretState(directories: any) {
         if (key === SECRET_KEYS._MIGRATED) {
             continue;
         }
-        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         result[key] = Array.isArray(state[key]) && state[key].length > 0;
     }
     return result;
@@ -492,7 +486,6 @@ export function getAllSecrets(directories: any) {
         if (Array.isArray(values) && values.length > 0) {
             const activeSecret = values.find(secret => secret.active);
             if (activeSecret) {
-                // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 result[key] = activeSecret.value;
             }
         }
@@ -526,7 +519,6 @@ router.post('/write', (request, response) => {
             return response.status(400).send('Invalid key or value');
         }
 
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const manager = new SecretManager(request.user.directories);
         const id = manager.writeSecret(key, value, label);
 
@@ -539,7 +531,6 @@ router.post('/write', (request, response) => {
 
 router.post('/read', (request, response) => {
     try {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const manager = new SecretManager(request.user.directories);
         const state = manager.getSecretState();
         return response.send(state);
@@ -556,7 +547,6 @@ router.post('/view', (request, response) => {
             return response.sendStatus(403);
         }
 
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const secrets = getAllSecrets(request.user.directories);
 
         if (!secrets) {
@@ -583,11 +573,9 @@ router.post('/find', (request, response) => {
             return response.sendStatus(403);
         }
 
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const manager = new SecretManager(request.user.directories);
         const state = manager.getSecretState();
 
-        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         if (!state[key]) {
             return response.sendStatus(404);
         }
@@ -608,7 +596,6 @@ router.post('/delete', (request, response) => {
             return response.status(400).send('Key and ID are required');
         }
 
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const manager = new SecretManager(request.user.directories);
         manager.deleteSecret(key, id);
 
@@ -627,7 +614,6 @@ router.post('/rotate', (request, response) => {
             return response.status(400).send('Key and ID are required');
         }
 
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const manager = new SecretManager(request.user.directories);
         manager.rotateSecret(key, id);
 
@@ -646,7 +632,6 @@ router.post('/rename', (request, response) => {
             return response.status(400).send('Key, ID, and label are required');
         }
 
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const manager = new SecretManager(request.user.directories);
         manager.renameSecret(key, id, label);
 

@@ -35,7 +35,5 @@
         "public/scripts/extensions",
         "public/lib",
         "src/vectors",
-        "**/*.js",
-        "**/*.mjs"
     ]
 }

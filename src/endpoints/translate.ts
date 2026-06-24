@@ -1,7 +1,10 @@
 import fetch from 'node-fetch';
 import express from 'express';
+// @ts-expect-error TS(2792): Cannot find module 'bing-translate-api'. Did you m... Remove this comment to see the full error message
 import { translate as bingTranslate } from 'bing-translate-api';
+// @ts-expect-error TS(2792): Cannot find module 'url-join'. Did you mean to set... Remove this comment to see the full error message
 import urlJoin from 'url-join';
+// @ts-expect-error TS(2792): Cannot find module 'google-translate-api-x'. Did y... Remove this comment to see the full error message
 import { Translator } from 'google-translate-api-x';
 
 import { readSecret, SECRET_KEYS } from './secrets.js';
@@ -15,9 +18,7 @@ export const router = express.Router();
 
 router.post('/libre', async (request, response) => {
     try {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const key = readSecret(request.user.directories, SECRET_KEYS.LIBRE);
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const url = readSecret(request.user.directories, SECRET_KEYS.LIBRE_URL);
 
         if (!url) {
@@ -66,13 +67,10 @@ router.post('/libre', async (request, response) => {
 
         /** @type {any} */
         const json = await result.json();
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         console.debug('Translated text: ' + json.translatedText);
 
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         return response.send(json.translatedText);
     } catch (error) {
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         console.error('Translation error: ' + error.message);
         return response.sendStatus(500);
     }
@@ -151,13 +149,11 @@ router.post('/yandex', async (request, response) => {
 
         /** @type {any} */
         const json = await result.json();
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         const translated = json.text.join();
         console.debug('Translated text: ' + translated);
 
         return response.send(translated);
     } catch (error) {
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         console.error('Translation error: ' + error.message);
         return response.sendStatus(500);
     }
@@ -165,7 +161,6 @@ router.post('/yandex', async (request, response) => {
 
 router.post('/lingva', async (request, response) => {
     try {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const secretUrl = readSecret(request.user.directories, SECRET_KEYS.LINGVA_URL);
         const baseUrl = secretUrl || LINGVA_DEFAULT;
 
@@ -200,9 +195,7 @@ router.post('/lingva', async (request, response) => {
 
         /** @type {any} */
         const data = await result.json();
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         console.debug('Translated text: ' + data.translation);
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         return response.send(data.translation);
     } catch (error) {
         console.error('Translation error', error);
@@ -212,7 +205,6 @@ router.post('/lingva', async (request, response) => {
 
 router.post('/deepl', async (request, response) => {
     try {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const key = readSecret(request.user.directories, SECRET_KEYS.DEEPL);
 
         if (!key) {
@@ -226,7 +218,6 @@ router.post('/deepl', async (request, response) => {
 
         const text = request.body.text;
         const lang = request.body.lang;
-        // @ts-expect-error TS(2345): Argument of type '"default"' is not assignable to ... Remove this comment to see the full error message
         const formality = getConfigValue('deepl.formality', 'default');
 
         if (!text || !lang) {
@@ -265,13 +256,10 @@ router.post('/deepl', async (request, response) => {
 
         /** @type {any} */
         const json = await result.json();
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         console.debug('Translated text: ' + json.translations[0].text);
 
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         return response.send(json.translations[0].text);
     } catch (error) {
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         console.error('Translation error: ' + error.message);
         return response.sendStatus(500);
     }
@@ -279,7 +267,6 @@ router.post('/deepl', async (request, response) => {
 
 router.post('/onering', async (request, response) => {
     try {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const secretUrl = readSecret(request.user.directories, SECRET_KEYS.ONERING_URL);
         const url = secretUrl || ONERING_URL_DEFAULT;
 
@@ -326,13 +313,10 @@ router.post('/onering', async (request, response) => {
 
         /** @type {any} */
         const data = await result.json();
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         console.debug('Translated text: ' + data.result);
 
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         return response.send(data.result);
     } catch (error) {
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         console.error('Translation error: ' + error.message);
         return response.sendStatus(500);
     }
@@ -340,7 +324,6 @@ router.post('/onering', async (request, response) => {
 
 router.post('/deeplx', async (request, response) => {
     try {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const secretUrl = readSecret(request.user.directories, SECRET_KEYS.DEEPLX_URL);
         const url = secretUrl || DEEPLX_URL_DEFAULT;
 
@@ -386,13 +369,10 @@ router.post('/deeplx', async (request, response) => {
 
         /** @type {any} */
         const json = await result.json();
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         console.debug('Translated text: ' + json.data);
 
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         return response.send(json.data);
     } catch (error) {
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         console.error('DeepLX translation error: ' + error.message);
         return response.sendStatus(500);
     }

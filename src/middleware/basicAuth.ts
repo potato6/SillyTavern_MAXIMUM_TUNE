@@ -5,18 +5,15 @@
 import { Buffer } from 'node:buffer';
 import path from 'node:path';
 import storage from 'node-persist';
+// @ts-expect-error TS(2792): Cannot find module 'rate-limiter-flexible'. Did yo... Remove this comment to see the full error message
 import { RateLimiterMemory, RateLimiterRes } from 'rate-limiter-flexible';
 import { getAllUserHandles, toKey, getPasswordHash } from '../users.js';
 import { getConfigValue, safeReadFileSync } from '../util.js';
 import { getIpAddress, retryAfter } from '../express-common.js';
 
-// @ts-expect-error TS(2345): Argument of type 'false' is not assignable to para... Remove this comment to see the full error message
 const PER_USER_BASIC_AUTH = !!getConfigValue('perUserBasicAuth', false, 'boolean');
-// @ts-expect-error TS(2345): Argument of type 'false' is not assignable to para... Remove this comment to see the full error message
 const ENABLE_ACCOUNTS = !!getConfigValue('enableUserAccounts', false, 'boolean');
-// @ts-expect-error TS(2345): Argument of type 'false' is not assignable to para... Remove this comment to see the full error message
 const PREFER_REAL_IP_HEADER = !!getConfigValue('rateLimiting.preferRealIpHeader', false, 'boolean');
-// @ts-expect-error TS(2345): Argument of type '5' is not assignable to paramete... Remove this comment to see the full error message
 const BASIC_AUTH_ATTEMPTS = getConfigValue('rateLimiting.basicAuthMaxAttempts', 5, 'number');
 
 const basicAuthLimiter = new RateLimiterMemory({
@@ -26,7 +23,6 @@ const basicAuthLimiter = new RateLimiterMemory({
 
 const basicAuthMiddleware = async function (request: any, response: any, callback: any) {
     const unauthorizedResponse = (res: any) => {
-        // @ts-expect-error TS(7017): Element implicitly has an 'any' type because type ... Remove this comment to see the full error message
         const unauthorizedWebpage = safeReadFileSync(path.join(globalThis.DATA_ROOT, '_errors', 'unauthorized.html')) ?? '';
         res.set('WWW-Authenticate', 'Basic realm="SillyTavern", charset="UTF-8"');
         return res.status(401).send(unauthorizedWebpage);

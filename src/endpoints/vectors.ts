@@ -1,8 +1,10 @@
 import path from 'node:path';
 import fs from 'node:fs';
 
+// @ts-expect-error TS(2792): Cannot find module 'vectra'. Did you mean to set t... Remove this comment to see the full error message
 import vectra from 'vectra';
 import express from 'express';
+// @ts-expect-error TS(2792): Cannot find module 'sanitize-filename'. Did you me... Remove this comment to see the full error message
 import sanitize from 'sanitize-filename';
 
 import { getConfigValue } from '../util.js';
@@ -226,7 +228,6 @@ function getSourceSettings(source: any, request: any) {
             };
         case 'transformers':
             return {
-                // @ts-expect-error TS(2345): Argument of type '""' is not assignable to paramet... Remove this comment to see the full error message
                 model: getConfigValue('extensions.models.embedding', ''),
             };
         case 'palm':
@@ -427,15 +428,11 @@ async function multiQueryCollection(directories: any, collectionIds: any, source
      */
     const groupedResults = {};
     for (const result of sortedResults) {
-        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         if (!groupedResults[result.collectionId]) {
-            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             groupedResults[result.collectionId] = { hashes: [], metadata: [] };
         }
 
-        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         groupedResults[result.collectionId].hashes.push(Number(result.result.item.metadata.hash));
-        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         groupedResults[result.collectionId].metadata.push(result.result.item.metadata);
     }
 
@@ -487,7 +484,6 @@ router.post('/query', async (req, res) => {
         const source = String(req.body.source) || 'transformers';
         const sourceSettings = getSourceSettings(source, req);
 
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const results = await queryCollection(req.user.directories, collectionId, source, sourceSettings, searchText, topK, threshold);
         return res.json(results);
     } catch (error) {
@@ -508,7 +504,6 @@ router.post('/query-multi', async (req, res) => {
         const source = String(req.body.source) || 'transformers';
         const sourceSettings = getSourceSettings(source, req);
 
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const results = await multiQueryCollection(req.user.directories, collectionIds, source, sourceSettings, searchText, topK, threshold);
         return res.json(results);
     } catch (error) {
@@ -531,7 +526,6 @@ router.post('/insert', async (req, res) => {
         const source = String(req.body.source) || 'transformers';
         const sourceSettings = getSourceSettings(source, req);
 
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         await insertVectorItems(req.user.directories, collectionId, source, sourceSettings, items);
         return res.sendStatus(200);
     } catch (error) {
@@ -549,7 +543,6 @@ router.post('/list', async (req, res) => {
         const source = String(req.body.source) || 'transformers';
         const sourceSettings = getSourceSettings(source, req);
 
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const hashes = await getSavedHashes(req.user.directories, collectionId, source, sourceSettings);
         return res.json(hashes);
     } catch (error) {
@@ -568,7 +561,6 @@ router.post('/delete', async (req, res) => {
         const source = String(req.body.source) || 'transformers';
         const sourceSettings = getSourceSettings(source, req);
 
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         await deleteVectorItems(req.user.directories, collectionId, source, sourceSettings, hashes);
         return res.sendStatus(200);
     } catch (error) {
@@ -579,7 +571,6 @@ router.post('/delete', async (req, res) => {
 router.post('/purge-all', async (req, res) => {
     try {
         for (const source of SOURCES) {
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             const sourcePath = path.join(req.user.directories.vectors, sanitize(source));
             if (!fs.existsSync(sourcePath)) {
                 continue;
@@ -604,7 +595,6 @@ router.post('/purge', async (req, res) => {
         const collectionId = String(req.body.collectionId);
 
         for (const source of SOURCES) {
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             const sourcePath = path.join(req.user.directories.vectors, sanitize(source), sanitize(collectionId));
             if (!fs.existsSync(sourcePath)) {
                 continue;

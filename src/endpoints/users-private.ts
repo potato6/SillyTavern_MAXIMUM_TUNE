@@ -34,12 +34,10 @@ router.post('/logout', async (request, response) => {
 
 router.get('/me', async (request, response) => {
     try {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         if (!request.user) {
             return response.sendStatus(403);
         }
 
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const user = request.user.profile;
         const viewModel = {
             handle: user.handle,
@@ -64,7 +62,6 @@ router.post('/change-avatar', async (request, response) => {
             return response.status(400).json({ error: 'Missing required fields' });
         }
 
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         if (request.body.handle !== request.user.profile.handle && !request.user.profile.admin) {
             console.error('Change avatar failed: Unauthorized');
             return response.status(403).json({ error: 'Unauthorized' });
@@ -100,7 +97,6 @@ router.post('/change-password', async (request, response) => {
             return response.status(400).json({ error: 'Missing required fields' });
         }
 
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         if (request.body.handle !== request.user.profile.handle && !request.user.profile.admin) {
             console.error('Change password failed: Unauthorized');
             return response.status(403).json({ error: 'Unauthorized' });
@@ -119,7 +115,6 @@ router.post('/change-password', async (request, response) => {
             return response.status(403).json({ error: 'User is disabled' });
         }
 
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         if (!request.user.profile.admin && user.password && user.password !== getPasswordHash(request.body.oldPassword, user.salt)) {
             console.error('Change password failed: Incorrect password');
             return response.status(403).json({ error: 'Incorrect password' });
@@ -148,9 +143,9 @@ router.post('/change-password', async (request, response) => {
     }
 });
 
+// @ts-expect-error TS(7030): Not all code paths return a value.
 router.post('/backup', async (request, response) => {
     try {
-        // @ts-expect-error TS(2345): Argument of type 'true' is not assignable to param... Remove this comment to see the full error message
         const allowFullDataBackup = !!getConfigValue('backups.allowFullDataBackup', true, 'boolean');
 
         if (!allowFullDataBackup) {
@@ -165,7 +160,6 @@ router.post('/backup', async (request, response) => {
             return response.status(400).json({ error: 'Missing required fields' });
         }
 
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         if (handle !== request.user.profile.handle && !request.user.profile.admin) {
             console.error('Backup failed: Unauthorized');
             return response.status(403).json({ error: 'Unauthorized' });
@@ -182,16 +176,13 @@ router.post('/reset-settings', async (request, response) => {
     try {
         const password = request.body.password;
 
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         if (request.user.profile.password && request.user.profile.password !== getPasswordHash(password, request.user.profile.salt)) {
             console.warn('Reset settings failed: Incorrect password');
             return response.status(403).json({ error: 'Incorrect password' });
         }
 
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const pathToFile = path.join(request.user.directories.root, SETTINGS_FILE);
         await fsPromises.rm(pathToFile, { force: true });
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         await checkForNewContent([request.user.directories], [CONTENT_TYPES.SETTINGS]);
 
         return response.sendStatus(204);
@@ -208,7 +199,6 @@ router.post('/change-name', async (request, response) => {
             return response.status(400).json({ error: 'Missing required fields' });
         }
 
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         if (request.body.handle !== request.user.profile.handle && !request.user.profile.admin) {
             console.error('Change name failed: Unauthorized');
             return response.status(403).json({ error: 'Unauthorized' });
@@ -236,10 +226,8 @@ router.post('/reset-step1', async (request, response) => {
     try {
         const resetCode = String(crypto.randomInt(1000, 9999));
         console.log();
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         console.log(color.magenta(`${request.user.profile.name}, your account reset code is: `) + color.red(resetCode));
         console.log();
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         RESET_CACHE.set(request.user.profile.handle, resetCode);
         return response.sendStatus(204);
     } catch (error) {
@@ -255,13 +243,11 @@ router.post('/reset-step2', async (request, response) => {
             return response.status(400).json({ error: 'Missing required fields' });
         }
 
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         if (request.user.profile.password && request.user.profile.password !== getPasswordHash(request.body.password, request.user.profile.salt)) {
             console.warn('Recover step 2 failed: Incorrect password');
             return response.status(400).json({ error: 'Incorrect password' });
         }
 
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const code = RESET_CACHE.get(request.user.profile.handle);
 
         if (!code || code !== request.body.code) {
@@ -269,16 +255,12 @@ router.post('/reset-step2', async (request, response) => {
             return response.status(400).json({ error: 'Incorrect code' });
         }
 
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         console.info('Resetting account data:', request.user.profile.handle);
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         await fsPromises.rm(request.user.directories.root, { recursive: true, force: true });
 
         await ensurePublicDirectoriesExist();
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         await checkForNewContent([request.user.directories]);
 
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         RESET_CACHE.remove(request.user.profile.handle);
         return response.sendStatus(204);
     } catch (error) {

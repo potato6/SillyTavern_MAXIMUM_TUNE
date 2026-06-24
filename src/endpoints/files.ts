@@ -2,6 +2,7 @@ import path from 'node:path';
 import fs from 'node:fs';
 
 import express from 'express';
+// @ts-expect-error TS(2792): Cannot find module 'sanitize-filename'. Did you me... Remove this comment to see the full error message
 import sanitize from 'sanitize-filename';
 import { sync as writeFileSyncAtomic } from 'write-file-atomic';
 
@@ -40,12 +41,9 @@ router.post('/upload', async (request, response) => {
         if (validation.error)
             return response.status(400).send(validation.message);
 
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const pathToUpload = path.join(request.user.directories.files, request.body.name);
         writeFileSyncAtomic(pathToUpload, request.body.data, 'base64');
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const url = clientRelativePath(request.user.directories.root, pathToUpload);
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         console.info(`Uploaded file: ${url} from ${request.user.profile.handle}`);
         return response.send({ path: url });
     } catch (error) {
@@ -60,9 +58,7 @@ router.post('/delete', async (request, response) => {
             return response.status(400).send('No path specified');
         }
 
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const pathToDelete = path.join(request.user.directories.root, request.body.path);
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         if (!pathToDelete.startsWith(request.user.directories.files)) {
             return response.status(400).send('Invalid path');
         }
@@ -72,7 +68,6 @@ router.post('/delete', async (request, response) => {
         }
 
         fs.unlinkSync(pathToDelete);
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         console.info(`Deleted file: ${request.body.path} from ${request.user.profile.handle}`);
         return response.sendStatus(200);
     } catch (error) {
@@ -90,15 +85,12 @@ router.post('/verify', async (request, response) => {
         const verified = {};
 
         for (const url of request.body.urls) {
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             const pathToVerify = path.join(request.user.directories.root, url);
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             if (!pathToVerify.startsWith(request.user.directories.files)) {
                 console.warn(`File verification: Invalid path: ${pathToVerify}`);
                 continue;
             }
             const fileExists = fs.existsSync(pathToVerify);
-            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             verified[url] = fileExists;
         }
 

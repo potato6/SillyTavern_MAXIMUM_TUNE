@@ -132,7 +132,6 @@ export const router = express.Router();
 
 router.post('/status', async function (req, res) {
     if (!req.body) return res.sendStatus(400);
-    // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
     const api_key_novel = readSecret(req.user.directories, SECRET_KEYS.NOVEL);
 
     if (!api_key_novel) {
@@ -165,10 +164,10 @@ router.post('/status', async function (req, res) {
     }
 });
 
+// @ts-expect-error TS(7030): Not all code paths return a value.
 router.post('/generate', async function (req, res) {
     if (!req.body) return res.sendStatus(400);
 
-    // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
     const api_key_novel = readSecret(req.user.directories, SECRET_KEYS.NOVEL);
 
     if (!api_key_novel) {
@@ -293,7 +292,6 @@ router.post('/generate', async function (req, res) {
 
             /** @type {any} */
             const data = await response.json();
-            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             console.info('NovelAI Output', data?.output);
             return res.send(data);
         }
@@ -307,7 +305,6 @@ router.post('/generate-image', async (request, response) => {
         return response.sendStatus(400);
     }
 
-    // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
     const key = readSecret(request.user.directories, SECRET_KEYS.NOVEL);
 
     if (!key) {
@@ -396,7 +393,7 @@ router.post('/generate-image', async (request, response) => {
             return response.sendStatus(500);
         }
 
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
+        // @ts-expect-error TS(2554): Expected 0 arguments, but got 1.
         const originalBase64 = imageBuffer.toString('base64');
 
         // No upscaling
@@ -434,7 +431,7 @@ router.post('/generate-image', async (request, response) => {
                 throw new Error('NovelAI upscaled an image, but the PNG file was not found.');
             }
 
-            // @ts-expect-error TS(2571): Object is of type 'unknown'.
+            // @ts-expect-error TS(2554): Expected 0 arguments, but got 1.
             const upscaledBase64 = upscaledImageBuffer.toString('base64');
 
             return response.send(upscaledBase64);
@@ -449,7 +446,6 @@ router.post('/generate-image', async (request, response) => {
 });
 
 router.post('/generate-voice', async (request, response) => {
-    // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
     const token = readSecret(request.user.directories, SECRET_KEYS.NOVEL);
 
     if (!token) {
@@ -481,7 +477,7 @@ router.post('/generate-voice', async (request, response) => {
         }
 
         const chunks = await readAllChunks(result.body);
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
+        // @ts-expect-error TS(2339): Property 'map' does not exist on type 'unknown'.
         const buffer = Buffer.concat(chunks.map((chunk: any) => new Uint8Array(chunk)));
         response.setHeader('Content-Type', 'audio/mpeg');
         return response.send(buffer);

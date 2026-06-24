@@ -3,6 +3,7 @@ import { promises as fsPromises } from 'node:fs';
 import path from 'node:path';
 
 import express from 'express';
+// @ts-expect-error TS(2792): Cannot find module 'sanitize-filename'. Did you me... Remove this comment to see the full error message
 import sanitize from 'sanitize-filename';
 import { sync as writeFileAtomicSync, default as writeFileAtomic } from 'write-file-atomic';
 
@@ -113,20 +114,15 @@ export async function migrateGroupChatsMetadataFormat(userDirectories: any) {
 router.post('/all', (request, response) => {
     const groups: any = [];
 
-    // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
     if (!fs.existsSync(request.user.directories.groups)) {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         fs.mkdirSync(request.user.directories.groups);
     }
 
-    // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
     const files = fs.readdirSync(request.user.directories.groups).filter(x => path.extname(x) === '.json');
-    // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
     const chats = fs.readdirSync(request.user.directories.groupChats).filter(x => path.extname(x) === '.jsonl');
 
     files.forEach(function (file) {
         try {
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             const filePath = path.join(request.user.directories.groups, file);
             const fileContents = fs.readFileSync(filePath, 'utf8');
             const group = JSON.parse(fileContents);
@@ -140,7 +136,6 @@ router.post('/all', (request, response) => {
             if (Array.isArray(group.chats) && Array.isArray(chats)) {
                 for (const chat of chats) {
                     if (group.chats.includes(path.parse(chat).name)) {
-                        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
                         const chatStat = fs.statSync(path.join(request.user.directories.groupChats, chat));
                         chat_size += chatStat.size;
                         date_last_chat = Math.max(date_last_chat, chatStat.mtimeMs);
@@ -182,13 +177,10 @@ router.post('/create', (request, response) => {
         generation_mode_join_prefix: request.body.generation_mode_join_prefix ?? '',
         generation_mode_join_suffix: request.body.generation_mode_join_suffix ?? '',
     };
-    // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
     const pathToFile = path.join(request.user.directories.groups, sanitize(`${id}.json`));
     const fileData = JSON.stringify(groupMetadata, null, 4);
 
-    // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
     if (!fs.existsSync(request.user.directories.groups)) {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         fs.mkdirSync(request.user.directories.groups);
     }
 
@@ -202,7 +194,6 @@ router.post('/edit', getFileNameValidationFunction('id'), (request, response) =>
     }
     warnOnGroupMetadata(request.body);
     const id = request.body.id;
-    // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
     const pathToFile = path.join(request.user.directories.groups, sanitize(`${id}.json`));
     const fileData = JSON.stringify(request.body, null, 4);
 
@@ -216,7 +207,6 @@ router.post('/delete', getFileNameValidationFunction('id'), async (request, resp
     }
 
     const id = request.body.id;
-    // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
     const pathToGroup = path.join(request.user.directories.groups, sanitize(`${id}.json`));
 
     try {
@@ -226,7 +216,6 @@ router.post('/delete', getFileNameValidationFunction('id'), async (request, resp
         if (group && Array.isArray(group.chats)) {
             for (const chat of group.chats) {
                 console.info('Deleting group chat', chat);
-                // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
                 const pathToFile = path.join(request.user.directories.groupChats, sanitize(`${chat}.jsonl`));
 
                 if (fs.existsSync(pathToFile)) {

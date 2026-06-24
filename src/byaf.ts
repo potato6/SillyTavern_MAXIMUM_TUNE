@@ -1,5 +1,6 @@
 import { promises as fsPromises } from 'node:fs';
 import path from 'node:path';
+// @ts-expect-error TS(2792): Cannot find module 'url-join'. Did you mean to set... Remove this comment to see the full error message
 import urlJoin from 'url-join';
 import { DEFAULT_AVATAR_PATH } from './constants.js';
 import { extractFileFromZipBuffer } from './util.js';
@@ -108,15 +109,10 @@ export class ByafParser {
                 return;
             }
             book.entries.push({
-                // @ts-expect-error TS(2322): Type 'string[]' is not assignable to type 'never'.
                 keys: ByafParser.replaceMacros(item?.key).split(',').map(key => key.trim()).filter(Boolean),
-                // @ts-expect-error TS(2322): Type 'string' is not assignable to type 'never'.
                 content: ByafParser.replaceMacros(item?.value),
-                // @ts-expect-error TS(2322): Type '{}' is not assignable to type 'never'.
                 extensions: {},
-                // @ts-expect-error TS(2322): Type 'boolean' is not assignable to type 'never'.
                 enabled: true,
-                // @ts-expect-error TS(2322): Type 'number' is not assignable to type 'never'.
                 insertion_order: index,
             });
         });
@@ -156,7 +152,6 @@ export class ByafParser {
         }
 
         try {
-            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             const character = JSON.parse(characterBuffer.toString());
             return { character, characterPath };
         } catch (error) {
@@ -188,7 +183,6 @@ export class ByafParser {
             }
             if (scenarioBuffer) {
                 try {
-                    // @ts-expect-error TS(2571): Object is of type 'unknown'.
                     scenarios.push(JSON.parse(scenarioBuffer.toString()));
                 } catch (error) {
                     console.warn('Warning: BYAF scenario is not a valid JSON', error);
@@ -292,10 +286,8 @@ export class ByafParser {
             if (bgImagePath) {
                 const data = await extractFileFromZipBuffer(this.#data, bgImagePath);
                 if (data) {
-                    // @ts-expect-error TS(2571): Object is of type 'unknown'.
                     const existingIndex = backgrounds.findIndex(bg => bg.data.compare(data) === 0);
                     if (existingIndex !== -1) {
-                        // @ts-expect-error TS(2532): Object is possibly 'undefined'.
                         backgrounds[existingIndex].paths.push(bgImagePath);
                         continue; // Skip adding a new background since it already exists
                     }
@@ -321,7 +313,6 @@ export class ByafParser {
             throw new Error('Failed to extract manifest.json from BYAF file');
         }
 
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         const manifest = JSON.parse(manifestBuffer.toString());
         if (!manifest || typeof manifest !== 'object') {
             throw new Error('Invalid BYAF manifest');

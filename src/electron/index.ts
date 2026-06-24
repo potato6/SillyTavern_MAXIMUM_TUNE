@@ -1,4 +1,4 @@
-// @ts-expect-error TS(2307): Cannot find module 'electron' or its corresponding... Remove this comment to see the full error message
+// @ts-expect-error TS(2792): Cannot find module 'electron'. Did you mean to set... Remove this comment to see the full error message
 import { app, BrowserWindow } from 'electron';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -39,7 +39,6 @@ function startServer() {
             appUrl = url.toString();
             createSillyTavernWindow();
         });
-        // @ts-expect-error TS(1470): The 'import.meta' meta-property is not allowed in ... Remove this comment to see the full error message
         const sillyTavernRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
         process.chdir(sillyTavernRoot);
 

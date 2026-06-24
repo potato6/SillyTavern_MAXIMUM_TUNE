@@ -166,9 +166,7 @@ router.post('/status', async function (request, response) {
             data = { data: data.map(x => ({ id: x.name, ...x })) };
         }
 
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         if (apiType === TEXTGEN_TYPES.OLLAMA && Array.isArray(data.models)) {
-            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             data = { data: data.models.map((x: any) => ({
                 id: x.name,
                 ...x
@@ -179,13 +177,11 @@ router.post('/status', async function (request, response) {
             data = { data: [] };
         }
 
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         if (!Array.isArray(data.data)) {
             console.error('Models response is not an array.');
             return response.sendStatus(400);
         }
 
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         const modelIds = data.data.map((x: any) => x.id);
         console.info('Models available:', modelIds);
 
@@ -202,7 +198,6 @@ router.post('/status', async function (request, response) {
                     const modelInfo = await modelInfoReply.json();
                     console.debug('Ooba model info:', modelInfo);
 
-                    // @ts-expect-error TS(2571): Object is of type 'unknown'.
                     const modelName = modelInfo?.model_name;
                     result = modelName || result;
                     response.setHeader('x-supports-tokenization', 'true');
@@ -220,7 +215,6 @@ router.post('/status', async function (request, response) {
                     const modelInfo = await modelInfoReply.json();
                     console.debug('Tabby model info:', modelInfo);
 
-                    // @ts-expect-error TS(2571): Object is of type 'unknown'.
                     const modelName = modelInfo?.id;
                     result = modelName || result;
                 } else {
@@ -233,7 +227,6 @@ router.post('/status', async function (request, response) {
             }
         }
 
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         return response.send({ result, data: data.data });
     } catch (error) {
         console.error(error);
@@ -267,12 +260,9 @@ router.post('/props', async function (request, response) {
         /** @type {any} */
         const props = await propsReply.json();
         // TEMPORARY: llama.cpp's /props endpoint has a bug which replaces the last newline with a \0
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         if (apiType === TEXTGEN_TYPES.LLAMACPP && props.chat_template && props.chat_template.endsWith('\u0000')) {
-            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             props.chat_template = props.chat_template.slice(0, -1) + '\n';
         }
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         props.chat_template_hash = createHash('sha256').update(props.chat_template).digest('hex');
         console.debug(`Model properties: ${JSON.stringify(props)}`);
         return response.send(props);
@@ -282,6 +272,7 @@ router.post('/props', async function (request, response) {
     }
 });
 
+// @ts-expect-error TS(7030): Not all code paths return a value.
 router.post('/generate', async function (request, response) {
     if (!request.body) return response.sendStatus(400);
 
@@ -396,9 +387,7 @@ router.post('/generate', async function (request, response) {
         }
 
         if (request.body.api_type === TEXTGEN_TYPES.OLLAMA) {
-            // @ts-expect-error TS(2345): Argument of type '-1' is not assignable to paramet... Remove this comment to see the full error message
             const keepAlive = Number(getConfigValue('ollama.keepAlive', -1, 'number'));
-            // @ts-expect-error TS(2345): Argument of type '-1' is not assignable to paramet... Remove this comment to see the full error message
             const numBatch = Number(getConfigValue('ollama.batchSize', -1, 'number'));
             if (numBatch > 0) {
                 request.body.num_batch = numBatch;
@@ -430,7 +419,6 @@ router.post('/generate', async function (request, response) {
 
                 // Map InfermaticAI response to OAI completions format
                 if (apiType === TEXTGEN_TYPES.INFERMATICAI) {
-                    // @ts-expect-error TS(2571): Object is of type 'unknown'.
                     data.choices = (data?.choices || []).map((choice: any) => ({
                         text: choice?.message?.content || choice.text,
                         logprobs: choice?.logprobs,
@@ -449,9 +437,7 @@ router.post('/generate', async function (request, response) {
             }
         }
     } catch (error) {
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         const status = error?.status ?? error?.code ?? 'UNKNOWN';
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         const text = error?.error ?? error?.statusText ?? error?.message ?? 'Unknown error on /generate endpoint';
         let value = { error: true, status: status, response: text };
         console.error('Endpoint error:', error);
@@ -524,7 +510,6 @@ ollama.post('/caption-image', async function (request, response) {
         const data = await fetchResponse.json();
         console.debug('Ollama caption response:', data);
 
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         const caption = data?.response || '';
 
         if (!caption) {
@@ -642,7 +627,6 @@ tabby.post('/download', async function (request, response) {
             /** @type {any} */
             const permissionJson = await permissionResponse.json();
 
-            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             if (permissionJson.permission !== 'admin') {
                 return response.status(403).send({ error: true });
             }

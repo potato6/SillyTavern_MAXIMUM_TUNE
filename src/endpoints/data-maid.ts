@@ -211,7 +211,7 @@ export class DataMaidService {
             }
             const knownImageFullPaths = new Set();
             knownImages.forEach(image => {
-                // @ts-expect-error TS(2571): Object is of type 'unknown'.
+                // @ts-expect-error TS(2339): Property 'startsWith' does not exist on type 'unkn... Remove this comment to see the full error message
                 if (image.startsWith('http') || image.startsWith('data:')) {
                     return; // Skip URLs and data URIs
                 }
@@ -678,17 +678,14 @@ export const router = express.Router();
 
 router.post('/report', async (req, res) => {
     try {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         if (!req.user || !req.user.directories) {
             return res.sendStatus(403);
         }
 
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const dataMaid = new DataMaidService(req.user.profile.handle, req.user.directories);
         const rawReport = await dataMaid.generateReport();
 
         const report = await dataMaid.sanitizeReport(rawReport);
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const token = DataMaidService.generateToken(req.user.profile.handle, rawReport);
 
         return res.json({ report, token });
@@ -700,7 +697,6 @@ router.post('/report', async (req, res) => {
 
 router.post('/finalize', async (req, res) => {
     try {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         if (!req.user || !req.user.directories) {
             return res.sendStatus(403);
         }
@@ -715,7 +711,6 @@ router.post('/finalize', async (req, res) => {
         }
 
         const tokenEntry = DataMaidService.TOKENS.get(token);
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         if (!tokenEntry || tokenEntry.handle !== req.user.profile.handle) {
             return res.sendStatus(403);
         }
@@ -731,16 +726,18 @@ router.post('/finalize', async (req, res) => {
 
 router.get('/view', async (req, res) => {
     try {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         if (!req.user || !req.user.directories) {
             return res.sendStatus(403);
         }
 
+        // @ts-expect-error TS(4111): Property 'token' comes from an index signature, so... Remove this comment to see the full error message
         if (!req.query.token || !req.query.hash) {
             return res.sendStatus(400);
         }
 
+        // @ts-expect-error TS(4111): Property 'token' comes from an index signature, so... Remove this comment to see the full error message
         const token = req.query.token.toString();
+        // @ts-expect-error TS(4111): Property 'hash' comes from an index signature, so ... Remove this comment to see the full error message
         const hash = req.query.hash.toString();
 
         if (!DataMaidService.TOKENS.has(token)) {
@@ -748,7 +745,6 @@ router.get('/view', async (req, res) => {
         }
 
         const tokenEntry = DataMaidService.TOKENS.get(token);
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         if (!tokenEntry || tokenEntry.handle !== req.user.profile.handle) {
             return res.sendStatus(403);
         }
@@ -758,7 +754,6 @@ router.get('/view', async (req, res) => {
             return res.sendStatus(404);
         }
 
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         if (!isPathUnderParent(req.user.directories.root, fileEntry.path)) {
             console.warn('[Data Maid] Attempted access to a file outside of the user directory:', fileEntry.path);
             return res.sendStatus(403);
@@ -783,7 +778,6 @@ router.get('/view', async (req, res) => {
 
 router.post('/delete', async (req, res) => {
     try {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         if (!req.user || !req.user.directories) {
             return res.sendStatus(403);
         }
@@ -798,7 +792,6 @@ router.post('/delete', async (req, res) => {
         }
 
         const tokenEntry = DataMaidService.TOKENS.get(token);
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         if (!tokenEntry || tokenEntry.handle !== req.user.profile.handle) {
             return res.sendStatus(403);
         }
@@ -809,7 +802,6 @@ router.post('/delete', async (req, res) => {
                 continue;
             }
 
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             if (!isPathUnderParent(req.user.directories.root, fileEntry.path)) {
                 console.warn('[Data Maid] Attempted deletion of a file outside of the user directory:', fileEntry.path);
                 continue;

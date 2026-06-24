@@ -1,9 +1,11 @@
 import { Buffer } from 'node:buffer';
 import fetch from 'node-fetch';
 import express from 'express';
+// @ts-expect-error TS(2792): Cannot find module 'google-translate-api-x'. Did y... Remove this comment to see the full error message
 import { speak, languages } from 'google-translate-api-x';
 import crypto from 'node:crypto';
 import util from 'node:util';
+// @ts-expect-error TS(2792): Cannot find module 'url-join'. Did you mean to set... Remove this comment to see the full error message
 import urlJoin from 'url-join';
 import lodash from 'lodash';
 
@@ -72,7 +74,6 @@ export async function getVertexAIAuth(request: any) {
                 };
             } catch (error) {
                 console.error('Failed to authenticate with service account:', error);
-                // @ts-expect-error TS(2571): Object is of type 'unknown'.
                 throw new Error(`Service account authentication failed: ${error.message}`);
             }
         }
@@ -133,7 +134,6 @@ export async function getAccessToken(jwtToken: any) {
 
     /** @type {any} */
     const data = await response.json();
-    // @ts-expect-error TS(2571): Object is of type 'unknown'.
     return data.access_token;
 }
 
@@ -189,7 +189,6 @@ export async function getGoogleApiConfig(request: any, model: any, endpoint = 'g
             url = projectId
                 ? `${baseUrl}/projects/${projectId}/locations/${region}/publishers/google/models/${model}:${endpoint}`
                 : `${baseUrl}/publishers/google/models/${model}:${endpoint}`;
-            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             headers['x-goog-api-key'] = keyParam;
         } else if (authType === 'full') {
             // Full mode: use project-specific URL with Authorization header
@@ -211,25 +210,21 @@ export async function getGoogleApiConfig(request: any, model: any, endpoint = 'g
                 ? 'https://aiplatform.googleapis.com/v1'
                 : `https://${region}-aiplatform.googleapis.com/v1`;
             url = `${baseUrl}/projects/${projectId}/locations/${region}/publishers/google/models/${model}:${endpoint}`;
-            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             headers['Authorization'] = authHeader;
         } else {
             // Proxy mode: use Authorization header
             const apiUrl = trimTrailingSlash(request.body.reverse_proxy || API_VERTEX_AI);
             baseUrl = `${apiUrl}/v1`;
             url = `${baseUrl}/publishers/google/models/${model}:${endpoint}`;
-            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             headers['Authorization'] = authHeader;
         }
     } else {
         // Google AI Studio
         const apiKey = request.body.reverse_proxy ? request.body.proxy_password : readSecret(request.user.directories, SECRET_KEYS.MAKERSUITE);
         const apiUrl = trimTrailingSlash(request.body.reverse_proxy || API_MAKERSUITE);
-        // @ts-expect-error TS(2345): Argument of type '"v1beta"' is not assignable to p... Remove this comment to see the full error message
         const apiVersion = getConfigValue('gemini.apiVersion', 'v1beta');
         baseUrl = `${apiUrl}/${apiVersion}`;
         url = `${baseUrl}/models/${model}:${endpoint}`;
-        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         headers['x-goog-api-key'] = apiKey;
     }
 
@@ -238,6 +233,7 @@ export async function getGoogleApiConfig(request: any, model: any, endpoint = 'g
 
 export const router = express.Router();
 
+// @ts-expect-error TS(7030): Not all code paths return a value.
 router.post('/caption-image', async (request, response) => {
     try {
         const mimeType = request.body.image.split(';')[0].split(':')[1];
@@ -278,7 +274,6 @@ router.post('/caption-image', async (request, response) => {
         const data = await result.json();
         console.info(`${apiName} captioning response`, data);
 
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         const candidates = data?.candidates;
         if (!candidates) {
             return response.status(500).send('No candidates found, image was most likely filtered.');
@@ -300,6 +295,7 @@ router.post('/list-voices', (_, response) => {
     return response.json(languages);
 });
 
+// @ts-expect-error TS(7030): Not all code paths return a value.
 router.post('/generate-voice', async (request, response) => {
     try {
         const text = request.body.text;
@@ -318,6 +314,7 @@ router.post('/generate-voice', async (request, response) => {
     }
 });
 
+// @ts-expect-error TS(7030): Not all code paths return a value.
 router.post('/list-native-voices', async (_, response) => {
     try {
         // Hardcoded Gemini native TTS voices from official documentation
@@ -361,6 +358,7 @@ router.post('/list-native-voices', async (_, response) => {
     }
 });
 
+// @ts-expect-error TS(7030): Not all code paths return a value.
 router.post('/generate-native-tts', async (request, response) => {
     try {
         const { text, voice, model } = request.body;
@@ -401,7 +399,6 @@ router.post('/generate-native-tts', async (request, response) => {
 
         /** @type {any} */
         const data = await result.json();
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         const audioPart = data?.candidates?.[0]?.content?.parts?.[0];
         const audioData = audioPart?.inlineData?.data;
         const mimeType = audioPart?.inlineData?.mimeType;
@@ -448,7 +445,6 @@ router.post('/generate-image', async (request, response) => {
         // Is it even worth it?
         const isDeprecated = model.startsWith('imagegeneration');
         // Get person generation setting from config
-        // @ts-expect-error TS(2345): Argument of type '"allow_adult"' is not assignable... Remove this comment to see the full error message
         const personGeneration = getConfigValue('gemini.image.personGeneration', 'allow_adult');
 
         const requestBody = {
@@ -488,7 +484,6 @@ router.post('/generate-image', async (request, response) => {
 
         /** @type {any} */
         const data = await result.json();
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         const imagePart = data?.predictions?.[0]?.bytesBase64Encoded;
 
         if (!imagePart) {
@@ -550,7 +545,6 @@ router.post('/generate-video', async (request, response) => {
 
         /** @type {any} */
         const videoJobData = await videoJobResponse.json();
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         const videoJobName = videoJobData?.name;
 
         if (!videoJobName) {
@@ -585,12 +579,10 @@ router.post('/generate-video', async (request, response) => {
 
                 /** @type {any} */
                 const pollData = await pollResponse.json();
-                // @ts-expect-error TS(2571): Object is of type 'unknown'.
                 const jobDone = pollData?.done;
                 console.debug(`${apiName} video job status attempt ${attempt + 1}: ${jobDone ? 'done' : 'running'}`);
 
                 if (jobDone) {
-                    // @ts-expect-error TS(2571): Object is of type 'unknown'.
                     const videoData = pollData?.response?.videos?.[0]?.bytesBase64Encoded;
                     if (!videoData) {
                         const pollDataLog = util.inspect(pollData, { depth: 5, colors: true, maxStringLength: 500 });
@@ -615,12 +607,10 @@ router.post('/generate-video', async (request, response) => {
 
                 /** @type {any} */
                 const pollData = await pollResponse.json();
-                // @ts-expect-error TS(2571): Object is of type 'unknown'.
                 const jobDone = pollData?.done;
                 console.debug(`${apiName} video job status attempt ${attempt + 1}: ${jobDone ? 'done' : 'running'}`);
 
                 if (jobDone) {
-                    // @ts-expect-error TS(2571): Object is of type 'unknown'.
                     const videoUri = pollData?.response?.generateVideoResponse?.generatedSamples?.[0]?.video?.uri;
                     console.debug(`${apiName} video URI:`, videoUri);
 

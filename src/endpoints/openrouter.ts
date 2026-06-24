@@ -23,7 +23,6 @@ router.post('/models/providers', async (req, res) => {
 
         /** @type {any} */
         const data = await response.json();
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         const endpoints = data?.data?.endpoints || [];
         const providerNames = endpoints.map((e: any) => e.provider_name);
 
@@ -56,13 +55,11 @@ async function fetchModelsByModality(endpoint: any, inputModality: any, outputMo
     /** @type {any} */
     const data = await response.json();
 
-    // @ts-expect-error TS(2571): Object is of type 'unknown'.
     if (!Array.isArray(data?.data)) {
         console.warn('OpenRouter API response was not an array');
         return [];
     }
 
-    // @ts-expect-error TS(2571): Object is of type 'unknown'.
     const filtered = data.data
         .filter((m: any) => Array.isArray(m?.architecture?.input_modalities))
         .filter((m: any) => m.architecture.input_modalities.includes(inputModality))
@@ -75,7 +72,6 @@ async function fetchModelsByModality(endpoint: any, inputModality: any, outputMo
 
 router.post('/models/multimodal', async (_req, res) => {
     try {
-        // @ts-expect-error TS(2345): Argument of type '(m: any) => any' is not assignab... Remove this comment to see the full error message
         const models = await fetchModelsByModality('/models', 'image', 'text', (m: any) => m.id);
         return res.json(models);
     } catch (error) {
@@ -86,7 +82,6 @@ router.post('/models/multimodal', async (_req, res) => {
 
 router.post('/models/embedding', async (_req, res) => {
     try {
-        // @ts-expect-error TS(2345): Argument of type '(m: any) => { id: any; name: any... Remove this comment to see the full error message
         const models = await fetchModelsByModality('/models', 'text', 'embeddings', (m: any) => ({
             id: m.id,
             name: m.name
@@ -100,7 +95,6 @@ router.post('/models/embedding', async (_req, res) => {
 
 router.post('/models/image', async (_req, res) => {
     try {
-        // @ts-expect-error TS(2345): Argument of type '(m: any) => { value: any; text: ... Remove this comment to see the full error message
         const models = await fetchModelsByModality('/models', 'text', 'image', (m: any) => ({
             value: m.id,
             text: m.name || m.id
@@ -114,7 +108,6 @@ router.post('/models/image', async (_req, res) => {
 
 router.post('/credits', async (req, res) => {
     try {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const key = readSecret(req.user.directories, SECRET_KEYS.OPENROUTER);
 
         if (!key) {
@@ -137,9 +130,7 @@ router.post('/credits', async (req, res) => {
 
         /** @type {any} */
         const data = await response.json();
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         const totalCredits = data.data?.total_credits ?? 0;
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         const totalUsage = data.data?.total_usage ?? 0;
         const remaining = totalCredits - totalUsage;
 
@@ -152,7 +143,6 @@ router.post('/credits', async (req, res) => {
 
 router.post('/image/generate', async (req, res) => {
     try {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const key = readSecret(req.user.directories, SECRET_KEYS.OPENROUTER);
 
         if (!key) {
@@ -198,7 +188,6 @@ router.post('/image/generate', async (req, res) => {
         /** @type {any} */
         const data = await response.json();
 
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         const imageUrl = data?.choices?.[0]?.message?.images?.[0]?.image_url?.url;
 
         if (!imageUrl) {

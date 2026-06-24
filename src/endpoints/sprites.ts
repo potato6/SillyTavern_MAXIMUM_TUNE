@@ -3,6 +3,7 @@ import path from 'node:path';
 
 import express from 'express';
 import mime from 'mime-types';
+// @ts-expect-error TS(2792): Cannot find module 'sanitize-filename'. Did you me... Remove this comment to see the full error message
 import sanitize from 'sanitize-filename';
 import { sync as writeFileAtomicSync } from 'write-file-atomic';
 
@@ -116,9 +117,9 @@ export function importRisuSprites(directories: any, data: any) {
 export const router = express.Router();
 
 router.get('/get', function (request, response) {
+    // @ts-expect-error TS(4111): Property 'name' comes from an index signature, so ... Remove this comment to see the full error message
     const name = String(request.query.name);
     const isSubfolder = name.includes('/');
-    // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
     const spritesPath = getSpritesPath(request.user.directories, name, isSubfolder);
     let sprites: any = [];
 
@@ -161,7 +162,6 @@ router.post('/delete', async (request, response) => {
     }
 
     try {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const spritesPath = getSpritesPath(request.user.directories, name, isSubfolder);
 
         // No sprites folder exists, or not a directory
@@ -195,7 +195,6 @@ router.post('/upload-zip', async (request, response) => {
     }
 
     try {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const spritesPath = getSpritesPath(request.user.directories, name, isSubfolder);
 
         // Invalid sprites path
@@ -217,7 +216,7 @@ router.post('/upload-zip', async (request, response) => {
         const sprites = await getImageBuffers(spritePackPath);
         const files = fs.readdirSync(spritesPath);
 
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
+        // @ts-expect-error TS(2488): Type 'unknown' must have a '[Symbol.iterator]()' m... Remove this comment to see the full error message
         for (const [filename, buffer] of sprites) {
             // Remove existing sprite with the same label
             const existingFile = files.find(file => path.parse(file).name === path.parse(filename).name);
@@ -233,7 +232,7 @@ router.post('/upload-zip', async (request, response) => {
 
         // Remove uploaded ZIP file
         fs.unlinkSync(spritePackPath);
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
+        // @ts-expect-error TS(2339): Property 'length' does not exist on type 'unknown'... Remove this comment to see the full error message
         return response.send({ ok: true, count: sprites.length });
     } catch (error) {
         console.error(error);
@@ -253,7 +252,6 @@ router.post('/upload', async (request, response) => {
     }
 
     try {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const spritesPath = getSpritesPath(request.user.directories, name, isSubfolder);
 
         // Invalid sprites path

@@ -3,8 +3,11 @@ import tls from 'node:tls';
 import http from 'node:http';
 import https from 'node:https';
 import dns from 'node:dns';
+// @ts-expect-error TS(2792): Cannot find module 'ip-matching'. Did you mean to ... Remove this comment to see the full error message
 import ipMatch from 'ip-matching';
+// @ts-expect-error TS(2792): Cannot find module 'ip-regex'. Did you mean to set... Remove this comment to see the full error message
 import ipRegex from 'ip-regex';
+// @ts-expect-error TS(2792): Cannot find module 'agent-base'. Did you mean to s... Remove this comment to see the full error message
 import { Agent } from 'agent-base';
 import { color } from './util.js';
 import { filterValidIpPatterns } from './express-common.js';
@@ -98,7 +101,6 @@ class PrivateRequestAgent extends Agent {
      */
     #isAllowedPrivateAddress(address: any) {
         // Permit the request if the private IP address is in the whitelist
-        // @ts-expect-error TS(2339): Property 'matches' does not exist on type 'never'.
         return this.privateAddressWhitelist.some(match => match.matches(address));
     }
 
@@ -228,7 +230,9 @@ export default function initPrivateRequestFilter({
 
     const agent = new PrivateRequestAgent({ privateAddressWhitelist, logBlocked, logAllowed, allowUnresolvedHosts, enableKeepAlive });
 
+    // @ts-expect-error TS(2740): Type 'PrivateRequestAgent' is missing the followin... Remove this comment to see the full error message
     http.globalAgent = agent;
+    // @ts-expect-error TS(2740): Type 'PrivateRequestAgent' is missing the followin... Remove this comment to see the full error message
     https.globalAgent = agent;
 
     console.info();

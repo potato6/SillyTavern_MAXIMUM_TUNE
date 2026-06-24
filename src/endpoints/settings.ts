@@ -11,19 +11,12 @@ import { getConfigValue, generateTimestamp, removeOldBackups } from '../util.js'
 import { getAllUserHandles, getUserDirectories } from '../users.js';
 import { getFileNameValidationFunction } from '../middleware/validateFileName.js';
 
-// @ts-expect-error TS(2345): Argument of type 'true' is not assignable to param... Remove this comment to see the full error message
 const ENABLE_EXTENSIONS = !!getConfigValue('extensions.enabled', true, 'boolean');
-// @ts-expect-error TS(2345): Argument of type 'true' is not assignable to param... Remove this comment to see the full error message
 const ENABLE_EXTENSIONS_AUTO_UPDATE = !!getConfigValue('extensions.autoUpdate', true, 'boolean');
-// @ts-expect-error TS(2345): Argument of type 'false' is not assignable to para... Remove this comment to see the full error message
 const ENABLE_ACCOUNTS = !!getConfigValue('enableUserAccounts', false, 'boolean');
-// @ts-expect-error TS(2345): Argument of type 'false' is not assignable to para... Remove this comment to see the full error message
 const ENABLE_REQUEST_COMPRESSION = !!getConfigValue('performance.requestCompression.enabled', false, 'boolean');
-// @ts-expect-error TS(2345): Argument of type '"256kb"' is not assignable to pa... Remove this comment to see the full error message
 const REQUEST_COMPRESSION_MIN = bytes.parse(getConfigValue('performance.requestCompression.minPayloadSize', '256kb'));
-// @ts-expect-error TS(2345): Argument of type '"8mb"' is not assignable to para... Remove this comment to see the full error message
 const REQUEST_COMPRESSION_MAX = bytes.parse(getConfigValue('performance.requestCompression.maxPayloadSize', '8mb'));
-// @ts-expect-error TS(2345): Argument of type '3000' is not assignable to param... Remove this comment to see the full error message
 const REQUEST_COMPRESSION_TIMEOUT = Number(getConfigValue('performance.requestCompression.timeout', 3000, 'number'));
 
 // 10 minutes
@@ -215,10 +208,8 @@ export const router = express.Router();
 
 router.post('/save', function (request, response) {
     try {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const pathToSettings = path.join(request.user.directories.root, SETTINGS_FILE);
         writeFileAtomicSync(pathToSettings, JSON.stringify(request.body, null, 4), 'utf8');
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         triggerAutoSave(request.user.profile.handle);
         response.send({ result: 'ok' });
     } catch (err) {
@@ -228,10 +219,10 @@ router.post('/save', function (request, response) {
 });
 
 // Wintermute's code
+// @ts-expect-error TS(7030): Not all code paths return a value.
 router.post('/get', (request, response) => {
     let settings;
     try {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const pathToSettings = path.join(request.user.directories.root, SETTINGS_FILE);
         settings = fs.readFileSync(pathToSettings, 'utf8');
     } catch (e) {
@@ -240,58 +231,42 @@ router.post('/get', (request, response) => {
 
     // NovelAI Settings
     const { fileContents: novelai_settings, fileNames: novelai_setting_names }
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         = readPresetsFromDirectory(request.user.directories.novelAI_Settings, {
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             sortFunction: sortByName(request.user.directories.novelAI_Settings),
             removeFileExtension: true,
         });
 
     // OpenAI Settings
     const { fileContents: openai_settings, fileNames: openai_setting_names }
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         = readPresetsFromDirectory(request.user.directories.openAI_Settings, {
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             sortFunction: sortByName(request.user.directories.openAI_Settings), removeFileExtension: true,
         });
 
     // TextGenerationWebUI Settings
     const { fileContents: textgenerationwebui_presets, fileNames: textgenerationwebui_preset_names }
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         = readPresetsFromDirectory(request.user.directories.textGen_Settings, {
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             sortFunction: sortByName(request.user.directories.textGen_Settings), removeFileExtension: true,
         });
 
     //Kobold
     const { fileContents: koboldai_settings, fileNames: koboldai_setting_names }
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         = readPresetsFromDirectory(request.user.directories.koboldAI_Settings, {
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             sortFunction: sortByName(request.user.directories.koboldAI_Settings), removeFileExtension: true,
         });
 
     const worldFiles = fs
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         .readdirSync(request.user.directories.worlds)
         .filter(file => path.extname(file).toLowerCase() === '.json')
         .sort((a, b) => a.localeCompare(b));
     const world_names = worldFiles.map(item => path.parse(item).name);
 
-    // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
     const themes = readAndParseFromDirectory(request.user.directories.themes);
-    // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
     const movingUIPresets = readAndParseFromDirectory(request.user.directories.movingUI);
-    // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
     const quickReplyPresets = readAndParseFromDirectory(request.user.directories.quickreplies);
 
-    // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
     const instruct = readAndParseFromDirectory(request.user.directories.instruct);
-    // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
     const context = readAndParseFromDirectory(request.user.directories.context);
-    // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
     const sysprompt = readAndParseFromDirectory(request.user.directories.sysprompt);
-    // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
     const reasoning = readAndParseFromDirectory(request.user.directories.reasoning);
 
     response.send({
@@ -326,14 +301,11 @@ router.post('/get', (request, response) => {
 
 router.post('/get-snapshots', async (request, response) => {
     try {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const snapshots = fs.readdirSync(request.user.directories.backups);
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const userFilesPattern = getSettingsBackupFilePrefix(request.user.profile.handle);
         const userSnapshots = snapshots.filter(x => x.startsWith(userFilesPattern));
 
         const result = userSnapshots.map(x => {
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             const stat = fs.statSync(path.join(request.user.directories.backups, x));
             return { date: stat.ctimeMs, name: x, size: stat.size };
         });
@@ -345,9 +317,9 @@ router.post('/get-snapshots', async (request, response) => {
     }
 });
 
+// @ts-expect-error TS(7030): Not all code paths return a value.
 router.post('/load-snapshot', getFileNameValidationFunction('name'), async (request, response) => {
     try {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const userFilesPattern = getSettingsBackupFilePrefix(request.user.profile.handle);
 
         if (!request.body.name || !request.body.name.startsWith(userFilesPattern)) {
@@ -355,7 +327,6 @@ router.post('/load-snapshot', getFileNameValidationFunction('name'), async (requ
         }
 
         const snapshotName = request.body.name;
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const snapshotPath = path.join(request.user.directories.backups, snapshotName);
 
         if (!fs.existsSync(snapshotPath)) {
@@ -373,7 +344,6 @@ router.post('/load-snapshot', getFileNameValidationFunction('name'), async (requ
 
 router.post('/make-snapshot', async (request, response) => {
     try {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         backupUserSettings(request.user.profile.handle, false);
         response.sendStatus(204);
     } catch (error) {
@@ -382,9 +352,9 @@ router.post('/make-snapshot', async (request, response) => {
     }
 });
 
+// @ts-expect-error TS(7030): Not all code paths return a value.
 router.post('/restore-snapshot', getFileNameValidationFunction('name'), async (request, response) => {
     try {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const userFilesPattern = getSettingsBackupFilePrefix(request.user.profile.handle);
 
         if (!request.body.name || !request.body.name.startsWith(userFilesPattern)) {
@@ -392,14 +362,12 @@ router.post('/restore-snapshot', getFileNameValidationFunction('name'), async (r
         }
 
         const snapshotName = request.body.name;
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const snapshotPath = path.join(request.user.directories.backups, snapshotName);
 
         if (!fs.existsSync(snapshotPath)) {
             return response.sendStatus(404);
         }
 
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const pathToSettings = path.join(request.user.directories.root, SETTINGS_FILE);
         fs.rmSync(pathToSettings, { force: true });
         fs.copyFileSync(snapshotPath, pathToSettings);

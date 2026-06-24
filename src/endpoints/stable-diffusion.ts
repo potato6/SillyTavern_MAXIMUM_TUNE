@@ -3,8 +3,10 @@ import path from 'node:path';
 
 import express from 'express';
 import fetch from 'node-fetch';
+// @ts-expect-error TS(2792): Cannot find module 'sanitize-filename'. Did you me... Remove this comment to see the full error message
 import sanitize from 'sanitize-filename';
 import { sync as writeFileAtomicSync } from 'write-file-atomic';
+// @ts-expect-error TS(2792): Cannot find module 'url-join'. Did you mean to set... Remove this comment to see the full error message
 import urlJoin from 'url-join';
 import _ from 'lodash';
 import mime from 'mime-types';
@@ -70,7 +72,6 @@ router.post('/upscalers', async (request, response) => {
 
             /** @type {any} */
             const data = await result.json();
-            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             return data.map((x: any) => x.name);
         }
 
@@ -91,7 +92,6 @@ router.post('/upscalers', async (request, response) => {
 
             /** @type {any} */
             const data = await result.json();
-            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             return data.map((x: any) => x.name);
         }
 
@@ -158,7 +158,6 @@ router.post('/samplers', async (request, response) => {
 
         /** @type {any} */
         const data = await result.json();
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         const names = data.map((x: any) => x.name);
         return response.send(names);
     } catch (error) {
@@ -185,7 +184,6 @@ router.post('/schedulers', async (request, response) => {
 
         /** @type {any} */
         const data = await result.json();
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         const names = data.map((x: any) => x.name);
         return response.send(names);
     } catch (error) {
@@ -212,7 +210,6 @@ router.post('/models', async (request, response) => {
 
         /** @type {any} */
         const data = await result.json();
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         const models = data.map((x: any) => ({
             value: x.title,
             text: x.title
@@ -237,7 +234,6 @@ router.post('/get-model', async (request, response) => {
         });
         /** @type {any} */
         const data = await result.json();
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         return response.send(data.sd_model_checkpoint);
     } catch (error) {
         console.error(error);
@@ -287,9 +283,7 @@ router.post('/set-model', async (request, response) => {
             /** @type {any} */
             const progressState = await getProgress();
 
-            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             const progress = progressState.progress;
-            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             const jobCount = progressState.state.job_count;
             if (progress === 0.0 && jobCount === 0) {
                 break;
@@ -314,7 +308,6 @@ router.post('/generate', async (request, response) => {
             const optionsResult = await fetch(optionsUrl, { headers: { 'Authorization': getBasicAuthHeader(request.body.auth) } });
             if (optionsResult.ok) {
                 const optionsData = /** @type {any} */ (await optionsResult.json());
-                // @ts-expect-error TS(2571): Object is of type 'unknown'.
                 const isForge = 'forge_preset' in optionsData;
 
                 if (!isForge) {
@@ -384,7 +377,6 @@ router.post('/sd-next/upscalers', async (request, response) => {
 
         /** @type {any} */
         const data = await result.json();
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         const names = data.map((x: any) => x.name);
 
         // 0 = None, then Latent Upscalers, then Upscalers
@@ -426,7 +418,6 @@ comfy.post('/samplers', async (request, response) => {
 
         /** @type {any} */
         const data = await result.json();
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         return response.send(data.KSampler.input.required.sampler_name[0]);
     } catch (error) {
         console.error(error);
@@ -445,19 +436,16 @@ comfy.post('/models', async (request, response) => {
         /** @type {any} */
         const data = await result.json();
 
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         const ckpts = data.CheckpointLoaderSimple.input.required.ckpt_name[0].map((it: any) => ({
             value: it,
             text: it
         })) || [];
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         const unets = data.UNETLoader.input.required.unet_name[0].map((it: any) => ({
             value: it,
             text: `UNet: ${it}`
         })) || [];
 
         // load list of GGUF unets from diffusion_models if the loader node is available
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         const ggufs = data.UnetLoaderGGUF?.input.required.unet_name[0].map((it: any) => ({
             value: it,
             text: `GGUF: ${it}`
@@ -485,7 +473,6 @@ comfy.post('/schedulers', async (request, response) => {
 
         /** @type {any} */
         const data = await result.json();
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         return response.send(data.KSampler.input.required.scheduler[0]);
     } catch (error) {
         console.error(error);
@@ -504,7 +491,6 @@ comfy.post('/vaes', async (request, response) => {
 
         /** @type {any} */
         const data = await result.json();
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         return response.send(data.VAELoader.input.required.vae_name[0]);
     } catch (error) {
         console.error(error);
@@ -514,7 +500,6 @@ comfy.post('/vaes', async (request, response) => {
 
 comfy.post('/workflows', async (request, response) => {
     try {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const data = getComfyWorkflows(request.user.directories);
         return response.send(data);
     } catch (error) {
@@ -525,10 +510,8 @@ comfy.post('/workflows', async (request, response) => {
 
 comfy.post('/workflow', async (request, response) => {
     try {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         let filePath = path.join(request.user.directories.comfyWorkflows, sanitize(String(request.body.file_name)));
         if (!fs.existsSync(filePath)) {
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             filePath = path.join(request.user.directories.comfyWorkflows, 'Default_Comfy_Workflow.json');
         }
         const data = fs.readFileSync(filePath, { encoding: 'utf-8' });
@@ -541,10 +524,8 @@ comfy.post('/workflow', async (request, response) => {
 
 comfy.post('/save-workflow', async (request, response) => {
     try {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const filePath = path.join(request.user.directories.comfyWorkflows, sanitize(String(request.body.file_name)));
         writeFileAtomicSync(filePath, request.body.workflow, 'utf8');
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const data = getComfyWorkflows(request.user.directories);
         return response.send(data);
     } catch (error) {
@@ -555,7 +536,6 @@ comfy.post('/save-workflow', async (request, response) => {
 
 comfy.post('/delete-workflow', async (request, response) => {
     try {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const filePath = path.join(request.user.directories.comfyWorkflows, sanitize(String(request.body.file_name)));
         if (fs.existsSync(filePath)) {
             fs.unlinkSync(filePath);
@@ -576,9 +556,7 @@ comfy.post('/rename-workflow', getFileNameValidationFunction('old_name'), getFil
             return response.status(400).send('Only JSON workflow files are allowed');
         }
 
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const oldPath = path.join(request.user.directories.comfyWorkflows, oldName);
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const newPath = path.join(request.user.directories.comfyWorkflows, newName);
 
         if (!fs.existsSync(oldPath)) {
@@ -623,7 +601,6 @@ comfy.post('/generate', async (request, response) => {
 
         /** @type {any} */
         const data = await promptResult.json();
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         const id = data.prompt_id;
         const historyUrl = new URL(urlJoin(request.body.url, '/history'));
         while (true) {
@@ -633,7 +610,6 @@ comfy.post('/generate', async (request, response) => {
             }
             /** @type {any} */
             const history = await result.json();
-            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             item = history[id];
             if (item) {
                 break;
@@ -666,7 +642,6 @@ comfy.post('/generate', async (request, response) => {
         return response.send({ format: format, data: Buffer.from(imgBuffer).toString('base64') });
     } catch (error) {
         console.error('ComfyUI error:', error);
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         response.status(500).send(error.message);
         return response;
     }
@@ -676,7 +651,6 @@ const comfyRunPod = express.Router();
 
 comfyRunPod.post('/ping', async (request, response) => {
     try {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const key = readSecret(request.user.directories, SECRET_KEYS.COMFY_RUNPOD);
 
         if (!key) {
@@ -695,7 +669,6 @@ comfyRunPod.post('/ping', async (request, response) => {
         }
         /** @type {any} */
         const data = await result.json();
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         if (data.workers.ready <= 0) {
             console.warn(`No workers reported as ready. ${result}`);
         }
@@ -709,7 +682,6 @@ comfyRunPod.post('/ping', async (request, response) => {
 
 comfyRunPod.post('/generate', async (request, response) => {
     try {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const key = readSecret(request.user.directories, SECRET_KEYS.COMFY_RUNPOD);
 
         if (!key) {
@@ -748,7 +720,6 @@ comfyRunPod.post('/generate', async (request, response) => {
 
         /** @type {any} */
         const data = await promptResult.json();
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         jobId = data.id;
         const statusUrl = new URL(urlJoin(request.body.url, `/status/${jobId}`));
         while (true) {
@@ -761,9 +732,7 @@ comfyRunPod.post('/generate', async (request, response) => {
             }
             /** @type {any} */
             const status = await result.json();
-            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             if (status.output) {
-                // @ts-expect-error TS(2571): Object is of type 'unknown'.
                 item = status.output.images[0];
             }
             if (item) {
@@ -775,7 +744,6 @@ comfyRunPod.post('/generate', async (request, response) => {
         return response.send({ format: format, data: item.data });
     } catch (error) {
         console.error('ComfyUI error:', error);
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         response.status(500).send(error.message);
         return response;
     }
@@ -785,7 +753,6 @@ const together = express.Router();
 
 together.post('/models', async (request, response) => {
     try {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const key = readSecret(request.user.directories, SECRET_KEYS.TOGETHERAI);
 
         if (!key) {
@@ -825,7 +792,6 @@ together.post('/models', async (request, response) => {
 
 together.post('/generate', async (request, response) => {
     try {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const key = readSecret(request.user.directories, SECRET_KEYS.TOGETHERAI);
 
         if (!key) {
@@ -863,7 +829,6 @@ together.post('/generate', async (request, response) => {
         const data = await result.json();
         console.debug('TogetherAI response:', data);
 
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         const choice = data?.data?.[0];
         let b64_json = choice.b64_json;
 
@@ -937,7 +902,6 @@ sdcpp.post('/generate', async (request, response) => {
 
         for (const [key, value] of Object.entries(payload)) {
             if (value === undefined || value === null || value === '') {
-                // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 delete payload[key];
             }
         }
@@ -1000,7 +964,6 @@ drawthings.post('/get-model', async (request, response) => {
         /** @type {any} */
         const data = await result.json();
 
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         return response.send(data.model);
     } catch (error) {
         console.error(error);
@@ -1020,7 +983,6 @@ drawthings.post('/get-upscaler', async (request, response) => {
         /** @type {any} */
         const data = await result.json();
 
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         return response.send(data.upscaler);
     } catch (error) {
         console.error(error);
@@ -1092,7 +1054,6 @@ pollinations.post('/models', async (_request, response) => {
 
 pollinations.post('/generate', async (request, response) => {
     try {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const key = readSecret(request.user.directories, SECRET_KEYS.POLLINATIONS);
         if (!key) {
             console.warn('Pollinations API key not found.');
@@ -1140,7 +1101,6 @@ const stability = express.Router();
 
 stability.post('/generate', async (request, response) => {
     try {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const key = readSecret(request.user.directories, SECRET_KEYS.STABILITY);
 
         if (!key) {
@@ -1201,7 +1161,6 @@ const huggingface = express.Router();
 
 huggingface.post('/generate', async (request, response) => {
     try {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const key = readSecret(request.user.directories, SECRET_KEYS.HUGGINGFACE);
 
         if (!key) {
@@ -1241,7 +1200,6 @@ const electronhub = express.Router();
 
 electronhub.post('/models', async (request, response) => {
     try {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const key = readSecret(request.user.directories, SECRET_KEYS.ELECTRONHUB);
 
         if (!key) {
@@ -1265,13 +1223,11 @@ electronhub.post('/models', async (request, response) => {
         /** @type {any} */
         const data = await modelsResponse.json();
 
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         if (!Array.isArray(data?.data)) {
             console.warn('Electron Hub returned invalid data.');
             return response.sendStatus(500);
         }
 
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         const models = data.data
             .filter((x: any) => x && Array.isArray(x.endpoints) && x.endpoints.includes('/v1/images/generations'))
             .map((x: any) => ({
@@ -1288,7 +1244,6 @@ electronhub.post('/models', async (request, response) => {
 
 electronhub.post('/generate', async (request, response) => {
     try {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const key = readSecret(request.user.directories, SECRET_KEYS.ELECTRONHUB);
 
         if (!key) {
@@ -1333,7 +1288,6 @@ electronhub.post('/generate', async (request, response) => {
 
         /** @type {any} */
         const data = await result.json();
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         const image = data?.data?.[0]?.b64_json;
 
         if (!image) {
@@ -1364,7 +1318,6 @@ electronhub.post('/sizes', async (request, response) => {
     /** @type {any} */
     const data = await result.json();
 
-    // @ts-expect-error TS(2571): Object is of type 'unknown'.
     const sizes = data.sizes;
 
     if (!sizes) {
@@ -1379,7 +1332,6 @@ const chutes = express.Router();
 
 chutes.post('/models', async (request, response) => {
     try {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const key = readSecret(request.user.directories, SECRET_KEYS.CHUTES);
 
         if (!key) {
@@ -1403,7 +1355,6 @@ chutes.post('/models', async (request, response) => {
         const data = await modelsResponse.json();
 
         const chutesData = /** @type {{items: Array<{name: string}>}} */ (data);
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         const models = chutesData.items.map((x: any) => ({
             value: x.name,
             text: x.name
@@ -1417,7 +1368,6 @@ chutes.post('/models', async (request, response) => {
 
 chutes.post('/generate', async (request, response) => {
     try {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const key = readSecret(request.user.directories, SECRET_KEYS.CHUTES);
 
         if (!key) {
@@ -1466,7 +1416,6 @@ const nanogpt = express.Router();
 
 nanogpt.post('/models', async (request, response) => {
     try {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const key = readSecret(request.user.directories, SECRET_KEYS.NANOGPT);
 
         if (!key) {
@@ -1489,7 +1438,6 @@ nanogpt.post('/models', async (request, response) => {
 
         /** @type {any} */
         const data = await modelsResponse.json();
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         const imageModels = data?.models?.image;
 
         if (!imageModels || typeof imageModels !== 'object') {
@@ -1497,7 +1445,7 @@ nanogpt.post('/models', async (request, response) => {
             return response.sendStatus(500);
         }
 
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
+        // @ts-expect-error TS(2339): Property 'model' does not exist on type 'unknown'.
         const models = Object.values(imageModels).map(x => ({ value: x.model, text: x.name }));
         return response.send(models);
     } catch (error) {
@@ -1508,7 +1456,6 @@ nanogpt.post('/models', async (request, response) => {
 
 nanogpt.post('/generate', async (request, response) => {
     try {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const key = readSecret(request.user.directories, SECRET_KEYS.NANOGPT);
 
         if (!key) {
@@ -1535,7 +1482,6 @@ nanogpt.post('/generate', async (request, response) => {
         /** @type {any} */
         const data = await result.json();
 
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         const image = data?.data?.[0]?.b64_json;
         if (!image) {
             console.warn('NanoGPT returned invalid data.');
@@ -1551,9 +1497,9 @@ nanogpt.post('/generate', async (request, response) => {
 
 const bfl = express.Router();
 
+// @ts-expect-error TS(7030): Not all code paths return a value.
 bfl.post('/generate', async (request, response) => {
     try {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const key = readSecret(request.user.directories, SECRET_KEYS.BFL);
 
         if (!key) {
@@ -1578,7 +1524,6 @@ bfl.post('/generate', async (request, response) => {
             const maxAspect = 21 / 9;
             const currentAspect = width / height;
 
-            // @ts-expect-error TS(7023): 'gcd' implicitly has return type 'any' because it ... Remove this comment to see the full error message
             const gcd = (a: any, b: any) => b === 0 ? a : gcd(b, a % b);
             const simplifyRatio = (w: any, h: any) => {
                 const divisor = gcd(w, h);
@@ -1629,7 +1574,6 @@ bfl.post('/generate', async (request, response) => {
 
         /** @type {any} */
         const taskData = await result.json();
-        // @ts-expect-error TS(2339): Property 'id' does not exist on type 'unknown'.
         const { id } = taskData;
 
         const MAX_ATTEMPTS = 100;
@@ -1647,14 +1591,11 @@ bfl.post('/generate', async (request, response) => {
             /** @type {any} */
             const statusData = await statusResult.json();
 
-            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             if (statusData?.status === 'Pending') {
                 continue;
             }
 
-            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             if (statusData?.status === 'Ready') {
-                // @ts-expect-error TS(2571): Object is of type 'unknown'.
                 const { sample } = statusData.result;
                 const fetchResult = await fetch(sample);
                 const fetchData = await fetchResult.arrayBuffer();
@@ -1662,7 +1603,6 @@ bfl.post('/generate', async (request, response) => {
                 return response.send({ image: image });
             }
 
-            // @ts-expect-error TS(2322): Type 'unknown' is not assignable to type 'Error | ... Remove this comment to see the full error message
             throw new Error('BFL failed to generate image.', { cause: statusData });
         }
     } catch (error) {
@@ -1691,14 +1631,12 @@ falai.post('/models', async (_request, response) => {
             }
 
             modelsResponse = await result.json();
-            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             if (!('items' in modelsResponse) || !Array.isArray(modelsResponse.items)) {
                 console.warn('FAL.AI returned invalid data.');
                 throw new Error('FAL.AI request failed.');
             }
 
             models = models.concat(
-                // @ts-expect-error TS(2571): Object is of type 'unknown'.
                 modelsResponse.items.filter(
                     (x: any) => !x.title.toLowerCase().includes('inpainting') &&
                     !x.title.toLowerCase().includes('control') &&
@@ -1707,17 +1645,12 @@ falai.post('/models', async (_request, response) => {
                 ),
             );
 
-            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             page = modelsResponse.page + 1;
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         } while (modelsResponse != null && page < modelsResponse.pages);
 
         const modelOptions = models
-            // @ts-expect-error TS(7006): Parameter 'a' implicitly has an 'any' type.
             .sort((a, b) => a.title.localeCompare(b.title))
-            // @ts-expect-error TS(7006): Parameter 'x' implicitly has an 'any' type.
             .map(x => ({ value: x.modelUrl.split('fal-ai/')[1], text: x.title }))
-            // @ts-expect-error TS(7006): Parameter 'x' implicitly has an 'any' type.
             .map(x => ({ ...x, text: `${x.text} (${x.value})` }));
         return response.send(modelOptions);
     } catch (error) {
@@ -1726,9 +1659,9 @@ falai.post('/models', async (_request, response) => {
     }
 });
 
+// @ts-expect-error TS(7030): Not all code paths return a value.
 falai.post('/generate', async (request, response) => {
     try {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const key = readSecret(request.user.directories, SECRET_KEYS.FALAI);
 
         if (!key) {
@@ -1764,7 +1697,6 @@ falai.post('/generate', async (request, response) => {
 
         /** @type {any} */
         const taskData = await result.json();
-        // @ts-expect-error TS(2339): Property 'status_url' does not exist on type 'unkn... Remove this comment to see the full error message
         const { status_url } = taskData;
 
         const MAX_ATTEMPTS = 100;
@@ -1786,14 +1718,11 @@ falai.post('/generate', async (request, response) => {
             /** @type {any} */
             const statusData = await statusResult.json();
 
-            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             if (statusData?.status === 'IN_QUEUE' || statusData?.status === 'IN_PROGRESS') {
                 continue;
             }
 
-            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             if (statusData?.status === 'COMPLETED') {
-                // @ts-expect-error TS(2571): Object is of type 'unknown'.
                 const resultFetch = await fetch(statusData?.response_url, {
                     method: 'GET',
                     headers: {
@@ -1803,13 +1732,11 @@ falai.post('/generate', async (request, response) => {
                 /** @type {any} */
                 const resultData = await resultFetch.json();
 
-                // @ts-expect-error TS(2571): Object is of type 'unknown'.
                 if (resultData.detail !== null && resultData.detail !== undefined) {
                     // @ts-expect-error TS(2322): Type 'string' is not assignable to type 'Error'.
                     throw new Error('FAL.AI failed to generate image.', { cause: `${resultData.detail[0].loc[1]}: ${resultData.detail[0].msg}` });
                 }
 
-                // @ts-expect-error TS(2571): Object is of type 'unknown'.
                 const imageFetch = await fetch(resultData?.images[0].url, {
                     headers: {
                         'Authorization': `Key ${key}`,
@@ -1821,12 +1748,10 @@ falai.post('/generate', async (request, response) => {
                 return response.send({ image: image });
             }
 
-            // @ts-expect-error TS(2322): Type 'unknown' is not assignable to type 'Error | ... Remove this comment to see the full error message
             throw new Error('FAL.AI failed to generate image.', { cause: statusData });
         }
     } catch (error) {
         console.error(error);
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         return response.status(500).send(error.cause || error.message);
     }
 });
@@ -1835,7 +1760,6 @@ const xai = express.Router();
 
 xai.post('/generate', async (request, response) => {
     try {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const key = readSecret(request.user.directories, SECRET_KEYS.XAI);
 
         if (!key) {
@@ -1872,7 +1796,6 @@ xai.post('/generate', async (request, response) => {
         const data = await result.json();
 
         // Can either be a base64 buffer (always JPEG) or a data URL (with MIME type)
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         const encodedImage = String(data?.data?.[0]?.b64_json || '');
         if (!encodedImage) {
             console.warn('xAI returned invalid data.');
@@ -1895,7 +1818,6 @@ const aimlapi = express.Router();
 
 aimlapi.post('/models', async (request, response) => {
     try {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const key = readSecret(request.user.directories, SECRET_KEYS.AIMLAPI);
 
         if (!key) {
@@ -1917,7 +1839,6 @@ aimlapi.post('/models', async (request, response) => {
 
         /** @type {any} */
         const data = await modelsResponse.json();
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         const models = (data.data || [])
             .filter((model: any) => model.type === 'image' &&
         model.id !== 'triposr' &&
@@ -1935,9 +1856,9 @@ aimlapi.post('/models', async (request, response) => {
     }
 });
 
+// @ts-expect-error TS(7030): Not all code paths return a value.
 aimlapi.post('/generate-image', async (req, res) => {
     try {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const key = readSecret(req.user.directories, SECRET_KEYS.AIMLAPI);
         if (!key) return res.sendStatus(400);
 
@@ -1955,7 +1876,6 @@ aimlapi.post('/generate-image', async (req, res) => {
         /** @type {any} */
         const data = await apiRes.json();
 
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         const imgObj = Array.isArray(data.images) ? data.images[0] : data.data?.[0];
         if (!imgObj) return res.status(500).send('No image returned');
 
@@ -1982,7 +1902,6 @@ const zai = express.Router();
 
 zai.post('/generate', async (request, response) => {
     try {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const key = readSecret(request.user.directories, SECRET_KEYS.ZAI);
 
         if (!key) {
@@ -2017,7 +1936,6 @@ zai.post('/generate', async (request, response) => {
         const data = await generateResponse.json();
         console.debug('Z.AI image response:', data);
 
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         const urlString = String(data?.data?.[0]?.url ?? '');
         if (!urlString || !isValidUrl(urlString)) {
             console.warn('Z.AI returned an invalid image URL.');
@@ -2067,7 +1985,6 @@ zai.post('/generate-video', async (request, response) => {
             controller.abort();
         });
 
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const key = readSecret(request.user.directories, SECRET_KEYS.ZAI);
 
         if (!key) {
@@ -2111,10 +2028,8 @@ zai.post('/generate-video', async (request, response) => {
             }
 
             await delay(5000 + attempt * 1000);
-            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             console.debug(`Polling Z.AI video job ${data.id}, attempt ${attempt + 1}`);
 
-            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             const pollResponse = await fetch(`https://api.z.ai/api/paas/v4/async-result/${data.id}`, {
                 method: 'GET',
                 headers: {
@@ -2130,19 +2045,15 @@ zai.post('/generate-video', async (request, response) => {
 
             /** @type {any} */
             const pollResult = await pollResponse.json();
-            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             console.debug(`Z.AI video job status: ${pollResult.task_status}`);
 
-            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             if (pollResult.task_status === 'FAIL') {
                 console.warn('Z.AI video generation failed', pollResult);
                 return response.status(500).send('Video generation failed');
             }
 
-            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             if (pollResult.task_status === 'SUCCESS') {
                 console.debug('Z.AI video generation succeeded', pollResult);
-                // @ts-expect-error TS(2571): Object is of type 'unknown'.
                 const url = pollResult?.video_result?.[0]?.url;
 
                 if (!url || !isValidUrl(url)) {
@@ -2173,7 +2084,6 @@ const workersai = express.Router();
 
 workersai.post('/models', async (request, response) => {
     try {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const key = readSecret(request.user.directories, SECRET_KEYS.WORKERS_AI);
 
         if (!key) {
@@ -2205,13 +2115,11 @@ workersai.post('/models', async (request, response) => {
         /** @type {any} */
         const data = await result.json();
 
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         if (!data.success || !Array.isArray(data.result)) {
             console.warn('Cloudflare Workers AI returned invalid data.');
             return response.sendStatus(500);
         }
 
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         const models = data.result.map((x: any) => ({
             value: x.name,
             text: x.name
@@ -2225,7 +2133,6 @@ workersai.post('/models', async (request, response) => {
 
 workersai.post('/generate', async (request, response) => {
     try {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const key = readSecret(request.user.directories, SECRET_KEYS.WORKERS_AI);
 
         if (!key) {
@@ -2259,9 +2166,7 @@ workersai.post('/generate', async (request, response) => {
 
         // Remove undefined values
         for (const prop of Object.keys(body)) {
-            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             if (body[prop] === undefined) {
-                // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 delete body[prop];
             }
         }
@@ -2303,7 +2208,6 @@ workersai.post('/generate', async (request, response) => {
         if (contentType.includes('application/json')) {
             /** @type {any} */
             const data = await result.json();
-            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             const image = data?.result?.image || data?.image;
             if (!image) {
                 console.warn('Cloudflare Workers AI returned JSON without image data.');

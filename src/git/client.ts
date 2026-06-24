@@ -1,8 +1,11 @@
 import fs from 'node:fs';
 
 import { sync as commandExistsSync } from 'command-exists';
+// @ts-expect-error TS(2792): Cannot find module 'isomorphic-git'. Did you mean ... Remove this comment to see the full error message
 import git from 'isomorphic-git';
+// @ts-expect-error TS(2792): Cannot find module 'isomorphic-git/http/node'. Did... Remove this comment to see the full error message
 import http from 'isomorphic-git/http/node';
+// @ts-expect-error TS(2792): Cannot find module 'simple-git'. Did you mean to s... Remove this comment to see the full error message
 import simpleGit from 'simple-git';
 
 /** @type {{ AUTO: 'auto', SYSTEM: 'system', BUILTIN: 'builtin' }} */
@@ -101,12 +104,10 @@ class SimpleGitClient {
         const cloneOptions = {};
 
         if (depth !== undefined) {
-            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             cloneOptions['--depth'] = depth;
         }
 
         if (branch) {
-            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             cloneOptions['--branch'] = branch;
         }
 

@@ -5,6 +5,7 @@ import { Buffer } from 'node:buffer';
 
 import express from 'express';
 import fetch from 'node-fetch';
+// @ts-expect-error TS(2792): Cannot find module 'sanitize-filename'. Did you me... Remove this comment to see the full error message
 import sanitize from 'sanitize-filename';
 import { sync as writeFileAtomicSync } from 'write-file-atomic';
 
@@ -19,7 +20,6 @@ const scaffoldDirectory = path.join(serverDirectory, 'default/scaffold');
 const contentIndexPath = path.join(contentDirectory, 'index.json');
 const scaffoldIndexPath = path.join(scaffoldDirectory, 'index.json');
 
-// @ts-expect-error TS(2345): Argument of type 'never[]' is not assignable to pa... Remove this comment to see the full error message
 const WHITELIST_GENERIC_URL_DOWNLOAD_SOURCES = getConfigValue('whitelistImportDomains', []);
 const USER_AGENT = 'SillyTavern';
 
@@ -203,7 +203,6 @@ async function seedContentForUser(contentIndex: any, directories: any, forceCate
  * @returns {Promise<boolean>} Whether any content was added
  */
 async function seedGlobalContent(contentIndex: any) {
-    // @ts-expect-error TS(7017): Element implicitly has an 'any' type because type ... Remove this comment to see the full error message
     const contentLogPath = path.join(globalThis.DATA_ROOT, 'content.log');
     // @ts-expect-error TS(2554): Expected 4 arguments, but got 3.
     return seedContent(contentIndex, contentLogPath, getGlobalTargetByType);
@@ -217,7 +216,6 @@ async function seedGlobalContent(contentIndex: any) {
  */
 export async function checkForNewContent(directoriesList: any, forceCategories = []) {
     try {
-        // @ts-expect-error TS(2345): Argument of type 'false' is not assignable to para... Remove this comment to see the full error message
         const contentCheckSkip = getConfigValue('skipContentCheck', false, 'boolean');
         if (contentCheckSkip && forceCategories?.length === 0) {
             return;
@@ -378,10 +376,8 @@ export function getUserTargetByType(type: any, directories: any) {
 export function getGlobalTargetByType(type: any) {
     switch (type) {
         case CONTENT_TYPES.ERROR_PAGE:
-            // @ts-expect-error TS(7017): Element implicitly has an 'any' type because type ... Remove this comment to see the full error message
             return path.join(globalThis.DATA_ROOT, '_errors');
         case CONTENT_TYPES.STYLESHEET:
-            // @ts-expect-error TS(7017): Element implicitly has an 'any' type because type ... Remove this comment to see the full error message
             return path.join(globalThis.DATA_ROOT, '_css');
         default:
             return null;
@@ -417,7 +413,6 @@ async function downloadChubLorebook(id: any) {
 
     /** @type {any} */
     const metadata = await result.json();
-    // @ts-expect-error TS(2571): Object is of type 'unknown'.
     const projectId = metadata.node?.id;
 
     if (!projectId) {
@@ -459,7 +454,6 @@ async function downloadChubCharacter(id: any) {
 
     /** @type {any} */
     const metadata = await result.json();
-    // @ts-expect-error TS(2571): Object is of type 'unknown'.
     const { definition, topics } = metadata.node;
 
     /** @type {TavernCardV2} */
@@ -490,7 +484,6 @@ async function downloadChubCharacter(id: any) {
 
     let imageBuffer = defaultAvatarBuffer;
 
-    // @ts-expect-error TS(2571): Object is of type 'unknown'.
     const imageUrl = metadata.node?.max_res_url;
 
     if (imageUrl) {
@@ -523,7 +516,6 @@ async function downloadPygmalionCharacter(id: any) {
 
     /** @type {any} */
     const jsonData = await result.json();
-    // @ts-expect-error TS(2571): Object is of type 'unknown'.
     const characterData = jsonData?.character;
 
     if (!characterData || typeof characterData !== 'object') {
@@ -617,9 +609,7 @@ async function downloadJannyCharacter(uuid: any) {
     if (result.ok) {
         /** @type {any} */
         const downloadResult = await result.json();
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         if (downloadResult.status === 'ok') {
-            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             const imageResult = await fetch(downloadResult.downloadUrl);
             const buffer = Buffer.from(await imageResult.arrayBuffer());
             const fileName = `${sanitize(uuid)}.png`;
@@ -698,7 +688,6 @@ async function downloadGenericPng(url: any) {
 
         if (result.ok) {
             const buffer = Buffer.from(await result.arrayBuffer());
-            // @ts-expect-error TS(2532): Object is possibly 'undefined'.
             let fileName = sanitize(result.url.split('?')[0].split('/').reverse()[0]);
             const contentType = result.headers.get('content-type') || 'image/png'; //yoink it from AICC function lol
 

@@ -6,6 +6,7 @@ import { readSecret, SECRET_KEYS } from './secrets.js';
 export const router = Router();
 
 
+// @ts-expect-error TS(7030): Not all code paths return a value.
 router.post('/generate-voice', async (req, res) => {
     try {
         let provider_endpoint = req.body.provider_endpoint;
@@ -14,9 +15,7 @@ router.post('/generate-voice', async (req, res) => {
             provider_endpoint = 'https://openspeech.bytedance.com/api/v3/tts/unidirectional';
         }
 
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const appId = readSecret(req.user.directories, SECRET_KEYS.VOLCENGINE_APP_ID);
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const accessKey = readSecret(req.user.directories, SECRET_KEYS.VOLCENGINE_ACCESS_KEY);
 
         if (!appId || !accessKey) {

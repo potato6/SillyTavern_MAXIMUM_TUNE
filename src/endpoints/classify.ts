@@ -11,6 +11,7 @@ export const router = express.Router();
  */
 const cacheObject = new Map();
 
+// @ts-expect-error TS(6133): 'req' is declared but its value is never read.
 router.post('/labels', async (req, res) => {
     try {
         const pipe = await getPipeline(TASK);

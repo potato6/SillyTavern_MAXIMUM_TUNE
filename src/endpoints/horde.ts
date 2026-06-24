@@ -1,5 +1,6 @@
 import fetch from 'node-fetch';
 import express from 'express';
+// @ts-expect-error TS(2792): Cannot find module '@zeldafan0225/ai_horde'. Did y... Remove this comment to see the full error message
 import { AIHorde, ModelGenerationInputStableSamplers, ModelInterrogationFormTypes, HordeAsyncRequestStates } from '@zeldafan0225/ai_horde';
 import { getVersion, delay, Cache } from '../util.js';
 import { readSecret, SECRET_KEYS } from './secrets.js';
@@ -55,6 +56,7 @@ function sanitizeHordeImagePrompt(prompt: any) {
     return prompt;
 }
 
+// @ts-expect-error TS(7030): Not all code paths return a value.
 router.post('/text-workers', async (request, response) => {
     try {
         const cachedWorkers = cache.get('workers');
@@ -93,6 +95,7 @@ async function mergeModelsAndMetadata(models: any, metadata: any) {
     });
 }
 
+// @ts-expect-error TS(7030): Not all code paths return a value.
 router.post('/text-models', async (request, response) => {
     try {
         const cachedModels = cache.get('models');
@@ -125,6 +128,7 @@ router.post('/text-models', async (request, response) => {
     }
 });
 
+// @ts-expect-error TS(7030): Not all code paths return a value.
 router.post('/status', async (_, response) => {
     try {
         const agent = await getClientAgent();
@@ -141,6 +145,7 @@ router.post('/status', async (_, response) => {
     }
 });
 
+// @ts-expect-error TS(7030): Not all code paths return a value.
 router.post('/cancel-task', async (request, response) => {
     try {
         const taskId = request.body.taskId;
@@ -161,6 +166,7 @@ router.post('/cancel-task', async (request, response) => {
     }
 });
 
+// @ts-expect-error TS(7030): Not all code paths return a value.
 router.post('/task-status', async (request, response) => {
     try {
         const taskId = request.body.taskId;
@@ -181,7 +187,6 @@ router.post('/task-status', async (request, response) => {
 });
 
 router.post('/generate-text', async (request, response) => {
-    // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
     const apiKey = readSecret(request.user.directories, SECRET_KEYS.HORDE) || ANONYMOUS_KEY;
     const url = 'https://aihorde.net/api/v2/generate/text/async';
     const agent = await getClientAgent();
@@ -233,9 +238,9 @@ router.post('/sd-models', async (_, response) => {
     }
 });
 
+// @ts-expect-error TS(7030): Not all code paths return a value.
 router.post('/caption-image', async (request, response) => {
     try {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const api_key_horde = readSecret(request.user.directories, SECRET_KEYS.HORDE) || ANONYMOUS_KEY;
         const ai_horde = await getHordeClient();
         const result = await ai_horde.postAsyncInterrogate({
@@ -285,7 +290,6 @@ router.post('/caption-image', async (request, response) => {
 });
 
 router.post('/user-info', async (request, response) => {
-    // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
     const api_key_horde = readSecret(request.user.directories, SECRET_KEYS.HORDE);
 
     if (!api_key_horde) {
@@ -336,7 +340,6 @@ router.post('/generate-image', async (request, response) => {
             request.body.prompt = sanitized;
         }
 
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const api_key_horde = readSecret(request.user.directories, SECRET_KEYS.HORDE) || ANONYMOUS_KEY;
         console.debug('Stable Horde request:', request.body);
 
@@ -349,7 +352,6 @@ router.post('/generate-image', async (request, response) => {
                 {
                     sampler_name: request.body.sampler,
                     hires_fix: request.body.enable_hr,
-                    // @ts-expect-error TS(2375): Type '{ sampler_name: any; hires_fix: any; use_gfp... Remove this comment to see the full error message
                     use_gfpgan: request.body.restore_faces,
                     cfg_scale: request.body.scale,
                     steps: request.body.steps,
@@ -390,7 +392,6 @@ router.post('/generate-image', async (request, response) => {
             if (check.done) {
                 const result = await ai_horde.getImageGenerationStatus(generation.id);
                 if (result.generations === undefined) return response.sendStatus(500);
-                // @ts-expect-error TS(2532): Object is possibly 'undefined'.
                 return response.send(result.generations[0].img);
             }
 

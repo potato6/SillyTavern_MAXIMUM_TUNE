@@ -1,20 +1,17 @@
 import path from 'node:path';
 import { color, getConfigValue, safeReadFileSync } from '../util.js';
+// @ts-expect-error TS(2792): Cannot find module 'host-validation-middleware'. D... Remove this comment to see the full error message
 import { isHostAllowed, hostValidationMiddleware } from 'host-validation-middleware';
 
 const knownHosts = new Set();
 const maxKnownHosts = 1000;
 
-// @ts-expect-error TS(2345): Argument of type 'false' is not assignable to para... Remove this comment to see the full error message
 const hostWhitelistEnabled = !!getConfigValue('hostWhitelist.enabled', false);
-// @ts-expect-error TS(2345): Argument of type 'never[]' is not assignable to pa... Remove this comment to see the full error message
 const hostWhitelist = Object.freeze(getConfigValue('hostWhitelist.hosts', []));
-// @ts-expect-error TS(2345): Argument of type 'false' is not assignable to para... Remove this comment to see the full error message
 const hostWhitelistScan = !!getConfigValue('hostWhitelist.scan', false, 'boolean');
 
 const validationMiddleware = hostValidationMiddleware({
     allowedHosts: hostWhitelist,
-    // @ts-expect-error TS(7017): Element implicitly has an 'any' type because type ... Remove this comment to see the full error message
     generateErrorMessage: () => safeReadFileSync(path.join(globalThis.DATA_ROOT, '_errors', 'host-not-allowed.html'))?.toString() ?? '',
     errorResponseContentType: 'text/html',
 });

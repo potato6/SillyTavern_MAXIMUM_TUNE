@@ -55,7 +55,7 @@ router.post('/get', requireAdminMiddleware, async (_request, response) => {
             }));
 
         const viewModels = await Promise.all(viewModelPromises);
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
+        // @ts-expect-error TS(2339): Property 'created' does not exist on type 'unknown... Remove this comment to see the full error message
         viewModels.sort((x, y) => (x.created ?? 0) - (y.created ?? 0));
         return response.json(viewModels);
     } catch (error) {
@@ -71,7 +71,6 @@ router.post('/disable', requireAdminMiddleware, async (request, response) => {
             return response.status(400).json({ error: 'Missing required fields' });
         }
 
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         if (request.body.handle === request.user.profile.handle) {
             console.warn('Disable user failed: Cannot disable yourself');
             return response.status(400).json({ error: 'Cannot disable yourself' });
@@ -149,7 +148,6 @@ router.post('/demote', requireAdminMiddleware, async (request, response) => {
             return response.status(400).json({ error: 'Missing required fields' });
         }
 
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         if (request.body.handle === request.user.profile.handle) {
             console.warn('Demote user failed: Cannot demote yourself');
             return response.status(400).json({ error: 'Cannot demote yourself' });
@@ -211,7 +209,6 @@ router.post('/create', requireAdminMiddleware, async (request, response) => {
         console.info('Creating data directories for', newUser.handle);
         await ensurePublicDirectoriesExist();
         const directories = getUserDirectories(newUser.handle);
-        // @ts-expect-error TS(2322): Type 'string' is not assignable to type 'never'.
         await checkForNewContent([directories], [CONTENT_TYPES.SETTINGS]);
         return response.json({ handle: newUser.handle });
     } catch (error) {
@@ -227,7 +224,6 @@ router.post('/delete', requireAdminMiddleware, async (request, response) => {
             return response.status(400).json({ error: 'Missing required fields' });
         }
 
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         if (request.body.handle === request.user.profile.handle) {
             console.warn('Delete user failed: Cannot delete yourself');
             return response.status(400).json({ error: 'Cannot delete yourself' });

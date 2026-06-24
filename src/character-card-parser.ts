@@ -64,14 +64,12 @@ export const read = (image: any) => {
     const ccv3Index = textChunks.findIndex((chunk) => chunk.keyword.toLowerCase() === 'ccv3');
 
     if (ccv3Index > -1) {
-        // @ts-expect-error TS(2532): Object is possibly 'undefined'.
         return Buffer.from(textChunks[ccv3Index].text, 'base64').toString('utf8');
     }
 
     const charaIndex = textChunks.findIndex((chunk) => chunk.keyword.toLowerCase() === 'chara');
 
     if (charaIndex > -1) {
-        // @ts-expect-error TS(2532): Object is possibly 'undefined'.
         return Buffer.from(textChunks[charaIndex].text, 'base64').toString('utf8');
     }
 

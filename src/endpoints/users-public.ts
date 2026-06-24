@@ -2,18 +2,15 @@ import crypto from 'node:crypto';
 
 import storage from 'node-persist';
 import express from 'express';
+// @ts-expect-error TS(2792): Cannot find module 'rate-limiter-flexible'. Did yo... Remove this comment to see the full error message
 import { RateLimiterMemory, RateLimiterRes } from 'rate-limiter-flexible';
 import { getIpAddress, retryAfter } from '../express-common.js';
 import { color, Cache, getConfigValue } from '../util.js';
 import { KEY_PREFIX, getUserAvatar, toKey, getPasswordHash, getPasswordSalt, getAccountVersion } from '../users.js';
 
-// @ts-expect-error TS(2345): Argument of type 'false' is not assignable to para... Remove this comment to see the full error message
 const DISCREET_LOGIN = getConfigValue('enableDiscreetLogin', false, 'boolean');
-// @ts-expect-error TS(2345): Argument of type 'false' is not assignable to para... Remove this comment to see the full error message
 const PREFER_REAL_IP_HEADER = getConfigValue('rateLimiting.preferRealIpHeader', false, 'boolean');
-// @ts-expect-error TS(2345): Argument of type '5' is not assignable to paramete... Remove this comment to see the full error message
 const LOGIN_POINTS = getConfigValue('rateLimiting.accountsLoginMaxAttempts', 5, 'number');
-// @ts-expect-error TS(2345): Argument of type '5' is not assignable to paramete... Remove this comment to see the full error message
 const RECOVER_POINTS = getConfigValue('rateLimiting.accountsRecoverMaxAttempts', 5, 'number');
 const MFA_CACHE = new Cache(5 * 60 * 1000);
 
@@ -54,7 +51,7 @@ router.post('/list', async (_request, response) => {
             }));
 
         const viewModels = await Promise.all(viewModelPromises);
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
+        // @ts-expect-error TS(2339): Property 'created' does not exist on type 'unknown... Remove this comment to see the full error message
         viewModels.sort((x, y) => (x.created ?? 0) - (y.created ?? 0));
         return response.json(viewModels);
     } catch (error) {

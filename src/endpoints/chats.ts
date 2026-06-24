@@ -4,6 +4,7 @@ import readline from 'node:readline';
 import process from 'node:process';
 
 import express from 'express';
+// @ts-expect-error TS(2792): Cannot find module 'sanitize-filename'. Did you me... Remove this comment to see the full error message
 import sanitize from 'sanitize-filename';
 import { sync as writeFileAtomicSync } from 'write-file-atomic';
 import _ from 'lodash';
@@ -23,13 +24,9 @@ import {
     isPathUnderParent,
 } from '../util.js';
 
-// @ts-expect-error TS(2345): Argument of type 'true' is not assignable to param... Remove this comment to see the full error message
 const isBackupEnabled = !!getConfigValue('backups.chat.enabled', true, 'boolean');
-// @ts-expect-error TS(2345): Argument of type '-1' is not assignable to paramet... Remove this comment to see the full error message
 const maxTotalChatBackups = Number(getConfigValue('backups.chat.maxTotalBackups', -1, 'number'));
-// @ts-expect-error TS(2345): Argument of type '10000' is not assignable to para... Remove this comment to see the full error message
 const throttleInterval = Number(getConfigValue('backups.chat.throttleInterval', 10_000, 'number'));
-// @ts-expect-error TS(2345): Argument of type 'true' is not assignable to param... Remove this comment to see the full error message
 const checkIntegrity = !!getConfigValue('backups.chat.checkIntegrity', true, 'boolean');
 
 export const CHAT_BACKUPS_PREFIX = 'chat_';
@@ -58,7 +55,6 @@ function backupChat(directory: any, name: any, data: any, backupPrefix = CHAT_BA
         if (isNaN(maxTotalChatBackups) || maxTotalChatBackups < 0) {
             return;
         }
-        // @ts-expect-error TS(2345): Argument of type 'number' is not assignable to par... Remove this comment to see the full error message
         removeOldBackups(directory, backupPrefix, maxTotalChatBackups);
     } catch (err) {
         console.error(`Could not backup chat for ${name}`, err);
@@ -263,6 +259,7 @@ function importKoboldLiteChat(_userName: any, _characterName: any, data: any) {
  * @param {string[]} lines serialised JSONL data
  * @returns {string} Converted data
  */
+// @ts-expect-error TS(6133): 'userName' is declared but its value is never read... Remove this comment to see the full error message
 function flattenChubChat(userName: any, characterName: any, lines: any) {
     function flattenSwipe(swipe: any) {
         return swipe.message ? swipe.message : swipe;
@@ -410,7 +407,6 @@ export async function getChatInfo(pathToFile: any, additionalData = {}, withMeta
                 const jsonData = tryParse(line);
                 if (jsonData) {
                     matchBuffer.push(jsonData.mes || '');
-                    // @ts-expect-error TS(2349): This expression is not callable.
                     if (matcher(matchBuffer)) {
                         hasAnyMatch = true;
                         matchBuffer = [];
@@ -481,20 +477,16 @@ export async function trySaveChat(chatData: any, filePath: any, skipIntegrityChe
 
 router.post('/save', validateAvatarUrlMiddleware, async function (request, response) {
     try {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const handle = request.user.profile.handle;
         const cardName = String(request.body.avatar_url).replace('.png', '');
         const chatData = request.body.chat;
         const chatFileName = `${String(request.body.file_name)}.jsonl`;
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const chatFilePath = path.join(request.user.directories.chats, cardName, sanitize(chatFileName));
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         if (!isPathUnderParent(request.user.directories.chats, chatFilePath)) {
             return response.sendStatus(400);
         }
 
         if (Array.isArray(chatData)) {
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             await trySaveChat(chatData, chatFilePath, request.body.force, handle, cardName, request.user.directories.backups);
             return response.send({ ok: true });
         } else {
@@ -533,9 +525,7 @@ export function getChatData(chatFilePath: any) {
 router.post('/get', validateAvatarUrlMiddleware, function (request, response) {
     try {
         const dirName = String(request.body.avatar_url).replace('.png', '');
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const directoryPath = path.join(request.user.directories.chats, dirName);
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         if (!isPathUnderParent(request.user.directories.chats, directoryPath)) {
             return response.sendStatus(400);
         }
@@ -568,11 +558,8 @@ router.post('/rename', validateAvatarUrlMiddleware, async function (request, res
         }
 
         const pathToFolder = request.body.is_group
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             ? request.user.directories.groupChats
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             : path.join(request.user.directories.chats, String(request.body.avatar_url).replace('.png', ''));
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         if (!request.body.is_group && !isPathUnderParent(request.user.directories.chats, pathToFolder)) {
             return response.sendStatus(400);
         }
@@ -605,9 +592,7 @@ router.post('/delete', validateAvatarUrlMiddleware, function (request, response)
 
         const dirName = String(request.body.avatar_url).replace('.png', '');
         const chatFileName = String(request.body.chatfile);
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const chatFilePath = path.join(request.user.directories.chats, dirName, sanitize(chatFileName));
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         if (!isPathUnderParent(request.user.directories.chats, chatFilePath)) {
             return response.sendStatus(400);
         }
@@ -624,17 +609,15 @@ router.post('/delete', validateAvatarUrlMiddleware, function (request, response)
     }
 });
 
+// @ts-expect-error TS(7030): Not all code paths return a value.
 router.post('/export', validateAvatarUrlMiddleware, async function (request, response) {
     if (!request.body.file || (!request.body.avatar_url && request.body.is_group === false)) {
         return response.sendStatus(400);
     }
     const pathToFolder = request.body.is_group
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         ? request.user.directories.groupChats
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         : path.join(request.user.directories.chats, String(request.body.avatar_url).replace('.png', ''));
     const filename = path.join(pathToFolder, sanitize(request.body.file));
-    // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
     if (!request.body.is_group && !isPathUnderParent(request.user.directories.chats, filename)) {
         return response.sendStatus(400);
     }
@@ -709,7 +692,6 @@ router.post('/group/import', function (request, response) {
 
         const chatname = humanizedDateTime();
         const pathToUpload = path.join(filedata.destination, filedata.filename);
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const pathToNewFile = path.join(request.user.directories.groupChats, `${chatname}.jsonl`);
         fs.copyFileSync(pathToUpload, pathToNewFile);
         fs.unlinkSync(pathToUpload);
@@ -720,6 +702,7 @@ router.post('/group/import', function (request, response) {
     }
 });
 
+// @ts-expect-error TS(7030): Not all code paths return a value.
 router.post('/import', validateAvatarUrlMiddleware, function (request, response) {
     if (!request.body) return response.sendStatus(400);
 
@@ -733,9 +716,7 @@ router.post('/import', validateAvatarUrlMiddleware, function (request, response)
         return response.sendStatus(400);
     }
 
-    // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
     const directoryPath = path.join(request.user.directories.chats, avatarUrl);
-    // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
     if (!isPathUnderParent(request.user.directories.chats, directoryPath)) {
         return response.sendStatus(400);
     }
@@ -788,7 +769,6 @@ router.post('/import', validateAvatarUrlMiddleware, function (request, response)
             let lines = data.split('\n');
             const header = lines[0];
 
-            // @ts-expect-error TS(2345): Argument of type 'string | undefined' is not assig... Remove this comment to see the full error message
             const jsonData = JSON.parse(header);
 
             if (!(jsonData.user_name !== undefined || jsonData.name !== undefined || jsonData.chat_metadata !== undefined)) {
@@ -830,7 +810,6 @@ router.post('/group/get', (request, response) => {
     }
 
     const id = request.body.id;
-    // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
     const chatFilePath = path.join(request.user.directories.groupChats, sanitize(`${id}.jsonl`));
 
     return response.send(getChatData(chatFilePath));
@@ -843,7 +822,6 @@ router.post('/group/info', async (request, response) => {
         }
 
         const id = request.body.id;
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const chatFilePath = path.join(request.user.directories.groupChats, sanitize(`${id}.jsonl`));
 
         const chatInfo = await getChatInfo(chatFilePath);
@@ -861,7 +839,6 @@ router.post('/group/delete', (request, response) => {
         }
 
         const id = request.body.id;
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const chatFilePath = path.join(request.user.directories.groupChats, sanitize(`${id}.jsonl`));
 
         //Return success if the file was deleted.
@@ -884,14 +861,11 @@ router.post('/group/save', async function (request, response) {
         }
 
         const id = request.body.id;
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const handle = request.user.profile.handle;
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const chatFilePath = path.join(request.user.directories.groupChats, sanitize(`${id}.jsonl`));
         const chatData = request.body.chat;
 
         if (Array.isArray(chatData)) {
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             await trySaveChat(chatData, chatFilePath, request.body.force, handle, String(id), request.user.directories.backups);
             return response.send({ ok: true });
         } else {
@@ -916,7 +890,6 @@ router.post('/search', validateAvatarUrlMiddleware, async function (request, res
 
         if (group_id) {
             // Find group's chat IDs first
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             const groupDir = path.join(request.user.directories.groups);
             const groupFiles = fs.readdirSync(groupDir)
                 .filter(file => path.extname(file) === '.json');
@@ -939,7 +912,6 @@ router.post('/search', validateAvatarUrlMiddleware, async function (request, res
             }
 
             // Find group chat files for given group ID
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             const groupChatsDir = path.join(request.user.directories.groupChats);
             chatFiles = targetGroup.chats
                 .map((chatId: any) => path.join(groupChatsDir, `${chatId}.jsonl`))
@@ -947,7 +919,6 @@ router.post('/search', validateAvatarUrlMiddleware, async function (request, res
         } else {
             // Regular character chat directory
             const character_name = avatar_url.replace('.png', '');
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             const directoryPath = path.join(request.user.directories.chats, character_name);
 
             if (!fs.existsSync(directoryPath)) {
@@ -983,19 +954,18 @@ router.post('/search', validateAvatarUrlMiddleware, async function (request, res
 
         for (const chatFile of chatFiles) {
             const matcher = query ? hasTextMatch : null;
-            // @ts-expect-error TS(2345): Argument of type '((textArray: any) => any) | null... Remove this comment to see the full error message
             const chatInfo = await getChatInfo(chatFile, {}, false, matcher);
-            // @ts-expect-error TS(2571): Object is of type 'unknown'.
+            // @ts-expect-error TS(2339): Property 'match' does not exist on type 'unknown'.
             const hasMatch = chatInfo.match || hasTextMatch([chatInfo.file_id ?? '']);
 
             // Skip corrupted or invalid chat files
-            // @ts-expect-error TS(2571): Object is of type 'unknown'.
+            // @ts-expect-error TS(2339): Property 'file_name' does not exist on type 'unkno... Remove this comment to see the full error message
             if (!chatInfo.file_name) {
                 continue;
             }
 
             // Empty chats without a file name match are skipped when searching with a query
-            // @ts-expect-error TS(2571): Object is of type 'unknown'.
+            // @ts-expect-error TS(2339): Property 'chat_items' does not exist on type 'unkn... Remove this comment to see the full error message
             if (query && chatInfo.chat_items === 0 && !hasMatch) {
                 continue;
             }
@@ -1003,15 +973,15 @@ router.post('/search', validateAvatarUrlMiddleware, async function (request, res
             // If no search query or a match was found, include the chat in results
             if (!query || hasMatch) {
                 results.push({
-                    // @ts-expect-error TS(2571): Object is of type 'unknown'.
+                    // @ts-expect-error TS(2339): Property 'file_id' does not exist on type 'unknown... Remove this comment to see the full error message
                     file_name: chatInfo.file_id,
-                    // @ts-expect-error TS(2571): Object is of type 'unknown'.
+                    // @ts-expect-error TS(2339): Property 'file_size' does not exist on type 'unkno... Remove this comment to see the full error message
                     file_size: chatInfo.file_size,
-                    // @ts-expect-error TS(2571): Object is of type 'unknown'.
+                    // @ts-expect-error TS(2339): Property 'chat_items' does not exist on type 'unkn... Remove this comment to see the full error message
                     message_count: chatInfo.chat_items,
-                    // @ts-expect-error TS(2571): Object is of type 'unknown'.
+                    // @ts-expect-error TS(2339): Property 'last_mes' does not exist on type 'unknow... Remove this comment to see the full error message
                     last_mes: chatInfo.last_mes,
-                    // @ts-expect-error TS(2571): Object is of type 'unknown'.
+                    // @ts-expect-error TS(2339): Property 'mes' does not exist on type 'unknown'.
                     preview_message: getPreviewMessage(chatInfo.mes),
                 });
             }
@@ -1033,13 +1003,11 @@ router.post('/recent', async function (request, response) {
         const pinnedChats = Array.isArray(request.body.pinned) ? request.body.pinned : [];
 
         const getCharacterChatFiles = async () => {
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             const pngDirents = await fs.promises.readdir(request.user.directories.characters, { withFileTypes: true });
             const pngFiles = pngDirents.filter(e => e.isFile() && path.extname(e.name) === '.png').map(e => e.name);
 
             for (const pngFile of pngFiles) {
                 const chatsDirectory = pngFile.replace('.png', '');
-                // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
                 const pathToChats = path.join(request.user.directories.chats, chatsDirectory);
                 if (!fs.existsSync(pathToChats)) {
                     continue;
@@ -1059,20 +1027,17 @@ router.post('/recent', async function (request, response) {
         };
 
         const getGroupChatFiles = async () => {
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             const groupDirents = await fs.promises.readdir(request.user.directories.groups, { withFileTypes: true });
             const groups = groupDirents.filter(e => e.isFile() && path.extname(e.name) === '.json').map(e => e.name);
 
             for (const group of groups) {
                 try {
-                    // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
                     const groupPath = path.join(request.user.directories.groups, group);
                     const groupContents = await fs.promises.readFile(groupPath, 'utf8');
                     const groupData = JSON.parse(groupContents);
 
                     if (Array.isArray(groupData.chats)) {
                         for (const chat of groupData.chats) {
-                            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
                             const filePath = path.join(request.user.directories.groupChats, `${chat}.jsonl`);
                             if (!fs.existsSync(filePath)) {
                                 continue;
@@ -1089,12 +1054,10 @@ router.post('/recent', async function (request, response) {
         };
 
         const getRootChatFiles = async () => {
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             const dirents = await fs.promises.readdir(request.user.directories.chats, { withFileTypes: true });
             const chatFiles = dirents.filter(e => e.isFile() && path.extname(e.name) === '.jsonl').map(e => e.name);
 
             for (const file of chatFiles) {
-                // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
                 const filePath = path.join(request.user.directories.chats, file);
                 const stats = await fs.promises.stat(filePath);
                 allChatFiles.push({ filePath, mtime: stats.mtimeMs });
@@ -1105,7 +1068,6 @@ router.post('/recent', async function (request, response) {
 
         const max = parseInt(request.body.max ?? Number.MAX_SAFE_INTEGER) + pinnedChats.length;
         const isPinned = (/** @type {ChatFile} */ chatFile: any) => pinnedChats.some((p: any) => p.file_name === path.basename(chatFile.filePath) && (p.avatar === chatFile.pngFile || p.group === chatFile.groupId));
-        // @ts-expect-error TS(7006): Parameter 'a' implicitly has an 'any' type.
         const recentChats = allChatFiles.sort((a, b) => {
             const isAPinned = isPinned(a);
             const isBPinned = isPinned(b);
@@ -1115,7 +1077,6 @@ router.post('/recent', async function (request, response) {
 
             return b.mtime - a.mtime;
         }).slice(0, max);
-        // @ts-expect-error TS(7006): Parameter 'file' implicitly has an 'any' type.
         const jsonFilesPromise = recentChats.map((file) => {
             const withMetadata = !!request.body.metadata;
             return file.groupId

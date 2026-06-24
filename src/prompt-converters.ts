@@ -1,7 +1,6 @@
 import crypto from 'node:crypto';
 import { getConfigValue, tryParse } from './util.js';
 
-// @ts-expect-error TS(2345): Argument of type '"Let's get started."' is not ass... Remove this comment to see the full error message
 const PROMPT_PLACEHOLDER = getConfigValue('promptPlaceholder', 'Let\'s get started.');
 
 const REASONING_EFFORT = {
@@ -32,7 +31,6 @@ const GEMINI_MEDIA_RESOLUTION = {
     high: 'media_resolution_high',
 };
 
-// @ts-expect-error TS(2345): Argument of type 'true' is not assignable to param... Remove this comment to see the full error message
 const enableThoughtSignatures = !!getConfigValue('gemini.thoughtSignatures', true, 'boolean');
 
 /**
@@ -174,7 +172,6 @@ export function convertClaudePrompt(messages: any, addAssistantPostfix: any, add
     // Convert messages to the prompt.
     let requestPrompt = messages.map((v: any, i: any) => {
         // Set prefix according to the role. Also, when "Exclude Human/Assistant prefixes" is checked, names are added via the system prefix.
-        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         let prefix = {
             'assistant': '\n\nAssistant: ',
             'user': '\n\nHuman: ',
@@ -356,7 +353,6 @@ export function convertClaudeMessages(messages: any, prefillString: any, useSysP
     });
 
     if (!useTools) {
-        // @ts-expect-error TS(7006): Parameter 'message' implicitly has an 'any' type.
         mergedMessages.forEach((message) => {
             message.content.forEach((content: any) => {
                 if (content.type === 'tool_use') {
@@ -516,7 +512,6 @@ export function convertGooglePrompt(messages: any, model: any, useSysPrompt: any
                 if (url && url.startsWith('data:')) {
                     const [header, base64Data] = url.split(',');
                     const mimeType = header.match(/data:([^;]+)/)?.[1] || defaultMimeType;
-                    // @ts-expect-error TS(2538): Type 'null' cannot be used as an index type.
                     const mediaResolution = GEMINI_MEDIA_RESOLUTION[detail] || null;
 
                     const part = {
@@ -541,7 +536,6 @@ export function convertGooglePrompt(messages: any, model: any, useSysPrompt: any
             if (part.type === 'text') {
                 parts.push({ text: part.text });
             } else if (part.type === 'tool_call_id') {
-                // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 const name = toolNameMap[part.tool_call_id] ?? 'unknown';
                 parts.push({
                     functionResponse: {
@@ -559,7 +553,6 @@ export function convertGooglePrompt(messages: any, model: any, useSysPrompt: any
                         ...(toolCall.signature ? { thoughtSignature: toolCall.signature } : {}),
                     });
 
-                    // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                     toolNameMap[toolCall.id] = toolCall.function.name;
                 });
             } else if (part.type === 'image_url') {
@@ -582,7 +575,6 @@ export function convertGooglePrompt(messages: any, model: any, useSysPrompt: any
             const skipSignatureMagic = 'skip_thought_signature_validator';
             const textSignature = message.signature;
 
-            // @ts-expect-error TS(7006): Parameter 'part' implicitly has an 'any' type.
             parts.forEach((part) => {
                 if (enableThoughtSignatures && textSignature && typeof part.text === 'string') {
                     part.thoughtSignature = textSignature;
@@ -603,7 +595,6 @@ export function convertGooglePrompt(messages: any, model: any, useSysPrompt: any
 
         // merge consecutive messages with the same role
         if (index > 0 && message.role === contents[contents.length - 1].role) {
-            // @ts-expect-error TS(7006): Parameter 'part' implicitly has an 'any' type.
             parts.forEach((part) => {
                 if (part.text) {
                     const textPart = contents[contents.length - 1].parts.find((p: any) => typeof p.text === 'string');
@@ -712,7 +703,6 @@ export function convertMistralMessages(messages: any, names: any) {
     }
 
     // Make the last assistant message a prefill
-    // @ts-expect-error TS(2345): Argument of type 'false' is not assignable to para... Remove this comment to see the full error message
     const prefixEnabled = getConfigValue('mistral.enablePrefix', false, 'boolean');
     const lastMsg = messages[messages.length - 1];
     if (prefixEnabled && messages.length > 0 && lastMsg?.role === 'assistant') {
@@ -832,7 +822,6 @@ export function convertXAIMessages(messages: any, names: any) {
  * @param {boolean} [options.tools] Allow tool calls in the prompt. If false, tool call messages are removed.
  * @returns {any[]} Merged messages
  */
-// @ts-expect-error TS(7023): 'mergeMessages' implicitly has return type 'any' b... Remove this comment to see the full error message
 export function mergeMessages(messages: any, names: any, { strict = false, placeholders = false, single = false, tools = false } = {}) {
     let mergedMessages: any = [];
 
@@ -918,7 +907,6 @@ export function mergeMessages(messages: any, names: any, { strict = false, place
 
     // Check for content tokens and replace them with the actual content objects
     if (contentTokens.size > 0) {
-        // @ts-expect-error TS(7006): Parameter 'message' implicitly has an 'any' type.
         mergedMessages.forEach((message) => {
             const hasValidToken = Array.from(contentTokens.keys()).some(token => message.content.includes(token));
 
@@ -1367,7 +1355,6 @@ export function embedOpenRouterMedia(messages: any, { audio = true, video = true
 
                 contentPart.type = 'input_audio';
                 contentPart.input_audio = {
-                    // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                     format: formatMap[mimeType] || 'mp3',
                     data: base64Data,
                 };

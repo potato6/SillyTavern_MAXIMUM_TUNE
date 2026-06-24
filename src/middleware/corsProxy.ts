@@ -28,7 +28,6 @@ export default async function corsProxyMiddleware(req: any, res: any) {
 
         const bodyMethods = ['POST', 'PUT', 'PATCH'];
 
-        // @ts-expect-error TS(2379): Argument of type '{ method: any; headers: any; bod... Remove this comment to see the full error message
         const response = await fetch(url, {
             method: req.method,
             headers: headers,

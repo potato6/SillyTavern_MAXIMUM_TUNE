@@ -4,6 +4,7 @@ import { finished } from 'node:stream/promises';
 
 import mime from 'mime-types';
 import express from 'express';
+// @ts-expect-error TS(2792): Cannot find module 'sanitize-filename'. Did you me... Remove this comment to see the full error message
 import sanitize from 'sanitize-filename';
 import fetch from 'node-fetch';
 
@@ -71,7 +72,6 @@ function getFiles(dir: any, files = []) {
             getFiles(name, files);
         } else {
             // If it is a file, push the full path to the files array
-            // @ts-expect-error TS(2345): Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
             files.push(name);
         }
     }
@@ -107,13 +107,11 @@ export const router = express.Router();
  * @returns {void}
  */
 router.post('/get', async (request, response) => {
-    // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
     const folderPath = path.join(request.user.directories.assets);
     let output = {};
 
     try {
         if (fs.existsSync(folderPath) && fs.statSync(folderPath).isDirectory()) {
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             ensureFoldersExist(request.user.directories);
 
             const folders = fs.readdirSync(folderPath, { withFileTypes: true })
@@ -125,16 +123,13 @@ router.post('/get', async (request, response) => {
 
                 // Live2d assets
                 if (folder == 'live2d') {
-                    // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                     output[folder] = [];
                     const live2d_folder = path.normalize(path.join(folderPath, folder));
                     const files = getFiles(live2d_folder);
                     //console.debug("FILE FOUND:",files)
                     for (let file of files) {
-                        // @ts-expect-error TS(2339): Property 'includes' does not exist on type 'never'... Remove this comment to see the full error message
                         if (file.includes('model') && file.endsWith('.json')) {
                             //console.debug("Asset live2d model found:",file)
-                            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                             output[folder].push(clientRelativePath(request.user.directories.root, file));
                         }
                     }
@@ -143,14 +138,12 @@ router.post('/get', async (request, response) => {
 
                 // VRM assets
                 if (folder == 'vrm') {
-                    // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                     output[folder] = { 'model': [], 'animation': [] };
                     // Extract models
                     const vrm_model_folder = path.normalize(path.join(folderPath, 'vrm', 'model'));
                     let files = getFiles(vrm_model_folder);
                     //console.debug("FILE FOUND:",files)
                     for (let file of files) {
-                        // @ts-expect-error TS(2339): Property 'endsWith' does not exist on type 'never'... Remove this comment to see the full error message
                         if (!file.endsWith('.placeholder')) {
                             //console.debug("Asset VRM model found:",file)
                             // @ts-expect-error TS(2339): Property 'vrm' does not exist on type '{}'.
@@ -163,7 +156,6 @@ router.post('/get', async (request, response) => {
                     files = getFiles(vrm_animation_folder);
                     //console.debug("FILE FOUND:",files)
                     for (let file of files) {
-                        // @ts-expect-error TS(2339): Property 'endsWith' does not exist on type 'never'... Remove this comment to see the full error message
                         if (!file.endsWith('.placeholder')) {
                             //console.debug("Asset VRM animation found:",file)
                             // @ts-expect-error TS(2339): Property 'vrm' does not exist on type '{}'.
@@ -178,10 +170,8 @@ router.post('/get', async (request, response) => {
                     .filter(filename => {
                         return filename != '.placeholder';
                     });
-                // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 output[folder] = [];
                 for (const file of files) {
-                    // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                     output[folder].push(`assets/${folder}/${file}`);
                 }
             }
@@ -200,6 +190,7 @@ router.post('/get', async (request, response) => {
  *
  * @returns {void}
  */
+// @ts-expect-error TS(7030): Not all code paths return a value.
 router.post('/download', async (request, response) => {
     try {
         if (!isValidUrl(request.body.url)) {
@@ -228,15 +219,12 @@ router.post('/download', async (request, response) => {
         }
 
         // Validate filename
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         ensureFoldersExist(request.user.directories);
         const validation = validateAssetFileName(request.body.filename);
         if (validation.error)
             return response.status(400).send(validation.message);
 
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const temp_path = path.join(request.user.directories.assets, 'temp', request.body.filename);
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const file_path = path.join(request.user.directories.assets, category, request.body.filename);
         console.info('Request received to download', url, 'to', file_path);
 
@@ -259,6 +247,7 @@ router.post('/download', async (request, response) => {
             response.setHeader('Content-Type', contentType);
             response.send(fileContent);
             fs.unlinkSync(temp_path);
+            // @ts-expect-error TS(7030): Not all code paths return a value.
             return;
         }
 
@@ -300,7 +289,6 @@ router.post('/delete', async (request, response) => {
     if (validation.error)
         return response.status(400).send(validation.message);
 
-    // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
     const file_path = path.join(request.user.directories.assets, category, request.body.filename);
     console.info('Request received to delete', category, file_path);
 
@@ -329,10 +317,13 @@ router.post('/delete', async (request, response) => {
  * @returns {void}
  */
 router.post('/character', async (request, response) => {
+    // @ts-expect-error TS(4111): Property 'name' comes from an index signature, so ... Remove this comment to see the full error message
     if (request.query.name === undefined) return response.sendStatus(400);
 
     // For backwards compatibility, don't reject invalid character names, just sanitize them
+    // @ts-expect-error TS(4111): Property 'name' comes from an index signature, so ... Remove this comment to see the full error message
     const name = sanitize(request.query.name.toString());
+    // @ts-expect-error TS(4111): Property 'category' comes from an index signature,... Remove this comment to see the full error message
     const inputCategory = request.query.category;
 
     // Check category
@@ -346,7 +337,6 @@ router.post('/character', async (request, response) => {
         return response.sendStatus(400);
     }
 
-    // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
     const folderPath = path.join(request.user.directories.characters, name, category);
 
     let output = [];

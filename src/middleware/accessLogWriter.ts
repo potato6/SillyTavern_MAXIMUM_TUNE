@@ -3,12 +3,10 @@ import fs from 'node:fs';
 import { getIpAddress } from '../express-common.js';
 import { color, getConfigValue } from '../util.js';
 
-// @ts-expect-error TS(2345): Argument of type 'true' is not assignable to param... Remove this comment to see the full error message
 const enableAccessLog = getConfigValue('logging.enableAccessLog', true, 'boolean');
 
 const knownIPs = new Set();
 
-// @ts-expect-error TS(7017): Element implicitly has an 'any' type because type ... Remove this comment to see the full error message
 export const getAccessLogPath = () => path.join(globalThis.DATA_ROOT, 'access.log');
 
 export function migrateAccessLog() {
@@ -33,6 +31,7 @@ export function migrateAccessLog() {
  * @returns {import('express').RequestHandler}
  */
 export default function accessLoggerMiddleware() {
+    // @ts-expect-error TS(6133): 'res' is declared but its value is never read.
     return function (req: any, res: any, next: any) {
         const clientIp = getIpAddress(req, true);
         const userAgent = req.headers['user-agent'];

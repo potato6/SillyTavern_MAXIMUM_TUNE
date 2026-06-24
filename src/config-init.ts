@@ -1,6 +1,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
+// @ts-expect-error TS(2792): Cannot find module 'yaml'. Did you mean to set the... Remove this comment to see the full error message
 import yaml from 'yaml';
+// @ts-expect-error TS(2792): Cannot find module 'chalk'. Did you mean to set th... Remove this comment to see the full error message
 import color from 'chalk';
 import _ from 'lodash';
 import { serverDirectory } from './server-directory.js';
@@ -142,7 +144,6 @@ const keyMigrationMap = [
  * @param {string} prefix Prefix to prepend to all keys
  * @returns {string[]} Array of all keys in the object
  */
-// @ts-expect-error TS(7023): 'getAllKeys' implicitly has return type 'any' beca... Remove this comment to see the full error message
 function getAllKeys(obj: any, prefix = '') {
     if (typeof obj !== 'object' || Array.isArray(obj) || obj === null) {
         return [];

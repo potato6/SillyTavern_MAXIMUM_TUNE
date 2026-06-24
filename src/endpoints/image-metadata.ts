@@ -6,6 +6,7 @@
 import * as fs from 'node:fs/promises';
 import path from 'node:path';
 import crypto from 'node:crypto';
+// @ts-expect-error TS(2792): Cannot find module 'image-size'. Did you mean to s... Remove this comment to see the full error message
 import { imageSize } from 'image-size';
 import writeFileAtomic from 'write-file-atomic';
 import express from 'express';
@@ -39,11 +40,8 @@ export const METADATA_FILE = 'image-metadata.json';
 
 /** @type {Record<string, number[]>} */
 export const thumbnailDimensions = {
-    // @ts-expect-error TS(2345): Argument of type 'number[]' is not assignable to p... Remove this comment to see the full error message
     'bg': getConfigValue('thumbnails.dimensions.bg', [160, 90]),
-    // @ts-expect-error TS(2345): Argument of type 'number[]' is not assignable to p... Remove this comment to see the full error message
     'avatar': getConfigValue('thumbnails.dimensions.avatar', [96, 144]),
-    // @ts-expect-error TS(2345): Argument of type 'number[]' is not assignable to p... Remove this comment to see the full error message
     'persona': getConfigValue('thumbnails.dimensions.persona', [96, 144]),
 };
 
@@ -53,7 +51,6 @@ export const thumbnailDimensions = {
  * @returns {number} Resolution (width * height)
  */
 export function getThumbnailResolution(type: any) {
-    // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     const dims = thumbnailDimensions[type];
     if (Array.isArray(dims) && dims.length >= 2) {
         return Number(dims[0]) * Number(dims[1]);
@@ -99,7 +96,6 @@ async function getAverageColorWithJimp(buffer: any) {
         const toHex = (c: any) => c.toString(16).padStart(2, '0');
         return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
     } catch (error) {
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         console.warn('[Jimp] Failed to calculate average color:', error.message);
         return '#808080';
     }
@@ -219,7 +215,6 @@ export async function getOrGenerateMetadataBatch(userDataRoot: any, relativePath
 
         // If cached and not modified, use cached
         if (cached && cached.mtime === currentMtime) {
-            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             results[relativePath] = cached;
             continue;
         }
@@ -236,12 +231,10 @@ export async function getOrGenerateMetadataBatch(userDataRoot: any, relativePath
             }
 
             index.images[posixPath] = metadata;
-            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             results[relativePath] = metadata;
             indexModified = true;
             generatedCount++;
         } catch (error) {
-            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             console.warn(`[ImageMetadata] Failed to generate metadata for ${relativePath}:`, error.message);
         }
     }
@@ -414,11 +407,11 @@ export async function deleteFolder(userDataRoot: any, folderId: any) {
     index.folders.splice(idx, 1);
     // Remove folderId from all images
     for (const meta of Object.values(index.images)) {
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
+        // @ts-expect-error TS(2339): Property 'folderIds' does not exist on type 'unkno... Remove this comment to see the full error message
         if (Array.isArray(meta.folderIds)) {
-            // @ts-expect-error TS(2571): Object is of type 'unknown'.
+            // @ts-expect-error TS(2339): Property 'folderIds' does not exist on type 'unkno... Remove this comment to see the full error message
             const fi = meta.folderIds.indexOf(folderId);
-            // @ts-expect-error TS(2571): Object is of type 'unknown'.
+            // @ts-expect-error TS(2339): Property 'folderIds' does not exist on type 'unkno... Remove this comment to see the full error message
             if (fi !== -1) meta.folderIds.splice(fi, 1);
         }
     }
@@ -496,7 +489,6 @@ export const router = express.Router();
  */
 router.post('/folders/get', async function (request, response) {
     try {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const index = await readMetadataIndex(request.user.directories.root);
         return response.json(index.folders || []);
     } catch (error) {
@@ -515,7 +507,6 @@ router.post('/folders/create', async function (request, response) {
         if (!name || typeof name !== 'string') {
             return response.status(400).json({ error: '"name" is required.' });
         }
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const folder = await createFolder(request.user.directories.root, name.trim());
         return response.json(folder);
     } catch (error) {
@@ -534,7 +525,6 @@ router.post('/folders/set-thumbnails', async function (request, response) {
         if (!Array.isArray(updates) || updates.some(u => !u.id || typeof u.thumbnailFile !== 'string')) {
             return response.status(400).json({ error: '"updates" must be an array of {id, thumbnailFile}.' });
         }
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         await setFolderThumbnailsBatch(request.user.directories.root, updates);
         return response.json({ ok: true });
     } catch (error) {
@@ -553,13 +543,10 @@ router.post('/folders/update', async function (request, response) {
         if (!id || typeof id !== 'string') {
             return response.status(400).json({ error: '"id" is required.' });
         }
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const folder = await updateFolder(request.user.directories.root, id, updates);
         return response.json(folder);
     } catch (error) {
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         if (error.message.includes('not found')) {
-            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             return response.status(404).json({ error: error.message });
         }
         console.error('[ImageMetadata] Folder update error:', error);
@@ -577,13 +564,10 @@ router.post('/folders/delete', async function (request, response) {
         if (!id || typeof id !== 'string') {
             return response.status(400).json({ error: '"id" is required.' });
         }
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         await deleteFolder(request.user.directories.root, id);
         return response.json({ ok: true });
     } catch (error) {
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         if (error.message.includes('not found')) {
-            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             return response.status(404).json({ error: error.message });
         }
         console.error('[ImageMetadata] Folder delete error:', error);
@@ -604,13 +588,10 @@ router.post('/folders/assign', async function (request, response) {
         if (!Array.isArray(paths)) {
             return response.status(400).json({ error: '"paths" array is required.' });
         }
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         await assignImagesToFolder(request.user.directories.root, id, paths);
         return response.json({ ok: true });
     } catch (error) {
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         if (error.message.includes('not found')) {
-            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             return response.status(404).json({ error: error.message });
         }
         console.error('[ImageMetadata] Folder assign error:', error);
@@ -631,7 +612,6 @@ router.post('/folders/unassign', async function (request, response) {
         if (!Array.isArray(paths)) {
             return response.status(400).json({ error: '"paths" array is required.' });
         }
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         await unassignImagesFromFolder(request.user.directories.root, id, paths);
         return response.json({ ok: true });
     } catch (error) {
@@ -652,7 +632,6 @@ router.post('/', async function (request, response) {
             return response.status(400).json({ error: 'Either "path" or "paths" is required.' });
         }
 
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const userDataRoot = request.user.directories.root;
 
         // Helper to validate a path is under user data directory
@@ -676,7 +655,6 @@ router.post('/', async function (request, response) {
             }
 
             const { results: metadataResults } = await getOrGenerateMetadataBatch(userDataRoot, [relativePath], type);
-            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             const metadata = metadataResults[relativePath];
 
             if (!metadata) {
@@ -698,7 +676,6 @@ router.post('/', async function (request, response) {
                     validatePath(relativePath);
                     validPaths.push(relativePath);
                 } catch (error) {
-                    // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                     results[relativePath] = { error: error.message };
                 }
             }
@@ -707,12 +684,9 @@ router.post('/', async function (request, response) {
             const { results: batchMetadata } = await getOrGenerateMetadataBatch(userDataRoot, validPaths, type);
 
             for (const relativePath of validPaths) {
-                // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 if (batchMetadata[relativePath]) {
-                    // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                     results[relativePath] = batchMetadata[relativePath];
                 } else {
-                    // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                     results[relativePath] = { error: 'File not found or could not process.' };
                 }
             }
@@ -734,7 +708,6 @@ router.post('/', async function (request, response) {
  */
 router.post('/all', async function (request, response) {
     try {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const userDataRoot = request.user.directories.root;
         const prefix = String(request.body.prefix || '');
         const index = await readMetadataIndex(userDataRoot);
@@ -744,7 +717,6 @@ router.post('/all', async function (request, response) {
             const filteredImages = {};
             for (const [key, value] of Object.entries(index.images)) {
                 if (key.startsWith(prefix)) {
-                    // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                     filteredImages[key] = value;
                 }
             }
@@ -764,7 +736,6 @@ router.post('/all', async function (request, response) {
  */
 router.post('/cleanup', async function (request, response) {
     try {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const userDataRoot = request.user.directories.root;
         const removed = await cleanupOrphanedMetadata(userDataRoot);
         return response.json({ removed, count: removed.length });

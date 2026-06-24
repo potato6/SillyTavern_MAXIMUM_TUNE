@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import { Buffer } from 'node:buffer';
 
 import fetch from 'node-fetch';
+// @ts-expect-error TS(2792): Cannot find module 'form-data'. Did you mean to se... Remove this comment to see the full error message
 import FormData from 'form-data';
 import express from 'express';
 
@@ -12,6 +13,7 @@ import { AIMLAPI_HEADERS, OPENROUTER_HEADERS, SILICONFLOW_ENDPOINT, ZAI_ENDPOINT
 
 export const router = express.Router();
 
+// @ts-expect-error TS(7030): Not all code paths return a value.
 router.post('/caption-image', async (request, response) => {
     try {
         let key = '';
@@ -19,17 +21,14 @@ router.post('/caption-image', async (request, response) => {
         let bodyParams = {};
 
         if (request.body.api === 'openai' && !request.body.reverse_proxy) {
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             key = readSecret(request.user.directories, SECRET_KEYS.OPENAI);
         }
 
         if (request.body.api === 'xai' && !request.body.reverse_proxy) {
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             key = readSecret(request.user.directories, SECRET_KEYS.XAI);
         }
 
         if (request.body.api === 'mistral' && !request.body.reverse_proxy) {
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             key = readSecret(request.user.directories, SECRET_KEYS.MISTRALAI);
         }
 
@@ -38,76 +37,62 @@ router.post('/caption-image', async (request, response) => {
         }
 
         if (request.body.api === 'custom') {
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             key = readSecret(request.user.directories, SECRET_KEYS.CUSTOM);
             mergeObjectWithYaml(bodyParams, request.body.custom_include_body);
             mergeObjectWithYaml(headers, request.body.custom_include_headers);
         }
 
         if (request.body.api === 'openrouter') {
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             key = readSecret(request.user.directories, SECRET_KEYS.OPENROUTER);
         }
 
         if (request.body.api === 'ooba') {
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             key = readSecret(request.user.directories, SECRET_KEYS.OOBA);
             // @ts-expect-error TS(2339): Property 'temperature' does not exist on type '{}'... Remove this comment to see the full error message
             bodyParams.temperature = 0.1;
         }
 
         if (request.body.api === 'koboldcpp') {
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             key = readSecret(request.user.directories, SECRET_KEYS.KOBOLDCPP);
         }
 
         if (request.body.api === 'llamacpp') {
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             key = readSecret(request.user.directories, SECRET_KEYS.LLAMACPP);
         }
 
         if (request.body.api === 'vllm') {
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             key = readSecret(request.user.directories, SECRET_KEYS.VLLM);
         }
 
         if (request.body.api === 'aimlapi') {
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             key = readSecret(request.user.directories, SECRET_KEYS.AIMLAPI);
         }
 
         if (request.body.api === 'groq') {
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             key = readSecret(request.user.directories, SECRET_KEYS.GROQ);
         }
 
         if (request.body.api === 'cohere') {
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             key = readSecret(request.user.directories, SECRET_KEYS.COHERE);
         }
 
         if (request.body.api === 'moonshot' && !request.body.reverse_proxy) {
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             key = readSecret(request.user.directories, SECRET_KEYS.MOONSHOT);
         }
 
         if (request.body.api === 'nanogpt') {
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             key = readSecret(request.user.directories, SECRET_KEYS.NANOGPT);
         }
 
         if (request.body.api === 'chutes') {
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             key = readSecret(request.user.directories, SECRET_KEYS.CHUTES);
         }
 
         if (request.body.api === 'electronhub') {
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             key = readSecret(request.user.directories, SECRET_KEYS.ELECTRONHUB);
         }
 
         if (request.body.api === 'zai' && !request.body.reverse_proxy) {
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             key = readSecret(request.user.directories, SECRET_KEYS.ZAI);
         }
 
@@ -117,14 +102,12 @@ router.post('/caption-image', async (request, response) => {
         }
 
         if (request.body.api === 'pollinations') {
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             key = readSecret(request.user.directories, SECRET_KEYS.POLLINATIONS);
             // @ts-expect-error TS(2339): Property 'seed' does not exist on type '{}'.
             bodyParams.seed = Math.floor(Math.random() * Math.pow(2, 32));
         }
 
         if (request.body.api === 'workers_ai') {
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             key = readSecret(request.user.directories, SECRET_KEYS.WORKERS_AI);
         }
 
@@ -264,7 +247,7 @@ router.post('/caption-image', async (request, response) => {
             body.messages.push({
                 role: 'user',
                 content: [],
-                // @ts-expect-error TS(2345): Argument of type '{ role: string; content: never[]... Remove this comment to see the full error message
+                // @ts-expect-error TS(2345): Argument of type '{ role: string; content: undefin... Remove this comment to see the full error message
                 image_url: imgMessage?.content?.[1]?.image_url?.url,
             });
         }
@@ -291,7 +274,6 @@ router.post('/caption-image', async (request, response) => {
         /** @type {any} */
         const data = await result.json();
         console.info('Multimodal captioning response', data);
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         const caption = data?.choices?.[0]?.message?.content ?? data?.message?.content?.[0]?.text;
 
         if (!caption) {
@@ -305,9 +287,9 @@ router.post('/caption-image', async (request, response) => {
     }
 });
 
+// @ts-expect-error TS(7030): Not all code paths return a value.
 router.post('/generate-voice', async (request, response) => {
     try {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const key = readSecret(request.user.directories, SECRET_KEYS.OPENAI);
 
         if (!key) {
@@ -355,9 +337,9 @@ router.post('/generate-voice', async (request, response) => {
 });
 
 // ElectronHub TTS proxy
+// @ts-expect-error TS(7030): Not all code paths return a value.
 router.post('/electronhub/generate-voice', async (request, response) => {
     try {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const key = readSecret(request.user.directories, SECRET_KEYS.ELECTRONHUB);
 
         if (!key) {
@@ -394,13 +376,11 @@ router.post('/electronhub/generate-voice', async (request, response) => {
         const knownParams = new Set(Object.keys(requestBody));
         for (const key in request.body) {
             if (!knownParams.has(key) && request.body[key] !== undefined) {
-                // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 requestBody[key] = request.body[key];
             }
         }
 
         // Clean undefineds
-        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         Object.keys(requestBody).forEach(k => requestBody[k] === undefined && delete requestBody[k]);
 
         console.debug('ElectronHub TTS request', requestBody);
@@ -431,9 +411,9 @@ router.post('/electronhub/generate-voice', async (request, response) => {
 });
 
 // ElectronHub model list
+// @ts-expect-error TS(7030): Not all code paths return a value.
 router.post('/electronhub/models', async (request, response) => {
     try {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const key = readSecret(request.user.directories, SECRET_KEYS.ELECTRONHUB);
 
         if (!key) {
@@ -455,7 +435,6 @@ router.post('/electronhub/models', async (request, response) => {
         }
         /** @type {any} */
         const data = await result.json();
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         const models = data && Array.isArray(data.data) ? data.data : [];
         return response.json(models);
     } catch (error) {
@@ -465,9 +444,9 @@ router.post('/electronhub/models', async (request, response) => {
 });
 
 // Chutes TTS
+// @ts-expect-error TS(7030): Not all code paths return a value.
 router.post('/chutes/generate-voice', async (request, response) => {
     try {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const key = readSecret(request.user.directories, SECRET_KEYS.CHUTES);
 
         if (!key) {
@@ -508,9 +487,9 @@ router.post('/chutes/generate-voice', async (request, response) => {
     }
 });
 
+// @ts-expect-error TS(7030): Not all code paths return a value.
 router.post('/chutes/models/embedding', async (request, response) => {
     try {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const key = readSecret(request.user.directories, SECRET_KEYS.CHUTES);
 
         if (!key) {
@@ -534,12 +513,10 @@ router.post('/chutes/models/embedding', async (request, response) => {
         /** @type {any} */
         const data = await result.json();
 
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         if (!Array.isArray(data?.items)) {
             console.warn('Chutes embedding models response invalid', data);
             return response.sendStatus(500);
         }
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         return response.json(data.items);
     } catch (error) {
         console.error('Chutes embedding models fetch failed', error);
@@ -547,9 +524,9 @@ router.post('/chutes/models/embedding', async (request, response) => {
     }
 });
 
+// @ts-expect-error TS(7030): Not all code paths return a value.
 router.post('/nanogpt/models/embedding', async (request, response) => {
     try {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const key = readSecret(request.user.directories, SECRET_KEYS.NANOGPT);
 
         if (!key) {
@@ -574,12 +551,10 @@ router.post('/nanogpt/models/embedding', async (request, response) => {
         /** @type {any} */
         const data = await result.json();
 
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         if (!Array.isArray(data?.data)) {
             console.warn('NanoGPT embedding models response invalid', data);
             return response.sendStatus(500);
         }
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         return response.json(data.data);
     } catch (error) {
         console.error('NanoGPT embedding models fetch failed', error);
@@ -587,9 +562,9 @@ router.post('/nanogpt/models/embedding', async (request, response) => {
     }
 });
 
+// @ts-expect-error TS(7030): Not all code paths return a value.
 router.post('/siliconflow/models/embedding', async (request, response) => {
     try {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const key = readSecret(request.user.directories, SECRET_KEYS.SILICONFLOW);
 
         if (!key) {
@@ -617,13 +592,11 @@ router.post('/siliconflow/models/embedding', async (request, response) => {
         /** @type {any} */
         const data = await result.json();
 
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         if (!Array.isArray(data?.data)) {
             console.warn('SiliconFlow embedding models response invalid', data);
             return response.sendStatus(500);
         }
 
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         return response.json(data.data);
     } catch (error) {
         console.error('SiliconFlow embedding models fetch failed', error);
@@ -631,9 +604,9 @@ router.post('/siliconflow/models/embedding', async (request, response) => {
     }
 });
 
+// @ts-expect-error TS(7030): Not all code paths return a value.
 router.post('/workers-ai/models/embedding', async (request, response) => {
     try {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const key = readSecret(request.user.directories, SECRET_KEYS.WORKERS_AI);
 
         if (!key) {
@@ -664,13 +637,11 @@ router.post('/workers-ai/models/embedding', async (request, response) => {
         /** @type {any} */
         const data = await result.json();
 
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         if (!Array.isArray(data?.result)) {
             console.warn('Workers AI embedding models response invalid', data);
             return response.sendStatus(500);
         }
 
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         return response.json(data.result.map((m: any) => ({
             ...m,
             id: m.name
@@ -681,9 +652,9 @@ router.post('/workers-ai/models/embedding', async (request, response) => {
     }
 });
 
+// @ts-expect-error TS(7030): Not all code paths return a value.
 router.post('/generate-image', async (request, response) => {
     try {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const key = readSecret(request.user.directories, SECRET_KEYS.OPENAI);
 
         if (!key) {
@@ -716,6 +687,7 @@ router.post('/generate-image', async (request, response) => {
     }
 });
 
+// @ts-expect-error TS(7030): Not all code paths return a value.
 router.post('/generate-video', async (request, response) => {
     try {
         const controller = new AbortController();
@@ -724,7 +696,6 @@ router.post('/generate-video', async (request, response) => {
             controller.abort();
         });
 
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const key = readSecret(request.user.directories, SECRET_KEYS.OPENAI);
 
         if (!key) {
@@ -757,7 +728,6 @@ router.post('/generate-video', async (request, response) => {
         /** @type {any} */
         const videoJob = await videoJobResponse.json();
 
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         if (!videoJob || !videoJob.id) {
             console.warn('OpenAI video generation returned no job ID', videoJob);
             return response.status(500).send('No video job ID returned');
@@ -771,10 +741,8 @@ router.post('/generate-video', async (request, response) => {
             }
 
             await delay(5000 + attempt * 1000);
-            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             console.debug(`Polling OpenAI video job ${videoJob.id}, attempt ${attempt + 1}`);
 
-            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             const pollResponse = await fetch(`https://api.openai.com/v1/videos/${videoJob.id}`, {
                 method: 'GET',
                 headers: {
@@ -790,18 +758,14 @@ router.post('/generate-video', async (request, response) => {
 
             /** @type {any} */
             const pollResult = await pollResponse.json();
-            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             console.debug(`OpenAI video job status: ${pollResult.status}, progress: ${pollResult.progress}`);
 
-            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             if (pollResult.status === 'failed') {
                 console.warn('OpenAI video generation failed', pollResult);
                 return response.status(500).send('Video generation failed');
             }
 
-            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             if (pollResult.status === 'completed') {
-                // @ts-expect-error TS(2571): Object is of type 'unknown'.
                 const contentResponse = await fetch(`https://api.openai.com/v1/videos/${videoJob.id}/content`, {
                     method: 'GET',
                     headers: {
@@ -827,9 +791,9 @@ router.post('/generate-video', async (request, response) => {
 
 const custom = express.Router();
 
+// @ts-expect-error TS(7030): Not all code paths return a value.
 custom.post('/generate-voice', async (request, response) => {
     try {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const key = readSecret(request.user.directories, SECRET_KEYS.CUSTOM_OPENAI_TTS);
         const { input, provider_endpoint, response_format, voice, speed, model } = request.body;
 
@@ -956,9 +920,9 @@ router.post('/zai/transcribe-audio', createTranscribeHandler({
     providerName: 'Z.AI',
 }));
 
+// @ts-expect-error TS(7030): Not all code paths return a value.
 router.post('/chutes/transcribe-audio', async (request, response) => {
     try {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const key = readSecret(request.user.directories, SECRET_KEYS.CHUTES);
 
         if (!key) {

@@ -102,6 +102,7 @@ router.post('/generate', async function (request, response_generate) {
             if (request.body.streaming) {
                 // Pipe remote SSE stream to Express response
                 await forwardFetchResponse(response, response_generate);
+                // @ts-expect-error TS(7030): Not all code paths return a value.
                 return;
             } else {
                 if (!response.ok) {
@@ -123,7 +124,6 @@ router.post('/generate', async function (request, response_generate) {
             }
         } catch (error) {
             // response
-            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             switch (error?.status) {
                 case 403:
                 case 503: // retry in case of temporary service issue, possibly caused by a queue failure?
@@ -131,9 +131,7 @@ router.post('/generate', async function (request, response_generate) {
                     await delay(delayAmount);
                     break;
                 default:
-                    // @ts-expect-error TS(2571): Object is of type 'unknown'.
                     if ('status' in error) {
-                        // @ts-expect-error TS(2571): Object is of type 'unknown'.
                         console.error('Status Code from Kobold:', error.status);
                     }
                     return response_generate.send({ error: true });
@@ -145,6 +143,7 @@ router.post('/generate', async function (request, response_generate) {
     return response_generate.send({ error: true });
 });
 
+// @ts-expect-error TS(7030): Not all code paths return a value.
 router.post('/status', async function (request, response) {
     if (!request.body) return response.sendStatus(400);
     let api_server = request.body.api_server;
@@ -190,12 +189,12 @@ router.post('/status', async function (request, response) {
     // @ts-expect-error TS(2339): Property 'model' does not exist on type '{}'.
     result.model = !koboldModelResponse || koboldModelResponse.result === 'ReadOnly' ?
         'no_connection' :
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         koboldModelResponse.result;
 
     response.send(result);
 });
 
+// @ts-expect-error TS(7030): Not all code paths return a value.
 router.post('/transcribe-audio', async function (request, response) {
     try {
         const server = request.body.server;
@@ -216,7 +215,6 @@ router.post('/transcribe-audio', async function (request, response) {
         fs.unlinkSync(request.file.path);
 
         const headers = {};
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         setAdditionalHeadersByType(headers, TEXTGEN_TYPES.KOBOLDCPP, server, request.user.directories);
 
         const url = new URL(server);
@@ -248,6 +246,7 @@ router.post('/transcribe-audio', async function (request, response) {
     }
 });
 
+// @ts-expect-error TS(7030): Not all code paths return a value.
 router.post('/embed', async function (request, response) {
     try {
         const { server, items } = request.body;
@@ -258,7 +257,6 @@ router.post('/embed', async function (request, response) {
         }
 
         const headers = {};
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         setAdditionalHeadersByType(headers, TEXTGEN_TYPES.KOBOLDCPP, server, request.user.directories);
 
         const embeddingsUrl = new URL(server);
@@ -277,15 +275,12 @@ router.post('/embed', async function (request, response) {
         /** @type {any} */
         const data = await embeddingsResult.json();
 
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         if (!Array.isArray(data?.data)) {
             console.warn('KoboldCpp API response was not an array');
             return response.sendStatus(500);
         }
 
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         const model = data.model || 'unknown';
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         const embeddings = data.data.map((x: any) => Array.isArray(x) ? x[0] : x).sort((a: any, b: any) => a.index - b.index).map((x: any) => x.embedding);
         return response.json({ model, embeddings });
     } catch (error) {

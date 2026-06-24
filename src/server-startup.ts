@@ -74,6 +74,7 @@ export function redirectDeprecatedEndpoints(app: any) {
      * @param {string} destination The URL to redirect to.
      */
     function redirect(src: any, destination: any) {
+        // @ts-expect-error TS(6133): 'req' is declared but its value is never read.
         app.use(src, (req: any, res: any) => {
             console.warn(`API endpoint ${src} is deprecated; use ${destination} instead`);
             // HTTP 301 causes the request to become a GET. 308 preserves the request method.

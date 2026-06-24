@@ -200,7 +200,6 @@ function getGenericHeaders(directories: any, secretId = null) {
 }
 
 export function getOverrideHeaders(urlHost: any) {
-    // @ts-expect-error TS(2345): Argument of type 'never[]' is not assignable to pa... Remove this comment to see the full error message
     const requestOverrides = getConfigValue('requestOverrides', []);
     const overrideHeaders = requestOverrides?.find((e: any) => e.hosts?.includes(urlHost))?.headers;
     if (overrideHeaders && urlHost) {

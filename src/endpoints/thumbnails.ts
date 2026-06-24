@@ -2,13 +2,16 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 import express from 'express';
+// @ts-expect-error TS(2792): Cannot find module 'sanitize-filename'. Did you me... Remove this comment to see the full error message
 import sanitize from 'sanitize-filename';
 import { Jimp, JimpMime } from '../jimp.js';
 import { sync as writeFileAtomicSync } from 'write-file-atomic';
+// @ts-expect-error TS(2792): Cannot find module 'image-size'. Did you mean to s... Remove this comment to see the full error message
 import { imageSize as sizeOf } from 'image-size';
 
 import { getConfigValue, invalidateFirefoxCache } from '../util.js';
 import { getThumbnailResolution, isAnimatedWebP, isAnimatedApng, thumbnailDimensions as dimensions } from './image-metadata.js';
+// @ts-expect-error TS(2792): Cannot find module '@jimp/plugin-resize'. Did you ... Remove this comment to see the full error message
 import { ResizeStrategy } from '@jimp/plugin-resize';
 
 export const publicRouter = express.Router();
@@ -17,11 +20,8 @@ export const apiRouter = express.Router();
 export const SKIPPED_EXTENSIONS = new Set(['.apng', '.mp4', '.webm', '.avi', '.mkv', '.flv', '.gif']);
 export const ALLOWED_IMAGE_EXTENSIONS = new Set(['.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp', '.tif', '.tiff', '.apng']);
 
-// @ts-expect-error TS(2345): Argument of type 'true' is not assignable to param... Remove this comment to see the full error message
 const thumbnailsEnabled = !!getConfigValue('thumbnails.enabled', true, 'boolean');
-// @ts-expect-error TS(2345): Argument of type '95' is not assignable to paramet... Remove this comment to see the full error message
 const quality = Math.min(100, Math.max(1, parseInt(getConfigValue('thumbnails.quality', 95, 'number'))));
-// @ts-expect-error TS(2345): Argument of type '"jpg"' is not assignable to para... Remove this comment to see the full error message
 const pngFormat = String(getConfigValue('thumbnails.format', 'jpg')).toLowerCase().trim() === 'png';
 
 /**
@@ -215,7 +215,6 @@ async function processSingleImage(file: any, originalFolder: any, thumbnailFolde
         const thumbnailResolution = getThumbnailResolution(type);
 
         if (type === 'bg') {
-            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             const [configWidth, configHeight] = dimensions[type];
             const targetPixelArea = configWidth * configHeight;
 
@@ -228,7 +227,6 @@ async function processSingleImage(file: any, originalFolder: any, thumbnailFolde
             thumbImage.resize({ w: thumbWidth, h: thumbHeight, mode: ResizeStrategy.BILINEAR });
         } else if (type === 'avatar' || type === 'persona') {
             // Crop and resize to fixed dimensions
-            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             const [configWidth, configHeight] = dimensions[type];
             thumbImage.cover({ w: configWidth, h: configHeight });
         }
@@ -242,7 +240,6 @@ async function processSingleImage(file: any, originalFolder: any, thumbnailFolde
         return { success: true, aspectRatio, resolution: thumbnailResolution };
     } catch (error) {
         console.warn(`[Thumbnails] Failed to process image ${file}:`, error);
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         return { success: false, filename: file, error: error.message };
     }
 }
@@ -264,7 +261,6 @@ publicRouter.get('/', async function (request, response) {
         if (file !== rawFile) return response.sendStatus(403);
 
         const serveOriginal = () => {
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             const folder = getOriginalFolder(request.user.directories, type);
             const pathToOriginalFile = path.resolve(path.join(folder, file));
             if (!fs.existsSync(pathToOriginalFile)) return response.sendStatus(404);
@@ -289,13 +285,11 @@ publicRouter.get('/', async function (request, response) {
             return serveOriginal();
         }
 
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const thumbnailFolder = getThumbnailFolder(request.user.directories, type);
         const pathToCachedFile = path.join(thumbnailFolder, file);
 
         // Try to generate thumbnail if it doesn't exist
         if (!fs.existsSync(pathToCachedFile)) {
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             const thumbResult = await generateThumbnail(request.user.directories, type, file, false);
             // If generation failed (path is null), serve the original file
             if (!thumbResult.path) {

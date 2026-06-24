@@ -1,5 +1,6 @@
 import path from 'node:path';
 import express from 'express';
+// @ts-expect-error TS(2792): Cannot find module 'sanitize-filename'. Did you me... Remove this comment to see the full error message
 import sanitize from 'sanitize-filename';
 import { sync as writeFileAtomicSync } from 'write-file-atomic';
 
@@ -10,7 +11,6 @@ router.post('/save', (request, response) => {
         return response.sendStatus(400);
     }
 
-    // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
     const filename = path.join(request.user.directories.movingUI, sanitize(`${request.body.name}.json`));
     writeFileAtomicSync(filename, JSON.stringify(request.body, null, 4), 'utf8');
 

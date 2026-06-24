@@ -1,8 +1,14 @@
+// @ts-expect-error TS(2792): Cannot find module 'typescript-eslint'. Did you me... Remove this comment to see the full error message
 import tseslint from "typescript-eslint";
+// @ts-expect-error TS(2792): Cannot find module 'eslint-plugin-jsdoc'. Did you ... Remove this comment to see the full error message
 import jsdoc from "eslint-plugin-jsdoc";
+// @ts-expect-error TS(2792): Cannot find module 'eslint-plugin-jest'. Did you m... Remove this comment to see the full error message
 import jest from "eslint-plugin-jest";
+// @ts-expect-error TS(2792): Cannot find module 'eslint-plugin-playwright'. Did... Remove this comment to see the full error message
 import playwright from "eslint-plugin-playwright";
+// @ts-expect-error TS(2792): Cannot find module 'globals'. Did you mean to set ... Remove this comment to see the full error message
 import globals from "globals";
+// @ts-expect-error TS(2792): Cannot find module 'eslint-plugin-prettier'. Did y... Remove this comment to see the full error message
 import eslintConfigPrettier from "eslint-plugin-prettier";
 
 const logicalRules = {

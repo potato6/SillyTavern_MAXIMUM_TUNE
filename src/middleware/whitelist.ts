@@ -2,20 +2,20 @@ import path from 'node:path';
 import fs from 'node:fs';
 import process from 'node:process';
 import dns from 'node:dns';
+// @ts-expect-error TS(2792): Cannot find module 'handlebars'. Did you mean to s... Remove this comment to see the full error message
 import Handlebars from 'handlebars';
+// @ts-expect-error TS(2792): Cannot find module 'ip-matching'. Did you mean to ... Remove this comment to see the full error message
 import ipMatching from 'ip-matching';
+// @ts-expect-error TS(2792): Cannot find module 'is-docker'. Did you mean to se... Remove this comment to see the full error message
 import isDocker from 'is-docker';
 
 import { filterValidIpPatterns, getIpFromRequest, getRealOrForwardedIp } from '../express-common.js';
 import { color, getConfigValue, safeReadFileSync } from '../util.js';
 
 const whitelistPath = path.join(process.cwd(), './whitelist.txt');
-// @ts-expect-error TS(2345): Argument of type 'false' is not assignable to para... Remove this comment to see the full error message
 const enableForwardedWhitelist = !!getConfigValue('enableForwardedWhitelist', false, 'boolean');
-// @ts-expect-error TS(2345): Argument of type 'true' is not assignable to param... Remove this comment to see the full error message
 const whitelistDockerHosts = !!getConfigValue('whitelistDockerHosts', true, 'boolean');
 /** @type {string[]} */
-// @ts-expect-error TS(2345): Argument of type 'never[]' is not assignable to pa... Remove this comment to see the full error message
 let whitelist = getConfigValue('whitelist', []);
 
 if (fs.existsSync(whitelistPath)) {
@@ -48,7 +48,6 @@ async function addDockerHostsToWhitelist() {
             console.info(`Resolved whitelist hostname ${color.green(entry)} to IPv${result.family} address ${color.green(result.address)}`);
             whitelist.push(result.address);
         } catch (e) {
-            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             console.warn(`Failed to resolve whitelist hostname ${color.red(entry)}: ${e.message}`);
         }
     }
@@ -60,7 +59,6 @@ async function addDockerHostsToWhitelist() {
  */
 export default async function getWhitelistMiddleware() {
     const forbiddenWebpage = Handlebars.compile(
-        // @ts-expect-error TS(7017): Element implicitly has an 'any' type because type ... Remove this comment to see the full error message
         safeReadFileSync(path.join(globalThis.DATA_ROOT, '_errors', 'forbidden-by-whitelist.html')) ?? '',
     );
 

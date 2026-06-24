@@ -1,3 +1,4 @@
+// @ts-expect-error TS(2792): Cannot find module 'crc'. Did you mean to set the ... Remove this comment to see the full error message
 import { crc32 } from 'crc';
 
 /**
@@ -41,13 +42,9 @@ export default function encode(chunks: any) {
         ];
 
         uint32[0] = size;
-        // @ts-expect-error TS(2322): Type 'number | undefined' is not assignable to typ... Remove this comment to see the full error message
         output[idx++] = uint8[3];
-        // @ts-expect-error TS(2322): Type 'number | undefined' is not assignable to typ... Remove this comment to see the full error message
         output[idx++] = uint8[2];
-        // @ts-expect-error TS(2322): Type 'number | undefined' is not assignable to typ... Remove this comment to see the full error message
         output[idx++] = uint8[1];
-        // @ts-expect-error TS(2322): Type 'number | undefined' is not assignable to typ... Remove this comment to see the full error message
         output[idx++] = uint8[0];
 
         output[idx++] = nameChars[0];
@@ -62,13 +59,9 @@ export default function encode(chunks: any) {
         const crc = crc32(data, crc32(new Uint8Array(nameChars)));
 
         int32[0] = crc;
-        // @ts-expect-error TS(2322): Type 'number | undefined' is not assignable to typ... Remove this comment to see the full error message
         output[idx++] = uint8[3];
-        // @ts-expect-error TS(2322): Type 'number | undefined' is not assignable to typ... Remove this comment to see the full error message
         output[idx++] = uint8[2];
-        // @ts-expect-error TS(2322): Type 'number | undefined' is not assignable to typ... Remove this comment to see the full error message
         output[idx++] = uint8[1];
-        // @ts-expect-error TS(2322): Type 'number | undefined' is not assignable to typ... Remove this comment to see the full error message
         output[idx++] = uint8[0];
     }
 

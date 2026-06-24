@@ -3,6 +3,7 @@ import process from 'node:process';
 import util from 'node:util';
 import express from 'express';
 import fetch from 'node-fetch';
+// @ts-expect-error TS(2792): Cannot find module 'url-join'. Did you mean to set... Remove this comment to see the full error message
 import urlJoin from 'url-join';
 
 import {
@@ -98,16 +99,12 @@ const API_WORKERS_AI = 'https://api.cloudflare.com/client/v4/accounts';
 /**
  * Module-scoped Claude caching configuration values.
  */
-// @ts-expect-error TS(2345): Argument of type 'false' is not assignable to para... Remove this comment to see the full error message
 const cacheTTL = getConfigValue('claude.extendedTTL', false, 'boolean') ? '1h' : '5m';
-// @ts-expect-error TS(2345): Argument of type 'false' is not assignable to para... Remove this comment to see the full error message
 const enableSystemPromptCache = getConfigValue('claude.enableSystemPromptCache', false, 'boolean');
 const cachingAtDepth = (() => {
-    // @ts-expect-error TS(2345): Argument of type '-1' is not assignable to paramet... Remove this comment to see the full error message
     const value = getConfigValue('claude.cachingAtDepth', -1, 'number');
     return Number.isInteger(value) && value >= 0 ? value : -1;
 })();
-// @ts-expect-error TS(2345): Argument of type 'true' is not assignable to param... Remove this comment to see the full error message
 const enableAdaptiveThinking = getConfigValue('claude.enableAdaptiveThinking', true, 'boolean');
 
 /**
@@ -143,13 +140,11 @@ async function isOpenRouterModelCacheable(modelId: any) {
         /** @type {any} */
         const data = await response.json();
 
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         if (!Array.isArray(data?.data)) {
             console.warn('OpenRouter API response format unexpected');
             return false;
         }
 
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         const model = data.data.find((m: any) => m.id === modelId);
         const supportsCache = model?.pricing?.input_cache_write != null;
 
@@ -159,7 +154,6 @@ async function isOpenRouterModelCacheable(modelId: any) {
 
         return supportsCache;
     } catch (error) {
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         console.warn(`Failed to check OpenRouter cache support for ${modelId}:`, error.message);
         return false;
     }
@@ -170,6 +164,7 @@ async function isOpenRouterModelCacheable(modelId: any) {
  * @param {import('express').Request} request Express request
  * @returns {string[] | undefined} OpenRouter transforms
  */
+// @ts-expect-error TS(7030): Not all code paths return a value.
 function getOpenRouterTransforms(request: any) {
     switch (request.body.middleout) {
         case 'on':
@@ -266,14 +261,11 @@ async function sendClaudeRequest(request: any, response: any) {
         };
         if (useSystemPrompt) {
             if (enableSystemPromptCache && Array.isArray(convertedPrompt.systemPrompt) && convertedPrompt.systemPrompt.length) {
-                // @ts-expect-error TS(2532): Object is possibly 'undefined'.
                 convertedPrompt.systemPrompt[convertedPrompt.systemPrompt.length - 1].cache_control = { type: 'ephemeral', ttl: cacheTTL };
             }
 
-            // @ts-expect-error TS(2322): Type '{ type: string; text: any; }[]' is not assig... Remove this comment to see the full error message
             requestBody.system = convertedPrompt.systemPrompt;
         } else {
-            // @ts-expect-error TS(2790): The operand of a 'delete' operator must be optiona... Remove this comment to see the full error message
             delete requestBody.system;
         }
         if (useTools) {
@@ -398,7 +390,6 @@ async function sendClaudeRequest(request: any, response: any) {
         }
 
         if (betaHeaders.length) {
-            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             additionalHeaders['anthropic-beta'] = betaHeaders.join(',');
         }
 
@@ -428,12 +419,10 @@ async function sendClaudeRequest(request: any, response: any) {
 
             /** @type {any} */
             const generateResponseJson = await generateResponse.json();
-            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             const responseText = generateResponseJson?.content?.[0]?.text || '';
             console.debug('Claude response:', generateResponseJson);
 
             // Wrap it back to OAI format + save the original content
-            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             const reply = { choices: [{ 'message': { 'content': responseText } }], content: generateResponseJson.content };
             return response.send(reply);
         }
@@ -468,9 +457,7 @@ async function sendMakerSuiteRequest(request: any, response: any) {
             authType = auth.authType;
             console.debug(`Using Vertex AI authentication type: ${authType}`);
         } catch (error) {
-            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             console.warn(`${apiName} authentication failed: ${error.message}`);
-            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             return response.status(400).send({ error: true, message: error.message });
         }
     } else {
@@ -678,7 +665,6 @@ async function sendMakerSuiteRequest(request: any, response: any) {
             controller.abort();
         });
 
-        // @ts-expect-error TS(2345): Argument of type '"v1beta"' is not assignable to p... Remove this comment to see the full error message
         const apiVersion = getConfigValue('gemini.apiVersion', 'v1beta');
         const responseType = (stream ? 'streamGenerateContent' : 'generateContent');
 
@@ -723,12 +709,10 @@ async function sendMakerSuiteRequest(request: any, response: any) {
                 } else {
                     url = `https://${region}-aiplatform.googleapis.com/v1/projects/${projectId}/locations/${region}/publishers/google/models/${model}:${responseType}${stream ? '?alt=sse' : ''}`;
                 }
-                // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 headers['Authorization'] = authHeader;
             } else {
                 // For proxy mode, use the original URL with Authorization header
                 url = `${apiUrl.toString().replace(/\/$/, '')}/v1/publishers/google/models/${model}:${responseType}${stream ? '?alt=sse' : ''}`;
-                // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 headers['Authorization'] = authHeader;
             }
         } else {
@@ -763,14 +747,11 @@ async function sendMakerSuiteRequest(request: any, response: any) {
             /** @type {any} */
             const generateResponseJson = await generateResponse.json();
 
-            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             const candidates = generateResponseJson?.candidates;
             if (!candidates || candidates.length === 0) {
                 let message = `${apiName} API returned no candidate`;
                 console.warn(message, generateResponseJson);
-                // @ts-expect-error TS(2571): Object is of type 'unknown'.
                 if (generateResponseJson?.promptFeedback?.blockReason) {
-                    // @ts-expect-error TS(2571): Object is of type 'unknown'.
                     message += `\nPrompt was blocked due to : ${generateResponseJson.promptFeedback.blockReason}`;
                 }
                 return response.send({ error: { message } });
@@ -919,14 +900,11 @@ async function sendMistralAIRequest(request: any, response: any) {
         };
 
         if (Array.isArray(request.body.tools) && request.body.tools.length > 0) {
-            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             requestBody['tools'] = request.body.tools;
-            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             requestBody['tool_choice'] = request.body.tool_choice;
         }
 
         if (request.body.json_schema) {
-            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             requestBody['response_format'] = {
                 type: 'json_schema',
                 json_schema: {
@@ -1101,16 +1079,12 @@ async function sendDeepSeekRequest(request: any, response: any) {
         let bodyParams = {};
 
         if (request.body.logprobs > 0) {
-            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             bodyParams['top_logprobs'] = request.body.logprobs;
-            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             bodyParams['logprobs'] = true;
         }
 
         if (Array.isArray(request.body.tools) && request.body.tools.length > 0) {
-            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             bodyParams['tools'] = request.body.tools;
-            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             bodyParams['tool_choice'] = request.body.tool_choice;
 
             // DeepSeek doesn't permit empty required arrays
@@ -1141,7 +1115,6 @@ async function sendDeepSeekRequest(request: any, response: any) {
         addReasoningContentToToolCalls(processedMessages);
 
         if (request.body.include_reasoning && request.body.reasoning_effort) {
-            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             bodyParams['reasoning_effort'] = request.body.reasoning_effort;
         }
 
@@ -1221,31 +1194,24 @@ async function sendXaiRequest(request: any, response: any) {
         let bodyParams = {};
 
         if (request.body.logprobs > 0) {
-            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             bodyParams['top_logprobs'] = request.body.logprobs;
-            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             bodyParams['logprobs'] = true;
         }
 
         if (Array.isArray(request.body.tools) && request.body.tools.length > 0) {
-            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             bodyParams['tools'] = request.body.tools;
-            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             bodyParams['tool_choice'] = request.body.tool_choice;
         }
 
         if (Array.isArray(request.body.stop) && request.body.stop.length > 0) {
-            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             bodyParams['stop'] = request.body.stop;
         }
 
         if (request.body.reasoning_effort) {
-            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             bodyParams['reasoning_effort'] = request.body.reasoning_effort === 'high' ? 'high' : 'low';
         }
 
         if (request.body.json_schema) {
-            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             bodyParams['response_format'] = {
                 type: 'json_schema',
                 json_schema: {
@@ -1334,31 +1300,24 @@ async function sendAimlapiRequest(request: any, response: any) {
         let bodyParams = {};
 
         if (request.body.logprobs > 0) {
-            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             bodyParams['top_logprobs'] = request.body.logprobs;
-            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             bodyParams['logprobs'] = true;
         }
 
         if (Array.isArray(request.body.tools) && request.body.tools.length > 0) {
-            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             bodyParams['tools'] = request.body.tools;
-            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             bodyParams['tool_choice'] = request.body.tool_choice;
         }
 
         if (Array.isArray(request.body.stop) && request.body.stop.length > 0) {
-            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             bodyParams['stop'] = request.body.stop;
         }
 
         if (request.body.reasoning_effort) {
-            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             bodyParams['reasoning_effort'] = request.body.reasoning_effort;
         }
 
         if (request.body.json_schema) {
-            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             bodyParams['response_format'] = {
                 type: 'json_schema',
                 json_schema: {
@@ -1446,24 +1405,19 @@ async function sendElectronHubRequest(request: any, response: any) {
         let bodyParams = {};
 
         if (request.body.enable_web_search) {
-            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             bodyParams['web_search'] = true;
         }
 
         if (Array.isArray(request.body.tools) && request.body.tools.length > 0) {
-            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             bodyParams['tools'] = request.body.tools;
-            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             bodyParams['tool_choice'] = request.body.tool_choice;
         }
 
         if (request.body.reasoning_effort) {
-            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             bodyParams['reasoning_effort'] = request.body.reasoning_effort;
         }
 
         if (request.body.json_schema) {
-            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             bodyParams['response_format'] = {
                 type: 'json_schema',
                 json_schema: {
@@ -1479,7 +1433,6 @@ async function sendElectronHubRequest(request: any, response: any) {
 
         if (Array.isArray(request.body.messages) && isClaude) {
             if (enableSystemPromptCache) {
-                // @ts-expect-error TS(2345): Argument of type '"1h" | "5m"' is not assignable t... Remove this comment to see the full error message
                 cachingSystemPromptForOpenRouter(request.body.messages, cacheTTL);
             }
 
@@ -1564,21 +1517,16 @@ async function sendChutesRequest(request: any, response: any) {
         let bodyParams = {};
 
         if (Array.isArray(request.body.tools) && request.body.tools.length > 0) {
-            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             bodyParams['tools'] = request.body.tools;
-            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             bodyParams['tool_choice'] = request.body.tool_choice;
         }
 
         if (request.body.logprobs > 0) {
-            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             bodyParams['top_logprobs'] = request.body.logprobs;
-            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             bodyParams['logprobs'] = true;
         }
 
         if (request.body.json_schema) {
-            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             bodyParams['response_format'] = {
                 type: 'json_schema',
                 json_schema: {
@@ -1675,9 +1623,7 @@ async function sendMinimaxRequest(request: any, response: any) {
         let bodyParams = {};
 
         if (Array.isArray(request.body.tools) && request.body.tools.length > 0) {
-            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             bodyParams['tools'] = request.body.tools;
-            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             bodyParams['tool_choice'] = request.body.tool_choice;
         }
 
@@ -1754,14 +1700,12 @@ async function sendAzureOpenAIRequest(request: any, response: any) {
     const apiRequestBody = /** @type {any} */ ({});
     for (const key of AZURE_OPENAI_KEYS) {
         if (Object.hasOwn(request.body, key)) {
-            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             apiRequestBody[key] = request.body[key];
         }
     }
 
     // Handle Structured Output (JSON Mode) by translating the custom `json_schema` object.
     if (request.body.json_schema) {
-        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         apiRequestBody['response_format'] = {
             type: 'json_schema',
             json_schema: {
@@ -1782,9 +1726,7 @@ async function sendAzureOpenAIRequest(request: any, response: any) {
     }
 
     // Do not send reasoning effort to models which do not support it
-    // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     apiRequestBody['reasoning_effort'] = OPENAI_REASONING_EFFORT_MODELS.includes(request.body.model)
-        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         ? OPENAI_FIXED_REASONING_EFFORT[request.body.model] ?? OPENAI_REASONING_EFFORT_MAP[request.body.reasoning_effort] ?? request.body.reasoning_effort
         : undefined;
 
@@ -1822,18 +1764,16 @@ async function sendAzureOpenAIRequest(request: any, response: any) {
         const data = tryParse(text) || { error: { message: fetchResponse.statusText || 'Unknown error occurred' } };
         return response.status(500).send(data);
     } catch (error) {
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         const message = error.name === 'AbortError'
             ? 'Request was aborted by the client.'
-            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             : (error.message || 'An unknown network error occurred.');
-        // @ts-expect-error TS(2698): Spread types may only be created from object types... Remove this comment to see the full error message
         return response.status(500).send({ error: { message, ...error } });
     }
 }
 
 export const router = express.Router();
 
+// @ts-expect-error TS(7030): Not all code paths return a value.
 router.post('/status', async function (request, statusResponse) {
     try {
         if (!request.body) return statusResponse.sendStatus(400);
@@ -1845,93 +1785,75 @@ router.post('/status', async function (request, statusResponse) {
 
         if (request.body.chat_completion_source === CHAT_COMPLETION_SOURCES.OPENAI) {
             apiUrl = new URL(request.body.reverse_proxy || API_OPENAI).toString();
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             apiKey = request.body.reverse_proxy ? request.body.proxy_password : readSecret(request.user.directories, SECRET_KEYS.OPENAI, request.body.secret_id);
             headers = {};
         } else if (request.body.chat_completion_source === CHAT_COMPLETION_SOURCES.OPENROUTER) {
             apiUrl = 'https://openrouter.ai/api/v1';
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             apiKey = readSecret(request.user.directories, SECRET_KEYS.OPENROUTER, request.body.secret_id);
             // OpenRouter needs to pass the Referer and X-Title: https://openrouter.ai/docs#requests
             headers = { ...OPENROUTER_HEADERS };
         } else if (request.body.chat_completion_source === CHAT_COMPLETION_SOURCES.MISTRALAI) {
             apiUrl = new URL(request.body.reverse_proxy || API_MISTRAL).toString();
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             apiKey = request.body.reverse_proxy ? request.body.proxy_password : readSecret(request.user.directories, SECRET_KEYS.MISTRALAI, request.body.secret_id);
             headers = {};
         } else if (request.body.chat_completion_source === CHAT_COMPLETION_SOURCES.CUSTOM) {
             apiUrl = request.body.custom_url;
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             apiKey = readSecret(request.user.directories, SECRET_KEYS.CUSTOM, request.body.secret_id);
             headers = {};
             mergeObjectWithYaml(headers, request.body.custom_include_headers);
         } else if (request.body.chat_completion_source === CHAT_COMPLETION_SOURCES.COHERE) {
             apiUrl = API_COHERE_V1;
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             apiKey = readSecret(request.user.directories, SECRET_KEYS.COHERE, request.body.secret_id);
             headers = {};
         } else if (request.body.chat_completion_source === CHAT_COMPLETION_SOURCES.CHUTES) {
             apiUrl = API_CHUTES;
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             apiKey = readSecret(request.user.directories, SECRET_KEYS.CHUTES, request.body.secret_id);
             headers = {};
         } else if (request.body.chat_completion_source === CHAT_COMPLETION_SOURCES.ELECTRONHUB) {
             apiUrl = API_ELECTRONHUB;
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             apiKey = readSecret(request.user.directories, SECRET_KEYS.ELECTRONHUB, request.body.secret_id);
             headers = {};
         } else if (request.body.chat_completion_source === CHAT_COMPLETION_SOURCES.NANOGPT) {
             apiUrl = API_NANOGPT;
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             apiKey = readSecret(request.user.directories, SECRET_KEYS.NANOGPT, request.body.secret_id);
             headers = {};
             queryParams = { detailed: true };
         } else if (request.body.chat_completion_source === CHAT_COMPLETION_SOURCES.DEEPSEEK) {
             apiUrl = new URL(request.body.reverse_proxy || API_DEEPSEEK.replace('/beta', '')).toString();
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             apiKey = request.body.reverse_proxy ? request.body.proxy_password : readSecret(request.user.directories, SECRET_KEYS.DEEPSEEK, request.body.secret_id);
             headers = {};
         } else if (request.body.chat_completion_source === CHAT_COMPLETION_SOURCES.XAI) {
             apiUrl = new URL(request.body.reverse_proxy || API_XAI).toString();
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             apiKey = request.body.reverse_proxy ? request.body.proxy_password : readSecret(request.user.directories, SECRET_KEYS.XAI, request.body.secret_id);
             headers = {};
         } else if (request.body.chat_completion_source === CHAT_COMPLETION_SOURCES.AIMLAPI) {
             apiUrl = API_AIMLAPI;
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             apiKey = readSecret(request.user.directories, SECRET_KEYS.AIMLAPI, request.body.secret_id);
             headers = { ...AIMLAPI_HEADERS };
         } else if (request.body.chat_completion_source === CHAT_COMPLETION_SOURCES.POLLINATIONS) {
             apiUrl = 'https://gen.pollinations.ai/text';
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             apiKey = readSecret(request.user.directories, SECRET_KEYS.POLLINATIONS, request.body.secret_id);
             headers = {};
         } else if (request.body.chat_completion_source === CHAT_COMPLETION_SOURCES.GROQ) {
             apiUrl = API_GROQ;
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             apiKey = readSecret(request.user.directories, SECRET_KEYS.GROQ, request.body.secret_id);
             headers = {};
         } else if (request.body.chat_completion_source === CHAT_COMPLETION_SOURCES.COMETAPI) {
             apiUrl = API_COMETAPI;
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             apiKey = readSecret(request.user.directories, SECRET_KEYS.COMETAPI, request.body.secret_id);
             headers = {};
             throw new Error('This provider is temporarily disabled.');
         } else if (request.body.chat_completion_source === CHAT_COMPLETION_SOURCES.MOONSHOT) {
             apiUrl = new URL(request.body.reverse_proxy || API_MOONSHOT).toString();
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             apiKey = request.body.reverse_proxy ? request.body.proxy_password : readSecret(request.user.directories, SECRET_KEYS.MOONSHOT, request.body.secret_id);
             headers = {};
         } else if (request.body.chat_completion_source === CHAT_COMPLETION_SOURCES.FIREWORKS) {
             apiUrl = API_FIREWORKS;
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             apiKey = readSecret(request.user.directories, SECRET_KEYS.FIREWORKS, request.body.secret_id);
             headers = {};
         } else if (request.body.chat_completion_source === CHAT_COMPLETION_SOURCES.MAKERSUITE) {
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             apiKey = request.body.reverse_proxy ? request.body.proxy_password : readSecret(request.user.directories, SECRET_KEYS.MAKERSUITE, request.body.secret_id);
             apiUrl = trimTrailingSlash(request.body.reverse_proxy || API_MAKERSUITE);
-            // @ts-expect-error TS(2345): Argument of type '"v1beta"' is not assignable to p... Remove this comment to see the full error message
             const apiVersion = getConfigValue('gemini.apiVersion', 'v1beta');
             const modelsUrl = !apiKey && request.body.reverse_proxy
                 ? `${apiUrl}/${apiVersion}/models`
@@ -1949,7 +1871,6 @@ router.post('/status', async function (request, statusResponse) {
                     /** @type {any} */
                     const data = await response.json();
                     // Transform Google AI Studio models to OpenAI format
-                    // @ts-expect-error TS(2571): Object is of type 'unknown'.
                     const models = data.models
                         ?.filter((model: any) => model.supportedGenerationMethods?.includes('generateContent'))
                         ?.map((model: any) => ({
@@ -1969,7 +1890,6 @@ router.post('/status', async function (request, statusResponse) {
             }
         } else if (request.body.chat_completion_source === CHAT_COMPLETION_SOURCES.AZURE_OPENAI) {
             const { azure_base_url, azure_deployment_name, azure_api_version } = request.body;
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             const apiKey = readSecret(request.user.directories, SECRET_KEYS.AZURE_OPENAI, request.body.secret_id);
 
             // 1) Validate configuration from the frontend
@@ -2006,7 +1926,6 @@ router.post('/status', async function (request, statusResponse) {
                     console.warn('Azure OpenAI GET /models failed:', apiConfigTest.status, apiConfigTest.statusText, errText || '');
 
                     const defaultMessage = `Azure Models endpoint error: ${apiConfigTest.statusText}`;
-                    // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                     const message = azureStatusErrorMap[apiConfigTest.status] ?? defaultMessage;
                     return statusResponse.status(apiConfigTest.status).send({ error: true, message });
                 }
@@ -2032,7 +1951,6 @@ router.post('/status', async function (request, statusResponse) {
                     modelResponse = { raw: 'Failed to parse JSON response from chat completions probe.' };
                 }
 
-                // @ts-expect-error TS(2571): Object is of type 'unknown'.
                 const modelId = /** @type {any} */ (modelResponse)?.model;
                 if (!modelId) {
                     console.warn('Azure status check succeeded but could not find a model ID in the response.');
@@ -2052,12 +1970,10 @@ router.post('/status', async function (request, statusResponse) {
             const defaultApiUrl = request.body.siliconflow_endpoint === SILICONFLOW_ENDPOINT.CN
                 ? API_SILICONFLOW_CN : API_SILICONFLOW;
             apiUrl = defaultApiUrl;
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             apiKey = readSecret(request.user.directories, SECRET_KEYS.SILICONFLOW, request.body.secret_id);
             headers = {};
             queryParams = { type: 'text', sub_type: 'chat' };
         } else if (request.body.chat_completion_source === CHAT_COMPLETION_SOURCES.WORKERS_AI) {
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             apiKey = readSecret(request.user.directories, SECRET_KEYS.WORKERS_AI, request.body.secret_id);
 
             if (!apiKey) {
@@ -2086,9 +2002,7 @@ router.post('/status', async function (request, statusResponse) {
                 if (response.ok) {
                     /** @type {any} */
                     const data = await response.json();
-                    // @ts-expect-error TS(2571): Object is of type 'unknown'.
                     const models = Array.isArray(data?.result)
-                        // @ts-expect-error TS(2571): Object is of type 'unknown'.
                         ? data.result.map((model: any) => ({
                         ...model,
                         id: model.name
@@ -2117,7 +2031,6 @@ router.post('/status', async function (request, statusResponse) {
 
         const modelsUrl = new URL(urlJoin(apiUrl, '/models'));
         Object.keys(queryParams).forEach(key => {
-            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             modelsUrl.searchParams.append(key, queryParams[key]);
         });
         const response = await fetch(modelsUrl, {
@@ -2136,9 +2049,7 @@ router.post('/status', async function (request, statusResponse) {
                 data = { data: data.map(model => ({ id: model.name, ...model })) };
             }
 
-            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             if (request.body.chat_completion_source === CHAT_COMPLETION_SOURCES.CHUTES && Array.isArray(data?.data)) {
-                // @ts-expect-error TS(2571): Object is of type 'unknown'.
                 data.data = data.data
                     .filter((model: any) => model?.id)
                     .map((model: any) => {
@@ -2158,20 +2069,16 @@ router.post('/status', async function (request, statusResponse) {
 
             statusResponse.send(data);
 
-            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             if (request.body.chat_completion_source === CHAT_COMPLETION_SOURCES.COHERE && Array.isArray(data?.models)) {
-                // @ts-expect-error TS(2571): Object is of type 'unknown'.
                 data.data = data.models.map((model: any) => ({
                     id: model.name,
                     ...model
                 }));
             }
 
-            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             if (request.body.chat_completion_source === CHAT_COMPLETION_SOURCES.OPENROUTER && Array.isArray(data?.data)) {
                 let models: any = [];
 
-                // @ts-expect-error TS(2571): Object is of type 'unknown'.
                 data.data.forEach((model: any) => {
                     const context_length = model.context_length;
                     const tokens_dollar = Number(1 / (1000 * model.pricing?.prompt));
@@ -2184,11 +2091,9 @@ router.post('/status', async function (request, statusResponse) {
 
                 console.info('Available OpenRouter models:', models);
             } else if (request.body.chat_completion_source === CHAT_COMPLETION_SOURCES.MISTRALAI) {
-                // @ts-expect-error TS(2571): Object is of type 'unknown'.
                 const models = data?.data;
                 console.info(models);
             } else {
-                // @ts-expect-error TS(2571): Object is of type 'unknown'.
                 const models = data?.data;
 
                 if (Array.isArray(models)) {
@@ -2219,6 +2124,7 @@ router.post('/bias', async function (request, response) {
 
     try {
         const result = {};
+        // @ts-expect-error TS(4111): Property 'model' comes from an index signature, so... Remove this comment to see the full error message
         const model = getTokenizerModel(String(request.query.model || ''));
 
         // no bias for claude
@@ -2258,7 +2164,6 @@ router.post('/bias', async function (request, response) {
                 const tokens = getEntryTokens(entry.text, encodeFunction);
 
                 for (const token of tokens) {
-                    // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                     result[token] = entry.value;
                 }
             } catch {
@@ -2339,7 +2244,6 @@ router.post('/generate', async function (request, response) {
 
         if (request.body.chat_completion_source === CHAT_COMPLETION_SOURCES.OPENAI) {
             apiUrl = new URL(request.body.reverse_proxy || API_OPENAI).toString();
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             apiKey = request.body.reverse_proxy ? request.body.proxy_password : readSecret(request.user.directories, SECRET_KEYS.OPENAI, request.body.secret_id);
             headers = {};
             bodyParams = {
@@ -2353,9 +2257,7 @@ router.post('/generate', async function (request, response) {
                 bodyParams.logprobs = true;
             }
 
-            // @ts-expect-error TS(2345): Argument of type 'false' is not assignable to para... Remove this comment to see the full error message
             if (getConfigValue('openai.randomizeUserId', false, 'boolean')) {
-                // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 bodyParams['user'] = uuidv4();
             }
 
@@ -2363,7 +2265,6 @@ router.post('/generate', async function (request, response) {
             embedOpenRouterMedia(request.body.messages, { audio: true, video: false });
         } else if (request.body.chat_completion_source === CHAT_COMPLETION_SOURCES.OPENROUTER) {
             apiUrl = 'https://openrouter.ai/api/v1';
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             apiKey = readSecret(request.user.directories, SECRET_KEYS.OPENROUTER, request.body.secret_id);
             // OpenRouter needs to pass the Referer and X-Title: https://openrouter.ai/docs#requests
             headers = { ...OPENROUTER_HEADERS };
@@ -2377,22 +2278,18 @@ router.post('/generate', async function (request, response) {
             };
 
             if (request.body.min_p !== undefined) {
-                // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 bodyParams['min_p'] = request.body.min_p;
             }
 
             if (request.body.top_a !== undefined) {
-                // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 bodyParams['top_a'] = request.body.top_a;
             }
 
             if (request.body.repetition_penalty !== undefined) {
-                // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 bodyParams['repetition_penalty'] = request.body.repetition_penalty;
             }
 
             if (Array.isArray(request.body.provider) && request.body.provider.length > 0) {
-                // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 bodyParams['provider'] = {
                     allow_fallbacks: request.body.allow_fallbacks ?? true,
                     order: request.body.provider ?? [],
@@ -2400,29 +2297,23 @@ router.post('/generate', async function (request, response) {
             }
 
             if (Array.isArray(request.body.quantizations) && request.body.quantizations.length > 0) {
-                // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 bodyParams['provider'] ??= {};
-                // @ts-expect-error TS(2339): Property 'provider' does not exist on type '{ tran... Remove this comment to see the full error message
                 bodyParams['provider']['quantizations'] = request.body.quantizations;
             }
 
             if (request.body.use_fallback) {
-                // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 bodyParams['route'] = 'fallback';
             }
 
             if (request.body.reasoning_effort) {
-                // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 bodyParams['reasoning']['effort'] = request.body.reasoning_effort;
             }
 
             if (request.body.verbosity) {
-                // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 bodyParams['verbosity'] = request.body.verbosity;
             }
 
             if (request.body.json_schema) {
-                // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 bodyParams['response_format'] = {
                     type: 'json_schema',
                     json_schema: {
@@ -2436,7 +2327,6 @@ router.post('/generate', async function (request, response) {
             const isClaude = /^anthropic\/claude/.test(request.body.model);
             const isGemini = /google\/gemini/.test(request.body.model);
             const isCacheableGemini = isGemini && (await isOpenRouterModelCacheable(request.body.model));
-            // @ts-expect-error TS(2345): Argument of type 'false' is not assignable to para... Remove this comment to see the full error message
             const enableGeminiSystemPromptCache = getConfigValue('gemini.enableSystemPromptCache', false, 'boolean');
 
             if (Array.isArray(request.body.messages)) {
@@ -2445,7 +2335,6 @@ router.post('/generate', async function (request, response) {
 
                 if (isClaude) {
                     if (enableSystemPromptCache) {
-                        // @ts-expect-error TS(2345): Argument of type '"1h" | "5m"' is not assignable t... Remove this comment to see the full error message
                         cachingSystemPromptForOpenRouter(request.body.messages, cacheTTL);
                     }
 
@@ -2460,12 +2349,10 @@ router.post('/generate', async function (request, response) {
             }
 
             if (isGemini) {
-                // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 bodyParams['safety_settings'] = GEMINI_SAFETY;
             }
         } else if (request.body.chat_completion_source === CHAT_COMPLETION_SOURCES.CUSTOM) {
             apiUrl = request.body.custom_url;
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             apiKey = readSecret(request.user.directories, SECRET_KEYS.CUSTOM, request.body.secret_id);
             headers = {};
             bodyParams = {
@@ -2484,7 +2371,6 @@ router.post('/generate', async function (request, response) {
             // @ts-expect-error TS(2322): Type 'false' is not assignable to type 'true'.
             embedOpenRouterMedia(request.body.messages, { audio: true, video: false });
             if (request.body.json_schema) {
-                // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 bodyParams['response_format'] = {
                     type: 'json_schema',
                     json_schema: {
@@ -2496,7 +2382,6 @@ router.post('/generate', async function (request, response) {
             }
         } else if (request.body.chat_completion_source === CHAT_COMPLETION_SOURCES.PERPLEXITY) {
             apiUrl = API_PERPLEXITY;
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             apiKey = readSecret(request.user.directories, SECRET_KEYS.PERPLEXITY, request.body.secret_id);
             headers = {};
             bodyParams = {
@@ -2504,7 +2389,6 @@ router.post('/generate', async function (request, response) {
             };
             request.body.messages = postProcessPrompt(request.body.messages, PROMPT_PROCESSING_TYPE.STRICT, getPromptNames(request));
             if (request.body.json_schema) {
-                // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 bodyParams['response_format'] = {
                     type: 'json_schema',
                     json_schema: {
@@ -2514,12 +2398,10 @@ router.post('/generate', async function (request, response) {
             }
         } else if (request.body.chat_completion_source === CHAT_COMPLETION_SOURCES.GROQ) {
             apiUrl = API_GROQ;
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             apiKey = readSecret(request.user.directories, SECRET_KEYS.GROQ, request.body.secret_id);
             headers = {};
             bodyParams = {};
             if (request.body.json_schema) {
-                // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 bodyParams['response_format'] = {
                     type: 'json_schema',
                     json_schema: {
@@ -2532,12 +2414,10 @@ router.post('/generate', async function (request, response) {
             }
         } else if (request.body.chat_completion_source === CHAT_COMPLETION_SOURCES.FIREWORKS) {
             apiUrl = API_FIREWORKS;
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             apiKey = readSecret(request.user.directories, SECRET_KEYS.FIREWORKS, request.body.secret_id);
             headers = {};
             bodyParams = {};
             if (request.body.json_schema) {
-                // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 bodyParams['response_format'] = {
                     type: 'json_schema',
                     json_schema: {
@@ -2550,45 +2430,35 @@ router.post('/generate', async function (request, response) {
             }
         } else if (request.body.chat_completion_source === CHAT_COMPLETION_SOURCES.NANOGPT) {
             apiUrl = API_NANOGPT;
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             apiKey = readSecret(request.user.directories, SECRET_KEYS.NANOGPT, request.body.secret_id);
             headers = {};
             bodyParams = {};
             if (request.body.nanogpt_provider) {
-                // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 headers['X-Provider'] = request.body.nanogpt_provider;
             }
             if (request.body.nanogpt_payg_override) {
-                // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 headers['X-Billing-Mode'] = 'paygo';
-                // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 bodyParams['billing_mode'] = 'paygo';
             }
             if (request.body.enable_web_search && !/:online$/.test(request.body.model)) {
                 request.body.model = `${request.body.model}:online`;
             }
             if (request.body.min_p !== undefined) {
-                // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 bodyParams['min_p'] = request.body.min_p;
             }
             if (request.body.top_a !== undefined) {
-                // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 bodyParams['top_a'] = request.body.top_a;
             }
             if (request.body.repetition_penalty !== undefined) {
-                // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 bodyParams['repetition_penalty'] = request.body.repetition_penalty;
             }
             if (request.body.reasoning_effort) {
-                // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 const effort = NANOGPT_REASONING_EFFORT_MAP[request.body.reasoning_effort];
-                // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 bodyParams['reasoning'] = { effort: effort };
             }
 
             const isClaude = /(?:^|\/)claude[-_]/.test(request.body.model);
             if (enableSystemPromptCache && isClaude) {
-                // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 bodyParams['cache_control'] = {
                     'enabled': true,
                     'ttl': cacheTTL,
@@ -2596,7 +2466,6 @@ router.post('/generate', async function (request, response) {
             }
         } else if (request.body.chat_completion_source === CHAT_COMPLETION_SOURCES.POLLINATIONS) {
             apiUrl = API_POLLINATIONS;
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             apiKey = readSecret(request.user.directories, SECRET_KEYS.POLLINATIONS, request.body.secret_id);
             headers = {};
             bodyParams = {
@@ -2604,7 +2473,6 @@ router.post('/generate', async function (request, response) {
                 seed: request.body.seed ?? Math.floor(Math.random() * 99999999),
             };
             if (request.body.json_schema) {
-                // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 bodyParams['response_format'] = {
                     type: 'json_schema',
                     json_schema: {
@@ -2614,7 +2482,6 @@ router.post('/generate', async function (request, response) {
             }
         } else if (request.body.chat_completion_source === CHAT_COMPLETION_SOURCES.MOONSHOT) {
             apiUrl = new URL(request.body.reverse_proxy || API_MOONSHOT).toString();
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             apiKey = request.body.reverse_proxy ? request.body.proxy_password : readSecret(request.user.directories, SECRET_KEYS.MOONSHOT, request.body.secret_id);
             headers = {};
             bodyParams = {
@@ -2627,7 +2494,6 @@ router.post('/generate', async function (request, response) {
                 : addAssistantPrefix(request.body.messages, [], 'partial');
         } else if (request.body.chat_completion_source === CHAT_COMPLETION_SOURCES.COMETAPI) {
             apiUrl = API_COMETAPI;
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             apiKey = readSecret(request.user.directories, SECRET_KEYS.COMETAPI, request.body.secret_id);
             headers = {};
             bodyParams = {
@@ -2637,7 +2503,6 @@ router.post('/generate', async function (request, response) {
         } else if (request.body.chat_completion_source === CHAT_COMPLETION_SOURCES.ZAI) {
             const defaultApiUrl = request.body.zai_endpoint === ZAI_ENDPOINT.CODING ? API_ZAI_CODING : API_ZAI_COMMON;
             apiUrl = new URL(request.body.reverse_proxy || defaultApiUrl).toString();
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             apiKey = request.body.reverse_proxy ? request.body.proxy_password : readSecret(request.user.directories, SECRET_KEYS.ZAI, request.body.secret_id);
             headers = {
                 'Accept-Language': 'en-US,en',
@@ -2654,7 +2519,6 @@ router.post('/generate', async function (request, response) {
             const defaultApiUrl = request.body.siliconflow_endpoint === SILICONFLOW_ENDPOINT.CN
                 ? API_SILICONFLOW_CN : API_SILICONFLOW;
             apiUrl = defaultApiUrl;
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             apiKey = readSecret(request.user.directories, SECRET_KEYS.SILICONFLOW, request.body.secret_id);
             headers = {};
             bodyParams = {};
@@ -2662,7 +2526,6 @@ router.post('/generate', async function (request, response) {
                 setJsonObjectFormat(bodyParams, request.body.messages, request.body.json_schema);
             }
         } else if (request.body.chat_completion_source === CHAT_COMPLETION_SOURCES.WORKERS_AI) {
-            // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
             apiKey = readSecret(request.user.directories, SECRET_KEYS.WORKERS_AI, request.body.secret_id);
             const accountId = String(request.body.workers_ai_account_id || '').trim();
             if (!accountId) {
@@ -2675,7 +2538,6 @@ router.post('/generate', async function (request, response) {
                 repetition_penalty: request.body.repetition_penalty,
             };
             if (request.body.json_schema) {
-                // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 bodyParams['response_format'] = {
                     type: 'json_schema',
                     json_schema: request.body.json_schema.value,
@@ -2689,7 +2551,6 @@ router.post('/generate', async function (request, response) {
         // A few of OpenAIs reasoning models support reasoning effort
         if (request.body.reasoning_effort && [CHAT_COMPLETION_SOURCES.CUSTOM, CHAT_COMPLETION_SOURCES.OPENAI].includes(request.body.chat_completion_source)) {
             if (OPENAI_REASONING_EFFORT_MODELS.includes(request.body.model)) {
-                // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 bodyParams['reasoning_effort'] = OPENAI_FIXED_REASONING_EFFORT[request.body.model] ?? OPENAI_REASONING_EFFORT_MAP[request.body.reasoning_effort] ?? request.body.reasoning_effort;
             }
             if (request.body.chat_completion_source === CHAT_COMPLETION_SOURCES.CUSTOM && /^koboldcpp\/(.+)$/.test(request.body.model)) {
@@ -2699,7 +2560,6 @@ router.post('/generate', async function (request, response) {
 
         if (request.body.verbosity && [CHAT_COMPLETION_SOURCES.CUSTOM, CHAT_COMPLETION_SOURCES.OPENAI].includes(request.body.chat_completion_source)) {
             if (OPENAI_VERBOSITY_MODELS.test(request.body.model)) {
-                // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 bodyParams['verbosity'] = request.body.verbosity;
             }
         }
@@ -2711,7 +2571,6 @@ router.post('/generate', async function (request, response) {
 
         // Add custom stop sequences
         if (Array.isArray(request.body.stop) && request.body.stop.length > 0) {
-            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             bodyParams['stop'] = request.body.stop;
         }
 
@@ -2727,15 +2586,11 @@ router.post('/generate', async function (request, response) {
         });
 
         if (!isTextCompletion && Array.isArray(request.body.tools) && request.body.tools.length > 0) {
-            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             bodyParams['tools'] = request.body.tools;
-            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             bodyParams['tool_choice'] = request.body.tool_choice;
         }
 
-        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         if (request.body.json_schema && !bodyParams['response_format']) {
-            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             bodyParams['response_format'] = {
                 type: 'json_schema',
                 json_schema: {
@@ -2813,15 +2668,11 @@ router.post('/generate', async function (request, response) {
         }
     } catch (error) {
         console.error('Generation failed', error);
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         const message = error.code === 'ECONNREFUSED'
-            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             ? `Connection refused: ${error.message}`
-            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             : error.message || 'Unknown error occurred';
 
         if (!response.headersSent) {
-            // @ts-expect-error TS(2698): Spread types may only be created from object types... Remove this comment to see the full error message
             response.status(502).send({ error: { message, ...error } });
         } else {
             response.end();
@@ -2868,12 +2719,10 @@ multimodalModels.post('/aimlapi', async (_req, res) => {
         /** @type {any} */
         const data = await response.json();
 
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         if (!Array.isArray(data?.data)) {
             return res.json([]);
         }
 
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         const multimodalModels = data.data.filter((m: any) => m?.features?.includes('openai/chat-completion.vision')).map((m: any) => m.id);
         return res.json(multimodalModels);
     } catch (error) {
@@ -2893,12 +2742,10 @@ multimodalModels.post('/nanogpt', async (_req, res) => {
         /** @type {any} */
         const data = await response.json();
 
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         if (!Array.isArray(data?.data)) {
             return res.json([]);
         }
 
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         const multimodalModels = data.data.filter((m: any) => m?.capabilities?.vision).map((m: any) => m.id);
         return res.json(multimodalModels);
     } catch (error) {
@@ -2917,7 +2764,6 @@ multimodalModels.post('/electronhub', async (_req, res) => {
 
         /** @type {any} */
         const data = await response.json();
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         const multimodalModels = data.data.filter((m: any) => m.metadata?.vision).map((m: any) => m.id);
         return res.json(multimodalModels);
     } catch (error) {
@@ -2928,7 +2774,6 @@ multimodalModels.post('/electronhub', async (_req, res) => {
 
 multimodalModels.post('/chutes', async (req, res) => {
     try {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const key = readSecret(req.user.directories, SECRET_KEYS.CHUTES);
 
         if (!key) {
@@ -2948,7 +2793,6 @@ multimodalModels.post('/chutes', async (req, res) => {
         const data = await response.json();
 
         const modelsData = /** @type {{object: string, data: Array<{id: string, input_modalities?: string[]}>}} */ (data);
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         const multimodalModels = modelsData.data
             .filter((m: any) => m.input_modalities?.includes('image'))
             .map((m: any) => m.id);
@@ -2961,7 +2805,6 @@ multimodalModels.post('/chutes', async (req, res) => {
 
 multimodalModels.post('/mistral', async (req, res) => {
     try {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const key = readSecret(req.user.directories, SECRET_KEYS.MISTRALAI);
 
         if (!key) {
@@ -2980,7 +2823,6 @@ multimodalModels.post('/mistral', async (req, res) => {
 
         /** @type {any} */
         const data = await response.json();
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         const multimodalModels = data.data.filter((m: any) => m.capabilities?.vision).map((m: any) => m.id);
         return res.json(multimodalModels);
     } catch (error) {
@@ -2991,7 +2833,6 @@ multimodalModels.post('/mistral', async (req, res) => {
 
 multimodalModels.post('/xai', async (req, res) => {
     try {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const key = readSecret(req.user.directories, SECRET_KEYS.XAI);
 
         if (!key) {
@@ -3011,7 +2852,6 @@ multimodalModels.post('/xai', async (req, res) => {
 
         /** @type {any} */
         const data = await response.json();
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         const multimodalModels = data.models.filter((m: any) => m.input_modalities?.includes('image')).map((m: any) => m.id);
         if (!multimodalModels.includes('grok-4-0709')) {
             // The endpoint says it doesn't support images, but it does
@@ -3026,7 +2866,6 @@ multimodalModels.post('/xai', async (req, res) => {
 
 multimodalModels.post('/moonshot', async (req, res) => {
     try {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const key = readSecret(req.user.directories, SECRET_KEYS.MOONSHOT);
 
         if (!key) {
@@ -3046,7 +2885,6 @@ multimodalModels.post('/moonshot', async (req, res) => {
         /** @type {any} */
         const data = await response.json();
 
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         const multimodalModels = data.data.filter((m: any) => m.supports_image_in).map((m: any) => m.id);
         return res.json(multimodalModels);
     } catch (error) {
@@ -3057,7 +2895,6 @@ multimodalModels.post('/moonshot', async (req, res) => {
 
 multimodalModels.post('/workers_ai', async (req, res) => {
     try {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const key = readSecret(req.user.directories, SECRET_KEYS.WORKERS_AI);
         const accountId = String(req.body.workers_ai_account_id || '').trim();
 
@@ -3077,9 +2914,7 @@ multimodalModels.post('/workers_ai', async (req, res) => {
 
         /** @type {any} */
         const data = await response.json();
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         const models = Array.isArray(data?.result)
-            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             ? data.result
                 .filter((m: any) => Array.isArray(m.properties) && m.properties.some((p: any) => p.property_id === 'vision' && p.value === 'true'))
                 .map((m: any) => m.name)

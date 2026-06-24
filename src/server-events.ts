@@ -6,7 +6,7 @@ import process from 'node:process';
  * @type {EventEmitter<ServerEventMap>} The default event source.
  */
 export const serverEvents = new EventEmitter();
-// @ts-expect-error TS(2339): Property 'serverEvents' does not exist on type 'Pr... Remove this comment to see the full error message
+// @ts-expect-error TS(2322): Type 'EventEmitter<DefaultEventMap>' is not assign... Remove this comment to see the full error message
 process.serverEvents = serverEvents;
 export default serverEvents;
 

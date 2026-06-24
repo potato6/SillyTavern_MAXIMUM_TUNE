@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 import express from 'express';
+// @ts-expect-error TS(2792): Cannot find module 'sanitize-filename'. Did you me... Remove this comment to see the full error message
 import sanitize from 'sanitize-filename';
 import { sync as writeFileAtomicSync } from 'write-file-atomic';
 
@@ -45,7 +46,6 @@ router.post('/save', function (request, response) {
         return response.sendStatus(400);
     }
 
-    // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
     const settings = getPresetSettingsByAPI(request.body.apiId, request.user.directories);
     const filename = name + settings.extension;
 
@@ -64,7 +64,6 @@ router.post('/delete', function (request, response) {
         return response.sendStatus(400);
     }
 
-    // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
     const settings = getPresetSettingsByAPI(request.body.apiId, request.user.directories);
     const filename = name + settings.extension;
 
@@ -84,10 +83,8 @@ router.post('/delete', function (request, response) {
 
 router.post('/restore', function (request, response) {
     try {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const settings = getPresetSettingsByAPI(request.body.apiId, request.user.directories);
         const name = sanitize(request.body.name);
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const defaultPresets = getDefaultPresets(request.user.directories);
 
         const defaultPreset = defaultPresets.find(p => p.name === name && p.folder === settings.folder);

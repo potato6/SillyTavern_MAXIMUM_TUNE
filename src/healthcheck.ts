@@ -3,6 +3,7 @@ import path from 'path';
 import { serverDirectory } from './server-directory.js';
 
 // Default to 0 seconds (disabled) if not set
+// @ts-expect-error TS(4111): Property 'SILLYTAVERN_HEARTBEATINTERVAL' comes fro... Remove this comment to see the full error message
 const intervalSeconds = parseInt(process.env.SILLYTAVERN_HEARTBEATINTERVAL || '0');
 const intervalMs = intervalSeconds * 1000;
 
@@ -14,6 +15,7 @@ if (Number.isNaN(intervalSeconds) || intervalSeconds <= 0) {
 // Allow a grace period (2 missed beats)
 const threshold = intervalMs * 2;
 
+// @ts-expect-error TS(4111): Property 'SILLYTAVERN_DATAROOT' comes from an inde... Remove this comment to see the full error message
 const dataRoot = process.env.SILLYTAVERN_DATAROOT || path.join(serverDirectory, 'data');
 const heartbeatFile = path.join(dataRoot, 'heartbeat.json');
 
@@ -35,7 +37,6 @@ try {
 
     process.exit(0);
 } catch (err) {
-    // @ts-expect-error TS(2571): Object is of type 'unknown'.
     console.error('Healthcheck error:', err.message);
     process.exit(1);
 }

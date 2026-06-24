@@ -57,7 +57,6 @@ export class TavernCardValidator {
         const requiredFields = ['name', 'description', 'personality', 'scenario', 'first_mes', 'mes_example'];
         return requiredFields.every(field => {
             if (!Object.hasOwn(this.card, field)) {
-                // @ts-expect-error TS(2322): Type 'string' is not assignable to type 'null'.
                 this.#lastValidationError = field;
                 return false;
             }
@@ -89,7 +88,6 @@ export class TavernCardValidator {
 
     #validateSpecV2() {
         if (this.card.spec !== 'chara_card_v2') {
-            // @ts-expect-error TS(2322): Type '"spec"' is not assignable to type 'null'.
             this.#lastValidationError = 'spec';
             return false;
         }
@@ -98,7 +96,6 @@ export class TavernCardValidator {
 
     #validateSpecVersionV2() {
         if (this.card.spec_version !== '2.0') {
-            // @ts-expect-error TS(2322): Type '"spec_version"' is not assignable to type 'n... Remove this comment to see the full error message
             this.#lastValidationError = 'spec_version';
             return false;
         }
@@ -109,7 +106,6 @@ export class TavernCardValidator {
         const data = this.card.data;
 
         if (!data) {
-            // @ts-expect-error TS(2322): Type '"No tavern card data found"' is not assignab... Remove this comment to see the full error message
             this.#lastValidationError = 'No tavern card data found';
             return false;
         }
@@ -117,7 +113,6 @@ export class TavernCardValidator {
         const requiredFields = ['name', 'description', 'personality', 'scenario', 'first_mes', 'mes_example', 'creator_notes', 'system_prompt', 'post_history_instructions', 'alternate_greetings', 'tags', 'creator', 'character_version', 'extensions'];
         const isAllRequiredFieldsPresent = requiredFields.every(field => {
             if (!Object.hasOwn(data, field)) {
-                // @ts-expect-error TS(2322): Type 'string' is not assignable to type 'null'.
                 this.#lastValidationError = `data.${field}`;
                 return false;
             }
@@ -137,7 +132,6 @@ export class TavernCardValidator {
         const requiredFields = ['extensions', 'entries'];
         const isAllRequiredFieldsPresent = requiredFields.every(field => {
             if (!Object.hasOwn(characterBook, field)) {
-                // @ts-expect-error TS(2322): Type 'string' is not assignable to type 'null'.
                 this.#lastValidationError = `data.character_book.${field}`;
                 return false;
             }
@@ -149,7 +143,6 @@ export class TavernCardValidator {
 
     #validateSpecV3() {
         if (this.card.spec !== 'chara_card_v3') {
-            // @ts-expect-error TS(2322): Type '"spec"' is not assignable to type 'null'.
             this.#lastValidationError = 'spec';
             return false;
         }
@@ -158,7 +151,6 @@ export class TavernCardValidator {
 
     #validateSpecVersionV3() {
         if (Number(this.card.spec_version) < 3.0 || Number(this.card.spec_version) >= 4.0) {
-            // @ts-expect-error TS(2322): Type '"spec_version"' is not assignable to type 'n... Remove this comment to see the full error message
             this.#lastValidationError = 'spec_version';
             return false;
         }
@@ -169,7 +161,6 @@ export class TavernCardValidator {
         const data = this.card.data;
 
         if (!data || typeof data !== 'object') {
-            // @ts-expect-error TS(2322): Type '"No tavern card data found"' is not assignab... Remove this comment to see the full error message
             this.#lastValidationError = 'No tavern card data found';
             return false;
         }

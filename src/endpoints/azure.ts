@@ -7,7 +7,6 @@ export const router = Router();
 
 router.post('/list', async (req, res) => {
     try {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const key = readSecret(req.user.directories, SECRET_KEYS.AZURE_TTS);
 
         if (!key) {
@@ -46,7 +45,6 @@ router.post('/list', async (req, res) => {
 
 router.post('/generate', async (req, res) => {
     try {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const key = readSecret(req.user.directories, SECRET_KEYS.AZURE_TTS);
 
         if (!key) {

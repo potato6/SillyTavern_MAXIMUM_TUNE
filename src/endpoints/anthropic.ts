@@ -5,6 +5,7 @@ import { readSecret, SECRET_KEYS } from './secrets.js';
 
 export const router = express.Router();
 
+// @ts-expect-error TS(7030): Not all code paths return a value.
 router.post('/caption-image', async (request, response) => {
     try {
         const mimeType = request.body.image.split(';')[0].split(':')[1];
@@ -39,7 +40,6 @@ router.post('/caption-image', async (request, response) => {
             headers: {
                 'Content-Type': 'application/json',
                 'anthropic-version': '2023-06-01',
-                // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
                 'x-api-key': request.body.reverse_proxy ? request.body.proxy_password : readSecret(request.user.directories, SECRET_KEYS.CLAUDE),
             },
         });
@@ -52,7 +52,6 @@ router.post('/caption-image', async (request, response) => {
 
         /** @type {any} */
         const generateResponseJson = await result.json();
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         const caption = generateResponseJson.content[0].text;
         console.debug('Claude response:', generateResponseJson);
 

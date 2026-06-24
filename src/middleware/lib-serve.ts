@@ -7,7 +7,6 @@ async function getLibOutputPath(forceDist = false) {
     const appVersion = await getVersion();
     const webpackRoot = forceDist
         ? path.resolve(process.cwd(), 'dist', '_webpack')
-        // @ts-expect-error TS(7017): Element implicitly has an 'any' type because type ... Remove this comment to see the full error message
         : path.resolve(globalThis.DATA_ROOT || process.cwd(), '_webpack');
 
     const cacheVersion = crypto.createHash('shake256', { outputLength: 8 })

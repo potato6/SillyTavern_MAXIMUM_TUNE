@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 import express from 'express';
+// @ts-expect-error TS(2792): Cannot find module 'sanitize-filename'. Did you me... Remove this comment to see the full error message
 import sanitize from 'sanitize-filename';
 import _ from 'lodash';
 import { sync as writeFileAtomicSync } from 'write-file-atomic';
@@ -39,14 +40,12 @@ export const router = express.Router();
 router.post('/list', async (request, response) => {
     try {
         const data = [];
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const jsonFiles = (await fs.promises.readdir(request.user.directories.worlds, { withFileTypes: true }))
             .filter((file) => file.isFile() && path.extname(file.name).toLowerCase() === '.json')
             .sort((a, b) => a.name.localeCompare(b.name));
 
         for (const file of jsonFiles) {
             try {
-                // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
                 const filePath = path.join(request.user.directories.worlds, file.name);
                 const fileContents = await fs.promises.readFile(filePath, 'utf8');
                 const fileContentsParsed = tryParse(fileContents) || {};
@@ -75,7 +74,6 @@ router.post('/get', (request, response) => {
         return response.sendStatus(400);
     }
 
-    // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
     const file = readWorldInfoFile(request.user.directories, request.body.name, true);
 
     return response.send(file);
@@ -88,7 +86,6 @@ router.post('/delete', (request, response) => {
 
     const worldInfoName = request.body.name;
     const filename = sanitize(`${worldInfoName}.json`);
-    // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
     const pathToWorldInfo = path.join(request.user.directories.worlds, filename);
 
     if (!fs.existsSync(pathToWorldInfo)) {
@@ -124,7 +121,6 @@ router.post('/import', (request, response) => {
         return response.status(400).send('Is not a valid world info file');
     }
 
-    // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
     const pathToNewFile = path.join(request.user.directories.worlds, filename);
     const worldName = path.parse(pathToNewFile).name;
 
@@ -154,7 +150,6 @@ router.post('/edit', (request, response) => {
     }
 
     const filename = sanitize(`${request.body.name}.json`);
-    // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
     const pathToFile = path.join(request.user.directories.worlds, filename);
 
     writeFileAtomicSync(pathToFile, JSON.stringify(request.body.data, null, 4));

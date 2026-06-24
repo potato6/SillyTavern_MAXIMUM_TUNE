@@ -1,8 +1,10 @@
 import { Buffer } from 'node:buffer';
 import fs from 'node:fs';
 import express from 'express';
+// @ts-expect-error TS(2792): Cannot find module 'wavefile'. Did you mean to set... Remove this comment to see the full error message
 import wavefile from 'wavefile';
 import fetch from 'node-fetch';
+// @ts-expect-error TS(2792): Cannot find module 'form-data'. Did you mean to se... Remove this comment to see the full error message
 import FormData from 'form-data';
 import mime from 'mime-types';
 import { getPipeline } from '../transformers.js';
@@ -116,7 +118,6 @@ pollinations.post('/voices', async (req, res) => {
 
 pollinations.post('/generate', async (req, res) => {
     try {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const key = readSecret(req.user.directories, SECRET_KEYS.POLLINATIONS);
         if (!key) {
             console.warn('No API key saved for Pollinations TTS.');
@@ -158,7 +159,6 @@ pollinations.post('/generate', async (req, res) => {
 
         /** @type {any} */
         const data = await response.json();
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         const audioData = data?.choices?.[0]?.message?.audio?.data;
 
         if (!audioData) {
@@ -180,7 +180,6 @@ const elevenlabs = express.Router();
 
 elevenlabs.post('/voices', async (req, res) => {
     try {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const apiKey = readSecret(req.user.directories, SECRET_KEYS.ELEVENLABS);
         if (!apiKey) {
             console.warn('ElevenLabs API key not found');
@@ -209,7 +208,6 @@ elevenlabs.post('/voices', async (req, res) => {
 
 elevenlabs.post('/voice-settings', async (req, res) => {
     try {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const apiKey = readSecret(req.user.directories, SECRET_KEYS.ELEVENLABS);
         if (!apiKey) {
             console.warn('ElevenLabs API key not found');
@@ -235,9 +233,9 @@ elevenlabs.post('/voice-settings', async (req, res) => {
     }
 });
 
+// @ts-expect-error TS(7030): Not all code paths return a value.
 elevenlabs.post('/synthesize', async (req, res) => {
     try {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const apiKey = readSecret(req.user.directories, SECRET_KEYS.ELEVENLABS);
         if (!apiKey) {
             console.warn('ElevenLabs API key not found');
@@ -278,7 +276,6 @@ elevenlabs.post('/synthesize', async (req, res) => {
 
 elevenlabs.post('/history', async (req, res) => {
     try {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const apiKey = readSecret(req.user.directories, SECRET_KEYS.ELEVENLABS);
         if (!apiKey) {
             console.warn('ElevenLabs API key not found');
@@ -305,9 +302,9 @@ elevenlabs.post('/history', async (req, res) => {
     }
 });
 
+// @ts-expect-error TS(7030): Not all code paths return a value.
 elevenlabs.post('/history-audio', async (req, res) => {
     try {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const apiKey = readSecret(req.user.directories, SECRET_KEYS.ELEVENLABS);
         if (!apiKey) {
             console.warn('ElevenLabs API key not found');
@@ -344,7 +341,6 @@ elevenlabs.post('/history-audio', async (req, res) => {
 
 elevenlabs.post('/voices/add', async (req, res) => {
     try {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const apiKey = readSecret(req.user.directories, SECRET_KEYS.ELEVENLABS);
         if (!apiKey) {
             console.warn('ElevenLabs API key not found');
@@ -397,7 +393,6 @@ elevenlabs.post('/voices/add', async (req, res) => {
 
 elevenlabs.post('/recognize', async (req, res) => {
     try {
-        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
         const apiKey = readSecret(req.user.directories, SECRET_KEYS.ELEVENLABS);
         if (!apiKey) {
             console.warn('ElevenLabs API key not found');

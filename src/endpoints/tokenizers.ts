@@ -8,9 +8,11 @@ import express from 'express';
 import fetch from 'node-fetch';
 import { sync as writeFileAtomicSync } from 'write-file-atomic';
 
+// @ts-expect-error TS(2792): Cannot find module '@agnai/web-tokenizers'. Did yo... Remove this comment to see the full error message
 import { Tokenizer } from '@agnai/web-tokenizers';
-// @ts-expect-error TS(7016): Could not find a declaration file for module '@agn... Remove this comment to see the full error message
+// @ts-expect-error TS(2792): Cannot find module '@agnai/sentencepiece-js'. Did ... Remove this comment to see the full error message
 import { SentencePieceProcessor } from '@agnai/sentencepiece-js';
+// @ts-expect-error TS(2792): Cannot find module 'tiktoken'. Did you mean to set... Remove this comment to see the full error message
 import tiktoken from 'tiktoken';
 
 import { convertClaudePrompt } from '../prompt-converters.js';
@@ -59,7 +61,6 @@ export const TEXT_COMPLETION_MODELS = [
 ];
 
 const BYTES_PER_TOKEN = 3.35;
-// @ts-expect-error TS(2345): Argument of type 'true' is not assignable to param... Remove this comment to see the full error message
 const IS_DOWNLOAD_ALLOWED = getConfigValue('enableDownloadableTokenizers', true, 'boolean');
 const gunzip = promisify(zlib.gunzip);
 
@@ -97,7 +98,6 @@ async function getPathToTokenizer(model: any, fallbackModel: any) {
             throw new Error('Failed to extract the file name from the URL');
         }
 
-        // @ts-expect-error TS(7017): Element implicitly has an 'any' type because type ... Remove this comment to see the full error message
         const CACHE_PATH = path.join(globalThis.DATA_ROOT, '_cache');
         if (!fs.existsSync(CACHE_PATH)) {
             fs.mkdirSync(CACHE_PATH, { recursive: true });
@@ -146,12 +146,10 @@ async function getPathToTokenizer(model: any, fallbackModel: any) {
     } catch (error) {
         const getLastSegment = (str: any) => str?.split('/')?.pop() || '';
         if (fallbackModel) {
-            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             console.error(`Could not get a tokenizer from ${getLastSegment(model)}. Reason: ${error.message}. Using a fallback model: ${getLastSegment(fallbackModel)}.`);
             return fallbackModel;
         }
 
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         throw new Error(`Failed to instantiate a tokenizer and fallback is not provided. Reason: ${error.message}`);
     }
 }
@@ -163,7 +161,6 @@ class SentencePieceTokenizer {
     /**
      * @type {import('@agnai/sentencepiece-js').SentencePieceProcessor} Sentencepiece tokenizer instance
      */
-    // @ts-expect-error TS(7008): Member '#instance' implicitly has an 'any' type.
     #instance;
     /**
      * @type {string} Path to the tokenizer model
@@ -213,7 +210,6 @@ class WebTokenizer {
     /**
      * @type {Tokenizer} Web tokenizer instance
      */
-    // @ts-expect-error TS(7008): Member '#instance' implicitly has an 'any' type.
     #instance;
     /**
      * @type {string} Path to the tokenizer model
@@ -544,15 +540,12 @@ export function getTokenizerModel(requestModel: any) {
 }
 
 export function getTiktokenTokenizer(model: any) {
-    // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     if (tokenizersCache[model]) {
-        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         return tokenizersCache[model];
     }
 
     const tokenizer = tiktoken.encoding_for_model(model);
     console.info('Instantiated the tokenizer for', model);
-    // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     tokenizersCache[model] = tokenizer;
     return tokenizer;
 }
@@ -790,6 +783,7 @@ router.post('/deepseek/decode', createWebTokenizerDecodingHandler(deepseekTokeni
 
 router.post('/openai/encode', async function (req, res) {
     try {
+        // @ts-expect-error TS(4111): Property 'model' comes from an index signature, so... Remove this comment to see the full error message
         const queryModel = String(req.query.model || '');
 
         if (queryModel.includes('llama3') || queryModel.includes('llama-3')) {
@@ -863,6 +857,7 @@ router.post('/openai/encode', async function (req, res) {
 
 router.post('/openai/decode', async function (req, res) {
     try {
+        // @ts-expect-error TS(4111): Property 'model' comes from an index signature, so... Remove this comment to see the full error message
         const queryModel = String(req.query.model || '');
 
         if (queryModel.includes('llama3') || queryModel.includes('llama-3')) {
@@ -934,11 +929,13 @@ router.post('/openai/decode', async function (req, res) {
     }
 });
 
+// @ts-expect-error TS(7030): Not all code paths return a value.
 router.post('/openai/count', async function (req, res) {
     try {
         if (!req.body) return res.sendStatus(400);
 
         let num_tokens = 0;
+        // @ts-expect-error TS(4111): Property 'model' comes from an index signature, so... Remove this comment to see the full error message
         const queryModel = String(req.query.model || '');
         const model = getTokenizerModel(queryModel);
 
@@ -1081,9 +1078,7 @@ router.post('/remote/kobold/count', async function (request, response) {
 
         /** @type {any} */
         const data = await result.json();
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         const count = data.value;
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         const ids = data.ids ?? [];
         return response.send({ count, ids });
     } catch (error) {
@@ -1153,9 +1148,7 @@ router.post('/remote/textgenerationwebui/encode', async function (request, respo
 
         /** @type {any} */
         const data = await result.json();
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         const count = (data?.length ?? data?.count ?? data?.value ?? data?.tokens?.length);
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         const ids = (data?.tokens ?? data?.ids ?? []);
 
         return response.send({ count, ids });
