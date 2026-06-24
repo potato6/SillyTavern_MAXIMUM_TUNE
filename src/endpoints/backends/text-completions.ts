@@ -154,9 +154,12 @@ router.post('/status', async function (request, response) {
         const isPossiblyLmStudio = modelsReply.headers.get('x-powered-by') === 'Express';
 
         if (!modelsReply.ok) {
-            console.error('Models endpoint is offline.');
-            return response.sendStatus(400);
-        }
+                    console.error(`Models endpoint returned HTTP ${modelsReply.status}`);
+                    return response.status(400).json({
+                        result: 'no_connection',
+                        response: `API returned an error: HTTP ${modelsReply.status}`
+                    });
+                }
 
         /** @type {any} */
         let data = await modelsReply.json();

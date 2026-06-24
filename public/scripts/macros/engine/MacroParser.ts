@@ -202,6 +202,7 @@ class MacroParser extends CstParser {
 
     /**
      * Resolves the tokenization dynamically to avoid transpilation mapping errors
+     * @param input
      */
     tokenizeInput(input: string) {
         const lexerAny = MacroLexer as any;
@@ -250,12 +251,7 @@ class MacroParser extends CstParser {
         this.input = lexingResult.tokens;
         const cst = this.macro();
 
-        // For testing purposes we need to actually persist the error messages in the object,
-        // otherwise the test cases cannot read those, as they don't have access to the exception object type.
-        const errors = this.errors.map((x: any) => ({ message: x.message, ...x, stack: x.stack }));
-
-        return { cst, errors: errors };
-    }
+   }
 }
 
 instance = MacroParser.instance;

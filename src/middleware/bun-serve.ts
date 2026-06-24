@@ -36,7 +36,7 @@ export default function getBunServeMiddleware() {
             format: 'esm',
             target: 'browser',
             sourcemap: 'none',
-            minify: true,
+            minify: false,
         });
 
         if (!result.success) {
