@@ -1,4 +1,4 @@
-FROM node:lts-alpine3.23
+FROM oven/bun:alpine
 
 # Arguments
 ARG APP_HOME=/home/node/app
@@ -19,7 +19,7 @@ COPY --chown=node:node . ./
 
 RUN \
   echo "*** Install npm packages ***" && \
-  npm ci --no-audit --no-fund --loglevel=error --no-progress --omit=dev --ignore-scripts && npm cache clean --force
+  bun install --frozen-lockfile --production && bun cache clean
 
 # Create config directory and link config.yaml. Added hardcoded dirs(constants.js?)
 # that must be present for Non-Root Mode and volumeless docker runs.
@@ -31,8 +31,8 @@ RUN \
 
 # Pre-compile public libraries
 RUN \
-  echo "*** Run Webpack ***" && \
-  node "./docker/build-lib.js"
+  echo "*** Run Bun Build ***" && \
+  bun scripts/build-lib.js
 
 # Set the entrypoint script and cleanup
 RUN \

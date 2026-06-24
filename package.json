@@ -90,7 +90,6 @@
     "url-join": "^5.0.0",
     "vectra": "^0.2.2",
     "wavefile": "^11.0.0",
-    "webpack": "^5.107.2",
     "write-file-atomic": "^5.0.1",
     "ws": "^8.21.0",
     "yaml": "^2.9.0",
@@ -116,20 +115,19 @@
     "url": "https://github.com/SillyTavern/SillyTavern.git"
   },
   "version": "1.18.0",
-  "scripts": {
-    "init": "node src/server-init.js",
-    "start": "node server.js",
-    "debug": "node --inspect server.js",
-    "start:global": "node server.js --global",
-    "start:electron": "cd ./src/electron && npm run start",
-    "start:deno": "deno run --allow-run --allow-net --allow-read --allow-write --allow-sys --allow-env server.js",
-    "start:bun": "bun server.js",
-    "start:no-csrf": "node server.js --disableCsrf",
-    "lint": "eslint \"src/**/*.js\" \"public/**/*.js\" ./*.js",
-    "lint:fix": "eslint \"src/**/*.js\" \"public/**/*.js\" ./*.js --fix",
-    "plugins:update": "node plugins update",
-    "plugins:install": "node plugins install"
-  },
+    "scripts": {
+        "init": "bun src/server-init.js",
+        "start": "bun server.js",
+        "debug": "bun --inspect server.js",
+        "start:global": "bun server.js --global",
+        "start:electron": "cd ./src/electron && npm run start",
+        "start:no-csrf": "bun server.js --disableCsrf",
+        "build:lib": "bun scripts/build-lib.js",
+        "lint": "eslint \"src/**/*.js\" \"public/**/*.js\" ./*.js",
+        "lint:fix": "eslint \"src/**/*.js\" \"public/**/*.js\" ./*.js --fix",
+        "plugins:update": "bun plugins update",
+        "plugins:install": "bun plugins install"
+    },
   "bin": {
     "sillytavern": "./src/server-global.js"
   },
