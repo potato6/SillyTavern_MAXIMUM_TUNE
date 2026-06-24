@@ -727,18 +727,23 @@ async function getStatusTextgen() {
     }
 
     try {
+
         const response = await fetch(url, {
-            method: 'POST',
-            headers: getRequestHeaders(),
-            body: JSON.stringify({
-                api_server: endpoint,
-                api_type: textgenerationwebui_settings.type,
-            }),
-            signal: abortStatusCheck.signal,
-        });
+                    method: 'POST',
+                    headers: getRequestHeaders(),
+                    body: JSON.stringify({
+                        api_server: endpoint,
+                        api_type: textgenerationwebui_settings.type,
+                    }),
+                    signal: abortStatusCheck.signal,
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP ${response.status}: ${errorText}`);
+                }
 
         const data = await response.json();
-
         if (textgenerationwebui_settings.type === textgen_types.MANCER) {
             loadMancerModels(data?.data);
             setOnlineStatus(textgenerationwebui_settings.mancer_model);
