@@ -2,6 +2,9 @@ import { getParsedUA, isMobile } from './RossAscends-mods.js';
 
 const isFirefox = () => /firefox/i.test(navigator.userAgent);
 
+/**
+ *
+ */
 function sanitizeInlineQuotationOnCopy() {
     // STRG+C, STRG+V on firefox leads to duplicate double quotes when inline quotation elements are copied.
     // To work around this, take the selection and transform <q> to <span> before calling toString().
@@ -53,6 +56,9 @@ function sanitizeInlineQuotationOnCopy() {
     });
 }
 
+/**
+ *
+ */
 function addSafariPatch() {
     const userAgent = getParsedUA();
     console.debug('User Agent', userAgent);
@@ -65,6 +71,9 @@ function addSafariPatch() {
     }
 }
 
+/**
+ *
+ */
 function applyBrowserFixes() {
     if (isFirefox()) {
         sanitizeInlineQuotationOnCopy();

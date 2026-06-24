@@ -8,7 +8,7 @@
  */
 
 /**
- * @typedef {Object} MacroFlags
+ * @typedef {object} MacroFlags
  * @property {boolean} immediate - Whether the immediate (`!`) flag is set.
  * @property {boolean} delayed - Whether the delayed (`?`) flag is set.
  * @property {boolean} reevaluate - Whether the re-evaluate (`~`) flag is set.
@@ -20,7 +20,6 @@
 
 /**
  * Enum of all recognized macro execution flags.
- *
  * @readonly
  * @enum {string}
  */
@@ -77,7 +76,7 @@ export const MacroFlagType = Object.freeze({
 });
 
 /**
- * @typedef {Object} MacroFlagDefinition
+ * @typedef {object} MacroFlagDefinition
  * @property {MacroFlagType} type - The flag type enum value (also the symbol).
  * @property {string} name - Human-readable name for the flag.
  * @property {string} description - Description of what the flag does.
@@ -87,7 +86,6 @@ export const MacroFlagType = Object.freeze({
 
 /**
  * Definitions for all macro flags with metadata.
- *
  * @type {Map<string, MacroFlagDefinition>}
  */
 export const MacroFlagDefinitions = new Map([
@@ -137,14 +135,12 @@ export const MacroFlagDefinitions = new Map([
 
 /**
  * Set of all valid flag symbols for quick lookup.
- *
  * @type {Set<string>}
  */
 export const ValidFlagSymbols = new Set(Object.values(MacroFlagType));
 
 /**
  * Creates a default MacroFlags object with all flags set to false.
- *
  * @returns {MacroFlags}
  */
 export function createEmptyFlags() {
@@ -161,7 +157,6 @@ export function createEmptyFlags() {
 
 /**
  * Parses an array of flag symbols into a MacroFlags object.
- *
  * @param {string[]} flagSymbols - Array of flag symbol strings (e.g., ['!', '?']).
  * @returns {MacroFlags}
  */
@@ -199,7 +194,6 @@ export function parseFlags(flagSymbols) {
 
 /**
  * Checks if a MacroFlags object has any flags set.
- *
  * @param {MacroFlags} flags - The flags object to check.
  * @returns {boolean} True if at least one flag is set.
  */
@@ -209,7 +203,6 @@ export function hasAnyFlag(flags) {
 
 /**
  * Gets the flag definition for a given symbol.
- *
  * @param {string} symbol - The flag symbol (e.g., '!').
  * @returns {MacroFlagDefinition|undefined}
  */
@@ -219,7 +212,6 @@ export function getFlagDefinition(symbol) {
 
 /**
  * Checks if a given symbol is a valid macro flag.
- *
  * @param {string} symbol - The symbol to check.
  * @returns {boolean}
  */

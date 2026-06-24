@@ -1,5 +1,7 @@
 import { AutoCompleteOption } from '../autocomplete/AutoCompleteOption.js';
+// @ts-expect-error TS(6133): 'SlashCommand' is declared but its value is never ... Remove this comment to see the full error message
 import { SlashCommand } from './SlashCommand.js';
+// @ts-expect-error TS(6133): 'SlashCommandEnumValue' is declared but its value ... Remove this comment to see the full error message
 import { SlashCommandEnumValue } from './SlashCommandEnumValue.js';
 
 export class SlashCommandEnumAutoCompleteOption extends AutoCompleteOption {
@@ -29,6 +31,7 @@ export class SlashCommandEnumAutoCompleteOption extends AutoCompleteOption {
     }
 
 
+    // @ts-expect-error TS(4114): This member must have an 'override' modifier becau... Remove this comment to see the full error message
     renderItem() {
         let li;
         li = this.makeItem(this.name, this.typeIcon, true, [], [], null, this.enumValue.description);
@@ -38,6 +41,7 @@ export class SlashCommandEnumAutoCompleteOption extends AutoCompleteOption {
     }
 
 
+    // @ts-expect-error TS(4114): This member must have an 'override' modifier becau... Remove this comment to see the full error message
     renderDetails() {
         return this.cmd.renderHelpDetails();
     }

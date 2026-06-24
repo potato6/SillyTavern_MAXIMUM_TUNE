@@ -2,7 +2,6 @@
  * Validates the data structure of character cards.
  * Supported specs: V1, V2
  * Up to: 8083fb3
- *
  * @link https://github.com/malfoyslastname/character-card-spec-v2
  */
 export class TavernCardValidator {
@@ -18,7 +17,6 @@ export class TavernCardValidator {
 
     /**
      * Field that caused the validation to fail
-     *
      * @returns {null|string}
      */
     get lastValidationError() {
@@ -27,7 +25,6 @@ export class TavernCardValidator {
 
     /**
      * Validate against V1 or V2 spec.
-     *
      * @returns {number|boolean} - false when neither V1 nor V2 spec were matched. Specification version number otherwise.
      */
     validate() {
@@ -50,7 +47,6 @@ export class TavernCardValidator {
 
     /**
      * Validate against V1 specification
-     *
      * @returns {this is string[]}
      */
     validateV1() {
@@ -66,7 +62,6 @@ export class TavernCardValidator {
 
     /**
      * Validate against V2 specification
-     *
      * @returns {false|boolean|*}
      */
     validateV2() {

@@ -7,7 +7,6 @@
  * - Blocking and non-blocking modes
  * - Stoppable or static toasts
  * - Class-based handle system for fine-grained control
- *
  * @module action-loader
  */
 
@@ -62,6 +61,7 @@ function generateLoaderId() {
  */
 function hasBlockingLoaders() {
     for (const handle of activeHandles) {
+        // @ts-expect-error TS(2339): Property 'isBlocking' does not exist on type 'unkn... Remove this comment to see the full error message
         if (handle.isBlocking && handle.isActive) {
             return true;
         }
@@ -107,13 +107,13 @@ export class ActionLoaderHandle {
     /**
      * Creates a new ActionLoaderHandle.
      * @param {object} options - Configuration options
-     * @param {boolean} [options.blocking=true] - Whether to show blocking overlay
+     * @param {boolean} [options.blocking] - Whether to show blocking overlay
      * @param {ActionLoaderToastMode} [options.toastMode] - Toast display mode
      * @param {string|null} [options.slug] - Unique slug for the loader (to identify it easily via code or CSS)
-     * @param {string} [options.message='Generating...'] - Message to display in the toast
+     * @param {string} [options.message] - Message to display in the toast
      * @param {string} [options.title] - Title for the toast notification
-     * @param {string} [options.stopTooltip='Stop'] - Tooltip for the stop button
-     * @param {boolean} [options.predisposed=false] - Whether this handle is already disposed (for special use)
+     * @param {string} [options.stopTooltip] - Tooltip for the stop button
+     * @param {boolean} [options.predisposed] - Whether this handle is already disposed (for special use)
      * @param {HTMLElement|string|null} [options.overlayContent] - Custom content for the overlay (replaces default spinner)
      * @param {(() => void)|null} [options.onStop] - Custom stop handler
      * @param {(() => void)|null} [options.onHide] - Custom hide handler
@@ -172,9 +172,12 @@ export class ActionLoaderHandle {
         toastContent.className = 'action-loader-toast';
 
         if (this.#slug) {
+            // @ts-expect-error TS(4111): Property 'slug' comes from an index signature, so ... Remove this comment to see the full error message
             toastContent.dataset.slug = this.#slug;
         }
+        // @ts-expect-error TS(4111): Property 'loaderId' comes from an index signature,... Remove this comment to see the full error message
         toastContent.dataset.loaderId = this.#id;
+        // @ts-expect-error TS(4111): Property 'blocking' comes from an index signature,... Remove this comment to see the full error message
         toastContent.dataset.blocking = this.#blocking.toString();
 
         const messageSpan = document.createElement('span');
@@ -196,6 +199,7 @@ export class ActionLoaderHandle {
         }
 
         // Show toast with no timeout (sticky)
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         this.#toast = toastr.info($(toastContent), title, {
             timeOut: 0,
             extendedTimeOut: 0,
@@ -209,6 +213,7 @@ export class ActionLoaderHandle {
      */
     #clearToast() {
         if (this.#toast) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.clear(this.#toast, { force: true }); // Need to force as the toast might have focus/hover
             this.#toast = null;
         }
@@ -310,17 +315,14 @@ export class ActionLoaderHandle {
  * Provides a convenient interface for showing and managing loading indicators.
  *
  * Read the functions documentation for more details.
- *
  * @example
  * // Basic usage
  * const handle = loader.show({ message: 'Loading...' });
  * await someOperation();
  * handle.hide();
- *
  * @example
  * // Non-blocking background task
  * const handle = loader.show({ blocking: false, message: 'Processing...' });
- *
  * @example
  * // Hide all active loaders
  * loader.hide();
@@ -382,10 +384,8 @@ export const loader = {
  * When the last loader is hidden, the overlay is removed.
  *
  * With default arguments, will function as a generation loader / wrapper.
- *
- * @param {ActionLoaderOptions} [options={}] - Configuration options
+ * @param {ActionLoaderOptions} [options] - Configuration options
  * @returns {ActionLoaderHandle} Handle to control the loader
- *
  * @example
  * // Basic usage
  * const loader = showActionLoader({ message: 'Generating title...' });
@@ -395,7 +395,6 @@ export const loader = {
  * } finally {
  *     await loader.hide();
  * }
- *
  * @example
  * // With custom stop and hide handlers
  * const loader = showActionLoader({
@@ -404,14 +403,12 @@ export const loader = {
  *     onStop: () => myCustomCancelFunction(),
  *     onHide: () => console.log('Loader hidden'),
  * });
- *
  * @example
  * // Stacking multiple loaders
  * const loader1 = showActionLoader({ message: 'Task 1...' });
  * const loader2 = showActionLoader({ message: 'Task 2...' });
  * await loader1.hide(); // Overlay stays, loader2 still active
  * await loader2.hide(); // Now overlay hides
- *
  * @example
  * // Non-blocking loader (toast only, no overlay)
  * const loader = showActionLoader({
@@ -426,7 +423,7 @@ export function showActionLoader(options = {}) {
 
 /**
  * Hides a specific action loader by handle, or all active loaders if no handle provided.
- * @param {ActionLoaderHandle|null} [handle=null] - Specific handle to hide, or undefined to hide all
+ * @param {ActionLoaderHandle|null} [handle] - Specific handle to hide, or undefined to hide all
  * @returns {Promise<boolean>} Whether any loader was hidden
  */
 export async function hideActionLoader(handle = null) {
@@ -441,6 +438,7 @@ export async function hideActionLoader(handle = null) {
     // No handle provided - hide all active loaders
     const handles = getActiveLoaderHandles();
     for (const h of handles) {
+        // @ts-expect-error TS(2339): Property 'hide' does not exist on type 'unknown'.
         await h.hide();
     }
     return handles.length > 0;
@@ -461,6 +459,7 @@ export function getActiveLoaderHandles() {
  */
 export function getLoaderHandleById(id) {
     for (const handle of activeHandles) {
+        // @ts-expect-error TS(2339): Property 'id' does not exist on type 'unknown'.
         if (handle.id === id) {
             return handle;
         }
@@ -481,7 +480,6 @@ let preloaderYoinked = false;
 /**
  * Creates the default loader overlay element.
  * Always returns a fresh element instance.
- *
  * @returns {HTMLDivElement} A new loader overlay element
  */
 export function createDefaultLoaderOverlay() {
@@ -558,7 +556,9 @@ async function hideOverlay() {
     }
 
     return new Promise((resolve) => {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const loaderElement = $('#loader');
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const spinner = $('#load-spinner');
 
         if (!loaderElement.length) {
@@ -580,6 +580,9 @@ async function hideOverlay() {
             cleanup();
         }
 
+        /**
+         *
+         */
         function cleanup() {
             loaderElement.remove();
             // Yoink preloader entirely; it only exists to cover up unstyled content while loading JS
@@ -590,6 +593,7 @@ async function hideOverlay() {
                 .catch((err) => console.error('Error completing loaderPopup:', err))
                 .finally(() => {
                     loaderPopup = null;
+                    // @ts-expect-error TS(2794): Expected 1 arguments, but got 0. Did you forget to... Remove this comment to see the full error message
                     resolve();
                 });
         }

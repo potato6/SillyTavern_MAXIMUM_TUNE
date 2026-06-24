@@ -122,11 +122,11 @@ const BIAS_KEY = '#textgenerationwebui_api-settings';
 const MANCER_SERVER_KEY = 'mancer_server';
 const MANCER_SERVER_DEFAULT = 'https://neuro.mancer.tech';
 export let MANCER_SERVER = localStorage.getItem(MANCER_SERVER_KEY) ?? MANCER_SERVER_DEFAULT;
-export let TOGETHERAI_SERVER = 'https://api.together.xyz';
-export let INFERMATICAI_SERVER = 'https://api.totalgpt.ai';
-export let DREAMGEN_SERVER = 'https://dreamgen.com';
-export let OPENROUTER_SERVER = 'https://openrouter.ai/api';
-export let FEATHERLESS_SERVER = 'https://api.featherless.ai/v1';
+export const TOGETHERAI_SERVER = 'https://api.together.xyz';
+export const INFERMATICAI_SERVER = 'https://api.totalgpt.ai';
+export const DREAMGEN_SERVER = 'https://dreamgen.com';
+export const OPENROUTER_SERVER = 'https://openrouter.ai/api';
+export const FEATHERLESS_SERVER = 'https://api.featherless.ai/v1';
 
 export const SERVER_INPUTS = {
     [textgen_types.OOBA]: '#textgenerationwebui_api_url_text',
@@ -324,6 +324,9 @@ export const setting_names = [
 
 const DYNATEMP_BLOCK = document.getElementById('dynatemp_block_ooba');
 
+/**
+ *
+ */
 export function validateTextGenUrl() {
     const selector = SERVER_INPUTS[textgenerationwebui_settings.type];
 
@@ -331,11 +334,13 @@ export function validateTextGenUrl() {
         return;
     }
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const control = $(selector);
     const url = String(control.val()).trim();
     const formattedUrl = formatTextGenURL(url);
 
     if (!formattedUrl) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.error(t`Enter a valid API URL`, 'Text Completion API');
         return;
     }
@@ -368,6 +373,10 @@ export function getTextGenServer(type = null) {
     }
 }
 
+/**
+ *
+ * @param name
+ */
 async function selectPreset(name) {
     const preset = textgenerationwebui_presets[textgenerationwebui_preset_names.indexOf(name)];
 
@@ -386,6 +395,10 @@ async function selectPreset(name) {
     saveSettingsDebounced();
 }
 
+/**
+ *
+ * @param value
+ */
 export function formatTextGenURL(value) {
     try {
         const noFormatTypes = [MANCER, TOGETHERAI, INFERMATICAI, DREAMGEN, OPENROUTER];
@@ -401,10 +414,17 @@ export function formatTextGenURL(value) {
     return null;
 }
 
+/**
+ *
+ * @param presets
+ */
 function convertPresets(presets) {
     return Array.isArray(presets) ? presets.map((p) => JSON.parse(p)) : [];
 }
 
+/**
+ *
+ */
 function getTokenizerForTokenIds() {
     const bestMatchTokenizer = getTokenizerBestMatch('textgenerationwebui');
     if (bestMatchTokenizer === tokenizers.API_TEXTGENERATIONWEBUI) {
@@ -504,7 +524,9 @@ function getCustomTokenBans(settings = null) {
  * @param {string} title Label title
  */
 function toggleBannedStringsKillSwitch(isEnabled, title) {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#send_banned_tokens_textgenerationwebui').prop('checked', isEnabled);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#send_banned_tokens_label').find('.menu_button').toggleClass('toggleEnabled', isEnabled).prop('title', title);
     textgenerationwebui_settings.send_banned_tokens = isEnabled;
     saveSettingsDebounced();
@@ -533,6 +555,7 @@ function calculateLogitBias(settings = null) {
      */
     function addBias(bias, sequence) {
         if (sequence.length === 0) {
+            // @ts-expect-error TS(7030): Not all code paths return a value.
             return;
         }
 
@@ -549,6 +572,11 @@ function calculateLogitBias(settings = null) {
     return result;
 }
 
+/**
+ *
+ * @param data
+ * @param loadedSettings
+ */
 export async function loadTextGenSettings(data, loadedSettings) {
     await loadApiSelectedSamplers();
     textgenerationwebui_presets = convertPresets(data.textgenerationwebui_presets);
@@ -563,8 +591,10 @@ export async function loadTextGenSettings(data, loadedSettings) {
     }
 
     for (const [type, selector] of Object.entries(SERVER_INPUTS)) {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const control = $(selector);
         control.val(textgenerationwebui_settings.server_urls[type] ?? '').on('input', function () {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             textgenerationwebui_settings.server_urls[type] = String($(this).val()).trim();
             saveSettingsDebounced();
         });
@@ -578,20 +608,26 @@ export async function loadTextGenSettings(data, loadedSettings) {
         const option = document.createElement('option');
         option.value = name;
         option.innerText = name;
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#settings_preset_textgenerationwebui').append(option);
     }
 
     if (textgenerationwebui_settings.preset) {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#settings_preset_textgenerationwebui').val(textgenerationwebui_settings.preset);
     }
 
     for (const i of setting_names) {
         const value = textgenerationwebui_settings[i];
+        // @ts-expect-error TS(2554): Expected 3 arguments, but got 2.
         setSettingByName(i, value);
     }
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#textgen_type').val(textgenerationwebui_settings.type);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#openrouter_providers_text').val(textgenerationwebui_settings.openrouter_providers).trigger('change');
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#openrouter_quantizations_text').val(textgenerationwebui_settings.openrouter_quantizations).trigger('change');
     showSamplerControls(textgenerationwebui_settings.type);
     BIAS_CACHE.delete(BIAS_KEY);
@@ -613,6 +649,7 @@ export async function loadTextGenSettings(data, loadedSettings) {
  */
 function sortKoboldItemsByOrder(orderArray) {
     console.debug('Preset samplers order: ' + orderArray);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const $draggableItems = $('#koboldcpp_order');
 
     for (let i = 0; i < orderArray.length; i++) {
@@ -622,8 +659,13 @@ function sortKoboldItemsByOrder(orderArray) {
     }
 }
 
+/**
+ *
+ * @param orderArray
+ */
 function sortLlamacppItemsByOrder(orderArray) {
     console.debug('Preset samplers order: ', orderArray);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const $container = $('#llamacpp_samplers_sortable');
 
     orderArray.forEach((name) => {
@@ -632,8 +674,13 @@ function sortLlamacppItemsByOrder(orderArray) {
     });
 }
 
+/**
+ *
+ * @param orderArray
+ */
 function sortOobaItemsByOrder(orderArray) {
     console.debug('Preset samplers order: ', orderArray);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const $container = $('#sampler_priority_container');
 
     orderArray.forEach((name) => {
@@ -648,6 +695,7 @@ function sortOobaItemsByOrder(orderArray) {
  */
 function sortAphroditeItemsByOrder(orderArray) {
     console.debug('Preset samplers order: ', orderArray);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const $container = $('#sampler_priority_container_aphrodite');
 
     orderArray.forEach((name) => {
@@ -656,6 +704,9 @@ function sortAphroditeItemsByOrder(orderArray) {
     });
 }
 
+/**
+ *
+ */
 async function getStatusTextgen() {
     const url = '/api/backends/text-completions/status';
 
@@ -775,6 +826,7 @@ async function getStatusTextgen() {
                             }
                             if (old_value !== max_context) {
                                 console.log(`Auto-switched max context from ${old_value} to ${max_context}`);
+                                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                                 toastr.info(`${old_value} ⇒ ${max_context}`, 'Context Size Changed');
                             }
                         }
@@ -796,6 +848,7 @@ async function getStatusTextgen() {
 
         // We didn't get a 200 status code, but the endpoint has an explanation. Which means it DID connect, but I digress.
         if (online_status === 'no_connection' && data.response) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.error(data.response, t`API Error`, { timeOut: 5000, preventDuplicates: true });
         }
     } catch (err) {
@@ -810,8 +863,13 @@ async function getStatusTextgen() {
     return resultCheckStatus();
 }
 
+/**
+ *
+ */
 export function initTextGenSettings() {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#send_banned_tokens_textgenerationwebui').on('change', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const checked = !!$(this).prop('checked');
         toggleBannedStringsKillSwitch(checked,
             checked
@@ -819,11 +877,14 @@ export function initTextGenSettings() {
                 : t`Banned tokens/strings are NOT being sent in the request.`);
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#koboldcpp_order').sortable({
         delay: getSortableDelay(),
         stop: function () {
             const order = [];
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#koboldcpp_order').children().each(function () {
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 order.push($(this).data('id'));
             });
             textgenerationwebui_settings.sampler_order = order;
@@ -832,17 +893,21 @@ export function initTextGenSettings() {
         },
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#koboldcpp_default_order').on('click', function () {
         textgenerationwebui_settings.sampler_order = KOBOLDCPP_ORDER;
         sortKoboldItemsByOrder(textgenerationwebui_settings.sampler_order);
         saveSettingsDebounced();
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#llamacpp_samplers_sortable').sortable({
         delay: getSortableDelay(),
         stop: function () {
             const order = [];
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#llamacpp_samplers_sortable').children().each(function () {
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 order.push($(this).data('name'));
             });
             textgenerationwebui_settings.samplers = order;
@@ -851,6 +916,7 @@ export function initTextGenSettings() {
         },
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#llamacpp_samplers_default_order').on('click', function () {
         sortLlamacppItemsByOrder(LLAMACPP_DEFAULT_ORDER);
         textgenerationwebui_settings.samplers = LLAMACPP_DEFAULT_ORDER;
@@ -858,11 +924,14 @@ export function initTextGenSettings() {
         saveSettingsDebounced();
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#sampler_priority_container').sortable({
         delay: getSortableDelay(),
         stop: function () {
             const order = [];
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#sampler_priority_container').children().each(function () {
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 order.push($(this).data('name'));
             });
             textgenerationwebui_settings.sampler_priority = order;
@@ -871,11 +940,14 @@ export function initTextGenSettings() {
         },
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#sampler_priority_container_aphrodite').sortable({
         delay: getSortableDelay(),
         stop: function () {
             const order = [];
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#sampler_priority_container_aphrodite').children().each(function () {
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 order.push($(this).data('name'));
             });
             textgenerationwebui_settings.samplers_priorities = order;
@@ -884,7 +956,9 @@ export function initTextGenSettings() {
         },
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#tabby_json_schema').on('input', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const json_schema_string = String($(this).val());
 
         if (json_schema_string) {
@@ -900,6 +974,7 @@ export function initTextGenSettings() {
         saveSettingsDebounced();
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#textgenerationwebui_default_order').on('click', function () {
         sortOobaItemsByOrder(OOBA_DEFAULT_ORDER);
         textgenerationwebui_settings.sampler_priority = OOBA_DEFAULT_ORDER;
@@ -907,6 +982,7 @@ export function initTextGenSettings() {
         saveSettingsDebounced();
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#aphrodite_default_order').on('click', function () {
         sortAphroditeItemsByOrder(APHRODITE_DEFAULT_ORDER);
         textgenerationwebui_settings.samplers_priorities = APHRODITE_DEFAULT_ORDER;
@@ -914,26 +990,38 @@ export function initTextGenSettings() {
         saveSettingsDebounced();
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#textgen_type').on('change', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const type = String($(this).val());
         textgenerationwebui_settings.type = type;
 
         if ([VLLM, APHRODITE, INFERMATICAI].includes(textgenerationwebui_settings.type)) {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#mirostat_mode_textgenerationwebui').attr('step', 2); //Aphro disallows mode 1
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#do_sample_textgenerationwebui').prop('checked', true); //Aphro should always do sample; 'otherwise set temp to 0 to mimic no sample'
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#ban_eos_token_textgenerationwebui').prop('checked', false); //Aphro should not ban EOS, just ignore it; 'add token '2' to ban list do to this'
             //special handling for vLLM/Aphrodite topK -1 disable state
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#top_k_textgenerationwebui').attr('min', -1);
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             if ($('#top_k_textgenerationwebui').val() === '0' || textgenerationwebui_settings.top_k === 0) {
                 textgenerationwebui_settings.top_k = -1;
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $('#top_k_textgenerationwebui').val('-1').trigger('input');
             }
         } else {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#mirostat_mode_textgenerationwebui').attr('step', 1);
             //undo special vLLM/Aphrodite setup for topK
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#top_k_textgenerationwebui').attr('min', 0);
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             if ($('#top_k_textgenerationwebui').val() === '-1' || textgenerationwebui_settings.top_k === -1) {
                 textgenerationwebui_settings.top_k = 0;
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $('#top_k_textgenerationwebui').val('0').trigger('input');
             }
         }
@@ -942,21 +1030,26 @@ export function initTextGenSettings() {
         setOnlineStatus('no_connection');
         BIAS_CACHE.delete(BIAS_KEY);
 
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#main_api').trigger('change');
 
         if (!SERVER_INPUTS[type] || textgenerationwebui_settings.server_urls[type]) {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#api_button_textgenerationwebui').trigger('click');
         }
 
         saveSettingsDebounced();
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#settings_preset_textgenerationwebui').on('change', async function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const presetName = $(this).val();
         await selectPreset(presetName);
         await eventSource.emit(event_types.PRESET_CHANGED, { apiId: 'textgenerationwebui', name: presetName });
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#samplerResetButton').off('click').on('click', function () {
         const inputs = {
             'temp_textgenerationwebui': 1,
@@ -1009,6 +1102,7 @@ export function initTextGenSettings() {
         };
 
         for (const [id, value] of Object.entries(inputs)) {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const inputElement = $(`#${id}`);
             const valueToSet = typeof value === 'boolean' ? String(value) : value;
             if (inputElement.prop('type') === 'checkbox') {
@@ -1018,12 +1112,14 @@ export function initTextGenSettings() {
             } else {
                 inputElement.val(valueToSet).trigger('input');
                 if (power_user.enableZenSliders) {
-                    let masterElementID = inputElement.prop('id');
+                    const masterElementID = inputElement.prop('id');
                     console.log(masterElementID);
-                    let zenSlider = $(`#${masterElementID}_zenslider`).slider();
+                    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+                    const zenSlider = $(`#${masterElementID}_zenslider`).slider();
                     zenSlider.slider('option', 'value', value);
                     zenSlider.slider('option', 'slide')
                         .call(zenSlider, null, {
+                            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                             handle: $('.ui-slider-handle', zenSlider), value: value,
                         });
                 }
@@ -1032,25 +1128,36 @@ export function initTextGenSettings() {
     });
 
     for (const i of setting_names) {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(`#${i}_textgenerationwebui`).attr('x-setting-id', i);
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(document).on('input', `#${i}_textgenerationwebui`, function () {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const isCheckbox = $(this).attr('type') == 'checkbox';
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const isText = $(this).attr('type') == 'text' || $(this).is('textarea');
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const id = $(this).attr('x-setting-id');
 
             if (isCheckbox) {
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 const value = $(this).prop('checked');
                 textgenerationwebui_settings[id] = value;
             } else if (isText) {
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 const value = $(this).val();
                 textgenerationwebui_settings[id] = value;
             } else {
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 const value = Number($(this).val());
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $(`#${id}_counter_textgenerationwebui`).val(value);
                 textgenerationwebui_settings[id] = value;
                 //special handling for vLLM/Aphrodite using -1 as disabled instead of 0
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 if ($(this).attr('id') === 'top_k_textgenerationwebui' && [INFERMATICAI, APHRODITE, VLLM].includes(textgenerationwebui_settings.type) && value === 0) {
                     textgenerationwebui_settings[id] = -1;
+                    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                     $(this).val(-1);
                 }
             }
@@ -1058,9 +1165,12 @@ export function initTextGenSettings() {
         });
     }
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#textgen_logit_bias_new_entry').on('click', () => createNewLogitBiasEntry(textgenerationwebui_settings.logit_bias, BIAS_KEY));
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#openrouter_providers_text').on('change', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const selectedProviders = $(this).val();
 
         // Not a multiple select?
@@ -1074,11 +1184,14 @@ export function initTextGenSettings() {
         saveSettingsDebounced();
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#openrouter_allow_fallbacks_textgenerationwebui').on('input', function () {
         updateOpenRouterProvidersWarning('#openrouter_providers_text');
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#openrouter_quantizations_text').on('change', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const selectedQuantizations = $(this).val();
 
         // Not a multiple select?
@@ -1091,6 +1204,7 @@ export function initTextGenSettings() {
         saveSettingsDebounced();
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#api_button_textgenerationwebui').on('click', async function (e) {
         const keys = [
             { id: 'api_key_mancer', secret: SECRET_KEYS.MANCER },
@@ -1110,8 +1224,10 @@ export function initTextGenSettings() {
         ];
 
         for (const key of keys) {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const keyValue = String($(`#${key.id}`).val()).trim();
             if (keyValue.length) {
+                // @ts-expect-error TS(2554): Expected 3-4 arguments, but got 2.
                 await writeSecret(key.secret, keyValue);
             }
         }
@@ -1129,9 +1245,12 @@ export function initTextGenSettings() {
  * @returns void
  */
 function showSamplerControls(apiType = null) {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#textgenerationwebui_api-settings [data-tg-samplers], #textgenerationwebui_api [data-tg-samplers]').each(function (idx, elem) {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const typeSpecificControlled = $(elem).data('tg-type') !== undefined;
 
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         if (!typeSpecificControlled) $(this).show();
     });
 
@@ -1142,35 +1261,49 @@ function showSamplerControls(apiType = null) {
 
     if (!samplersActivatedManually?.length || !prioritizeManualSamplerSelect) return;
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#textgenerationwebui_api-settings [data-tg-samplers], #textgenerationwebui_api [data-tg-samplers]').each(function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const tgSamplers = $(this).attr('data-tg-samplers').split(',').map(x => x.trim()).filter(str => str !== '');
 
         for (const tgSampler of tgSamplers) {
             if (samplersActivatedManually.includes(tgSampler)) {
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $(this).show();
                 return;
             } else {
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $(this).hide();
             }
         }
     });
 }
 
+/**
+ *
+ * @param apiType
+ */
 function showTypeSpecificControls(apiType) {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('[data-tg-type]').each(function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const mode = String($(this).attr('data-tg-type-mode') ?? '').toLowerCase().trim();
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const tgTypes = $(this).attr('data-tg-type').split(',').map(x => x.trim());
 
         if (mode === 'except') {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(this)[tgTypes.includes(apiType) ? 'hide' : 'show']();
             return;
         }
 
         for (const tgType of tgTypes) {
             if (tgType === apiType || tgType == 'all') {
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $(this).show();
                 return;
             } else {
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $(this).hide();
             }
         }
@@ -1196,6 +1329,12 @@ function insertMissingArrayItems(source, target) {
     }
 }
 
+/**
+ *
+ * @param setting
+ * @param value
+ * @param trigger
+ */
 function setSettingByName(setting, value, trigger) {
     if ('extensions' === setting) {
         value = value || {};
@@ -1205,6 +1344,7 @@ function setSettingByName(setting, value, trigger) {
 
     if ('json_schema' === setting) {
         textgenerationwebui_settings.json_schema = value ?? null;
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#tabby_json_schema').val(value ? JSON.stringify(textgenerationwebui_settings.json_schema, null, 2) : '');
         return;
     }
@@ -1249,32 +1389,42 @@ function setSettingByName(setting, value, trigger) {
         return;
     }
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const isCheckbox = $(`#${setting}_textgenerationwebui`).attr('type') == 'checkbox';
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const isText = $(`#${setting}_textgenerationwebui`).attr('type') == 'text' || $(`#${setting}_textgenerationwebui`).is('textarea');
     if (isCheckbox) {
         const val = Boolean(value);
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(`#${setting}_textgenerationwebui`).prop('checked', val);
 
         if ('send_banned_tokens' === setting) {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(`#${setting}_textgenerationwebui`).trigger('change');
         }
     } else if (isText) {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(`#${setting}_textgenerationwebui`).val(value);
     } else {
         const val = parseFloat(value);
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(`#${setting}_textgenerationwebui`).val(val);
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(`#${setting}_counter_textgenerationwebui`).val(val);
         if (power_user.enableZenSliders) {
-            let zenSlider = $(`#${setting}_textgenerationwebui_zenslider`).slider();
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            const zenSlider = $(`#${setting}_textgenerationwebui_zenslider`).slider();
             zenSlider.slider('option', 'value', val);
             zenSlider.slider('option', 'slide')
                 .call(zenSlider, null, {
+                    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                     handle: $('.ui-slider-handle', zenSlider), value: val,
                 });
         }
     }
 
     if (trigger) {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(`#${setting}_textgenerationwebui`).trigger('input');
     }
 }
@@ -1321,7 +1471,7 @@ export async function generateTextGenWithStreaming(generate_data, signal) {
 
             tryParseStreamingError(response, value.data);
 
-            let data = JSON.parse(value.data);
+            const data = JSON.parse(value.data);
 
             if (data?.choices?.[0]?.index > 0) {
                 const swipeIndex = data.choices[0].index - 1;
@@ -1347,7 +1497,7 @@ export async function generateTextGenWithStreaming(generate_data, signal) {
  * for a single token into a TokenLogprobs object used by the Token
  * Probabilities feature.
  * @param {string} token - the text of the token that the logprobs are for
- * @param {Object} logprobs - logprobs object returned from the API
+ * @param {object} logprobs - logprobs object returned from the API
  * @returns {import('./logprobs.js').TokenLogprobs | null} - converted logprobs
  */
 export function parseTextgenLogprobs(token, logprobs) {
@@ -1402,6 +1552,10 @@ export function parseTextgenLogprobs(token, logprobs) {
     }
 }
 
+/**
+ *
+ * @param data
+ */
 export function parseTabbyLogprobs(data) {
     const text = data?.choices?.[0]?.text;
     const offsets = data?.choices?.[0]?.logprobs?.text_offset;
@@ -1427,6 +1581,7 @@ export function parseTabbyLogprobs(data) {
  * @returns {void} Nothing.
  * @throws {Error} If the response contains an error message, throws Error with the message.
  */
+// @ts-expect-error TS(6133): 'response' is declared but its value is never read... Remove this comment to see the full error message
 function tryParseStreamingError(response, decoded) {
     let data = {};
 
@@ -1436,9 +1591,11 @@ function tryParseStreamingError(response, decoded) {
         // No JSON. Do nothing.
     }
 
+    // @ts-expect-error TS(2339): Property 'error' does not exist on type '{}'.
     const message = data?.error?.message || data?.error || data?.message || data?.detail;
 
     if (message) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.error(message, 'Text Completion API');
         throw new Error(message);
     }
@@ -1491,6 +1648,7 @@ export function getTextGenModel(settings = null) {
             return settings.aphrodite_model;
         case OLLAMA:
             if (!settings.ollama_model) {
+                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                 toastr.error(t`No Ollama model selected.`, 'Text Completion API');
                 throw new Error('No Ollama model selected');
             }
@@ -1516,6 +1674,9 @@ export function getTextGenModel(settings = null) {
     return undefined;
 }
 
+/**
+ *
+ */
 export function isJsonSchemaSupported() {
     return [TABBY, LLAMACPP].includes(textgenerationwebui_settings.type) && main_api === 'textgenerationwebui';
 }
@@ -1527,6 +1688,7 @@ export function isJsonSchemaSupported() {
  */
 function isDynamicTemperatureSupported(settings = null) {
     settings = settings ?? textgenerationwebui_settings;
+    // @ts-expect-error TS(4111): Property 'tgType' comes from an index signature, s... Remove this comment to see the full error message
     return settings.dynatemp && DYNATEMP_BLOCK?.dataset?.tgType?.includes(settings.type);
 }
 
@@ -1750,14 +1912,20 @@ export function createTextGenGenerationData(settings, model, finalPrompt = null,
     };
 
     if (settings.type === OPENROUTER) {
+        // @ts-expect-error TS(2339): Property 'provider' does not exist on type '{ prom... Remove this comment to see the full error message
         params.provider = settings.openrouter_providers;
+        // @ts-expect-error TS(2339): Property 'quantizations' does not exist on type '{... Remove this comment to see the full error message
         params.quantizations = settings.openrouter_quantizations;
+        // @ts-expect-error TS(2339): Property 'allow_fallbacks' does not exist on type ... Remove this comment to see the full error message
         params.allow_fallbacks = settings.openrouter_allow_fallbacks;
     }
 
     if (settings.type === KOBOLDCPP) {
+        // @ts-expect-error TS(2339): Property 'grammar' does not exist on type '{ promp... Remove this comment to see the full error message
         params.grammar = settings.grammar_string || undefined;
+        // @ts-expect-error TS(2339): Property 'grammar_retain_state' does not exist on ... Remove this comment to see the full error message
         params.grammar_retain_state = (settings.grammar_string && !!isContinue) ? true : undefined;
+        // @ts-expect-error TS(2339): Property 'trim_stop' does not exist on type '{ pro... Remove this comment to see the full error message
         params.trim_stop = true;
         params.dry_sequence_breakers = params.parseSequenceBreakers();
     }
@@ -1769,11 +1937,15 @@ export function createTextGenGenerationData(settings, model, finalPrompt = null,
     }
 
     if (settings.type === MANCER) {
+        // @ts-expect-error TS(2339): Property 'n' does not exist on type '{ prompt: any... Remove this comment to see the full error message
         params.n = canMultiSwipe ? settings.n : 1;
         params.epsilon_cutoff /= 1000;
         params.eta_cutoff /= 1000;
+        // @ts-expect-error TS(2551): Property 'dynatemp_mode' does not exist on type '{... Remove this comment to see the full error message
         params.dynatemp_mode = params.dynamic_temperature ? 1 : 0;
+        // @ts-expect-error TS(2339): Property 'dynatemp_min' does not exist on type '{ ... Remove this comment to see the full error message
         params.dynatemp_min = params.dynatemp_low;
+        // @ts-expect-error TS(2339): Property 'dynatemp_max' does not exist on type '{ ... Remove this comment to see the full error message
         params.dynatemp_max = params.dynatemp_high;
         delete params.dynatemp_low;
         delete params.dynatemp_high;
@@ -1781,6 +1953,7 @@ export function createTextGenGenerationData(settings, model, finalPrompt = null,
     }
 
     if (settings.type === TABBY || settings.type === LLAMACPP) {
+        // @ts-expect-error TS(2339): Property 'n' does not exist on type '{ prompt: any... Remove this comment to see the full error message
         params.n = canMultiSwipe ? settings.n : 1;
     }
 
@@ -1803,12 +1976,15 @@ export function createTextGenGenerationData(settings, model, finalPrompt = null,
     if (Array.isArray(settings.logit_bias) && settings.logit_bias.length) {
         const logitBias = BIAS_CACHE.get(BIAS_KEY) || calculateLogitBias(settings);
         BIAS_CACHE.set(BIAS_KEY, logitBias);
+        // @ts-expect-error TS(2339): Property 'logit_bias' does not exist on type '{ pr... Remove this comment to see the full error message
         params.logit_bias = logitBias;
     }
 
     if (settings.type === LLAMACPP || settings.type === OLLAMA) {
         // Convert bias and token bans to array of arrays
+        // @ts-expect-error TS(2339): Property 'logit_bias' does not exist on type '{ pr... Remove this comment to see the full error message
         const logitBiasArray = (params.logit_bias && typeof params.logit_bias === 'object' && Object.keys(params.logit_bias).length > 0)
+            // @ts-expect-error TS(2339): Property 'logit_bias' does not exist on type '{ pr... Remove this comment to see the full error message
             ? Object.entries(params.logit_bias).map(([key, value]) => [Number(key), value])
             : [];
         const tokenBans = toIntArray(banned_tokens);
@@ -1830,17 +2006,31 @@ export function createTextGenGenerationData(settings, model, finalPrompt = null,
     // Grammar conflicts with with json_schema
     if ([LLAMACPP, APHRODITE].includes(settings.type)) {
         if (jsonSchema) {
+            // @ts-expect-error TS(2339): Property 'grammar_string' does not exist on type '... Remove this comment to see the full error message
             delete params.grammar_string;
+            // @ts-expect-error TS(2339): Property 'grammar' does not exist on type '{ promp... Remove this comment to see the full error message
             delete params.grammar;
+            // @ts-expect-error TS(2339): Property 'guided_grammar' does not exist on type '... Remove this comment to see the full error message
             delete params.guided_grammar;
         } else {
+            // @ts-expect-error TS(2339): Property 'json_schema' does not exist on type '{ p... Remove this comment to see the full error message
             delete params.json_schema;
+            // @ts-expect-error TS(2339): Property 'guided_json' does not exist on type '{ p... Remove this comment to see the full error message
             delete params.guided_json;
         }
     }
     return params;
 }
 
+/**
+ *
+ * @param finalPrompt
+ * @param maxTokens
+ * @param isImpersonate
+ * @param isContinue
+ * @param cfgValues
+ * @param type
+ */
 export async function getTextGenGenerationData(finalPrompt, maxTokens, isImpersonate, isContinue, cfgValues, type) {
     const model = getTextGenModel(textgenerationwebui_settings);
     const params = createTextGenGenerationData(textgenerationwebui_settings, model, finalPrompt, maxTokens, isImpersonate, isContinue, cfgValues, type);

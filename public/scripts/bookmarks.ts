@@ -76,6 +76,7 @@ async function getExistingChatNames() {
 
     if (response.ok) {
         const data = await response.json();
+        // @ts-expect-error TS(2339): Property 'file_name' does not exist on type 'unkno... Remove this comment to see the full error message
         const chats = Object.values(data).map(x => x.file_name.replace('.jsonl', ''));
         return [...chats];
     }
@@ -83,9 +84,20 @@ async function getExistingChatNames() {
     return [];
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.isReplace
+ * @param root0.forceName
+ */
 async function getBookmarkName({ isReplace = false, forceName = null } = {}) {
     const mainChatName = (getCurrentChatDetails()).sessionName;
 
+    /**
+     *
+     * @param name
+     * @param i
+     */
     function buildCheckpointName(name, i) {
         // Strip off existing suffixes, then build new name
         let cleanName = name.replace(new RegExp(` - ${bookmarkNameToken}\\d+$`), '');
@@ -97,7 +109,7 @@ async function getBookmarkName({ isReplace = false, forceName = null } = {}) {
     const suggestedName = getUniqueName(mainChatName, (x) => existingChats.includes(x), { nameBuilder: buildCheckpointName });
 
     const body = await renderTemplateAsync('createCheckpoint', { isReplace: isReplace, suggestedName: suggestedName });
-    let name = forceName ?? await Popup.show.input('Create Checkpoint', body, suggestedName);
+    let name = forceName ?? (await Popup.show.input('Create Checkpoint', body, suggestedName));
     // Special handling for confirmed empty input (=> auto-generate name)
     if (name === '') {
         name = suggestedName;
@@ -109,52 +121,78 @@ async function getBookmarkName({ isReplace = false, forceName = null } = {}) {
     return name;
 }
 
+/**
+ *
+ */
 function getMainChatName() {
     if (chat_metadata) {
+        // @ts-expect-error TS(2339): Property 'main_chat' does not exist on type '{}'.
         if (chat_metadata.main_chat) {
+            // @ts-expect-error TS(2339): Property 'main_chat' does not exist on type '{}'.
             return chat_metadata.main_chat;
         } else if (selected_group) {
             // groups didn't support bookmarks before chat metadata was introduced
             return null;
         } else if (characters[this_chid].chat && characters[this_chid].chat.includes(bookmarkNameToken)) {
             const tokenIndex = characters[this_chid].chat.lastIndexOf(bookmarkNameToken);
+            // @ts-expect-error TS(2339): Property 'main_chat' does not exist on type '{}'.
             chat_metadata.main_chat = characters[this_chid].chat.substring(0, tokenIndex).trim();
+            // @ts-expect-error TS(2339): Property 'main_chat' does not exist on type '{}'.
             return chat_metadata.main_chat;
         }
     }
     return null;
 }
 
+/**
+ *
+ */
 export function showBookmarksButtons() {
     try {
         if (selected_group) {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#option_convert_to_group').hide();
         } else {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#option_convert_to_group').show();
         }
 
+        // @ts-expect-error TS(2339): Property 'main_chat' does not exist on type '{}'.
         if (chat_metadata.main_chat) {
             // In bookmark chat
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#option_back_to_main').show();
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#option_new_bookmark').show();
         } else if (!selected_group && !characters[this_chid].chat) {
             // No chat recorded on character
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#option_back_to_main').hide();
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#option_new_bookmark').hide();
         } else {
             // In main chat
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#option_back_to_main').hide();
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#option_new_bookmark').show();
         }
     } catch {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#option_back_to_main').hide();
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#option_new_bookmark').hide();
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#option_convert_to_group').hide();
     }
 }
 
+/**
+ *
+ */
 async function saveBookmarkMenu() {
     if (!chat.length) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.warning('The chat is empty.', 'Checkpoint creation failed');
         return;
     }
@@ -165,7 +203,7 @@ async function saveBookmarkMenu() {
 /**
  * Builds the branch chat snapshot, optionally selecting a specific swipe for the target message.
  * @param {number} mesId
- * @param {{swipeId?: number|null}} [options={}]
+ * @param {{swipeId?: number|null}} [options]
  * @returns {ChatMessage[]|null}
  */
 function getBranchChatSnapshot(mesId, { swipeId = null } = {}) {
@@ -183,13 +221,21 @@ function getBranchChatSnapshot(mesId, { swipeId = null } = {}) {
 }
 
 // Export is used by Timelines extension. Do not remove.
+/**
+ *
+ * @param mesId
+ * @param root0
+ * @param root0.swipeId
+ */
 export async function createBranch(mesId, { swipeId = null } = {}) {
     if (!chat.length) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.warning('The chat is empty.', 'Branch creation failed');
         return;
     }
 
     if (mesId < 0 || mesId >= chat.length) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.warning('Invalid message ID.', 'Branch creation failed');
         return;
     }
@@ -200,10 +246,16 @@ export async function createBranch(mesId, { swipeId = null } = {}) {
     const selectedSwipeId = swipeId === null ? null : Number(swipeId);
 
     if (selectedSwipeId !== null && (!Number.isInteger(selectedSwipeId) || selectedSwipeId < 0 || selectedSwipeId >= (lastMes?.swipes?.length ?? 0))) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.warning('Invalid swipe ID.', 'Branch creation failed');
         return;
     }
 
+    /**
+     *
+     * @param name
+     * @param i
+     */
     function buildBranchName(name, i) {
         // Strip off existing suffixes, then build new name
         let cleanName = name.replace(/ - Branch #\d+$/, '');
@@ -215,12 +267,14 @@ export async function createBranch(mesId, { swipeId = null } = {}) {
     const name = getUniqueName(mainChatName, (x) => existingChats.includes(x), { nameBuilder: buildBranchName });
     if (!name) {
         console.error('Could not generate a unique branch name.');
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.error('Could not generate a unique branch name.', 'Branch creation failed');
         return;
     }
 
     const branchChatSnapshot = getBranchChatSnapshot(mesId, { swipeId: selectedSwipeId });
     if (!branchChatSnapshot) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.warning('Could not prepare the selected swipe for branching.', 'Branch creation failed');
         return;
     }
@@ -244,22 +298,24 @@ export async function createBranch(mesId, { swipeId = null } = {}) {
 
 /**
  * Creates a new bookmark for a message.
- *
  * @param {number} mesId - The ID of the message.
- * @param {Object} [options={}] - Optional parameters.
- * @param {string?} [options.forceName=null] - The name to force for the bookmark.
+ * @param {object} [options] - Optional parameters.
+ * @param {string?} [options.forceName] - The name to force for the bookmark.
  * @returns {Promise<string?>} - A promise that resolves to the bookmark name when the bookmark is created.
  */
 export async function createNewBookmark(mesId, { forceName = null } = {}) {
     if (this_chid === undefined && !selected_group) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.info('No character selected.', 'Create Checkpoint');
         return null;
     }
     if (!chat.length) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.warning('The chat is empty.', 'Create Checkpoint');
         return null;
     }
     if (!chat[mesId]) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.warning('Invalid message ID.', 'Create Checkpoint');
         return null;
     }
@@ -272,7 +328,7 @@ export async function createNewBookmark(mesId, { forceName = null } = {}) {
 
     const isReplace = lastMes.extra.bookmark_link;
 
-    let name = await getBookmarkName({ isReplace: isReplace, forceName: forceName });
+    const name = await getBookmarkName({ isReplace: isReplace, forceName: forceName });
     if (!name) {
         return null;
     }
@@ -289,10 +345,12 @@ export async function createNewBookmark(mesId, { forceName = null } = {}) {
 
     lastMes.extra.bookmark_link = name;
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const mes = $(`.mes[mesid="${mesId}"]`);
     updateBookmarkDisplay(mes, name);
 
     await saveChatConditional();
+    // @ts-expect-error TS(2304): Cannot find name 'toastr'.
     toastr.success('Click the flag icon next to the message to open the checkpoint chat.', 'Create Checkpoint', { timeOut: 10000 });
     return name;
 }
@@ -301,7 +359,7 @@ export async function createNewBookmark(mesId, { forceName = null } = {}) {
 /**
  * Updates the display of the bookmark on a chat message.
  * @param {JQuery<HTMLElement>} mes - The message element
- * @param {string?} [newBookmarkLink=null] - The new bookmark link (optional)
+ * @param {string?} [newBookmarkLink] - The new bookmark link (optional)
  */
 export function updateBookmarkDisplay(mes, newBookmarkLink = null) {
     newBookmarkLink && mes.attr('bookmark_link', newBookmarkLink);
@@ -309,6 +367,9 @@ export function updateBookmarkDisplay(mes, newBookmarkLink = null) {
     bookmarkFlag.attr('title', `Checkpoint\n${mes.attr('bookmark_link')}\n\n${bookmarkFlag.data('tooltip')}`);
 }
 
+/**
+ *
+ */
 async function backToMainChat() {
     const mainChatName = getMainChatName();
     const allChats = await getExistingChatNames();
@@ -325,6 +386,9 @@ async function backToMainChat() {
     return null;
 }
 
+/**
+ *
+ */
 export async function convertSoloToGroupChat() {
     if (selected_group) {
         console.log('Already in group. No need for conversion');
@@ -352,6 +416,7 @@ export async function convertSoloToGroupChat() {
     const favChecked = character.fav || character.fav == 'true';
     /** @type {ChatMetadata} */
     const metadata = Object.assign({}, chat_metadata);
+    // @ts-expect-error TS(2339): Property 'main_chat' does not exist on type '{}'.
     delete metadata.main_chat;
     /** @type {ChatHeader} */
     const chatHeader = {
@@ -429,6 +494,7 @@ export async function convertSoloToGroupChat() {
 
     if (!createChatResponse.ok) {
         console.error('Group chat creation unsuccessful');
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.error('Group chat creation unsuccessful');
         return;
     }
@@ -437,17 +503,19 @@ export async function convertSoloToGroupChat() {
     setActiveGroup(group.id);
     await openGroupById(group.id);
 
+    // @ts-expect-error TS(2304): Cannot find name 'toastr'.
     toastr.success(t`The chat has been successfully converted!`);
 }
 
 /**
  * Creates a new branch from the message with the given ID
  * @param {number} mesId Message ID
- * @param {{swipeId?: number|null}} [options={}] Branch options
+ * @param {{swipeId?: number|null}} [options] Branch options
  * @returns {Promise<string?>} Branch file name
  */
 export async function branchChat(mesId, { swipeId = null } = {}) {
     if (this_chid === undefined && !selected_group) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.info('No character selected.', 'Create Branch');
         return null;
     }
@@ -468,20 +536,24 @@ export async function branchChat(mesId, { swipeId = null } = {}) {
     return fileName;
 }
 
+/**
+ *
+ */
 function registerBookmarksSlashCommands() {
     /**
      * Validates a message ID. (Is a number, exists as a message)
-     *
      * @param {number} mesId - The message ID to validate.
      * @param {string} context - The context of the slash command. Will be used as the title of any toasts.
      * @returns {boolean} - Returns true if the message ID is valid, otherwise false.
      */
     function validateMessageId(mesId, context) {
         if (isNaN(mesId)) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.warning('Invalid message ID was provided', context);
             return false;
         }
         if (!chat[mesId]) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.warning(`Message for id ${mesId} not found`, context);
             return false;
         }
@@ -525,6 +597,7 @@ function registerBookmarksSlashCommands() {
             if (!validateMessageId(mesId, 'Create Checkpoint')) return '';
 
             if (typeof text !== 'string') {
+                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                 toastr.warning('Checkpoint name must be a string or empty', 'Create Checkpoint');
                 return '';
             }
@@ -579,6 +652,7 @@ function registerBookmarksSlashCommands() {
 
             const checkPointName = chat[mesId].extra?.bookmark_link;
             if (!checkPointName) {
+                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                 toastr.warning('No checkpoint is linked to the selected message', 'Open Checkpoint');
                 return '';
             }
@@ -650,7 +724,10 @@ function registerBookmarksSlashCommands() {
     SlashCommandParser.addCommandObject(SlashCommand.fromProps({
         name: 'checkpoint-list',
         returns: 'JSON array of all existing checkpoints in this chat, as an array',
-        /** @param {{links?: string}} args @returns {Promise<string>} */
+        /**
+         * @param {{links?: string}} args @returns {Promise<string>}
+         * @param _
+         */
         callback: async (args, _) => {
             const result = Object.entries(chat)
                 .filter(([_, message]) => message.extra?.bookmark_link)
@@ -677,13 +754,21 @@ function registerBookmarksSlashCommands() {
     }));
 }
 
+/**
+ *
+ */
 export function initBookmarks() {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#option_new_bookmark').on('click', saveBookmarkMenu);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#option_back_to_main').on('click', backToMainChat);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#option_convert_to_group').on('click', convertSoloToGroupChat);
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.select_chat_block, .mes_bookmark', async function (e) {
         // If shift is held down, we are not following the bookmark, but creating a new one
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const mes = $(this).closest('.mes');
         if (e.shiftKey && mes.length) {
             const selectedMesId = mes.attr('mesid');
@@ -691,8 +776,11 @@ export function initBookmarks() {
             return;
         }
 
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const fileName = $(this).hasClass('mes_bookmark')
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             ? $(this).closest('.mes').attr('bookmark_link')
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             : $(this).attr('file_name');
 
         if (!fileName) {
@@ -716,17 +804,22 @@ export function initBookmarks() {
             await loaderHandle.hide();
         }
 
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#shadow_select_chat_popup').css('display', 'none');
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.mes_create_bookmark', async function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const mesId = $(this).closest('.mes').attr('mesid');
         if (mesId !== undefined) {
             await createNewBookmark(Number(mesId));
         }
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.mes_create_branch', async function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const mesId = $(this).closest('.mes').attr('mesid');
         if (mesId !== undefined) {
             await branchChat(Number(mesId));

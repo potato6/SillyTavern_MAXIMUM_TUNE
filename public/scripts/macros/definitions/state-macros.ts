@@ -1,10 +1,14 @@
 import { MacroRegistry, MacroCategory } from '../engine/MacroRegistry.js';
 import { eventSource, event_types } from '../../events.js';
+// @ts-expect-error TS(2792): Cannot find module '/scripts/extensions.js'. Did y... Remove this comment to see the full error message
 import { findExtension } from '/scripts/extensions.js';
 
 let lastGenerationTypeValue = '';
 let lastGenerationTypeTrackingInitialized = false;
 
+/**
+ *
+ */
 function ensureLastGenerationTypeTracking() {
     if (lastGenerationTypeTrackingInitialized) {
         return;

@@ -32,8 +32,8 @@ export class SlashCommandBrowser {
                                 if (query.slice(-1) === '"' && !/(?:^|\s+)"/.test(query)) {
                                     query = `"${query}`;
                                 }
-                                let fuzzyList = [];
-                                let quotedList = [];
+                                const fuzzyList = [];
+                                const quotedList = [];
                                 while (query.length > 0) {
                                     const match = queryRegex.exec(query);
                                     if (!match) break;

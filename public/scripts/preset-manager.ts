@@ -99,10 +99,13 @@ export function getPresetManager(apiId = '') {
  * Registers preset managers for all select elements with data-preset-manager-for attribute.
  */
 function registerPresetManagers() {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('select[data-preset-manager-for]').each((_, e) => {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const forData = $(e).data('preset-manager-for');
         for (const apiId of forData.split(',')) {
             console.debug(`Registering preset manager for API: ${apiId}`);
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             presetManagers[apiId] = new PresetManager($(e), apiId);
         }
     });
@@ -198,13 +201,18 @@ class PresetManager {
             setData: (data) => {
                 power_user.user_prompt_bias = data.value ?? '';
                 power_user.show_user_prompt_bias = data.show ?? false;
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $('#start_reply_with').val(power_user.user_prompt_bias);
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $('#chat-show-reply-prefix-checkbox').prop('checked', power_user.show_user_prompt_bias);
                 return saveSettingsDebounced();
             },
             isValid: (data) => PresetManager.isPossiblyStartReplyWithData(data),
         },
     };
+
+    apiId: any;
+    select: any;
 
     static isPossiblyInstructData(data) {
         const instructProps = ['name', 'input_sequence', 'output_sequence'];
@@ -243,6 +251,7 @@ class PresetManager {
      */
     static async performMasterImport(data, fileName) {
         if (!data || typeof data !== 'object') {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.error(t`Invalid data provided for master import`);
             return;
         }
@@ -250,30 +259,35 @@ class PresetManager {
         // Check for legacy file imports
         // 1. Instruct Template
         if (this.isPossiblyInstructData(data)) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.info(t`Importing instruct template...`, t`Instruct template detected`);
             return await getPresetManager('instruct').savePreset(data.name, data);
         }
 
         // 2. Context Template
         if (this.isPossiblyContextData(data)) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.info(t`Importing as context template...`, t`Context template detected`);
             return await getPresetManager('context').savePreset(data.name, data);
         }
 
         // 3. System Prompt
         if (this.isPossiblySystemPromptData(data)) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.info(t`Importing as system prompt...`, t`System prompt detected`);
             return await getPresetManager('sysprompt').savePreset(data.name, data);
         }
 
         // 4. Text Completion settings
         if (this.isPossiblyTextCompletionData(data)) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.info(t`Importing as settings preset...`, t`Text Completion settings detected`);
             return await getPresetManager('textgenerationwebui').savePreset(fileName, data);
         }
 
         // 5. Reasoning Template
         if (this.isPossiblyReasoningData(data)) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.info(t`Importing as reasoning template...`, t`Reasoning template detected`);
             return await getPresetManager('reasoning').savePreset(data.name, data);
         }
@@ -286,6 +300,7 @@ class PresetManager {
         }
 
         if (validSections.length === 0) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.error(t`No valid sections found in imported data`);
             return;
         }
@@ -295,6 +310,7 @@ class PresetManager {
             return acc;
         }, {});
 
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const html = $(await renderTemplateAsync('masterImport', { sections: sectionNames }));
         const popup = new Popup(html, POPUP_TYPE.CONFIRM, '', {
             okButton: t`Import`,
@@ -312,6 +328,7 @@ class PresetManager {
         const confirmedSections = html.find('input:checked').map((_, el) => el instanceof HTMLInputElement && el.value).get();
 
         if (confirmedSections.length === 0) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.info(t`No sections selected for import`);
             return;
         }
@@ -325,6 +342,7 @@ class PresetManager {
             }
         }
 
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.success(t`Imported ${importedSections.length} settings: ${importedSections.join(', ')}`);
     }
 
@@ -337,6 +355,7 @@ class PresetManager {
             acc[key] = { key: key, name: section.name, checked: !['preset', 'srw'].includes(key) };
             return acc;
         }, {});
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const html = $(await renderTemplateAsync('masterExport', { sections: sectionNames }));
 
         const popup = new Popup(html, POPUP_TYPE.CONFIRM, '', {
@@ -348,6 +367,7 @@ class PresetManager {
 
         // Export cancelled
         if (result !== POPUP_RESULT.AFFIRMATIVE) {
+            // @ts-expect-error TS(7030): Not all code paths return a value.
             return;
         }
 
@@ -355,7 +375,9 @@ class PresetManager {
         const data = {};
 
         if (confirmedSections.length === 0) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.info(t`No sections selected for export`);
+            // @ts-expect-error TS(7030): Not all code paths return a value.
             return;
         }
 
@@ -374,6 +396,7 @@ class PresetManager {
      * @returns {string[]} List of preset names
      */
     getAllPresets() {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         return $(this.select).find('option').map((_, el) => el.text).toArray();
     }
 
@@ -383,7 +406,9 @@ class PresetManager {
      * @returns {any} Preset value
      */
     findPreset(name) {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         return $(this.select).find('option').filter(function () {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             return $(this).text() === name;
         }).val();
     }
@@ -393,6 +418,7 @@ class PresetManager {
      * @returns {any} Selected preset value
      */
     getSelectedPreset() {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         return $(this.select).find('option:selected').val();
     }
 
@@ -401,6 +427,7 @@ class PresetManager {
      * @returns {string} Selected preset name
      */
     getSelectedPresetName() {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         return $(this.select).find('option:selected').text();
     }
 
@@ -409,23 +436,29 @@ class PresetManager {
      * @param {string} value Preset option value
      */
     selectPreset(value) {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const option = $(this.select).filter(function () {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             return $(this).val() === value;
         });
         option.prop('selected', true);
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(this.select).val(value).trigger('change');
     }
 
     /**
      * Updates the preset select element with the current API presets.
      * @param {object} [options] Options for saving the preset
-     * @param {boolean} [options.skipUpdate=false] If true, skips updating the preset list after saving.
+     * @param {boolean} [options.skipUpdate] If true, skips updating the preset list after saving.
+     * @param option
      */
     async updatePreset(option = { skipUpdate: false }) {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const selected = $(this.select).find('option:selected');
         console.log(selected);
 
         if (selected.val() == 'gui') {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.info(t`Cannot update GUI preset`);
             return;
         }
@@ -434,6 +467,7 @@ class PresetManager {
         await this.savePreset(name, null, option);
 
         const successToast = !this.isAdvancedFormatting() ? t`Preset updated` : t`Template updated`;
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.success(successToast);
     }
 
@@ -450,9 +484,11 @@ class PresetManager {
             return;
         }
 
+        // @ts-expect-error TS(2554): Expected 2-3 arguments, but got 1.
         await this.savePreset(name);
 
         const successToast = !this.isAdvancedFormatting() ? t`Preset saved` : t`Template saved`;
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.success(successToast);
     }
 
@@ -461,7 +497,7 @@ class PresetManager {
      * @param {string} name Name of the preset to save
      * @param {object} [settings] Settings to save as the preset. If not provided, uses the current preset settings.
      * @param {object} [options] Options for saving the preset
-     * @param {boolean} [options.skipUpdate=false] If true, skips updating the preset list after saving.
+     * @param {boolean} [options.skipUpdate] If true, skips updating the preset list after saving.
      */
     async savePreset(name, settings, { skipUpdate = false } = {}) {
         if (this.apiId === 'instruct' && settings) {
@@ -481,6 +517,7 @@ class PresetManager {
         });
 
         if (!response.ok) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.error(t`Check the server connection and reload the page to prevent data loss.`, t`Preset could not be saved`);
             console.error('Preset could not be saved', response);
             throw new Error('Preset could not be saved');
@@ -507,9 +544,11 @@ class PresetManager {
             throw new Error('New name must be different from old name');
         }
         try {
+            // @ts-expect-error TS(2554): Expected 2-3 arguments, but got 1.
             await this.savePreset(newName);
             await this.deletePreset(oldName);
         } catch (error) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.error(t`Check the server connection and reload the page to prevent data loss.`, t`Preset could not be renamed`);
             console.error('Preset could not be renamed', error);
             throw new Error('Preset could not be renamed');
@@ -600,18 +639,25 @@ class PresetManager {
      * @param {object} preset Preset object
      */
     updateList(name, preset) {
+        // @ts-expect-error TS(2554): Expected 1 arguments, but got 0.
         const { presets, preset_names } = this.getPresetList();
+        // @ts-expect-error TS(2339): Property 'includes' does not exist on type '{}'.
         const presetExists = this.isKeyedApi() ? preset_names.includes(name) : Object.keys(preset_names).includes(name);
 
         if (presetExists) {
             if (this.isKeyedApi()) {
+                // @ts-expect-error TS(2339): Property 'indexOf' does not exist on type '{}'.
                 presets[preset_names.indexOf(name)] = preset;
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $(this.select).find(`option[value="${name}"]`).prop('selected', true);
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $(this.select).val(name).trigger('change');
             } else {
                 const value = preset_names[name];
                 presets[value] = preset;
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $(this.select).find(`option[value="${value}"]`).prop('selected', true);
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $(this.select).val(value).trigger('change');
             }
         } else {
@@ -620,13 +666,19 @@ class PresetManager {
 
             if (this.isKeyedApi()) {
                 preset_names[value] = name;
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 const option = $('<option></option>', { value: name, text: name, selected: true });
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $(this.select).append(option);
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $(this.select).val(name).trigger('change');
             } else {
                 preset_names[name] = value;
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 const option = $('<option></option>', { value: value, text: name, selected: true });
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $(this.select).append(option);
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $(this.select).val(value).trigger('change');
             }
         }
@@ -638,6 +690,10 @@ class PresetManager {
      * @returns {object} Preset settings object for the given name
      */
     getPresetSettings(name) {
+        /**
+         *
+         * @param apiId
+         */
         function getSettingsByApiId(apiId) {
             switch (apiId) {
                 case 'koboldhorde':
@@ -649,21 +705,25 @@ class PresetManager {
                     return textgen_settings;
                 case 'context': {
                     const context_preset = getContextSettings();
+                    // @ts-expect-error TS(2339): Property 'name' does not exist on type '{}'.
                     context_preset.name = name || power_user.context.preset;
                     return context_preset;
                 }
                 case 'instruct': {
                     const instruct_preset = structuredClone(power_user.instruct);
+                    // @ts-expect-error TS(2339): Property 'name' does not exist on type '{ enabled:... Remove this comment to see the full error message
                     instruct_preset.name = name || power_user.instruct.preset;
                     return instruct_preset;
                 }
                 case 'sysprompt': {
                     const sysprompt_preset = structuredClone(power_user.sysprompt);
+                    // @ts-expect-error TS(2339): Property 'preset' does not exist on type '{ enable... Remove this comment to see the full error message
                     sysprompt_preset.name = name || power_user.sysprompt.preset;
                     return sysprompt_preset;
                 }
                 case 'reasoning': {
                     const reasoning_preset = structuredClone(power_user.reasoning);
+                    // @ts-expect-error TS(2339): Property 'preset' does not exist on type '{ name: ... Remove this comment to see the full error message
                     reasoning_preset.name = name || power_user.reasoning.preset;
                     return reasoning_preset;
                 }
@@ -735,7 +795,9 @@ class PresetManager {
         }
 
         if (!this.isAdvancedFormatting() && this.apiId !== 'openai') {
+            // @ts-expect-error TS(2339): Property 'genamt' does not exist on type '{}'.
             settings.genamt = amount_gen;
+            // @ts-expect-error TS(2339): Property 'max_length' does not exist on type '{}'.
             settings.max_length = max_context;
         }
 
@@ -749,7 +811,8 @@ class PresetManager {
      */
     getCompletionPresetByName(name) {
         // Retrieve a completion preset by name. Return undefined if not found.
-        let { presets, preset_names } = this.getPresetList();
+        // @ts-expect-error TS(2554): Expected 1 arguments, but got 0.
+        const { presets, preset_names } = this.getPresetList();
         let preset;
 
         // Some APIs use an array of names, others use an object of {name: index}
@@ -776,22 +839,29 @@ class PresetManager {
      * @param {string} [name] Name of the preset to delete.
      */
     async deletePreset(name) {
+        // @ts-expect-error TS(2554): Expected 1 arguments, but got 0.
         const { preset_names, presets } = this.getPresetList();
         const value = name ? (this.isKeyedApi() ? this.findPreset(name) : name) : this.getSelectedPreset();
         const nameToDelete = name || this.getSelectedPresetName();
 
         if (value == 'gui') {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.info(t`Cannot delete GUI preset`);
+            // @ts-expect-error TS(7030): Not all code paths return a value.
             return;
         }
 
         if (this.isKeyedApi()) {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(this.select).find(`option[value="${value}"]`).remove();
+            // @ts-expect-error TS(2339): Property 'indexOf' does not exist on type '{}'.
             const index = preset_names.indexOf(nameToDelete);
+            // @ts-expect-error TS(2339): Property 'splice' does not exist on type '{}'.
             preset_names.splice(index, 1);
             presets.splice(index, 1);
         } else {
             const index = preset_names[nameToDelete];
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(this.select).find(`option[value="${index}"]`).remove();
             delete preset_names[nameToDelete];
         }
@@ -802,7 +872,9 @@ class PresetManager {
         if (Object.keys(preset_names).length && switchPresets) {
             const nextPresetName = Object.keys(preset_names)[0];
             const newValue = preset_names[nextPresetName];
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(this.select).find(`option[value="${newValue}"]`).attr('selected', 'true');
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(this.select).trigger('change');
         }
 
@@ -829,6 +901,7 @@ class PresetManager {
 
         if (!response.ok) {
             const errorToast = !this.isAdvancedFormatting() ? t`Failed to restore default preset` : t`Failed to restore default template`;
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.error(errorToast);
             return;
         }
@@ -841,15 +914,17 @@ class PresetManager {
      * @param {object} options
      * @param {string} [options.name] Name of the preset. If not provided, uses the currently selected preset name.
      * @param {string} options.path Path to the preset extension field, e.g. 'myextension.data'. If empty, reads the entire extensions object.
-     * @return {any} The value of the preset extension field, or null if not found.
+     * @returns {any} The value of the preset extension field, or null if not found.
      */
     readPresetExtensionField({ name, path }) {
+        // @ts-expect-error TS(2554): Expected 1 arguments, but got 0.
         const { settings } = this.getPresetList();
         const selectedName = this.getSelectedPresetName();
         const presetName = name || selectedName;
 
         // Read from settings if the selected preset is the same as the provided name
         if (settings && selectedName === presetName) {
+            // @ts-expect-error TS(2339): Property 'extensions' does not exist on type '{}'.
             const settingsExtensions = ensurePlainObject(settings.extensions || {});
             return path ? lodash.get(settingsExtensions, path, null) : settingsExtensions;
         }
@@ -871,9 +946,10 @@ class PresetManager {
      * @param {string} [options.name] Name of the preset. If not provided, uses the currently selected preset name.
      * @param {string} options.path Path to the preset extension field, e.g. 'myextension.data'. If empty, writes to the root of the extensions object.
      * @param {any} options.value Value to write to the preset extension field.
-     * @return {Promise<void>} Resolves when the preset is saved.
+     * @returns {Promise<void>} Resolves when the preset is saved.
      */
     async writePresetExtensionField({ name, path, value }) {
+        // @ts-expect-error TS(2554): Expected 1 arguments, but got 0.
         const { settings } = this.getPresetList();
         const selectedName = this.getSelectedPresetName();
         const presetName = name || selectedName;
@@ -881,7 +957,9 @@ class PresetManager {
         // Write to settings if the selected preset is the same as the provided name
         if (settings && selectedName === presetName) {
             // Set the value at the specified path
+            // @ts-expect-error TS(2339): Property 'extensions' does not exist on type '{}'.
             settings.extensions = ensurePlainObject(settings.extensions || {});
+            // @ts-expect-error TS(2339): Property 'extensions' does not exist on type '{}'.
             path ? lodash.set(settings.extensions, path, value) : (settings.extensions = value);
             await saveSettings();
         }
@@ -939,7 +1017,7 @@ async function presetCommandCallback(_, name) {
 
             if (presetValue) {
                 presetManager.selectPreset(presetValue);
-                shouldReconnect && await waitForConnection();
+                shouldReconnect && (await waitForConnection());
             }
         }
 
@@ -962,7 +1040,7 @@ async function presetCommandCallback(_, name) {
 
             if (currentPreset !== fuzzyPresetName) {
                 presetManager.selectPreset(fuzzyPresetValue);
-                shouldReconnect && await waitForConnection();
+                shouldReconnect && (await waitForConnection());
             }
         }
 
@@ -981,6 +1059,9 @@ async function waitForConnection() {
     }
 }
 
+/**
+ *
+ */
 export async function initPresetManager() {
     eventSource.on(event_types.CHAT_CHANGED, autoSelectPreset);
     registerPresetManagers();
@@ -1014,7 +1095,9 @@ export async function initPresetManager() {
     }));
 
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '[data-preset-manager-update]', async function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const apiId = $(this).data('preset-manager-update');
         const presetManager = getPresetManager(apiId);
 
@@ -1026,7 +1109,9 @@ export async function initPresetManager() {
         await presetManager.updatePreset();
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '[data-preset-manager-new]', async function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const apiId = $(this).data('preset-manager-new');
         const presetManager = getPresetManager(apiId);
 
@@ -1038,7 +1123,9 @@ export async function initPresetManager() {
         await presetManager.savePresetAs();
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '[data-preset-manager-rename]', async function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const apiId = $(this).data('preset-manager-rename');
         const presetManager = getPresetManager(apiId);
 
@@ -1049,12 +1136,13 @@ export async function initPresetManager() {
 
         const popupHeader = !presetManager.isAdvancedFormatting() ? t`Rename preset` : t`Rename template`;
         const oldName = presetManager.getSelectedPresetName();
-        const newName = await getSanitizedFilename(await Popup.show.input(popupHeader, t`Enter a new name:`, oldName) || '');
+        const newName = await getSanitizedFilename((await Popup.show.input(popupHeader, t`Enter a new name:`, oldName)) || '');
         if (!newName || oldName === newName) {
             console.debug(!presetManager.isAdvancedFormatting() ? 'Preset rename cancelled' : 'Template rename cancelled');
             return;
         }
         if (equalsIgnoreCaseAndAccents(oldName, newName)) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.warning(t`Name not accepted, as it is the same as before (ignoring case and accents).`, t`Rename Preset`);
             return;
         }
@@ -1067,15 +1155,19 @@ export async function initPresetManager() {
 
         if (apiId === 'openai') {
             // This is a horrible mess, but prevents the renamed preset from being corrupted.
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#update_oai_preset').trigger('click');
             return;
         }
 
         const successToast = !presetManager.isAdvancedFormatting() ? t`Preset renamed` : t`Template renamed`;
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.success(successToast);
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '[data-preset-manager-export]', async function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const apiId = $(this).data('preset-manager-export');
         const presetManager = getPresetManager(apiId);
 
@@ -1084,6 +1176,7 @@ export async function initPresetManager() {
             return;
         }
 
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const selected = $(presetManager.select).find('option:selected');
         const name = selected.text();
         const preset = presetManager.getPresetSettings(name);
@@ -1091,12 +1184,17 @@ export async function initPresetManager() {
         download(data, `${name}.json`, 'application/json');
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '[data-preset-manager-import]', async function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const apiId = $(this).data('preset-manager-import');
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(`[data-preset-manager-file="${apiId}"]`).trigger('click');
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('change', '[data-preset-manager-file]', async function (e) {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const apiId = $(this).data('preset-manager-file');
         const presetManager = getPresetManager(apiId);
 
@@ -1113,16 +1211,21 @@ export async function initPresetManager() {
 
         const fileName = file.name.replace('.json', '').replace('.settings', '');
         const data = await parseJsonFile(file);
+        // @ts-expect-error TS(2339): Property 'name' does not exist on type 'unknown'.
         const name = data?.name ?? fileName;
+        // @ts-expect-error TS(2339): Property 'name' does not exist on type 'unknown'.
         data.name = name;
 
         await presetManager.savePreset(name, data);
         const successToast = !presetManager.isAdvancedFormatting() ? t`Preset imported` : t`Template imported`;
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.success(successToast);
         e.target.value = null;
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '[data-preset-manager-delete]', async function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const apiId = $(this).data('preset-manager-delete');
         const presetManager = getPresetManager(apiId);
 
@@ -1142,17 +1245,21 @@ export async function initPresetManager() {
 
         if (result) {
             const successToast = !presetManager.isAdvancedFormatting() ? t`Preset deleted` : t`Template deleted`;
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.success(successToast);
             await eventSource.emit(event_types.PRESET_DELETED, { apiId, name });
         } else {
             const warningToast = !presetManager.isAdvancedFormatting() ? t`Preset was not deleted from server` : t`Template was not deleted from server`;
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.warning(warningToast);
         }
 
         saveSettingsDebounced();
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '[data-preset-manager-restore]', async function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const apiId = $(this).data('preset-manager-restore');
         const presetManager = getPresetManager(apiId);
 
@@ -1165,6 +1272,7 @@ export async function initPresetManager() {
         const data = await presetManager.getDefaultPreset(name);
 
         if (name == 'gui') {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.info(t`Cannot restore GUI preset`);
             return;
         }
@@ -1176,6 +1284,7 @@ export async function initPresetManager() {
         if (data.isDefault) {
             if (Object.keys(data.preset).length === 0) {
                 const errorToast = !presetManager.isAdvancedFormatting() ? t`Default preset cannot be restored` : t`Default template cannot be restored`;
+                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                 toastr.error(errorToast);
                 return;
             }
@@ -1193,6 +1302,7 @@ export async function initPresetManager() {
             const option = presetManager.findPreset(name);
             presetManager.selectPreset(option);
             const successToast = !presetManager.isAdvancedFormatting() ? t`Default preset restored` : t`Default template restored`;
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.success(successToast);
         } else {
             const confirmText = !presetManager.isAdvancedFormatting()
@@ -1206,14 +1316,18 @@ export async function initPresetManager() {
             const option = presetManager.findPreset(name);
             presetManager.selectPreset(option);
             const successToast = !presetManager.isAdvancedFormatting() ? t`Preset restored` : t`Template restored`;
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.success(successToast);
         }
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#af_master_import').on('click', () => {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#af_master_import_file').trigger('click');
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#af_master_import_file').on('change', async function (e) {
         if (!(e.target instanceof HTMLInputElement)) {
             return;
@@ -1230,6 +1344,7 @@ export async function initPresetManager() {
         e.target.value = null;
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#af_master_export').on('click', async () => {
         const data = await PresetManager.performMasterExport();
 

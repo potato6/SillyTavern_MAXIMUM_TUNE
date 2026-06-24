@@ -8,9 +8,11 @@ import { SlashCommandExecutor } from './SlashCommandExecutor.js';
 import { SlashCommandParserError } from './SlashCommandParserError.js';
 import { AutoCompleteNameResult } from '../autocomplete/AutoCompleteNameResult.js';
 import { SlashCommandQuickReplyAutoCompleteOption } from './SlashCommandQuickReplyAutoCompleteOption.js';
+// @ts-expect-error TS(6133): 'SlashCommandScope' is declared but its value is n... Remove this comment to see the full error message
 import { SlashCommandScope } from './SlashCommandScope.js';
 import { SlashCommandVariableAutoCompleteOption } from './SlashCommandVariableAutoCompleteOption.js';
 import { SlashCommandNamedArgumentAssignment } from './SlashCommandNamedArgumentAssignment.js';
+// @ts-expect-error TS(6133): 'SlashCommandAbortController' is declared but its ... Remove this comment to see the full error message
 import { SlashCommandAbortController } from './SlashCommandAbortController.js';
 import { SlashCommandAutoCompleteNameResult } from './SlashCommandAutoCompleteNameResult.js';
 import { SlashCommandUnnamedArgumentAssignment } from './SlashCommandUnnamedArgumentAssignment.js';
@@ -20,6 +22,7 @@ import {
     buildMacroAutoCompleteResult,
 } from '../autocomplete/MacroAutoCompleteHelper.js';
 import { SlashCommandBreakPoint } from './SlashCommandBreakPoint.js';
+// @ts-expect-error TS(6133): 'SlashCommandDebugController' is declared but its ... Remove this comment to see the full error message
 import { SlashCommandDebugController } from './SlashCommandDebugController.js';
 import { commonEnumProviders } from './SlashCommandCommonEnumsProvider.js';
 import { SlashCommandBreak } from './SlashCommandBreak.js';
@@ -31,7 +34,7 @@ import { parseMacroContext } from '../autocomplete/EnhancedMacroAutoCompleteOpti
 /** @typedef {import('../autocomplete/EnhancedMacroAutoCompleteOption.js').EnhancedMacroAutoCompleteOptions} EnhancedMacroAutoCompleteOptions */
 
 /**
- * @enum {Number}
+ * @enum {number}
  * @readonly
  * @typedef {{[id:PARSER_FLAG]:boolean}} ParserFlags
  */
@@ -88,6 +91,7 @@ export class SlashCommandParser {
         } else if (command.isExtension) {
             command.source = stack.find(it => it.includes('/scripts/extensions/')).replace(/^.*?\/scripts\/extensions\/([^/]+)\/.*$/, '$1');
         } else {
+            // @ts-expect-error TS(2339): Property 'findLastIndex' does not exist on type 's... Remove this comment to see the full error message
             const idx = stack.findLastIndex(it => it.includes('at SlashCommandParser.')) + 1;
             command.source = stack[idx].replace(/^.*?\/((?:scripts\/)?(?:[^/]+)\.js).*$/, '$1');
         }
@@ -228,6 +232,9 @@ export class SlashCommandParser {
             relevance: 0,
         };
 
+        /**
+         *
+         */
         function getQuotedRunRegex() {
             try {
                 return new RegExp('(".+?(?<!\\\\)")|((?:[^\\s\\|"]|"[^"]*")*)(\\||$|\\s)');
@@ -580,6 +587,7 @@ export class SlashCommandParser {
      * @param {number} offset Offset from the current index (won't move the index if offset != 0).
      * @returns Whether the next characters are the indicated symbol.
      */
+    // @ts-expect-error TS(7030): Not all code paths return a value.
     testSymbol(sequence, offset = 0) {
         if (!this.flags[PARSER_FLAG.STRICT_ESCAPING]) return this.testSymbolLooseyGoosey(sequence, offset);
         // /echo abc | /echo def
@@ -623,6 +631,7 @@ export class SlashCommandParser {
         }
     }
 
+    // @ts-expect-error TS(7030): Not all code paths return a value.
     testSymbolLooseyGoosey(sequence, offset = 0) {
         const escapeOffset = this.jumpedEscapeSequence ? -1 : 0;
         const escapes = this.text[this.index + offset + escapeOffset] == '\\' ? 1 : 0;
@@ -658,6 +667,7 @@ export class SlashCommandParser {
             const pipeName = `_PARSER_PIPE_${uuidv4()}`;
             const storePipe = new SlashCommandExecutor(startIdx); {
                 storePipe.end = endIdx;
+                // @ts-expect-error TS(2339): Property 'let' does not exist on type '{}'.
                 storePipe.command = this.commands.let;
                 storePipe.name = 'let';
                 const nameAss = new SlashCommandUnnamedArgumentAssignment();
@@ -681,6 +691,7 @@ export class SlashCommandParser {
             const varName = `_PARSER_VAR_${uuidv4()}`;
             const setvar = new SlashCommandExecutor(startIdx); {
                 setvar.end = endIdx;
+                // @ts-expect-error TS(2339): Property 'let' does not exist on type '{}'.
                 setvar.command = this.commands.let;
                 setvar.name = 'let';
                 const nameAss = new SlashCommandUnnamedArgumentAssignment();
@@ -693,6 +704,7 @@ export class SlashCommandParser {
             // return pipe
             const returnPipe = new SlashCommandExecutor(startIdx); {
                 returnPipe.end = endIdx;
+                // @ts-expect-error TS(2339): Property 'return' does not exist on type '{}'.
                 returnPipe.command = this.commands.return;
                 returnPipe.name = 'return';
                 const varAss = new SlashCommandUnnamedArgumentAssignment();
@@ -746,7 +758,7 @@ export class SlashCommandParser {
         let injectPipe = true;
         if (!isRoot) this.take(2); // discard opening {:
         const textStart = this.index;
-        let closure = new SlashCommandClosure(this.scope);
+        const closure = new SlashCommandClosure(this.scope);
         closure.parserContext = this.parserContext;
         closure.fullText = this.text;
         closure.abortController = this.abortController;
@@ -816,8 +828,10 @@ export class SlashCommandParser {
         return this.testSymbol(/\/breakpoint\s*\|/);
     }
     parseBreakPoint() {
+        // @ts-expect-error TS(2554): Expected 1 arguments, but got 0.
         const cmd = new SlashCommandBreakPoint();
         cmd.name = 'breakpoint';
+        // @ts-expect-error TS(2339): Property 'breakpoint' does not exist on type '{}'.
         cmd.command = this.commands.breakpoint;
         cmd.start = this.index + 1;
         this.take('/breakpoint'.length);
@@ -831,13 +845,16 @@ export class SlashCommandParser {
         return this.testSymbol(/\/break(\s|\||$)/);
     }
     parseBreak() {
+        // @ts-expect-error TS(2554): Expected 1 arguments, but got 0.
         const cmd = new SlashCommandBreak();
         cmd.name = 'break';
+        // @ts-expect-error TS(2339): Property 'break' does not exist on type '{}'.
         cmd.command = this.commands.break;
         cmd.start = this.index + 1;
         this.take('/break'.length);
         this.discardWhitespace();
         if (this.testUnnamedArgument()) {
+            // @ts-expect-error TS(2554): Expected 1-3 arguments, but got 0.
             cmd.unnamedArgumentList.push(...this.parseUnnamedArgument());
         }
         cmd.end = this.index;
@@ -936,6 +953,7 @@ export class SlashCommandParser {
         const cmd = new SlashCommandExecutor(start);
         cmd.name = ':';
         cmd.unnamedArgumentList = [];
+        // @ts-expect-error TS(2339): Property 'run' does not exist on type '{}'.
         cmd.command = this.commands.run;
         this.commandIndex.push(cmd);
         this.scopeIndex.push(this.scope.getCopy());
@@ -1055,7 +1073,7 @@ export class SlashCommandParser {
         return /^(\w+)=/.test(`${this.char}${this.ahead}`);
     }
     parseNamedArgument() {
-        let assignment = new SlashCommandNamedArgumentAssignment();
+        const assignment = new SlashCommandNamedArgumentAssignment();
         assignment.start = this.index;
         let key = '';
         while (/\w/.test(this.char)) key += this.take(); // take chars
@@ -1086,7 +1104,7 @@ export class SlashCommandParser {
         let value = this.jumpedEscapeSequence ? this.take() : ''; // take the first, already tested, char if it is an escaped one
         let isList = split;
         let listValues = [];
-        let listQuoted = []; // keep track of which listValues were quoted
+        const listQuoted = []; // keep track of which listValues were quoted
         /**@type {SlashCommandUnnamedArgumentAssignment}*/
         let assignment = new SlashCommandUnnamedArgumentAssignment();
         assignment.start = this.index;
@@ -1165,6 +1183,7 @@ export class SlashCommandParser {
                     listQuoted.push(false);
                     assignment = new SlashCommandUnnamedArgumentAssignment();
                 } else {
+                    // @ts-expect-error TS(2554): Expected 3 arguments, but got 1.
                     throw new SlashCommandParserError(`Unexpected end of unnamed argument at index ${this.userIndex}.`);
                 }
                 this.discardWhitespace();

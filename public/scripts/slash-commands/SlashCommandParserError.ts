@@ -9,7 +9,7 @@ export class SlashCommandParserError extends Error {
         return this.text.slice(0, this.index).split('\n').pop().length;
     }
     get hint() {
-        let lineOffset = this.line.toString().length;
+        const lineOffset = this.line.toString().length;
         let lineStart = this.index;
         let start = this.index;
         let end = this.index;
@@ -27,8 +27,8 @@ export class SlashCommandParserError extends Error {
             offset++;
             end++;
         }
-        let hint  = [];
-        let lines = this.text.slice(start + 1, end - 1).split('\n');
+        const hint  = [];
+        const lines = this.text.slice(start + 1, end - 1).split('\n');
         let lineNum = this.line - lines.length + 1;
         let tabOffset = 0;
         for (const line of lines) {

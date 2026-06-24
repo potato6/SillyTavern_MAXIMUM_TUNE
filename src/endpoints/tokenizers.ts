@@ -387,9 +387,9 @@ async function countSentencepieceTokens(tokenizer: any, text: any) {
         };
     }
 
-    let cleaned = text; // cleanText(text); <-- cleaning text can result in an incorrect tokenization
+    const cleaned = text; // cleanText(text); <-- cleaning text can result in an incorrect tokenization
 
-    let ids = instance.encodeIds(cleaned);
+    const ids = instance.encodeIds(cleaned);
     return {
         ids,
         count: ids.length,
@@ -409,6 +409,11 @@ async function countSentencepieceArrayTokens(tokenizer: any, array: any) {
     return num_tokens;
 }
 
+/**
+ *
+ * @param tokenizer
+ * @param ids
+ */
 async function getTiktokenChunks(tokenizer: any, ids: any) {
     const decoder = new TextDecoder();
     const chunks = [];
@@ -539,6 +544,10 @@ export function getTokenizerModel(requestModel: any) {
     return 'gpt-3.5-turbo';
 }
 
+/**
+ *
+ * @param model
+ */
 export function getTiktokenTokenizer(model: any) {
     if (tokenizersCache[model]) {
         return tokenizersCache[model];

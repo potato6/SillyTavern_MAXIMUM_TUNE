@@ -47,7 +47,7 @@ const SOURCES = [
 /**
  * Gets the vector for the given text from the given source.
  * @param {string} source - The source of the vector
- * @param {Object} sourceSettings - Settings for the source, if it needs any
+ * @param {object} sourceSettings - Settings for the source, if it needs any
  * @param {string} text - The text to get the vector for
  * @param {boolean} isQuery - If the text is a query for embedding search
  * @param {import('../users.js').UserDirectoryList} directories - The directories object for the user
@@ -101,7 +101,7 @@ async function getVector(source: any, sourceSettings: any, text: any, isQuery: a
 /**
  * Gets the vector for the given text batch from the given source.
  * @param {string} source - The source of the vector
- * @param {Object} sourceSettings - Settings for the source, if it needs any
+ * @param {object} sourceSettings - Settings for the source, if it needs any
  * @param {string[]} texts - The array of texts to get the vector for
  * @param {boolean} isQuery - If the text is a query for embedding search
  * @param {import('../users.js').UserDirectoryList} directories - The directories object for the user
@@ -111,8 +111,8 @@ async function getBatchVector(source: any, sourceSettings: any, texts: any, isQu
     const batchSize = 10;
     const batches = Array(Math.ceil(texts.length / batchSize)).fill(undefined).map((_, i) => texts.slice(i * batchSize, i * batchSize + batchSize));
 
-    let results = [];
-    for (let batch of batches) {
+    const results = [];
+    for (const batch of batches) {
         switch (source) {
             case 'nomicai':
                 results.push(...(await getNomicAIBatchVector(batch, source, directories)));
@@ -316,7 +316,7 @@ async function getIndex(directories: any, collectionId: any, source: any, source
  * @param {import('../users.js').UserDirectoryList} directories - User directories
  * @param {string} collectionId - The collection ID
  * @param {string} source - The source of the vector
- * @param {Object} sourceSettings - Settings for the source, if it needs any
+ * @param {object} sourceSettings - Settings for the source, if it needs any
  * @param {{ hash: number; text: string; index: number; }[]} items - The items to insert
  */
 async function insertVectorItems(directories: any, collectionId: any, source: any, sourceSettings: any, items: any) {
@@ -340,7 +340,7 @@ async function insertVectorItems(directories: any, collectionId: any, source: an
  * @param {import('../users.js').UserDirectoryList} directories - User directories
  * @param {string} collectionId - The collection ID
  * @param {string} source - The source of the vector
- * @param {Object} sourceSettings - Settings for the source, if it needs any
+ * @param {object} sourceSettings - Settings for the source, if it needs any
  * @returns {Promise<number[]>} - The hashes of the items in the collection
  */
 async function getSavedHashes(directories: any, collectionId: any, source: any, sourceSettings: any) {
@@ -357,7 +357,7 @@ async function getSavedHashes(directories: any, collectionId: any, source: any, 
  * @param {import('../users.js').UserDirectoryList} directories - User directories
  * @param {string} collectionId - The collection ID
  * @param {string} source - The source of the vector
- * @param {Object} sourceSettings - Settings for the source, if it needs any
+ * @param {object} sourceSettings - Settings for the source, if it needs any
  * @param {number[]} hashes - The hashes of the items to delete
  */
 async function deleteVectorItems(directories: any, collectionId: any, source: any, sourceSettings: any, hashes: any) {
@@ -378,7 +378,7 @@ async function deleteVectorItems(directories: any, collectionId: any, source: an
  * @param {import('../users.js').UserDirectoryList} directories - User directories
  * @param {string} collectionId - The collection ID
  * @param {string} source - The source of the vector
- * @param {Object} sourceSettings - Settings for the source, if it needs any
+ * @param {object} sourceSettings - Settings for the source, if it needs any
  * @param {string} searchText - The text to search for
  * @param {number} topK - The number of results to return
  * @param {number} threshold - The threshold for the search
@@ -399,11 +399,10 @@ async function queryCollection(directories: any, collectionId: any, source: any,
  * @param {import('../users.js').UserDirectoryList} directories - User directories
  * @param {string[]} collectionIds - The collection IDs to query
  * @param {string} source - The source of the vector
- * @param {Object} sourceSettings - Settings for the source, if it needs any
+ * @param {object} sourceSettings - Settings for the source, if it needs any
  * @param {string} searchText - The text to search for
  * @param {number} topK - The number of results to return
  * @param {number} threshold - The threshold for the search
- *
  * @returns {Promise<Record<string, { hashes: number[], metadata: object[] }>>} - The top K results from each collection
  */
 async function multiQueryCollection(directories: any, collectionIds: any, source: any, sourceSettings: any, searchText: any, topK: any, threshold: any) {

@@ -202,7 +202,7 @@ export class ByafParser {
      * Extracts all character icon images from BYAF buffer.
      * @param {ByafCharacter} character Character object
      * @param {string} characterPath Path to the character in the BYAF manifest
-     * @return {Promise<{filename: string, image: Buffer, label: string}[]>} Image buffer
+     * @returns {Promise<{filename: string, image: Buffer, label: string}[]>} Image buffer
      * @private
      */
     async getCharacterImages(character: any, characterPath: any) {
@@ -243,7 +243,7 @@ export class ByafParser {
      * @param {ByafManifest} manifest BYAF manifest
      * @param {ByafCharacter} character Character object
      * @param {Partial<ByafScenario>[]} scenarios Scenarios array
-     * @return {TavernCardV2} Character card object
+     * @returns {TavernCardV2} Character card object
      * @private
      */
     getCharacterCard(manifest: any, character: any, scenarios: any) {
@@ -439,7 +439,7 @@ export class ByafParser {
 
     /**
      * Parses the BYAF data.
-     * @return {Promise<ByafParseResult>} Parsed character card and image buffer
+     * @returns {Promise<ByafParseResult>} Parsed character card and image buffer
      */
     async parse() {
         const manifest = await this.getManifest();

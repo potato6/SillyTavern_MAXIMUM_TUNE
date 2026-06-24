@@ -3,11 +3,12 @@ import { updateSecretDisplay } from './secrets.js';
 
 const storageKey = 'language';
 const overrideLanguage = localStorage.getItem(storageKey);
+// @ts-expect-error TS(2339): Property 'userLanguage' does not exist on type 'Na... Remove this comment to see the full error message
 const localeFile = String(overrideLanguage || navigator.language || navigator.userLanguage || 'en').toLowerCase();
-var langs;
+let langs;
 // Don't change to let/const! It will break module loading.
-// eslint-disable-next-line prefer-const
-var localeData;
+ 
+let localeData;
 
 /** @type {Set<string>|null} Array of translations keys if they should be tracked - if not tracked then null */
 let trackMissingDynamicTranslate = null;
@@ -64,7 +65,6 @@ const observer = new MutationObserver(mutations => {
  * Translates a template string with named arguments
  *
  * Uses the template literal with all values replaced by index placeholder for translation key.
- *
  * @example
  * ```js
  * toastr.warning(t`Tag ${tagName} not found.`);
@@ -73,16 +73,16 @@ const observer = new MutationObserver(mutations => {
  * ```
  * Tag ${0} not found. -> Tag ${0} nicht gefunden.
  * ```
- *
  * @param {TemplateStringsArray} strings - Template strings array
  * @param  {...any} values - Values for placeholders in the template string
  * @returns {string} Translated and formatted string
  */
 export function t(strings, ...values) {
-    let str = strings.reduce((result, string, i) => result + string + (values[i] !== undefined ? `\${${i}}` : ''), '');
-    let translatedStr = translate(str);
+    const str = strings.reduce((result, string, i) => result + string + (values[i] !== undefined ? `\${${i}}` : ''), '');
+    const translatedStr = translate(str);
 
     // Replace indexed placeholders with actual values
+    // @ts-expect-error TS(6133): 'match' is declared but its value is never read.
     return translatedStr.replace(/\$\{(\d+)\}/g, (match, index) => values[index]);
 }
 
@@ -93,7 +93,6 @@ export function t(strings, ...values) {
  * The original text still has to be provided, as that is the default value being returned if no translation is found.
  *
  * For in-code text translation on a format string, using the template literal `t` is preferred.
- *
  * @param {string} text - The text to translate
  * @param {string?} key - The key to use for translation. If not provided, text is used as the key.
  * @returns {string} - The translated text
@@ -116,7 +115,7 @@ export function translate(text, key = null) {
  * @returns {Promise<Record<string, string>>} Locale data
  */
 async function getLocaleData(language) {
-    let supportedLang = findLang(language);
+    const supportedLang = findLang(language);
     if (!supportedLang) {
         return {};
     }
@@ -170,7 +169,7 @@ function translateElement(element) {
 
 /**
  * Checks if the given locale is supported and not English.
- * @param {string} [locale=null] The locale to check (defaults to the current locale)
+ * @param {string} [locale] The locale to check (defaults to the current locale)
  * @returns {boolean} True if the locale is not English and supported
  */
 function isSupportedNonEnglish(locale = null) {
@@ -178,6 +177,9 @@ function isSupportedNonEnglish(locale = null) {
     return lang && lang != 'en' && findLang(lang);
 }
 
+/**
+ *
+ */
 async function getMissingTranslations() {
     /** @type {Array<{key: string, language: string, value: string}>} */
     const missingData = [];
@@ -191,18 +193,22 @@ async function getMissingTranslations() {
 
     for (const language of langsToProcess) {
         const localeData = await getLocaleData(language.lang);
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(document).find('[data-i18n]').each(function () {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const keys = $(this).data('i18n').split(';'); // Multi-key entries are ; delimited
             for (const key of keys) {
                 const attributeMatch = key.match(/\[(\S+)\](.+)/); // [attribute]key
                 if (attributeMatch) { // attribute-tagged key
                     const localizedValue = localeData?.[attributeMatch[2]];
                     if (!localizedValue) {
+                        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                         missingData.push({ key, language: language.lang, value: String($(this).attr(attributeMatch[1])) });
                     }
                 } else { // No attribute tag, treat as 'text'
                     const localizedValue = localeData?.[key];
                     if (!localizedValue) {
+                        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                         missingData.push({ key, language: language.lang, value: $(this).text().trim() });
                     }
                 }
@@ -235,6 +241,7 @@ async function getMissingTranslations() {
         console.log(trackMissingDynamicTranslateMap);
     }
 
+    // @ts-expect-error TS(2304): Cannot find name 'toastr'.
     toastr.success(`Found ${uniqueMissingData.length} missing translations. See browser console for details.`);
 }
 
@@ -248,6 +255,7 @@ export function applyLocale(root = document) {
         return root;
     }
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const $root = root instanceof Document ? $(root) : $(new DOMParser().parseFromString(root, 'text/html'));
 
     //find all the elements with `data-i18n` attribute
@@ -260,7 +268,11 @@ export function applyLocale(root = document) {
     }
 }
 
+/**
+ *
+ */
 function addLanguagesToDropdown() {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const uiLanguageSelects = $('#ui_language_select, #onboarding_ui_language_select');
     for (const langObj of langs) { // Set the value to the language code
         const option = document.createElement('option');
@@ -275,6 +287,9 @@ function addLanguagesToDropdown() {
     }
 }
 
+/**
+ *
+ */
 export async function initLocales() {
     langs = await fetch('/locales/lang.json').then(response => response.json());
     localeData = await getLocaleData(localeFile);
@@ -283,7 +298,9 @@ export async function initLocales() {
     addLanguagesToDropdown();
     updateSecretDisplay();
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#ui_language_select, #onboarding_ui_language_select').on('change', async function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const language = String($(this).val());
 
         if (language) {
@@ -319,12 +336,15 @@ export async function initLocales() {
             localStorage.setItem('trackDynamicTranslate', isTracking ? 'true' : 'false');
             if (isTracking && isSupportedNonEnglish()) {
                 trackMissingDynamicTranslate = new Set();
+                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                 toastr.success('Dynamic translation tracking enabled.');
             } else if (isTracking) {
                 trackMissingDynamicTranslate = null;
+                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                 toastr.warning('Dynamic translation tracking enabled, but will not be tracked with locale English.');
             } else {
                 trackMissingDynamicTranslate = null;
+                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                 toastr.info('Dynamic translation tracking disabled.');
             }
         });

@@ -103,6 +103,9 @@ function applyA11yRules(element) {
     }
 }
 
+/**
+ *
+ */
 function setAccessibilityObserver() {
     // Apply for existing elements
     applyA11yRules(document.body);
@@ -126,6 +129,9 @@ function setAccessibilityObserver() {
     });
 }
 
+/**
+ *
+ */
 export function initAccessibility() {
     setAccessibilityObserver();
 }

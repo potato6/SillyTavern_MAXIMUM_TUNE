@@ -22,11 +22,14 @@ export async function setUserControls(isEnabled) {
     accountsEnabled = isEnabled;
 
     if (!isEnabled) {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#logout_button').hide();
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#admin_button').hide();
         return;
     }
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#logout_button').show();
     await getCurrentUser();
 }
@@ -70,6 +73,7 @@ async function getCurrentUser() {
         }
 
         currentUser = await response.json();
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#admin_button').toggle(accountsEnabled && isAdmin());
     } catch (error) {
         console.error('Error getting current user:', error);
@@ -113,6 +117,7 @@ async function enableUser(handle, callback) {
 
         if (!response.ok) {
             const data = await response.json();
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.error(data.error || 'Unknown error', 'Failed to enable user');
             throw new Error('Failed to enable user');
         }
@@ -123,6 +128,11 @@ async function enableUser(handle, callback) {
     }
 }
 
+/**
+ *
+ * @param handle
+ * @param callback
+ */
 async function disableUser(handle, callback) {
     try {
         const response = await fetch('/api/users/disable', {
@@ -133,6 +143,7 @@ async function disableUser(handle, callback) {
 
         if (!response.ok) {
             const data = await response.json();
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.error(data?.error || 'Unknown error', 'Failed to disable user');
             throw new Error('Failed to disable user');
         }
@@ -159,6 +170,7 @@ async function promoteUser(handle, callback) {
 
         if (!response.ok) {
             const data = await response.json();
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.error(data.error || 'Unknown error', 'Failed to promote user');
             throw new Error('Failed to promote user');
         }
@@ -184,6 +196,7 @@ async function demoteUser(handle, callback) {
 
         if (!response.ok) {
             const data = await response.json();
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.error(data.error || 'Unknown error', 'Failed to demote user');
             throw new Error('Failed to demote user');
         }
@@ -197,6 +210,7 @@ async function demoteUser(handle, callback) {
 /**
  * Create a new user.
  * @param {HTMLFormElement} form Form element
+ * @param callback
  */
 async function createUser(form, callback) {
     const errors = [];
@@ -211,6 +225,7 @@ async function createUser(form, callback) {
     }
 
     if (errors.length) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.error(errors.join(', '), 'Failed to create user');
         return;
     }
@@ -235,6 +250,7 @@ async function createUser(form, callback) {
 
         if (!response.ok) {
             const data = await response.json();
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.error(data.error || 'Unknown error', 'Failed to create user');
             throw new Error('Failed to create user');
         }
@@ -254,6 +270,7 @@ async function createUser(form, callback) {
  */
 async function backupUserData(handle, callback) {
     try {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.info('Please wait for the download to start.', 'Backup Requested');
         const response = await fetch('/api/users/backup', {
             method: 'POST',
@@ -263,12 +280,14 @@ async function backupUserData(handle, callback) {
 
         if (!response.ok) {
             const data = await response.json();
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.error(data.error || 'Unknown error', 'Failed to backup user data');
             throw new Error('Failed to backup user data');
         }
 
         const includesSecrets = await canViewSecrets();
         if (includesSecrets === false) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.warning('The backup will not include secrets due to a server configuration.', 'Secrets Not Included');
         }
 
@@ -295,18 +314,22 @@ async function backupUserData(handle, callback) {
  */
 async function changePassword(handle, callback) {
     try {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const template = $(await renderTemplateAsync('changePassword'));
         template.find('.currentPasswordBlock').toggle(!isAdmin());
         let newPassword = '';
         let confirmPassword = '';
         let oldPassword = '';
         template.find('input[name="current"]').on('input', function () {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             oldPassword = String($(this).val());
         });
         template.find('input[name="password"]').on('input', function () {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             newPassword = String($(this).val());
         });
         template.find('input[name="confirm"]').on('input', function () {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             confirmPassword = String($(this).val());
         });
         const result = await callGenericPopup(template, POPUP_TYPE.CONFIRM, '', { okButton: 'Change', cancelButton: 'Cancel', wide: false, large: false });
@@ -315,6 +338,7 @@ async function changePassword(handle, callback) {
         }
 
         if (newPassword !== confirmPassword) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.error('Passwords do not match', 'Failed to change password');
             throw new Error('Passwords do not match');
         }
@@ -327,10 +351,12 @@ async function changePassword(handle, callback) {
 
         if (!response.ok) {
             const data = await response.json();
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.error(data.error || 'Unknown error', 'Failed to change password');
             throw new Error('Failed to change password');
         }
 
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.success('Password changed successfully', 'Password Changed');
         callback();
     } catch (error) {
@@ -346,6 +372,7 @@ async function changePassword(handle, callback) {
 async function deleteUser(handle, callback) {
     try {
         if (handle === currentUser.handle) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.error('Cannot delete yourself', 'Failed to delete user');
             throw new Error('Cannot delete yourself');
         }
@@ -353,12 +380,15 @@ async function deleteUser(handle, callback) {
         let purge = false;
         let confirmHandle = '';
 
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const template = $(await renderTemplateAsync('deleteUser'));
         template.find('#deleteUserName').text(handle);
         template.find('input[name="deleteUserData"]').on('input', function () {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             purge = $(this).is(':checked');
         });
         template.find('input[name="deleteUserHandle"]').on('input', function () {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             confirmHandle = String($(this).val());
         });
 
@@ -369,6 +399,7 @@ async function deleteUser(handle, callback) {
         }
 
         if (handle !== confirmHandle) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.error('Handles do not match', 'Failed to delete user');
             throw new Error('Handles do not match');
         }
@@ -381,10 +412,12 @@ async function deleteUser(handle, callback) {
 
         if (!response.ok) {
             const data = await response.json();
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.error(data.error || 'Unknown error', 'Failed to delete user');
             throw new Error('Failed to delete user');
         }
 
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.success('User deleted successfully', 'User Deleted');
         callback();
     } catch (error) {
@@ -400,8 +433,10 @@ async function deleteUser(handle, callback) {
 async function resetSettings(handle, callback) {
     try {
         let password = '';
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const template = $(await renderTemplateAsync('resetSettings'));
         template.find('input[name="password"]').on('input', function () {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             password = String($(this).val());
         });
         const result = await callGenericPopup(template, POPUP_TYPE.CONFIRM, '', { okButton: 'Reset', cancelButton: 'Cancel', wide: false, large: false });
@@ -418,10 +453,12 @@ async function resetSettings(handle, callback) {
 
         if (!response.ok) {
             const data = await response.json();
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.error(data.error || 'Unknown error', 'Failed to reset settings');
             throw new Error('Failed to reset settings');
         }
 
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.success('Settings reset successfully', 'Settings Reset');
         callback();
     } catch (error) {
@@ -437,6 +474,7 @@ async function resetSettings(handle, callback) {
  */
 async function changeName(handle, name, callback) {
     try {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const template = $(await renderTemplateAsync('changeName'));
         const result = await callGenericPopup(template, POPUP_TYPE.INPUT, name, { okButton: 'Change', cancelButton: 'Cancel', wide: false, large: false });
 
@@ -454,10 +492,12 @@ async function changeName(handle, name, callback) {
 
         if (!response.ok) {
             const data = await response.json();
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.error(data.error || 'Unknown error', 'Failed to change name');
             throw new Error('Failed to change name');
         }
 
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.success('Name changed successfully', 'Name Changed');
         callback();
     } catch (error) {
@@ -491,6 +531,7 @@ async function restoreSnapshot(name, callback) {
 
         if (!response.ok) {
             const data = await response.json();
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.error(data.error || 'Unknown error', 'Failed to restore snapshot');
             throw new Error('Failed to restore snapshot');
         }
@@ -506,6 +547,7 @@ async function restoreSnapshot(name, callback) {
  * @param {string} name Snapshot name
  * @returns {Promise<string>} Snapshot content
  */
+// @ts-expect-error TS(7030): Not all code paths return a value.
 async function loadSnapshotContent(name) {
     try {
         const response = await fetch('/api/settings/load-snapshot', {
@@ -516,6 +558,7 @@ async function loadSnapshotContent(name) {
 
         if (!response.ok) {
             const data = await response.json();
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.error(data.error || 'Unknown error', 'Failed to load snapshot content');
             throw new Error('Failed to load snapshot content');
         }
@@ -529,7 +572,7 @@ async function loadSnapshotContent(name) {
 /**
  * Gets a list of settings snapshots.
  * @returns {Promise<Snapshot[]>} List of snapshots
- * @typedef {Object} Snapshot
+ * @typedef {object} Snapshot
  * @property {string} name Snapshot name
  * @property {number} date Date in milliseconds
  * @property {number} size File size in bytes
@@ -543,6 +586,7 @@ async function getSnapshots() {
 
         if (!response.ok) {
             const data = await response.json();
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.error(data.error || 'Unknown error', 'Failed to get settings snapshots');
             throw new Error('Failed to get settings snapshots');
         }
@@ -569,10 +613,12 @@ async function makeSnapshot(callback) {
 
         if (!response.ok) {
             const data = await response.json();
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.error(data.error || 'Unknown error', 'Failed to make snapshot');
             throw new Error('Failed to make snapshot');
         }
 
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.success('Snapshot created successfully', 'Snapshot Created');
         callback();
     } catch (error) {
@@ -584,7 +630,11 @@ async function makeSnapshot(callback) {
  * Open the settings snapshots view.
  */
 async function viewSettingsSnapshots() {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const template = $(await renderTemplateAsync('snapshotsView'));
+    /**
+     *
+     */
     async function renderSnapshots() {
         const snapshots = await getSnapshots();
         template.find('.snapshotList').empty();
@@ -627,6 +677,7 @@ async function resetEverything(callback) {
 
         if (!step1Response.ok) {
             const data = await step1Response.json();
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.error(data.error || 'Unknown error', 'Failed to reset');
             throw new Error('Failed to reset everything');
         }
@@ -634,11 +685,14 @@ async function resetEverything(callback) {
         let password = '';
         let code = '';
 
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const template = $(await renderTemplateAsync('userReset'));
         template.find('input[name="password"]').on('input', function () {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             password = String($(this).val());
         });
         template.find('input[name="code"]').on('input', function () {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             code = String($(this).val());
         });
         const confirm = await callGenericPopup(
@@ -660,10 +714,12 @@ async function resetEverything(callback) {
 
         if (!step2Response.ok) {
             const data = await step2Response.json();
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.error(data.error || 'Unknown error', 'Failed to reset');
             throw new Error('Failed to reset everything');
         }
 
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.success('Everything reset successfully', 'Reset Everything');
         callback();
     } catch (error) {
@@ -671,8 +727,12 @@ async function resetEverything(callback) {
     }
 }
 
+/**
+ *
+ */
 async function openUserProfile() {
     await getCurrentUser();
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const template = $(await renderTemplateAsync('userProfile'));
     template.find('.userName').text(currentUser.name);
     template.find('.userHandle').text(currentUser.handle);
@@ -692,8 +752,10 @@ async function openUserProfile() {
         template.find('.noPassword').toggle(!currentUser.password);
     }));
     template.find('.userBackupButton').on('click', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(this).addClass('disabled');
         backupUserData(currentUser.handle, () => {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(this).removeClass('disabled');
         });
     });
@@ -745,6 +807,7 @@ async function cropAndUploadAvatar(handle, file) {
     const dataUrl = await getBase64Async(await ensureImageFormatSupported(file));
     const croppedImage = await callGenericPopup('Set the crop position of the avatar image', POPUP_TYPE.CROP, '', { cropAspect: 1, cropImage: dataUrl });
     if (!croppedImage) {
+        // @ts-expect-error TS(7030): Not all code paths return a value.
         return;
     }
 
@@ -769,6 +832,7 @@ async function changeAvatar(handle, avatar) {
 
         if (!response.ok) {
             const data = await response.json();
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.error(data.error || 'Unknown error', 'Failed to change avatar');
             return;
         }
@@ -777,7 +841,13 @@ async function changeAvatar(handle, avatar) {
     }
 }
 
+/**
+ *
+ */
 async function openAdminPanel() {
+    /**
+     *
+     */
     async function renderUsers() {
         const users = await getUsers();
         template.find('.usersList').empty();
@@ -799,6 +869,7 @@ async function openAdminPanel() {
             userBlock.find('.userDelete').on('click', () => deleteUser(user.handle, renderUsers));
             userBlock.find('.userChangeNameButton').on('click', async () => changeName(user.handle, user.name, renderUsers));
             userBlock.find('.userBackupButton').on('click', function () {
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $(this).addClass('disabled').off('click');
                 backupUserData(user.handle, renderUsers);
             });
@@ -824,16 +895,20 @@ async function openAdminPanel() {
         }
     }
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const template = $(await renderTemplateAsync('admin'));
 
     template.find('.adminNav > button').on('click', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const target = String($(this).data('target-tab'));
         template.find('.navTab').each(function () {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(this).toggle(this.classList.contains(target));
         });
     });
 
     template.find('.createUserDisplayName').on('input', async function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const slug = await slugify(String($(this).val()));
         template.find('.createUserHandle').val(slug);
     });
@@ -909,6 +984,7 @@ async function extendUserSession() {
         });
 
         if (!response.ok) {
+            // @ts-expect-error TS(2322): Type 'number' is not assignable to type 'Error'.
             throw new Error('Ping did not succeed', { cause: response.status });
         }
     } catch (error) {
@@ -916,13 +992,17 @@ async function extendUserSession() {
     }
 }
 
+// @ts-expect-error TS(2304): Cannot find name 'jQuery'.
 jQuery(() => {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#logout_button').on('click', () => {
         logout();
     });
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#admin_button').on('click', () => {
         openAdminPanel();
     });
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#account_button').on('click', () => {
         openUserProfile();
     });

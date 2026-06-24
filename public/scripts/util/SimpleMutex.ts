@@ -35,6 +35,7 @@ export class SimpleMutex {
         // I'm free. Let's update!
         try {
             this.isBusy = true;
+            // @ts-expect-error TS(2556): A spread argument must either have a tuple type or... Remove this comment to see the full error message
             await this.callback(...args);
         } finally {
             this.isBusy = false;

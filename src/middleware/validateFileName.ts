@@ -18,11 +18,11 @@ function hasToString(o: any) {
  */
 export function getFileNameValidationFunction(fieldName: any) {
     /**
-    * Validates the field in the request body.
-    * @param {import('express').Request} req Request object
-    * @param {import('express').Response} res Response object
-    * @param {import('express').NextFunction} next Next middleware
-    */
+     * Validates the field in the request body.
+     * @param {import('express').Request} req Request object
+     * @param {import('express').Response} res Response object
+     * @param {import('express').NextFunction} next Next middleware
+     */
     return function validateAvatarUrlMiddleware(req: any, res: any, next: any) {
         if (req.body && fieldName in req.body && (typeof req.body[fieldName] === 'string' || hasToString(req.body[fieldName]))) {
             if (forbiddenRegExp.test(req.body[fieldName])) {

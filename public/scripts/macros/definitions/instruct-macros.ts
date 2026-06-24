@@ -13,7 +13,7 @@ export function registerInstructMacros() {
      * @param {() => string} getValue
      * @param {() => boolean} isEnabled
      * @param {string} description
-     * @param {string} [category=MacroCategory.PROMPTS]
+     * @param {string} [category]
      */
     function registerSimple(names, getValue, isEnabled, description, category = MacroCategory.PROMPTS) {
         const [primary, ...aliasNames] = names;

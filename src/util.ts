@@ -89,6 +89,9 @@ export function getConfig() {
  * @returns {any} Value for the given key
  */
 export function getConfigValue(key: any, defaultValue = null, typeConverter = null) {
+    /**
+     *
+     */
     function _getValue() {
         const envKey = keyToEnv(key);
         if (envKey in process.env) {
@@ -489,12 +492,21 @@ export async function readAllChunks(readableStream: any) {
     });
 }
 
+/**
+ *
+ * @param item
+ */
 function isObject(item: any) {
     return (item && typeof item === 'object' && !Array.isArray(item));
 }
 
+/**
+ *
+ * @param target
+ * @param source
+ */
 export function deepMerge(target: any, source: any) {
-    let output = Object.assign({}, target);
+    const output = Object.assign({}, target);
     if (isObject(target) && isObject(source)) {
         Object.keys(source).forEach(key => {
             if (isObject(source[key])) {
@@ -557,6 +569,10 @@ export function humanizedDateTime(timestamp = Date.now()) {
     return `${dt.year}-${dt.month}-${dt.day}@${dt.hour}h${dt.minute}m${dt.second}s${dt.millisecond}ms`;
 }
 
+/**
+ *
+ * @param str
+ */
 export function tryParse(str: any) {
     try {
         return JSON.parse(str);
@@ -584,11 +600,11 @@ export function clientRelativePath(root: any, inputPath: any) {
  * Returns a name that is unique among the names that exist.
  * @param {string} baseName The name to check.
  * @param {{ (name: string): boolean; }} exists Function to check if name exists.
- * @param {Object} [options] The options.
- * @param {((baseName: string, i: number) => string)|null} [options.nameBuilder=null] Function to build the name.
+ * @param {object} [options] The options.
+ * @param {((baseName: string, i: number) => string)|null} [options.nameBuilder] Function to build the name.
  *        Starts with the index provided by `startIndex` (default is 1). If not provided, uses "${baseName} (${i})".
- * @param {number} [options.maxTries=1000] The maximum number of tries to find a unique name. Default is 1000.
- * @param {number} [options.startIndex=1] The index to start with when building the name. Default is 1.
+ * @param {number} [options.maxTries] The maximum number of tries to find a unique name. Default is 1000.
+ * @param {number} [options.startIndex] The index to start with when building the name. Default is 1.
  *        When set to 0, the intention is to also check if the basename (without applied index) is free.
  * @returns {string|null} A unique name. Null if no unique name could be found in `maxTries`.
  */
@@ -625,6 +641,9 @@ export function removeFileExtension(filename: any) {
     return filename.replace(/\.[^.]+$/, '');
 }
 
+/**
+ *
+ */
 export function generateTimestamp() {
     const now = new Date();
     const year = now.getFullYear();
@@ -670,6 +689,9 @@ export function removeOldBackups(directory: any, prefix: any, limit = null) {
  * @returns {string[]} List of image file names
  */
 export function getImages(directoryPath: any, sortBy = 'name', type = MEDIA_REQUEST_TYPE.IMAGE) {
+    /**
+     *
+     */
     function getSortFunction() {
         switch (sortBy) {
             case 'name':
@@ -712,7 +734,7 @@ export function getImages(directoryPath: any, sortBy = 'name', type = MEDIA_REQU
  */
 export async function forwardFetchResponse(from: any, to: any) {
     let statusCode = from.status;
-    let statusText = from.statusText;
+    const statusText = from.statusText;
 
     // Avoid sending 401 responses as they reset the client Basic auth.
     // This can produce an interesting artifact as "400 Unauthorized", but it's not out of spec.
@@ -761,7 +783,6 @@ export async function forwardFetchResponse(from: any, to: any) {
 
 /**
  * Makes an HTTP/2 request to the specified endpoint.
- *
  * @deprecated Use `node-fetch` if possible.
  * @param {string} endpoint URL to make the request to
  * @param {string} method HTTP method to use
@@ -1035,7 +1056,6 @@ export async function canResolve(name: any, useIPv6 = true, useIPv4 = true) {
 
 /**
  * Checks the network interfaces to determine the presence of IPv6 and IPv4 addresses.
- *
  * @typedef {object} IPQueryResult
  * @property {boolean} hasIPv6Any - Whether the computer has any IPv6 address, including (`::1`).
  * @property {boolean} hasIPv4Any - Whether the computer has any IPv4 address, including (`127.0.0.1`).
@@ -1083,7 +1103,6 @@ export async function getHasIP() {
 /**
  * Converts various JavaScript primitives to boolean values.
  * Handles special case for "true"/"false" strings (case-insensitive)
- *
  * @param {any} value - The value to convert to boolean
  * @returns {boolean} - The boolean representation of the value
  */
@@ -1404,7 +1423,7 @@ export function isPathUnderParent(parentPath: any, childPath: any) {
 /**
  * Checks if the given request is a file URL.
  * @param {string | URL | Request} request The request to check
- * @return {boolean} Returns true if the request is a file URL, false otherwise
+ * @returns {boolean} Returns true if the request is a file URL, false otherwise
  */
 export function isFileURL(request: any) {
     if (typeof request === 'string') {
@@ -1422,7 +1441,7 @@ export function isFileURL(request: any) {
 /**
  * Gets the URL from the request.
  * @param {string | URL | Request} request The request to get the URL from
- * @return {string} The URL of the request
+ * @returns {string} The URL of the request
  */
 export function getRequestURL(request: any) {
     if (typeof request === 'string') {
@@ -1455,6 +1474,11 @@ export function flattenSchema(schema: any, api: any) {
     const definitions = schemaCopy.$defs || {};
     delete schemaCopy.$defs;
 
+    /**
+     *
+     * @param obj
+     * @param parents
+     */
     function resolve(obj: any, parents = []) {
         if (!obj || typeof obj !== 'object') {
             return obj;
@@ -1509,10 +1533,10 @@ export function tryWriteFileSync(filePath: any, data: any) {
 }
 
 /**
-* Attempts to read a file as utf8.
-* @param {string} filePath
-* @returns {string|null}
-*/
+ * Attempts to read a file as utf8.
+ * @param {string} filePath
+ * @returns {string|null}
+ */
 export function tryReadFileSync(filePath: any) {
     try {
         if (fs.existsSync(filePath)) {
@@ -1525,10 +1549,10 @@ export function tryReadFileSync(filePath: any) {
 }
 
 /**
-* Attempts to delete a file.
-* @param {string} filePath Target file.
-* @returns {boolean} Returns true if the file was found and deleted.
-*/
+ * Attempts to delete a file.
+ * @param {string} filePath Target file.
+ * @returns {boolean} Returns true if the file was found and deleted.
+ */
 export function tryDeleteFile(filePath: any) {
     if (fs.existsSync(filePath)) {
         fs.unlinkSync(filePath);

@@ -27,10 +27,9 @@ const observer = new MutationObserver(mutations => {
 
 /**
  * Generates dynamic focus styles based on the given stylesheet, taking its hover styles as reference
- *
  * @param {CSSStyleSheet} styleSheet - The stylesheet to process
  * @param {object} [options] - Optional configuration options
- * @param {boolean} [options.fromExtension=false] - Indicates if the styles are from an extension
+ * @param {boolean} [options.fromExtension] - Indicates if the styles are from an extension
  */
 function applyDynamicFocusStyles(styleSheet, { fromExtension = false } = {}) {
     /** @typedef {{ type: 'media'|'supports'|'container', conditionText: string }} WrapperCond */
@@ -88,10 +87,12 @@ function applyDynamicFocusStyles(styleSheet, { fromExtension = false } = {}) {
             } else if (rule instanceof CSSSupportsRule) {
                 // Recursively process nested @supports rules
                 processRules(rule.cssRules, [...wrappers, { type: 'supports', conditionText: rule.conditionText }]);
+            // @ts-expect-error TS(2551): Property 'CSSContainerRule' does not exist on type... Remove this comment to see the full error message
             } else if (rule instanceof window.CSSContainerRule) {
                 // Recursively process nested @container rules (if supported by the browser)
                 // Note: conditionText contains the query like "(min-width: 300px)" or "style(color)"
                 // Using 'container' as the type ensures uniqueness separate from @media/@supports
+                // @ts-expect-error TS(2339): Property 'cssRules' does not exist on type 'unknow... Remove this comment to see the full error message
                 processRules(rule.cssRules, [...wrappers, { type: 'container', conditionText: rule.conditionText }]);
             }
         });
@@ -157,10 +158,9 @@ function applyDynamicFocusStyles(styleSheet, { fromExtension = false } = {}) {
 
 /**
  * Retrieves the stylesheet that should be used for dynamic rules
- *
  * @param {object} options - The options object
- * @param {boolean} [options.fromExtension=false] - Indicates whether the rules are coming from extensions
- * @return {CSSStyleSheet} The dynamic stylesheet
+ * @param {boolean} [options.fromExtension] - Indicates whether the rules are coming from extensions
+ * @returns {CSSStyleSheet} The dynamic stylesheet
  */
 function getDynamicStyleSheet({ fromExtension = false } = {}) {
     if (fromExtension) {

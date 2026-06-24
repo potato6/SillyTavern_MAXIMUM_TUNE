@@ -1,11 +1,19 @@
 import { formatTime } from './utils.js';
 
 export class AudioPlayer {
+    audio: any;
+    boundHandlers: any;
+    container: any;
+    elements: any;
+    isDestroyed: any;
+    isDragging: any;
+    observer: any;
+    options: any;
     /**
      * Creates an audio player instance
      * @param {HTMLElement} audioElement - The audio element to control
      * @param {HTMLElement} containerElement - The container element with player controls
-     * @param {Object} options - Configuration options
+     * @param {object} options - Configuration options
      */
     constructor(audioElement, containerElement, options = {}) {
         if (!(audioElement instanceof HTMLAudioElement)) {

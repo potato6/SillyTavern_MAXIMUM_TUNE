@@ -124,8 +124,12 @@ export function isPersonaPanelOpen() {
     return document.querySelector('#persona-management-button .drawer-content')?.classList.contains('openDrawer') ?? false;
 }
 
+/**
+ *
+ */
 function switchPersonaGridView() {
     const state = accountStorage.getItem(GRID_STORAGE_KEY) === 'true';
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#user_avatar_block').toggleClass('gridView', state);
 }
 
@@ -138,6 +142,10 @@ export function getUserAvatar(avatarImg) {
     return `${USER_AVATAR_PATH}${avatarImg}`;
 }
 
+/**
+ *
+ * @param avatar
+ */
 export function initUserAvatar(avatar) {
     user_avatar = avatar;
     reloadUserAvatar();
@@ -148,11 +156,12 @@ export function initUserAvatar(avatar) {
  * Sets a user avatar file
  * @param {string} imgfile Link to an image file
  * @param {object} [options] Optional settings
- * @param {boolean} [options.toastPersonaNameChange=true] Whether to show a toast when the persona name is changed
- * @param {boolean} [options.navigateToCurrent=false] Whether to navigate to the current persona after setting the avatar
+ * @param {boolean} [options.toastPersonaNameChange] Whether to show a toast when the persona name is changed
+ * @param {boolean} [options.navigateToCurrent] Whether to navigate to the current persona after setting the avatar
  */
 export async function setUserAvatar(imgfile, { toastPersonaNameChange = true, navigateToCurrent = false } = {}) {
     const currentUserAvatar = user_avatar;
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     user_avatar = imgfile && typeof imgfile === 'string' ? imgfile : $(this).attr('data-avatar-id');
     if (currentUserAvatar === user_avatar) {
         return;
@@ -162,17 +171,25 @@ export async function setUserAvatar(imgfile, { toastPersonaNameChange = true, na
     selectCurrentPersona({ toastPersonaNameChange: toastPersonaNameChange });
     await retriggerFirstMessageOnEmptyChat();
     saveSettingsDebounced();
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('.zoomed_avatar[forchar]').remove();
     await eventSource.emit(event_types.PERSONA_CHANGED, user_avatar);
 }
 
+/**
+ *
+ * @param force
+ */
 function reloadUserAvatar(force = false) {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('.mes').each(function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const avatarImg = $(this).find('.avatar img');
         if (force) {
             avatarImg.attr('src', avatarImg.attr('src'));
         }
 
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         if ($(this).attr('is_user') == 'true' && $(this).attr('force_avatar') == 'false') {
             avatarImg.attr('src', getThumbnailUrl('persona', user_avatar));
         }
@@ -185,6 +202,7 @@ function reloadUserAvatar(force = false) {
  * @returns {string[]} The sorted persona names array, same reference as passed in
  */
 function sortPersonas(personas) {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const option = $('#persona_sort_order').find(':selected');
     if (option.attr('value') === 'search') {
         personas.sort((a, b) => {
@@ -206,7 +224,9 @@ function sortPersonas(personas) {
 /** Checks the state of the current search, and adds/removes the search sorting option accordingly */
 function verifyPersonaSearchSortRule() {
     const searchTerm = personasFilter.getFilterData(FILTER_TYPES.PERSONA_SEARCH);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const searchOption = $('#persona_sort_order option[value="search"]');
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const selector = $('#persona_sort_order');
     const isHidden = searchOption.attr('hidden') !== undefined;
 
@@ -229,12 +249,14 @@ function verifyPersonaSearchSortRule() {
  * @returns {JQuery<HTMLElement>} Avatar block
  */
 function getUserAvatarBlock(avatarId) {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const template = $('#user_avatar_template .avatar-container').clone();
     const personaName = power_user.personas[avatarId];
     const personaDescription = power_user.persona_descriptions[avatarId]?.description;
     const personaTitle = power_user.persona_descriptions[avatarId]?.title;
 
     template.find('.ch_name').text(personaName || '[Unnamed Persona]');
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     template.find('.ch_description').text(personaDescription || $('#user_avatar_block').attr('no_desc_text')).toggleClass('text_muted', !personaDescription);
     template.find('.ch_additional_info').text(personaTitle || '');
     template.attr('data-avatar-id', avatarId);
@@ -249,6 +271,7 @@ function getUserAvatarBlock(avatarId) {
         template.find('.ch_description').text(currentText + '\n\xa0\n\xa0');
     }
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#user_avatar_block').append(template);
     return template;
 }
@@ -272,6 +295,7 @@ async function addMissingPersonas(avatarsList) {
  * @param {string} openPageAt Item to be opened at
  * @returns {Promise<string[]>} List of avatar file names
  */
+// @ts-expect-error TS(7030): Not all code paths return a value.
 export async function getUserAvatars(doRender = true, openPageAt = '') {
     const response = await fetch('/api/avatars/get', {
         method: 'POST',
@@ -301,6 +325,7 @@ export async function getUserAvatars(doRender = true, openPageAt = '') {
         const perPage = Number(accountStorage.getItem(storageKey)) || 5;
         const sizeChangerOptions = [5, 10, 25, 50, 100, 250, 500, 1000];
 
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#persona_pagination_container').pagination({
             dataSource: entities,
             pageSize: perPage,
@@ -316,11 +341,14 @@ export async function getUserAvatars(doRender = true, openPageAt = '') {
             formatNavigator: PAGINATION_TEMPLATE,
             showNavigator: true,
             callback: function (data) {
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $(listId).empty();
                 for (const item of data) {
+                    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                     $(listId).append(getUserAvatarBlock(item));
                 }
                 updatePersonaUIStates();
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 localizePagination($('#persona_pagination_container'));
             },
             afterSizeSelectorChange: function (e, size) {
@@ -331,19 +359,23 @@ export async function getUserAvatars(doRender = true, openPageAt = '') {
                 savePersonasPage = e;
             },
             afterRender: function () {
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $(listId).scrollTop(0);
             },
         });
 
+        // @ts-expect-error TS(2322): Type '(avatarId: any) => void' is not assignable t... Remove this comment to see the full error message
         navigateToAvatar = (avatarId) => {
             const avatarIndex = entities.indexOf(avatarId);
             const page = Math.floor(avatarIndex / perPage) + 1;
 
             if (avatarIndex !== -1) {
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $('#persona_pagination_container').pagination('go', page);
             }
         };
 
+        // @ts-expect-error TS(2554): Expected 0 arguments, but got 1.
         openPageAt && navigateToAvatar(openPageAt);
 
         return allEntities;
@@ -383,6 +415,10 @@ async function uploadUserAvatar(url, name) {
     await getUserAvatars(true, data?.path || name);
 }
 
+/**
+ *
+ * @param e
+ */
 async function changeUserAvatar(e) {
     const form = document.getElementById('form_upload_avatar');
 
@@ -471,10 +507,14 @@ export async function createPersona(avatarId) {
 
     await initPersona(avatarId, personaName, personaDescription, '');
     if (power_user.persona_show_notifications) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.success(t`You can now pick ${personaName} as a persona in the Persona Management menu.`, t`Persona Created`);
     }
 }
 
+/**
+ *
+ */
 async function createDummyPersona() {
     const popup = new Popup(t`Enter a name for this persona:`, POPUP_TYPE.INPUT, '', {
         customInputs: [{
@@ -504,12 +544,12 @@ async function createDummyPersona() {
  * @param {string} personaName Name for the persona
  * @param {string} personaDescription Optional description for the persona
  * @param {string} personaTitle Optional title for the persona
- * @param {object} [options={}] Optional settings
- * @param {boolean} [options.silent=false] If true, no PERSONA_CREATED event is emitted (used for background migrations)
- * @param {number} [options.position=persona_description_positions.IN_PROMPT] Description position (defaults to IN_PROMPT)
- * @param {number} [options.depth=DEFAULT_DEPTH] Description depth (defaults to DEFAULT_DEPTH)
- * @param {number} [options.role=DEFAULT_ROLE] Description role (defaults to DEFAULT_ROLE)
- * @param {string} [options.lorebook=''] Attached lorebook name
+ * @param {object} [options] Optional settings
+ * @param {boolean} [options.silent] If true, no PERSONA_CREATED event is emitted (used for background migrations)
+ * @param {number} [options.position] Description position (defaults to IN_PROMPT)
+ * @param {number} [options.depth] Description depth (defaults to DEFAULT_DEPTH)
+ * @param {number} [options.role] Description role (defaults to DEFAULT_ROLE)
+ * @param {string} [options.lorebook] Attached lorebook name
  * @returns {Promise<void>}
  */
 export async function initPersona(avatarId, personaName, personaDescription, personaTitle, {
@@ -544,7 +584,6 @@ export async function initPersona(avatarId, personaName, personaDescription, per
  *
  * The function creates a new persona with the same name as the character, and sets the persona description to the character description with the macros swapped.
  * The function also saves the settings and refreshes the persona selector.
- *
  * @param {number} [characterId] - The ID of the character to convert to a persona. Defaults to the current character ID.
  * @returns {Promise<boolean>} A promise that resolves to true if the character was converted, false otherwise.
  */
@@ -599,6 +638,7 @@ export async function convertCharacterToPersona(characterId = null) {
     await eventSource.emit(event_types.PERSONA_CREATED, { avatarId: overwriteName, name, description, title: '' });
 
     console.log('Persona for character created');
+    // @ts-expect-error TS(2304): Cannot find name 'toastr'.
     toastr.success(t`You can now pick ${name} as a persona in the Persona Management menu.`, t`Persona Created`);
 
     // Refresh the persona selector
@@ -612,8 +652,10 @@ export async function convertCharacterToPersona(characterId = null) {
  * Counts the number of tokens in a persona description.
  */
 const countPersonaDescriptionTokens = debounce(async () => {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const description = String($('#persona_description').val());
     const count = await getTokenCountAsync(description);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#persona_description_token_count').text(String(count));
 }, debounce_timeout.relaxed);
 
@@ -621,23 +663,30 @@ const countPersonaDescriptionTokens = debounce(async () => {
  * Updates the UI for the Persona Management page with the current persona values
  */
 export function setPersonaDescription() {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#your_name').text(name1);
 
     if (power_user.persona_description_position === persona_description_positions.AFTER_CHAR) {
         power_user.persona_description_position = persona_description_positions.IN_PROMPT;
     }
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#persona_depth_position_settings').toggle(power_user.persona_description_position === persona_description_positions.AT_DEPTH);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#persona_description').val(power_user.persona_description);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#persona_depth_value').val(power_user.persona_description_depth ?? DEFAULT_DEPTH);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#persona_description_position')
         .val(power_user.persona_description_position)
         .find(`option[value="${power_user.persona_description_position}"]`)
         .attr('selected', String(true));
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#persona_depth_role')
         .val(power_user.persona_description_role)
         .find(`option[value="${power_user.persona_description_role}"]`)
         .prop('selected', String(true));
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#persona_lore_button').toggleClass('world_set', !!power_user.persona_description_lorebook);
     countPersonaDescriptionTokens();
 
@@ -647,7 +696,6 @@ export function setPersonaDescription() {
 
 /**
  * Gets a list of all personas in the current chat.
- *
  * @returns {string[]} An array of persona identifiers
  */
 function getPersonasOfCurrentChat() {
@@ -659,13 +707,12 @@ function getPersonasOfCurrentChat() {
 
 /**
  * Builds a list of persona avatars and populates the given block element with them.
- *
  * @param {HTMLElement} block - The HTML element where the avatar list will be rendered
  * @param {string[]} personas - An array of persona identifiers
- * @param {Object} [options] - Optional settings for building the avatar list
- * @param {boolean} [options.empty=true] - Whether to clear the block element before adding avatars
- * @param {boolean} [options.interactable=false] - Whether the avatars should be interactable
- * @param {boolean} [options.highlightFavs=true] - Whether to highlight favorite avatars
+ * @param {object} [options] - Optional settings for building the avatar list
+ * @param {boolean} [options.empty] - Whether to clear the block element before adding avatars
+ * @param {boolean} [options.interactable] - Whether the avatars should be interactable
+ * @param {boolean} [options.highlightFavs] - Whether to highlight favorite avatars
  */
 export function buildPersonaAvatarList(block, personas, { empty = true, interactable = false, highlightFavs = true } = {}) {
     const personaEntities = personas.map(avatar => ({
@@ -679,6 +726,7 @@ export function buildPersonaAvatarList(block, personas, { empty = true, interact
         },
     }));
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     buildAvatarList($(block), personaEntities, { empty: empty, interactable: interactable, highlightFavs: highlightFavs });
 }
 
@@ -702,22 +750,23 @@ export function updatePersonaConnectionsAvatarList() {
     }).filter(entity => entity?.item !== undefined);
 
     if (entities.length)
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         buildAvatarList($('#persona_connections_list'), entities, { interactable: true });
     else
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#persona_connections_list').text(t`[No character connections. Click one of the buttons above to connect this persona.]`);
 }
 
 
 /**
  * Displays a popup for persona selection and returns the selected persona.
- *
  * @param {string} title - The title to display in the popup
  * @param {string} text - The text to display in the popup
  * @param {string[]} personas - An array of persona ids to display for selection
- * @param {Object} [options] - Optional settings for the popup
- * @param {string} [options.okButton='None'] - The label for the OK button
+ * @param {object} [options] - Optional settings for the popup
+ * @param {string} [options.okButton] - The label for the OK button
  * @param {(element: HTMLElement, ev: MouseEvent) => any} [options.shiftClickHandler] - A function to handle shift-click
- * @param {boolean|string[]} [options.highlightPersonas=false] - Whether to highlight personas - either by providing a list of persona keys, or true to highlight all present in current chat
+ * @param {boolean|string[]} [options.highlightPersonas] - Whether to highlight personas - either by providing a list of persona keys, or true to highlight all present in current chat
  * @param {PersonaConnection} [options.targetedChar] - The targeted character or gorup for this persona selection
  * @returns {Promise<string?>} - A promise that resolves to the selected persona id or null if no selection was made
  */
@@ -741,11 +790,13 @@ export async function askForPersonaSelection(title, text, personas, { okButton =
     else
         personaListBlock.textContent = t`[Currently no personas connected]`;
 
+    // @ts-expect-error TS(2358): The left-hand side of an 'instanceof' expression m... Remove this comment to see the full error message
     const personasToHighlight = highlightPersonas instanceof Array ? highlightPersonas : (highlightPersonas ? getPersonasOfCurrentChat() : []);
 
     // Make the persona blocks clickable and close the popup
     personaListBlock.querySelectorAll('.avatar[data-type="persona"]').forEach(block => {
         if (!(block instanceof HTMLElement)) return;
+        // @ts-expect-error TS(4111): Property 'result' comes from an index signature, s... Remove this comment to see the full error message
         block.dataset.result = String(100 + personas.indexOf(block.dataset.pid));
 
         if (shiftClickHandler) {
@@ -756,6 +807,7 @@ export async function askForPersonaSelection(title, text, personas, { okButton =
             });
         }
 
+        // @ts-expect-error TS(4111): Property 'pid' comes from an index signature, so i... Remove this comment to see the full error message
         if (personasToHighlight && personasToHighlight.includes(block.dataset.pid)) {
             block.classList.add('is_active');
             block.title = block.title + '\n\n' + t`Was used in current chat.`;
@@ -772,6 +824,7 @@ export async function askForPersonaSelection(title, text, personas, { okButton =
             action: () => {
                 for (const [personaId, description] of Object.entries(power_user.persona_descriptions)) {
                     /** @type {PersonaConnection[]} */
+                    // @ts-expect-error TS(2339): Property 'connections' does not exist on type 'unk... Remove this comment to see the full error message
                     const connections = description.connections;
                     if (connections) {
                         power_user.persona_descriptions[personaId].connections = connections.filter(c => {
@@ -785,6 +838,7 @@ export async function askForPersonaSelection(title, text, personas, { okButton =
                 updatePersonaConnectionsAvatarList();
                 if (power_user.persona_show_notifications) {
                     const name = targetedChar.type == 'character' ? characters[targetedChar.id]?.name : groups[targetedChar.id]?.name;
+                    // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                     toastr.info(t`All connections to ${name} have been removed.`, t`Personas Unlocked`);
                 }
             },
@@ -799,8 +853,8 @@ export async function askForPersonaSelection(title, text, personas, { okButton =
 /**
  * Automatically selects a persona based on the given name if a matching persona exists.
  * @param {string} name - The name to search for
- * @param {Object} [options={}]
- * @param {string} [options.personaKey=null] - Optionally a persona avatar key to target (if multiple persona have the same name); must match the name
+ * @param {object} [options]
+ * @param {string} [options.personaKey] - Optionally a persona avatar key to target (if multiple persona have the same name); must match the name
  * @returns {Promise<boolean>} True if a matching persona was found and selected, false otherwise
  */
 export async function autoSelectPersona(name, { personaKey = null } = {}) {
@@ -890,13 +944,14 @@ async function renamePersona(avatarId) {
 
 /**
  * Selects the persona with the currently set avatar ID by updating the user name and persona description, and updating the locked persona if the setting is enabled.
- * @param {object} [options={}] - Optional settings
- * @param {boolean} [options.toastPersonaNameChange=true] - Whether to show a toast when the persona name is changed
+ * @param {object} [options] - Optional settings
+ * @param {boolean} [options.toastPersonaNameChange] - Whether to show a toast when the persona name is changed
  * @returns {Promise<void>}
  */
 async function selectCurrentPersona({ toastPersonaNameChange = true } = {}) {
     const personaName = power_user.personas[user_avatar];
     if (personaName) {
+        // @ts-expect-error TS(2339): Property 'persona_auto_lock' does not exist on typ... Remove this comment to see the full error message
         const shouldAutoLock = power_user.persona_auto_lock && user_avatar !== chat_metadata.persona;
 
         if (personaName !== name1) {
@@ -933,9 +988,11 @@ async function selectCurrentPersona({ toastPersonaNameChange = true } = {}) {
 
         // Update the locked persona if setting is enabled
         if (shouldAutoLock) {
+            // @ts-expect-error TS(2339): Property 'persona' does not exist on type '{}'.
             chat_metadata.persona = user_avatar;
             console.log(`Auto locked persona to ${user_avatar}`);
             if (toastPersonaNameChange && power_user.persona_show_notifications) {
+                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                 toastr.success(t`Persona ${personaName} selected and auto-locked to current chat`, t`Persona Selected`);
             }
             saveMetadataDebounced();
@@ -946,9 +1003,11 @@ async function selectCurrentPersona({ toastPersonaNameChange = true } = {}) {
         if (power_user.persona_show_notifications && !isPersonaPanelOpen()) {
             const temporary = getPersonaTemporaryLockInfo();
             if (temporary.isTemporary) {
+                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                 toastr.info(t`This persona is only temporarily chosen. Click for more info.`, t`Temporary Persona`, {
                     preventDuplicates: true,
                     onclick: () => {
+                        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                         toastr.info(escapeHtml(temporary.info).replaceAll('\n', '<br />'), t`Temporary Persona`, { escapeHtml: false });
                     },
                 });
@@ -977,6 +1036,7 @@ export function isPersonaLocked(type = 'chat') {
         case 'default':
             return power_user.default_persona === user_avatar;
         case 'chat':
+            // @ts-expect-error TS(2339): Property 'persona' does not exist on type '{}'.
             return chat_metadata.persona == user_avatar;
         case 'character': {
             return !!power_user.persona_descriptions[user_avatar]?.connections?.some(isPersonaConnectionLocked);
@@ -1023,11 +1083,14 @@ async function unlockPersona(type = 'chat') {
             break;
         }
         case 'chat': {
+            // @ts-expect-error TS(2339): Property 'persona' does not exist on type '{}'.
             if (chat_metadata.persona) {
                 console.log(`Unlocking persona ${user_avatar} from this chat`);
+                // @ts-expect-error TS(2339): Property 'persona' does not exist on type '{}'.
                 delete chat_metadata.persona;
                 await saveMetadata();
                 if (power_user.persona_show_notifications && !isPersonaPanelOpen()) {
+                    // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                     toastr.info(t`Persona ${name1} is now unlocked from this chat.`, t`Persona Unlocked`);
                 }
             }
@@ -1042,6 +1105,7 @@ async function unlockPersona(type = 'chat') {
                 saveSettingsDebounced();
                 updatePersonaConnectionsAvatarList();
                 if (power_user.persona_show_notifications && !isPersonaPanelOpen()) {
+                    // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                     toastr.info(t`Persona ${name1} is now unlocked from character ${name2}.`, t`Persona Unlocked`);
                 }
             }
@@ -1063,6 +1127,7 @@ async function lockPersona(type = 'chat') {
     if (!(user_avatar in power_user.personas)) {
         console.log(`Creating a new persona ${user_avatar}`);
         if (power_user.persona_show_notifications) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.info(t`Creating a new persona for currently selected user name and avatar...`, t`Persona Not Found`);
         }
         power_user.personas[user_avatar] = name1;
@@ -1085,9 +1150,11 @@ async function lockPersona(type = 'chat') {
         }
         case 'chat': {
             console.log(`Locking persona ${user_avatar} to this chat`);
+            // @ts-expect-error TS(2339): Property 'persona' does not exist on type '{}'.
             chat_metadata.persona = user_avatar;
             saveMetadataDebounced();
             if (power_user.persona_show_notifications && !isPersonaPanelOpen()) {
+                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                 toastr.success(t`User persona ${name1} is locked to ${name2} in this chat`, t`Persona Locked`);
             }
             break;
@@ -1101,12 +1168,16 @@ async function lockPersona(type = 'chat') {
                 power_user.persona_descriptions[user_avatar].connections = [...connections, newConnection];
 
                 const unlinkedCharacters = [];
+                // @ts-expect-error TS(2339): Property 'persona_allow_multi_connections' does no... Remove this comment to see the full error message
                 if (!power_user.persona_allow_multi_connections) {
                     for (const [avatarId, description] of Object.entries(power_user.persona_descriptions)) {
                         if (avatarId === user_avatar) continue;
 
+                        // @ts-expect-error TS(2339): Property 'connections' does not exist on type 'unk... Remove this comment to see the full error message
                         const filteredConnections = description.connections?.filter(c => !(c.type === newConnection.type && c.id === newConnection.id)) ?? [];
+                        // @ts-expect-error TS(2339): Property 'connections' does not exist on type 'unk... Remove this comment to see the full error message
                         if (filteredConnections.length !== description.connections?.length) {
+                            // @ts-expect-error TS(2339): Property 'connections' does not exist on type 'unk... Remove this comment to see the full error message
                             description.connections = filteredConnections;
                             unlinkedCharacters.push(power_user.personas[avatarId]);
                         }
@@ -1120,6 +1191,7 @@ async function lockPersona(type = 'chat') {
                     if (unlinkedCharacters.length)
                         additional += `<br /><br />${t`Unlinked existing persona${unlinkedCharacters.length > 1 ? 's' : ''}: ${unlinkedCharacters.map(escapeHtml).join(', ')}`}`;
                     if (additional || !isPersonaPanelOpen()) {
+                        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                         toastr.success(t`User persona ${escapeHtml(name1)} is locked to character ${escapeHtml(name2)}${additional}`, t`Persona Locked`, { escapeHtml: false });
                     }
                 }
@@ -1145,7 +1217,7 @@ async function deleteUserAvatar() {
  * Deletes a persona by avatar id.
  * @param {string} avatarId The persona's avatar id to delete
  * @param {object} [options] Options
- * @param {boolean} [options.silent=false] If true, skips the confirmation popup and suppresses toast notifications
+ * @param {boolean} [options.silent] If true, skips the confirmation popup and suppresses toast notifications
  * @returns {Promise<boolean>} True if the persona was deleted
  */
 async function deletePersona(avatarId, { silent = false } = {}) {
@@ -1181,12 +1253,16 @@ async function deletePersona(avatarId, { silent = false } = {}) {
         delete power_user.persona_descriptions[avatarId];
 
         if (avatarId === power_user.default_persona) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             if (!silent) toastr.warning(t`The default persona was deleted. You will need to set a new default persona.`, t`Default Persona Deleted`);
             power_user.default_persona = null;
         }
 
+        // @ts-expect-error TS(2339): Property 'persona' does not exist on type '{}'.
         if (avatarId === chat_metadata.persona) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             if (!silent) toastr.warning(t`The locked persona was deleted. You will need to set a new persona for this chat.`, t`Persona Deleted`);
+            // @ts-expect-error TS(2339): Property 'persona' does not exist on type '{}'.
             delete chat_metadata.persona;
             await saveMetadata();
         }
@@ -1203,7 +1279,11 @@ async function deletePersona(avatarId, { silent = false } = {}) {
     return false;
 }
 
+/**
+ *
+ */
 async function onPersonaDescriptionInput() {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     power_user.persona_description = String($('#persona_description').val());
     countPersonaDescriptionTokens();
 
@@ -1213,8 +1293,11 @@ async function onPersonaDescriptionInput() {
         if (!object) {
             object = {
                 description: power_user.persona_description,
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 position: Number($('#persona_description_position').find(':selected').val()),
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 depth: Number($('#persona_depth_value').val()),
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 role: Number($('#persona_depth_role').find(':selected').val()),
                 lorebook: '',
                 title: '',
@@ -1225,7 +1308,9 @@ async function onPersonaDescriptionInput() {
         object.description = power_user.persona_description;
     }
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(`.avatar-container[data-avatar-id="${user_avatar}"] .ch_description`)
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         .text(power_user.persona_description || $('#user_avatar_block').attr('no_desc_text'))
         .toggleClass('text_muted', !power_user.persona_description);
     saveSettingsDebounced();
@@ -1235,7 +1320,11 @@ async function onPersonaDescriptionInput() {
     }
 }
 
+/**
+ *
+ */
 async function onPersonaDescriptionDepthValueInput() {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     power_user.persona_description_depth = Number($('#persona_depth_value').val());
 
     if (power_user.personas[user_avatar]) {
@@ -1249,7 +1338,11 @@ async function onPersonaDescriptionDepthValueInput() {
     saveSettingsDebounced();
 }
 
+/**
+ *
+ */
 async function onPersonaDescriptionDepthRoleInput() {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     power_user.persona_description_role = Number($('#persona_depth_role').find(':selected').val());
 
     if (power_user.personas[user_avatar]) {
@@ -1272,6 +1365,7 @@ async function onPersonaLoreButtonClick({ shiftKey, altKey }) {
     const selectedLorebook = power_user.persona_description_lorebook;
 
     if (!personaName) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.warning(t`You must bind a name to this persona before you can set a lorebook.`, t`Persona Name Not Set`);
         return;
     }
@@ -1281,6 +1375,7 @@ async function onPersonaLoreButtonClick({ shiftKey, altKey }) {
         return;
     }
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const template = $(await renderTemplateAsync('personaLorebook'));
 
     const worldSelect = template.find('select');
@@ -1295,6 +1390,7 @@ async function onPersonaLoreButtonClick({ shiftKey, altKey }) {
     }
 
     worldSelect.on('change', async function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         power_user.persona_description_lorebook = String($(this).val());
 
         if (power_user.personas[user_avatar]) {
@@ -1302,6 +1398,7 @@ async function onPersonaLoreButtonClick({ shiftKey, altKey }) {
             object.lorebook = power_user.persona_description_lorebook;
         }
 
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#persona_lore_button').toggleClass('world_set', !!power_user.persona_description_lorebook);
         saveSettingsDebounced();
 
@@ -1313,8 +1410,12 @@ async function onPersonaLoreButtonClick({ shiftKey, altKey }) {
     await callGenericPopup(template, POPUP_TYPE.TEXT);
 }
 
+/**
+ *
+ */
 async function onPersonaDescriptionPositionInput() {
     power_user.persona_description_position = Number(
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#persona_description_position').find(':selected').val(),
     );
 
@@ -1323,14 +1424,19 @@ async function onPersonaDescriptionPositionInput() {
         object.position = power_user.persona_description_position;
         saveSettingsDebounced();
         await eventSource.emit(event_types.PERSONA_UPDATED, user_avatar);
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#persona_depth_position_settings').toggle(power_user.persona_description_position === persona_description_positions.AT_DEPTH);
         return;
     }
 
     saveSettingsDebounced();
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#persona_depth_position_settings').toggle(power_user.persona_description_position === persona_description_positions.AT_DEPTH);
 }
 
+/**
+ *
+ */
 export function getOrCreatePersonaDescriptor() {
     let object = power_user.persona_descriptions[user_avatar];
 
@@ -1353,7 +1459,7 @@ export function getOrCreatePersonaDescriptor() {
  * Sets a persona as the default one to be used for all new chats and unlocked existing chats
  * @param {string} avatarId The avatar id of the persona to set as the default
  * @param {object} [options] Optional arguments
- * @param {boolean} [options.quiet=false] If true, no confirmation popups will be shown
+ * @param {boolean} [options.quiet] If true, no confirmation popups will be shown
  * @returns {Promise<void>}
  */
 async function toggleDefaultPersona(avatarId, { quiet = false } = {}) {
@@ -1366,6 +1472,7 @@ async function toggleDefaultPersona(avatarId, { quiet = false } = {}) {
 
     if (power_user.personas[avatarId] === undefined) {
         console.warn(`No persona name found for avatar ${avatarId}`);
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.warning(t`You must bind a name to this persona before you can set it as the default.`, t`Persona Name Not Set`);
         return;
     }
@@ -1382,6 +1489,7 @@ async function toggleDefaultPersona(avatarId, { quiet = false } = {}) {
 
         console.log(`Removing default persona ${avatarId}`);
         if (power_user.persona_show_notifications && !isPersonaPanelOpen()) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.info(t`This persona will no longer be used by default when you open a new chat.`, t`Default Persona Removed`);
         }
         delete power_user.default_persona;
@@ -1399,6 +1507,7 @@ async function toggleDefaultPersona(avatarId, { quiet = false } = {}) {
 
         power_user.default_persona = avatarId;
         if (power_user.persona_show_notifications && !isPersonaPanelOpen()) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.success(t`Set to ${power_user.personas[avatarId]}.This persona will be used by default when you open a new chat.`, t`Default Persona`);
         }
     }
@@ -1420,6 +1529,7 @@ async function toggleDefaultPersona(avatarId, { quiet = false } = {}) {
  */
 function getPersonaStates(avatarId) {
     const isDefaultPersona = power_user.default_persona === avatarId;
+    // @ts-expect-error TS(2339): Property 'persona' does not exist on type '{}'.
     const hasChatLock = chat_metadata.persona == avatarId;
 
     /** @type {PersonaConnection[]} */
@@ -1444,36 +1554,55 @@ function getPersonaStates(avatarId) {
  * and character lock, as well as updating icons and labels in the persona management panel to reflect
  * the current state of the user's persona.
  * Additionally, it manages the display of temporary persona lock information.
- * @param {Object} [options={}] - Optional settings
+ * @param {object} [options={}] - Optional settings
  * @param {boolean} [options.navigateToCurrent=false] - Whether to navigate to the current persona in the persona list
  */
 
+/**
+ *
+ * @param root0
+ * @param root0.navigateToCurrent
+ */
 function updatePersonaUIStates({ navigateToCurrent = false } = {}) {
     if (navigateToCurrent) {
+        // @ts-expect-error TS(2554): Expected 0 arguments, but got 1.
         navigateToAvatar(user_avatar);
     }
 
     // Update the persona list
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#user_avatar_block .avatar-container').each(function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const avatarId = $(this).attr('data-avatar-id');
         const states = getPersonaStates(avatarId);
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(this).toggleClass('default_persona', states.default);
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(this).toggleClass('locked_to_chat', states.locked.chat);
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(this).toggleClass('locked_to_character', states.locked.character);
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(this).toggleClass('selected', avatarId === user_avatar);
     });
 
     // Buttons for the persona panel on the right
     const personaStates = getPersonaStates(user_avatar);
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#lock_persona_default').toggleClass('locked', personaStates.default);
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#lock_user_name').toggleClass('locked', personaStates.locked.chat);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#lock_user_name i.icon').toggleClass('fa-lock', personaStates.locked.chat);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#lock_user_name i.icon').toggleClass('fa-unlock', !personaStates.locked.chat);
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#lock_persona_to_char').toggleClass('locked', personaStates.locked.character);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#lock_persona_to_char i.icon').toggleClass('fa-lock', personaStates.locked.character);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#lock_persona_to_char i.icon').toggleClass('fa-unlock', !personaStates.locked.character);
 
     // Persona panel info block
@@ -1499,7 +1628,7 @@ function updatePersonaUIStates({ navigateToCurrent = false } = {}) {
 }
 
 /**
- * @typedef {Object} PersonaLockInfo
+ * @typedef {object} PersonaLockInfo
  * @property {boolean} isTemporary - Whether the selected persona is temporary based on current locks.
  * @property {boolean} hasDifferentChatLock - True if the chat persona is set and differs from the user avatar.
  * @property {boolean} hasDifferentDefaultLock - True if the default persona is set and differs from the user avatar.
@@ -1512,16 +1641,18 @@ function updatePersonaUIStates({ navigateToCurrent = false } = {}) {
  * This function checks whether the currently selected persona is temporary by comparing
  * the chat persona and the default persona to the user avatar. If either is different,
  * the currently selected persona is considered temporary and a detailed message is generated.
- *
  * @returns {PersonaLockInfo} An object containing flags and a message describing the persona lock status.
  */
 function getPersonaTemporaryLockInfo() {
+    // @ts-expect-error TS(2339): Property 'persona' does not exist on type '{}'.
     const hasDifferentChatLock = !!chat_metadata.persona && chat_metadata.persona !== user_avatar;
     const hasDifferentDefaultLock = power_user.default_persona && power_user.default_persona !== user_avatar;
+    // @ts-expect-error TS(2339): Property 'persona' does not exist on type '{}'.
     const isTemporary = hasDifferentChatLock || (!chat_metadata.persona && hasDifferentDefaultLock);
     const info = isTemporary ? t`A different persona is locked to this chat, or you have a different default persona set. The currently selected persona will only be temporary, and resets on reload. Consider locking this persona to the chat if you want to permanently use it.`
         + '\n\n'
         + t`Current Persona: ${power_user.personas[user_avatar]}`
+        // @ts-expect-error TS(2339): Property 'persona' does not exist on type '{}'.
         + (hasDifferentChatLock ? '\n' + t`Chat persona: ${power_user.personas[chat_metadata.persona]}` : '')
         + (hasDifferentDefaultLock ? '\n' + t`Default persona: ${power_user.personas[power_user.default_persona]}` : '') : '';
 
@@ -1535,13 +1666,13 @@ function getPersonaTemporaryLockInfo() {
 
 /**
  * Loads the appropriate persona for the current chat session based on locks (chat lock, char lock, default persona)
- *
- * @param {Object} [options={}] - Optional arguments
- * @param {boolean} [options.doRender=false] - Whether to render the persona immediately
+ * @param {object} [options] - Optional arguments
+ * @param {boolean} [options.doRender] - Whether to render the persona immediately
  * @returns {Promise<boolean>} - A promise that resolves to a boolean indicating whether a persona was selected
  */
 async function loadPersonaForCurrentChat({ doRender = false } = {}) {
     const currentChatId = getCurrentChatId();
+    // @ts-expect-error TS(7030): Not all code paths return a value.
     if (currentChatId === personaLastLoadedChatId) return;
     personaLastLoadedChatId = currentChatId;
 
@@ -1561,13 +1692,17 @@ async function loadPersonaForCurrentChat({ doRender = false } = {}) {
     let connectType = null;
 
     // If persona is locked in chat metadata, select it
+    // @ts-expect-error TS(2339): Property 'persona' does not exist on type '{}'.
     if (chat_metadata.persona) {
+        // @ts-expect-error TS(2339): Property 'persona' does not exist on type '{}'.
         console.log(`Using locked persona ${chat_metadata.persona}`);
+        // @ts-expect-error TS(2339): Property 'persona' does not exist on type '{}'.
         chatPersona = chat_metadata.persona;
 
         // Verify it exists
         if (!userAvatars.includes(chatPersona)) {
             console.warn('Chat-locked persona avatar not found, unlocking persona');
+            // @ts-expect-error TS(2339): Property 'persona' does not exist on type '{}'.
             delete chat_metadata.persona;
             saveSettingsDebounced();
             chatPersona = '';
@@ -1609,6 +1744,7 @@ async function loadPersonaForCurrentChat({ doRender = false } = {}) {
         if (connectedPersonas.length > 0) {
             if (connectedPersonas.length === 1) {
                 chatPersona = connectedPersonas[0];
+            // @ts-expect-error TS(2339): Property 'persona_allow_multi_connections' does no... Remove this comment to see the full error message
             } else if (!power_user.persona_allow_multi_connections) {
                 console.warn('More than one persona is connected to this character.Using the first available persona for this chat.');
                 chatPersona = connectedPersonas[0];
@@ -1631,8 +1767,10 @@ async function loadPersonaForCurrentChat({ doRender = false } = {}) {
     }
 
     // Whatever way we selected a persona, if it doesn't exist, unlock this chat
+    // @ts-expect-error TS(2339): Property 'persona' does not exist on type '{}'.
     if (chat_metadata.persona && !userAvatars.includes(chat_metadata.persona)) {
         console.warn('Persona avatar not found, unlocking persona');
+        // @ts-expect-error TS(2339): Property 'persona' does not exist on type '{}'.
         delete chat_metadata.persona;
     }
 
@@ -1645,6 +1783,7 @@ async function loadPersonaForCurrentChat({ doRender = false } = {}) {
 
     // Persona avatar found, select it
     if (chatPersona && user_avatar !== chatPersona) {
+        // @ts-expect-error TS(2339): Property 'persona_auto_lock' does not exist on typ... Remove this comment to see the full error message
         const willAutoLock = power_user.persona_auto_lock && user_avatar !== chat_metadata.persona;
         await setUserAvatar(chatPersona, { toastPersonaNameChange: false, navigateToCurrent: true });
 
@@ -1653,8 +1792,10 @@ async function loadPersonaForCurrentChat({ doRender = false } = {}) {
             if (willAutoLock) {
                 message += '<br /><br />' + t`Auto-locked this persona to current chat.`;
             }
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.success(message, t`Persona Auto Selected`, { escapeHtml: false });
         }
+    // @ts-expect-error TS(2339): Property 'persona_auto_lock' does not exist on typ... Remove this comment to see the full error message
     } else if (chatPersona && power_user.persona_auto_lock && !chat_metadata.persona) {
         // Even if it's the same persona, we still might need to auto-lock to chat if that's enabled
         await lockPersona('chat');
@@ -1674,6 +1815,7 @@ async function loadPersonaForCurrentChat({ doRender = false } = {}) {
 export function getConnectedPersonas(characterKey = undefined) {
     characterKey ??= selected_group || characters[Number(this_chid)]?.avatar;
     const connectedPersonas = Object.entries(power_user.persona_descriptions)
+        // @ts-expect-error TS(2339): Property 'connections' does not exist on type '{}'... Remove this comment to see the full error message
         .filter(([_, { connections }]) => connections?.some(conn => conn.id === characterKey))
         .map(([key, _]) => key);
     return connectedPersonas;
@@ -1683,7 +1825,7 @@ export function getConnectedPersonas(characterKey = undefined) {
 /**
  * Shows a popup with all personas connected to the currently selected character or group.
  * In the popup, the user can select a persona to load for the current character or group, or shift-click to remove the connection.
- * @return {Promise<void>}
+ * @returns {Promise<void>}
  */
 export async function showCharConnections() {
     let isRemoving = false;
@@ -1694,7 +1836,9 @@ export async function showCharConnections() {
         okButton: t`Ok`,
         highlightPersonas: true,
         targetedChar: getCurrentConnectionObj(),
+        // @ts-expect-error TS(6133): 'ev' is declared but its value is never read.
         shiftClickHandler: (element, ev) => {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const personaId = $(element).attr('data-pid');
 
             /** @type {PersonaConnection[]} */
@@ -1709,10 +1853,12 @@ export async function showCharConnections() {
                 saveSettingsDebounced();
                 updatePersonaConnectionsAvatarList();
                 if (power_user.persona_show_notifications) {
+                    // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                     toastr.info(t`User persona ${power_user.personas[personaId]} is now unlocked from the current character ${name2}.`, t`Persona unlocked`);
                 }
 
                 isRemoving = true;
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $('#char_connections_button').trigger('click');
             }
         },
@@ -1722,6 +1868,7 @@ export async function showCharConnections() {
     if (!isRemoving && selectedPersona) {
         await setUserAvatar(selectedPersona, { toastPersonaNameChange: false });
         if (power_user.persona_show_notifications) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.success(t`Selected persona ${power_user.personas[selectedPersona]} for current chat.`, t`Connected Persona Selected`);
         }
     }
@@ -1729,7 +1876,6 @@ export async function showCharConnections() {
 
 /**
  * Retrieves the current connection object based on whether the current chat is with a char or a group.
- *
  * @returns {PersonaConnection} An object representing the current connection
  */
 export function getCurrentConnectionObj() {
@@ -1740,6 +1886,9 @@ export function getCurrentConnectionObj() {
     return null;
 }
 
+/**
+ *
+ */
 function onBackupPersonas() {
     const timestamp = new Date().toISOString().split('T')[0].replace(/-/g, '');
     const filename = `personas_${timestamp}.json`;
@@ -1753,6 +1902,10 @@ function onBackupPersonas() {
     download(blob, filename, 'application/json');
 }
 
+/**
+ *
+ * @param e
+ */
 async function onPersonasRestoreInput(e) {
     const file = e.target.files[0];
 
@@ -1764,12 +1917,15 @@ async function onPersonasRestoreInput(e) {
     const data = await parseJsonFile(file);
 
     if (!data) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.warning(t`Invalid file selected`, t`Persona Management`);
         console.debug('Invalid file selected');
         return;
     }
 
+    // @ts-expect-error TS(2339): Property 'personas' does not exist on type 'unknow... Remove this comment to see the full error message
     if (!data.personas || !data.persona_descriptions || typeof data.personas !== 'object' || typeof data.persona_descriptions !== 'object') {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.warning(t`Invalid file format`, t`Persona Management`);
         console.debug('Invalid file selected');
         return;
@@ -1779,6 +1935,7 @@ async function onPersonasRestoreInput(e) {
     const warnings = [];
 
     // Merge personas with existing ones
+    // @ts-expect-error TS(2339): Property 'personas' does not exist on type 'unknow... Remove this comment to see the full error message
     for (const [key, value] of Object.entries(data.personas)) {
         if (key in power_user.personas) {
             warnings.push(`Persona "${key}" (${value}) already exists, skipping`);
@@ -1795,6 +1952,7 @@ async function onPersonasRestoreInput(e) {
     }
 
     // Merge persona descriptions with existing ones
+    // @ts-expect-error TS(2339): Property 'persona_descriptions' does not exist on ... Remove this comment to see the full error message
     for (const [key, value] of Object.entries(data.persona_descriptions)) {
         if (key in power_user.persona_descriptions) {
             warnings.push(`Persona description for "${key}" (${power_user.personas[key]}) already exists, skipping`);
@@ -1809,34 +1967,41 @@ async function onPersonasRestoreInput(e) {
         power_user.persona_descriptions[key] = value;
     }
 
+    // @ts-expect-error TS(2339): Property 'default_persona' does not exist on type ... Remove this comment to see the full error message
     if (data.default_persona) {
+        // @ts-expect-error TS(2339): Property 'default_persona' does not exist on type ... Remove this comment to see the full error message
         if (data.default_persona in power_user.personas) {
+            // @ts-expect-error TS(2339): Property 'default_persona' does not exist on type ... Remove this comment to see the full error message
             power_user.default_persona = data.default_persona;
         } else {
+            // @ts-expect-error TS(2339): Property 'default_persona' does not exist on type ... Remove this comment to see the full error message
             warnings.push(`Default persona "${data.default_persona}" does not exist, skipping`);
         }
     }
 
     if (warnings.length) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.success(t`Personas restored with warnings. Check console for details.`, t`Persona Management`);
         console.warn(`PERSONA RESTORE REPORT\n====================\n${warnings.join('\n')}`);
     } else {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.success(t`Personas restored successfully.`, t`Persona Management`);
     }
 
     await getUserAvatars();
     setPersonaDescription();
     saveSettingsDebounced();
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#personas_restore_input').val('');
 }
 
 /**
  * Synchronizes user-sent messages in the chat to the current persona.
- * @param {object} [options={}] - Optional parameters
- * @param {number} [options.start=0] - Start index of the message range (inclusive)
- * @param {number} [options.end=chat.length - 1] - End index of the message range (inclusive)
- * @param {boolean} [options.quiet=false] - If true, skips the confirmation popup
- * @param {string} [options.nameFilter=''] - Filter messages by name (case-insensitive)
+ * @param {object} [options] - Optional parameters
+ * @param {number} [options.start] - Start index of the message range (inclusive)
+ * @param {number} [options.end] - End index of the message range (inclusive)
+ * @param {boolean} [options.quiet] - If true, skips the confirmation popup
+ * @param {string} [options.nameFilter] - Filter messages by name (case-insensitive)
  * @returns {Promise<void>}
  */
 async function syncUserNameToPersona({ start = 0, end = chat.length - 1, quiet = false, nameFilter = '' } = {}) {
@@ -1873,6 +2038,7 @@ async function syncUserNameToPersona({ start = 0, end = chat.length - 1, quiet =
  * Retriggers the first message to reload it from the char definition.
  */
 export async function retriggerFirstMessageOnEmptyChat() {
+    // @ts-expect-error TS(2339): Property 'tainted' does not exist on type '{}'.
     if (chat_metadata.tainted) {
         return;
     }
@@ -1880,6 +2046,7 @@ export async function retriggerFirstMessageOnEmptyChat() {
         await reloadCurrentChat();
     }
     if (!selected_group && Number(this_chid) >= 0 && chat.length === 1) {
+        // @ts-expect-error TS(2554): Expected 1 arguments, but got 0.
         await createOrEditCharacter();
     }
 }
@@ -1888,14 +2055,15 @@ export async function retriggerFirstMessageOnEmptyChat() {
  * Duplicates a persona.
  * @param {string} avatarId Source persona avatar id
  * @param {object} [options] Options
- * @param {boolean} [options.silent=false] If true, skips the confirmation popup
- * @param {boolean} [options.select=false] If true, selects/activates the duplicated persona
+ * @param {boolean} [options.silent] If true, skips the confirmation popup
+ * @param {boolean} [options.select] If true, selects/activates the duplicated persona
  * @returns {Promise<string>} The avatar id of the new persona, or empty string on failure/cancellation
  */
 async function duplicatePersona(avatarId, { silent = false, select = false } = {}) {
     const personaName = power_user.personas[avatarId];
 
     if (!personaName) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.warning(t`Chosen avatar is not a persona`, t`Persona Management`);
         return '';
     }
@@ -2014,7 +2182,7 @@ function parsePersonaRole(value) {
  * @param {string} avatarId The persona's avatar file name
  * @param {string} base64Data Base64 data URL of the image
  * @param {object} [options] Options
- * @param {boolean} [options.resizePrompt=false] Whether to show the crop dialog
+ * @param {boolean} [options.resizePrompt] Whether to show the crop dialog
  * @returns {Promise<boolean>} True if upload was successful
  */
 async function uploadPersonaAvatar(avatarId, base64Data, { resizePrompt = false } = {}) {
@@ -2055,6 +2223,7 @@ async function uploadPersonaAvatar(avatarId, base64Data, { resizePrompt = false 
         return true;
     } catch (error) {
         console.error('Error uploading persona avatar:', error);
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.warning(t`Failed to upload avatar: ${error.message}`);
         return false;
     }
@@ -2069,6 +2238,7 @@ function getTargetPersona(personaArg) {
     if (personaArg) {
         const persona = findPersona({ name: personaArg });
         if (!persona) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.warning(t`Persona "${personaArg}" not found`);
             return null;
         }
@@ -2078,6 +2248,7 @@ function getTargetPersona(personaArg) {
     // Fall back to currently active persona
     const persona = findPersona({ preferCurrentPersona: true });
     if (!persona) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.warning(t`No persona selected and no persona argument provided`);
         return null;
     }
@@ -2096,6 +2267,7 @@ function getTargetPersona(personaArg) {
 async function createPersonaCallback(args) {
     const name = args.name;
     if (!name || typeof name !== 'string' || !name.trim()) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.warning(t`Persona name is required`);
         return '';
     }
@@ -2111,6 +2283,7 @@ async function createPersonaCallback(args) {
 
     let depth = args.descriptionDepth !== undefined ? Number(args.descriptionDepth) : DEFAULT_DEPTH;
     if (isNaN(depth)) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.warning(t`Invalid description depth "${args.descriptionDepth}", defaulting to ${DEFAULT_DEPTH}`);
         depth = DEFAULT_DEPTH;
     }
@@ -2141,6 +2314,7 @@ async function createPersonaCallback(args) {
         await setUserAvatar(avatarId);
     }
 
+    // @ts-expect-error TS(2304): Cannot find name 'toastr'.
     toastr.success(t`Persona "${trimmedName}" created successfully`);
     return avatarId;
 }
@@ -2158,6 +2332,7 @@ async function updatePersonaCallback(args) {
     const descriptor = power_user.persona_descriptions[avatarId];
 
     if (!descriptor) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.warning(t`Persona data not found for "${persona.name}"`);
         return '';
     }
@@ -2249,6 +2424,7 @@ async function updatePersonaCallback(args) {
     }
 
     if (!hasUpdates) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.info(t`No fields provided to update`);
         return avatarId;
     }
@@ -2263,6 +2439,7 @@ async function updatePersonaCallback(args) {
     await getUserAvatars(true, avatarId);
     updatePersonaUIStates();
 
+    // @ts-expect-error TS(2304): Cannot find name 'toastr'.
     toastr.success(t`Persona "${power_user.personas[avatarId]}" updated successfully`);
     return avatarId;
 }
@@ -2296,6 +2473,7 @@ async function getPersonaDataCallback(args) {
 
         const value = fieldMap[args.field];
         if (value === undefined) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.warning(t`Unknown persona field "${args.field}"`);
             return '';
         }
@@ -2353,10 +2531,12 @@ async function duplicatePersonaCallback(args) {
     const newAvatarId = await duplicatePersona(persona.avatar, { silent: true, select: shouldSelect });
 
     if (!newAvatarId) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.error(t`Failed to duplicate persona`);
         return '';
     }
 
+    // @ts-expect-error TS(2304): Cannot find name 'toastr'.
     toastr.success(t`Persona "${power_user.personas[newAvatarId]}" duplicated successfully`);
     return newAvatarId;
 }
@@ -2373,6 +2553,7 @@ async function lockPersonaCallback(_args, value) {
     const type = /** @type {PersonaLockType} */ (_args.type ?? 'chat');
 
     if (!['chat', 'character', 'default'].includes(type)) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.warning(t`Unknown lock type "${type}"`, t`Persona Management`);
         return '';
     }
@@ -2407,11 +2588,13 @@ async function lockPersonaCallback(_args, value) {
  */
 async function setNameCallback({ mode = 'all' }, name) {
     if (!name) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.warning('You must specify a name to change to');
         return '';
     }
 
     if (!['lookup', 'temp', 'all'].includes(mode)) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.warning('Mode must be one of "lookup", "temp" or "all"');
         return '';
     }
@@ -2425,6 +2608,7 @@ async function setNameCallback({ mode = 'all' }, name) {
             await autoSelectPersona(persona.name, { personaKey: persona.avatar });
             return '';
         } else if (mode === 'lookup') {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.warning(`Persona ${name} not found`);
             return '';
         }
@@ -2438,6 +2622,11 @@ async function setNameCallback({ mode = 'all' }, name) {
     return '';
 }
 
+/**
+ *
+ * @param args
+ * @param value
+ */
 async function syncCallback(args, value) {
     const range = value ? stringToRange(value, 0, chat.length - 1) : null;
 
@@ -2469,6 +2658,9 @@ function userMessageNamesEnumProvider() {
         .map(name => new SlashCommandEnumValue(name, null, enumTypes.name, enumIcons.persona));
 }
 
+/**
+ *
+ */
 function registerPersonaSlashCommands() {
     // Shared persona field definitions for persona CRUD commands
     const getPersonaFieldArgs = ({ requiredFields = [] } = {}) => [
@@ -2919,21 +3111,34 @@ function registerPersonaSlashCommands() {
 export async function initPersonas() {
     await migrateNonPersonaUser();
     registerPersonaSlashCommands();
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#persona_delete_button').on('click', deleteUserAvatar);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#lock_persona_default').on('click', () => togglePersonaLock('default'));
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#lock_user_name').on('click', () => togglePersonaLock('chat'));
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#lock_persona_to_char').on('click', () => togglePersonaLock('character'));
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#create_dummy_persona').on('click', createDummyPersona);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#persona_description').on('input', onPersonaDescriptionInput);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#persona_description_position').on('input', onPersonaDescriptionPositionInput);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#persona_depth_value').on('input', onPersonaDescriptionDepthValueInput);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#persona_depth_role').on('input', onPersonaDescriptionDepthRoleInput);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#persona_lore_button').on('click', onPersonaLoreButtonClick);
     addLongPressEvent('#persona_lore_button', function () {
         onPersonaLoreButtonClick({ shiftKey: true, altKey: false });
     });
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#persona-management-dropdown').on('change', async function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const target = $(this).find(':selected').attr('id');
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(this).prop('selectedIndex', 0);
         switch (target) {
             case 'persona_lorebook_link':
@@ -2941,16 +3146,22 @@ export async function initPersonas() {
                 break;
         }
     });
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#personas_backup').on('click', onBackupPersonas);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#personas_restore').on('click', () => $('#personas_restore_input').trigger('click'));
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#personas_restore_input').on('change', onPersonasRestoreInput);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#persona_sort_order').val(power_user.persona_sort_order).on('input', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const value = String($(this).val());
         // Save sort order, but do not save search sorting, as this is a temporary sorting option
         if (value !== 'search') power_user.persona_sort_order = value;
         getUserAvatars(true, user_avatar);
         saveSettingsDebounced();
     });
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#persona_grid_toggle').on('click', () => {
         const state = accountStorage.getItem(GRID_STORAGE_KEY) === 'true';
         accountStorage.setItem(GRID_STORAGE_KEY, String(!state));
@@ -2961,38 +3172,53 @@ export async function initPersonas() {
         personasFilter.setFilterData(FILTER_TYPES.PERSONA_SEARCH, searchQuery);
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#persona_search_bar').on('input', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const searchQuery = String($(this).val());
         debouncedPersonaSearch(searchQuery);
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#sync_name_button').on('click', async () => await syncUserNameToPersona());
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#avatar_upload_file').on('change', changeUserAvatar);
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '#user_avatar_block .avatar-container', async function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const imgfile = $(this).attr('data-avatar-id');
         await setUserAvatar(imgfile);
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#persona_rename_button').on('click', () => renamePersona(user_avatar));
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '#user_avatar_block .avatar_upload', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#avatar_upload_overwrite').val('');
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#avatar_upload_file').trigger('click');
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#persona_duplicate_button').on('click', () => duplicatePersona(user_avatar));
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#persona_set_image_button').on('click', function () {
         if (!user_avatar) {
             console.log('no imgfile');
             return;
         }
 
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#avatar_upload_overwrite').val(user_avatar);
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#avatar_upload_file').trigger('click');
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#char_connections_button').on('click', showCharConnections);
 
     eventSource.on(event_types.CHARACTER_MANAGEMENT_DROPDOWN, (target) => {

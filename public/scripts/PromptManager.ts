@@ -4,6 +4,7 @@ import { DOMPurify } from '../lib.js';
 
 import { event_types, eventSource, is_send_press, main_api, substituteParams } from '../script.js';
 import { is_group_generating } from './group-chats.js';
+// @ts-expect-error TS(6133): 'MessageCollection' is declared but its value is n... Remove this comment to see the full error message
 import { Message, MessageCollection, TokenHandler } from './openai.js';
 import { power_user } from './power-user.js';
 import { debounce, waitUntilCondition, escapeHtml, uuidv4 } from './utils.js';
@@ -13,6 +14,11 @@ import { Popup } from './popup.js';
 import { t } from './i18n.js';
 import { isMobile } from './RossAscends-mods.js';
 
+/**
+ *
+ * @param func
+ * @param delay
+ */
 function debouncePromise(func, delay) {
     let timeoutId;
 
@@ -164,8 +170,7 @@ class Prompt {
 
     /**
      * Create a new Prompt instance.
-     *
-     * @param {Object} [param0] - Object containing the properties of the prompt.
+     * @param {object} [param0] - Object containing the properties of the prompt.
      * @param {string} [param0.identifier] - The unique identifier of the prompt.
      * @param {string} [param0.role] - The role associated with the prompt.
      * @param {string} [param0.content] - The content of the prompt.
@@ -179,7 +184,20 @@ class Prompt {
      * @param {boolean} [param0.forbid_overrides] - Indicates if the prompt should not be overridden.
      * @param {boolean} [param0.extension] - Prompt is added by an extension.
      */
-    constructor({ identifier, role, content, name, system_prompt, position, injection_depth, injection_position, forbid_overrides, extension, injection_order, injection_trigger } = {}) {
+    constructor({
+        identifier,
+        role,
+        content,
+        name,
+        system_prompt,
+        position,
+        injection_depth,
+        injection_position,
+        forbid_overrides,
+        extension,
+        injection_order,
+        injection_trigger
+    }: any = {}) {
         this.identifier = identifier;
         this.role = role;
         this.content = content;
@@ -213,7 +231,6 @@ export class PromptCollection {
 
     /**
      * Create a new PromptCollection instance.
-     *
      * @param {...Prompt} prompts - An array of Prompt instances.
      */
     constructor(...prompts) {
@@ -222,12 +239,11 @@ export class PromptCollection {
 
     /**
      * Checks if the provided instances are of the Prompt class.
-     *
      * @param {...Prompt} prompts - Instances to check.
      * @throws Will throw an error if one or more instances are not of the Prompt class.
      */
     checkPromptInstance(...prompts) {
-        for (let prompt of prompts) {
+        for (const prompt of prompts) {
             if (!(prompt instanceof Prompt)) {
                 throw new Error('Only Prompt instances can be added to PromptCollection');
             }
@@ -236,7 +252,6 @@ export class PromptCollection {
 
     /**
      * Adds new Prompt instances to the collection.
-     *
      * @param {...Prompt} prompts - An array of Prompt instances.
      */
     add(...prompts) {
@@ -246,7 +261,6 @@ export class PromptCollection {
 
     /**
      * Sets a Prompt instance at a specific position in the collection.
-     *
      * @param {Prompt} prompt - The Prompt instance to set.
      * @param {number} position - The position in the collection to set the Prompt instance.
      */
@@ -257,7 +271,6 @@ export class PromptCollection {
 
     /**
      * Retrieves a Prompt instance from the collection by its identifier.
-     *
      * @param {string} identifier - The identifier of the Prompt instance to retrieve.
      * @returns {Prompt} The Prompt instance with the provided identifier, or undefined if not found.
      */
@@ -267,7 +280,6 @@ export class PromptCollection {
 
     /**
      * Retrieves the index of a Prompt instance in the collection by its identifier.
-     *
      * @param {string} identifier - The identifier of the Prompt instance to find.
      * @returns {number} The index of the Prompt instance in the collection, or -1 if not found.
      */
@@ -277,7 +289,6 @@ export class PromptCollection {
 
     /**
      * Checks if a Prompt instance exists in the collection by its identifier.
-     *
      * @param {string} identifier - The identifier of the Prompt instance to check.
      * @returns {boolean} true if the Prompt instance exists in the collection, false otherwise.
      */
@@ -287,7 +298,6 @@ export class PromptCollection {
 
     /**
      * Overrides a prompt at a specific position in the collection.
-     *
      * @param {Prompt} prompt - The Prompt instance to override.
      * @param {number} position - The position in the collection to override the Prompt instance.
      */
@@ -298,6 +308,34 @@ export class PromptCollection {
 }
 
 class PromptManager {
+    activeCharacter: any;
+    configuration: any;
+    containerElement: any;
+    error: any;
+    handleAppendPrompt: any;
+    handleCharacterExport: any;
+    handleCharacterReset: any;
+    handleDeletePrompt: any;
+    handleDetach: any;
+    handleEdit: any;
+    handleFullExport: any;
+    handleImport: any;
+    handleInspect: any;
+    handleNewPrompt: any;
+    handleResetPrompt: any;
+    handleSavePrompt: any;
+    handleToggle: any;
+    listElement: any;
+    messages: any;
+    overridablePrompts: any;
+    overriddenPrompts: any;
+    renderDebounced: any;
+    saveServiceSettings: any;
+    serviceSettings: any;
+    systemPrompts: any;
+    tokenHandler: any;
+    tokenUsage: any;
+    tryGenerate: any;
     get promptSources() {
         return {
             charDescription: t`Character Description`,
@@ -425,9 +463,8 @@ class PromptManager {
      *
      * Sets up various handlers for user interactions, event listeners and initial rendering of prompts.
      * It is also responsible for preparing prompt edit form buttons, managing popup form close and clear actions.
-     *
-     * @param {Object} moduleConfiguration - Configuration object for the PromptManager.
-     * @param {Object} serviceSettings - Service settings object for the PromptManager.
+     * @param {object} moduleConfiguration - Configuration object for the PromptManager.
+     * @param {object} serviceSettings - Service settings object for the PromptManager.
      */
     init(moduleConfiguration, serviceSettings) {
         this.configuration = Object.assign(this.configuration, moduleConfiguration);
@@ -558,20 +595,30 @@ class PromptManager {
             const entrySourceBlock = /** @type {HTMLDivElement} */(document.getElementById(this.configuration.prefix + 'prompt_manager_popup_entry_source_block'));
             const entrySource = /** @type {HTMLSpanElement} */(document.getElementById(this.configuration.prefix + 'prompt_manager_popup_entry_source'));
 
+            // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
             nameField.value = prompt.name;
+            // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
             roleField.value = 'system';
+            // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
             promptField.value = prompt.content ?? '';
+            // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
             injectionPositionField.value = (prompt.injection_position ?? 0).toString();
+            // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
             injectionDepthField.value = (prompt.injection_depth ?? DEFAULT_DEPTH).toString();
+            // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
             injectionOrderField.value = (prompt.injection_order ?? DEFAULT_ORDER).toString();
+            // @ts-expect-error TS(2339): Property 'options' does not exist on type 'HTMLEle... Remove this comment to see the full error message
             Array.from(injectionTriggerField.options).forEach(option => {
+                // @ts-expect-error TS(2339): Property 'selected' does not exist on type 'unknow... Remove this comment to see the full error message
                 option.selected = false;
             });
             injectionTriggerField.dispatchEvent(new Event('change', { bubbles: true }));
             depthBlock.style.visibility = prompt.injection_position === INJECTION_POSITION.ABSOLUTE ? 'visible' : 'hidden';
             orderBlock.style.visibility = prompt.injection_position === INJECTION_POSITION.ABSOLUTE ? 'visible' : 'hidden';
+            // @ts-expect-error TS(2339): Property 'checked' does not exist on type 'HTMLEle... Remove this comment to see the full error message
             forbidOverridesField.checked = prompt.forbid_overrides ?? false;
             forbidOverridesBlock.style.visibility = this.overridablePrompts.includes(prompt.identifier) ? 'visible' : 'hidden';
+            // @ts-expect-error TS(2339): Property 'disabled' does not exist on type 'HTMLEl... Remove this comment to see the full error message
             promptField.disabled = prompt.marker ?? false;
             entrySourceBlock.style.display = isPulledPrompt ? '' : 'none';
 
@@ -582,8 +629,10 @@ class PromptManager {
         };
 
         // Append prompt to selected character
+        // @ts-expect-error TS(6133): 'event' is declared but its value is never read.
         this.handleAppendPrompt = (event) => {
             const appendPromptFooter = /** @type {HTMLSelectElement} */(document.getElementById(this.configuration.prefix + 'prompt_manager_footer_append_prompt'));
+            // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
             const promptID = appendPromptFooter.value;
             const prompt = this.getPromptById(promptID);
 
@@ -595,10 +644,12 @@ class PromptManager {
         };
 
         // Delete selected prompt from list form and close edit form
+        // @ts-expect-error TS(6133): 'event' is declared but its value is never read.
         this.handleDeletePrompt = async (event) => {
             Popup.show.confirm(t`Are you sure you want to delete this prompt?`, null).then((userChoice) => {
                 if (!userChoice) return;
                 const appendPromptFooter = /** @type {HTMLSelectElement} */(document.getElementById(this.configuration.prefix + 'prompt_manager_footer_append_prompt'));
+                // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
                 const promptID = appendPromptFooter.value;
                 const prompt = this.getPromptById(promptID);
 
@@ -617,6 +668,7 @@ class PromptManager {
         };
 
         // Create new prompt, then save it to settings and close form.
+        // @ts-expect-error TS(6133): 'event' is declared but its value is never read.
         this.handleNewPrompt = (event) => {
             const prompt = {
                 identifier: this.getUuidv4(),
@@ -695,6 +747,7 @@ class PromptManager {
                                 const data = JSON.parse(fileContent.toString());
                                 this.import(data);
                             } catch (err) {
+                                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                                 toastr.error(t`An error occurred while importing prompts. More info available in console.`);
                                 console.log('An error occurred while importing prompts');
                                 console.log(err.toString());
@@ -734,6 +787,7 @@ class PromptManager {
                 // @see https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/offsetParent
                 const popupEditFormPrompt = /** @type {HTMLTextAreaElement} */(document.getElementById(this.configuration.prefix + 'prompt_manager_popup_entry_form_prompt'));
                 if (popupEditFormPrompt.offsetParent) {
+                    // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
                     popupEditFormPrompt.value = prompt.content;
                 }
 
@@ -795,6 +849,7 @@ class PromptManager {
             if (this.activeCharacter) this.renderDebounced();
         });
 
+        // @ts-expect-error TS(6133): 'event' is declared but its value is never read.
         document.getElementById('openai_max_tokens').addEventListener('change', (event) => {
             if (this.activeCharacter) this.renderDebounced();
         });
@@ -856,7 +911,6 @@ class PromptManager {
 
     /**
      * Main rendering function
-     *
      * @param afterTryGenerate - Whether a dry run should be attempted before rendering
      */
     render(afterTryGenerate = true) {
@@ -909,13 +963,21 @@ class PromptManager {
         const injectionTriggerField = /** @type {HTMLSelectElement} */(document.getElementById(this.configuration.prefix + 'prompt_manager_popup_entry_form_injection_trigger'));
         const forbidOverridesField = /** @type {HTMLInputElement} */(document.getElementById(this.configuration.prefix + 'prompt_manager_popup_entry_form_forbid_overrides'));
 
+        // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
         prompt.name = nameField.value;
+        // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
         prompt.role = roleField.value;
+        // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
         prompt.content = promptField.value;
+        // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
         prompt.injection_position = Number(injectionPositionField.value);
+        // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
         prompt.injection_depth = Number(injectionDepthField.value);
+        // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
         prompt.injection_order = Number(injectionOrderField.value);
+        // @ts-expect-error TS(2339): Property 'selectedOptions' does not exist on type ... Remove this comment to see the full error message
         prompt.injection_trigger = Array.from(injectionTriggerField.selectedOptions).map(option => option.value);
+        // @ts-expect-error TS(2339): Property 'checked' does not exist on type 'HTMLEle... Remove this comment to see the full error message
         prompt.forbid_overrides = forbidOverridesField.checked;
     }
 
@@ -937,7 +999,7 @@ class PromptManager {
      */
     updatePrompts(prompts) {
         prompts.forEach((update) => {
-            let prompt = this.getPromptById(update.identifier);
+            const prompt = this.getPromptById(update.identifier);
             if (prompt) Object.assign(prompt, update);
         });
     }
@@ -1037,7 +1099,6 @@ class PromptManager {
     /**
      * Checks whether entries of a characters prompt order are orphaned
      * and if all mandatory system prompts for a character are present.
-     *
      * @param prompts
      */
     checkForMissingPrompts(prompts) {
@@ -1061,6 +1122,7 @@ class PromptManager {
      * @param {Prompt} prompt - The prompt to check.
      * @returns {boolean} True if the prompt is a marker, false otherwise.
      */
+    // @ts-expect-error TS(6133): 'prompt' is declared but its value is never read.
     isPromptInspectionAllowed(prompt) {
         return true;
     }
@@ -1145,7 +1207,6 @@ class PromptManager {
 
     /**
      * Set the most recently selected character
-     *
      * @param event
      */
     handleCharacterUpdated(event) {
@@ -1160,7 +1221,6 @@ class PromptManager {
 
     /**
      * Set the most recently selected character group
-     *
      * @param event
      */
     handleGroupSelected(event) {
@@ -1179,7 +1239,6 @@ class PromptManager {
 
     /**
      * Get a list of group characters, regardless of whether they are active or not.
-     *
      * @returns {string[]}
      */
     getActiveGroupCharacters() {
@@ -1229,8 +1288,8 @@ class PromptManager {
 
     /**
      * Adds a new prompt list for a specific character.
-     * @param {Object} character - Object with at least an `id` property
-     * @param {Array<Object>} promptOrder - Array of prompt objects
+     * @param {object} character - Object with at least an `id` property
+     * @param {Array<object>} promptOrder - Array of prompt objects
      */
     addPromptOrderForCharacter(character, promptOrder) {
         this.serviceSettings.prompt_order.push({
@@ -1241,9 +1300,9 @@ class PromptManager {
 
     /**
      * Searches for a prompt list entry for a given character and identifier.
-     * @param {Object} character - Character object
+     * @param {object} character - Character object
      * @param {string} identifier - Identifier of the prompt list entry
-     * @returns {Object|null} The prompt list entry object, or null if not found
+     * @returns {object | null} The prompt list entry object, or null if not found
      */
     getPromptOrderEntry(character, identifier) {
         return this.getPromptOrderForCharacter(character).find(entry => entry.identifier === identifier) ?? null;
@@ -1269,7 +1328,6 @@ class PromptManager {
 
     /**
      * Enriches a generic object, creating a new prompt object in the process
-     *
      * @param {Partial<Prompt>} prompt - Prompt object
      * @param original
      * @returns {Prompt} An object with "role" and "content" properties
@@ -1294,7 +1352,8 @@ class PromptManager {
      *
      * The QuickEdit object provides methods to synchronize an input element's value with a prompt's content
      * and handle input events to update the prompt content.
-     *
+     * @param identifier
+     * @param title
      */
     createQuickEdit(identifier, title) {
         const prompt = this.getPromptById(identifier);
@@ -1313,6 +1372,7 @@ class PromptManager {
 
         const textarea = /** @type {HTMLTextAreaElement} */(document.getElementById(textareaIdentifier));
         textarea.addEventListener('blur', () => {
+            // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
             prompt.content = textarea.value;
             this.updatePromptByIdentifier(identifier, prompt);
             debouncedSaveServiceSettings().then(() => this.render());
@@ -1328,6 +1388,7 @@ class PromptManager {
     updateQuickEdit(identifier, prompt) {
         const elementId = `${identifier}_prompt_quick_edit_textarea`;
         const textarea = /** @type {HTMLTextAreaElement} */(document.getElementById(elementId));
+        // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
         textarea.value = prompt.content;
 
         return elementId;
@@ -1336,7 +1397,6 @@ class PromptManager {
     /**
      * Checks if a given name is accepted by OpenAi API
      * @link https://platform.openai.com/docs/api-reference/chat/create
-     *
      * @param name
      * @returns {boolean}
      */
@@ -1370,20 +1430,30 @@ class PromptManager {
         const entrySource = /** @type {HTMLSpanElement} */(document.getElementById(this.configuration.prefix + 'prompt_manager_popup_entry_source'));
         const isPulledPrompt = Object.keys(this.promptSources).includes(prompt.identifier);
 
+        // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
         nameField.value = prompt.name ?? '';
+        // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
         roleField.value = prompt.role || 'system';
+        // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
         promptField.value = prompt.content ?? '';
+        // @ts-expect-error TS(2339): Property 'disabled' does not exist on type 'HTMLEl... Remove this comment to see the full error message
         promptField.disabled = prompt.marker ?? false;
+        // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
         injectionPositionField.value = (prompt.injection_position ?? INJECTION_POSITION.RELATIVE).toString();
+        // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
         injectionDepthField.value = (prompt.injection_depth ?? DEFAULT_DEPTH).toString();
+        // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
         injectionOrderField.value = (prompt.injection_order ?? DEFAULT_ORDER).toString();
+        // @ts-expect-error TS(2339): Property 'options' does not exist on type 'HTMLEle... Remove this comment to see the full error message
         Array.from(injectionTriggerField.options).forEach(option => {
+            // @ts-expect-error TS(2339): Property 'selected' does not exist on type 'unknow... Remove this comment to see the full error message
             option.selected = Array.isArray(prompt.injection_trigger) && prompt.injection_trigger.includes(option.value);
         });
         injectionTriggerField.dispatchEvent(new Event('change', { bubbles: true }));
         injectionDepthBlock.style.visibility = prompt.injection_position === INJECTION_POSITION.ABSOLUTE ? 'visible' : 'hidden';
         injectionOrderBlock.style.visibility = prompt.injection_position === INJECTION_POSITION.ABSOLUTE ? 'visible' : 'hidden';
         injectionPositionField.removeAttribute('disabled');
+        // @ts-expect-error TS(2339): Property 'checked' does not exist on type 'HTMLEle... Remove this comment to see the full error message
         forbidOverridesField.checked = prompt.forbid_overrides ?? false;
         forbidOverridesBlock.style.visibility = this.overridablePrompts.includes(prompt.identifier) ? 'visible' : 'hidden';
         entrySourceBlock.style.display = isPulledPrompt ? '' : 'none';
@@ -1396,6 +1466,7 @@ class PromptManager {
         const resetPromptButton = document.getElementById(this.configuration.prefix + 'prompt_manager_popup_entry_form_reset');
         if (true === prompt.system_prompt) {
             resetPromptButton.style.display = 'block';
+            // @ts-expect-error TS(4111): Property 'pmPrompt' comes from an index signature,... Remove this comment to see the full error message
             resetPromptButton.dataset.pmPrompt = prompt.identifier;
         } else {
             resetPromptButton.style.display = 'none';
@@ -1405,6 +1476,7 @@ class PromptManager {
         injectionPositionField.addEventListener('change', (e) => this.handleInjectionPositionChange(e));
 
         const savePromptButton = document.getElementById(this.configuration.prefix + 'prompt_manager_popup_entry_form_save');
+        // @ts-expect-error TS(4111): Property 'pmPrompt' comes from an index signature,... Remove this comment to see the full error message
         savePromptButton.dataset.pmPrompt = prompt.identifier;
     }
 
@@ -1435,7 +1507,7 @@ class PromptManager {
             const content = message.content || 'No Content';
             const tokens = message.getTokens();
 
-            let drawerHTML = `
+            const drawerHTML = `
         <div class="inline-drawer ${this.configuration.prefix}prompt_manager_prompt">
             <div class="inline-drawer-toggle inline-drawer-header">
                 <span>Name: ${escapeHtml(title)}, Role: ${role}, Tokens: ${tokens}</span>
@@ -1445,7 +1517,7 @@ class PromptManager {
         </div>
         `;
 
-            let template = document.createElement('template');
+            const template = document.createElement('template');
             template.innerHTML = drawerHTML.trim();
             return template.content.firstChild;
         };
@@ -1482,22 +1554,32 @@ class PromptManager {
         const entrySourceBlock = /** @type {HTMLDivElement} */(document.getElementById(this.configuration.prefix + 'prompt_manager_popup_entry_source_block'));
         const entrySource = /** @type {HTMLSpanElement} */(document.getElementById(this.configuration.prefix + 'prompt_manager_popup_entry_source'));
 
+        // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
         nameField.value = '';
+        // @ts-expect-error TS(2339): Property 'selectedIndex' does not exist on type 'H... Remove this comment to see the full error message
         roleField.selectedIndex = 0;
+        // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
         promptField.value = '';
+        // @ts-expect-error TS(2339): Property 'disabled' does not exist on type 'HTMLEl... Remove this comment to see the full error message
         promptField.disabled = false;
+        // @ts-expect-error TS(2339): Property 'selectedIndex' does not exist on type 'H... Remove this comment to see the full error message
         injectionPositionField.selectedIndex = 0;
         injectionPositionField.removeAttribute('disabled');
+        // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
         injectionDepthField.value = DEFAULT_DEPTH.toString();
+        // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
         injectionOrderField.value = DEFAULT_ORDER.toString();
+        // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
         injectionTriggerField.value = '';
         injectionDepthBlock.style.visibility = 'unset';
         injectionOrderBlock.style.visibility = 'unset';
         forbidOverridesBlock.style.visibility = 'unset';
+        // @ts-expect-error TS(2339): Property 'checked' does not exist on type 'HTMLEle... Remove this comment to see the full error message
         forbidOverridesField.checked = false;
         entrySourceBlock.style.display = 'none';
         entrySource.textContent = '';
 
+        // @ts-expect-error TS(2339): Property 'disabled' does not exist on type 'HTMLEl... Remove this comment to see the full error message
         roleField.disabled = false;
     }
 
@@ -1554,7 +1636,6 @@ class PromptManager {
 
     /**
      * Setter for messages property
-     *
      * @param {import('./openai.js').MessageCollection} messages
      */
     setMessages(messages) {
@@ -1563,7 +1644,6 @@ class PromptManager {
 
     /**
      * Set and process a finished chat completion object
-     *
      * @param {import('./openai.js').ChatCompletion} chatCompletion
      */
     setChatCompletion(chatCompletion) {
@@ -1576,7 +1656,6 @@ class PromptManager {
 
     /**
      * Populates the token handler
-     *
      * @param {import('./openai.js').MessageCollection} messages
      */
     populateTokenCounts(messages) {
@@ -1767,25 +1846,28 @@ class PromptManager {
 
         // Now that the new elements are in the DOM, you can add the event listeners.
         Array.from(promptManagerList.getElementsByClassName('prompt-manager-detach-action')).forEach(el => {
+            // @ts-expect-error TS(2339): Property 'addEventListener' does not exist on type... Remove this comment to see the full error message
             el.addEventListener('click', this.handleDetach);
         });
 
         Array.from(promptManagerList.getElementsByClassName('prompt-manager-inspect-action')).forEach(el => {
+            // @ts-expect-error TS(2339): Property 'addEventListener' does not exist on type... Remove this comment to see the full error message
             el.addEventListener('click', this.handleInspect);
         });
 
         Array.from(promptManagerList.getElementsByClassName('prompt-manager-edit-action')).forEach(el => {
+            // @ts-expect-error TS(2339): Property 'addEventListener' does not exist on type... Remove this comment to see the full error message
             el.addEventListener('click', this.handleEdit);
         });
 
         Array.from(promptManagerList.querySelectorAll('.prompt-manager-toggle-action')).forEach(el => {
+            // @ts-expect-error TS(2339): Property 'addEventListener' does not exist on type... Remove this comment to see the full error message
             el.addEventListener('click', this.handleToggle);
         });
     }
 
     /**
      * Writes the passed data to a json file
-     *
      * @param data
      * @param type
      * @param name
@@ -1813,15 +1895,14 @@ class PromptManager {
 
     /**
      * Imports a json file with prompts and an optional prompt list for the active character
-     *
      * @param importData
      */
     import(importData) {
         const mergeKeepNewer = (prompts, newPrompts) => {
             let merged = [...prompts, ...newPrompts];
 
-            let map = new Map();
-            for (let obj of merged) {
+            const map = new Map();
+            for (const obj of merged) {
                 map.set(obj.identifier, obj);
             }
 
@@ -1840,6 +1921,7 @@ class PromptManager {
         };
 
         if (false === this.validateObject(controlObj, importData)) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.warning(t`Could not import prompts. Export failed validation.`);
             return;
         }
@@ -1863,19 +1945,19 @@ class PromptManager {
             throw new Error('Prompt order strategy not supported.');
         }
 
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.success(t`Prompt import complete.`);
         this.saveServiceSettings().then(() => this.render());
     }
 
     /**
      * Helper function to check whether the structure of object matches controlObj
-     *
      * @param controlObj
      * @param object
      * @returns {boolean}
      */
     validateObject(controlObj, object) {
-        for (let key in controlObj) {
+        for (const key in controlObj) {
             if (!Object.hasOwn(object, key)) {
                 if (controlObj[key] === null) continue;
                 else return false;
@@ -1894,7 +1976,6 @@ class PromptManager {
 
     /**
      * Get current date as mm/dd/YYYY
-     *
      * @returns {`${string}_${string}_${string}`}
      */
     getFormattedDate() {
@@ -1911,17 +1992,20 @@ class PromptManager {
 
     /**
      * Makes the prompt list draggable and handles swapping of two entries in the list.
-     * @typedef {Object} Entry
+     * @typedef {object} Entry
      * @property {string} identifier
      * @returns {void}
      */
     makeDraggable() {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(`#${this.configuration.prefix}prompt_manager_list`).sortable({
             delay: this.configuration.sortableDelay,
             handle: isMobile() ? '.drag-handle' : null,
             items: `.${this.configuration.prefix}prompt_manager_prompt_draggable`,
+            // @ts-expect-error TS(6133): 'event' is declared but its value is never read.
             update: (event, ui) => {
                 const promptOrder = this.getPromptOrderForCharacter(this.activeCharacter);
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 const promptListElement = $(`#${this.configuration.prefix}prompt_manager_list`).sortable('toArray', { attribute: 'data-pm-identifier' });
                 const idToObjectMap = new Map(promptOrder.map(prompt => [prompt.identifier, prompt]));
                 const updatedPromptOrder = promptListElement.map(identifier => idToObjectMap.get(identifier));
@@ -1938,12 +2022,14 @@ class PromptManager {
 
     /**
      * Slides down the edit form and adds the class 'openDrawer' to the first element of '#openai_prompt_manager_popup'.
+     * @param area
      * @returns {void}
      */
     showPopup(area = 'edit') {
         const areaElement = document.getElementById(this.configuration.prefix + 'prompt_manager_popup_' + area);
         areaElement.style.display = 'flex';
 
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#' + this.configuration.prefix + 'prompt_manager_popup').first()
             .slideDown(200, 'swing')
             .addClass('openDrawer');
@@ -1954,6 +2040,7 @@ class PromptManager {
      * @returns {void}
      */
     hidePopup() {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#' + this.configuration.prefix + 'prompt_manager_popup').first()
             .slideUp(200, 'swing')
             .removeClass('openDrawer');
@@ -1969,7 +2056,6 @@ class PromptManager {
 
     /**
      * Write to console with prefix
-     *
      * @param output
      */
     log(output) {
@@ -1978,7 +2064,6 @@ class PromptManager {
 
     /**
      * Start a profiling task
-     *
      * @param identifier
      */
     profileStart(identifier) {
@@ -1987,7 +2072,6 @@ class PromptManager {
 
     /**
      * End a profiling task
-     *
      * @param identifier
      */
     profileEnd(identifier) {

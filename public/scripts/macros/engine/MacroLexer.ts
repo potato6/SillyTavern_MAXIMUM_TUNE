@@ -295,7 +295,6 @@ const Def = {
 
 /**
  * The singleton instance of the MacroLexer.
- *
  * @type {MacroLexer}
  */
 let instance;
@@ -308,6 +307,7 @@ class MacroLexer extends Lexer {
     // Define the tokens
     /** @readonly */ static tokens = Tokens;
     /** @readonly */ static def = Def;
+    tokenize: any;
     /** @readonly */ tokens = Tokens;
     /** @readonly */ def = MacroLexer.def;
 
@@ -338,10 +338,9 @@ instance = MacroLexer.instance;
  * Marks the token to **enter** the following lexer mode.
  *
  * Optionally, you can specify the modes to exit when entering this mode.
- *
  * @param {TokenType} token - The token to modify
  * @param {string} mode - The mode to set
- * @param {object} [options={}] - Additional options
+ * @param {object} [options] - Additional options
  * @param {string} [options.andExits] - The modes to exit when entering this mode
  * @returns {TokenType} The token again
  */
@@ -364,7 +363,6 @@ function enter(token, mode, { andExits = undefined } = {}) {
  * Can be used inside the token mode definition block.
  *
  * Marks the token to **exit** the following lexer mode.
- *
  * @param {TokenType} token - The token to modify
  * @param {string} mode - The mode to leave
  * @returns {TokenType} The token again
@@ -380,7 +378,6 @@ function exits(token, mode) {
  * Can be used inside the token mode definition block.
  *
  * Marks the token to to just be used/consumed, and not exit or enter a mode.
- *
  * @param {TokenType} token - The token to modify
  * @returns {TokenType} The token again
  */

@@ -52,7 +52,7 @@ const STORAGE_KEYS = {
 };
 
 /**
- * @typedef {Object} User
+ * @typedef {object} User
  * @property {string} handle - The user's short handle. Used for directories and other references
  * @property {string} name - The user's name. Displayed in the UI
  * @property {number} created - The timestamp when the user was created
@@ -63,7 +63,7 @@ const STORAGE_KEYS = {
  */
 
 /**
- * @typedef {Object} UserViewModel
+ * @typedef {object} UserViewModel
  * @property {string} handle - The user's short handle. Used for directories and other references
  * @property {string} name - The user's name. Displayed in the UI
  * @property {string} avatar - The user's avatar image
@@ -74,7 +74,7 @@ const STORAGE_KEYS = {
  */
 
 /**
- * @typedef {Object} UserDirectoryList
+ * @typedef {object} UserDirectoryList
  * @property {string} root - The root directory for the user
  * @property {string} thumbnails - The directory where the thumbnails are stored
  * @property {string} thumbnailsBg - The directory where the background thumbnails are stored
@@ -199,6 +199,9 @@ export async function verifySecuritySettings() {
     }
 }
 
+/**
+ *
+ */
 export function cleanUploads() {
     try {
         const uploadsPath = path.join(globalThis.DATA_ROOT, UPLOADS_DIRECTORY);
@@ -435,6 +438,9 @@ export async function migrateUserData() {
     console.log(color.green('Migration completed!'));
 }
 
+/**
+ *
+ */
 export async function migrateSystemPrompts() {
     /**
      * Gets the default system prompts.
@@ -492,6 +498,9 @@ export async function migrateSystemPrompts() {
     }
 }
 
+/**
+ *
+ */
 export async function migratePublicOverrides() {
     const migrationMap = [
         {
@@ -620,6 +629,9 @@ export function getCookieSessionName() {
     return `session-${suffix}`;
 }
 
+/**
+ *
+ */
 export function getSessionCookieAge() {
     // Defaults to "no expiration" if not set
     const configValue = getConfigValue('sessionTimeout', -1, 'number');
@@ -823,7 +835,7 @@ async function authentikUserLogin(request: any) {
 /**
  * Check if the request can authenticate SSO users based on the trusted proxies configuration and the request's IP address.
  * @param {string} ip The IP address of the request
- * @return {boolean} If the request is from a trusted proxy based on the configuration
+ * @returns {boolean} If the request is from a trusted proxy based on the configuration
  */
 function isRequestFromTrustedProxy(ip: any) {
     if (!Array.isArray(TRUSTED_PROXIES)) {
@@ -861,7 +873,7 @@ function isRequestFromTrustedProxy(ip: any) {
 /**
  * Tries auto-login with a given header.
  * @param {import('express').Request} request Request object
- * @param {string} [header='Remote-User'] The header to use for the trusted user
+ * @param {string} [header] The header to use for the trusted user
  * @returns {Promise<boolean>} Whether auto-login was performed
  */
 async function headerUserLogin(request: any, header = 'Remote-User') {
@@ -974,7 +986,7 @@ export async function setUserDataMiddleware(request: any, response: any, next: a
     }
 
     // If user accounts are enabled, get the user from the session
-    let handle = request.session?.handle;
+    const handle = request.session?.handle;
 
     // If we have the only user and it's not password protected, use it
     if (!handle) {

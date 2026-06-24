@@ -2,7 +2,7 @@ import { DOMPurify, Handlebars } from '../lib.js';
 import { applyLocale } from './i18n.js';
 
 /**
- * @type {Map<string, function>}
+ * @type {Map<string, Function>}
  * @description Cache for Handlebars templates.
  */
 const TEMPLATE_CACHE = new Map();
@@ -58,6 +58,10 @@ function getUrlAsync(url) {
  * @returns {Promise<string>} Rendered template
  */
 export async function renderTemplateAsync(templateId, templateData = {}, sanitize = true, localize = true, fullPath = false) {
+    /**
+     *
+     * @param pathToTemplate
+     */
     async function fetchTemplateAsync(pathToTemplate) {
         let template = TEMPLATE_CACHE.get(pathToTemplate);
         if (!template) {
@@ -84,6 +88,7 @@ export async function renderTemplateAsync(templateId, templateData = {}, sanitiz
         return result;
     } catch (err) {
         console.error('Error rendering template', templateId, templateData, err);
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.error('Check the DevTools console for more information.', 'Error rendering template');
     }
 }
@@ -96,10 +101,13 @@ export async function renderTemplateAsync(templateId, templateData = {}, sanitiz
  * @param {boolean} localize Should the template be localized
  * @param {boolean} fullPath Should the template ID be treated as a full path or a relative path
  * @returns {string} Rendered template
- *
  * @deprecated Use renderTemplateAsync instead.
  */
 export function renderTemplate(templateId, templateData = {}, sanitize = true, localize = true, fullPath = false) {
+    /**
+     *
+     * @param pathToTemplate
+     */
     function fetchTemplateSync(pathToTemplate) {
         let template = TEMPLATE_CACHE.get(pathToTemplate);
         if (!template) {
@@ -126,6 +134,7 @@ export function renderTemplate(templateId, templateData = {}, sanitize = true, l
         return result;
     } catch (err) {
         console.error('Error rendering template', templateId, templateData, err);
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.error('Check the DevTools console for more information.', 'Error rendering template');
     }
 }

@@ -5,6 +5,7 @@
 
 import { MacroRegistry, MacroCategory } from './MacroRegistry.js';
 import { performFuzzySearch } from '../../power-user.js';
+// @ts-expect-error TS(2792): Cannot find module '/scripts/utils.js'. Did you me... Remove this comment to see the full error message
 import { escapeRegex } from '/scripts/utils.js';
 
 /** @typedef {import('./MacroRegistry.js').MacroDefinition} MacroDefinition */
@@ -162,6 +163,7 @@ export class MacroBrowser {
             const categoryHeader = document.createElement('div');
             categoryHeader.classList.add('macro-category-header');
             categoryHeader.textContent = getCategoryConfig(category).label;
+            // @ts-expect-error TS(4111): Property 'category' comes from an index signature,... Remove this comment to see the full error message
             categoryHeader.dataset.category = category;
             listPanel.appendChild(categoryHeader);
 
@@ -245,6 +247,7 @@ export class MacroBrowser {
         // Hide empty category headers
         this.dom.querySelectorAll('.macro-category-header').forEach(header => {
             if (!(header instanceof HTMLElement)) return;
+            // @ts-expect-error TS(4111): Property 'category' comes from an index signature,... Remove this comment to see the full error message
             const category = header.dataset.category;
             const hasVisible = Array.from(this.itemMap.values())
                 .filter(item => item.dataset.macroName)
@@ -286,6 +289,7 @@ export class MacroBrowser {
      * Handles keyboard shortcuts.
      * @param {KeyboardEvent} evt
      */
+    // @ts-expect-error TS(6133): '#handleKeyDown' is declared but its value is neve... Remove this comment to see the full error message
     #handleKeyDown(evt) {
         if (!evt.shiftKey && !evt.altKey && evt.ctrlKey && evt.key.toLowerCase() === 'f') {
             if (!this.dom.closest('body')) return;
@@ -302,7 +306,6 @@ export class MacroBrowser {
  * Gets the macro help content.
  * If experimental_macro_engine is enabled, returns a placeholder for the browser.
  * Otherwise returns the static template content.
- *
  * @returns {string} HTML string for help content
  */
 export function getMacrosHelp() {
@@ -434,6 +437,7 @@ function renderMacroItem(macro) {
     const item = document.createElement('div');
     item.classList.add('macro-item');
     if (macro.aliasOf) item.classList.add('isAlias');
+    // @ts-expect-error TS(4111): Property 'macroName' comes from an index signature... Remove this comment to see the full error message
     item.dataset.macroName = macro.name;
 
     // Signature (fixed width, truncates if too long)
@@ -462,12 +466,13 @@ function renderMacroItem(macro) {
  * Renders detailed information for a macro.
  * Can optionally highlight the current argument being typed.
  * @param {MacroDefinition} macro
- * @param {Object} [options]
- * @param {number} [options.currentArgIndex=-1] - Index of argument to highlight (-1 for none).
- * @param {boolean} [options.showCategory=true] - Whether to show category badge.
+ * @param {object} [options]
+ * @param {number} [options.currentArgIndex] - Index of argument to highlight (-1 for none).
+ * @param {boolean} [options.showCategory] - Whether to show category badge.
  * @returns {HTMLElement}
  */
 export function renderMacroDetails(macro, options = {}) {
+    // @ts-expect-error TS(2339): Property 'currentArgIndex' does not exist on type ... Remove this comment to see the full error message
     const { currentArgIndex = -1, showCategory = true } = options;
     const details = document.createElement('div');
     details.classList.add('macro-details');

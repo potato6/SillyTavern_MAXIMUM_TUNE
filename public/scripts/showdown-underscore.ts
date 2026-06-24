@@ -27,6 +27,9 @@ export const markdownUnderscoreExt = () => {
     }
 };
 
+/**
+ *
+ */
 function canUseNegativeLookbehind() {
     try {
         new RegExp('(?<!_)');

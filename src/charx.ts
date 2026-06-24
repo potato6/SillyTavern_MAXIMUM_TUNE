@@ -31,7 +31,7 @@ function findZipStart(buffer: any) {
 }
 
 /**
- * @typedef {Object} CharXAsset
+ * @typedef {object} CharXAsset
  * @property {string} type - Asset type (emotion, expression, background, etc.)
  * @property {string} name - Asset name from metadata
  * @property {string} ext - File extension (lowercase, no dot)
@@ -42,8 +42,8 @@ function findZipStart(buffer: any) {
  */
 
 /**
- * @typedef {Object} CharXParseResult
- * @property {Object} card - Parsed card.json (CCv2 or CCv3 spec)
+ * @typedef {object} CharXParseResult
+ * @property {object} card - Parsed card.json (CCv2 or CCv3 spec)
  * @property {string|Buffer} avatar - Avatar image buffer or DEFAULT_AVATAR_PATH
  * @property {CharXAsset[]} auxiliaryAssets - Assets mapped for storage
  * @property {Map<string, Buffer>} extractedBuffers - Map of zipPath to extracted buffer
@@ -304,7 +304,7 @@ function deleteExistingByBaseName(dirPath: any, baseName: any) {
  * Note: Uses sync writes consistent with ST's existing file handling.
  * @param {Array} assets - Mapped assets from CharXParser
  * @param {Map<string, Buffer>} bufferMap - Extracted file buffers
- * @param {Object} directories - User directories object
+ * @param {object} directories - User directories object
  * @param {string} characterFolder - Character folder name (sanitized)
  * @returns {{sprites: number, backgrounds: number, misc: number}}
  */

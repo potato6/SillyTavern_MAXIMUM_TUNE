@@ -16,7 +16,7 @@ import { getConfigValue, isPathUnderParent, uuidv4 } from '../util.js';
 export const METADATA_FILE = 'image-metadata.json';
 
 /**
- * @typedef {Object} ImageMetadata
+ * @typedef {object} ImageMetadata
  * @property {string} [hash] - SHA-256 hash of the image file.
  * @property {number} [aspectRatio] - Aspect ratio (width / height) of the image.
  * @property {boolean} [isAnimated] - Whether the image is animated.
@@ -28,7 +28,7 @@ export const METADATA_FILE = 'image-metadata.json';
  */
 
 /**
- * @typedef {Object} MetadataIndex
+ * @typedef {object} MetadataIndex
  * @property {number} version - Metadata version.
  * @property {Object.<string, ImageMetadata>} images - Mapping of relative paths to their metadata.
  * @property {Array<{id: string, name: string, thumbnailFile: string}>} folders - Virtual folders.

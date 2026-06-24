@@ -67,12 +67,14 @@ function handleNodeChange(node) {
         if (isKeyboardInteractable(node)) {
             makeKeyboardInteractable(node);
         }
+        // @ts-expect-error TS(2345): Argument of type 'Element' is not assignable to pa... Remove this comment to see the full error message
         initializeInteractables(node);
 
         // Handle scroll reset containers
         if (node.classList.contains('scroll-reset-container')) {
             applyScrollResetBehavior(node);
         }
+        // @ts-expect-error TS(2345): Argument of type 'Element' is not assignable to pa... Remove this comment to see the full error message
         initializeScrollResetBehaviors(node);
     }
 }
@@ -80,11 +82,10 @@ function handleNodeChange(node) {
 /**
  * Registers an interactable class (for example for an extension) and makes it keyboard interactable.
  * Optionally apply the 'not_focusable' and 'disabled' classes if needed.
- *
  * @param {string} interactableSelector - The CSS selector for the interactable (Supports class combinations, chained via dots like <c>tag.actionable</c>, and sub selectors)
- * @param {object} [options={}] - Optional settings for the interactable
- * @param {boolean} [options.disabledByDefault=false] - Whether interactables of this class should be disabled by default
- * @param {boolean} [options.notFocusableByDefault=false] - Whether interactables of this class should not be focusable by default
+ * @param {object} [options] - Optional settings for the interactable
+ * @param {boolean} [options.disabledByDefault] - Whether interactables of this class should be disabled by default
+ * @param {boolean} [options.notFocusableByDefault] - Whether interactables of this class should not be focusable by default
  */
 export function registerInteractableType(interactableSelector, { disabledByDefault = false, notFocusableByDefault = false } = {}) {
     interactableSelectors.push(interactableSelector);
@@ -103,7 +104,6 @@ export function registerInteractableType(interactableSelector, { disabledByDefau
 
 /**
  * Checks if the given control is a keyboard-enabled interactable.
- *
  * @param {Element} control - The control element to check
  * @returns {boolean} Returns true if the control is a keyboard interactable, false otherwise
  */
@@ -115,7 +115,6 @@ export function isKeyboardInteractable(control) {
 /**
  * Makes all the given controls keyboard interactable and sets their state.
  * If the control doesn't have any of the classes, it will be set to a custom-enabled keyboard interactable.
- *
  * @param {Element[]} interactables - The controls to make interactable and set their state
  */
 export function makeKeyboardInteractable(...interactables) {
@@ -160,8 +159,7 @@ export function makeKeyboardInteractable(...interactables) {
 
 /**
  * Initializes the focusability of controls on the given element or the document
- *
- * @param {Element|Document} [element=document] - The element on which to initialize the interactable state. Defaults to the document.
+ * @param {Element|Document} [element] - The element on which to initialize the interactable state. Defaults to the document.
  */
 function initializeInteractables(element = document) {
     const interactables = getAllInteractables(element);
@@ -170,7 +168,6 @@ function initializeInteractables(element = document) {
 
 /**
  * Queries all interactables within the given element based on the given selectors and returns them as an array
- *
  * @param {Element|Document} element - The element within which to query the interactables
  * @returns {HTMLElement[]} An array containing all the interactables that match the given selectors
  */
@@ -184,6 +181,7 @@ function getAllInteractables(element) {
  * @param {Element} container - The container
  */
 const applyScrollResetBehavior = (container) => {
+    // @ts-expect-error TS(6133): 'e' is declared but its value is never read.
     container.addEventListener('focusout', (e) => {
         setTimeout(() => {
             const focusedElement = document.activeElement;
@@ -197,8 +195,7 @@ const applyScrollResetBehavior = (container) => {
 
 /**
  * Initializes the scroll reset behavior on the given element or the document
- *
- * @param {Element|Document} [element=document] - The element on which to initialize the scroll reset behavior. Defaults to the document.
+ * @param {Element|Document} [element] - The element on which to initialize the scroll reset behavior. Defaults to the document.
  */
 function initializeScrollResetBehaviors(element = document) {
     const scrollResetContainers = element.querySelectorAll('.scroll-reset-container');
@@ -207,7 +204,6 @@ function initializeScrollResetBehaviors(element = document) {
 
 /**
  * Handles keydown events on the document to trigger click on Enter key press for interactables
- *
  * @param {KeyboardEvent} event - The keyboard event
  */
 function handleGlobalKeyDown(event) {

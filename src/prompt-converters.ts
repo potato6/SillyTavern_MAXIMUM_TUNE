@@ -170,9 +170,9 @@ export function convertClaudePrompt(messages: any, addAssistantPostfix: any, add
     }
 
     // Convert messages to the prompt.
-    let requestPrompt = messages.map((v: any, i: any) => {
+    const requestPrompt = messages.map((v: any, i: any) => {
         // Set prefix according to the role. Also, when "Exclude Human/Assistant prefixes" is checked, names are added via the system prefix.
-        let prefix = {
+        const prefix = {
             'assistant': '\n\nAssistant: ',
             'user': '\n\nHuman: ',
             'system': i === 0 ? '' : v.name === 'example_assistant' ? '\n\nA: ' : v.name === 'example_user' ? '\n\nH: ' : excludePrefixes && v.name ? `\n\n${v.name}: ` : '\n\n',
@@ -195,7 +195,7 @@ export function convertClaudePrompt(messages: any, addAssistantPostfix: any, add
  * @returns {{messages: object[], systemPrompt: object[]}} Prompt for Anthropic
  */
 export function convertClaudeMessages(messages: any, prefillString: any, useSysPrompt: any, useTools: any, names: any) {
-    let systemPrompt = [];
+    const systemPrompt = [];
     if (useSysPrompt) {
         // Collect all the system messages up until the first instance of a non-system message, and then remove them from the messages array.
         let i;
@@ -343,7 +343,7 @@ export function convertClaudeMessages(messages: any, prefillString: any, useSysP
 
     // Since the messaging endpoint only supports user assistant roles in turns, we have to merge messages with the same role if they follow eachother
     // Also handle multi-modality, holy slop.
-    let mergedMessages: any = [];
+    const mergedMessages: any = [];
     messages.forEach((message: any) => {
         if (mergedMessages.length > 0 && mergedMessages[mergedMessages.length - 1].role === message.role) {
             mergedMessages[mergedMessages.length - 1].content.push(...message.content);
@@ -679,7 +679,7 @@ export function convertAI21Messages(messages: any, names: any) {
     });
 
     // Since the messaging endpoint only supports alternating turns, we have to merge messages with the same role if they follow each other
-    let mergedMessages: any = [];
+    const mergedMessages: any = [];
     messages.forEach((message) => {
         if (mergedMessages.length > 0 && mergedMessages[mergedMessages.length - 1].role === message.role) {
             mergedMessages[mergedMessages.length - 1].content += '\n\n' + message.content;
@@ -823,7 +823,7 @@ export function convertXAIMessages(messages: any, names: any) {
  * @returns {any[]} Merged messages
  */
 export function mergeMessages(messages: any, names: any, { strict = false, placeholders = false, single = false, tools = false } = {}) {
-    let mergedMessages: any = [];
+    const mergedMessages: any = [];
 
     /** @type {Map<string,object>} */
     const contentTokens = new Map();
@@ -1063,7 +1063,6 @@ export function cachingAtDepthForOpenRouterClaude(messages: any, cachingAtDepth:
 
 /**
  * Adds cache_control to the system prompt for OpenRouter requests.
- *
  * @param {object[]} messages Array of messages
  * @param {string} [ttl] TTL value (optional)
  */
@@ -1178,6 +1177,9 @@ export function calculateClaudeBudgetTokens(maxTokens: any, reasoningEffort: any
  * @returns {number|string|null} Budget tokens
  */
 export function calculateGoogleBudgetTokens(maxTokens: any, reasoningEffort: any, model: any) {
+    /**
+     *
+     */
     function getFlashBudget() {
         let budgetTokens = 0;
 
@@ -1205,6 +1207,9 @@ export function calculateGoogleBudgetTokens(maxTokens: any, reasoningEffort: any
         return budgetTokens;
     }
 
+    /**
+     *
+     */
     function getFlashLiteBudget() {
         let budgetTokens = 0;
 
@@ -1232,6 +1237,9 @@ export function calculateGoogleBudgetTokens(maxTokens: any, reasoningEffort: any
         return budgetTokens;
     }
 
+    /**
+     *
+     */
     function getProBudget() {
         let budgetTokens = 0;
 
@@ -1260,6 +1268,9 @@ export function calculateGoogleBudgetTokens(maxTokens: any, reasoningEffort: any
         return budgetTokens;
     }
 
+    /**
+     *
+     */
     function getGemini3FlashBudget() {
         switch (reasoningEffort) {
             case REASONING_EFFORT.auto:
@@ -1279,6 +1290,9 @@ export function calculateGoogleBudgetTokens(maxTokens: any, reasoningEffort: any
         return null;
     }
 
+    /**
+     *
+     */
     function getGemini3ProBudget() {
         switch (reasoningEffort) {
             case REASONING_EFFORT.auto:
@@ -1388,7 +1402,7 @@ export function addReasoningContentToToolCalls(messages: any) {
  * Converts reasoning signatures to OpenRouter format.
  * @param {object[]} messages Array of messages
  * @param {string} model Model name
- * @return {void}
+ * @returns {void}
  */
 export function addOpenRouterSignatures(messages: any, model: any) {
     const getFormatForModel = () => {

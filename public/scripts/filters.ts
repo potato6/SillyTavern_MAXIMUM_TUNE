@@ -76,6 +76,7 @@ export const fuzzySearchCategories = Object.freeze({
  * data = filterHelper.applyFilters(data);
  */
 export class FilterHelper {
+    onDataChanged: any;
     /**
      * Cache fuzzy search weighting scores for re-usability, sorting and stuff
      *
@@ -223,6 +224,7 @@ export class FilterHelper {
      */
     tagFilter(data) {
         const TAG_LOGIC_AND = true; // switch to false to use OR logic for combining tags
+        // @ts-expect-error TS(2339): Property 'selected' does not exist on type 'string... Remove this comment to see the full error message
         const { selected, excluded } = this.filterData[FILTER_TYPES.TAG];
 
         if (!selected.length && !excluded.length) {
@@ -296,7 +298,7 @@ export class FilterHelper {
      * @param {FilterState|string} state The tri-state filter value (SELECTED, EXCLUDED, or UNDEFINED)
      * @param {Function} filterFunc A predicate function applied to each entity
      * @param {object} [options] Options object
-     * @param {boolean} [options.includeFolders=false] If true, entities with type 'tag' always pass through
+     * @param {boolean} [options.includeFolders] If true, entities with type 'tag' always pass through
      * @returns {any[]} The filtered data
      */
     filterDataByState(data, state, filterFunc, { includeFolders = false } = {}) {
@@ -333,6 +335,10 @@ export class FilterHelper {
         }
 
         const _this = this;
+        /**
+         *
+         * @param entity
+         */
         function getIsValidSearch(entity) {
             if (power_user.fuzzy_search) {
                 // We can filter easily by checking if we have saved a score
@@ -375,12 +381,13 @@ export class FilterHelper {
      * Applies all filters to the given data.
      * @param {any[]} data - The data to filter.
      * @param {object} options - Optional call parameters
-     * @param {boolean} [options.clearScoreCache=true] - Whether the score cache should be cleared.
-     * @param {Object.<FilterType, any>} [options.tempOverrides={}] - Temporarily override specific filters for this filter application
-     * @param {boolean} [options.clearFuzzySearchCaches=true] - Whether the fuzzy search caches should be cleared.
+     * @param {boolean} [options.clearScoreCache] - Whether the score cache should be cleared.
+     * @param {Object.<FilterType, any>} [options.tempOverrides] - Temporarily override specific filters for this filter application
+     * @param {boolean} [options.clearFuzzySearchCaches] - Whether the fuzzy search caches should be cleared.
      * @returns {any[]} The filtered data.
      */
     applyFilters(data, { clearScoreCache = true, tempOverrides = {}, clearFuzzySearchCaches = true } = {}) {
+        // @ts-expect-error TS(2554): Expected 1 arguments, but got 0.
         if (clearScoreCache) this.clearScoreCache();
 
         if (clearFuzzySearchCaches) this.clearFuzzySearchCaches();
@@ -454,6 +461,7 @@ export class FilterHelper {
      */
     clearFuzzySearchCaches() {
         for (const cache of Object.values(this.fuzzySearchCaches)) {
+            // @ts-expect-error TS(2339): Property 'resultMap' does not exist on type 'unkno... Remove this comment to see the full error message
             cache.resultMap.clear();
         }
     }

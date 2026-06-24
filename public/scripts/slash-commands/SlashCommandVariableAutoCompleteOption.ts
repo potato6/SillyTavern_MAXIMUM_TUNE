@@ -9,6 +9,7 @@ export class SlashCommandVariableAutoCompleteOption extends AutoCompleteOption {
     }
 
 
+    // @ts-expect-error TS(4114): This member must have an 'override' modifier becau... Remove this comment to see the full error message
     renderItem() {
         let li;
         li = this.makeItem(this.name, '[𝑥]', true);
@@ -18,6 +19,7 @@ export class SlashCommandVariableAutoCompleteOption extends AutoCompleteOption {
     }
 
 
+    // @ts-expect-error TS(4114): This member must have an 'override' modifier becau... Remove this comment to see the full error message
     renderDetails() {
         const frag = document.createDocumentFragment();
         const specs = document.createElement('div'); {

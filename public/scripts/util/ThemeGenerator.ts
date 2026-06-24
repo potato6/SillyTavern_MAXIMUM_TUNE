@@ -207,7 +207,7 @@ function ensureContrast(L, C, h, refRgb, minContrast, preferLight) {
 /**
  * Formats an RGB color as an RGBA string.
  * @param {{r: number, g: number, b: number}} rgb RGB color
- * @param {number} [alpha=1] Alpha value
+ * @param {number} [alpha] Alpha value
  * @returns {string} RGBA color string
  */
 function rgbaString(rgb, alpha = 1) {
@@ -218,7 +218,6 @@ function rgbaString(rgb, alpha = 1) {
  * Generates a complete theme color palette from a dominant background color.
  * Uses color theory (complementary, analogous, triadic relationships) in Oklch space
  * with accessibility contrast checking.
- *
  * @param {{r: number, g: number, b: number}} dominantRgb The dominant image color
  * @returns {Partial<Theme>} Theme color properties ready to merge into a theme object
  */

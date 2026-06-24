@@ -41,44 +41,72 @@ const chara_note_position = {
     after: 2,
 };
 
+/**
+ *
+ * @param _
+ * @param text
+ */
 function setNoteTextCommand(_, text) {
     if (text) {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#extension_floating_prompt').val(text).trigger('input');
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.success(t`Author's Note text updated`);
     }
     return chat_metadata[metadata_keys.prompt];
 }
 
+/**
+ *
+ * @param _
+ * @param text
+ */
 function setNoteDepthCommand(_, text) {
     if (text) {
         const value = Number(text);
 
         if (Number.isNaN(value)) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.error(t`Not a valid number`);
             return;
         }
 
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#extension_floating_depth').val(Math.abs(value)).trigger('input');
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.success(t`Author's Note depth updated`);
     }
     return chat_metadata[metadata_keys.depth];
 }
 
+/**
+ *
+ * @param _
+ * @param text
+ */
 function setNoteIntervalCommand(_, text) {
     if (text) {
         const value = Number(text);
 
         if (Number.isNaN(value)) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.error(t`Not a valid number`);
             return;
         }
 
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#extension_floating_interval').val(Math.abs(value)).trigger('input');
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.success(t`Author's Note frequency updated`);
     }
     return chat_metadata[metadata_keys.interval];
 }
 
+/**
+ *
+ * @param _
+ * @param text
+ */
 function setNotePositionCommand(_, text) {
     const validPositions = {
         'after': 0,
@@ -92,16 +120,25 @@ function setNotePositionCommand(_, text) {
         const position = validPositions[text?.trim()?.toLowerCase()];
 
         if (typeof position === 'undefined') {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.error(t`Not a valid position`);
+            // @ts-expect-error TS(7030): Not all code paths return a value.
             return;
         }
 
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(`input[name="extension_floating_position"][value="${position}"]`).prop('checked', true).trigger('input');
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.info(t`Author's Note position updated`);
     }
     return Object.keys(validPositions).find(key => validPositions[key] == chat_metadata[metadata_keys.position]);
 }
 
+/**
+ *
+ * @param _
+ * @param text
+ */
 function setNoteRoleCommand(_, text) {
     const validRoles = {
         'system': 0,
@@ -113,44 +150,67 @@ function setNoteRoleCommand(_, text) {
         const role = validRoles[text?.trim()?.toLowerCase()];
 
         if (typeof role === 'undefined') {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.error(t`Not a valid role`);
+            // @ts-expect-error TS(7030): Not all code paths return a value.
             return;
         }
 
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#extension_floating_role').val(Math.abs(role)).trigger('input');
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.info(t`Author's Note role updated`);
     }
     return Object.keys(validRoles).find(key => validRoles[key] == chat_metadata[metadata_keys.role]);
 }
 
+/**
+ *
+ */
 function updateSettings() {
     saveSettingsDebounced();
     loadSettings();
     setFloatingPrompt();
 }
 
+// @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
 const setMainPromptTokenCounterDebounced = debounce(async (value) => $('#extension_floating_prompt_token_counter').text(await getTokenCountAsync(value)), debounce_timeout.relaxed);
+// @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
 const setCharaPromptTokenCounterDebounced = debounce(async (value) => $('#extension_floating_chara_token_counter').text(await getTokenCountAsync(value)), debounce_timeout.relaxed);
+// @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
 const setDefaultPromptTokenCounterDebounced = debounce(async (value) => $('#extension_floating_default_token_counter').text(await getTokenCountAsync(value)), debounce_timeout.relaxed);
 
+/**
+ *
+ */
 async function onExtensionFloatingPromptInput() {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     chat_metadata[metadata_keys.prompt] = $(this).val();
     setMainPromptTokenCounterDebounced(chat_metadata[metadata_keys.prompt]);
     updateSettings();
     saveMetadataDebounced();
 }
 
+/**
+ *
+ */
 async function onExtensionFloatingIntervalInput() {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     chat_metadata[metadata_keys.interval] = Number($(this).val());
     updateSettings();
     saveMetadataDebounced();
 }
 
+/**
+ *
+ */
 async function onExtensionFloatingDepthInput() {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     let value = Number($(this).val());
 
     if (value < 0) {
         value = Math.abs(value);
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(this).val(value);
     }
 
@@ -159,44 +219,76 @@ async function onExtensionFloatingDepthInput() {
     saveMetadataDebounced();
 }
 
+/**
+ *
+ * @param e
+ */
 async function onExtensionFloatingPositionInput(e) {
     chat_metadata[metadata_keys.position] = Number(e.target.value);
     updateSettings();
     saveMetadataDebounced();
 }
 
+/**
+ *
+ * @param e
+ */
 async function onDefaultPositionInput(e) {
+    // @ts-expect-error TS(2339): Property 'defaultPosition' does not exist on type ... Remove this comment to see the full error message
     extension_settings.note.defaultPosition = Number(e.target.value);
     saveSettingsDebounced();
 }
 
+/**
+ *
+ */
 async function onDefaultDepthInput() {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     let value = Number($(this).val());
 
     if (value < 0) {
         value = Math.abs(value);
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(this).val(value);
     }
 
+    // @ts-expect-error TS(2339): Property 'defaultDepth' does not exist on type '{ ... Remove this comment to see the full error message
     extension_settings.note.defaultDepth = value;
     saveSettingsDebounced();
 }
 
+/**
+ *
+ */
 async function onDefaultIntervalInput() {
+    // @ts-expect-error TS(2339): Property 'defaultInterval' does not exist on type ... Remove this comment to see the full error message
     extension_settings.note.defaultInterval = Number($(this).val());
     saveSettingsDebounced();
 }
 
+/**
+ *
+ * @param e
+ */
 function onExtensionFloatingRoleInput(e) {
     chat_metadata[metadata_keys.role] = Number(e.target.value);
     updateSettings();
 }
 
+/**
+ *
+ * @param e
+ */
 function onExtensionDefaultRoleInput(e) {
+    // @ts-expect-error TS(2339): Property 'defaultRole' does not exist on type '{ d... Remove this comment to see the full error message
     extension_settings.note.defaultRole = Number(e.target.value);
     saveSettingsDebounced();
 }
 
+/**
+ *
+ * @param e
+ */
 async function onExtensionFloatingCharPositionInput(e) {
     const value = e.target.value;
     const charaNote = extension_settings.note.chara.find((e) => e.name === getCharaFilename());
@@ -207,10 +299,14 @@ async function onExtensionFloatingCharPositionInput(e) {
     }
 }
 
+/**
+ *
+ */
 function onExtensionFloatingCharaPromptInput() {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const tempPrompt = $(this).val();
     const avatarName = getCharaFilename();
-    let tempCharaNote = {
+    const tempCharaNote = {
         name: avatarName,
         prompt: tempPrompt,
     };
@@ -242,6 +338,7 @@ function onExtensionFloatingCharaPromptInput() {
         extension_settings.note.chara.push(tempCharaNote);
     } else {
         console.log('Character author\'s note error: No avatar name key could be found.');
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.error(t`Something went wrong. Could not save character's author's note.`);
 
         // Don't save settings if something went wrong
@@ -251,7 +348,11 @@ function onExtensionFloatingCharaPromptInput() {
     updateSettings();
 }
 
+/**
+ *
+ */
 function onExtensionFloatingCharaCheckboxChanged() {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const value = !!$(this).prop('checked');
     const charaNote = extension_settings.note.chara.find((e) => e.name === getCharaFilename());
 
@@ -262,65 +363,104 @@ function onExtensionFloatingCharaCheckboxChanged() {
     }
 }
 
+/**
+ *
+ */
 function onExtensionFloatingDefaultInput() {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     extension_settings.note.default = $(this).val();
     setDefaultPromptTokenCounterDebounced(extension_settings.note.default);
     updateSettings();
 }
 
+/**
+ *
+ */
 function loadSettings() {
     const DEFAULT_DEPTH = 4;
     const DEFAULT_POSITION = 1;
     const DEFAULT_INTERVAL = 1;
     const DEFAULT_ROLE = extension_prompt_roles.SYSTEM;
 
+    // @ts-expect-error TS(2339): Property 'defaultPosition' does not exist on type ... Remove this comment to see the full error message
     if (extension_settings.note.defaultPosition === undefined) {
+        // @ts-expect-error TS(2339): Property 'defaultPosition' does not exist on type ... Remove this comment to see the full error message
         extension_settings.note.defaultPosition = DEFAULT_POSITION;
     }
 
+    // @ts-expect-error TS(2339): Property 'defaultDepth' does not exist on type '{ ... Remove this comment to see the full error message
     if (extension_settings.note.defaultDepth === undefined) {
+        // @ts-expect-error TS(2339): Property 'defaultDepth' does not exist on type '{ ... Remove this comment to see the full error message
         extension_settings.note.defaultDepth = DEFAULT_DEPTH;
     }
 
+    // @ts-expect-error TS(2339): Property 'defaultInterval' does not exist on type ... Remove this comment to see the full error message
     if (extension_settings.note.defaultInterval === undefined) {
+        // @ts-expect-error TS(2339): Property 'defaultInterval' does not exist on type ... Remove this comment to see the full error message
         extension_settings.note.defaultInterval = DEFAULT_INTERVAL;
     }
 
+    // @ts-expect-error TS(2339): Property 'defaultRole' does not exist on type '{ d... Remove this comment to see the full error message
     if (extension_settings.note.defaultRole === undefined) {
+        // @ts-expect-error TS(2339): Property 'defaultRole' does not exist on type '{ d... Remove this comment to see the full error message
         extension_settings.note.defaultRole = DEFAULT_ROLE;
     }
 
     chat_metadata[metadata_keys.prompt] = chat_metadata[metadata_keys.prompt] ?? extension_settings.note.default ?? '';
+    // @ts-expect-error TS(2339): Property 'defaultInterval' does not exist on type ... Remove this comment to see the full error message
     chat_metadata[metadata_keys.interval] = chat_metadata[metadata_keys.interval] ?? extension_settings.note.defaultInterval ?? DEFAULT_INTERVAL;
+    // @ts-expect-error TS(2339): Property 'defaultPosition' does not exist on type ... Remove this comment to see the full error message
     chat_metadata[metadata_keys.position] = chat_metadata[metadata_keys.position] ?? extension_settings.note.defaultPosition ?? DEFAULT_POSITION;
+    // @ts-expect-error TS(2339): Property 'defaultDepth' does not exist on type '{ ... Remove this comment to see the full error message
     chat_metadata[metadata_keys.depth] = chat_metadata[metadata_keys.depth] ?? extension_settings.note.defaultDepth ?? DEFAULT_DEPTH;
+    // @ts-expect-error TS(2339): Property 'defaultRole' does not exist on type '{ d... Remove this comment to see the full error message
     chat_metadata[metadata_keys.role] = chat_metadata[metadata_keys.role] ?? extension_settings.note.defaultRole ?? DEFAULT_ROLE;
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#extension_floating_prompt').val(chat_metadata[metadata_keys.prompt]);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#extension_floating_interval').val(chat_metadata[metadata_keys.interval]);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#extension_floating_allow_wi_scan').prop('checked', extension_settings.note.allowWIScan ?? false);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#extension_floating_depth').val(chat_metadata[metadata_keys.depth]);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#extension_floating_role').val(chat_metadata[metadata_keys.role]);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(`input[name="extension_floating_position"][value="${chat_metadata[metadata_keys.position]}"]`).prop('checked', true);
 
     if (extension_settings.note.chara && getContext().characterId !== undefined) {
         const charaNote = extension_settings.note.chara.find((e) => e.name === getCharaFilename());
 
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#extension_floating_chara').val(charaNote ? charaNote.prompt : '');
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#extension_use_floating_chara').prop('checked', charaNote ? charaNote.useChara : false);
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(`input[name="extension_floating_char_position"][value="${charaNote?.position ?? chara_note_position.replace}"]`).prop('checked', true);
     } else {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#extension_floating_chara').val('');
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#extension_use_floating_chara').prop('checked', false);
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(`input[name="extension_floating_char_position"][value="${chara_note_position.replace}"]`).prop('checked', true);
     }
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#extension_floating_default').val(extension_settings.note.default);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#extension_default_depth').val(extension_settings.note.defaultDepth);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#extension_default_interval').val(extension_settings.note.defaultInterval);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#extension_default_role').val(extension_settings.note.defaultRole);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(`input[name="extension_default_position"][value="${extension_settings.note.defaultPosition}"]`).prop('checked', true);
 }
 
+/**
+ *
+ */
 export function setFloatingPrompt() {
     const context = getContext();
     if (!context.groupId && context.characterId === undefined) {
@@ -350,6 +490,7 @@ export function setFloatingPrompt() {
 
     if (lastMessageNumber <= 0 || chat_metadata[metadata_keys.interval] <= 0) {
         context.setExtensionPrompt(MODULE_NAME, '', extension_prompt_types.NONE, MAX_INJECTION_DEPTH);
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#extension_floating_counter').text('(disabled)');
         shouldWIAddPrompt = false;
         return;
@@ -361,6 +502,7 @@ export function setFloatingPrompt() {
     const shouldAddPrompt = messagesTillInsertion == 0;
     shouldWIAddPrompt = shouldAddPrompt;
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     let prompt = shouldAddPrompt ? $('#extension_floating_prompt').val() : '';
     if (shouldAddPrompt && extension_settings.note.chara && getContext().characterId !== undefined) {
         const charaNote = extension_settings.note.chara.find((e) => e.name === getCharaFilename());
@@ -385,19 +527,26 @@ export function setFloatingPrompt() {
         String(prompt),
         chat_metadata[metadata_keys.position],
         chat_metadata[metadata_keys.depth],
+        // @ts-expect-error TS(2339): Property 'allowWIScan' does not exist on type '{ d... Remove this comment to see the full error message
         extension_settings.note.allowWIScan,
         chat_metadata[metadata_keys.role],
     );
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#extension_floating_counter').text(shouldAddPrompt ? '0' : messagesTillInsertion);
 }
 
+/**
+ *
+ */
 function onANMenuItemClick() {
     if (!selected_group && this_chid === undefined) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.warning(t`Select a character before trying to use Author's Note`, '', { timeOut: 2000 });
         return;
     }
 
     //show AN if it's hidden
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const $ANcontainer = $('#floatingPrompt');
     if ($ANcontainer.css('display') !== 'flex') {
         $ANcontainer.addClass('resizing');
@@ -412,10 +561,12 @@ function onANMenuItemClick() {
         });
 
         //auto-open the main AN inline drawer
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         if ($('#ANBlockToggle')
             .siblings('.inline-drawer-content')
             .css('display') !== 'block') {
             $ANcontainer.addClass('resizing');
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#ANBlockToggle').trigger('click');
         }
     } else {
@@ -435,18 +586,24 @@ function onANMenuItemClick() {
 
     //duplicate options menu close handler from script.js
     //because this listener takes priority
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#options').stop().fadeOut(animation_duration);
 }
 
+/**
+ *
+ */
 async function onChatChanged() {
     loadSettings();
     setFloatingPrompt();
     const context = getContext();
 
     // Disable the chara note if in a group
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#extension_floating_chara').prop('disabled', !!context.groupId);
 
     const tokenCounter1 = chat_metadata[metadata_keys.prompt] ? await getTokenCountAsync(chat_metadata[metadata_keys.prompt]) : 0;
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#extension_floating_prompt_token_counter').text(tokenCounter1);
 
     let tokenCounter2;
@@ -458,13 +615,19 @@ async function onChatChanged() {
         }
     }
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#extension_floating_chara_token_counter').text(tokenCounter2 || 0);
 
     const tokenCounter3 = extension_settings.note.default ? await getTokenCountAsync(extension_settings.note.default) : 0;
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#extension_floating_default_token_counter').text(tokenCounter3);
 }
 
+/**
+ *
+ */
 function onAllowWIScanCheckboxChanged() {
+    // @ts-expect-error TS(2339): Property 'allowWIScan' does not exist on type '{ d... Remove this comment to see the full error message
     extension_settings.note.allowWIScan = !!$(this).prop('checked');
     updateSettings();
 }
@@ -474,28 +637,46 @@ function onAllowWIScanCheckboxChanged() {
  */
 // Inserts the extension first since it's statically imported
 export function initAuthorsNote() {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#extension_floating_prompt').on('input', onExtensionFloatingPromptInput);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#extension_floating_interval').on('input', onExtensionFloatingIntervalInput);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#extension_floating_depth').on('input', onExtensionFloatingDepthInput);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#extension_floating_chara').on('input', onExtensionFloatingCharaPromptInput);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#extension_use_floating_chara').on('input', onExtensionFloatingCharaCheckboxChanged);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#extension_floating_default').on('input', onExtensionFloatingDefaultInput);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#extension_default_depth').on('input', onDefaultDepthInput);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#extension_default_interval').on('input', onDefaultIntervalInput);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#extension_floating_allow_wi_scan').on('input', onAllowWIScanCheckboxChanged);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#extension_floating_role').on('input', onExtensionFloatingRoleInput);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#extension_default_role').on('input', onExtensionDefaultRoleInput);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('input[name="extension_floating_position"]').on('change', onExtensionFloatingPositionInput);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('input[name="extension_default_position"]').on('change', onDefaultPositionInput);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('input[name="extension_floating_char_position"]').on('change', onExtensionFloatingCharPositionInput);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#ANClose').on('click', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#floatingPrompt').transition({
             opacity: 0,
             duration: animation_duration,
             easing: 'ease-in-out',
         });
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         setTimeout(function () { $('#floatingPrompt').hide(); }, animation_duration);
     });
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#option_toggle_AN').on('click', onANMenuItemClick);
 
     SlashCommandParser.addCommandObject(SlashCommand.fromProps({
@@ -584,6 +765,9 @@ export function initAuthorsNote() {
     registerAuthorsNoteMacros();
 }
 
+/**
+ *
+ */
 function registerAuthorsNoteMacros() {
     if (power_user.experimental_macro_engine) {
         macros.register('authorsNote', {

@@ -13,6 +13,7 @@ export class MacroAutoCompleteOption extends AutoCompleteOption {
     }
 
 
+    // @ts-expect-error TS(4114): This member must have an 'override' modifier becau... Remove this comment to see the full error message
     renderItem() {
         let li;
         li = this.makeItem(`${this.fullName}`, '{}', true, [], [], null, this.description);
@@ -22,6 +23,7 @@ export class MacroAutoCompleteOption extends AutoCompleteOption {
     }
 
 
+    // @ts-expect-error TS(4114): This member must have an 'override' modifier becau... Remove this comment to see the full error message
     renderDetails() {
         const frag = document.createDocumentFragment();
         const specs = document.createElement('div'); {

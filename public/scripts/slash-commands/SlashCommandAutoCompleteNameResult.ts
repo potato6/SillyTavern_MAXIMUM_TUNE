@@ -1,10 +1,13 @@
 import { AutoCompleteNameResult } from '../autocomplete/AutoCompleteNameResult.js';
 import { AutoCompleteSecondaryNameResult } from '../autocomplete/AutoCompleteSecondaryNameResult.js';
+// @ts-expect-error TS(6133): 'SlashCommand' is declared but its value is never ... Remove this comment to see the full error message
 import { SlashCommand } from './SlashCommand.js';
 import { SlashCommandCommandAutoCompleteOption } from './SlashCommandCommandAutoCompleteOption.js';
 import { SlashCommandEnumAutoCompleteOption } from './SlashCommandEnumAutoCompleteOption.js';
+// @ts-expect-error TS(6133): 'SlashCommandExecutor' is declared but its value i... Remove this comment to see the full error message
 import { SlashCommandExecutor } from './SlashCommandExecutor.js';
 import { SlashCommandNamedArgumentAutoCompleteOption } from './SlashCommandNamedArgumentAutoCompleteOption.js';
+// @ts-expect-error TS(6133): 'SlashCommandScope' is declared but its value is n... Remove this comment to see the full error message
 import { SlashCommandScope } from './SlashCommandScope.js';
 
 export class SlashCommandAutoCompleteNameResult extends AutoCompleteNameResult {
@@ -32,6 +35,7 @@ export class SlashCommandAutoCompleteNameResult extends AutoCompleteNameResult {
         this.scope = scope;
     }
 
+    // @ts-expect-error TS(4114): This member must have an 'override' modifier becau... Remove this comment to see the full error message
     getSecondaryNameAt(text, index, isSelect) {
         const namedResult = this.getNamedArgumentAt(text, index, isSelect);
         if (!namedResult || namedResult.optionList.length == 0 || !namedResult.isRequired) {
@@ -52,6 +56,9 @@ export class SlashCommandAutoCompleteNameResult extends AutoCompleteNameResult {
     }
 
     getNamedArgumentAt(text, index, isSelect) {
+        /**
+         *
+         */
         function getSplitRegex() {
             try {
                 return new RegExp('(?<==)');
@@ -135,6 +142,7 @@ export class SlashCommandAutoCompleteNameResult extends AutoCompleteNameResult {
         return null;
     }
 
+    // @ts-expect-error TS(6133): 'text' is declared but its value is never read.
     getUnnamedArgumentAt(text, index, isSelect) {
         if (!Array.isArray(this.executor.command?.unnamedArgumentList)) {
             return null;

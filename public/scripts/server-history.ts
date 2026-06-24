@@ -23,20 +23,34 @@ function findServers(request, resolve, serverLabel) {
     resolve(result);
 }
 
+/**
+ *
+ * @param event
+ * @param ui
+ * @param serverLabel
+ */
 function selectServer(event, ui, serverLabel) {
     // unfocus the input
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(event.target).val(ui.item.value).trigger('input').trigger('blur');
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('[data-server-connect]').each(function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const serverLabels = String($(this).data('server-connect')).split(',');
 
         if (serverLabels.includes(serverLabel)) {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(this).trigger('click');
         }
     });
 }
 
+/**
+ *
+ */
 function createServerAutocomplete() {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const inputElement = $(this);
     const serverLabel = inputElement.data('server-history');
 
@@ -49,11 +63,19 @@ function createServerAutocomplete() {
         .on('focus', onInputFocus); // <== show tag list on click
 }
 
+/**
+ *
+ */
 function onInputFocus() {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(this).autocomplete('search', $(this).val());
 }
 
+/**
+ *
+ */
 function onServerConnectClick() {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const serverLabels = String($(this).data('server-connect')).split(',');
 
     serverLabels.forEach(serverLabel => {
@@ -61,6 +83,7 @@ function onServerConnectClick() {
             power_user.servers = [];
         }
 
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const value = String($(`[data-server-history="${serverLabel}"]`).val()).toLowerCase().trim();
 
         // Don't save empty values or invalid URLs
@@ -80,7 +103,12 @@ function onServerConnectClick() {
     });
 }
 
+/**
+ *
+ */
 export function initServerHistory() {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('[data-server-history]').each(createServerAutocomplete);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '[data-server-connect]', onServerConnectClick);
 }

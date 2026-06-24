@@ -6,6 +6,7 @@ import { power_user } from './power-user.js';
 import { isMobile } from './RossAscends-mods.js';
 import { getTokenCountAsync } from './tokenizers.js';
 import { addLongPressEvent, clamp, copyText, timestampToMoment } from './utils.js';
+// @ts-expect-error TS(2792): Cannot find module '/script.js'. Did you mean to s... Remove this comment to see the full error message
 import { chat, deleteSwipe, ensureSwipes, isMessageSwipeable, isSwipingAllowed, swipe, syncMesToSwipe } from '/script.js';
 
 /**
@@ -53,6 +54,7 @@ async function openSwipePicker(messageId) {
     const message = chat[messageId];
 
     if (!canOpenSwipePickerForMessage(messageId)) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.info(t`This message has no alternate swipes yet.`, t`Jump to Swipe`);
         return;
     }
@@ -83,12 +85,19 @@ async function openSwipePicker(messageId) {
     /** @type {number|null} */
     let branchActionSwipeId = null;
 
+    /**
+     *
+     */
     function syncSwipeIdInput() {
         if (swipeIdInput) {
             swipeIdInput.value = String(selectedSwipeId + 1);
         }
     }
 
+    /**
+     *
+     * @param nextSwipeId
+     */
     function setSelectedSwipe(nextSwipeId) {
         selectedSwipeId = clamp(Number(nextSwipeId), 0, message.swipes.length - 1);
         listContainer.querySelectorAll('.swipe_picker_block').forEach((element) => {
@@ -102,6 +111,9 @@ async function openSwipePicker(messageId) {
         syncSwipeIdInput();
     }
 
+    /**
+     *
+     */
     function scrollToSelectedSwipe() {
         const swipeBlock = listContainer.querySelector(`.swipe_picker_block[data-swipe-id="${selectedSwipeId}"]`);
         if (swipeBlock instanceof HTMLElement) {
@@ -118,6 +130,10 @@ async function openSwipePicker(messageId) {
         }
     }
 
+    /**
+     *
+     * @param swipeId
+     */
     function canDeleteSwipeFromPicker(swipeId) {
         if ((message?.swipes?.length ?? 0) <= 1) {
             return false;
@@ -127,9 +143,13 @@ async function openSwipePicker(messageId) {
         return canJumpToSwipe || swipeId !== currentSwipeId;
     }
 
+    /**
+     *
+     */
     async function renderSwipeList() {
         const swipeBlocks = await Promise.all(message.swipes.map(async (swipe, index) => {
             const swipeText = String(swipe ?? '');
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const template = $('#past_chat_template .select_chat_block_wrapper').clone();
             const block = template.find('.select_chat_block');
             block.removeClass('select_chat_block').addClass('swipe_picker_block');
@@ -139,7 +159,7 @@ async function openSwipePicker(messageId) {
             const swipeInfo = Array.isArray(message.swipe_info) ? message.swipe_info[index] : null;
             const sendDate = swipeInfo?.send_date ? timestampToMoment(swipeInfo.send_date).format('lll') : '';
             const previewText = swipeText.replace(/\s+/g, ' ').trim();
-            const tokenCount = swipeInfo?.extra?.token_count ?? await getTokenCountAsync(swipeText, 0);
+            const tokenCount = swipeInfo?.extra?.token_count ?? (await getTokenCountAsync(swipeText, 0));
             const canDeleteSwipe = canDeleteSwipeFromPicker(index);
             const swipeDetails = [];
 
@@ -181,12 +201,14 @@ async function openSwipePicker(messageId) {
                 .toggleClass('disabled', !canDeleteSwipe)
                 .each(function () {
                     if (canDeleteSwipe) {
+                        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                         $(this)
                             .attr({
                                 title: t`Delete Swipe`,
                                 'data-i18n': '[title]Delete Swipe',
                             });
                     } else {
+                        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                         $(this)
                             .removeAttr('title')
                             .removeAttr('data-i18n');
@@ -256,6 +278,7 @@ async function openSwipePicker(messageId) {
                 event.preventDefault();
                 event.stopPropagation();
                 await copyText(swipeText);
+                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                 toastr.info(t`Copied!`, '', { timeOut: 2000 });
             });
 
@@ -321,6 +344,7 @@ async function openSwipePicker(messageId) {
             const targetSwipeNumber = Number.parseInt(String(swipeIdInput instanceof HTMLInputElement ? swipeIdInput.value : '').trim(), 10);
 
             if (!Number.isInteger(targetSwipeNumber) || targetSwipeNumber < 1 || targetSwipeNumber > message.swipes.length) {
+                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                 toastr.warning(t`Enter a swipe ID between 1 and ${message.swipes.length}.`, t`Jump to Swipe`);
                 if (swipeIdInput instanceof HTMLInputElement) {
                     swipeIdInput.focus();
@@ -401,6 +425,7 @@ async function openSwipePicker(messageId) {
     const currentSwipeId = clamp(Number(message.swipe_id ?? 0), 0, message.swipes.length - 1);
 
     if (targetSwipeId === currentSwipeId) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.info(t`Already showing swipe #${targetSwipeId + 1}.`, t`Jump to Swipe`);
         return;
     }
@@ -409,6 +434,9 @@ async function openSwipePicker(messageId) {
     await swipe(null, direction, { source: SWIPE_SOURCE.SWIPE_PICKER, forceMesId: messageId, forceSwipeId: targetSwipeId });
 }
 
+/**
+ *
+ */
 export function initSwipePicker() {
     /**
      * Click handler for opening the swipe picker when clicking on the swipe counter.
@@ -418,6 +446,7 @@ export function initSwipePicker() {
         e.preventDefault();
         e.stopPropagation();
 
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const mesId = Number($(this).closest('.mes').attr('mesid'));
         await openSwipePicker(mesId);
     }
@@ -425,8 +454,10 @@ export function initSwipePicker() {
     if (isMobile()) {
         addLongPressEvent('.swipes-counter.swipe-picker-enabled', onSwipeCounterClick);
     } else {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(document).on('click', '.swipes-counter.swipe-picker-enabled', onSwipeCounterClick);
     }
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('keydown', '.swipes-counter.swipe-picker-enabled', async function (e) {
         if (e.key !== ' ') {
             return;
@@ -434,10 +465,12 @@ export function initSwipePicker() {
 
         onSwipeCounterClick.call(this, e);
     });
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.mes_swipe_picker', async function (e) {
         e.preventDefault();
         e.stopPropagation();
 
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const mesId = Number($(this).closest('.mes').attr('mesid'));
         await openSwipePicker(mesId);
     });

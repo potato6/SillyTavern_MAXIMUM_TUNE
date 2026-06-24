@@ -6,11 +6,13 @@ import { SlashCommandAbortController } from './slash-commands/SlashCommandAbortC
 import { ARGUMENT_TYPE, SlashCommandArgument, SlashCommandNamedArgument } from './slash-commands/SlashCommandArgument.js';
 import { SlashCommandBreakController } from './slash-commands/SlashCommandBreakController.js';
 import { SlashCommandClosure } from './slash-commands/SlashCommandClosure.js';
+// @ts-expect-error TS(6133): 'SlashCommandClosureResult' is declared but its va... Remove this comment to see the full error message
 import { SlashCommandClosureResult } from './slash-commands/SlashCommandClosureResult.js';
 import { commonEnumProviders, enumIcons } from './slash-commands/SlashCommandCommonEnumsProvider.js';
 import { SlashCommandEnumValue, enumTypes } from './slash-commands/SlashCommandEnumValue.js';
 import { SlashCommandParser } from './slash-commands/SlashCommandParser.js';
 import { slashCommandReturnHelper } from './slash-commands/SlashCommandReturnHelper.js';
+// @ts-expect-error TS(6133): 'SlashCommandScope' is declared but its value is n... Remove this comment to see the full error message
 import { SlashCommandScope } from './slash-commands/SlashCommandScope.js';
 import { isFalseBoolean, convertValueType, isTrueBoolean } from './utils.js';
 
@@ -19,19 +21,31 @@ import { isFalseBoolean, convertValueType, isTrueBoolean } from './utils.js';
 
 const MAX_LOOPS = 100;
 
+/**
+ *
+ * @param name
+ * @param args
+ */
 export function getLocalVariable(name, args = {}) {
+    // @ts-expect-error TS(2339): Property 'variables' does not exist on type '{}'.
     if (!chat_metadata.variables) {
+        // @ts-expect-error TS(2339): Property 'variables' does not exist on type '{}'.
         chat_metadata.variables = {};
     }
 
+    // @ts-expect-error TS(2339): Property 'variables' does not exist on type '{}'.
     let localVariable = chat_metadata?.variables[args.key ?? name];
+    // @ts-expect-error TS(2339): Property 'index' does not exist on type '{}'.
     if (args.index !== undefined) {
         try {
             localVariable = JSON.parse(localVariable);
+            // @ts-expect-error TS(2339): Property 'index' does not exist on type '{}'.
             const numIndex = Number(args.index);
             if (Number.isNaN(numIndex)) {
+                // @ts-expect-error TS(2339): Property 'index' does not exist on type '{}'.
                 localVariable = localVariable[args.index];
             } else {
+                // @ts-expect-error TS(2339): Property 'index' does not exist on type '{}'.
                 localVariable = localVariable[Number(args.index)];
             }
             if (typeof localVariable == 'object') {
@@ -45,50 +59,75 @@ export function getLocalVariable(name, args = {}) {
     return (localVariable?.trim?.() === '' || isNaN(Number(localVariable))) ? (localVariable || '') : Number(localVariable);
 }
 
+/**
+ *
+ * @param name
+ * @param value
+ * @param args
+ */
 export function setLocalVariable(name, value, args = {}) {
     if (!name) {
         throw new Error('Variable name cannot be empty or undefined.');
     }
 
+    // @ts-expect-error TS(2339): Property 'variables' does not exist on type '{}'.
     if (!chat_metadata.variables) {
+        // @ts-expect-error TS(2339): Property 'variables' does not exist on type '{}'.
         chat_metadata.variables = {};
     }
 
+    // @ts-expect-error TS(2339): Property 'index' does not exist on type '{}'.
     if (args.index !== undefined) {
         try {
+            // @ts-expect-error TS(2339): Property 'variables' does not exist on type '{}'.
             let localVariable = JSON.parse(chat_metadata.variables[name] ?? 'null');
+            // @ts-expect-error TS(2339): Property 'index' does not exist on type '{}'.
             const numIndex = Number(args.index);
             if (Number.isNaN(numIndex)) {
                 if (localVariable === null) {
                     localVariable = {};
                 }
+                // @ts-expect-error TS(2339): Property 'index' does not exist on type '{}'.
                 localVariable[args.index] = convertValueType(value, args.as);
             } else {
                 if (localVariable === null) {
                     localVariable = [];
                 }
+                // @ts-expect-error TS(2339): Property 'as' does not exist on type '{}'.
                 localVariable[numIndex] = convertValueType(value, args.as);
             }
+            // @ts-expect-error TS(2339): Property 'variables' does not exist on type '{}'.
             chat_metadata.variables[name] = JSON.stringify(localVariable);
         } catch {
             // that didn't work
         }
     } else {
+        // @ts-expect-error TS(2339): Property 'variables' does not exist on type '{}'.
         chat_metadata.variables[name] = value;
     }
     saveMetadataDebounced();
     return value;
 }
 
+/**
+ *
+ * @param name
+ * @param args
+ */
 export function getGlobalVariable(name, args = {}) {
+    // @ts-expect-error TS(2339): Property 'key' does not exist on type '{}'.
     let globalVariable = extension_settings.variables.global[args.key ?? name];
+    // @ts-expect-error TS(2339): Property 'index' does not exist on type '{}'.
     if (args.index !== undefined) {
         try {
             globalVariable = JSON.parse(globalVariable);
+            // @ts-expect-error TS(2339): Property 'index' does not exist on type '{}'.
             const numIndex = Number(args.index);
             if (Number.isNaN(numIndex)) {
+                // @ts-expect-error TS(2339): Property 'index' does not exist on type '{}'.
                 globalVariable = globalVariable[args.index];
             } else {
+                // @ts-expect-error TS(2339): Property 'index' does not exist on type '{}'.
                 globalVariable = globalVariable[Number(args.index)];
             }
             if (typeof globalVariable == 'object') {
@@ -102,24 +141,34 @@ export function getGlobalVariable(name, args = {}) {
     return (globalVariable?.trim?.() === '' || isNaN(Number(globalVariable))) ? (globalVariable || '') : Number(globalVariable);
 }
 
+/**
+ *
+ * @param name
+ * @param value
+ * @param args
+ */
 export function setGlobalVariable(name, value, args = {}) {
     if (!name) {
         throw new Error('Variable name cannot be empty or undefined.');
     }
 
+    // @ts-expect-error TS(2339): Property 'index' does not exist on type '{}'.
     if (args.index !== undefined) {
         try {
             let globalVariable = JSON.parse(extension_settings.variables.global[name] ?? 'null');
+            // @ts-expect-error TS(2339): Property 'index' does not exist on type '{}'.
             const numIndex = Number(args.index);
             if (Number.isNaN(numIndex)) {
                 if (globalVariable === null) {
                     globalVariable = {};
                 }
+                // @ts-expect-error TS(2339): Property 'index' does not exist on type '{}'.
                 globalVariable[args.index] = convertValueType(value, args.as);
             } else {
                 if (globalVariable === null) {
                     globalVariable = [];
                 }
+                // @ts-expect-error TS(2339): Property 'as' does not exist on type '{}'.
                 globalVariable[numIndex] = convertValueType(value, args.as);
             }
             extension_settings.variables.global[name] = JSON.stringify(globalVariable);
@@ -133,6 +182,11 @@ export function setGlobalVariable(name, value, args = {}) {
     return value;
 }
 
+/**
+ *
+ * @param name
+ * @param value
+ */
 export function addLocalVariable(name, value) {
     const currentValue = getLocalVariable(name) || 0;
     try {
@@ -163,6 +217,11 @@ export function addLocalVariable(name, value) {
     return newValue;
 }
 
+/**
+ *
+ * @param name
+ * @param value
+ */
 export function addGlobalVariable(name, value) {
     const currentValue = getGlobalVariable(name) || 0;
     try {
@@ -193,18 +252,34 @@ export function addGlobalVariable(name, value) {
     return newValue;
 }
 
+/**
+ *
+ * @param name
+ */
 export function incrementLocalVariable(name) {
     return addLocalVariable(name, 1);
 }
 
+/**
+ *
+ * @param name
+ */
 export function incrementGlobalVariable(name) {
     return addGlobalVariable(name, 1);
 }
 
+/**
+ *
+ * @param name
+ */
 export function decrementLocalVariable(name) {
     return addLocalVariable(name, -1);
 }
 
+/**
+ *
+ * @param name
+ */
 export function decrementGlobalVariable(name) {
     return addGlobalVariable(name, -1);
 }
@@ -260,19 +335,26 @@ export function getVariableMacros() {
     ];
 }
 
+/**
+ *
+ * @param args
+ */
 async function listVariablesCallback(args) {
     /** @type {import('./slash-commands/SlashCommandReturnHelper.js').SlashCommandReturnType} */
-    let returnType = args.return;
+    const returnType = args.return;
 
     // Now the actual new return type handling
     const scope = String(args?.scope || '').toLowerCase().trim() || 'all';
+    // @ts-expect-error TS(2339): Property 'variables' does not exist on type '{}'.
     if (!chat_metadata.variables) {
+        // @ts-expect-error TS(2339): Property 'variables' does not exist on type '{}'.
         chat_metadata.variables = {};
     }
 
     const includeLocalVariables = scope === 'all' || scope === 'local';
     const includeGlobalVariables = scope === 'all' || scope === 'global';
 
+    // @ts-expect-error TS(2339): Property 'variables' does not exist on type '{}'.
     const localVariables = includeLocalVariables ? Object.entries(chat_metadata.variables).map(([name, value]) => `${name}: ${value}`) : [];
     const globalVariables = includeGlobalVariables ? Object.entries(extension_settings.variables.global).map(([name, value]) => `${name}: ${value}`) : [];
 
@@ -289,6 +371,7 @@ async function listVariablesCallback(args) {
     };
 
     const jsonVariables = [
+        // @ts-expect-error TS(2339): Property 'variables' does not exist on type '{}'.
         ...Object.entries(chat_metadata.variables).map(x => ({ key: x[0], value: x[1], scope: 'local' })),
         ...Object.entries(extension_settings.variables.global).map(x => ({ key: x[0], value: x[1], scope: 'global' })),
     ];
@@ -420,6 +503,7 @@ async function ifCallback(args, value) {
  * @returns {boolean} True if the local variable exists, false otherwise
  */
 export function existsLocalVariable(name) {
+    // @ts-expect-error TS(2339): Property 'variables' does not exist on type '{}'.
     return chat_metadata.variables && chat_metadata.variables[name] !== undefined;
 }
 
@@ -485,7 +569,6 @@ export function parseBooleanOperands(args) {
 
 /**
  * Evaluates a boolean comparison rule.
- *
  * @param {string?} rule Boolean comparison rule
  * @param {string|number} a The left operand
  * @param {string|number?} b The right operand
@@ -543,8 +626,8 @@ export function evalBoolean(rule, a, b) {
     }
 
     // otherwise do case-insensitive string comparsion, stringify non-strings
-    let aString = (typeof a === 'string') ? a.toLowerCase() : JSON.stringify(a).toLowerCase();
-    let bString = (typeof b === 'string') ? b.toLowerCase() : JSON.stringify(b).toLowerCase();
+    const aString = (typeof a === 'string') ? a.toLowerCase() : JSON.stringify(a).toLowerCase();
+    const bString = (typeof b === 'string') ? b.toLowerCase() : JSON.stringify(b).toLowerCase();
 
     switch (rule) {
         case 'in':
@@ -595,6 +678,7 @@ export function deleteLocalVariable(name) {
         return '';
     }
 
+    // @ts-expect-error TS(2339): Property 'variables' does not exist on type '{}'.
     delete chat_metadata.variables[name];
     saveMetadataDebounced();
     return '';
@@ -649,7 +733,17 @@ function parseNumericSeries(value, scope = null) {
     return array;
 }
 
+/**
+ *
+ * @param value
+ * @param operation
+ * @param singleOperand
+ * @param scope
+ */
 function performOperation(value, operation, singleOperand = false, scope = null) {
+    /**
+     *
+     */
     function getResult() {
         if (!value) {
             return 0;
@@ -674,26 +768,56 @@ function performOperation(value, operation, singleOperand = false, scope = null)
     return String(result);
 }
 
+/**
+ *
+ * @param args
+ * @param value
+ */
 function addValuesCallback(args, value) {
     return performOperation(value, (array) => array.reduce((a, b) => a + b, 0), false, args._scope);
 }
 
+/**
+ *
+ * @param args
+ * @param value
+ */
 function mulValuesCallback(args, value) {
     return performOperation(value, (array) => array.reduce((a, b) => a * b, 1), false, args._scope);
 }
 
+/**
+ *
+ * @param args
+ * @param value
+ */
 function minValuesCallback(args, value) {
     return performOperation(value, (array) => Math.min(...array), false, args._scope);
 }
 
+/**
+ *
+ * @param args
+ * @param value
+ */
 function maxValuesCallback(args, value) {
     return performOperation(value, (array) => Math.max(...array), false, args._scope);
 }
 
+/**
+ *
+ * @param args
+ * @param value
+ */
 function subValuesCallback(args, value) {
     return performOperation(value, (array) => array.reduce((a, b) => a - b, array.shift() ?? 0), false, args._scope);
 }
 
+/**
+ *
+ * @param args
+ * @param value
+ */
 function divValuesCallback(args, value) {
     return performOperation(value, (array) => {
         if (array[1] === 0) {
@@ -704,6 +828,11 @@ function divValuesCallback(args, value) {
     }, false, args._scope);
 }
 
+/**
+ *
+ * @param args
+ * @param value
+ */
 function modValuesCallback(args, value) {
     return performOperation(value, (array) => {
         if (array[1] === 0) {
@@ -714,34 +843,73 @@ function modValuesCallback(args, value) {
     }, false, args._scope);
 }
 
+/**
+ *
+ * @param args
+ * @param value
+ */
 function powValuesCallback(args, value) {
     return performOperation(value, (array) => Math.pow(array[0], array[1]), false, args._scope);
 }
 
+/**
+ *
+ * @param args
+ * @param value
+ */
 function sinValuesCallback(args, value) {
     return performOperation(value, Math.sin, true, args._scope);
 }
 
+/**
+ *
+ * @param args
+ * @param value
+ */
 function cosValuesCallback(args, value) {
     return performOperation(value, Math.cos, true, args._scope);
 }
 
+/**
+ *
+ * @param args
+ * @param value
+ */
 function logValuesCallback(args, value) {
     return performOperation(value, Math.log, true, args._scope);
 }
 
+/**
+ *
+ * @param args
+ * @param value
+ */
 function roundValuesCallback(args, value) {
     return performOperation(value, Math.round, true, args._scope);
 }
 
+/**
+ *
+ * @param args
+ * @param value
+ */
 function absValuesCallback(args, value) {
     return performOperation(value, Math.abs, true, args._scope);
 }
 
+/**
+ *
+ * @param args
+ * @param value
+ */
 function sqrtValuesCallback(args, value) {
     return performOperation(value, Math.sqrt, true, args._scope);
 }
 
+/**
+ *
+ * @param value
+ */
 function lenValuesCallback(value) {
     let parsedValue = value;
     try {
@@ -764,6 +932,12 @@ function lenValuesCallback(value) {
     }
 }
 
+/**
+ *
+ * @param from
+ * @param to
+ * @param args
+ */
 function randValuesCallback(from, to, args) {
     const range = to - from;
     const value = from + Math.random() * range;
@@ -779,6 +953,11 @@ function randValuesCallback(from, to, args) {
     return value;
 }
 
+/**
+ *
+ * @param a
+ * @param b
+ */
 function customSortComparitor(a, b) {
     if (typeof a != typeof b) {
         a = typeof a;
@@ -787,6 +966,11 @@ function customSortComparitor(a, b) {
     return a > b ? 1 : a < b ? -1 : 0;
 }
 
+/**
+ *
+ * @param args
+ * @param value
+ */
 function sortArrayObjectCallback(args, value) {
     let parsedValue;
     if (typeof value == 'string') {
@@ -803,7 +987,7 @@ function sortArrayObjectCallback(args, value) {
         // always sort lists by value
         parsedValue.sort(customSortComparitor);
     } else if (typeof parsedValue == 'object') {
-        let keysort = args.keysort;
+        const keysort = args.keysort;
         if (isFalseBoolean(keysort)) {
             parsedValue = Object.keys(parsedValue).sort(function (a, b) { return customSortComparitor(parsedValue[a], parsedValue[b]); });
         } else {
@@ -880,6 +1064,7 @@ function varCallback(args, value) {
  * @param {SlashCommandClosure} value
  * @returns {string}
  */
+// @ts-expect-error TS(6133): 'args' is declared but its value is never read.
 function closureSerializeCallback(args, value) {
     if (!(value instanceof SlashCommandClosure)) {
         throw new Error('unnamed argument must be a closure');
@@ -899,6 +1084,9 @@ function closureDeserializeCallback(args, value) {
     return closure;
 }
 
+/**
+ *
+ */
 export function registerVariableCommands() {
     SlashCommandParser.addCommandObject(SlashCommand.fromProps({
         name: 'listvar',

@@ -1,6 +1,7 @@
 import { name1, name2, characters, getCharacterCardFieldsLazy, getGeneratingModel } from '../../../script.js';
 import { groups, selected_group } from '../../../scripts/group-chats.js';
 import { logMacroGeneralError } from './MacroDiagnostics.js';
+// @ts-expect-error TS(2792): Cannot find module '/scripts/utils.js'. Did you me... Remove this comment to see the full error message
 import { getStringHash } from '/scripts/utils.js';
 /**
  * MacroEnvBuilder is responsible for constructing the MacroEnv object
@@ -15,7 +16,7 @@ import { getStringHash } from '/scripts/utils.js';
 /** @typedef {import('./MacroEnv.types.js').MacroEnv} MacroEnv */
 
 /**
- * @typedef {Object} MacroEnvRawContext
+ * @typedef {object} MacroEnvRawContext
  * @property {string} content
  * @property {string|null} [name1Override]
  * @property {string|null} [name2Override]
@@ -61,9 +62,8 @@ class MacroEnvBuilder {
      * data (for extensions, extra context, etc.).
      *
      * Should be called once during initialization.
-     *
      * @param {MacroEnvProvider} provider
-     * @param {env_provider_order} [order=env_provider_order.NORMAL]
+     * @param {env_provider_order} [order]
      * @returns {void}
      */
     registerProvider(provider, order = env_provider_order.NORMAL) {
@@ -74,7 +74,6 @@ class MacroEnvBuilder {
     /**
      * Builds a MacroEnv from the raw arguments that are conceptually the
      * same as substituteParams receives, plus a bundle of global helpers.
-     *
      * @param {MacroEnvRawContext} ctx
      * @returns {MacroEnv}
      */
@@ -137,12 +136,14 @@ class MacroEnvBuilder {
         env.names.notChar = getGroupValue(ctx, { currentChar: env.names.char, filterOutChar: true, includeUser: env.names.user });
 
         // System
+        // @ts-expect-error TS(2554): Expected 1 arguments, but got 0.
         env.system.model = getGeneratingModel();
 
         // Functions
         // original (one-shot) and arbitrary additional values
         if (typeof ctx.original === 'string') {
             let originalSubstituted = false;
+            // @ts-expect-error TS(2339): Property 'original' does not exist on type '{ post... Remove this comment to see the full error message
             env.functions.original = () => {
                 if (originalSubstituted) return '';
                 originalSubstituted = true;
@@ -179,11 +180,11 @@ instance = MacroEnvBuilder.instance;
 
 /**
  * @param {MacroEnvRawContext} ctx
- * @param {Object} options
- * @param {string} [options.currentChar=null]
- * @param {boolean} [options.includeMuted=false]
- * @param {boolean} [options.filterOutChar=false]
- * @param {string|null} [options.includeUser=null]
+ * @param {object} options
+ * @param {string} [options.currentChar]
+ * @param {boolean} [options.includeMuted]
+ * @param {boolean} [options.filterOutChar]
+ * @param {string|null} [options.includeUser]
  * @returns {string}
  */
 function getGroupValue(ctx, { currentChar = null, includeMuted = false, filterOutChar = false, includeUser = null }) {

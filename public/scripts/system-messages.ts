@@ -31,6 +31,9 @@ export const system_message_types = {
     ASSISTANT_MESSAGE: 'assistant_message',
 };
 
+/**
+ *
+ */
 export async function initSystemMessages() {
     /** @type {ChatMessage} */
     const defaultMessage = {

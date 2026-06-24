@@ -55,6 +55,9 @@ router.post('/ping', async (request, response) => {
 
 router.post('/upscalers', async (request, response) => {
     try {
+        /**
+         *
+         */
         async function getUpscalerModels() {
             const url = new URL(request.body.url);
             url.pathname = '/sdapi/v1/upscalers';
@@ -75,6 +78,9 @@ router.post('/upscalers', async (request, response) => {
             return data.map((x: any) => x.name);
         }
 
+        /**
+         *
+         */
         async function getLatentUpscalers() {
             const url = new URL(request.body.url);
             url.pathname = '/sdapi/v1/latent-upscale-modes';
@@ -243,6 +249,9 @@ router.post('/get-model', async (request, response) => {
 
 router.post('/set-model', async (request, response) => {
     try {
+        /**
+         *
+         */
         async function getProgress() {
             const url = new URL(request.body.url);
             url.pathname = '/sdapi/v1/progress';
@@ -1251,7 +1260,7 @@ electronhub.post('/generate', async (request, response) => {
             return response.sendStatus(400);
         }
 
-        let bodyParams = {
+        const bodyParams = {
             model: request.body.model,
             prompt: request.body.prompt,
             response_format: 'b64_json',
@@ -1519,6 +1528,11 @@ bfl.post('/generate', async (request, response) => {
             output_format: 'jpeg',
         };
 
+        /**
+         *
+         * @param width
+         * @param height
+         */
         function getClosestAspectRatio(width: any, height: any) {
             const minAspect = 9 / 21;
             const maxAspect = 21 / 9;

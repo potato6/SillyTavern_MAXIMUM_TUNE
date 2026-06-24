@@ -106,6 +106,12 @@ export async function clearItemizedPrompts() {
     }
 }
 
+/**
+ *
+ * @param itemizedPrompts
+ * @param thisPromptSet
+ * @param incomingMesId
+ */
 export async function itemizedParams(itemizedPrompts, thisPromptSet, incomingMesId) {
     const params = {
         charDescriptionTokens: await getTokenCountAsync(itemizedPrompts[thisPromptSet].charDescription),
@@ -132,6 +138,7 @@ export async function itemizedParams(itemizedPrompts, thisPromptSet, incomingMes
         examplesCount: String(itemizedPrompts[thisPromptSet].examplesCount ?? ''),
     };
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const getFriendlyName = (value) => $(`#rm_api_block select option[value="${value}"]`).first().text() || value;
 
     if (params.apiUsed) {
@@ -139,10 +146,12 @@ export async function itemizedParams(itemizedPrompts, thisPromptSet, incomingMes
     }
 
     if (params.this_main_api) {
+        // @ts-expect-error TS(2339): Property 'mainApiFriendlyName' does not exist on t... Remove this comment to see the full error message
         params.mainApiFriendlyName = getFriendlyName(params.this_main_api);
     }
 
     if (params.chatInjects) {
+        // @ts-expect-error TS(2339): Property 'ActualChatHistoryTokens' does not exist ... Remove this comment to see the full error message
         params.ActualChatHistoryTokens = params.ActualChatHistoryTokens - params.chatInjects;
     }
 
@@ -151,25 +160,45 @@ export async function itemizedParams(itemizedPrompts, thisPromptSet, incomingMes
         //console.log('-- Counting OAI Tokens');
 
         //params.finalPromptTokens = itemizedPrompts[thisPromptSet].oaiTotalTokens;
+        // @ts-expect-error TS(2339): Property 'oaiMainTokens' does not exist on type '{... Remove this comment to see the full error message
         params.oaiMainTokens = itemizedPrompts[thisPromptSet].oaiMainTokens;
+        // @ts-expect-error TS(2339): Property 'oaiStartTokens' does not exist on type '... Remove this comment to see the full error message
         params.oaiStartTokens = itemizedPrompts[thisPromptSet].oaiStartTokens;
+        // @ts-expect-error TS(2339): Property 'ActualChatHistoryTokens' does not exist ... Remove this comment to see the full error message
         params.ActualChatHistoryTokens = itemizedPrompts[thisPromptSet].oaiConversationTokens;
+        // @ts-expect-error TS(2339): Property 'examplesStringTokens' does not exist on ... Remove this comment to see the full error message
         params.examplesStringTokens = itemizedPrompts[thisPromptSet].oaiExamplesTokens;
+        // @ts-expect-error TS(2339): Property 'oaiPromptTokens' does not exist on type ... Remove this comment to see the full error message
         params.oaiPromptTokens = itemizedPrompts[thisPromptSet].oaiPromptTokens - (params.afterScenarioAnchorTokens + params.beforeScenarioAnchorTokens) + params.examplesStringTokens;
+        // @ts-expect-error TS(2339): Property 'oaiBiasTokens' does not exist on type '{... Remove this comment to see the full error message
         params.oaiBiasTokens = itemizedPrompts[thisPromptSet].oaiBiasTokens;
+        // @ts-expect-error TS(2339): Property 'oaiJailbreakTokens' does not exist on ty... Remove this comment to see the full error message
         params.oaiJailbreakTokens = itemizedPrompts[thisPromptSet].oaiJailbreakTokens;
+        // @ts-expect-error TS(2339): Property 'oaiNudgeTokens' does not exist on type '... Remove this comment to see the full error message
         params.oaiNudgeTokens = itemizedPrompts[thisPromptSet].oaiNudgeTokens;
+        // @ts-expect-error TS(2339): Property 'oaiImpersonateTokens' does not exist on ... Remove this comment to see the full error message
         params.oaiImpersonateTokens = itemizedPrompts[thisPromptSet].oaiImpersonateTokens;
+        // @ts-expect-error TS(2339): Property 'oaiNsfwTokens' does not exist on type '{... Remove this comment to see the full error message
         params.oaiNsfwTokens = itemizedPrompts[thisPromptSet].oaiNsfwTokens;
+        // @ts-expect-error TS(2339): Property 'finalPromptTokens' does not exist on typ... Remove this comment to see the full error message
         params.finalPromptTokens =
+            // @ts-expect-error TS(2339): Property 'oaiStartTokens' does not exist on type '... Remove this comment to see the full error message
             params.oaiStartTokens +
+            // @ts-expect-error TS(2339): Property 'oaiPromptTokens' does not exist on type ... Remove this comment to see the full error message
             params.oaiPromptTokens +
+            // @ts-expect-error TS(2339): Property 'oaiMainTokens' does not exist on type '{... Remove this comment to see the full error message
             params.oaiMainTokens +
+            // @ts-expect-error TS(2339): Property 'oaiNsfwTokens' does not exist on type '{... Remove this comment to see the full error message
             params.oaiNsfwTokens +
+            // @ts-expect-error TS(2339): Property 'oaiBiasTokens' does not exist on type '{... Remove this comment to see the full error message
             params.oaiBiasTokens +
+            // @ts-expect-error TS(2339): Property 'oaiImpersonateTokens' does not exist on ... Remove this comment to see the full error message
             params.oaiImpersonateTokens +
+            // @ts-expect-error TS(2339): Property 'oaiJailbreakTokens' does not exist on ty... Remove this comment to see the full error message
             params.oaiJailbreakTokens +
+            // @ts-expect-error TS(2339): Property 'oaiNudgeTokens' does not exist on type '... Remove this comment to see the full error message
             params.oaiNudgeTokens +
+            // @ts-expect-error TS(2339): Property 'ActualChatHistoryTokens' does not exist ... Remove this comment to see the full error message
             params.ActualChatHistoryTokens +
             //charDescriptionTokens +
             //charPersonalityTokens +
@@ -178,53 +207,88 @@ export async function itemizedParams(itemizedPrompts, thisPromptSet, incomingMes
             params.beforeScenarioAnchorTokens +
             params.afterScenarioAnchorTokens;
         // Max context size - max completion tokens
+        // @ts-expect-error TS(2339): Property 'thisPrompt_max_context' does not exist o... Remove this comment to see the full error message
         params.thisPrompt_max_context = (oai_settings.openai_max_context - oai_settings.openai_max_tokens);
 
         //console.log('-- applying % on OAI tokens');
+        // @ts-expect-error TS(2339): Property 'oaiStartTokensPercentage' does not exist... Remove this comment to see the full error message
         params.oaiStartTokensPercentage = ((params.oaiStartTokens / (params.finalPromptTokens)) * 100).toFixed(2);
+        // @ts-expect-error TS(2339): Property 'storyStringTokensPercentage' does not ex... Remove this comment to see the full error message
         params.storyStringTokensPercentage = (((params.afterScenarioAnchorTokens + params.beforeScenarioAnchorTokens + params.oaiPromptTokens) / (params.finalPromptTokens)) * 100).toFixed(2);
+        // @ts-expect-error TS(2339): Property 'ActualChatHistoryTokensPercentage' does ... Remove this comment to see the full error message
         params.ActualChatHistoryTokensPercentage = ((params.ActualChatHistoryTokens / (params.finalPromptTokens)) * 100).toFixed(2);
+        // @ts-expect-error TS(2339): Property 'promptBiasTokensPercentage' does not exi... Remove this comment to see the full error message
         params.promptBiasTokensPercentage = ((params.oaiBiasTokens / (params.finalPromptTokens)) * 100).toFixed(2);
+        // @ts-expect-error TS(2339): Property 'worldInfoStringTokensPercentage' does no... Remove this comment to see the full error message
         params.worldInfoStringTokensPercentage = ((params.worldInfoStringTokens / (params.finalPromptTokens)) * 100).toFixed(2);
+        // @ts-expect-error TS(2339): Property 'allAnchorsTokensPercentage' does not exi... Remove this comment to see the full error message
         params.allAnchorsTokensPercentage = ((params.allAnchorsTokens / (params.finalPromptTokens)) * 100).toFixed(2);
+        // @ts-expect-error TS(2339): Property 'selectedTokenizer' does not exist on typ... Remove this comment to see the full error message
         params.selectedTokenizer = getFriendlyTokenizerName(params.this_main_api).tokenizerName;
+        // @ts-expect-error TS(2339): Property 'oaiSystemTokens' does not exist on type ... Remove this comment to see the full error message
         params.oaiSystemTokens = params.oaiImpersonateTokens + params.oaiJailbreakTokens + params.oaiNudgeTokens + params.oaiStartTokens + params.oaiNsfwTokens + params.oaiMainTokens;
+        // @ts-expect-error TS(2339): Property 'oaiSystemTokensPercentage' does not exis... Remove this comment to see the full error message
         params.oaiSystemTokensPercentage = ((params.oaiSystemTokens / (params.finalPromptTokens)) * 100).toFixed(2);
     } else {
         //for non-OAI APIs
         //console.log('-- Counting non-OAI Tokens');
+        // @ts-expect-error TS(2339): Property 'finalPromptTokens' does not exist on typ... Remove this comment to see the full error message
         params.finalPromptTokens = await getTokenCountAsync(itemizedPrompts[thisPromptSet].finalPrompt);
-        params.storyStringTokens = await getTokenCountAsync(itemizedPrompts[thisPromptSet].storyString) - params.worldInfoStringTokens;
+        // @ts-expect-error TS(2339): Property 'storyStringTokens' does not exist on typ... Remove this comment to see the full error message
+        params.storyStringTokens = (await getTokenCountAsync(itemizedPrompts[thisPromptSet].storyString)) - params.worldInfoStringTokens;
+        // @ts-expect-error TS(2339): Property 'examplesStringTokens' does not exist on ... Remove this comment to see the full error message
         params.examplesStringTokens = await getTokenCountAsync(itemizedPrompts[thisPromptSet].examplesString);
+        // @ts-expect-error TS(2339): Property 'mesSendStringTokens' does not exist on t... Remove this comment to see the full error message
         params.mesSendStringTokens = await getTokenCountAsync(itemizedPrompts[thisPromptSet].mesSendString);
+        // @ts-expect-error TS(2339): Property 'ActualChatHistoryTokens' does not exist ... Remove this comment to see the full error message
         params.ActualChatHistoryTokens = params.mesSendStringTokens - (params.allAnchorsTokens - (params.beforeScenarioAnchorTokens + params.afterScenarioAnchorTokens)) + power_user.token_padding;
+        // @ts-expect-error TS(2339): Property 'instructionTokens' does not exist on typ... Remove this comment to see the full error message
         params.instructionTokens = await getTokenCountAsync(itemizedPrompts[thisPromptSet].instruction);
+        // @ts-expect-error TS(2339): Property 'promptBiasTokens' does not exist on type... Remove this comment to see the full error message
         params.promptBiasTokens = await getTokenCountAsync(itemizedPrompts[thisPromptSet].promptBias);
 
+        // @ts-expect-error TS(2339): Property 'totalTokensInPrompt' does not exist on t... Remove this comment to see the full error message
         params.totalTokensInPrompt =
+            // @ts-expect-error TS(2339): Property 'storyStringTokens' does not exist on typ... Remove this comment to see the full error message
             params.storyStringTokens +     //chardefs total
             params.worldInfoStringTokens +
+            // @ts-expect-error TS(2339): Property 'examplesStringTokens' does not exist on ... Remove this comment to see the full error message
             params.examplesStringTokens + // example messages
+            // @ts-expect-error TS(2339): Property 'ActualChatHistoryTokens' does not exist ... Remove this comment to see the full error message
             params.ActualChatHistoryTokens +  //chat history
             params.allAnchorsTokens +      // AN and/or legacy anchors
             //afterScenarioAnchorTokens +       //only counts if AN is set to 'after scenario'
             //zeroDepthAnchorTokens +           //same as above, even if AN not on 0 depth
+            // @ts-expect-error TS(2339): Property 'promptBiasTokens' does not exist on type... Remove this comment to see the full error message
             params.promptBiasTokens;       //{{}}
         //- thisPrompt_padding;  //not sure this way of calculating is correct, but the math results in same value as 'finalPrompt'
+        // @ts-expect-error TS(2339): Property 'thisPrompt_max_context' does not exist o... Remove this comment to see the full error message
         params.thisPrompt_max_context = itemizedPrompts[thisPromptSet].this_max_context;
+        // @ts-expect-error TS(2339): Property 'thisPrompt_actual' does not exist on typ... Remove this comment to see the full error message
         params.thisPrompt_actual = params.thisPrompt_max_context - params.thisPrompt_padding;
 
         //console.log('-- applying % on non-OAI tokens');
+        // @ts-expect-error TS(2339): Property 'storyStringTokensPercentage' does not ex... Remove this comment to see the full error message
         params.storyStringTokensPercentage = ((params.storyStringTokens / (params.totalTokensInPrompt)) * 100).toFixed(2);
+        // @ts-expect-error TS(2339): Property 'ActualChatHistoryTokensPercentage' does ... Remove this comment to see the full error message
         params.ActualChatHistoryTokensPercentage = ((params.ActualChatHistoryTokens / (params.totalTokensInPrompt)) * 100).toFixed(2);
+        // @ts-expect-error TS(2339): Property 'promptBiasTokensPercentage' does not exi... Remove this comment to see the full error message
         params.promptBiasTokensPercentage = ((params.promptBiasTokens / (params.totalTokensInPrompt)) * 100).toFixed(2);
+        // @ts-expect-error TS(2339): Property 'worldInfoStringTokensPercentage' does no... Remove this comment to see the full error message
         params.worldInfoStringTokensPercentage = ((params.worldInfoStringTokens / (params.totalTokensInPrompt)) * 100).toFixed(2);
+        // @ts-expect-error TS(2339): Property 'allAnchorsTokensPercentage' does not exi... Remove this comment to see the full error message
         params.allAnchorsTokensPercentage = ((params.allAnchorsTokens / (params.totalTokensInPrompt)) * 100).toFixed(2);
+        // @ts-expect-error TS(2339): Property 'selectedTokenizer' does not exist on typ... Remove this comment to see the full error message
         params.selectedTokenizer = itemizedPrompts[thisPromptSet]?.tokenizer || getFriendlyTokenizerName(params.this_main_api).tokenizerName;
     }
     return params;
 }
 
+/**
+ *
+ * @param itemizedPrompts
+ * @param incomingMesId
+ */
 export function findItemizedPromptSet(itemizedPrompts, incomingMesId) {
     let thisPromptSet = undefined;
     priorPromptArrayItemForRawPromptDisplay = -1;
@@ -245,11 +309,16 @@ export function findItemizedPromptSet(itemizedPrompts, incomingMesId) {
     return thisPromptSet;
 }
 
+/**
+ *
+ * @param itemizedPrompts
+ * @param requestedMesId
+ */
 export async function promptItemize(itemizedPrompts, requestedMesId) {
     console.log('PROMPT ITEMIZE ENTERED');
-    var incomingMesId = Number(requestedMesId);
+    const incomingMesId = Number(requestedMesId);
     console.debug(`looking for MesId ${incomingMesId}`);
-    var thisPromptSet = findItemizedPromptSet(itemizedPrompts, incomingMesId);
+    const thisPromptSet = findItemizedPromptSet(itemizedPrompts, incomingMesId);
 
     if (thisPromptSet === undefined) {
         console.log(`couldnt find the right mesId. looked for ${incomingMesId}`);
@@ -287,13 +356,14 @@ export async function promptItemize(itemizedPrompts, requestedMesId) {
             container.innerHTML = DOMPurify.sanitize(ds);
             const rawPromptWrapper = document.getElementById('rawPromptWrapper');
             rawPromptWrapper.replaceChildren(container);
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#rawPromptPopup').slideToggle();
         });
     } else {
         diffPrevPrompt.style.display = 'none';
     }
     popup.dlg.querySelector('#copyPromptToClipboard').addEventListener('pointerup', async function () {
-        let rawPrompt = itemizedPrompts[PromptArrayItemForRawPromptDisplay].rawPrompt;
+        const rawPrompt = itemizedPrompts[PromptArrayItemForRawPromptDisplay].rawPrompt;
         let rawPromptValues = rawPrompt;
 
         if (Array.isArray(rawPrompt)) {
@@ -301,6 +371,7 @@ export async function promptItemize(itemizedPrompts, requestedMesId) {
         }
 
         await copyText(rawPromptValues);
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.info(t`Copied!`);
     });
 
@@ -326,23 +397,30 @@ export async function promptItemize(itemizedPrompts, requestedMesId) {
         //let DisplayStringifiedPrompt = JSON.stringify(itemizedPrompts[PromptArrayItemForRawPromptDisplay].rawPrompt).replace(/\n+/g, '<br>');
         const rawPromptWrapper = document.getElementById('rawPromptWrapper');
         rawPromptWrapper.innerText = rawPrompt;
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#rawPromptPopup').slideToggle();
     });
 
     await popup.show();
 }
 
+/**
+ *
+ */
 export function initItemizedPrompts() {
     registerDebugFunction('clearPrompts', 'Delete itemized prompts', 'Deletes all itemized prompts from the local storage.', async () => {
         await clearItemizedPrompts();
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.info('Itemized prompts deleted.');
         if (getCurrentChatId()) {
             await reloadCurrentChat();
         }
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('pointerup', '.mes_prompt', async function () {
-        let mesIdForItemization = $(this).closest('.mes').attr('mesId');
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        const mesIdForItemization = $(this).closest('.mes').attr('mesId');
         console.log(`looking for mesID: ${mesIdForItemization}`);
         if (itemizedPrompts.length !== undefined && itemizedPrompts.length !== 0) {
             await promptItemize(itemizedPrompts, mesIdForItemization);

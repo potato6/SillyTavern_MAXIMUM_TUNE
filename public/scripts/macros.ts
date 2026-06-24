@@ -30,7 +30,7 @@ Handlebars.registerHelper('helperMissing', function () {
  */
 
 /**
- * @typedef {Object} CustomMacro
+ * @typedef {object} CustomMacro
  * @property {string} key - Macro name (key)
  * @property {string} description - Optional description of the macro
  */
@@ -55,10 +55,9 @@ export class MacrosParser {
     /**
      * Logs a deprecation warning for MacrosParser APIs, pointing callers to
      * the new macro engine registration surface.
-     *
      * @param {string} method
      * @param {string} replacement
-     * @param {IArguments} [methodArgs=null]
+     * @param {IArguments} [methodArgs]
      * @returns {void}
      */
     static #logDeprecated(method, replacement, methodArgs = null) {
@@ -72,7 +71,6 @@ export class MacrosParser {
      * This mirrors the simple "{{key}}" replacement behavior by registering
      * a 0-arg macro in MacroRegistry that does not take arguments and returns
      * the sanitized value from the legacy registry.
-     *
      * @param {string} key
      * @param {string|MacroFunction} value
      * @param {string} description
@@ -119,7 +117,6 @@ export class MacrosParser {
     /**
      * Bridges a legacy MacrosParser macro unregistration into the new macro
      * engine when the experimental macro engine flag is enabled.
-     *
      * @param {string} key
      * @returns {void}
      */
@@ -220,7 +217,6 @@ export class MacrosParser {
 
     /**
      * Unregisters a global macro with the given key
-     *
      * @param {string} key Macro name (key)
      */
     static unregisterMacro(key) {
@@ -313,13 +309,16 @@ export class MacrosParser {
  * @returns {number} The hashed chat id
  */
 function getChatIdHash() {
+    // @ts-expect-error TS(2339): Property 'chat_id_hash' does not exist on type '{}... Remove this comment to see the full error message
     const cachedIdHash = chat_metadata.chat_id_hash;
 
     // If chat_id_hash is not already set, calculate it
     if (!cachedIdHash) {
         // Use the main_chat if it's available, otherwise get the current chat ID
+        // @ts-expect-error TS(2339): Property 'main_chat' does not exist on type '{}'.
         const chatId = chat_metadata.main_chat ?? getCurrentChatId();
         const chatIdHash = getStringHash(chatId);
+        // @ts-expect-error TS(2339): Property 'chat_id_hash' does not exist on type '{}... Remove this comment to see the full error message
         chat_metadata.chat_id_hash = chatIdHash;
         return chatIdHash;
     }
@@ -331,15 +330,14 @@ function getChatIdHash() {
  * Returns the ID of the last message in the chat
  *
  * Optionally can only choose specific messages, if a filter is provided.
- *
  * @param {object} param0 - Optional arguments
- * @param {boolean} [param0.exclude_swipe_in_propress=true] - Whether a message that is currently being swiped should be ignored
+ * @param {boolean} [param0.exclude_swipe_in_propress] - Whether a message that is currently being swiped should be ignored
  * @param {function(object):boolean} [param0.filter] - A filter applied to the search, ignoring all messages that don't match the criteria. For example to only find user messages, etc.
  * @returns {number|null} The message id, or null if none was found
  */
 export function getLastMessageId({ exclude_swipe_in_propress = true, filter = null } = {}) {
     for (let i = chat?.length - 1; i >= 0; i--) {
-        let message = chat[i];
+        const message = chat[i];
 
         // If ignoring swipes and the message is being swiped, continue
         // We can check if a message is being swiped by checking whether the current swipe id is not in the list of finished swipes yet
@@ -358,16 +356,15 @@ export function getLastMessageId({ exclude_swipe_in_propress = true, filter = nu
 
 /**
  * Returns the ID of the first message included in the context
- *
  * @returns {number|null} The ID of the first message in the context
  */
 function getFirstIncludedMessageId() {
+    // @ts-expect-error TS(2339): Property 'lastInContextMessageId' does not exist o... Remove this comment to see the full error message
     return chat_metadata.lastInContextMessageId;
 }
 
 /**
  * Returns the ID of the first displayed message in the chat.
- *
  * @returns {number|null} The ID of the first displayed message
  */
 function getFirstDisplayedMessageId() {
@@ -382,7 +379,6 @@ function getFirstDisplayedMessageId() {
 
 /**
  * Returns the last message in the chat
- *
  * @returns {string} The last message in the chat
  */
 function getLastMessage() {
@@ -392,7 +388,6 @@ function getLastMessage() {
 
 /**
  * Returns the last message from the user
- *
  * @returns {string} The last message from the user
  */
 function getLastUserMessage() {
@@ -402,7 +397,6 @@ function getLastUserMessage() {
 
 /**
  * Returns the last message from the bot
- *
  * @returns {string} The last message from the bot
  */
 function getLastCharMessage() {
@@ -412,7 +406,6 @@ function getLastCharMessage() {
 
 /**
  * Returns the 1-based ID (number) of the last swipe
- *
  * @returns {number|null} The 1-based ID of the last swipe
  */
 function getLastSwipeId() {
@@ -424,7 +417,6 @@ function getLastSwipeId() {
 
 /**
  * Returns the 1-based ID (number) of the current swipe
- *
  * @returns {number|null} The 1-based ID of the current swipe
  */
 function getCurrentSwipeId() {
@@ -441,6 +433,7 @@ function getCurrentSwipeId() {
  */
 function getBannedWordsMacro() {
     const banPattern = /{{banned "(.*)"}}/gi;
+    // @ts-expect-error TS(6133): 'match' is declared but its value is never read.
     const banReplace = (match, bannedWord) => {
         if (main_api == 'textgenerationwebui') {
             console.log('Found banned word in macros: ' + bannedWord);
@@ -452,6 +445,9 @@ function getBannedWordsMacro() {
     return { regex: banPattern, replace: banReplace };
 }
 
+/**
+ *
+ */
 function getTimeSinceLastMessage() {
     const now = moment();
 
@@ -490,6 +486,7 @@ function getTimeSinceLastMessage() {
  */
 function getRandomReplaceMacro() {
     const randomPattern = /{{random\s?::?([^}]+)}}/gi;
+    // @ts-expect-error TS(6133): 'match' is declared but its value is never read.
     const randomReplace = (match, listString) => {
         // Split on either double colons or comma. If comma is the separator, we are also trimming all items.
         const list = listString.includes('::')
@@ -520,6 +517,7 @@ function getPickReplaceMacro(rawContent) {
     const rawContentHash = getStringHash(rawContent);
 
     const pickPattern = /{{pick\s?::?([^}]+)}}/gi;
+    // @ts-expect-error TS(6133): 'match' is declared but its value is never read.
     const pickReplace = (match, listString, offset) => {
         // Split on either double colons or comma. If comma is the separator, we are also trimming all items.
         const list = listString.includes('::')
@@ -535,7 +533,6 @@ function getPickReplaceMacro(rawContent) {
         // This allows us to get unique but repeatable picks in nearly all cases
         const combinedSeedString = `${chatIdHash}-${rawContentHash}-${offset}`;
         const finalSeed = getStringHash(combinedSeedString);
-        // @ts-ignore - have to use numbers for legacy picks
         const rng = seedrandom(finalSeed);
         const randomIndex = Math.floor(rng() * list.length);
         return list[randomIndex];
@@ -549,6 +546,7 @@ function getPickReplaceMacro(rawContent) {
  */
 function getDiceRollMacro() {
     const rollPattern = /{{roll[ : ]([^}]+)}}/gi;
+    // @ts-expect-error TS(6133): 'match' is declared but its value is never read.
     const rollReplace = (match, matchValue) => {
         let formula = matchValue.trim();
 
@@ -618,7 +616,7 @@ export function evaluateMacros(content, env, postProcessFn) {
     /**
      * Built-ins running before the env variables
      * @type {Macro[]}
-     * */
+     */
     const preEnvMacros = [
         // Legacy non-curly macros
         { regex: /<USER>/gi, replace: () => typeof env.user === 'function' ? env.user() : env.user },
@@ -632,13 +630,14 @@ export function evaluateMacros(content, env, postProcessFn) {
         { regex: /{{newline}}/gi, replace: () => '\n' },
         { regex: /(?:\r?\n)*{{trim}}(?:\r?\n)*/gi, replace: () => '' },
         { regex: /{{noop}}/gi, replace: () => '' },
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         { regex: /{{input}}/gi, replace: () => String($('#send_textarea').val()) },
     ];
 
     /**
      * Built-ins running after the env variables
      * @type {Macro[]}
-    */
+     */
     const postEnvMacros = [
         { regex: /{{maxPrompt}}/gi, replace: () => String(getMaxPromptTokens()) },
         { regex: /{{maxPromptTokens}}/gi, replace: () => String(getMaxPromptTokens()) },
@@ -714,9 +713,15 @@ export function evaluateMacros(content, env, postProcessFn) {
     return content;
 }
 
+/**
+ *
+ */
 export function initMacros() {
     // Only manually register those is new macro engine is not on. In the new one, they are already registered automatically
     if (!power_user.experimental_macro_engine) {
+        /**
+         *
+         */
         function initLastGenerationType() {
             let lastGenerationType = '';
 

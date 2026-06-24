@@ -8,10 +8,11 @@ import { MacroEngine } from './MacroEngine.js';
 import { parseFlags, createEmptyFlags, MacroFlagType } from './MacroFlags.js';
 import { MacroParser } from './MacroParser.js';
 import { MacroRegistry } from './MacroRegistry.js';
+// @ts-expect-error TS(2792): Cannot find module '/scripts/utils.js'. Did you me... Remove this comment to see the full error message
 import { isFalseBoolean } from '/scripts/utils.js';
 
 /**
- * @typedef {Object} MacroCall
+ * @typedef {object} MacroCall
  * @property {string} name
  * @property {string[]} args
  * @property {MacroFlags} flags - Parsed macro execution flags.
@@ -29,7 +30,7 @@ import { isFalseBoolean } from '/scripts/utils.js';
  */
 
 /**
- * @typedef {Object} VariableExprInfo
+ * @typedef {object} VariableExprInfo
  * @property {'local' | 'global'} scope - Whether this is a local (.) or global ($) variable.
  * @property {string} varName - The variable name.
  * @property {'get' | 'set' | 'inc' | 'dec' | 'add'} operation - The operation to perform.
@@ -38,8 +39,7 @@ import { isFalseBoolean } from '/scripts/utils.js';
 
 /**
  * Context passed through the CST evaluation process.
- *
- * @typedef {Object} EvaluationContext
+ * @typedef {object} EvaluationContext
  * @property {string} text - The text being evaluated at the current level. This is NOT the same as env.content.
  *           At the top level, this is the full document text. When evaluating nested content (arguments or scoped
  *           content), this is the substring being evaluated. CST node positions are always relative to this text.
@@ -56,13 +56,13 @@ import { isFalseBoolean } from '/scripts/utils.js';
  */
 
 /**
- * @typedef {Object} TokenRange
+ * @typedef {object} TokenRange
  * @property {number} startOffset
  * @property {number} endOffset
  */
 
 /**
- * @typedef {Object} MacroNodeInfo
+ * @typedef {object} MacroNodeInfo
  * @property {string} name - The macro identifier name.
  * @property {boolean} isClosing - Whether this macro has the closing block flag (/).
  * @property {number} startOffset - Start position in the source text.
@@ -72,7 +72,6 @@ import { isFalseBoolean } from '/scripts/utils.js';
 
 /**
  * The singleton instance of the MacroCstWalker.
- *
  * @type {MacroCstWalker}
  */
 let instance;
@@ -86,7 +85,6 @@ class MacroCstWalker {
 
     /**
      * Evaluates a full document CST into a resolved string.
-     *
      * @param {EvaluationContext & { cst: CstNode }} options
      * @returns {string}
      */
@@ -155,7 +153,6 @@ class MacroCstWalker {
     /**
      * Extracts basic info from a macro CST node: name, closing flag, position, and argument count.
      * Returns null for variable expressions or nodes without valid identifiers.
-     *
      * @param {CstNode} macroNode - A macro CST node from the parser.
      * @returns {MacroNodeInfo | null}
      */
@@ -203,8 +200,7 @@ class MacroCstWalker {
     /**
      * Finds unclosed scoped macros in a document CST.
      * Used by autocomplete to suggest closing tags.
-     *
-     * @param {Object} options
+     * @param {object} options
      * @param {string} options.text - The document text.
      * @param {CstNode} options.cst - The parsed CST.
      * @returns {Array<{ name: string, startOffset: number, endOffset: number, paddingBefore: string, paddingAfter: string }>} - Array of unclosed macro info, innermost last.
@@ -216,7 +212,7 @@ class MacroCstWalker {
             return [];
         }
 
-        let items = this.#collectDocumentItems(cst);
+        const items = this.#collectDocumentItems(cst);
         // Don't process scoped macros - we want to find the raw opening/closing pairs
         // Just extract macro info and find unmatched openers
 
@@ -233,6 +229,7 @@ class MacroCstWalker {
             if (info.isClosing) {
                 // Find matching opener in stack (case-insensitive)
                 // When closing an outer scope, all inner unclosed scopes are implicitly closed
+                // @ts-expect-error TS(2339): Property 'findLastIndex' does not exist on type 'a... Remove this comment to see the full error message
                 const matchIndex = unclosedStack.findLastIndex(s => s.name.toLowerCase() === info.name.toLowerCase());
                 if (matchIndex !== -1) {
                     // Pop everything from matchIndex to end (inclusive) - closes the matched scope and all nested ones
@@ -262,7 +259,6 @@ class MacroCstWalker {
     /**
      * Extracts the whitespace padding from a macro node.
      * Returns the whitespace after {{ and before }}.
-     *
      * @param {CstNode} macroNode - The macro CST node.
      * @param {string} text - The source text.
      * @returns {{ paddingBefore: string, paddingAfter: string }}
@@ -298,7 +294,6 @@ class MacroCstWalker {
 
     /**
      * Collects top-level plaintext tokens and macro nodes from the document CST.
-     *
      * @param {CstNode} cst
      * @returns {Array<DocumentItem>}
      */
@@ -354,7 +349,6 @@ class MacroCstWalker {
 
     /**
      * Evaluates a single macro CST node, resolving any nested macros first.
-     *
      * @param {CstNode} macroNode
      * @param {EvaluationContext} context
      * @param {{ startOffset: number, endOffset: number, closingEndOffset: number }} [scopedContent] - Optional scoped content range for block macros.
@@ -503,7 +497,6 @@ class MacroCstWalker {
      * Supports operators: get, set (=), add (+=), sub (-=), inc (++), dec (--),
      * logical or (||), nullish coalescing (??), logical or assign (||=),
      * nullish coalescing assign (??=), and equality comparison (==).
-     *
      * @param {CstNode} macroNode - The parent macro node.
      * @param {CstNode} variableExprNode - The variableExpr CST node.
      * @param {EvaluationContext} context - The evaluation context.
@@ -594,6 +587,7 @@ class MacroCstWalker {
                         hasValueExpr = true;
                         break;
                     default:
+                        // @ts-expect-error TS(2345): Argument of type '{ message: string; }' is not ass... Remove this comment to see the full error message
                         logMacroInternalError({ message: `Lexer found macro operator that is not implemented for variable shorthand expressions in macro node '${macroNode.name}'.` });
                         break;
                 }
@@ -612,7 +606,6 @@ class MacroCstWalker {
     /**
      * Creates a lazy value resolver that caches its result on first call.
      * This ensures the value expression is only evaluated when actually needed.
-     *
      * @param {Record<string, any>} operatorChildren - The children of the variableOperator node.
      * @param {EvaluationContext} context - The evaluation context.
      * @returns {() => string} A function that returns the evaluated value, caching the result.
@@ -632,7 +625,6 @@ class MacroCstWalker {
 
     /**
      * Executes a variable operation using the SillyTavern context API.
-     *
      * @param {string} varName - The variable name.
      * @param {boolean} isGlobal - Whether this is a global ($) or local (.) variable.
      * @param {string} operation - The operation to perform.
@@ -641,13 +633,14 @@ class MacroCstWalker {
      */
     #executeVariableOperation(varName, isGlobal, operation, lazyValue) {
         const ctx = SillyTavern.getContext();
+        // @ts-expect-error TS(2339): Property 'variables' does not exist on type '() =>... Remove this comment to see the full error message
         const vars = isGlobal ? ctx.variables.global : ctx.variables.local;
 
         /**
-        * Normalizes macro results into a string.
-        * @param {any} value
-        * @returns {string}
-        */
+         * Normalizes macro results into a string.
+         * @param {any} value
+         * @returns {string}
+         */
         const normalize = MacroEngine.normalizeMacroResult.bind(MacroEngine);
 
         /**
@@ -679,6 +672,7 @@ class MacroCstWalker {
                 // Subtract by adding the negative value
                 const numValue = Number(lazyValue());
                 if (!isNaN(numValue)) vars.add(varName, -numValue);
+                // @ts-expect-error TS(2345): Argument of type '{ message: string; }' is not ass... Remove this comment to see the full error message
                 else logMacroRuntimeWarning({ message: `Variable shorthand "-=" operator requires a numeric value, got: "${lazyValue()}"` });
                 return '';
             }
@@ -738,6 +732,7 @@ class MacroCstWalker {
                 const currentNum = Number(vars.get(varName));
                 const compareNum = Number(lazyValue());
                 if (isNaN(currentNum) || isNaN(compareNum)) {
+                    // @ts-expect-error TS(2345): Argument of type '{ message: string; }' is not ass... Remove this comment to see the full error message
                     logMacroRuntimeWarning({ message: `Variable shorthand ">" operator requires numeric values. Got: "${vars.get(varName)}" > "${lazyValue()}"` });
                     return 'false';
                 }
@@ -749,6 +744,7 @@ class MacroCstWalker {
                 const currentNum = Number(vars.get(varName));
                 const compareNum = Number(lazyValue());
                 if (isNaN(currentNum) || isNaN(compareNum)) {
+                    // @ts-expect-error TS(2345): Argument of type '{ message: string; }' is not ass... Remove this comment to see the full error message
                     logMacroRuntimeWarning({ message: `Variable shorthand ">=" operator requires numeric values. Got: "${vars.get(varName)}" >= "${lazyValue()}"` });
                     return 'false';
                 }
@@ -760,6 +756,7 @@ class MacroCstWalker {
                 const currentNum = Number(vars.get(varName));
                 const compareNum = Number(lazyValue());
                 if (isNaN(currentNum) || isNaN(compareNum)) {
+                    // @ts-expect-error TS(2345): Argument of type '{ message: string; }' is not ass... Remove this comment to see the full error message
                     logMacroRuntimeWarning({ message: `Variable shorthand "<" operator requires numeric values. Got: "${vars.get(varName)}" < "${lazyValue()}"` });
                     return 'false';
                 }
@@ -771,6 +768,7 @@ class MacroCstWalker {
                 const currentNum = Number(vars.get(varName));
                 const compareNum = Number(lazyValue());
                 if (isNaN(currentNum) || isNaN(compareNum)) {
+                    // @ts-expect-error TS(2345): Argument of type '{ message: string; }' is not ass... Remove this comment to see the full error message
                     logMacroRuntimeWarning({ message: `Variable shorthand "<=" operator requires numeric values. Got: "${vars.get(varName)}" <= "${lazyValue()}"` });
                     return 'false';
                 }
@@ -778,6 +776,7 @@ class MacroCstWalker {
             }
 
             default:
+                // @ts-expect-error TS(2345): Argument of type '{ message: string; }' is not ass... Remove this comment to see the full error message
                 logMacroRuntimeWarning({ message: `Unknown variable shorthand operation: "${operation}"` });
                 return '';
         }
@@ -786,7 +785,6 @@ class MacroCstWalker {
     /**
      * Evaluates the value part of a variable expression (after = or +=).
      * Resolves any nested macros in the value.
-     *
      * @param {Record<string, any>} operatorChildren - The children of the variableOperator node.
      * @param {EvaluationContext} context - The evaluation context.
      * @returns {string}
@@ -842,6 +840,7 @@ class MacroCstWalker {
             if (entry.range.startOffset > cursor) {
                 result += text.slice(cursor, entry.range.startOffset);
             }
+            // @ts-expect-error TS(2554): Expected 3 arguments, but got 2.
             result += this.#evaluateMacroNode(entry.node, context);
             cursor = entry.range.endOffset + 1;
         }
@@ -860,7 +859,6 @@ class MacroCstWalker {
      * This method extracts the argument's raw text and re-parses it to properly
      * handle scoped macros (opening/closing tag pairs) that may appear within
      * the argument content.
-     *
      * @param {CstNode} argNode - The argument CST node to evaluate.
      * @param {EvaluationContext} context - The evaluation context containing the parent document's text and environment.
      * @returns {string} The evaluated argument with all nested macros (including scoped ones) resolved.
@@ -887,7 +885,6 @@ class MacroCstWalker {
      *
      * This is the core helper used by both argument evaluation and scoped content
      * evaluation to ensure consistent handling of nested and scoped macros.
-     *
      * @param {string} rawContent - The raw text content to evaluate.
      * @param {number} newContextOffset - The offset of rawContent's start position in the original top-level document.
      * @param {EvaluationContext} context - The parent evaluation context (used for env, resolveMacro, trimContent).
@@ -960,7 +957,6 @@ class MacroCstWalker {
     /**
      * Computes the character range of a macro node based on its start/end tokens
      * or its own location if those are not available.
-     *
      * @param {CstNode} macroNode
      * @returns {TokenRange}
      */
@@ -980,7 +976,6 @@ class MacroCstWalker {
     /**
      * Flattens an incomplete macro node into document items.
      * Tokens from the incomplete macro become plaintext, but nested complete macros are preserved.
-     *
      * @param {CstNode} macroNode
      * @param {IToken} excludeToken - The recovery-inserted token to exclude
      * @param {Array<DocumentItem>} items - The items array to add to
@@ -1034,7 +1029,6 @@ class MacroCstWalker {
     /**
      * Checks if a token was inserted during Chevrotain's error recovery.
      * Recovery tokens have `isInsertedInRecovery=true` or invalid offset values.
-     *
      * @param {IToken|null|undefined} token
      * @returns {boolean}
      */
@@ -1047,7 +1041,6 @@ class MacroCstWalker {
     /**
      * Computes the character range of an argument node based on all its child
      * tokens and nested macros.
-     *
      * @param {CstNode} argNode
      * @returns {TokenRange|null}
      */
@@ -1090,7 +1083,6 @@ class MacroCstWalker {
 
     /**
      * Determines whether the given value is a CST node.
-     *
      * @param {any} value
      * @returns {value is CstNode}
      */
@@ -1101,7 +1093,6 @@ class MacroCstWalker {
     /**
      * Evaluates scoped content between an opening and closing macro tag.
      * This resolves any nested macros within the scoped content.
-     *
      * @param {{ startOffset: number, endOffset: number }} scopedContent - The range of the scoped content.
      * @param {EvaluationContext} context - The evaluation context. The `text` property contains the parent
      *        document text, and offsets in scopedContent are relative to that parent text.
@@ -1132,11 +1123,11 @@ class MacroCstWalker {
      *
      * The closing macro has the `closingBlock` flag (`/`) and the same identifier.
      * Everything between the opening and closing macros becomes the last unnamed argument.
-     *
      * @param {Array<DocumentItem>} items - The collected document items.
      * @param {string} text - The original document text.
      * @returns {Array<DocumentItem>} - The processed items with scoped macros merged.
      */
+    // @ts-expect-error TS(6133): 'text' is declared but its value is never read.
     #processScopedMacros(items, text) {
         // Build a list of scoped macro info for each macro item
         /** @type {Array<{ index: number, item: DocumentItemMacro, name: string, isClosing: boolean, matched: boolean }>} */
@@ -1256,7 +1247,6 @@ class MacroCstWalker {
 
     /**
      * Extracts macro name and closing flag status from a macro node.
-     *
      * @param {CstNode} macroNode
      * @returns {{ name: string, isClosing: boolean } | null}
      */
@@ -1288,7 +1278,6 @@ class MacroCstWalker {
     /**
      * Checks if a macro can accept scoped content as an additional argument.
      * Returns true if adding one more argument would result in valid arity.
-     *
      * @param {CstNode} macroNode - The macro CST node.
      * @param {string} macroName - The macro name.
      * @returns {boolean} - True if scoped content is allowed.
@@ -1324,7 +1313,6 @@ class MacroCstWalker {
      * Finds the matching closing macro for an opening macro at the given index.
      * Handles nested scopes by tracking depth. Only counts opening macros that
      * can accept scoped content (inline macros with all args filled don't count).
-     *
      * @param {Array<{ index: number, item: DocumentItemMacro, name: string, isClosing: boolean, matched: boolean }>} macroInfos
      * @param {number} openingIdx - Index in macroInfos array of the opening macro.
      * @returns {number} - Index in macroInfos array of the matching closing macro, or -1 if not found.

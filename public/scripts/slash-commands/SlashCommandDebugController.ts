@@ -1,4 +1,6 @@
+// @ts-expect-error TS(6133): 'SlashCommandClosure' is declared but its value is... Remove this comment to see the full error message
 import { SlashCommandClosure } from './SlashCommandClosure.js';
+// @ts-expect-error TS(6133): 'SlashCommandExecutor' is declared but its value i... Remove this comment to see the full error message
 import { SlashCommandExecutor } from './SlashCommandExecutor.js';
 
 export class SlashCommandDebugController {

@@ -15,6 +15,10 @@ import { humanFileSize, timestampToMoment } from './utils.js';
  * Data Maid Dialog class for managing the cleanup dialog interface.
  */
 class DataMaidDialog {
+    DATA_MAID_CATEGORIES: any;
+    container: any;
+    isScanning: any;
+    token: any;
     constructor() {
         this.token = null;
         this.container = null;
@@ -115,6 +119,7 @@ class DataMaidDialog {
      */
     async handleScanClick() {
         if (this.isScanning) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.warning(t`The scan is already running. Please wait for it to finish.`);
             return;
         }
@@ -132,6 +137,7 @@ class DataMaidDialog {
             this.token = report.token;
         } catch (error) {
             this.hideSpinner();
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.error(t`An error has occurred. Check the console for details.`);
             console.error('Error generating Data Maid report:', error);
         } finally {
@@ -167,6 +173,7 @@ class DataMaidDialog {
      */
     async renderReport(report, resultsList) {
         for (const [prop, data] of Object.entries(this.DATA_MAID_CATEGORIES)) {
+            // @ts-expect-error TS(2339): Property 'name' does not exist on type 'unknown'.
             const category = await this.renderCategory(prop, data.name, data.description, report.report[prop]);
             if (!category) {
                 continue;
@@ -195,7 +202,7 @@ class DataMaidDialog {
      * @param {string} name Name of the category
      * @param {string} description Description of the category
      * @param {import('../../src/endpoints/data-maid.js').DataMaidSanitizedRecord[]} items List of items in the category
-     * @return {Promise<Element|null>} A promise that resolves to a DOM element containing the rendered category
+     * @returns {Promise<Element|null>} A promise that resolves to a DOM element containing the rendered category
      * @private
      */
     async renderCategory(prop, name, description, items) {
@@ -324,7 +331,7 @@ class DataMaidDialog {
     /**
      * Deletes an item by its file path hash.
      * @param {string[]} hashes Hashes of items to delete
-     * @return {Promise<boolean>} True if the deletion was successful, false otherwise
+     * @returns {Promise<boolean>} True if the deletion was successful, false otherwise
      * @private
      */
     async delete(hashes) {
@@ -393,6 +400,9 @@ class DataMaidDialog {
     }
 }
 
+/**
+ *
+ */
 export function initDataMaid() {
     const dataMaidButton = document.getElementById('data_maid_button');
     if (!dataMaidButton) {

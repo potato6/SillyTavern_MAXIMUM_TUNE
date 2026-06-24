@@ -24,7 +24,7 @@ const AUTOSAVE_INTERVAL = 10 * 60 * 1000;
 
 /**
  * Map of functions to trigger settings autosave for a user.
- * @type {Map<string, function>}
+ * @type {Map<string, Function>}
  */
 const AUTOSAVE_FUNCTIONS = new Map();
 
@@ -89,6 +89,11 @@ export function getSettingsBackupFilePrefix(handle: any) {
     return `settings_${handle}_`;
 }
 
+/**
+ *
+ * @param directoryPath
+ * @param options
+ */
 function readPresetsFromDirectory(directoryPath: any, options = {}) {
     const {
         // @ts-expect-error TS(2339): Property 'sortFunction' does not exist on type '{}... Remove this comment to see the full error message
@@ -118,6 +123,9 @@ function readPresetsFromDirectory(directoryPath: any, options = {}) {
     return { fileContents, fileNames };
 }
 
+/**
+ *
+ */
 async function backupSettings() {
     try {
         const userHandles = await getAllUserHandles();

@@ -291,6 +291,7 @@ import { canJumpToSwipeForMessage, canOpenSwipePickerForMessage, initSwipePicker
 // API OBJECT FOR EXTERNAL WIRING
 globalThis.SillyTavern = {
     libs,
+    // @ts-expect-error TS(2322): Type '() => { accountStorage: AccountStorage; chat... Remove this comment to see the full error message
     getContext,
 };
 
@@ -337,6 +338,7 @@ export {
  */
 await new Promise((resolve) => {
     if (document.readyState === 'complete') {
+        // @ts-expect-error TS(2794): Expected 1 arguments, but got 0. Did you forget to... Remove this comment to see the full error message
         resolve();
     } else {
         window.addEventListener('load', resolve);
@@ -344,6 +346,7 @@ await new Promise((resolve) => {
 });
 
 // Configure toast library:
+// @ts-expect-error TS(2304): Cannot find name 'toastr'.
 toastr.options = {
     positionClass: 'toast-top-center',
     closeButton: false,
@@ -365,11 +368,13 @@ toastr.options = {
 };
 
 // Run once during startup
+// @ts-expect-error TS(2304): Cannot find name 'toastr'.
 toastr.subscribe(function (args) {
     if (args.state !== 'visible') {
         return;
     }
 
+    // @ts-expect-error TS(2304): Cannot find name 'toastr'.
     const $container = toastr.getContainer(args.options, false);
     if (!$container || !$container.length) {
         return;
@@ -403,11 +408,11 @@ export let converter;
 
 export const systemUserName = 'SillyTavern System';
 export const neutralCharacterName = 'Assistant';
-let default_user_name = 'User';
+const default_user_name = 'User';
 export let name1 = default_user_name;
 export let name2 = systemUserName;
 /** @type {ChatMessage[]} */
-export let chat = [];
+export const chat = [];
 
 /**
  * @type {import('./scripts/constants.js').SWIPE_STATE}
@@ -423,7 +428,7 @@ export let displayVersion = 'SillyTavern';
 
 let generation_started = new Date();
 /** @type {Character[]} */
-export let characters = [];
+export const characters = [];
 /**
  * Stringified index of a currently chosen entity in the characters array.
  * @type {string|undefined} Yes, we hate it as much as you do.
@@ -435,16 +440,18 @@ export const system_avatar = 'img/five.png';
 export const comment_avatar = 'img/quill.png';
 export const default_user_avatar = 'img/user-default.png';
 export let CLIENT_VERSION = 'SillyTavern:UNKNOWN:Cohee#1207'; // For Horde header
-let optionsPopper = Popper.createPopper(document.getElementById('options_button'), document.getElementById('options'), {
+const optionsPopper = Popper.createPopper(document.getElementById('options_button'), document.getElementById('options'), {
     placement: 'top-start',
 });
-let exportPopper = Popper.createPopper(document.getElementById('export_button'), document.getElementById('export_format_popup'), {
+const exportPopper = Popper.createPopper(document.getElementById('export_button'), document.getElementById('export_format_popup'), {
     placement: 'left',
 });
 let isExportPopupOpen = false;
 
 // Saved here for performance reasons
+// @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
 const messageTemplate = $('#message_template .mes');
+// @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
 export const chatElement = $('#chat');
 
 let dialogueResolve = null;
@@ -467,6 +474,7 @@ export const DEFAULT_SAVE_EDIT_TIMEOUT = debounce_timeout.relaxed;
 export const DEFAULT_PRINT_TIMEOUT = debounce_timeout.quick;
 
 export const saveSettingsDebounced = debounce((loopCounter = 0) => saveSettings(loopCounter), DEFAULT_SAVE_EDIT_TIMEOUT);
+// @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
 export const saveCharacterDebounced = debounce(() => $('#create_button').trigger('click'), DEFAULT_SAVE_EDIT_TIMEOUT);
 
 /**
@@ -498,6 +506,9 @@ export const extension_prompt_roles = {
 
 export const MAX_INJECTION_DEPTH = 10000;
 
+/**
+ *
+ */
 async function getClientVersion() {
     try {
         const response = await fetch('/version');
@@ -510,13 +521,18 @@ async function getClientVersion() {
             displayVersion += ` '${data.gitBranch}' (${data.gitRevision})`;
         }
 
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#version_display').text(displayVersion);
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#version_display_welcome').text(displayVersion);
     } catch (err) {
         console.error('Couldn\'t get client version', err);
     }
 }
 
+/**
+ *
+ */
 export function reloadMarkdownProcessor() {
     converter = new showdown.Converter({
         emoji: true,
@@ -537,6 +553,9 @@ export function reloadMarkdownProcessor() {
     return converter;
 }
 
+/**
+ *
+ */
 export function getCurrentChatId() {
     if (selected_group) {
         return groups.find(x => x.id == selected_group)?.chat_id;
@@ -550,7 +569,7 @@ export const depth_prompt_depth_default = 4;
 export const depth_prompt_role_default = 'system';
 const per_page_default = 50;
 
-var is_advanced_char_open = false;
+let is_advanced_char_open = false;
 
 /**
  * The type of the right menu
@@ -566,7 +585,7 @@ export let menu_type = '';
 export let selected_button = ''; //which button pressed
 
 //create pole save
-export let create_save = {
+export const create_save = {
     name: '',
     description: '',
     creator_notes: '',
@@ -594,7 +613,7 @@ export let create_save = {
 //animation right menu
 export const ANIMATION_DURATION_DEFAULT = 125;
 export let animation_duration = ANIMATION_DURATION_DEFAULT;
-export let animation_easing = 'ease-in-out';
+export const animation_easing = 'ease-in-out';
 let popup_type = '';
 let chat_file_for_del = '';
 export let online_status = 'no_connection';
@@ -628,9 +647,10 @@ export let main_api;// = "kobold";
 let abortController = new AbortController();
 
 //css
-var css_send_form_display = $('<div id=send_form></div>').css('display');
+// @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+const css_send_form_display = $('<div id=send_form></div>').css('display');
 
-var kobold_horde_model = '';
+let kobold_horde_model = '';
 
 export let token;
 
@@ -642,6 +662,11 @@ export let active_group = '';
 
 export const entitiesFilter = new FilterHelper(printCharactersDebounced);
 
+/**
+ *
+ * @param root0
+ * @param root0.omitContentType
+ */
 export function getRequestHeaders({ omitContentType = false } = {}) {
     const headers = {
         'Content-Type': 'application/json',
@@ -655,6 +680,9 @@ export function getRequestHeaders({ omitContentType = false } = {}) {
     return headers;
 }
 
+/**
+ *
+ */
 export function getSlideToggleOptions() {
     return {
         miliseconds: animation_duration * 1.5,
@@ -662,6 +690,7 @@ export function getSlideToggleOptions() {
     };
 }
 
+// @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
 $.ajaxPrefilter((options, originalOptions, xhr) => {
     xhr.setRequestHeader('X-CSRF-Token', token);
 });
@@ -689,12 +718,16 @@ export async function pingServer() {
 }
 
 //MARK: firstLoadInit
+/**
+ *
+ */
 async function firstLoadInit() {
     try {
         const tokenResponse = await fetch('/csrf-token');
         const tokenData = await tokenResponse.json();
         token = tokenData.token;
     } catch {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.error(t`Couldn't get CSRF token. Please refresh the page.`, t`Error`, { timeOut: 0, extendedTimeOut: 0, preventDuplicates: true });
         throw new Error('Initialization failed');
     }
@@ -711,6 +744,7 @@ async function firstLoadInit() {
     const splashMessage = document.createElement('h2');
     splashMessage.className = 'splash-message';
     splashMessage.textContent = t`Initializing…`;
+    // @ts-expect-error TS(4111): Property 'i18n' comes from an index signature, so ... Remove this comment to see the full error message
     splashMessage.dataset.i18n = 'Initializing…';
 
     initLoaderOverlay.prepend(splashLogo);
@@ -788,31 +822,49 @@ async function firstLoadInit() {
     await eventSource.emit(event_types.APP_READY);
 }
 
+/**
+ *
+ */
 async function fixViewport() {
     document.body.style.position = 'absolute';
     await delay(1);
     document.body.style.position = '';
 }
 
+/**
+ *
+ */
 function initStandaloneMode() {
     const isPwaMode = window.matchMedia('(display-mode: standalone)').matches;
     if (isPwaMode) {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('body').addClass('PWA');
     }
 }
 
+/**
+ *
+ * @param reason
+ */
 export function cancelStatusCheck(reason = 'Manually cancelled status check') {
     abortStatusCheck?.abort(new AbortReason(reason));
     abortStatusCheck = new AbortController();
     setOnlineStatus('no_connection');
 }
 
+/**
+ *
+ */
 export function displayOnlineStatus() {
     if (online_status == 'no_connection') {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('.online_status_indicator').removeClass('success');
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('.online_status_text').text($('#API-status-top').attr('no_connection_text'));
     } else {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('.online_status_indicator').addClass('success');
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('.online_status_text').text(online_status);
     }
 }
@@ -845,16 +897,29 @@ export function setActiveGroup(entityOrKey) {
     if (active_group) active_character = null;
 }
 
+/**
+ *
+ */
 export function startStatusLoading() {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('.api_loading').show();
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('.api_button').addClass('disabled');
 }
 
+/**
+ *
+ */
 export function stopStatusLoading() {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('.api_loading').hide();
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('.api_button').removeClass('disabled');
 }
 
+/**
+ *
+ */
 export function resultCheckStatus() {
     displayOnlineStatus();
     stopStatusLoading();
@@ -867,7 +932,7 @@ export function resultCheckStatus() {
  * If the character is different from the currently selected one, it will clear the chat and reset any selected character or group.
  * @param {number} id The ID of the character to switch to.
  * @param {object} [options] Options for the switch.
- * @param {boolean} [options.switchMenu=true] Whether to switch the right menu to the character edit menu if the character is already selected.
+ * @param {boolean} [options.switchMenu] Whether to switch the right menu to the character edit menu if the character is already selected.
  * @returns {Promise<void>} A promise that resolves when the character is switched.
  */
 export async function selectCharacterById(id, { switchMenu = true } = {}) {
@@ -876,6 +941,7 @@ export async function selectCharacterById(id, { switchMenu = true } = {}) {
     }
 
     if (isChatSaving) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.info(t`Please wait until the chat is saved before switching characters.`, t`Your chat is still saving...`);
         return;
     }
@@ -906,11 +972,18 @@ export async function selectCharacterById(id, { switchMenu = true } = {}) {
     }
 }
 
+/**
+ *
+ */
 function getBackBlock() {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const template = $('#bogus_folder_back_template .bogus_folder_select').clone();
     return template;
 }
 
+/**
+ *
+ */
 async function getEmptyBlock() {
     const icons = ['fa-dragon', 'fa-otter', 'fa-kiwi-bird', 'fa-crow', 'fa-frog'];
     const texts = [t`Here be dragons`, t`Otterly empty`, t`Kiwibunga`, t`Pump-a-Rum`, t`Croak it`];
@@ -920,6 +993,7 @@ async function getEmptyBlock() {
         icon: icons[roll],
     };
     const emptyBlock = await renderTemplateAsync('emptyBlock', params);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     return $(emptyBlock);
 }
 
@@ -931,15 +1005,22 @@ async function getHiddenBlock(hidden) {
         text: (hidden > 1 ? t`${hidden} characters hidden.` : t`${hidden} character hidden.`),
     };
     const hiddenBlock = await renderTemplateAsync('hiddenBlock', params);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     return $(hiddenBlock);
 }
 
+/**
+ *
+ * @param item
+ * @param id
+ */
 function getCharacterBlock(item, id) {
     let this_avatar = default_avatar;
     if (item.avatar != 'none') {
         this_avatar = getThumbnailUrl('avatar', item.avatar);
     }
     // Populate the template
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const template = $('#character_template .character_select').clone();
     template.attr({ 'data-chid': id, 'id': `CharID${id}` });
     template.find('img').attr('src', this_avatar).attr('alt', item.name);
@@ -985,13 +1066,13 @@ function getCharacterBlock(item, id) {
  * Use this function whenever the reprinting of the character list is the primary focus, otherwise using `printCharactersDebounced` is preferred for a cleaner, non-blocking experience.
  *
  * The printing will also always reprint all filter options of the global list, to keep them up to date.
- *
  * @param {boolean} fullRefresh - If true, the list is fully refreshed and the navigation is being reset
  */
 export async function printCharacters(fullRefresh = false) {
     const storageKey = 'Characters_PerPage';
     const listId = '#rm_print_characters_block';
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     let currentScrollTop = $(listId).scrollTop();
 
     if (fullRefresh) {
@@ -1016,6 +1097,7 @@ export async function printCharacters(fullRefresh = false) {
 
     const pageSize = Number(accountStorage.getItem(storageKey)) || per_page_default;
     const sizeChangerOptions = [10, 25, 50, 100, 250, 500, 1000];
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#rm_print_characters_pagination').pagination({
         dataSource: entities,
         pageSize,
@@ -1030,26 +1112,32 @@ export async function printCharacters(fullRefresh = false) {
         formatSizeChanger: renderPaginationDropdown(pageSize, sizeChangerOptions),
         showNavigator: true,
         callback: async function (/** @type {Entity[]} */ data) {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(listId).empty();
             if (power_user.bogus_folders && isBogusFolderOpen()) {
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $(listId).append(getBackBlock());
             }
             if (!data.length) {
                 const emptyBlock = await getEmptyBlock();
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $(listId).append(emptyBlock);
             }
             let displayCount = 0;
             for (const i of data) {
                 switch (i.type) {
                     case 'character':
+                        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                         $(listId).append(getCharacterBlock(i.item, i.id));
                         displayCount++;
                         break;
                     case 'group':
+                        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                         $(listId).append(getGroupBlock(i.item));
                         displayCount++;
                         break;
                     case 'tag':
+                        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                         $(listId).append(getTagBlock(i.item, i.entities, i.hidden, i.isUseless));
                         break;
                 }
@@ -1058,8 +1146,10 @@ export async function printCharacters(fullRefresh = false) {
             const hidden = (characters.length + groups.length) - displayCount;
             if (hidden > 0 && entitiesFilter.hasAnyFilter()) {
                 const hiddenBlock = await getHiddenBlock(hidden);
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $(listId).append(hiddenBlock);
             }
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             localizePagination($('#rm_print_characters_pagination'));
 
             eventSource.emit(event_types.CHARACTER_PAGE_LOADED);
@@ -1072,6 +1162,7 @@ export async function printCharacters(fullRefresh = false) {
             saveCharactersPage = e;
         },
         afterRender: function () {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(listId).scrollTop(currentScrollTop);
         },
     });
@@ -1083,7 +1174,9 @@ export async function printCharacters(fullRefresh = false) {
 /** Checks the state of the current search, and adds/removes the search sorting option accordingly */
 function verifyCharactersSearchSortRule() {
     const searchTerm = entitiesFilter.getFilterData(FILTER_TYPES.SEARCH);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const searchOption = $('#character_sort_order option[data-field="search"]');
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const selector = $('#character_sort_order');
     const isHidden = searchOption.attr('hidden') !== undefined;
 
@@ -1096,6 +1189,7 @@ function verifyCharactersSearchSortRule() {
     // If search got cleared, we make sure to hide the option and go back to the one before
     if (!searchTerm && !isHidden) {
         searchOption.attr('hidden', '');
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(`#character_sort_order option[data-order="${power_user.sort_order}"][data-field="${power_user.sort_field}"]`).prop('selected', true);
     }
 }
@@ -1112,7 +1206,6 @@ function verifyCharactersSearchSortRule() {
 
 /**
  * Converts the given character to its entity representation
- *
  * @param {Character} character - The character
  * @param {string|number} id - The id of this character
  * @returns {Entity} The entity for this character
@@ -1123,7 +1216,6 @@ export function characterToEntity(character, id) {
 
 /**
  * Converts the given group to its entity representation
- *
  * @param {Group} group - The group
  * @returns {Entity} The entity for this group
  */
@@ -1133,7 +1225,6 @@ export function groupToEntity(group) {
 
 /**
  * Converts the given tag to its entity representation
- *
  * @param {import('./scripts/tags.js').Tag} tag - The tag
  * @returns {Entity} The entity for this tag
  */
@@ -1145,7 +1236,6 @@ export function tagToEntity(tag) {
  * Builds the full list of all entities available
  *
  * They will be correctly marked and filtered.
- *
  * @param {object} param0 - Optional parameters
  * @param {boolean} [param0.doFilter] - Whether this entity list should already be filtered based on the global filters
  * @param {boolean} [param0.doSort] - Whether the entity list should be sorted when returned
@@ -1186,7 +1276,9 @@ export function getEntitiesList({ doFilter = false, doSort = true } = {}) {
             if (doSort) {
                 sortEntitiesList(subEntities, false);
             }
+            // @ts-expect-error TS(2339): Property 'entities' does not exist on type '{ item... Remove this comment to see the full error message
             entity.entities = subEntities;
+            // @ts-expect-error TS(2339): Property 'hidden' does not exist on type '{ item: ... Remove this comment to see the full error message
             entity.hidden = subCount - subEntities.length;
         }
     }
@@ -1206,6 +1298,7 @@ export function getEntitiesList({ doFilter = false, doSort = true } = {}) {
     const nonTagEntitiesCount = entities.filter(entity => entity.type !== 'tag').length;
     for (const entity of entities) {
         if (entity.type === 'tag') {
+            // @ts-expect-error TS(2339): Property 'entities' does not exist on type '{ item... Remove this comment to see the full error message
             if (entity.entities?.length == nonTagEntitiesCount) entity.isUseless = true;
         }
     }
@@ -1218,6 +1311,10 @@ export function getEntitiesList({ doFilter = false, doSort = true } = {}) {
     return entities;
 }
 
+/**
+ *
+ * @param avatarUrl
+ */
 export async function getOneCharacter(avatarUrl) {
     const response = await fetch('/api/characters/get', {
         method: 'POST',
@@ -1237,11 +1334,16 @@ export async function getOneCharacter(avatarUrl) {
         if (indexOf !== -1) {
             characters[indexOf] = getData;
         } else {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.error(t`Character ${avatarUrl} not found in the list`, t`Error`, { timeOut: 5000, preventDuplicates: true });
         }
     }
 }
 
+/**
+ *
+ * @param chId
+ */
 export function getCharacterSource(chId = this_chid) {
     const character = characters[chId];
 
@@ -1289,6 +1391,9 @@ export function getCharacterSource(chId = this_chid) {
     return '';
 }
 
+/**
+ *
+ */
 export async function getCharacters() {
     const response = await fetch('/api/characters/all', {
         method: 'POST',
@@ -1333,6 +1438,10 @@ export async function getCharacters() {
     }
 }
 
+/**
+ *
+ * @param chatfile
+ */
 async function delChat(chatfile) {
     const response = await fetch('/api/chats/delete', {
         method: 'POST',
@@ -1391,7 +1500,9 @@ export async function deleteCharacterChatByName(characterId, fileName) {
             body: JSON.stringify({ avatar_url: character.avatar }),
         });
         const chats = Object.values(await chatsResponse.json());
+        // @ts-expect-error TS(2339): Property 'last_mes' does not exist on type 'unknow... Remove this comment to see the full error message
         chats.sort((a, b) => sortMoments(timestampToMoment(a.last_mes), timestampToMoment(b.last_mes)));
+        // @ts-expect-error TS(2339): Property 'file_name' does not exist on type 'objec... Remove this comment to see the full error message
         const newChatName = chats.length && typeof chats[0] === 'object' ? chats[0].file_name.replace('.jsonl', '') : `${character.name} - ${humanizedDateTime()}`;
         await updateRemoteChatName(characterId, newChatName);
     }
@@ -1399,6 +1510,9 @@ export async function deleteCharacterChatByName(characterId, fileName) {
     await eventSource.emit(event_types.CHAT_DELETED, fileName);
 }
 
+/**
+ *
+ */
 export async function replaceCurrentChat() {
     await clearChat({ clearData: true });
 
@@ -1410,17 +1524,21 @@ export async function replaceCurrentChat() {
 
     if (chatsResponse.ok) {
         const chats = Object.values(await chatsResponse.json());
+        // @ts-expect-error TS(2339): Property 'last_mes' does not exist on type 'unknow... Remove this comment to see the full error message
         chats.sort((a, b) => sortMoments(timestampToMoment(a.last_mes), timestampToMoment(b.last_mes)));
 
         if (chats.length && typeof chats[0] === 'object') {
             // pick existing chat
+            // @ts-expect-error TS(2339): Property 'file_name' does not exist on type 'objec... Remove this comment to see the full error message
             characters[this_chid].chat = chats[0].file_name.replace('.jsonl', '');
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#selected_chat_pole').val(characters[this_chid].chat);
             saveCharacterDebounced();
             await getChat();
         } else {
             // start new chat
             characters[this_chid].chat = `${name2} - ${humanizedDateTime()}`;
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#selected_chat_pole').val(characters[this_chid].chat);
             saveCharacterDebounced();
             await getChat();
@@ -1428,10 +1546,14 @@ export async function replaceCurrentChat() {
     }
 }
 
+/**
+ *
+ * @param messagesToLoad
+ */
 export async function showMoreMessages(messagesToLoad = null) {
     const firstDisplayedMesId = chatElement.children('.mes').first().attr('mesid');
     let messageId = Number(firstDisplayedMesId);
-    let count = messagesToLoad || power_user.chat_truncation || Number.MAX_SAFE_INTEGER;
+    const count = messagesToLoad || power_user.chat_truncation || Number.MAX_SAFE_INTEGER;
 
     // If there are no messages displayed, or the message somehow has no mesid, we default to one higher than last message id,
     // so the first "new" message being shown will be the last available message
@@ -1441,6 +1563,7 @@ export async function showMoreMessages(messagesToLoad = null) {
 
     console.debug('Inserting messages before', messageId, 'count', count, 'chat length', chat.length);
     const prevHeight = chatElement.prop('scrollHeight');
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const showMoreButton = $('#show_more_messages');
     const isButtonInView = isElementInViewport(showMoreButton[0]);
 
@@ -1472,9 +1595,12 @@ export async function showMoreMessages(messagesToLoad = null) {
     await eventSource.emit(event_types.MORE_MESSAGES_LOADED);
 }
 
+/**
+ *
+ */
 export async function printMessages() {
     let startIndex = 0;
-    let count = power_user.chat_truncation || Number.MAX_SAFE_INTEGER;
+    const count = power_user.chat_truncation || Number.MAX_SAFE_INTEGER;
 
     if (chat.length > count) {
         startIndex = chat.length - count;
@@ -1490,9 +1616,9 @@ export async function printMessages() {
 /**
  * Visually updates all chat messages including and after index by removing them, then adding them.
  * @param {object} [options] Options
- * @param {ChatMessage[]} [options.targetChat=chat] All messages in chat before startIndex will remain unchanged.
- * @param {Number} [options.startIndex=0] Everything including and after startIndex will be replaced.
- * @param {Boolean} [options.fade=true] When false, the swipe chevrons will not fade in.
+ * @param {ChatMessage[]} [options.targetChat] All messages in chat before startIndex will remain unchanged.
+ * @param {number} [options.startIndex] Everything including and after startIndex will be replaced.
+ * @param {boolean} [options.fade] When false, the swipe chevrons will not fade in.
  */
 export async function redisplayChat({ targetChat = chat, startIndex = 0, fade = true } = {}) {
     const messageElements = chatElement.find('.mes');
@@ -1529,6 +1655,9 @@ export async function redisplayChat({ targetChat = chat, startIndex = 0, fade = 
     console.info(`Rendered ${targetChat.length - startIndex} messages in ${((performance.now() - t1) / 1000).toFixed(3)} seconds.`);
 }
 
+/**
+ *
+ */
 export function scrollOnMediaLoad() {
     const started = Date.now();
     const media = chatElement.find('.mes_block img, .mes_block video, .mes_block audio').toArray();
@@ -1553,6 +1682,9 @@ export function scrollOnMediaLoad() {
         }
     }
 
+    /**
+     *
+     */
     function incrementAndCheck() {
         const MAX_DELAY = 1000; // 1 second
         if ((Date.now() - started) > MAX_DELAY) {
@@ -1579,7 +1711,7 @@ export function cancelDebouncedChatSave() {
 /**
  * Visually removes all chat message elements.
  * @param {object} [options] Options
- * @param {boolean} [options.clearData=false] Optionally clear the chat array's contents.
+ * @param {boolean} [options.clearData] Optionally clear the chat array's contents.
  */
 export async function clearChat({ clearData = false } = {}) {
     cancelDebouncedChatSave();
@@ -1587,12 +1719,15 @@ export async function clearChat({ clearData = false } = {}) {
     closeMessageEditor();
     extension_prompts = {};
     if (is_delete_mode) {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#dialogue_del_mes_cancel').trigger('click');
     }
     //This will also remove non '.mes' elements, e.g. '<div id="show_more_messages">Show more messages</div>'.
     chatElement.children().remove();
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     if ($('.zoomed_avatar[forChar]').length) {
         console.debug('saw avatars to remove');
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('.zoomed_avatar[forChar]').remove();
     } else { console.debug('saw no avatars'); }
 
@@ -1602,6 +1737,9 @@ export async function clearChat({ clearData = false } = {}) {
     if (clearData) chat.length = 0;
 }
 
+/**
+ *
+ */
 export async function deleteLastMessage() {
     deleteItemizedPromptForMessage(chat.length - 1);
     chat.length = chat.length - 1;
@@ -1613,7 +1751,7 @@ export async function deleteLastMessage() {
  * Deletes a message from the chat by its ID, optionally asking for confirmation.
  * @param {number} id The ID of the message to delete.
  * @param {number} [swipeDeletionIndex] Deletes the swipe with that index.
- * @param {boolean} [askConfirmation=false] Whether to ask for confirmation before deleting.
+ * @param {boolean} [askConfirmation] Whether to ask for confirmation before deleting.
  */
 export async function deleteMessage(id, swipeDeletionIndex = undefined, askConfirmation = false) {
     const canDeleteSwipe = swipeDeletionIndex !== undefined && swipeDeletionIndex !== null;
@@ -1656,6 +1794,7 @@ export async function deleteMessage(id, swipeDeletionIndex = undefined, askConfi
     chat.splice(id, 1);
     messageElement.remove();
 
+    // @ts-expect-error TS(2339): Property 'tainted' does not exist on type '{}'.
     chat_metadata.tainted = true;
 
     const startIndex = [0, minId].includes(id) ? id : null;
@@ -1705,6 +1844,7 @@ export async function reloadCurrentChatUnsafe() {
 export async function sendTextareaMessage() {
     // don't proceed during swipeGenerate()
     if (swipeState == SWIPE_STATE.EDITING) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.warning(t`Confirm the edit to start a generation.`, t`You cannot send a message during a swipe-edit.`);
         return;
     }
@@ -1717,6 +1857,7 @@ export async function sendTextareaMessage() {
     let generateType = 'normal';
     // "Continue on send" is activated when the user hits "send" (or presses enter) on an empty chat box, and the last
     // message was sent from a character (not the user or the system).
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const textareaText = String($('#send_textarea').val());
     const lastMessage = chat[chat.length - 1];
     if (power_user.continue_on_send &&
@@ -1734,7 +1875,7 @@ export async function sendTextareaMessage() {
         await newAssistantChat({ temporary: false });
     }
 
-    let generation = await Generate(generateType);
+    const generation = await Generate(generateType);
     showSwipeButtons();
     return generation;
 }
@@ -1758,6 +1899,7 @@ export function messageFormatting(mes, ch_name, isSystem, isUser, messageId, san
     if (Number(messageId) === 0 && !isSystem && !isUser && !isReasoning) {
         const mesBeforeReplace = mes;
         const chatMessage = chat[messageId];
+        // @ts-expect-error TS(2554): Expected 1-2 arguments, but got 3.
         mes = substituteParams(mes, undefined, ch_name);
         if (chatMessage && chatMessage.mes === mesBeforeReplace && chatMessage.extra?.display_text !== mesBeforeReplace) {
             chatMessage.mes = mes;
@@ -1783,6 +1925,9 @@ export function messageFormatting(mes, ch_name, isSystem, isUser, messageId, san
     }
 
     if (!isSystem) {
+        /**
+         *
+         */
         function getRegexPlacement() {
             try {
                 if (isReasoning) {
@@ -1915,9 +2060,8 @@ export function messageFormatting(mes, ch_name, isSystem, isUser, messageId, san
  * Creates an Image element for the given API/model icon.
  * The image references the matching SVG file from `/img/` and includes a tooltip with API and model info.
  * The caller is responsible for appending the image to the DOM and optionally calling `SVGInject` on it.
- *
  * @param {string} apiName - API identifier matching an SVG file in /img/ (e.g. 'openai', 'openrouter', 'claude')
- * @param {string} [modelName=''] - Model name shown in the tooltip
+ * @param {string} [modelName] - Model name shown in the tooltip
  * @returns {HTMLImageElement} The image element (not yet in the DOM)
  */
 export function createModelIcon(apiName, modelName = '') {
@@ -1930,7 +2074,6 @@ export function createModelIcon(apiName, modelName = '') {
 
 /**
  * Inserts or replaces an SVG icon adjacent to the provided message's timestamp.
- *
  * @param {JQuery<HTMLElement>} mes - The message element containing the timestamp where the icon should be inserted or replaced.
  * @param {ChatMessageExtra} extra - Contains the API and model details.
  */
@@ -1943,7 +2086,7 @@ function insertSVGIcon(mes, extra) {
 
     const insertOrReplaceSVG = (image, className, targetSelector, insertBefore) => {
         image.onload = async function () {
-            let existingSVG = insertBefore ? mes.find(targetSelector).prev(`.${className}`) : mes.find(targetSelector).next(`.${className}`);
+            const existingSVG = insertBefore ? mes.find(targetSelector).prev(`.${className}`) : mes.find(targetSelector).next(`.${className}`);
             if (existingSVG.length) {
                 existingSVG.replaceWith(image);
             } else {
@@ -1960,6 +2103,7 @@ function insertSVGIcon(mes, extra) {
         insertOrReplaceSVG(image, className, targetSelector, insertBefore);
     };
 
+    // @ts-expect-error TS(2554): Expected 3 arguments, but got 2.
     insertIcon('timestamp-icon', '.timestamp');
     insertIcon('thinking-icon', '.mes_reasoning_header_title', true);
 }
@@ -1968,8 +2112,8 @@ function insertSVGIcon(mes, extra) {
  * Re-renders a message block with updated content.
  * @param {number} messageId Message ID
  * @param {object} message Message object
- * @param {object} [options={}] Optional arguments
- * @param {boolean} [options.rerenderMessage=true] Whether to re-render the message content (inside <c>.mes_text</c>)
+ * @param {object} [options] Optional arguments
+ * @param {boolean} [options.rerenderMessage] Whether to re-render the message content (inside <c>.mes_text</c>)
  */
 export function updateMessageBlock(messageId, message, { rerenderMessage = true } = {}) {
     const messageElement = chatElement.find(`[mesid="${messageId}"]`);
@@ -2118,7 +2262,9 @@ export function ensureMessageMediaIsArray(mes) {
 
     migrateMediaToArray(mes.extra);
     addArrayAutoWrapper(mes.extra, 'file', 'files');
+    // @ts-expect-error TS(2345): Argument of type '(t: any) => boolean' is not assi... Remove this comment to see the full error message
     addArrayAutoWrapper(mes.extra, 'image', 'media', (t) => t.type === MEDIA_TYPE.IMAGE, (t) => t.url);
+    // @ts-expect-error TS(2345): Argument of type '(t: any) => boolean' is not assi... Remove this comment to see the full error message
     addArrayAutoWrapper(mes.extra, 'video', 'media', (t) => t.type === MEDIA_TYPE.VIDEO, (t) => t.url);
 }
 
@@ -2198,6 +2344,7 @@ export function appendMediaToMessage(mes, messageElement, scrollBehavior = SCROL
      * @returns {JQuery<HTMLElement>} The appended image container element
      */
     function appendImageAttachment(attachment, index) {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const template = $('#message_image_template .mes_img_container').clone();
         template.attr('data-index', index);
 
@@ -2205,14 +2352,22 @@ export function appendMediaToMessage(mes, messageElement, scrollBehavior = SCROL
         image.attr('src', attachment.url);
         image.attr('title', attachment.title || mes.extra.title || '');
         mediaPromises.push(new Promise((resolve) => {
+            /**
+             *
+             */
             function onLoad() {
                 image.removeAttr('alt');
                 image.removeClass('error');
+                // @ts-expect-error TS(2794): Expected 1 arguments, but got 0. Did you forget to... Remove this comment to see the full error message
                 resolve();
             }
+            /**
+             *
+             */
             function onError() {
                 image.attr('alt', '');
                 image.addClass('error');
+                // @ts-expect-error TS(2794): Expected 1 arguments, but got 0. Did you forget to... Remove this comment to see the full error message
                 resolve();
             }
             if (image.prop('complete')) {
@@ -2234,6 +2389,7 @@ export function appendMediaToMessage(mes, messageElement, scrollBehavior = SCROL
      * @returns {JQuery<HTMLElement>} The appended video container element
      */
     function appendVideoAttachment(attachment, index) {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const template = $('#message_video_template .mes_video_container').clone();
         template.attr('data-index', index);
 
@@ -2241,11 +2397,19 @@ export function appendMediaToMessage(mes, messageElement, scrollBehavior = SCROL
         video.attr('src', attachment.url);
         video.attr('title', attachment.title || mes.extra.title || '');
         mediaPromises.push(new Promise((resolve) => {
+            /**
+             *
+             */
             function onLoad() {
+                // @ts-expect-error TS(2794): Expected 1 arguments, but got 0. Did you forget to... Remove this comment to see the full error message
                 resolve();
             }
+            /**
+             *
+             */
             function onError() {
                 video.addClass('error');
+                // @ts-expect-error TS(2794): Expected 1 arguments, but got 0. Did you forget to... Remove this comment to see the full error message
                 resolve();
             }
             if (video.prop('readyState') >= HTMLMediaElement.HAVE_CURRENT_DATA) {
@@ -2267,6 +2431,7 @@ export function appendMediaToMessage(mes, messageElement, scrollBehavior = SCROL
      * @returns {JQuery<HTMLElement>} The appended audio container element
      */
     function appendAudioAttachment(attachment, index) {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const template = $('#message_audio_template .mes_audio_container').clone();
         template.attr('data-index', index);
         const audio = template.find('.mes_audio');
@@ -2274,11 +2439,19 @@ export function appendMediaToMessage(mes, messageElement, scrollBehavior = SCROL
         audio.attr('title', attachment.title || mes.extra.title || '');
 
         mediaPromises.push(new Promise((resolve) => {
+            /**
+             *
+             */
             function onLoad() {
+                // @ts-expect-error TS(2794): Expected 1 arguments, but got 0. Did you forget to... Remove this comment to see the full error message
                 resolve();
             }
+            /**
+             *
+             */
             function onError() {
                 audio.addClass('error');
+                // @ts-expect-error TS(2794): Expected 1 arguments, but got 0. Did you forget to... Remove this comment to see the full error message
                 resolve();
             }
             if (audio.prop('readyState') >= HTMLMediaElement.HAVE_CURRENT_DATA) {
@@ -2369,6 +2542,7 @@ export function appendMediaToMessage(mes, messageElement, scrollBehavior = SCROL
         const mediaIndex = getMediaIndex(mes);
         const selectedMedia = mes.extra.media[mediaIndex];
 
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const galleryControls = $('#message_gallery_controls .mes_img_swipes').clone();
         const counter = galleryControls.find('.mes_img_swipe_counter');
         counter.text(`${mediaIndex + 1}/${mes.extra.media.length}`);
@@ -2393,6 +2567,7 @@ export function appendMediaToMessage(mes, messageElement, scrollBehavior = SCROL
     if (hasFiles) {
         for (let index = 0; index < mes.extra.files.length; index++) {
             const file = mes.extra.files[index];
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const template = $('#message_file_template .mes_file_container').clone();
             template.attr('data-index', index);
             template.find('.mes_file_name').text(file.name).attr('title', file.name);
@@ -2417,7 +2592,12 @@ export function appendMediaToMessage(mes, messageElement, scrollBehavior = SCROL
     });
 }
 
+/**
+ *
+ * @param messageElement
+ */
 export function addCopyToCodeBlocks(messageElement) {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const codeBlocks = $(messageElement).find('pre code');
     for (let i = 0; i < codeBlocks.length; i++) {
         hljs.highlightElement(codeBlocks.get(i));
@@ -2431,6 +2611,7 @@ export function addCopyToCodeBlocks(messageElement) {
         copyButton.addEventListener('pointerup', async function () {
             const text = codeBlocks.get(i).textContent;
             await copyText(text);
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.info(t`Copied!`, '', { timeOut: 2000 });
         });
     }
@@ -2442,7 +2623,7 @@ export function addCopyToCodeBlocks(messageElement) {
  * @param {object} options Options
  * @param {number} [options.messageId] Message ID
  * @param {JQuery<HTMLElement>} [options.messageElement] Message element
- * @return {void}
+ * @returns {void}
  */
 function updateMessageItemizedPromptButton(message, { messageId = chat.indexOf(message), messageElement = chatElement.find(`.mes[mesid="${messageId}"]`) }) {
     //if we have itemized messages, and the array isn't null..
@@ -2481,12 +2662,12 @@ function getMessageTextHTML(message, { messageId = chat.indexOf(message) }) {
  * Adds a single message to the chat.
  * @param {ChatMessage} mes Message object
  * @param {object} [options] Options
- * @param {string} [options.type=undefined|'swipe'] Deprecated. Use updateMessageElement instead.
- * @param {number} [options.insertAfter=null] Message ID to insert the new message after
- * @param {boolean} [options.scroll=true] Whether to scroll to the new message
- * @param {number} [options.insertBefore=null] Message ID to insert the new message before
- * @param {number} [options.forceId=null] Force the message ID
- * @param {boolean} [options.showSwipes=true] Whether to refresh the swipe buttons.
+ * @param {string} [options.type] Deprecated. Use updateMessageElement instead.
+ * @param {number} [options.insertAfter] Message ID to insert the new message after
+ * @param {boolean} [options.scroll] Whether to scroll to the new message
+ * @param {number} [options.insertBefore] Message ID to insert the new message before
+ * @param {number} [options.forceId] Force the message ID
+ * @param {boolean} [options.showSwipes] Whether to refresh the swipe buttons.
  * @returns {JQuery<HTMLElement>} The newly added message element
  */
 export function addOneMessage(mes, { type = undefined, insertAfter = null, scroll = true, insertBefore = null, forceId = null, showSwipes = true } = {}) {
@@ -2522,9 +2703,11 @@ export function addOneMessage(mes, { type = undefined, insertAfter = null, scrol
         messageElement = updateMessageElement(mes, { messageId, adjustMediaScroll: scroll ? SCROLL_BEHAVIOR.ADJUST : SCROLL_BEHAVIOR.NONE });
         if (typeof insertAfter === 'number' && insertAfter >= 0) {
             const target = chatElement.find(`.mes[mesid="${insertAfter}"]`);
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(messageElement).insertAfter(target);
         } else if (typeof insertBefore === 'number' && insertBefore >= 0) {
             const target = chatElement.find(`.mes[mesid="${insertBefore}"]`);
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(messageElement).insertBefore(target);
         } else {
             chatElement.append(messageElement);
@@ -2542,6 +2725,7 @@ export function addOneMessage(mes, { type = undefined, insertAfter = null, scrol
         scrollChatToBottom({ waitForFrame: true });
     }
 
+    // @ts-expect-error TS(2322): Type 'number' is not assignable to type 'any[]'.
     applyCharacterTagsToMessageDivs({ mesIds: messageId });
     updateEditArrowClasses();
     return messageElement;
@@ -2551,9 +2735,9 @@ export function addOneMessage(mes, { type = undefined, insertAfter = null, scrol
  * Creates the element of a single message as if it were the last message or at forceMesId
  * @param {ChatMessage} mes Message object
  * @param {object} [options] Options
- * @param {number} [options.messageId=chat.length - 1] Force the message ID
- * @param {JQuery<HTMLElement>} [options.messageElement=messageTemplate.clone()] This message element will be updated with the ChatMessage object.
- * @param {SCROLL_BEHAVIOR} [options.adjustMediaScroll=SCROLL_BEHAVIOR.NONE] Scroll behavior option passed to appendMediaToMessage.
+ * @param {number} [options.messageId] Force the message ID
+ * @param {JQuery<HTMLElement>} [options.messageElement] This message element will be updated with the ChatMessage object.
+ * @param {SCROLL_BEHAVIOR} [options.adjustMediaScroll] Scroll behavior option passed to appendMediaToMessage.
  * @returns {JQuery<HTMLElement>} Rendered HTMLElement.
  */
 export function updateMessageElement(mes, { messageId = chat.length - 1, messageElement = messageTemplate.clone(), adjustMediaScroll = SCROLL_BEHAVIOR.NONE } = {}) {
@@ -2629,7 +2813,9 @@ export function updateMessageElement(mes, { messageId = chat.length - 1, message
     updateMessageItemizedPromptButton(mes, { messageId, messageElement });
 
     messageElement.find('.avatar img').on('error', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(this).hide();
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(this).parent().html('<div class="missing-avatar fa-solid fa-user-slash"></div>');
     });
 
@@ -2661,6 +2847,10 @@ export function getCharacterAvatar(characterId) {
     return formatCharacterAvatar(avatarImg);
 }
 
+/**
+ *
+ * @param characterAvatar
+ */
 export function formatCharacterAvatar(characterAvatar) {
     return `characters/${characterAvatar}`;
 }
@@ -2670,9 +2860,9 @@ export function formatCharacterAvatar(characterAvatar) {
  * @param {MessageTimestamp} gen_started Date when generation was started
  * @param {MessageTimestamp} gen_finished Date when generation was finished
  * @param {number} tokenCount Number of tokens generated (0 if not available)
- * @param {number?} [reasoningDuration=null] Reasoning duration (null if no reasoning was done)
- * @param {number?} [timeToFirstToken=null] Time to first token
- * @returns {Object} Object containing the formatted timer value and title
+ * @param {number?} [reasoningDuration] Reasoning duration (null if no reasoning was done)
+ * @param {number?} [timeToFirstToken] Time to first token
+ * @returns {object} Object containing the formatted timer value and title
  * @example
  * const { timerValue, timerTitle } = formatGenerationTimer(gen_started, gen_finished, tokenCount);
  * console.log(timerValue); // 1.2s
@@ -2711,7 +2901,9 @@ let requestId = null;
  * @param {object} [options] Options
  * @param {boolean} [options.waitForFrame] If true, waits for the animation frame before scrolling
  */
-export function scrollChatToBottom({ waitForFrame } = {}) {
+export function scrollChatToBottom({
+    waitForFrame
+}: any = {}) {
     if (!power_user.auto_scroll_chat_to_bottom) {
         return;
     }
@@ -2748,6 +2940,9 @@ export function scrollChatToBottom({ waitForFrame } = {}) {
 }
 
 /**
+ * @param content
+ * @param additionalMacro
+ * @param postProcessFn
  * @deprecated Function is not needed anymore, as the new signature of substituteParams is more flexible.
  *
  * Substitutes {{macro}} parameters in a string.
@@ -2806,6 +3001,7 @@ export function substituteParamsLegacy(content, _name1, _name2, _original, _grou
 
     if (typeof _original === 'string') {
         let originalSubstituted = false;
+        // @ts-expect-error TS(2339): Property 'original' does not exist on type '{}'.
         environment.original = () => {
             if (originalSubstituted) {
                 return '';
@@ -2864,12 +3060,19 @@ export function substituteParamsLegacy(content, _name1, _name2, _original, _grou
 
     if (_replaceCharacterCard) {
         const fields = getCharacterCardFields();
+        // @ts-expect-error TS(2339): Property 'charPrompt' does not exist on type '{}'.
         environment.charPrompt = fields.system || '';
+        // @ts-expect-error TS(2339): Property 'charInstruction' does not exist on type ... Remove this comment to see the full error message
         environment.charInstruction = environment.charJailbreak = fields.jailbreak || '';
+        // @ts-expect-error TS(2339): Property 'description' does not exist on type '{}'... Remove this comment to see the full error message
         environment.description = fields.description || '';
+        // @ts-expect-error TS(2339): Property 'personality' does not exist on type '{}'... Remove this comment to see the full error message
         environment.personality = fields.personality || '';
+        // @ts-expect-error TS(2339): Property 'scenario' does not exist on type '{}'.
         environment.scenario = fields.scenario || '';
+        // @ts-expect-error TS(2339): Property 'persona' does not exist on type '{}'.
         environment.persona = fields.persona || '';
+        // @ts-expect-error TS(2339): Property 'mesExamples' does not exist on type '{}'... Remove this comment to see the full error message
         environment.mesExamples = () => {
             const isInstruct = power_user.instruct.enabled && main_api !== 'openai';
             const mesExamplesArray = parseMesExamples(fields.mesExamples, isInstruct);
@@ -2879,19 +3082,30 @@ export function substituteParamsLegacy(content, _name1, _name2, _original, _grou
             }
             return mesExamplesArray.join('');
         };
+        // @ts-expect-error TS(2339): Property 'mesExamplesRaw' does not exist on type '... Remove this comment to see the full error message
         environment.mesExamplesRaw = fields.mesExamples || '';
+        // @ts-expect-error TS(2339): Property 'charVersion' does not exist on type '{}'... Remove this comment to see the full error message
         environment.charVersion = fields.version || '';
+        // @ts-expect-error TS(2339): Property 'char_version' does not exist on type '{}... Remove this comment to see the full error message
         environment.char_version = fields.version || '';
+        // @ts-expect-error TS(2339): Property 'charDepthPrompt' does not exist on type ... Remove this comment to see the full error message
         environment.charDepthPrompt = fields.charDepthPrompt || '';
+        // @ts-expect-error TS(2339): Property 'creatorNotes' does not exist on type '{}... Remove this comment to see the full error message
         environment.creatorNotes = fields.creatorNotes || '';
     }
 
     // Must be substituted last so that they're replaced inside {{description}}
+    // @ts-expect-error TS(2339): Property 'user' does not exist on type '{}'.
     environment.user = _name1 ?? name1;
+    // @ts-expect-error TS(2339): Property 'char' does not exist on type '{}'.
     environment.char = _name2 ?? name2;
+    // @ts-expect-error TS(2339): Property 'group' does not exist on type '{}'.
     environment.group = environment.charIfNotGroup = getGroupValue(true);
+    // @ts-expect-error TS(2339): Property 'groupNotMuted' does not exist on type '{... Remove this comment to see the full error message
     environment.groupNotMuted = getGroupValue(false);
+    // @ts-expect-error TS(2339): Property 'notChar' does not exist on type '{}'.
     environment.notChar = getNotCharValue();
+    // @ts-expect-error TS(2339): Property 'model' does not exist on type '{}'.
     environment.model = getGeneratingModel();
 
     if (additionalMacro && typeof additionalMacro === 'object') {
@@ -2907,16 +3121,15 @@ export function substituteParamsLegacy(content, _name1, _name2, _original, _grou
  * Substitutes {{macros}} in a string using the new macro engine.
  *
  * This will replace all registered macros and dynamic additional macros as environment context.
- *
  * @param {string} content - The string to substitute parameters in.
- * @param {Object} [options={}] - Options for the substitution.
+ * @param {object} [options] - Options for the substitution.
  * @param {string} [options.name1Override] - The name of the user. Uses global name1 if not provided.
  * @param {string} [options.name2Override] - The name of the character. Uses global name2 if not provided.
  * @param {string} [options.original] - The original message for {{original}} substitution.
  * @param {string} [options.groupOverride] - The group members list for {{group}} substitution.
- * @param {boolean} [options.replaceCharacterCard=true] - Whether to replace character card macros.
- * @param {Record<string, import('./scripts/macros/engine/MacroEnv.types.js').DynamicMacroValue>} [options.dynamicMacros={}] - Additional environment variables as dynamic macros for substitution. Registered as macro functions.
- * @param {(x: string) => string} [options.postProcessFn=(x) => x] - Post-processing function for each substituted macro.
+ * @param {boolean} [options.replaceCharacterCard] - Whether to replace character card macros.
+ * @param {Record<string, import('./scripts/macros/engine/MacroEnv.types.js').DynamicMacroValue>} [options.dynamicMacros] - Additional environment variables as dynamic macros for substitution. Registered as macro functions.
+ * @param {(x: string) => string} [options.postProcessFn] - Post-processing function for each substituted macro.
  * @returns {string} The string with substituted parameters.
  */
 export function substituteParams(content, options = {}) {
@@ -2936,17 +3149,25 @@ export function substituteParams(content, options = {}) {
 
     // Keep the new macro engine behind a feature switch for now
     if (!power_user?.experimental_macro_engine) {
+        // @ts-expect-error TS(2339): Property 'name1Override' does not exist on type '{... Remove this comment to see the full error message
         return substituteParamsLegacy(content, options.name1Override, options.name2Override, options.original, options.groupOverride, options.replaceCharacterCard, options.dynamicMacros, options.postProcessFn);
     }
 
     const ctx = /** @type {import('./scripts/macros/engine/MacroEnvBuilder.js').MacroEnvRawContext} */ ({
         content,
+        // @ts-expect-error TS(2339): Property 'name1Override' does not exist on type '{... Remove this comment to see the full error message
         name1Override: options.name1Override,
+        // @ts-expect-error TS(2339): Property 'name2Override' does not exist on type '{... Remove this comment to see the full error message
         name2Override: options.name2Override,
+        // @ts-expect-error TS(2339): Property 'original' does not exist on type '{}'.
         original: options.original,
+        // @ts-expect-error TS(2339): Property 'groupOverride' does not exist on type '{... Remove this comment to see the full error message
         groupOverride: options.groupOverride,
+        // @ts-expect-error TS(2339): Property 'replaceCharacterCard' does not exist on ... Remove this comment to see the full error message
         replaceCharacterCard: options.replaceCharacterCard ?? true,
+        // @ts-expect-error TS(2339): Property 'dynamicMacros' does not exist on type '{... Remove this comment to see the full error message
         dynamicMacros: options.dynamicMacros ?? {},
+        // @ts-expect-error TS(2339): Property 'postProcessFn' does not exist on type '{... Remove this comment to see the full error message
         postProcessFn: options.postProcessFn ?? ((x) => x),
     });
 
@@ -3009,18 +3230,19 @@ export function getStoppingStrings(isImpersonate, isContinue, api = main_api) {
 /**
  * Background generation based on the provided prompt.
  * @typedef {object} GenerateQuietPromptParams
- * @prop {string} [quietPrompt] Instruction prompt for the AI
- * @prop {boolean} [quietToLoud] Whether the message should be sent in a foreground (loud) or background (quiet) mode
- * @prop {boolean} [skipWIAN] Whether to skip addition of World Info and Author's Note into the prompt
- * @prop {string} [quietImage] Image to use for the quiet prompt
- * @prop {string} [quietName] Name to use for the quiet prompt (defaults to "System:")
- * @prop {number} [responseLength] Maximum response length. If unset, the global default value is used.
- * @prop {number} [forceChId] Character ID to use for this generation run. Works in groups only.
- * @prop {object} [jsonSchema] JSON schema to use for the structured generation. Usually requires a special instruction.
- * @prop {boolean} [removeReasoning] Parses and removes the reasoning block according to reasoning format preferences
- * @prop {boolean} [trimToSentence] Whether to trim the response to the last complete sentence
+ * @property {string} [quietPrompt] Instruction prompt for the AI
+ * @property {boolean} [quietToLoud] Whether the message should be sent in a foreground (loud) or background (quiet) mode
+ * @property {boolean} [skipWIAN] Whether to skip addition of World Info and Author's Note into the prompt
+ * @property {string} [quietImage] Image to use for the quiet prompt
+ * @property {string} [quietName] Name to use for the quiet prompt (defaults to "System:")
+ * @property {number} [responseLength] Maximum response length. If unset, the global default value is used.
+ * @property {number} [forceChId] Character ID to use for this generation run. Works in groups only.
+ * @property {object} [jsonSchema] JSON schema to use for the structured generation. Usually requires a special instruction.
+ * @property {boolean} [removeReasoning] Parses and removes the reasoning block according to reasoning format preferences
+ * @property {boolean} [trimToSentence] Whether to trim the response to the last complete sentence
  * @param {GenerateQuietPromptParams} params Parameters for the quiet prompt generation
  * @returns {Promise<string>} Generated text. If using structured output, will contain a serialized JSON object.
+ * @property
  */
 export async function generateQuietPrompt({ quietPrompt = '', quietToLoud = false, skipWIAN = false, quietImage = null, quietName = null, responseLength = null, forceChId = null, jsonSchema = null, removeReasoning = true, trimToSentence = false } = {}) {
     if (arguments.length > 0 && typeof arguments[0] !== 'object') {
@@ -3117,7 +3339,7 @@ function cleanGroupMessage(getMessage) {
     const group = groups.find((x) => x.id == selected_group);
 
     if (group && Array.isArray(group.members) && group.members) {
-        for (let member of group.members) {
+        for (const member of group.members) {
             const character = characters.find(x => x.avatar == member);
 
             if (!character) {
@@ -3141,6 +3363,9 @@ function cleanGroupMessage(getMessage) {
     return getMessage;
 }
 
+/**
+ *
+ */
 function addPersonaDescriptionExtensionPrompt() {
     const INJECT_TAG = 'PERSONA_DESCRIPTION';
     setExtensionPrompt(INJECT_TAG, '', extension_prompt_types.IN_PROMPT, 0);
@@ -3157,6 +3382,7 @@ function addPersonaDescriptionExtensionPrompt() {
             ? `${power_user.persona_description}\n${originalAN}`
             : `${originalAN}\n${power_user.persona_description}`;
 
+        // @ts-expect-error TS(2339): Property 'allowWIScan' does not exist on type '{ d... Remove this comment to see the full error message
         setExtensionPrompt(NOTE_MODULE_NAME, ANWithDesc, chat_metadata[metadata_keys.position], chat_metadata[metadata_keys.depth], extension_settings.note.allowWIScan, chat_metadata[metadata_keys.role]);
     }
 
@@ -3173,14 +3399,17 @@ async function getAllExtensionPrompts() {
     const values = [];
 
     for (const prompt of Object.values(extension_prompts)) {
+        // @ts-expect-error TS(2339): Property 'value' does not exist on type 'unknown'.
         const value = prompt?.value?.trim();
 
         if (!value) {
             continue;
         }
 
+        // @ts-expect-error TS(2339): Property 'filter' does not exist on type 'unknown'... Remove this comment to see the full error message
         const hasFilter = typeof prompt.filter === 'function';
-        if (hasFilter && !await prompt.filter()) {
+        // @ts-expect-error TS(2339): Property 'filter' does not exist on type 'unknown'... Remove this comment to see the full error message
+        if (hasFilter && !(await prompt.filter())) {
             continue;
         }
 
@@ -3208,7 +3437,7 @@ export async function getExtensionPromptByName(moduleName) {
 
     const hasFilter = typeof prompt.filter === 'function';
 
-    if (hasFilter && !await prompt.filter()) {
+    if (hasFilter && !(await prompt.filter())) {
         return '';
     }
 
@@ -3242,7 +3471,7 @@ export function getExtensionPromptMaxDepth() {
 export async function getExtensionPrompt(position = extension_prompt_types.IN_PROMPT, depth = undefined, separator = '\n', role = undefined, wrap = true) {
     const filterByFunction = async (prompt) => {
         const hasFilter = typeof prompt.filter === 'function';
-        if (hasFilter && !await prompt.filter()) {
+        if (hasFilter && !(await prompt.filter())) {
             return false;
         }
         return true;
@@ -3293,7 +3522,7 @@ export function baseChatReplace(value, name1Override = null, name2Override = nul
 }
 
 /**
- * @typedef {Object} CharacterCardFields
+ * @typedef {object} CharacterCardFields
  * @property {string} system System prompt
  * @property {string} mesExamples Message examples
  * @property {string} description Description
@@ -3321,6 +3550,7 @@ export function createLazyFields(resolvers) {
         Object.defineProperty(result, key, {
             get() {
                 if (!resolved) {
+                    // @ts-expect-error TS(2349): This expression is not callable.
                     cached = resolver();
                     resolved = true;
                 }
@@ -3336,7 +3566,7 @@ export function createLazyFields(resolvers) {
 /**
  * Returns the character card fields for the current character as lazy getters.
  * Each field is only processed (baseChatReplace) when first accessed.
- * @param {Object} [options={}]
+ * @param {object} [options]
  * @param {number} [options.chid] Optional character index
  * @returns {CharacterCardFields} Character card fields with lazy evaluation
  */
@@ -3353,6 +3583,7 @@ export function getCharacterCardFieldsLazy({ chid = undefined } = {}) {
         persona: () => baseChatReplace(power_user.persona_description?.trim()),
         system: () => {
             if (!character) return '';
+            // @ts-expect-error TS(2339): Property 'system_prompt' does not exist on type '{... Remove this comment to see the full error message
             const systemPrompt = chat_metadata.system_prompt || character.data?.system_prompt || '';
             return power_user.prefer_character_prompt ? baseChatReplace(systemPrompt.trim()) : '';
         },
@@ -3371,24 +3602,30 @@ export function getCharacterCardFieldsLazy({ chid = undefined } = {}) {
         },
         // These four fields may be overridden by group cards
         description: () => {
+            // @ts-expect-error TS(2339): Property 'description' does not exist on type '{}'... Remove this comment to see the full error message
             if (groupCardsLazy) return groupCardsLazy.description;
             if (!character) return '';
             return baseChatReplace(character.description?.trim());
         },
         personality: () => {
+            // @ts-expect-error TS(2339): Property 'personality' does not exist on type '{}'... Remove this comment to see the full error message
             if (groupCardsLazy) return groupCardsLazy.personality;
             if (!character) return '';
             return baseChatReplace(character.personality?.trim());
         },
         scenario: () => {
+            // @ts-expect-error TS(2339): Property 'scenario' does not exist on type '{}'.
             if (groupCardsLazy) return groupCardsLazy.scenario;
             if (!character) return '';
+            // @ts-expect-error TS(2339): Property 'scenario' does not exist on type '{}'.
             const scenarioText = chat_metadata.scenario || character.scenario || '';
             return baseChatReplace(scenarioText.trim());
         },
         mesExamples: () => {
+            // @ts-expect-error TS(2339): Property 'mesExamples' does not exist on type '{}'... Remove this comment to see the full error message
             if (groupCardsLazy) return groupCardsLazy.mesExamples;
             if (!character) return '';
+            // @ts-expect-error TS(2339): Property 'mes_example' does not exist on type '{}'... Remove this comment to see the full error message
             const exampleDialog = chat_metadata.mes_example || character.mes_example || '';
             return baseChatReplace(exampleDialog.trim());
         },
@@ -3410,7 +3647,7 @@ export function getCharacterCardFieldsLazy({ chid = undefined } = {}) {
 
 /**
  * Returns the character card fields for the current character.
- * @param {Object} [options={}]
+ * @param {object} [options]
  * @param {number} [options.chid] Optional character index
  * @returns {CharacterCardFields} Character card fields
  */
@@ -3419,17 +3656,29 @@ export function getCharacterCardFields({ chid = undefined } = {}) {
 
     // Resolve all lazy fields into a plain object
     return {
+        // @ts-expect-error TS(2339): Property 'system' does not exist on type '{}'.
         system: lazy.system,
+        // @ts-expect-error TS(2339): Property 'mesExamples' does not exist on type '{}'... Remove this comment to see the full error message
         mesExamples: lazy.mesExamples,
+        // @ts-expect-error TS(2339): Property 'description' does not exist on type '{}'... Remove this comment to see the full error message
         description: lazy.description,
+        // @ts-expect-error TS(2339): Property 'personality' does not exist on type '{}'... Remove this comment to see the full error message
         personality: lazy.personality,
+        // @ts-expect-error TS(2339): Property 'persona' does not exist on type '{}'.
         persona: lazy.persona,
+        // @ts-expect-error TS(2339): Property 'scenario' does not exist on type '{}'.
         scenario: lazy.scenario,
+        // @ts-expect-error TS(2339): Property 'jailbreak' does not exist on type '{}'.
         jailbreak: lazy.jailbreak,
+        // @ts-expect-error TS(2339): Property 'version' does not exist on type '{}'.
         version: lazy.version,
+        // @ts-expect-error TS(2339): Property 'charDepthPrompt' does not exist on type ... Remove this comment to see the full error message
         charDepthPrompt: lazy.charDepthPrompt,
+        // @ts-expect-error TS(2339): Property 'creatorNotes' does not exist on type '{}... Remove this comment to see the full error message
         creatorNotes: lazy.creatorNotes,
+        // @ts-expect-error TS(2339): Property 'firstMessage' does not exist on type '{}... Remove this comment to see the full error message
         firstMessage: lazy.firstMessage,
+        // @ts-expect-error TS(2339): Property 'alternateGreetings' does not exist on ty... Remove this comment to see the full error message
         alternateGreetings: lazy.alternateGreetings,
     };
 }
@@ -3437,6 +3686,7 @@ export function getCharacterCardFields({ chid = undefined } = {}) {
 /**
  * Parses an examples string.
  * @param {string} examplesStr
+ * @param isInstruct
  * @returns {string[]} Examples array with block heading
  */
 export function parseMesExamples(examplesStr, isInstruct) {
@@ -3455,6 +3705,9 @@ export function parseMesExamples(examplesStr, isInstruct) {
     return splitExamples;
 }
 
+/**
+ *
+ */
 export function isStreamingEnabled() {
     return (
         (main_api == 'openai' &&
@@ -3466,19 +3719,54 @@ export function isStreamingEnabled() {
         || (main_api == 'textgenerationwebui' && textgen_settings.streaming));
 }
 
+/**
+ *
+ */
 function showStopButton() {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#mes_stop').css({ 'display': 'flex' });
 }
 
+/**
+ *
+ */
 function hideStopButton() {
     // prevent NOOP, because hideStopButton() gets called multiple times
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     if ($('#mes_stop').css('display') !== 'none') {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#mes_stop').css({ 'display': 'none' });
         eventSource.emit(event_types.GENERATION_ENDED, chat.length);
     }
 }
 
 class StreamingProcessor {
+    abortController: any;
+    continueMessage: any;
+    createdAt: any;
+    firstMessageText: any;
+    force_name2: any;
+    generator: any;
+    images: any;
+    isFinished: any;
+    isStopped: any;
+    messageDom: any;
+    messageId: any;
+    messageLogprobs: any;
+    messageTextDom: any;
+    messageTimerDom: any;
+    messageTokenCounterDom: any;
+    promptReasoning: any;
+    reasoningHandler: any;
+    reasoningSignature: any;
+    result: any;
+    sendTextarea: any;
+    stoppingStrings: any;
+    swipes: any;
+    timeStarted: any;
+    timeToFirstToken: any;
+    toolCalls: any;
+    type: any;
     /**
      * Creates a new streaming processor.
      * @param {string} type Generation type
@@ -3556,6 +3844,7 @@ class StreamingProcessor {
     }
 
     markUIGenStopped() {
+        // @ts-expect-error TS(2554): Expected 1 arguments, but got 0.
         unblockGeneration();
     }
 
@@ -3690,7 +3979,7 @@ class StreamingProcessor {
      * without the heavier finish operations (UI unlock - optional, auto-swipe, sound, save chat).
      * @param {number} messageId - The message ID to finalize.
      * @param {string} text - The message text.
-     * @param {Object} options - Additional options for finalization.
+     * @param {object} options - Additional options for finalization.
      * @param {boolean} options.unlockUI - Whether to unlock the generation UI.
      */
     async finalizeIntermediaryMessage(messageId, text, { unlockUI = true }) {
@@ -3712,6 +4001,7 @@ class StreamingProcessor {
                 gen_finished: message.gen_finished,
                 extra: swipeInfoExtra,
             };
+            // @ts-expect-error TS(2554): Expected 1-3 arguments, but got 0.
             const swipeInfoArray = Array(this.swipes.length).fill().map(() => structuredClone(swipeInfo));
             parseReasoningInSwipes(this.swipes, swipeInfoArray, message.extra?.reasoning_duration);
             message.swipes.push(...this.swipes);
@@ -3723,6 +4013,7 @@ class StreamingProcessor {
 
         if (Array.isArray(this.images) && this.images.length > 0) {
             await processImageAttachment(message, { imageUrls: this.images });
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             appendMediaToMessage(message, $(this.messageDom));
         }
 
@@ -3834,6 +4125,7 @@ class StreamingProcessor {
                 this.images = state?.images ?? [];
                 this.reasoningSignature = state?.signature ?? null;
                 await eventSource.emit(event_types.STREAM_TOKEN_RECEIVED, text);
+                // @ts-expect-error TS(2554): Expected 3 arguments, but got 2.
                 await sw.tick(async () => await this.onProgressStreaming(this.messageId, this.continueMessage + text));
             }
             const seconds = (timestamps[timestamps.length - 1] - timestamps[0]) / 1000;
@@ -3921,15 +4213,16 @@ export function createRawPrompt(prompt, api, instructOverride, quietToLoud, syst
 
 /**
  * @typedef {object} GenerateRawParams
- * @prop {string | object[]} [prompt] Prompt to generate a message from. Can be a string or an array of chat-style messages, i.e. [{role: '', content: ''}, ...]
- * @prop {string} [api] API to use. Main API is used if not specified.
- * @prop {boolean} [instructOverride] true to override instruct mode, false to use the default value
- * @prop {boolean} [quietToLoud] true to generate a message in system mode, false to generate a message in character mode
- * @prop {string} [systemPrompt] System prompt to use.
- * @prop {number} [responseLength] Maximum response length. If unset, the global default value is used.
- * @prop {boolean} [trimNames] Whether to allow trimming "{{user}}:" and "{{char}}:" from the response.
- * @prop {string} [prefill] An optional prefill for the prompt.
- * @prop {JsonSchema} [jsonSchema] JSON schema to use for the structured generation. Usually requires a special instruction.
+ * @property {string | object[]} [prompt] Prompt to generate a message from. Can be a string or an array of chat-style messages, i.e. [{role: '', content: ''}, ...]
+ * @property {string} [api] API to use. Main API is used if not specified.
+ * @property {boolean} [instructOverride] true to override instruct mode, false to use the default value
+ * @property {boolean} [quietToLoud] true to generate a message in system mode, false to generate a message in character mode
+ * @property {string} [systemPrompt] System prompt to use.
+ * @property {number} [responseLength] Maximum response length. If unset, the global default value is used.
+ * @property {boolean} [trimNames] Whether to allow trimming "{{user}}:" and "{{char}}:" from the response.
+ * @property {string} [prefill] An optional prefill for the prompt.
+ * @property {JsonSchema} [jsonSchema] JSON schema to use for the structured generation. Usually requires a special instruction.
+ * @property
  */
 
 /**
@@ -4036,7 +4329,9 @@ export async function generateRawData({ prompt = '', api = null, instructOverrid
         // should only happen for text completions
         // other frontend paths do not return data if calling the backend fails,
         // they throw things instead
+        // @ts-expect-error TS(2339): Property 'error' does not exist on type '{}'.
         if (data.error) {
+            // @ts-expect-error TS(2339): Property 'response' does not exist on type '{}'.
             throw new Error(data.response);
         }
 
@@ -4189,10 +4484,13 @@ function removeLastMessage() {
     return new Promise((resolve) => {
         const lastMes = chatElement.children('.mes').last();
         if (lastMes.length === 0) {
+            // @ts-expect-error TS(2794): Expected 1 arguments, but got 0. Did you forget to... Remove this comment to see the full error message
             return resolve();
         }
         lastMes.hide(animation_duration, function () {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(this).remove();
+            // @ts-expect-error TS(2794): Expected 1 arguments, but got 0. Did you forget to... Remove this comment to see the full error message
             resolve();
         });
     });
@@ -4205,7 +4503,6 @@ function removeLastMessage() {
  * @property {string} [description] Description of the schema.
  * @property {boolean} [strict] If true, the schema will be used in strict mode, meaning that only the fields defined in the schema will be allowed.
  * @property {boolean} [returnInvalid] If true, a string that can't be parsed as a JSON will be returned as is, instead of an empty object.
- *
  * @typedef {object} GenerateOptions
  * @property {boolean} [automatic_trigger] If the generation was triggered automatically (e.g. group auto mode).
  * @property {boolean} [force_name2] If a char name should be forced to add to the prompt's last line (Text Completion, non-Instruct only).
@@ -4228,7 +4525,19 @@ function removeLastMessage() {
  * @param {boolean} dryRun Whether to actually generate a message or just assemble the prompt
  * @returns {Promise<any>} Returns a promise that resolves when the text is done generating.
  */
-export async function Generate(type, { automatic_trigger, force_name2, quiet_prompt, quietToLoud, skipWIAN, force_chid, signal, quietImage, quietName, jsonSchema = null, depth = 0 } = {}, dryRun = false) {
+export async function Generate(type, {
+    automatic_trigger,
+    force_name2,
+    quiet_prompt,
+    quietToLoud,
+    skipWIAN,
+    force_chid,
+    signal,
+    quietImage,
+    quietName,
+    jsonSchema = null,
+    depth = 0
+}: any = {}, dryRun = false) {
     console.log('Generate entered');
     setGenerationProgress(0);
     generation_started = new Date();
@@ -4249,6 +4558,7 @@ export async function Generate(type, { automatic_trigger, force_name2, quiet_pro
     const isImpersonate = type == 'impersonate';
 
     if (!(dryRun || depth || type == 'regenerate' || type == 'swipe' || type == 'quiet')) {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const interruptedByCommand = await processCommands(String($('#send_textarea').val()));
 
         if (interruptedByCommand) {
@@ -4262,6 +4572,7 @@ export async function Generate(type, { automatic_trigger, force_name2, quiet_pro
     await eventSource.emit(event_types.GENERATION_AFTER_COMMANDS, type, { automatic_trigger, force_name2, quiet_prompt, quietToLoud, skipWIAN, force_chid, signal, quietImage }, dryRun);
 
     if (main_api == 'kobold' && kai_settings.streaming_kobold && !kai_flags.can_use_streaming) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.error(t`Streaming is enabled, but the version of Kobold used does not support token streaming.`, undefined, { timeOut: 10000, preventDuplicates: true });
         unblockGeneration(type);
         return Promise.resolve();
@@ -4278,6 +4589,7 @@ export async function Generate(type, { automatic_trigger, force_name2, quiet_pro
 
         if (!pingResult) {
             unblockGeneration(type);
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.error(t`Verify that the server is running and accessible.`, t`ST Server cannot be reached`);
             throw new Error('Server unreachable');
         }
@@ -4285,6 +4597,7 @@ export async function Generate(type, { automatic_trigger, force_name2, quiet_pro
         // Hide swipes if not in a dry run.
         hideSwipeButtons();
         // If generated any message, set the flag to indicate it can't be recreated again.
+        // @ts-expect-error TS(2339): Property 'tainted' does not exist on type '{}'.
         chat_metadata.tainted = true;
     }
 
@@ -4339,7 +4652,9 @@ export async function Generate(type, { automatic_trigger, force_name2, quiet_pro
     let textareaText;
     if (type !== 'regenerate' && type !== 'swipe' && type !== 'quiet' && !isImpersonate && !dryRun && !depth) {
         is_send_press = true;
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         textareaText = String($('#send_textarea').val());
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#send_textarea').val('')[0].dispatchEvent(new Event('input', { bubbles: true }));
     } else {
         textareaText = '';
@@ -4371,7 +4686,7 @@ export async function Generate(type, { automatic_trigger, force_name2, quiet_pro
         deactivateSendButtons();
     }
 
-    let { messageBias, promptBias, isUserPromptBias } = getBiasStrings(textareaText, type);
+    const { messageBias, promptBias, isUserPromptBias } = getBiasStrings(textareaText, type);
 
     //*********************************
     //PRE FORMATING STRING
@@ -4417,12 +4732,14 @@ export async function Generate(type, { automatic_trigger, force_name2, quiet_pro
     if (selected_group && Array.isArray(groupDepthPrompts) && groupDepthPrompts.length > 0) {
         groupDepthPrompts.forEach((value, index) => {
             const role = getExtensionPromptRoleByName(value.role);
+            // @ts-expect-error TS(2339): Property 'allowWIScan' does not exist on type '{ d... Remove this comment to see the full error message
             setExtensionPrompt(inject_ids.DEPTH_PROMPT_INDEX(index), value.text, extension_prompt_types.IN_CHAT, value.depth, extension_settings.note.allowWIScan, role);
         });
     } else {
         const depthPromptText = charDepthPrompt || '';
         const depthPromptDepth = characters[this_chid]?.data?.extensions?.depth_prompt?.depth ?? depth_prompt_depth_default;
         const depthPromptRole = getExtensionPromptRoleByName(characters[this_chid]?.data?.extensions?.depth_prompt?.role ?? depth_prompt_role_default);
+        // @ts-expect-error TS(2339): Property 'allowWIScan' does not exist on type '{ d... Remove this comment to see the full error message
         setExtensionPrompt(inject_ids.DEPTH_PROMPT, depthPromptText, extension_prompt_types.IN_CHAT, depthPromptDepth, extension_settings.note.allowWIScan, depthPromptRole);
     }
 
@@ -4440,9 +4757,9 @@ export async function Generate(type, { automatic_trigger, force_name2, quiet_pro
     }
 
     coreChat = await Promise.all(coreChat.map(async (/** @type {ChatMessage} */ chatItem, index) => {
-        let message = chatItem.mes;
-        let regexType = chatItem.is_user ? regex_placement.USER_INPUT : regex_placement.AI_OUTPUT;
-        let options = { isPrompt: true, depth: (coreChat.length - index - (isContinue ? 2 : 1)) };
+        const message = chatItem.mes;
+        const regexType = chatItem.is_user ? regex_placement.USER_INPUT : regex_placement.AI_OUTPUT;
+        const options = { isPrompt: true, depth: (coreChat.length - index - (isContinue ? 2 : 1)) };
 
         let regexedMessage = getRegexedString(message, regexType, options);
         regexedMessage = await appendFileContent(chatItem, regexedMessage);
@@ -4614,6 +4931,7 @@ export async function Generate(type, { automatic_trigger, force_name2, quiet_pro
         }
         if (outletEntries && typeof outletEntries === 'object' && Object.keys(outletEntries).length > 0) {
             Object.entries(outletEntries).forEach(([key, value]) => {
+                // @ts-expect-error TS(2339): Property 'join' does not exist on type 'unknown'.
                 setExtensionPrompt(inject_ids.CUSTOM_WI_OUTLET(key), value.join('\n'), extension_prompt_types.NONE, 0);
             });
         }
@@ -4705,9 +5023,10 @@ export async function Generate(type, { automatic_trigger, force_name2, quiet_pro
         }
     }
 
-    let chat2 = [];
+    const chat2 = [];
     let continue_mag = '';
     let userMessageIndices = [];
+    // @ts-expect-error TS(2339): Property 'findLastIndex' does not exist on type 'a... Remove this comment to see the full error message
     const lastUserMessageIndex = coreChat.findLastIndex(x => x.is_user);
 
     for (let i = coreChat.length - 1, j = 0; i >= 0; i--, j++) {
@@ -4756,7 +5075,7 @@ export async function Generate(type, { automatic_trigger, force_name2, quiet_pro
         }
     }
 
-    let addUserAlignment = isInstruct && power_user.instruct.user_alignment_message;
+    const addUserAlignment = isInstruct && power_user.instruct.user_alignment_message;
     let userAlignmentMessage = '';
 
     if (addUserAlignment) {
@@ -4785,6 +5104,9 @@ export async function Generate(type, { automatic_trigger, force_name2, quiet_pro
     let chatString = addChatsPreamble(addChatsSeparator(''));
     let cyclePrompt = '';
 
+    /**
+     *
+     */
     async function getMessagesTokenCount() {
         const encodeString = [
             combinedStoryString,
@@ -4899,7 +5221,7 @@ export async function Generate(type, { automatic_trigger, force_name2, quiet_pro
     tokenCount = await getMessagesTokenCount();
     let count_exm_add = 0;
     if (!power_user.pin_examples) {
-        for (let example of mesExamplesArray) {
+        for (const example of mesExamplesArray) {
             tokenCount += await getTokenCountAsync(example.replace(/\r/gm, ''));
             examplesString += example;
             if (tokenCount < this_max_context) {
@@ -4910,7 +5232,7 @@ export async function Generate(type, { automatic_trigger, force_name2, quiet_pro
         }
     }
 
-    let mesSend = [];
+    const mesSend = [];
     console.debug('calling runGenerate');
 
     if (isContinue) {
@@ -4927,11 +5249,12 @@ export async function Generate(type, { automatic_trigger, force_name2, quiet_pro
         is_send_press = true;
     }
 
-    let generatedPromptCache = cyclePrompt || '';
+    const generatedPromptCache = cyclePrompt || '';
     if (generatedPromptCache.length == 0 || type === 'continue') {
         console.debug('generating prompt');
         chatString = '';
         arrMes = arrMes.reverse();
+        // @ts-expect-error TS(6133): 'arr' is declared but its value is never read.
         arrMes.forEach(function (item, i, arr) {
             // OAI doesn't need all of this
             if (main_api === 'openai') {
@@ -4953,6 +5276,9 @@ export async function Generate(type, { automatic_trigger, force_name2, quiet_pro
 
     let mesExmString = '';
 
+    /**
+     *
+     */
     function setPromptString() {
         if (main_api == 'openai') {
             return;
@@ -4966,6 +5292,10 @@ export async function Generate(type, { automatic_trigger, force_name2, quiet_pro
         }
     }
 
+    /**
+     *
+     * @param lastMesString
+     */
     function modifyLastPromptLine(lastMesString) {
         //#########QUIET PROMPT STUFF PT2##############
 
@@ -5031,6 +5361,9 @@ export async function Generate(type, { automatic_trigger, force_name2, quiet_pro
         return lastMesString;
     }
 
+    /**
+     *
+     */
     async function checkPromptSize() {
         console.debug('---checking Prompt size');
         setPromptString();
@@ -5043,7 +5376,7 @@ export async function Generate(type, { automatic_trigger, force_name2, quiet_pro
             modifyLastPromptLine(''),
             generatedPromptCache,
         ].join('').replace(/\r/gm, '');
-        let thisPromptContextSize = await getTokenCountAsync(prompt, power_user.token_padding);
+        const thisPromptContextSize = await getTokenCountAsync(prompt, power_user.token_padding);
 
         if (thisPromptContextSize > this_max_context) {        //if the prepared prompt is larger than the max context size...
             if (count_exm_add > 0) {                            // ..and we have example messages..
@@ -5070,6 +5403,10 @@ export async function Generate(type, { automatic_trigger, force_name2, quiet_pro
     // For prompt bit itemization
     let mesSendString = '';
 
+    /**
+     *
+     * @param isNegative
+     */
     async function getCombinedPrompt(isNegative) {
         // Only return if the guidance scale doesn't exist or the value is 1
         // Also don't return if constructing the neutral prompt
@@ -5083,7 +5420,7 @@ export async function Generate(type, { automatic_trigger, force_name2, quiet_pro
         }
 
         // Deep clone
-        let finalMesSend = structuredClone(mesSend);
+        const finalMesSend = structuredClone(mesSend);
 
         if (useCfgPrompt) {
             const cfgPrompt = getCfgPrompt(cfgGuidanceScale, isNegative);
@@ -5148,7 +5485,7 @@ export async function Generate(type, { automatic_trigger, force_name2, quiet_pro
             item.injected = injectedIndices.includes(finalMesSend.length - i - 1);
         });
 
-        let data = {
+        const data = {
             api: main_api,
             combinedPrompt: null,
             description,
@@ -5185,7 +5522,7 @@ export async function Generate(type, { automatic_trigger, force_name2, quiet_pro
     finalPrompt = eventData.prompt;
 
     let maxLength = Number(amount_gen); // how many tokens the AI will be requested to generate
-    let thisPromptBits = [];
+    const thisPromptBits = [];
 
     let generate_data;
     switch (main_api) {
@@ -5223,7 +5560,7 @@ export async function Generate(type, { automatic_trigger, force_name2, quiet_pro
             break;
         }
         case 'openai': {
-            let [prompt, counts] = await prepareOpenAIMessages({
+            const [prompt, counts] = await prepareOpenAIMessages({
                 name2: name2,
                 charDescription: description,
                 charPersonality: personality,
@@ -5264,7 +5601,7 @@ export async function Generate(type, { automatic_trigger, force_name2, quiet_pro
 
     /**
      * Saves itemized prompt bits and calls streaming or non-streaming generation API.
-     * @returns {Promise<void|*|Awaited<*>|String|{fromStream}|string|undefined|Object>}
+     * @returns {Promise<void | * | Awaited<*> | string | {fromStream} | string | undefined | object>}
      * @throws {Error|object} Error with message text, or Error with response JSON (OAI/Horde), or the actual response JSON (novel|textgenerationwebui|kobold)
      */
     async function finishGenerating() {
@@ -5277,8 +5614,8 @@ export async function Generate(type, { automatic_trigger, force_name2, quiet_pro
         showStopButton();
 
         //set array object for prompt token itemization of this message
-        let currentArrayEntry = Number(thisPromptBits.length - 1);
-        let additionalPromptStuff = {
+        const currentArrayEntry = Number(thisPromptBits.length - 1);
+        const additionalPromptStuff = {
             ...thisPromptBits[currentArrayEntry],
             rawPrompt: generate_data.prompt || generate_data.input,
             mesId: getNextMessageId(type),
@@ -5286,6 +5623,7 @@ export async function Generate(type, { automatic_trigger, force_name2, quiet_pro
             chatInjects: injectedIndices?.map(index => arrMes[arrMes.length - index - 1])?.join('') || '',
             summarizeString: (extension_prompts['1_memory']?.value || ''),
             authorsNoteString: (extension_prompts['2_floating_prompt']?.value || ''),
+            // @ts-expect-error TS(2339): Property 'chromadb' does not exist on type '{}'.
             smartContextString: (extension_prompts.chromadb?.value || ''),
             chatVectorsString: (extension_prompts['3_vectors']?.value || ''),
             dataBankVectorsString: (extension_prompts['4_vectors_data_bank']?.value || ''),
@@ -5335,7 +5673,7 @@ export async function Generate(type, { automatic_trigger, force_name2, quiet_pro
 
             hideSwipeButtons();
             let getMessage = await streamingProcessor.generate();
-            let messageChunk = cleanUpMessage({
+            const messageChunk = cleanUpMessage({
                 getMessage: getMessage,
                 isImpersonate: isImpersonate,
                 isContinue: isContinue,
@@ -5352,7 +5690,7 @@ export async function Generate(type, { automatic_trigger, force_name2, quiet_pro
                 const lastMessage = chat[chat.length - 1];
                 const hasToolCalls = ToolManager.hasToolCalls(streamingProcessor.toolCalls);
                 const shouldDeleteMessage = type !== 'swipe' && ['', '...'].includes(lastMessage?.mes) && !lastMessage?.extra?.reasoning && ['', '...'].includes(streamingProcessor?.result);
-                hasToolCalls && shouldDeleteMessage && await deleteLastMessage();
+                hasToolCalls && shouldDeleteMessage && (await deleteLastMessage());
                 if (hasToolCalls && !shouldDeleteMessage) {
                     await streamingProcessor.finalizeIntermediaryMessage(streamingProcessor.messageId, getMessage, { unlockUI: false });
                 }
@@ -5396,7 +5734,7 @@ export async function Generate(type, { automatic_trigger, force_name2, quiet_pro
     /**
      * Handles the successful response from the generation API.
      * @param data
-     * @returns {Promise<String|{fromStream}|*|string|string|void|Awaited<*>|undefined>}
+     * @returns {Promise<string | {fromStream} | * | string | string | void | Awaited<*> | undefined>}
      * @throws {Error} Throws an error if the response data contains an error message
      */
     async function onSuccess(data) {
@@ -5413,6 +5751,7 @@ export async function Generate(type, { automatic_trigger, force_name2, quiet_pro
             unblockGeneration(type);
 
             if (data?.response) {
+                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                 toastr.error(data.response, t`API Error`, { preventDuplicates: true });
             }
             throw new Error(data?.response);
@@ -5425,9 +5764,9 @@ export async function Generate(type, { automatic_trigger, force_name2, quiet_pro
 
         //const getData = await response.json();
         let getMessage = extractMessageFromData(data);
-        let title = extractTitleFromData(data);
+        const title = extractTitleFromData(data);
         let reasoning = extractReasoningFromData(data);
-        let imageUrls = extractImagesFromData(data);
+        const imageUrls = extractImagesFromData(data);
         const reasoningSignature = extractReasoningSignatureFromData(data);
         kobold_horde_model = title;
 
@@ -5462,6 +5801,7 @@ export async function Generate(type, { automatic_trigger, force_name2, quiet_pro
         });
 
         if (isImpersonate) {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#send_textarea').val(getMessage)[0].dispatchEvent(new Event('input', { bubbles: true }));
             await eventSource.emit(event_types.IMPERSONATE_READY, getMessage);
         } else if (type == 'quiet') {
@@ -5482,7 +5822,7 @@ export async function Generate(type, { automatic_trigger, force_name2, quiet_pro
         if (canPerformToolCalls) {
             const hasToolCalls = ToolManager.hasToolCalls(data);
             const shouldDeleteMessage = type !== 'swipe' && ['', '...'].includes(getMessage) && !reasoning;
-            hasToolCalls && shouldDeleteMessage && await deleteLastMessage();
+            hasToolCalls && shouldDeleteMessage && (await deleteLastMessage());
             const invocationResult = await ToolManager.invokeFunctionTools(data, { reasoningText: reasoning });
             const shouldStopGeneration = (!invocationResult.invocations.length && shouldDeleteMessage) || invocationResult.stealthCalls.length;
             if (hasToolCalls) {
@@ -5531,6 +5871,7 @@ export async function Generate(type, { automatic_trigger, force_name2, quiet_pro
     function onError(exception) {
         // if the response JSON was thrown (novel|textgenerationwebui|kobold), show the error message
         if (typeof exception?.error?.message === 'string') {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.error(exception.error.message, t`Text generation error`, { timeOut: 10000, extendedTimeOut: 20000 });
         }
 
@@ -5616,6 +5957,9 @@ async function doChatInject(messages, isContinue) {
     return injectedIndices;
 }
 
+/**
+ *
+ */
 function flushWIInjections() {
     const depthPrefix = inject_ids.CUSTOM_WI_DEPTH;
     const outletPrefix = inject_ids.CUSTOM_WI_OUTLET('');
@@ -5644,6 +5988,10 @@ function unblockGeneration(type) {
     flushWIInjections();
 }
 
+/**
+ *
+ * @param type
+ */
 export function getNextMessageId(type) {
     return type == 'swipe' ? chat.length - 1 : chat.length;
 }
@@ -5690,6 +6038,7 @@ export function shouldAutoContinue(messageChunk, isImpersonate) {
         return false;
     }
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const textareaText = String($('#send_textarea').val());
     const USABLE_LENGTH = 5;
 
@@ -5728,10 +6077,16 @@ export function triggerAutoContinue(messageChunk, isImpersonate) {
     }
 
     if (shouldAutoContinue(messageChunk, isImpersonate)) {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#option_continue').trigger('click');
     }
 }
 
+/**
+ *
+ * @param textareaText
+ * @param type
+ */
 export function getBiasStrings(textareaText, type) {
     if (type == 'impersonate' || type == 'continue') {
         return { messageBias: '', promptBias: '', isUserPromptBias: false };
@@ -5767,7 +6122,7 @@ export function getBiasStrings(textareaText, type) {
 }
 
 /**
- * @param {Object} chatItem Message history item.
+ * @param {object} chatItem Message history item.
  * @param {boolean} isInstruct Whether instruct mode is enabled.
  * @param {boolean|number} forceOutputSequence Whether to force the first/last output sequence for instruct mode.
  */
@@ -5827,15 +6182,18 @@ export async function sendMessageAsUser(messageText, messageBias, insertAt = nul
     };
 
     if (power_user.message_token_count_enabled) {
+        // @ts-expect-error TS(2339): Property 'token_count' does not exist on type '{ i... Remove this comment to see the full error message
         message.extra.token_count = await getTokenCountAsync(message.mes, 0);
     }
 
     // Lock user avatar to a persona.
     if (avatar in power_user.personas) {
+        // @ts-expect-error TS(2339): Property 'force_avatar' does not exist on type '{ ... Remove this comment to see the full error message
         message.force_avatar = getThumbnailUrl('persona', avatar);
     }
 
     if (messageBias) {
+        // @ts-expect-error TS(2339): Property 'bias' does not exist on type '{ isSmallS... Remove this comment to see the full error message
         message.extra.bias = messageBias;
         message.mes = removeMacros(message.mes);
     }
@@ -5843,6 +6201,7 @@ export async function sendMessageAsUser(messageText, messageBias, insertAt = nul
     await populateFileAttachment(message);
     statMesProcess(message, 'user', characters, this_chid, '');
 
+    // @ts-expect-error TS(2339): Property 'tainted' does not exist on type '{}'.
     chat_metadata.tainted = true;
 
     if (typeof insertAt === 'number' && insertAt >= 0 && insertAt <= chat.length) {
@@ -5927,6 +6286,11 @@ export function getMaxPromptTokens(overrideResponseLength = null) {
     return getMaxContextTokens() - (overrideResponseLength || getMaxResponseTokens());
 }
 
+/**
+ *
+ * @param counts
+ * @param thisPromptBits
+ */
 function parseTokenCounts(counts, thisPromptBits) {
     /**
      * @param {any[]} numbers
@@ -5951,12 +6315,20 @@ function parseTokenCounts(counts, thisPromptBits) {
     });
 }
 
+/**
+ *
+ * @param mesSendString
+ */
 function addChatsPreamble(mesSendString) {
     return main_api === 'novel'
         ? substituteParams(nai_settings.preamble) + '\n' + mesSendString
         : mesSendString;
 }
 
+/**
+ *
+ * @param mesSendString
+ */
 function addChatsSeparator(mesSendString) {
     if (power_user.context.chat_start) {
         return substituteParams(power_user.context.chat_start + '\n') + mesSendString;
@@ -5967,9 +6339,9 @@ function addChatsSeparator(mesSendString) {
 
 /**
  * Duplicates a character.
- * @param {object} [options={}] - Options
+ * @param {object} [options] - Options
  * @param {string} [options.avatar] - Avatar key of the character to duplicate. Uses current character if not provided.
- * @param {boolean} [options.silent=false] - Whether to skip the confirmation popup
+ * @param {boolean} [options.silent] - Whether to skip the confirmation popup
  * @returns {Promise<string>} The avatar key of the duplicated character, or empty string if cancelled/failed
  */
 export async function duplicateCharacter({ avatar = null, silent = false } = {}) {
@@ -5978,12 +6350,14 @@ export async function duplicateCharacter({ avatar = null, silent = false } = {})
     if (avatar) {
         const character = characters.find(c => c.avatar === avatar);
         if (!character) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.warning(t`Character not found: ${avatar}`);
             return '';
         }
         targetAvatar = avatar;
     } else {
         if (this_chid === undefined || !characters[this_chid]) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.warning(t`You must first select a character to duplicate!`);
             return '';
         }
@@ -5992,6 +6366,7 @@ export async function duplicateCharacter({ avatar = null, silent = false } = {})
 
     // Show confirmation unless silent
     if (!silent) {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const confirmMessage = $(await renderTemplateAsync('duplicateConfirm'));
         const confirm = await callGenericPopup(confirmMessage, POPUP_TYPE.CONFIRM);
 
@@ -6009,10 +6384,12 @@ export async function duplicateCharacter({ avatar = null, silent = false } = {})
     });
 
     if (!response.ok) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.error(t`Failed to duplicate character`);
         return '';
     }
 
+    // @ts-expect-error TS(2304): Cannot find name 'toastr'.
     toastr.success(t`Character Duplicated`);
     const data = await response.json();
     await eventSource.emit(event_types.CHARACTER_DUPLICATED, { oldAvatar: targetAvatar, newAvatar: data.path });
@@ -6021,6 +6398,11 @@ export async function duplicateCharacter({ avatar = null, silent = false } = {})
     return data.path;
 }
 
+/**
+ *
+ * @param msgInContextCount
+ * @param type
+ */
 function setInContextMessages(msgInContextCount, type) {
     chatElement.find('.mes').removeClass('lastInContext');
 
@@ -6038,6 +6420,7 @@ function setInContextMessages(msgInContextCount, type) {
 
     // Update last id to chat. No metadata save on purpose, gets hopefully saved via another call
     const lastMessageId = Math.max(0, chat.length - msgInContextCount);
+    // @ts-expect-error TS(2339): Property 'lastInContextMessageId' does not exist o... Remove this comment to see the full error message
     chat_metadata.lastInContextMessageId = lastMessageId;
 }
 
@@ -6125,6 +6508,10 @@ export function getGenerateUrl(api) {
     }
 }
 
+/**
+ *
+ * @param data
+ */
 function extractTitleFromData(data) {
     if (main_api == 'koboldhorde') {
         return data.workerName;
@@ -6172,7 +6559,7 @@ function extractImagesFromData(data, { mainApi = null, chatCompletionSource = nu
  * to the currently active message.
  * @param {object} data - response data containing all tokens/logprobs
  * @param {string} continueFrom - for 'continue' generations, the prompt
- *  */
+ */
 function parseAndSaveLogprobs(data, continueFrom) {
     /** @type {import('./scripts/logprobs.js').TokenLogprobs[] | null} */
     let logprobs = null;
@@ -6215,6 +6602,9 @@ function parseAndSaveLogprobs(data, continueFrom) {
  * @returns {string} Extracted message
  */
 export function extractMessageFromData(data, activeApi = null) {
+    /**
+     *
+     */
     function getResult() {
         if (typeof data === 'string') {
             return data;
@@ -6246,7 +6636,7 @@ export function extractMessageFromData(data, activeApi = null) {
  * @param {object} [options] Extraction options
  * @param {string} [options.mainApi] Main API to use
  * @param {string} [options.chatCompletionSource] Chat completion source
- * @param {boolean} [options.returnInvalidJson=false] Whether to return the raw JSON string even if it fails to parse
+ * @param {boolean} [options.returnInvalidJson] Whether to return the raw JSON string even if it fails to parse
  * @returns {string} Extracted JSON string from the response data
  */
 export function extractJsonFromData(data, { mainApi = null, chatCompletionSource = null, returnInvalidJson = false } = {}) {
@@ -6308,7 +6698,7 @@ export function extractJsonFromData(data, { mainApi = null, chatCompletionSource
 
 /**
  * Extracts multiswipe swipes from the response data.
- * @param {Object} data Response data
+ * @param {object} data Response data
  * @param {string} type Type of generation
  * @returns {string[]} Array of extra swipes
  */
@@ -6373,14 +6763,22 @@ function extractMultiSwipes(data, type) {
  * @param {boolean} [options.isImpersonate] Whether this is an impersonated message
  * @param {boolean} [options.isContinue] Whether this is a continued message
  * @param {boolean} [options.displayIncompleteSentences] Whether to keep incomplete sentences at the end.
- * @param {array} [options.stoppingStrings] Array of stopping strings.
+ * @param {Array} [options.stoppingStrings] Array of stopping strings.
  * @param {boolean} [options.includeUserPromptBias] Whether to permit prepending the user prompt bias at the beginning.
  * @param {boolean} [options.trimNames] Whether to allow trimming "{{char}}:" or "{{user}}:" from the beginning.
  * @param {boolean} [options.trimWrongNames] Whether to allow deleting responses prefixed by the incorrect name, depending on isImpersonate
- *
  * @returns {string} The formatted message
  */
-export function cleanUpMessage({ getMessage, isImpersonate, isContinue, displayIncompleteSentences = false, stoppingStrings = null, includeUserPromptBias = true, trimNames = true, trimWrongNames = true } = {}) {
+export function cleanUpMessage({
+    getMessage,
+    isImpersonate,
+    isContinue,
+    displayIncompleteSentences = false,
+    stoppingStrings = null,
+    includeUserPromptBias = true,
+    trimNames = true,
+    trimWrongNames = true
+}: any = {}) {
     if (arguments.length > 0 && typeof arguments[0] !== 'object') {
         console.trace('cleanUpMessage called with positional arguments. Please use an object instead.');
         [getMessage, isImpersonate, isContinue, displayIncompleteSentences, stoppingStrings, includeUserPromptBias, trimNames, trimWrongNames] = arguments;
@@ -6436,7 +6834,7 @@ export function cleanUpMessage({ getMessage, isImpersonate, isContinue, displayI
         // Also delete any trailing text that starts with the wrong name.
         // This only occurs if the corresponding "power_user.allow_nameX_display" is false.
 
-        let wrongName = isImpersonate
+        const wrongName = isImpersonate
             ? (!power_user.allow_name2_display ? name2 : '')  // char
             : (!power_user.allow_name1_display ? name1 : '');  // user
 
@@ -6538,7 +6936,6 @@ export function cleanUpMessage({ getMessage, isImpersonate, isContinue, displayI
  * @param {object} message Message object
  * @param {object} sources Image sources
  * @param {string[]} [sources.imageUrls] Image URLs
- *
  * @returns {Promise<void>}
  */
 async function processImageAttachment(message, { imageUrls }) {
@@ -6565,7 +6962,6 @@ async function processImageAttachment(message, { imageUrls }) {
  * Saves a resulting message to the chat.
  * @param {SaveReplyParams} params
  * @returns {Promise<SaveReplyResult>} Promise when the message is saved
- *
  * @typedef {object} SaveReplyParams
  * @property {string} type Type of generation
  * @property {string} getMessage Generated message
@@ -6575,7 +6971,6 @@ async function processImageAttachment(message, { imageUrls }) {
  * @property {string} [reasoning] Message reasoning
  * @property {string[]} [imageUrls] Links to images
  * @property {string?} [reasoningSignature] Encrypted signature of the reasoning text
- *
  * @typedef {object} SaveReplyResult
  * @property {string} type Type of generation
  * @property {string} getMessage Generated message
@@ -6619,6 +7014,7 @@ export async function saveReply({ type, getMessage, fromStreaming = false, title
             lastMessage.gen_finished = generationFinished;
             lastMessage.send_date = getMessageTimeStamp();
             lastMessage.extra.api = getGeneratingApi();
+            // @ts-expect-error TS(2554): Expected 1 arguments, but got 0.
             lastMessage.extra.model = getGeneratingModel();
             lastMessage.extra.reasoning = reasoning;
             lastMessage.extra.reasoning_duration = null;
@@ -6629,9 +7025,9 @@ export async function saveReply({ type, getMessage, fromStreaming = false, title
                 lastMessage.extra.token_count = await getTokenCountAsync(tokenCountText, 0);
             }
             const chat_id = (chat.length - 1);
-            !fromStreaming && await eventSource.emit(event_types.MESSAGE_RECEIVED, chat_id, type);
+            !fromStreaming && (await eventSource.emit(event_types.MESSAGE_RECEIVED, chat_id, type));
             addOneMessage(chat[chat_id], { type: 'swipe' });
-            !fromStreaming && await eventSource.emit(event_types.CHARACTER_MESSAGE_RENDERED, chat_id, type);
+            !fromStreaming && (await eventSource.emit(event_types.CHARACTER_MESSAGE_RENDERED, chat_id, type));
         } else {
             lastMessage.mes = getMessage;
         }
@@ -6644,6 +7040,7 @@ export async function saveReply({ type, getMessage, fromStreaming = false, title
         lastMessage.gen_finished = generationFinished;
         lastMessage.send_date = getMessageTimeStamp();
         lastMessage.extra.api = getGeneratingApi();
+        // @ts-expect-error TS(2554): Expected 1 arguments, but got 0.
         lastMessage.extra.model = getGeneratingModel();
         lastMessage.extra.reasoning = reasoning;
         lastMessage.extra.reasoning_duration = null;
@@ -6654,9 +7051,9 @@ export async function saveReply({ type, getMessage, fromStreaming = false, title
             lastMessage.extra.token_count = await getTokenCountAsync(tokenCountText, 0);
         }
         const chat_id = (chat.length - 1);
-        !fromStreaming && await eventSource.emit(event_types.MESSAGE_RECEIVED, chat_id, type);
+        !fromStreaming && (await eventSource.emit(event_types.MESSAGE_RECEIVED, chat_id, type));
         addOneMessage(chat[chat_id], { type: 'swipe' });
-        !fromStreaming && await eventSource.emit(event_types.CHARACTER_MESSAGE_RENDERED, chat_id, type);
+        !fromStreaming && (await eventSource.emit(event_types.CHARACTER_MESSAGE_RENDERED, chat_id, type));
     } else if (type === 'appendFinal') {
         oldMessage = lastMessage.mes;
         console.debug('Trying to appendFinal.');
@@ -6666,6 +7063,7 @@ export async function saveReply({ type, getMessage, fromStreaming = false, title
         lastMessage.gen_finished = generationFinished;
         lastMessage.send_date = getMessageTimeStamp();
         lastMessage.extra.api = getGeneratingApi();
+        // @ts-expect-error TS(2554): Expected 1 arguments, but got 0.
         lastMessage.extra.model = getGeneratingModel();
         lastMessage.extra.reasoning += reasoning;
         lastMessage.extra.reasoning_signature = reasoningSignature;
@@ -6676,32 +7074,47 @@ export async function saveReply({ type, getMessage, fromStreaming = false, title
             lastMessage.extra.token_count = await getTokenCountAsync(tokenCountText, 0);
         }
         const chat_id = (chat.length - 1);
-        !fromStreaming && await eventSource.emit(event_types.MESSAGE_RECEIVED, chat_id, type);
+        !fromStreaming && (await eventSource.emit(event_types.MESSAGE_RECEIVED, chat_id, type));
         addOneMessage(chat[chat_id], { type: 'swipe' });
-        !fromStreaming && await eventSource.emit(event_types.CHARACTER_MESSAGE_RENDERED, chat_id, type);
+        !fromStreaming && (await eventSource.emit(event_types.CHARACTER_MESSAGE_RENDERED, chat_id, type));
     } else {
         console.debug('entering chat update routine for non-swipe post');
         const newMessage = {};
         chat.push(newMessage);
+        // @ts-expect-error TS(2339): Property 'extra' does not exist on type '{}'.
         newMessage.extra = {};
+        // @ts-expect-error TS(2339): Property 'name' does not exist on type '{}'.
         newMessage.name = name2;
+        // @ts-expect-error TS(2339): Property 'is_user' does not exist on type '{}'.
         newMessage.is_user = false;
+        // @ts-expect-error TS(2339): Property 'send_date' does not exist on type '{}'.
         newMessage.send_date = getMessageTimeStamp();
+        // @ts-expect-error TS(2339): Property 'extra' does not exist on type '{}'.
         newMessage.extra.api = getGeneratingApi();
+        // @ts-expect-error TS(2339): Property 'extra' does not exist on type '{}'.
         newMessage.extra.model = getGeneratingModel();
+        // @ts-expect-error TS(2339): Property 'extra' does not exist on type '{}'.
         newMessage.extra.reasoning = reasoning;
+        // @ts-expect-error TS(2339): Property 'extra' does not exist on type '{}'.
         newMessage.extra.reasoning_duration = null;
+        // @ts-expect-error TS(2339): Property 'extra' does not exist on type '{}'.
         newMessage.extra.reasoning_signature = reasoningSignature;
         if (power_user.trim_spaces) {
             getMessage = getMessage.trim();
         }
+        // @ts-expect-error TS(2339): Property 'mes' does not exist on type '{}'.
         newMessage.mes = getMessage;
+        // @ts-expect-error TS(2339): Property 'title' does not exist on type '{}'.
         newMessage.title = title;
+        // @ts-expect-error TS(2339): Property 'gen_started' does not exist on type '{}'... Remove this comment to see the full error message
         newMessage.gen_started = generation_started;
+        // @ts-expect-error TS(2339): Property 'gen_finished' does not exist on type '{}... Remove this comment to see the full error message
         newMessage.gen_finished = generationFinished;
 
         if (power_user.message_token_count_enabled) {
+            // @ts-expect-error TS(2339): Property 'mes' does not exist on type '{}'.
             const tokenCountText = (reasoning || '') + newMessage.mes;
+            // @ts-expect-error TS(2339): Property 'extra' does not exist on type '{}'.
             newMessage.extra.token_count = await getTokenCountAsync(tokenCountText, 0);
         }
 
@@ -6711,17 +7124,20 @@ export async function saveReply({ type, getMessage, fromStreaming = false, title
             if (characters[this_chid].avatar != 'none') {
                 avatarImg = getThumbnailUrl('avatar', characters[this_chid].avatar);
             }
+            // @ts-expect-error TS(2339): Property 'force_avatar' does not exist on type '{}... Remove this comment to see the full error message
             newMessage.force_avatar = avatarImg;
+            // @ts-expect-error TS(2339): Property 'original_avatar' does not exist on type ... Remove this comment to see the full error message
             newMessage.original_avatar = characters[this_chid].avatar;
+            // @ts-expect-error TS(2339): Property 'extra' does not exist on type '{}'.
             newMessage.extra.gen_id = group_generation_id;
         }
 
         await processImageAttachment(newMessage, { imageUrls });
         const chat_id = (chat.length - 1);
 
-        !fromStreaming && await eventSource.emit(event_types.MESSAGE_RECEIVED, chat_id, type);
+        !fromStreaming && (await eventSource.emit(event_types.MESSAGE_RECEIVED, chat_id, type));
         addOneMessage(chat[chat_id]);
-        !fromStreaming && await eventSource.emit(event_types.CHARACTER_MESSAGE_RENDERED, chat_id, type);
+        !fromStreaming && (await eventSource.emit(event_types.CHARACTER_MESSAGE_RENDERED, chat_id, type));
     }
 
     const item = chat[chat.length - 1];
@@ -6760,6 +7176,7 @@ export async function saveReply({ type, getMessage, fromStreaming = false, title
             gen_finished: item.gen_finished,
             extra: swipeInfoExtra,
         };
+        // @ts-expect-error TS(2554): Expected 1-3 arguments, but got 0.
         const swipeInfoArray = Array(swipes.length).fill().map(() => structuredClone(swipeInfo));
         parseReasoningInSwipes(swipes, swipeInfoArray, item.extra?.reasoning_duration);
         item.swipes.push(...swipes);
@@ -6831,7 +7248,7 @@ export function ensureSwipes(message) {
  * Syncs the current message and all its data into the swipe data at the given message ID (or the last message if no ID is given).
  *
  * If the swipe data is invalid in some way, this function will exit out without doing anything.
- * @param {number?} [messageId=null] - The ID of the message to sync with the swipe data. If no ID is given, the last message is used.
+ * @param {number?} [messageId] - The ID of the message to sync with the swipe data. If no ID is given, the last message is used.
  * @returns {boolean} Whether the message was successfully synced
  */
 export function syncMesToSwipe(messageId = null) {
@@ -6870,6 +7287,7 @@ export function syncMesToSwipe(messageId = null) {
     }
 
     // Only sync swipes if the chat is not pristine, so that macros in the greeting can resolve again on swipe
+    // @ts-expect-error TS(2339): Property 'tainted' does not exist on type '{}'.
     if (chat_metadata.tainted || chat.length > 1) {
         targetMessage.swipes[targetMessage.swipe_id] = targetMessage.mes;
     }
@@ -6887,9 +7305,9 @@ export function syncMesToSwipe(messageId = null) {
  * If the swipe ID is not provided, the current swipe ID in the message object is used.
  *
  * If the swipe data is invalid in some way, this function will exit out without doing anything.
- * @param {number?} [messageId=null] - The ID of the message to sync with the swipe data. If no ID is given, the last message is used.
- * @param {number?} [swipeId=null] - The ID of the swipe to sync. If no ID is given, the current swipe ID in the message object is used.
- * @param {ChatMessage?} [targetMessage=null] - The message object to sync instead of resolving one from `chat`.
+ * @param {number?} [messageId] - The ID of the message to sync with the swipe data. If no ID is given, the last message is used.
+ * @param {number?} [swipeId] - The ID of the swipe to sync. If no ID is given, the current swipe ID in the message object is used.
+ * @param {ChatMessage?} [targetMessage] - The message object to sync instead of resolving one from `chat`.
  * @returns {boolean} Whether the swipe data was successfully synced to the message
  */
 export function syncSwipeToMes(messageId = null, swipeId = null, targetMessage = null) {
@@ -6977,6 +7395,9 @@ function saveImageToMessage(img, mes) {
     }
 }
 
+/**
+ *
+ */
 export function getGeneratingApi() {
     switch (main_api) {
         case 'openai':
@@ -6988,6 +7409,11 @@ export function getGeneratingApi() {
     }
 }
 
+/**
+ *
+ * @param mes
+ */
+// @ts-expect-error TS(6133): 'mes' is declared but its value is never read.
 export function getGeneratingModel(mes) {
     let model = '';
     switch (main_api) {
@@ -7017,6 +7443,7 @@ export function activateSendButtons() {
     is_send_press = false;
     hideStopButton();
     showSwipeButtons();
+    // @ts-expect-error TS(4111): Property 'generating' comes from an index signatur... Remove this comment to see the full error message
     delete document.body.dataset.generating;
 }
 
@@ -7026,9 +7453,13 @@ export function activateSendButtons() {
 export function deactivateSendButtons() {
     showStopButton();
     hideSwipeButtons();
+    // @ts-expect-error TS(4111): Property 'generating' comes from an index signatur... Remove this comment to see the full error message
     document.body.dataset.generating = 'true';
 }
 
+/**
+ *
+ */
 export function resetChatState() {
     // replaces deleted charcter name with system user since it will be displayed next.
     name2 = (this_chid === undefined && neutralCharacterName) ? neutralCharacterName : systemUserName;
@@ -7049,9 +7480,14 @@ export function resetChatState() {
 export function setMenuType(value) {
     menu_type = value;
     // Allow custom CSS to see which menu type is active
+    // @ts-expect-error TS(4111): Property 'menuType' comes from an index signature,... Remove this comment to see the full error message
     document.getElementById('right-nav-panel').dataset.menuType = menu_type;
 }
 
+/**
+ *
+ * @param controller
+ */
 export function setExternalAbortController(controller) {
     abortController = controller;
 }
@@ -7081,6 +7517,10 @@ export function setCharacterId(value) {
     }
 }
 
+/**
+ *
+ * @param value
+ */
 export function setCharacterName(value) {
     name2 = value;
 }
@@ -7098,10 +7538,18 @@ export function setOnlineStatus(value) {
     }
 }
 
+/**
+ *
+ * @param value
+ */
 export function setEditedMessageId(value) {
     this_edit_mes_id = value;
 }
 
+/**
+ *
+ * @param value
+ */
 export function setSendButtonState(value) {
     is_send_press = value;
 }
@@ -7115,7 +7563,6 @@ export function setSendButtonState(value) {
  *
  * If the renaming is successful, the character list is reloaded and the renamed character is selected.
  * Optionally, past chats can be renamed to reflect the new character name.
- *
  * @param {string?} [name=null] - The new name for the character. If not provided, a popup will prompt for it.
  * @param {object} [options] - Additional options.
  * @param {boolean} [options.silent=false] - If true, suppresses popups and warnings.
@@ -7123,24 +7570,35 @@ export function setSendButtonState(value) {
  * @returns {Promise<boolean>} - Returns true if the character was successfully renamed, false otherwise.
  */
 
+/**
+ *
+ * @param name
+ * @param root0
+ * @param root0.silent
+ * @param root0.renameChats
+ */
 export async function renameCharacter(name = null, { silent = false, renameChats = null } = {}) {
     if (!name && silent) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.warning(t`No character name provided.`, t`Rename Character`);
         return false;
     }
     if (this_chid === undefined) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.warning(t`No character selected.`, t`Rename Character`);
         return false;
     }
 
     const oldAvatar = characters[this_chid].avatar;
-    const newValue = name || await callGenericPopup('<h3>' + t`New name:` + '</h3>', POPUP_TYPE.INPUT, characters[this_chid].name);
+    const newValue = name || (await callGenericPopup('<h3>' + t`New name:` + '</h3>', POPUP_TYPE.INPUT, characters[this_chid].name));
 
     if (!newValue) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.warning(t`No character name provided.`, t`Rename Character`);
         return false;
     }
     if (newValue === characters[this_chid].name) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.info(t`Same character name provided, so name did not change.`, t`Rename Character`);
         return false;
     }
@@ -7165,6 +7623,7 @@ export async function renameCharacter(name = null, { silent = false, renameChats
             renameTagKey(oldAvatar, newAvatar);
 
             // Additional lore books
+            // @ts-expect-error TS(2339): Property 'charLore' does not exist on type '{}'.
             const charLore = world_info.charLore?.find(x => x.name == oldName);
             if (charLore) {
                 charLore.name = newName;
@@ -7211,17 +7670,19 @@ export async function renameCharacter(name = null, { silent = false, renameChats
                     ? renameChats
                     : silent
                         ? false
-                        : await Popup.show.confirm(
+                        : (await Popup.show.confirm(
                             t`Character renamed!`,
                             `<p>${t`Past chats will still contain the old character name. Would you like to update the character name in previous chats as well?`}</p>
                             <i><b>${t`Sprites folder (if any) should be renamed manually.`}</b></i>`,
-                        ) == POPUP_RESULT.AFFIRMATIVE;
+                        )) == POPUP_RESULT.AFFIRMATIVE;
 
                 if (renamePastChatsConfirm) {
                     await renamePastChats(oldAvatar, newAvatar, newValue);
                     await reloadCurrentChat();
+                    // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                     toastr.success(t`Character renamed and past chats updated!`, t`Rename Character`);
                 } else {
+                    // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                     toastr.success(t`Character renamed!`, t`Rename Character`);
                 }
             } else {
@@ -7233,6 +7694,7 @@ export async function renameCharacter(name = null, { silent = false, renameChats
     } catch (error) {
         // Reloading to prevent data corruption
         if (!silent) await Popup.show.text(t`Rename Character`, t`Something went wrong. The page will be reloaded.`);
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         else toastr.error(t`Something went wrong. The page will be reloaded.`, t`Rename Character`);
 
         console.log('Renaming character error:', error);
@@ -7243,9 +7705,16 @@ export async function renameCharacter(name = null, { silent = false, renameChats
     return true;
 }
 
+/**
+ *
+ * @param oldAvatar
+ * @param newAvatar
+ * @param newName
+ */
 async function renamePastChats(oldAvatar, newAvatar, newName) {
     const pastChats = await getPastCharacterChats();
 
+    // @ts-expect-error TS(2339): Property 'file_name' does not exist on type '{}'.
     for (const { file_name } of pastChats) {
         try {
             const fileNameWithoutExtension = file_name.replace('.jsonl', '');
@@ -7293,12 +7762,16 @@ async function renamePastChats(oldAvatar, newAvatar, newName) {
                 }
             }
         } catch (error) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.error(t`Past chat could not be updated: ${file_name}`);
             console.error(error);
         }
     }
 }
 
+/**
+ *
+ */
 export function saveChatDebounced() {
     const chid = this_chid;
     const selectedGroup = selected_group;
@@ -7330,11 +7803,17 @@ export function saveChatDebounced() {
  * @param {number} [options.mesId] The message ID to save the chat up to
  * @param {boolean} [options.force] Force the saving despite the integrity check result
  * @param {ChatMessage[]} [options.chatData] Chat snapshot to save instead of the current in-memory chat
- *
  * @returns {Promise<void>}
  */
-export async function saveChat({ chatName, withMetadata, mesId, force = false, chatData = undefined } = {}) {
+export async function saveChat({
+    chatName,
+    withMetadata,
+    mesId,
+    force = false,
+    chatData = undefined
+}: any = {}) {
     if (selected_group) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.error(t`Operation was aborted to prevent data corruption.`, t`saveChat called for a group chat`);
         throw new Error('saveChat called for a group chat');
     }
@@ -7416,6 +7895,7 @@ export async function saveChat({ chatName, withMetadata, mesId, force = false, c
         await saveChat({ chatName, withMetadata, mesId, force: true });
     } catch (error) {
         console.error(error);
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.error(t`Check the server connection and reload the page to prevent data loss.`, t`Chat could not be saved`);
     }
 }
@@ -7444,8 +7924,10 @@ async function read_avatar_load(input) {
             }
 
             crop_data = dlg.cropData;
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#avatar_load_preview').attr('src', String(croppedImage));
         } else {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#avatar_load_preview').attr('src', fileData);
         }
 
@@ -7453,8 +7935,10 @@ async function read_avatar_load(input) {
             return;
         }
 
+        // @ts-expect-error TS(2554): Expected 1 arguments, but got 0.
         await createOrEditCharacter();
 
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const formData = new FormData(/** @type {HTMLFormElement} */($('#form_create').get(0)));
         const avatarKey = formData.get('avatar_url').toString();
 
@@ -7483,13 +7967,23 @@ async function read_avatar_load(input) {
  * Gets the URL for a thumbnail of a specific type and file.
  * @param {import('../src/endpoints/thumbnails.js').ThumbnailType} type The type of the thumbnail to get
  * @param {string} file The file name or path for which to get the thumbnail URL
- * @param {boolean} [t=false] Whether to add a cache-busting timestamp to the URL
+ * @param {boolean} [t] Whether to add a cache-busting timestamp to the URL
  * @returns {string} The URL for the thumbnail
  */
 export function getThumbnailUrl(type, file, t = false) {
     return `/thumbnail?type=${type}&file=${encodeURIComponent(file)}${t ? `&t=${Date.now()}` : ''}`;
 }
 
+/**
+ *
+ * @param block
+ * @param entities
+ * @param root0
+ * @param root0.templateId
+ * @param root0.empty
+ * @param root0.interactable
+ * @param root0.highlightFavs
+ */
 export function buildAvatarList(block, entities, { templateId = 'inline_avatar_template', empty = true, interactable = false, highlightFavs = true } = {}) {
     if (empty) {
         block.empty();
@@ -7499,6 +7993,7 @@ export function buildAvatarList(block, entities, { templateId = 'inline_avatar_t
         const id = entity.id;
 
         // Populate the template
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const avatarTemplate = $(`#${templateId} .avatar`).clone();
 
         let this_avatar = default_avatar;
@@ -7572,6 +8067,9 @@ export async function unshallowCharacter(characterId) {
     await getOneCharacter(avatar);
 }
 
+/**
+ *
+ */
 export async function getChat() {
     try {
         await unshallowCharacter(this_chid);
@@ -7603,7 +8101,9 @@ export async function getChat() {
             chat.splice(0, chat.length);
             chat_metadata = {};
         }
+        // @ts-expect-error TS(2339): Property 'integrity' does not exist on type '{}'.
         if (!chat_metadata.integrity) {
+            // @ts-expect-error TS(2339): Property 'integrity' does not exist on type '{}'.
             chat_metadata.integrity = uuidv4();
         }
         await getChatResult();
@@ -7611,9 +8111,11 @@ export async function getChat() {
 
         // Focus on the textarea if not already focused on a visible text input
         delay(debounce_timeout.short).then(() => {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             if ($(document.activeElement).is('input:visible, textarea:visible')) {
                 return;
             }
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#send_textarea').trigger('click').trigger('focus');
         });
     } catch (error) {
@@ -7622,6 +8124,9 @@ export async function getChat() {
     }
 }
 
+/**
+ *
+ */
 async function getChatResult() {
     name2 = characters[this_chid].name;
     let freshChat = false;
@@ -7648,6 +8153,9 @@ async function getChatResult() {
     }
 }
 
+/**
+ *
+ */
 function getFirstMessage() {
     const firstMes = characters[this_chid]?.first_mes || '';
     const alternateGreetings = characters[this_chid]?.data?.alternate_greetings;
@@ -7669,8 +8177,11 @@ function getFirstMessage() {
             message.mes = swipes[0];
         }
 
+        // @ts-expect-error TS(2339): Property 'swipe_id' does not exist on type '{ name... Remove this comment to see the full error message
         message.swipe_id = 0;
+        // @ts-expect-error TS(2339): Property 'swipes' does not exist on type '{ name: ... Remove this comment to see the full error message
         message.swipes = swipes;
+        // @ts-expect-error TS(2339): Property 'swipe_info' does not exist on type '{ na... Remove this comment to see the full error message
         message.swipe_info = swipes.map(_ => ({
             send_date: message.send_date,
             gen_started: void 0,
@@ -7682,65 +8193,110 @@ function getFirstMessage() {
     return message;
 }
 
+/**
+ *
+ * @param file_name
+ */
 export async function openCharacterChat(file_name) {
     await waitUntilCondition(() => !isChatSaving, debounce_timeout.extended, 10);
     await clearChat({ clearData: true });
     characters[this_chid].chat = file_name;
     chat_metadata = {};
     await getChat();
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#selected_chat_pole').val(file_name);
     await createOrEditCharacter(new CustomEvent('newChat'));
 }
 
 ////////// OPTIMZED MAIN API CHANGE FUNCTION ////////////
 
+/**
+ *
+ * @param api
+ */
 export function changeMainAPI(api = null) {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const selectedVal = api ?? $('#main_api').val();
     //console.log(selectedVal);
     const apiElements = {
         'koboldhorde': {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             apiStreaming: $('#NULL_SELECTOR'),
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             apiSettings: $('#kobold_api-settings'),
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             apiConnector: $('#kobold_horde'),
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             apiPresets: $('#kobold_api-presets'),
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             apiRanges: $('#range_block'),
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             maxContextElem: $('#max_context_block'),
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             amountGenElem: $('#amount_gen_block'),
         },
         'kobold': {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             apiStreaming: $('#streaming_kobold_block'),
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             apiSettings: $('#kobold_api-settings'),
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             apiConnector: $('#kobold_api'),
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             apiPresets: $('#kobold_api-presets'),
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             apiRanges: $('#range_block'),
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             maxContextElem: $('#max_context_block'),
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             amountGenElem: $('#amount_gen_block'),
         },
         'textgenerationwebui': {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             apiStreaming: $('#streaming_textgenerationwebui_block'),
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             apiSettings: $('#textgenerationwebui_api-settings'),
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             apiConnector: $('#textgenerationwebui_api'),
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             apiPresets: $('#textgenerationwebui_api-presets'),
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             apiRanges: $('#range_block_textgenerationwebui'),
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             maxContextElem: $('#max_context_block'),
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             amountGenElem: $('#amount_gen_block'),
         },
         'novel': {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             apiStreaming: $('#streaming_novel_block'),
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             apiSettings: $('#novel_api-settings'),
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             apiConnector: $('#novel_api'),
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             apiPresets: $('#novel_api-presets'),
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             apiRanges: $('#range_block_novel'),
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             maxContextElem: $('#max_context_block'),
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             amountGenElem: $('#amount_gen_block'),
         },
         'openai': {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             apiStreaming: $('#NULL_SELECTOR'),
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             apiSettings: $('#openai_settings'),
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             apiConnector: $('#openai_api'),
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             apiPresets: $('#openai_api-presets'),
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             apiRanges: $('#range_block_openai'),
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             maxContextElem: $('#max_context_block'),
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             amountGenElem: $('#amount_gen_block'),
         },
     };
@@ -7763,7 +8319,7 @@ export function changeMainAPI(api = null) {
 
     //then, find and enable the active item.
     //This is split out of the loop so that different apis can share settings divs
-    let activeItem = apiElements[selectedVal];
+    const activeItem = apiElements[selectedVal];
 
     activeItem.apiStreaming.css('display', 'block');
     activeItem.apiSettings.css('display', 'block');
@@ -7783,19 +8339,24 @@ export function changeMainAPI(api = null) {
 
     //custom because streaming has been moved up under response tokens, which exists inside common settings block
     if (selectedVal === 'novel') {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#ai_module_block_novel').css('display', 'block');
     } else {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#ai_module_block_novel').css('display', 'none');
     }
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#prompt_cost_block').toggle(selectedVal === 'textgenerationwebui' && textgen_settings.type === textgen_types.OPENROUTER);
 
     // Hide common settings for OpenAI
     console.debug('value?', selectedVal);
     if (selectedVal == 'openai') {
         console.debug('hiding settings?');
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#common-gen-settings-block').css('display', 'none');
     } else {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#common-gen-settings-block').css('display', 'block');
     }
 
@@ -7811,19 +8372,32 @@ export function changeMainAPI(api = null) {
     forceCharacterEditorTokenize();
 }
 
+/**
+ *
+ * @param value
+ * @param root0
+ * @param root0.toastPersonaNameChange
+ */
 export function setUserName(value, { toastPersonaNameChange = true } = {}) {
     name1 = value;
     if (name1 === undefined || name1 == '')
         name1 = default_user_name;
     console.log(`User name changed to ${name1}`);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#your_name').text(name1);
     if (toastPersonaNameChange && power_user.persona_show_notifications && !isPersonaPanelOpen()) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.success(t`Your messages will now be sent as ${name1}`, t`Persona Changed`);
     }
     saveSettingsDebounced();
 }
 
+/**
+ *
+ * @param avatarId
+ */
 async function doOnboarding(avatarId) {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const template = $('#onboarding_template .onboarding');
     let userName = await callGenericPopup(template, POPUP_TYPE.INPUT, currentUser?.name || name1, { wider: true, cancelButton: false });
 
@@ -7839,6 +8413,9 @@ async function doOnboarding(avatarId) {
     }
 }
 
+/**
+ *
+ */
 function reloadLoop() {
     const MAX_RELOADS = 5;
     let reloads = Number(sessionStorage.getItem('reloads') || 0);
@@ -7851,6 +8428,10 @@ function reloadLoop() {
 
 //MARK: getSettings()
 ///////////////////////////////////////////
+/**
+ *
+ * @param initLoaderHandle
+ */
 export async function getSettings(initLoaderHandle = null) {
     const response = await fetch('/api/settings/get', {
         method: 'POST',
@@ -7861,6 +8442,7 @@ export async function getSettings(initLoaderHandle = null) {
 
     if (!response.ok) {
         reloadLoop();
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.error(t`Settings could not be loaded after multiple attempts. Please try again later.`);
         throw new Error('Error getting settings');
     }
@@ -7870,6 +8452,7 @@ export async function getSettings(initLoaderHandle = null) {
         settings = JSON.parse(data.settings);
         if (settings.username !== undefined && settings.username !== '') {
             name1 = settings.username;
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#your_name').text(name1);
         }
 
@@ -7886,6 +8469,7 @@ export async function getSettings(initLoaderHandle = null) {
             max_context = parseInt(settings.max_context);
 
         swipes = settings.swipes !== undefined ? !!settings.swipes : true;  // enable swipes by default
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#swipes-checkbox').prop('checked', swipes); /// swipecode
         refreshSwipeButtons();
 
@@ -7923,10 +8507,14 @@ export async function getSettings(initLoaderHandle = null) {
         await eventSource.emit(event_types.SETTINGS_LOADED_AFTER, settings);
 
         // Set context size after loading power user (may override the max value)
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#max_context').val(max_context);
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#max_context_counter').val(max_context);
 
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#amount_gen').val(amount_gen);
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#amount_gen_counter').val(amount_gen);
 
         //Load which API we are using
@@ -7939,7 +8527,9 @@ export async function getSettings(initLoaderHandle = null) {
         }
 
         main_api = settings.main_api;
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#main_api').val(main_api);
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(`#main_api option[value=${main_api}]`).attr('selected', 'true');
         changeMainAPI();
 
@@ -7966,12 +8556,19 @@ export async function getSettings(initLoaderHandle = null) {
             await eventSource.emit(event_types.EXTENSION_SETTINGS_LOADED);
         } else {
             Object.assign(extension_settings, (settings.extension_settings ?? {}));
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#third_party_extension_button').addClass('disabled');
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#extensions_details').addClass('disabled');
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#extensions_connect').addClass('disabled');
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#extensions_notify_updates').attr('disabled', 'disabled');
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#extensions_autoconnect').attr('disabled', 'disabled');
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#extensions_url').attr('disabled', 'disabled');
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#extensions_api_key').attr('disabled', 'disabled');
         }
 
@@ -7989,6 +8586,10 @@ export async function getSettings(initLoaderHandle = null) {
 }
 
 //MARK: saveSettings()
+/**
+ *
+ * @param loopCounter
+ */
 export async function saveSettings(loopCounter = 0) {
     if (!settingsReady) {
         console.warn('Settings not ready, scheduling another save');
@@ -8051,6 +8652,7 @@ export async function saveSettings(loopCounter = 0) {
         await eventSource.emit(event_types.SETTINGS_UPDATED);
     } catch (error) {
         console.error('Error saving settings:', error);
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.error(t`Check the server connection and reload the page to prevent data loss.`, t`Settings could not be saved`);
     }
 }
@@ -8061,22 +8663,31 @@ export async function saveSettings(loopCounter = 0) {
  */
 export function setGenerationParamsFromPreset(preset) {
     const needsUnlock = (preset.max_length ?? max_context) > MAX_CONTEXT_DEFAULT || (preset.genamt ?? amount_gen) > MAX_RESPONSE_DEFAULT;
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#max_context_unlocked').prop('checked', needsUnlock).trigger('change');
 
     if (preset.genamt !== undefined) {
         amount_gen = preset.genamt;
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#amount_gen').val(amount_gen);
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#amount_gen_counter').val(amount_gen);
     }
 
     if (preset.max_length !== undefined) {
         max_context = preset.max_length;
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#max_context').val(max_context);
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#max_context_counter').val(max_context);
     }
 }
 
 // Common code for message editor done and auto-save
+/**
+ *
+ * @param div
+ */
 function updateMessage(div) {
     const mesBlock = div.closest('.mes_block');
     let text = mesBlock.find('.edit_textarea').val()
@@ -8128,19 +8739,29 @@ function updateMessage(div) {
         mes.extra.bias = null;
     }
 
+    // @ts-expect-error TS(2339): Property 'tainted' does not exist on type '{}'.
     chat_metadata.tainted = true;
 
     return { mesBlock, text, mes, bias };
 }
 
+/**
+ *
+ * @param fromSlashCommand
+ */
 function openMessageDelete(fromSlashCommand) {
     closeMessageEditor();
     hideSwipeButtons();
     if (fromSlashCommand || (!is_send_press) || (selected_group && !is_group_generating)) {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#dialogue_del_mes').css('display', 'block');
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#send_form').css('display', 'none');
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('.del_checkbox').each(function () {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(this).css('display', 'grid');
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(this).parent().children('.for_checkbox').css('display', 'none');
         });
     } else {
@@ -8155,6 +8776,10 @@ function openMessageDelete(fromSlashCommand) {
     is_delete_mode = true;
 }
 
+/**
+ *
+ * @param div
+ */
 function messageEditAuto(div) {
     const { mesBlock, text, mes, bias } = updateMessage(div);
 
@@ -8212,10 +8837,12 @@ export async function messageEdit(editMessageId) {
     const editTextArea = document.createElement('textarea');
     editTextArea.id = 'curEditTextarea';
     editTextArea.className = 'edit_textarea mdHotkeys';
+    // @ts-expect-error TS(4111): Property 'macros' comes from an index signature, s... Remove this comment to see the full error message
     editTextArea.dataset.macros = '';
     messageText.append(editTextArea);
 
     const text = trimSpaces(editMessage.mes || '');
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const $editTextArea = $(editTextArea);
     $editTextArea.val(text);
 
@@ -8240,13 +8867,14 @@ export async function messageEdit(editMessageId) {
 /**
  * Close the open message editor.
  * This deletes the user's unsaved changes.
- * @param {number} [messageId=this_edit_mes_id]
+ * @param {number} [messageId]
  */
 async function messageEditCancel(messageId = this_edit_mes_id) {
-    let text = chat[messageId].mes;
+    const text = chat[messageId].mes;
     let thisMesDiv;
     // If this is the button then select it's parent. Otherwise, select by messageId.
     if (this?.classList?.contains('mes_edit_cancel')) {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         thisMesDiv = $(this).closest('.mes');
     } else {
         thisMesDiv = chatElement.children('.mes').filter(`[mesid="${messageId}"]`);
@@ -8334,6 +8962,10 @@ async function messageEditMove(sourceId, targetId) {
     return true;
 }
 
+/**
+ *
+ * @param div
+ */
 async function messageEditDone(div) {
     if (!(this_edit_mes_id >= 0)) {
         console.trace('this_edit_mes_id cannot be blank when calling messageEditDone.');
@@ -8378,18 +9010,19 @@ async function messageEditDone(div) {
  * Fetches the chat content for each chat file from the server and compiles them into a dictionary.
  * The function iterates over a provided list of chat metadata and requests the actual chat content
  * for each chat, either as an individual chat or a group chat based on the context.
- *
  * @param {Array} data - An array containing metadata about each chat such as file_name.
  * @param {boolean} isGroupChat - A flag indicating if the chat is a group chat.
- * @returns {Promise<Object>} chat_dict - A dictionary where each key is a file_name and the value is the
+ * @returns {Promise<object>} chat_dict - A dictionary where each key is a file_name and the value is the
  * corresponding chat content fetched from the server.
  */
 export async function getChatsFromFiles(data, isGroupChat) {
     const context = getContext();
-    let chat_dict = {};
-    let chat_list = Object.values(data).sort((a, b) => a.file_name.localeCompare(b.file_name)).reverse();
+    const chat_dict = {};
+    // @ts-expect-error TS(2339): Property 'file_name' does not exist on type 'unkno... Remove this comment to see the full error message
+    const chat_list = Object.values(data).sort((a, b) => a.file_name.localeCompare(b.file_name)).reverse();
 
-    let chat_promise = chat_list.map(({ file_name }) => {
+    const chat_promise = chat_list.map(({ file_name }) => {
+        // @ts-expect-error TS(6133): 'rej' is declared but its value is never read.
         return new Promise(async (res, rej) => {
             try {
                 const endpoint = isGroupChat ? '/api/chats/group/get' : '/api/chats/get';
@@ -8409,6 +9042,7 @@ export async function getChatsFromFiles(data, isGroupChat) {
                 });
 
                 if (!chatResponse.ok) {
+                    // @ts-expect-error TS(2794): Expected 1 arguments, but got 0. Did you forget to... Remove this comment to see the full error message
                     return res();
                     // continue;
                 }
@@ -8423,6 +9057,7 @@ export async function getChatsFromFiles(data, isGroupChat) {
                 console.error(error);
             }
 
+            // @ts-expect-error TS(2794): Expected 1 arguments, but got 0. Did you forget to... Remove this comment to see the full error message
             return res();
         });
     });
@@ -8436,9 +9071,7 @@ export async function getChatsFromFiles(data, isGroupChat) {
  * Fetches the metadata of all past chats related to a specific character based on its avatar URL.
  * The function sends a POST request to the server to retrieve all chats for the character. It then
  * processes the received data, sorts it by the file name, and returns the sorted data.
- *
- * @param {null|number} [characterId=null] - When set, the function will use this character id instead of this_chid.
- *
+ * @param {null|number} [characterId] - When set, the function will use this character id instead of this_chid.
  * @returns {Promise<Array>} - An array containing metadata of all past chats of the character, sorted
  * in descending order by file name. Returns an empty array if the fetch request is unsuccessful or the
  * response is an object with an `error` property set to `true`.
@@ -8463,6 +9096,7 @@ export async function getPastCharacterChats(characterId = null) {
     }
 
     const chats = Object.values(data);
+    // @ts-expect-error TS(2339): Property 'file_name' does not exist on type 'unkno... Remove this comment to see the full error message
     return chats.sort((a, b) => a.file_name.localeCompare(b.file_name)).reverse();
 }
 
@@ -8489,7 +9123,9 @@ export function getCurrentChatDetails() {
  * @param {string[]} hightlightNames - An array of chat names to highlight
  */
 export async function displayPastChats(hightlightNames = []) {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#select_chat_div').empty();
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#select_chat_search').val('').off('input');
 
     const chatDetails = getCurrentChatDetails();
@@ -8504,13 +9140,16 @@ export async function displayPastChats(hightlightNames = []) {
     });
 
     // Define the search input listener
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#select_chat_search').off('input').on('input', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const searchQuery = $(this).val();
         debouncedDisplay(searchQuery);
     });
 
     // UX convenience: Focus the search field when the Manage Chat Files view opens.
     setTimeout(function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const textSearchElement = $('#select_chat_search');
         textSearchElement.trigger('click').trigger('focus').trigger('select');
     }, 200);
@@ -8518,6 +9157,16 @@ export async function displayPastChats(hightlightNames = []) {
     addChatBackupsBrowser();
 }
 
+/**
+ *
+ * @param searchQuery
+ * @param currentChat
+ * @param displayName
+ * @param avatarImg
+ * @param selected_group
+ * @param highlightNames
+ */
+// @ts-expect-error TS(6133): 'displayName' is declared but its value is never r... Remove this comment to see the full error message
 async function displayChats(searchQuery, currentChat, displayName, avatarImg, selected_group, highlightNames) {
     try {
         const response = await fetch('/api/chats/search', {
@@ -8535,12 +9184,14 @@ async function displayChats(searchQuery, currentChat, displayName, avatarImg, se
         }
 
         const filteredData = await response.json();
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#select_chat_div').empty();
 
         filteredData.sort((a, b) => sortMoments(timestampToMoment(a.last_mes), timestampToMoment(b.last_mes)));
 
         for (const chat of filteredData) {
             const isSelected = currentChat === chat.file_name;
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const template = $('#past_chat_template .select_chat_block_wrapper').clone();
             template.find('.select_chat_block').attr('file_name', chat.file_name);
             template.find('.avatar img').attr('src', avatarImg);
@@ -8555,34 +9206,46 @@ async function displayChats(searchQuery, currentChat, displayName, avatarImg, se
                 template.find('.select_chat_block').attr('highlight', String(true));
             }
 
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#select_chat_div').append(template);
 
             if (Array.isArray(highlightNames) && highlightNames.includes(chat.file_name)) {
                 const templateOffset = template.offset().top - template.parent().offset().top;
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $('#select_chat_div').scrollTop(templateOffset);
                 flashHighlight(template, debounce_timeout.extended);
             }
         }
     } catch (error) {
         console.error('Error loading chats:', error);
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.error('Could not load chat data. Try reloading the page.');
     }
 }
 
+/**
+ *
+ * @param selectedMenuId
+ */
 export function selectRightMenuWithAnimation(selectedMenuId) {
     const displayModes = {
         'rm_group_chats_block': 'flex',
         'rm_api_block': 'grid',
         'rm_characters_block': 'flex',
     };
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#result_info').toggle(selectedMenuId === 'rm_ch_create_block');
     document.querySelectorAll('#right-nav-panel .right_menu').forEach((menu) => {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(menu).css('display', 'none');
 
         if (selectedMenuId && selectedMenuId.replace('#', '') === menu.id) {
             const mode = displayModes[menu.id] ?? 'block';
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(menu).css('display', mode);
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(menu).css('opacity', 0.0);
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(menu).transition({
                 opacity: 1.0,
                 duration: animation_duration,
@@ -8593,8 +9256,15 @@ export function selectRightMenuWithAnimation(selectedMenuId) {
     });
 }
 
+/**
+ *
+ * @param type
+ * @param charId
+ * @param previousCharId
+ */
 export function select_rm_info(type, charId, previousCharId = null) {
     if (!type) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.error(t`Invalid process (no 'type')`);
         return;
     }
@@ -8603,19 +9273,24 @@ export function select_rm_info(type, charId, previousCharId = null) {
     }
 
     if (type === 'char_delete') {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.warning(t`Character Deleted: ${displayName}`);
     }
     if (type === 'char_create') {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.success(t`Character Created: ${displayName}`);
     }
     if (type === 'group_create') {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.success(t`Group Created`);
     }
     if (type === 'group_delete') {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.warning(t`Group Deleted`);
     }
 
     if (type === 'char_import') {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.success(t`Character Imported: ${displayName}`);
     }
 
@@ -8639,9 +9314,11 @@ export function select_rm_info(type, charId, previousCharId = null) {
                 const perPage = Number(accountStorage.getItem('Characters_PerPage')) || per_page_default;
                 const page = Math.floor(charIndex / perPage) + 1;
                 const selector = `#rm_print_characters_block [title*="${avatarFileName}"]`;
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $('#rm_print_characters_pagination').pagination('go', page);
 
                 waitUntilCondition(() => document.querySelector(selector) !== null).then(() => {
+                    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                     const element = $(selector).parent();
 
                     if (element.length === 0) {
@@ -8670,10 +9347,12 @@ export function select_rm_info(type, charId, previousCharId = null) {
 
             const perPage = Number(accountStorage.getItem('Characters_PerPage')) || per_page_default;
             const page = Math.floor(charIndex / perPage) + 1;
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#rm_print_characters_pagination').pagination('go', page);
             const selector = `#rm_print_characters_block [grid="${charId}"]`;
             try {
                 waitUntilCondition(() => document.querySelector(selector) !== null).then(() => {
+                    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                     const element = $(selector);
                     const scrollOffset = element.offset().top - element.parent().offset().top;
                     element.parent().scrollTop(scrollOffset);
@@ -8697,83 +9376,131 @@ export function select_rm_info(type, charId, previousCharId = null) {
  * Selects the right menu for displaying the character editor.
  * @param {string} chid Character array index
  * @param {object} [param1] Options for the switch
- * @param {boolean} [param1.switchMenu=true] Whether to switch the menu
+ * @param {boolean} [param1.switchMenu] Whether to switch the menu
  */
 export function select_selected_character(chid, { switchMenu = true } = {}) {
     //character select
     //console.log('select_selected_character() -- starting with input of -- ' + chid + ' (name:' + characters[chid].name + ')');
     select_rm_create({ switchMenu });
     switchMenu && setMenuType('character_edit');
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#delete_button').css('display', 'flex');
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#export_button').css('display', 'flex');
 
     //create text poles
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#rm_button_back').css('display', 'none');
     //$("#character_import_button").css("display", "none");
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#create_button').attr('value', 'Save');              // what is the use case for this?
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#dupe_button').show();
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#create_button_label').css('display', 'none');
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#char_connections_button').show();
 
     // Hide the chat scenario button if we're peeking the group member defs
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#set_chat_character_settings').toggle(!selected_group);
 
     // Don't update the navbar name if we're peeking the group member defs
     if (!selected_group) {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#rm_button_selected_ch').children('h2').text(characters[chid].name);
     }
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#add_avatar_button').val('');
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#character_popup-button-h3').text(characters[chid].name);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#character_name_pole').val(characters[chid].name);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#description_textarea').val(characters[chid].description);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#character_world').val(characters[chid].data?.extensions?.world || '');
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#creator_notes_textarea').val(characters[chid].data?.creator_notes || characters[chid].creatorcomment);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#creator_notes_spoiler').html(formatCreatorNotes(characters[chid].data?.creator_notes || characters[chid].creatorcomment, characters[chid].avatar));
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#character_version_textarea').val(characters[chid].data?.character_version || '');
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#system_prompt_textarea').val(characters[chid].data?.system_prompt || '');
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#post_history_instructions_textarea').val(characters[chid].data?.post_history_instructions || '');
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#tags_textarea').val(Array.isArray(characters[chid].data?.tags) ? characters[chid].data.tags.join(', ') : '');
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#creator_textarea').val(characters[chid].data?.creator);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#character_version_textarea').val(characters[chid].data?.character_version || '');
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#personality_textarea').val(characters[chid].personality);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#firstmessage_textarea').val(characters[chid].first_mes);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#scenario_pole').val(characters[chid].scenario);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#depth_prompt_prompt').val(characters[chid].data?.extensions?.depth_prompt?.prompt ?? '');
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#depth_prompt_depth').val(characters[chid].data?.extensions?.depth_prompt?.depth ?? depth_prompt_depth_default);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#depth_prompt_role').val(characters[chid].data?.extensions?.depth_prompt?.role ?? depth_prompt_role_default);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#talkativeness_slider').val(characters[chid].talkativeness || talkativeness_default);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#mes_example_textarea').val(characters[chid].mes_example);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#selected_chat_pole').val(characters[chid].chat);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#create_date_pole').val(timestampToMoment(characters[chid].create_date).toISOString());
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#avatar_url_pole').val(characters[chid].avatar);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#chat_import_avatar_url').val(characters[chid].avatar);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#chat_import_character_name').val(characters[chid].name);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#character_json_data').val(characters[chid].json_data);
 
     updateFavButtonState(characters[chid].fav || characters[chid].fav == 'true');
 
     const avatarUrl = characters[chid].avatar != 'none' ? getThumbnailUrl('avatar', characters[chid].avatar) : default_avatar;
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#avatar_load_preview').attr('src', avatarUrl);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('.open_alternate_greetings').data('chid', chid);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#set_character_world').data('chid', chid);
     setWorldInfoButtonClass(chid);
     checkEmbeddedWorld(chid);
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#name_div').removeClass('displayBlock');
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#name_div').addClass('displayNone');
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#renameCharButton').css('display', '');
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#form_create').attr('actiontype', 'editcharacter');
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('.form_create_bottom_buttons_block .chat_lorebook_button').show();
 
     const externalMediaState = isExternalMediaAllowed();
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#character_open_media_overrides').toggle(!selected_group);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#character_media_allowed_icon').toggle(externalMediaState);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#character_media_forbidden_icon').toggle(!externalMediaState);
 
     // Update some stuff about the char management dropdown
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#character_source').attr('disabled', !getCharacterSource(chid) ? '' : null);
 
     eventSource.emit(event_types.CHARACTER_EDITOR_OPENED, chid);
@@ -8784,13 +9511,14 @@ export function select_selected_character(chid, { switchMenu = true } = {}) {
 /**
  * Selects the right menu for creating a new character.
  * @param {object} [options] Options for the switch
- * @param {boolean} [options.switchMenu=true] Whether to switch the menu
+ * @param {boolean} [options.switchMenu] Whether to switch the menu
  */
 function select_rm_create({ switchMenu = true } = {}) {
     switchMenu && setMenuType('create');
 
     //console.log('select_rm_Create() -- selected button: '+selected_button);
     if (selected_button == 'create' && create_save.avatar) {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const addAvatarInput = /** @type {HTMLInputElement} */ ($('#add_avatar_button').get(0));
         addAvatarInput.files = create_save.avatar;
         read_avatar_load(addAvatarInput);
@@ -8798,54 +9526,98 @@ function select_rm_create({ switchMenu = true } = {}) {
 
     switchMenu && selectRightMenuWithAnimation('rm_ch_create_block');
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#set_chat_character_settings').hide();
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#delete_button_div').css('display', 'none');
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#delete_button').css('display', 'none');
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#export_button').css('display', 'none');
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#create_button_label').css('display', '');
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#create_button').attr('value', 'Create');
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#dupe_button').hide();
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#char_connections_button').hide();
 
     //create text poles
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#rm_button_back').css('display', '');
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#character_import_button').css('display', '');
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#character_popup-button-h3').text('Create character');
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#character_name_pole').val(create_save.name);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#description_textarea').val(create_save.description);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#character_world').val(create_save.world);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#creator_notes_textarea').val(create_save.creator_notes);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#creator_notes_spoiler').html(formatCreatorNotes(create_save.creator_notes, ''));
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#post_history_instructions_textarea').val(create_save.post_history_instructions);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#system_prompt_textarea').val(create_save.system_prompt);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#tags_textarea').val(create_save.tags);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#creator_textarea').val(create_save.creator);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#character_version_textarea').val(create_save.character_version);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#personality_textarea').val(create_save.personality);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#firstmessage_textarea').val(create_save.first_message);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#talkativeness_slider').val(create_save.talkativeness);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#scenario_pole').val(create_save.scenario);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#depth_prompt_prompt').val(create_save.depth_prompt_prompt);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#depth_prompt_depth').val(create_save.depth_prompt_depth);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#depth_prompt_role').val(create_save.depth_prompt_role);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#mes_example_textarea').val(create_save.mes_example);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#character_json_data').val('');
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#avatar_div').css('display', 'flex');
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#avatar_load_preview').attr('src', default_avatar);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#renameCharButton').css('display', 'none');
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#name_div').removeClass('displayNone');
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#name_div').addClass('displayBlock');
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('.open_alternate_greetings').data('chid', -1);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#set_character_world').data('chid', -1);
     setWorldInfoButtonClass(undefined, !!create_save.world);
     updateFavButtonState(false);
+    // @ts-expect-error TS(2554): Expected 1 arguments, but got 0.
     checkEmbeddedWorld();
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#form_create').attr('actiontype', 'createcharacter');
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('.form_create_bottom_buttons_block .chat_lorebook_button').hide();
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#character_open_media_overrides').hide();
 }
 
+/**
+ *
+ */
 function select_rm_characters() {
     const doFullRefresh = menu_type === 'characters';
     setMenuType('characters');
@@ -8912,7 +9684,7 @@ export function removeDepthPrompts() {
 
 /**
  * Adds or updates the metadata for the currently active chat.
- * @param {Object} newValues An object with collection of new values to be added into the metadata.
+ * @param {object} newValues An object with collection of new values to be added into the metadata.
  * @param {boolean} reset Should a metadata be reset by this call.
  */
 export function updateChatMetadata(newValues, reset) {
@@ -8928,22 +9700,32 @@ function updateFavButtonState(state) {
     // Update global state of the flag
     // TODO: This is bad and needs to be refactored.
     fav_ch_checked = state;
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#fav_checkbox').prop('checked', state);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#favorite_button').toggleClass('fav_on', state);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#favorite_button').toggleClass('fav_off', !state);
 }
 
+/**
+ *
+ */
 export async function setCharacterSettingsOverrides() {
     if (!selected_group && (this_chid === undefined || !characters[this_chid])) {
         console.warn('setCharacterSettingsOverrides() -- no selected group or character');
         return;
     }
 
+    // @ts-expect-error TS(2339): Property 'scenario' does not exist on type '{}'.
     const scenarioOverrideValue = chat_metadata.scenario || '';
+    // @ts-expect-error TS(2339): Property 'mes_example' does not exist on type '{}'... Remove this comment to see the full error message
     const exampleMessagesValue = chat_metadata.mes_example || '';
+    // @ts-expect-error TS(2339): Property 'system_prompt' does not exist on type '{... Remove this comment to see the full error message
     const systemPromptValue = chat_metadata.system_prompt || '';
     const isGroup = !!selected_group;
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const $template = $(await renderTemplateAsync('scenarioOverride'));
     $template.find('[data-group="true"]').toggle(isGroup);
     $template.find('[data-character="true"]').toggle(!isGroup);
@@ -8956,14 +9738,17 @@ export async function setCharacterSettingsOverrides() {
     // Keep edits local until the popup is closed/confirmed
     const $scenario = $template.find('.chat_scenario');
     $scenario.val(scenarioOverrideValue).on('input', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         pendingChanges.scenario = String($(this).val());
     });
     const $examples = $template.find('.chat_examples');
     $examples.val(exampleMessagesValue).on('input', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         pendingChanges.examples = String($(this).val());
     });
     const $systemPrompt = $template.find('.chat_system_prompt');
     $systemPrompt.val(systemPromptValue).on('input', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         pendingChanges.system_prompt = String($(this).val());
     });
 
@@ -8988,8 +9773,11 @@ export async function setCharacterSettingsOverrides() {
         allowVerticalScrolling: true,
     });
 
+    // @ts-expect-error TS(2339): Property 'scenario' does not exist on type '{}'.
     chat_metadata.scenario = pendingChanges.scenario;
+    // @ts-expect-error TS(2339): Property 'mes_example' does not exist on type '{}'... Remove this comment to see the full error message
     chat_metadata.mes_example = pendingChanges.examples;
+    // @ts-expect-error TS(2339): Property 'system_prompt' does not exist on type '{... Remove this comment to see the full error message
     chat_metadata.system_prompt = pendingChanges.system_prompt;
     await saveMetadata();
 }
@@ -9004,7 +9792,20 @@ export async function setCharacterSettingsOverrides() {
  * @returns {Promise<any>} A promise that resolves when the popup is closed.
  * @deprecated Use `callGenericPopup` instead.
  */
-export function callPopup(text, type, inputValue = '', { okButton, rows, wide, wider, large, allowHorizontalScrolling, allowVerticalScrolling, cropAspect } = {}) {
+export function callPopup(text, type, inputValue = '', {
+    okButton,
+    rows,
+    wide,
+    wider,
+    large,
+    allowHorizontalScrolling,
+    allowVerticalScrolling,
+    // @ts-expect-error TS(6133): 'cropAspect' is declared but its value is never re... Remove this comment to see the full error message
+    cropAspect
+}: any = {}) {
+    /**
+     *
+     */
     function getOkButtonText() {
         if (['text', 'char_not_selected'].includes(popup_type)) {
             $dialoguePopupCancel.css('display', 'none');
@@ -9024,11 +9825,17 @@ export function callPopup(text, type, inputValue = '', { okButton, rows, wide, w
         popup_type = type;
     }
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const $dialoguePopup = $('#dialogue_popup');
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const $dialoguePopupCancel = $('#dialogue_popup_cancel');
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const $dialoguePopupOk = $('#dialogue_popup_ok');
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const $dialoguePopupInput = $('#dialogue_popup_input');
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const $dialoguePopupText = $('#dialogue_popup_text');
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const $shadowPopup = $('#shadow_popup');
 
     $dialoguePopup.toggleClass('wide_dialogue_popup', !!wide)
@@ -9061,10 +9868,10 @@ export function callPopup(text, type, inputValue = '', { okButton, rows, wide, w
 /**
  * Update the swipe counter for mesId.
  * By default, the swipe counter's opacity will appear greyed out. The opacity is changed with CSS.
- * @param {Number} mesId
+ * @param {number} mesId
  * @param {object} [options] Options
- * @param {ChatMessage} [options.message=undefined] Swipe numbers from this message will be used instead of mesId.
- * @param {JQuery<HTMLElement>} [options.messageElement=undefined] Target Element. Passing in the message's element will save a DOM query.
+ * @param {ChatMessage} [options.message] Swipe numbers from this message will be used instead of mesId.
+ * @param {JQuery<HTMLElement>} [options.messageElement] Target Element. Passing in the message's element will save a DOM query.
  */
 export async function updateSwipeCounter(mesId, { message = undefined, messageElement = undefined } = {}) {
     message ??= chat[mesId];
@@ -9117,7 +9924,7 @@ export function isSwipingAllowed() {
  * This does not check if messages are generally swipeable. See isSwipingAllowed().
  * This does not check if the swipes exist or are valid.
  * @param {number} messageId The message Id to check.
- * @param {ChatMessage} [message=undefined] If undefined, then the message checks will be skipped.
+ * @param {ChatMessage} [message] If undefined, then the message checks will be skipped.
  * @returns {boolean}
  */
 export function isMessageSwipeable(messageId, message = undefined) {
@@ -9157,12 +9964,13 @@ export function isMessageSwipeable(messageId, message = undefined) {
  * This does not check if messages are generally swipeable. See isSwipingAllowed().
  * This does not check if the swipes exist or are valid.
  * @param {number} messageId The message Id to check.
- * @param {ChatMessage} [message=undefined] If defined, this will be used instead of chat[messageId].
+ * @param {ChatMessage} [message] If defined, this will be used instead of chat[messageId].
  * @returns {OVERSWIPE_BEHAVIOR}
  */
 export function getOverswipeBehavior(messageId, message = undefined) {
     message ??= chat[messageId];
 
+    // @ts-expect-error TS(2339): Property 'tainted' does not exist on type '{}'.
     const isPristine = !chat_metadata?.tainted;
     const isGreeting = messageId === 0;
 
@@ -9187,17 +9995,21 @@ export function getOverswipeBehavior(messageId, message = undefined) {
  * @param {boolean} fade By default, the chevrons fade in and out.
  * @returns
  */
+// @ts-expect-error TS(7030): Not all code paths return a value.
 export function refreshSwipeButtons(updateCounters = false, fade = true) {
     //Never show swipe buttons on an empty chat.
     if (chat?.length === 0) return false;
 
     //If swipes are disabled or hidden, hide all swipe buttons.
     if (!isSwipingAllowed()) {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('body').addClass('hideAllSwipeButtons');
+        // @ts-expect-error TS(7030): Not all code paths return a value.
         return;
         //Don't hide all swipe buttons.
     } else {
         //CSS will hide all messages.
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('body').removeClass('hideAllSwipeButtons');
     }
     //Non-messages can appear in chat. '.mes' is required.
@@ -9221,6 +10033,7 @@ export function refreshSwipeButtons(updateCounters = false, fade = true) {
             const isLastSwipe = (message?.swipes?.length ?? 1) - 1 <= (message?.swipe_id ?? 0);
             const hasSwipes = (message?.swipes?.length > 1);
             const overswipe = getOverswipeBehavior(messageId, message);
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const swipePickerButton = $(div).find('.mes_swipe_picker');
             const canOpenSwipePicker = canOpenSwipePickerForMessage(messageId);
 
@@ -9239,10 +10052,12 @@ export function refreshSwipeButtons(updateCounters = false, fade = true) {
             swipePickerButton.toggle(canOpenSwipePicker);
 
             //updateSwipeCounter does not need to be awaited, It can run a bit later.
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             if (updateCounters) updateSwipeCounter(messageId, { message, messageElement: $(div) });
         } else {
             //Hide all messages that are not swipeable.
             div.classList.remove('swipes_visible', 'last_swipe');
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(div).find('.mes_swipe_picker').toggle(canOpenSwipePickerForMessage(messageId));
         }
     });
@@ -9258,7 +10073,7 @@ export function showSwipeButtons() {
 /**
  * This function is misleadingly named. It blocks generation then refreshes the swipe buttons and counters.
  * @param {object} [options] Options
- * @param {boolean} [options.hideCounters=false] Also hide the swipes counter.
+ * @param {boolean} [options.hideCounters] Also hide the swipes counter.
  */
 export function hideSwipeButtons({ hideCounters = false } = {}) {
     swipesHidden = true;
@@ -9271,15 +10086,15 @@ export function hideSwipeButtons({ hideCounters = false } = {}) {
 
 /**
  * Deletes a swipe from the chat.
- *
- * @param {number?} [swipeId = null] - The ID of the swipe to delete. If not provided, the current swipe will be deleted.
- * @param {number?} [messageId = chat.length - 1] - The ID of the message to delete from. If not provided, the last message will be targeted.
+ * @param {number?} [swipeId] - The ID of the swipe to delete. If not provided, the current swipe will be deleted.
+ * @param {number?} [messageId] - The ID of the message to delete from. If not provided, the last message will be targeted.
  * @returns {Promise<number>|undefined} - The ID of the new swipe after deletion.
  */
 export async function deleteSwipe(swipeId = null, messageId = chat.length - 1) {
     if (swipeId != null) {
         swipeId = Number(swipeId);
         if (!Number.isInteger(swipeId) || swipeId < 0) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.warning(t`Invalid swipe ID.`);
             return;
         }
@@ -9287,11 +10102,13 @@ export async function deleteSwipe(swipeId = null, messageId = chat.length - 1) {
 
     const message = chat[messageId];
     if (!message || !Array.isArray(message.swipes) || !message.swipes.length) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.warning(t`No messages to delete swipes from.`);
         return;
     }
 
     if (message.swipes.length <= 1) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.warning(t`Can't delete the last swipe.`);
         return;
     }
@@ -9300,6 +10117,7 @@ export async function deleteSwipe(swipeId = null, messageId = chat.length - 1) {
     const currentSwipeId = clamp(Number(message.swipe_id ?? 0), 0, message.swipes.length - 1);
 
     if (swipeId < 0 || swipeId >= message.swipes.length) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.warning(t`Invalid swipe ID: ${swipeId + 1}`);
         return;
     }
@@ -9320,6 +10138,7 @@ export async function deleteSwipe(swipeId = null, messageId = chat.length - 1) {
         newSwipeId = Math.min(swipeId, message.swipes.length - 1);
     }
 
+    // @ts-expect-error TS(2339): Property 'tainted' does not exist on type '{}'.
     chat_metadata.tainted = true;
 
     messageId = Number(messageId);
@@ -9345,10 +10164,16 @@ export async function deleteSwipe(swipeId = null, messageId = chat.length - 1) {
     return newSwipeId;
 }
 
+/**
+ *
+ */
 export async function saveMetadata() {
     return await saveChatConditional();
 }
 
+/**
+ *
+ */
 export async function saveChatConditional() {
     try {
         await waitUntilCondition(() => !isChatSaving, DEFAULT_SAVE_EDIT_TIMEOUT, 100);
@@ -9381,7 +10206,7 @@ export async function saveChatConditional() {
 /**
  * Saves the chat to the server.
  * @param {FormData} formData Form data to send to the server.
- * @param {object} [options={}] Options for the import
+ * @param {object} [options] Options for the import
  * @param {boolean} [options.refresh] Whether to refresh the group chat list after import
  * @returns {Promise<string[]>} List of imported file names.
  */
@@ -9404,11 +10229,17 @@ export async function importCharacterChat(formData, { refresh = true } = {}) {
     return [];
 }
 
+/**
+ *
+ * @param startIndex
+ */
 export function updateViewMessageIds(startIndex = null) {
     const minId = startIndex ?? getFirstDisplayedMessageId();
 
     chatElement.find('.mes').each(function (index, element) {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(element).attr('mesid', minId + index);
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(element).find('.mesIDDisplay').text(`#${minId + index}`);
     });
 
@@ -9418,12 +10249,18 @@ export function updateViewMessageIds(startIndex = null) {
     updateEditArrowClasses();
 }
 
+/**
+ *
+ */
 export function getFirstDisplayedMessageId() {
     const allIds = Array.from(document.querySelectorAll('#chat .mes')).map(el => Number(el.getAttribute('mesid'))).filter(x => !isNaN(x));
     const minId = Math.min(...allIds);
     return minId;
 }
 
+/**
+ *
+ */
 export function updateEditArrowClasses() {
     if (!(this_edit_mes_id >= 0)) {
         return;
@@ -9467,10 +10304,16 @@ export function closeMessageEditor(what = 'all') {
     }
 }
 
+/**
+ *
+ * @param progress
+ */
 export function setGenerationProgress(progress) {
     if (!progress) {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#send_textarea').css({ 'background': '', 'transition': '' });
     } else {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#send_textarea').css({
             'background': `linear-gradient(90deg, #008000d6 ${progress}%, transparent ${progress}%)`,
             'transition': '0.25s ease-in-out',
@@ -9478,20 +10321,33 @@ export function setGenerationProgress(progress) {
     }
 }
 
+/**
+ *
+ */
 export function cancelTtsPlay() {
     if ('speechSynthesis' in window) {
         speechSynthesis.cancel();
     }
 }
 
+/**
+ *
+ * @param root
+ */
 function updateAlternateGreetingsHintVisibility(root) {
     const numberOfGreetings = root.find('.alternate_greetings_list .alternate_greeting').length;
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(root).find('.alternate_grettings_hint').toggle(numberOfGreetings == 0);
 }
 
+/**
+ *
+ */
 async function openCharacterWorldPopup() {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const chid = $('#set_character_world').data('chid');
     if (menu_type != 'create' && chid === undefined) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.error('Does not have an Id for this character in world select menu.');
         return;
     }
@@ -9500,19 +10356,29 @@ async function openCharacterWorldPopup() {
     const fileName = getCharaFilename(chid);
     const charName = (menu_type == 'create' ? create_save.name : characters[chid]?.data?.name) || 'Nameless';
     const worldId = (menu_type == 'create' ? create_save.world : characters[chid]?.data?.extensions?.world) || '';
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const template = $('#character_world_template .character_world').clone();
     template.find('.character_name').text(charName);
 
     // --- Event Handlers ---
+    /**
+     *
+     */
     async function handlePrimaryWorldSelect() {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const selectedValue = $(this).val();
         const worldIndex = selectedValue !== '' ? Number(selectedValue) : NaN;
         const name = !isNaN(worldIndex) ? world_names[worldIndex] : '';
         await charUpdatePrimaryWorld(name);
     }
 
+    /**
+     *
+     * @param evt
+     */
     function handleExtrasWorldSelect(evt) {
         const el = evt?.currentTarget ?? this;
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const selectedValues = $(el).val();
         const selected = Array.isArray(selectedValues) ? selectedValues : [];
         const fileName = getCharaFilename(null, {});
@@ -9529,6 +10395,7 @@ async function openCharacterWorldPopup() {
 
     // Append to extras dropdown.
     const extrasSelect = template.find('.character_extra_world_info_selector');
+    // @ts-expect-error TS(2339): Property 'charLore' does not exist on type '{}'.
     const existingCharLore = world_info.charLore?.find((e) => e.name === fileName);
     world_names.forEach((item, i) => {
         const array = (menu_type == 'create' ? create_save.extra_books : existingCharLore?.extraBooks);
@@ -9538,6 +10405,7 @@ async function openCharacterWorldPopup() {
 
     const popup = new Popup(template, POPUP_TYPE.TEXT, '', {
         onOpen: function (popup) {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const popupDialog = $(popup.dlg);
 
             primarySelect.on('change', handlePrimaryWorldSelect);
@@ -9559,10 +10427,15 @@ async function openCharacterWorldPopup() {
     await popup.show();
 }
 
+/**
+ *
+ */
 function openAlternateGreetings() {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const chid = $('.open_alternate_greetings').data('chid');
 
     if (menu_type != 'create' && chid === undefined) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.error('Does not have an Id for this character in editor menu.');
         return;
     } else {
@@ -9572,6 +10445,7 @@ function openAlternateGreetings() {
         }
     }
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const template = $('#alternate_greetings_template .alternate_grettings').clone();
     const getArray = () => menu_type == 'create' ? create_save.alternate_greetings : characters[chid].data.alternate_greetings;
     const popup = new Popup(template, POPUP_TYPE.TEXT, '', {
@@ -9580,6 +10454,7 @@ function openAlternateGreetings() {
         allowVerticalScrolling: true,
         onClose: async () => {
             if (menu_type !== 'create') {
+                // @ts-expect-error TS(2554): Expected 1 arguments, but got 0.
                 await createOrEditCharacter();
             }
         },
@@ -9612,11 +10487,13 @@ function openAlternateGreetings() {
  * @param {Popup} popup
  */
 function addAlternateGreeting(template, greeting, index, getArray, popup) {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const greetingBlock = $('#alternate_greeting_form_template .alternate_greeting').clone();
     greetingBlock.attr('data-index', index);
     greetingBlock.find('.alternate_greeting_text')
         .attr('id', `alternate_greeting_${index}`)
         .on('input', async function () {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const value = $(this).val();
             const array = getArray();
             array[index] = value;
@@ -9691,7 +10568,9 @@ export async function createOrEditCharacter(e) {
         return;
     }
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#rm_info_avatar').html('');
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const formData = new FormData(/** @type {HTMLFormElement} */($('#form_create').get(0)));
     formData.set('fav', String(fav_ch_checked));
     const isNewChat = e instanceof CustomEvent && e.type === 'newChat';
@@ -9704,12 +10583,16 @@ export async function createOrEditCharacter(e) {
 
     const headers = getRequestHeaders({ omitContentType: true });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     if ($('#form_create').attr('actiontype') == 'createcharacter') {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         if (String($('#character_name_pole').val()).length === 0) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.error(t`Name is required`);
             return;
         }
         if (is_group_generating || is_send_press) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.error(t`Cannot create characters while generating. Stop the request and try again.`, t`Creation aborted`);
             return;
         }
@@ -9741,6 +10624,7 @@ export async function createOrEditCharacter(e) {
 
             const avatarId = await fetchResult.text();
 
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#character_cross').trigger('click'); //closes the advanced character editing popup
             const fields = [
                 { id: '#character_name_pole', callback: value => create_save.name = value },
@@ -9762,17 +10646,20 @@ export async function createOrEditCharacter(e) {
                 { id: '#character_json_data', callback: () => { } },
                 { id: '#alternate_greetings_template', callback: value => create_save.alternate_greetings = value, defaultValue: [] },
                 { id: '#character_world', callback: value => create_save.world = value },
+                // @ts-expect-error TS(6133): 'value' is declared but its value is never read.
                 { id: '#_character_extensions_fake', callback: value => create_save.extensions = {} },
             ];
 
             fields.forEach(field => {
                 const fieldValue = field.defaultValue !== undefined ? field.defaultValue : '';
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $(field.id).val(fieldValue);
                 field.callback && field.callback(fieldValue);
             });
 
             if (Array.isArray(create_save.extra_books) && create_save.extra_books.length > 0) {
                 const fileName = getCharaFilename(null, { manualAvatarKey: avatarId });
+                // @ts-expect-error TS(2339): Property 'charLore' does not exist on type '{}'.
                 const charLore = world_info.charLore ?? [];
                 charLore.push({ name: fileName, extraBooks: create_save.extra_books });
                 Object.assign(world_info, { charLore: charLore });
@@ -9780,11 +10667,14 @@ export async function createOrEditCharacter(e) {
             }
             create_save.extra_books = [];
 
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#character_popup-button-h3').text('Create character');
 
             create_save.avatar = null;
 
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#add_avatar_button').replaceWith(
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $('#add_avatar_button').val('').clone(true),
             );
 
@@ -9802,6 +10692,7 @@ export async function createOrEditCharacter(e) {
             crop_data = undefined;
         } catch (error) {
             console.error('Error creating character', error);
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.error(t`Failed to create character`);
         }
     } else {
@@ -9813,6 +10704,7 @@ export async function createOrEditCharacter(e) {
             }
 
             formData.delete('alternate_greetings');
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const chid = $('.open_alternate_greetings').data('chid');
             if (characters[chid] && Array.isArray(characters[chid]?.data?.alternate_greetings)) {
                 for (const value of characters[chid].data.alternate_greetings) {
@@ -9834,9 +10726,12 @@ export async function createOrEditCharacter(e) {
             await getOneCharacter(formData.get('avatar_url'));
             favsToHotswap(); // Update fav state
 
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#add_avatar_button').replaceWith(
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $('#add_avatar_button').val('').clone(true),
             );
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#create_button').attr('value', 'Save');
             crop_data = undefined;
             await eventSource.emit(event_types.CHARACTER_EDITED, { detail: { id: this_chid, character: characters[this_chid] } });
@@ -9847,6 +10742,7 @@ export async function createOrEditCharacter(e) {
                 !isNewChat &&
                 message.mes &&
                 !selected_group &&
+                // @ts-expect-error TS(2339): Property 'tainted' does not exist on type '{}'.
                 !chat_metadata.tainted &&
                 (chat.length === 0 || (chat.length === 1 && !chat[0].is_user && !chat[0].is_system));
 
@@ -9861,6 +10757,7 @@ export async function createOrEditCharacter(e) {
             }
         } catch (error) {
             console.log(error);
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.error(t`Something went wrong while saving the character, or the image file provided was in an invalid format. Double check that the image is not a webp.`);
         }
     }
@@ -9886,12 +10783,19 @@ function formatSwipeCounter(current, total) {
  * @param {object} params Additional parameters.
  * @param {import('./scripts/constants.js').SWIPE_SOURCE} [params.source]  The source of the swipe event.
  * @param {boolean} [params.repeated] Is the swipe event repeated.
- * @param {ChatMessage} [params.message=chat[chat.length - 1]] The chat message to swipe.
+ * @param {ChatMessage} [params.message] The chat message to swipe.
  * @param {number} [params.forceMesId] The message id to swipe.
  * @param {number} [params.forceSwipeId] The target swipe_id. When out of range, it will be looped or clamped.
  * @param {number} [params.forceDuration] Overwrites the default swipe duration.
  */
-export async function swipe(event, direction, { source, repeated, message = chat[chat.length - 1], forceMesId, forceSwipeId, forceDuration } = {}) {
+export async function swipe(event, direction, {
+    source,
+    repeated,
+    message = chat[chat.length - 1],
+    forceMesId,
+    forceSwipeId,
+    forceDuration
+}: any = {}) {
     if (chat.length === 0) {
         console.warn('Swipe was called on an empty chat.');
         return;
@@ -9915,6 +10819,7 @@ export async function swipe(event, direction, { source, repeated, message = chat
     } else {
         //Only show an error if swipes are not hidden and a message is generating.
         if (isGenerating() && (swipes && !swipesHidden && (swipeState === SWIPE_STATE.NONE))) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.warning(t`Cannot swipe while generating. Stop the request and try again.`, t`Swipe aborted`);
             return;
         }
@@ -9970,7 +10875,7 @@ export async function swipe(event, direction, { source, repeated, message = chat
 
     //The offscreen messages may be visible if the user resizes the viewport during a swipe.
     const thisMesDivWidth = thisMesDiv.width() + 30;
-    let swipeRange = (direction === SWIPE_DIRECTION.RIGHT) ? -thisMesDivWidth : thisMesDivWidth;
+    const swipeRange = (direction === SWIPE_DIRECTION.RIGHT) ? -thisMesDivWidth : thisMesDivWidth;
 
     /**
      * Waits for the generation to end, reverts the swipe if swipe_id has not changed.
@@ -9981,6 +10886,7 @@ export async function swipe(event, direction, { source, repeated, message = chat
         try {
             //`mes_buttons` need to be hidden until the animation completes.
             if (generation) {
+                // @ts-expect-error TS(4111): Property 'swiping' comes from an index signature, ... Remove this comment to see the full error message
                 document.body.dataset.swiping = 'true';
                 await generation;
             }
@@ -9989,7 +10895,7 @@ export async function swipe(event, direction, { source, repeated, message = chat
         }
 
         //Clamp Id between swipes.
-        let clampedId = clamp(chat[mesId].swipe_id, 0, Math.max(0, chat[mesId].swipes.length - 1));
+        const clampedId = clamp(chat[mesId].swipe_id, 0, Math.max(0, chat[mesId].swipes.length - 1));
 
         await updateSwipeCounter(mesId);
         //Fallback.
@@ -10037,10 +10943,15 @@ export async function swipe(event, direction, { source, repeated, message = chat
 
         //Allow for another swipe.
         swipeState = SWIPE_STATE.NONE;
+        // @ts-expect-error TS(4111): Property 'swiping' comes from an index signature, ... Remove this comment to see the full error message
         delete document.body.dataset.swiping;
         showSwipeButtons();
     }
 
+    /**
+     *
+     * @param newSwipeId
+     */
     async function standardSwipe(newSwipeId) {
         //If swipe_id has changed, or the source is being deleted.
         if (newSwipeId !== originalSwipeId || source == SWIPE_SOURCE.DELETE || source == SWIPE_SOURCE.BACK) {
@@ -10086,7 +10997,8 @@ export async function swipe(event, direction, { source, repeated, message = chat
 
         //Load from swipes.
         if (syncSwipeToMes(mesId, newSwipeId) == false) {
-            let errorMessage = t`When swiping ${direction} on message ${mesId}, syncSwipeToMes has returned false. Attempting to swipe back!`;
+            const errorMessage = t`When swiping ${direction} on message ${mesId}, syncSwipeToMes has returned false. Attempting to swipe back!`;
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.error(errorMessage);
 
             chat[mesId].swipe_id = originalSwipeId;
@@ -10099,16 +11011,17 @@ export async function swipe(event, direction, { source, repeated, message = chat
      * Animates a swipe for all messages >= mesId.
      * @param {number} mesId
      * @param {object} params
-     * @param {string} [params.xStart='opx']
-     * @param {string} [params.xEnd='0px']
-     * @param {number} [params.duration=animation_duration]
-     * @param {string} [params.classes=''] Additional CSS classes to target during the swipe.
-     * @param {boolean} [params.freeze=true] When true, do not remove the class from the animation, leaving it stuck at xEnd.
+     * @param {string} [params.xStart]
+     * @param {string} [params.xEnd]
+     * @param {number} [params.duration]
+     * @param {string} [params.classes] Additional CSS classes to target during the swipe.
+     * @param {boolean} [params.freeze] When true, do not remove the class from the animation, leaving it stuck at xEnd.
      * @returns {Promise<boolean|Function>} endSlide unfreezes the messages from xEnd.
      */
     async function animateSwipeTransition(mesId, { xStart = '0px', xEnd = '0px', duration = animation_duration, classes = '', freeze = false } = {}) {
         // If the animation_duration is zero, the 'animationend' promise will never resolve.
         //Skip the animation if it's faster than 50ms.
+        // @ts-expect-error TS(7030): Not all code paths return a value.
         if (duration <= 50) return;
 
         //Select MAXIMUM_ANIMATED messages after mesId. Ideally, only visible messages would be animated.
@@ -10117,6 +11030,7 @@ export async function swipe(event, direction, { source, repeated, message = chat
         const messages = chatElement.children('.mes');
         const firstDisplayedMesId = Number(messages.first().attr('mesid'));
 
+        // @ts-expect-error TS(6133): 'div' is declared but its value is never read.
         const swipedMessagesDiv = messages.filter((index, div) => {
             // const messageId = Number($(div).attr('mesid')); //Slower.
             //This assumes the messages are in order and their Id's are accurate.
@@ -10168,6 +11082,10 @@ export async function swipe(event, direction, { source, repeated, message = chat
         return false;
     }
 
+    /**
+     *
+     * @param thisMesDiv
+     */
     function getMessageBottomHeight(thisMesDiv) {
         const thisMesRect = thisMesDiv[0].getBoundingClientRect();
         //Scroll position + Chat height = Bottom of chat height.
@@ -10179,6 +11097,10 @@ export async function swipe(event, direction, { source, repeated, message = chat
         return scrollHeight;
     }
 
+    /**
+     *
+     * @param thisMesDiv
+     */
     function expandNewMessage(thisMesDiv) {
         //Only scroll if the view is not near the bottom.
         const is_animation_scroll = (chatElement.scrollTop() >= (chatElement.prop('scrollHeight') - chatElement.outerHeight()) - 10);
@@ -10192,6 +11114,7 @@ export async function swipe(event, direction, { source, repeated, message = chat
         thisMesDiv.animate({ height: new_height + 'px' }, {
             duration: 0, //used to be 100 //Disabled on Cohee's request. https://github.com/SillyTavern/SillyTavern/pull/4610/files#r2408731744
             queue: false,
+            // @ts-expect-error TS(6133): 'animation' is declared but its value is never rea... Remove this comment to see the full error message
             progress: function (animation, progress, remainingMs) {
                 if (is_animation_scroll) chatElement.scrollTop(getMessageBottomHeight(thisMesDiv));
             },
@@ -10206,7 +11129,7 @@ export async function swipe(event, direction, { source, repeated, message = chat
     /**
      * Anime a swipe, optionally running a generation.
      * @param {boolean} run_generate
-     * @param {boolean} [skipSwipeOut=false]
+     * @param {boolean} [skipSwipeOut]
      */
     async function animateSwipe(run_generate = false, skipSwipeOut = false) {
         if (!skipSwipeOut) {
@@ -10271,6 +11194,7 @@ export async function swipe(event, direction, { source, repeated, message = chat
     }
 
     if (isHordeGenerationNotAllowed()) {
+        // @ts-expect-error TS(2554): Expected 1 arguments, but got 0.
         return unblockGeneration();
     }
 
@@ -10292,7 +11216,7 @@ export async function swipe(event, direction, { source, repeated, message = chat
             };
         }
         // If the user is holding down the key and we're at the last or first swipe, don't do anything.
-        let isLastSwipe = (direction === SWIPE_DIRECTION.RIGHT) ? (chat[mesId].swipe_id === Math.max(0, chat[mesId].swipes.length - 1)) : chat[mesId].swipe_id === 0;
+        const isLastSwipe = (direction === SWIPE_DIRECTION.RIGHT) ? (chat[mesId].swipe_id === Math.max(0, chat[mesId].swipes.length - 1)) : chat[mesId].swipe_id === 0;
         if (source === SWIPE_SOURCE.KEYBOARD && repeated && isLastSwipe) {
             await endSwipe();
             return;
@@ -10312,6 +11236,7 @@ export async function swipe(event, direction, { source, repeated, message = chat
         }
         //Limit swipe_id to swipes.
         if (newSwipeId > chat[mesId].swipes.length - 1) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.warning(`The swipe_id for message #${mesId} was ${newSwipeId}. It has been reset to ${chat[mesId].swipes.length - 1}.`);
             chat[mesId].swipe_id = chat[mesId].swipes.length - 1;
             await endSwipe();
@@ -10326,6 +11251,7 @@ export async function swipe(event, direction, { source, repeated, message = chat
 
         //Minimum of zero.
         if (newSwipeId < 0) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.warning(`The swipe_id for message #${mesId} was ${newSwipeId}. It has been reset to zero.`);
             chat[mesId].swipe_id = 0;
             await endSwipe();
@@ -10350,7 +11276,7 @@ export async function swipe(event, direction, { source, repeated, message = chat
             } else if (overswipe == OVERSWIPE_BEHAVIOR.REGENERATE) {
                 //Regenerate the message
                 clearMessageData(chat[mesId]);
-                let run_generate = true;
+                const run_generate = true;
                 //Generate.
                 await animateSwipe(run_generate);
                 await endSwipe();
@@ -10374,7 +11300,11 @@ export async function swipe(event, direction, { source, repeated, message = chat
  * @param {boolean} [params.repeated] Is the swipe event repeated.
  * @param {object} [params.message] The chat message to swipe.
  */
-export async function swipe_left(event, { source, repeated, message } = {}) {
+export async function swipe_left(event, {
+    source,
+    repeated,
+    message
+}: any = {}) {
     await swipe.call(this, event, SWIPE_DIRECTION.LEFT, { source: source, repeated: repeated, message: message });
 }
 
@@ -10388,7 +11318,11 @@ export async function swipe_left(event, { source, repeated, message } = {}) {
  * @param {object} [params.message] The chat message to swipe.
  */
 //MARK: swipe_right
-export async function swipe_right(event = null, { source, repeated, message } = {}) {
+export async function swipe_right(event = null, {
+    source,
+    repeated,
+    message
+}: any = {}) {
     await swipe.call(this, event, SWIPE_DIRECTION.RIGHT, { source: source, repeated: repeated, message: message });
 }
 
@@ -10423,6 +11357,7 @@ export async function processDroppedFiles(files, data = new Map()) {
                 avatarFileNames.push(avatarFileName);
             }
         } else {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.warning(t`Unsupported file type: ` + file.name);
         }
     }
@@ -10464,23 +11399,27 @@ function selectImportedChar(charId) {
  * @param {File} file File to import
  * @param {object} [options] - Options
  * @param {string} [options.preserveFileName] Whether to preserve original file name
- * @param {Boolean} [options.importTags=false] Whether to import tags
+ * @param {boolean} [options.importTags] Whether to import tags
  * @returns {Promise<string>}
  */
+// @ts-expect-error TS(7030): Not all code paths return a value.
 async function importCharacter(file, { preserveFileName = '', importTags = false } = {}) {
     if (is_group_generating || is_send_press) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.error(t`Cannot import characters while generating. Stop the request and try again.`, t`Import aborted`);
         throw new Error('Cannot import character while generating');
     }
 
     const ext = file.name.match(/\.(\w+)$/);
     if (!ext || !(['json', 'png', 'yaml', 'yml', 'charx', 'byaf'].includes(ext[1].toLowerCase()))) {
+        // @ts-expect-error TS(7030): Not all code paths return a value.
         return;
     }
 
     const exists = preserveFileName ? characters.find(character => character.avatar === preserveFileName) : undefined;
 
     const format = ext[1].toLowerCase();
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#character_import_file_type').val(format);
     const formData = new FormData();
     formData.append('avatar', file);
@@ -10507,18 +11446,21 @@ async function importCharacter(file, { preserveFileName = '', importTags = false
         }
 
         if (data.file_name !== undefined) {
-            let avatarFileName = `${data.file_name}.png`;
+            const avatarFileName = `${data.file_name}.png`;
 
             // Refresh existing thumbnail
             if (exists && this_chid !== undefined) {
                 await fetch(getThumbnailUrl('avatar', avatarFileName), { cache: 'reload' });
             }
 
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#character_search_bar').val('').trigger('input');
 
             if (exists) {
+                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                 toastr.success(t`Character Replaced: ${String(data.file_name).replace('.png', '')}`);
             } else {
+                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                 toastr.success(t`Character Created: ${String(data.file_name).replace('.png', '')}`);
             }
             if (importTags) {
@@ -10529,16 +11471,23 @@ async function importCharacter(file, { preserveFileName = '', importTags = false
         }
     } catch (error) {
         console.error('Error importing character', error);
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.error(t`The file is likely invalid or corrupted.`, t`Could not import character`);
     }
 }
 
+/**
+ *
+ * @param items
+ * @param files
+ */
 async function importFromURL(items, files) {
     for (const item of items) {
         if (item.type === 'text/uri-list') {
             const uriList = await new Promise((resolve) => {
                 item.getAsString((uriList) => { resolve(uriList); });
             });
+            // @ts-expect-error TS(2339): Property 'split' does not exist on type 'unknown'.
             const uris = uriList.split('\n').filter(uri => uri.trim() !== '');
             try {
                 for (const uri of uris) {
@@ -10555,6 +11504,11 @@ async function importFromURL(items, files) {
     }
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.deleteCurrentChat
+ */
 export async function doNewChat({ deleteCurrentChat = false } = {}) {
     //Make a new chat for selected character
     if ((!selected_group && this_chid == undefined) || menu_type == 'create') {
@@ -10579,6 +11533,7 @@ export async function doNewChat({ deleteCurrentChat = false } = {}) {
         //RossAscends: added character name to new chat filenames and replaced Date.now() with humanizedDateTime;
         chat_metadata = {};
         characters[this_chid].chat = `${name2} - ${humanizedDateTime()}`;
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#selected_chat_pole').val(characters[this_chid].chat);
         await getChat();
         await createOrEditCharacter(new CustomEvent('newChat'));
@@ -10593,7 +11548,7 @@ export async function doNewChat({ deleteCurrentChat = false } = {}) {
  * @param {string} [param.groupId] Group ID to rename chat for
  * @param {string} param.oldFileName Old name of the chat (no JSONL extension)
  * @param {string} param.newFileName New name for the chat (no JSONL extension)
- * @param {boolean} [param.loader=true] Whether to show loader during the operation
+ * @param {boolean} [param.loader] Whether to show loader during the operation
  */
 export async function renameGroupOrCharacterChat({ characterId, groupId, oldFileName, newFileName, loader: showLoader }) {
     const currentChatId = getCurrentChatId();
@@ -10609,6 +11564,7 @@ export async function renameGroupOrCharacterChat({ characterId, groupId, oldFile
         return;
     }
     if (equalsIgnoreCaseAndAccents(body.original_file, body.renamed_file)) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.warning(t`Name not accepted, as it is the same as before (ignoring case and accents).`, t`Rename Chat`);
         return;
     }
@@ -10645,7 +11601,9 @@ export async function renameGroupOrCharacterChat({ characterId, groupId, oldFile
             await renameGroupChat(groupId, oldFileName, newFileName);
         } else if (characterId !== undefined && String(characterId) === String(this_chid) && characters[characterId]?.chat === oldFileName) {
             characters[characterId].chat = newFileName;
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#selected_chat_pole').val(characters[characterId].chat);
+            // @ts-expect-error TS(2554): Expected 1 arguments, but got 0.
             await createOrEditCharacter();
         }
 
@@ -10695,11 +11653,13 @@ export async function closeCurrentChat() {
         this_edit_mes_id = undefined;
         chat_metadata = {};
         selected_button = 'characters';
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#rm_button_selected_ch').children('h2').text('');
         select_rm_characters();
         await eventSource.emit(event_types.CHAT_CHANGED, getCurrentChatId());
         return true;
     } else {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.info(t`Please stop the message generation first.`);
         return false;
     }
@@ -10733,6 +11693,9 @@ export async function updateRemoteChatName(characterId, newName) {
 }
 
 
+/**
+ *
+ */
 function doCharListDisplaySwitch() {
     power_user.charListGrid = !power_user.charListGrid;
     document.body.classList.toggle('charListGrid', power_user.charListGrid);
@@ -10745,7 +11708,6 @@ function doCharListDisplaySwitch() {
  * It fetches the delete character route, sending necessary parameters, and in case of success,
  * it proceeds to delete character from UI and saves settings.
  * In case of error during the fetch request, it logs the error details.
- *
  * @param {string} this_chid - The character ID to be deleted.
  * @param {boolean} delete_chats - Whether to delete chats or not.
  */
@@ -10759,11 +11721,10 @@ export async function handleDeleteCharacter(this_chid, delete_chats) {
 
 /**
  * Deletes a character completely, including associated chats if specified
- *
  * @param {string|string[]} characterKey - The key (avatar) of the character to be deleted
- * @param {Object} [options] - Optional parameters for the deletion
- * @param {boolean} [options.deleteChats=true] - Whether to delete associated chats or not
- * @return {Promise<boolean>} - A promise that resolves when the character is successfully deleted
+ * @param {object} [options] - Optional parameters for the deletion
+ * @param {boolean} [options.deleteChats] - Whether to delete associated chats or not
+ * @returns {Promise<boolean>} - A promise that resolves when the character is successfully deleted
  */
 export async function deleteCharacter(characterKey, { deleteChats = true } = {}) {
     if (!Array.isArray(characterKey)) {
@@ -10791,6 +11752,7 @@ export async function deleteCharacter(characterKey, { deleteChats = true } = {})
     for (const key of characterKey) {
         const character = characters.find(x => x.avatar == key);
         if (!character) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.warning(t`Character ${key} not found. Skipping deletion.`);
             continue;
         }
@@ -10808,6 +11770,7 @@ export async function deleteCharacter(characterKey, { deleteChats = true } = {})
         });
 
         if (!response.ok) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.error(`${response.status} ${response.statusText}`, t`Failed to delete character`);
             continue;
         }
@@ -10820,6 +11783,7 @@ export async function deleteCharacter(characterKey, { deleteChats = true } = {})
 
         if (deleteChats) {
             for (const chat of pastChats) {
+                // @ts-expect-error TS(2339): Property 'file_name' does not exist on type 'unkno... Remove this comment to see the full error message
                 const name = chat.file_name.replace('.jsonl', '');
                 await eventSource.emit(event_types.CHAT_DELETED, name);
             }
@@ -10843,8 +11807,10 @@ export async function deleteCharacter(characterKey, { deleteChats = true } = {})
 async function removeCharacterFromUI() {
     preserveNeutralChat();
     await clearChat();
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#character_cross').trigger('click');
     resetChatState();
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document.getElementById('rm_button_selected_ch')).children('h2').text('');
     restoreNeutralChat();
     await getCharacters();
@@ -10856,7 +11822,7 @@ async function removeCharacterFromUI() {
 /**
  * Creates a new assistant chat.
  * @param {object} params - Parameters for the new assistant chat
- * @param {boolean} [params.temporary=false] I need a temporary secretary
+ * @param {boolean} [params.temporary] I need a temporary secretary
  * @returns {Promise<void>} - A promise that resolves when the new assistant chat is created
  */
 export async function newAssistantChat({ temporary = false } = {}) {
@@ -10867,6 +11833,7 @@ export async function newAssistantChat({ temporary = false } = {}) {
     chat.splice(0, chat.length);
     chat_metadata = {};
     setCharacterName(neutralCharacterName);
+    // @ts-expect-error TS(2554): Expected 2-3 arguments, but got 1.
     sendSystemMessage(system_message_types.ASSISTANT_NOTE);
 }
 
@@ -10877,7 +11844,9 @@ export async function newAssistantChat({ temporary = false } = {}) {
  * @returns {void}
  */
 function doDrawerOpenClick() {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const targetDrawerID = $(this).attr('data-target');
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const drawer = $(`#${targetDrawerID}`);
     const drawerToggle = drawer.find('.drawer-toggle');
     const drawerWasOpenAlready = drawerToggle.parent().find('.drawer-content').hasClass('openDrawer');
@@ -10891,18 +11860,26 @@ function doDrawerOpenClick() {
  * @returns {Promise<void>}
  */
 export async function doNavbarIconClick() {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const icon = $(this).find('.drawer-icon');
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const drawer = $(this).parent().find('.drawer-content');
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const drawerWasOpenAlready = $(this).parent().find('.drawer-content').hasClass('openDrawer');
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const targetDrawerID = $(this).parent().find('.drawer-content').attr('id');
 
     if (!drawerWasOpenAlready) {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const $openDrawers = $('.openDrawer:not(.pinnedOpen)');
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const $openIcons = $('.openIcon:not(.drawerPinnedOpen)');
         for (const iconEl of $openIcons) {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(iconEl).toggleClass('closedIcon openIcon');
         }
         for (const el of $openDrawers) {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(el).toggleClass('closedDrawer openDrawer');
         }
         if ($openDrawers.length && animation_duration) {
@@ -10913,13 +11890,16 @@ export async function doNavbarIconClick() {
 
         if (targetDrawerID === 'right-nav-panel') {
             favsToHotswap();
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#rm_print_characters_block').trigger('scroll');
         }
 
         // Set the height of "autoSetHeight" textareas within the drawer to their scroll height
         if (!CSS.supports('field-sizing', 'content')) {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const textareas = $(this).closest('.drawer').find('.drawer-content textarea.autoSetHeight');
             for (const textarea of textareas) {
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 await resetScrollHeight($(textarea));
             }
         }
@@ -10929,6 +11909,9 @@ export async function doNavbarIconClick() {
     }
 }
 
+/**
+ *
+ */
 function addDebugFunctions() {
     const doBackfill = async () => {
         for (const message of chat) {
@@ -10962,17 +11945,20 @@ function addDebugFunctions() {
 
     registerDebugFunction('generationTest', 'Send a generation request', 'Generates text using the currently selected API.', async () => {
         const text = prompt('Input text:', 'Hello');
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.info('Working on it...');
         const message = await generateRaw({ prompt: text });
         alert(message);
     });
     registerDebugFunction('toggleEventTracing', 'Toggle event tracing', 'Useful to see what triggered a certain event.', () => {
         localStorage.setItem('eventTracing', localStorage.getItem('eventTracing') === 'true' ? 'false' : 'true');
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.info('Event tracing is now ' + (localStorage.getItem('eventTracing') === 'true' ? 'enabled' : 'disabled'));
     });
 
     registerDebugFunction('toggleRegenerateWarning', 'Toggle Ctrl+Enter regeneration confirmation', 'Toggle the warning when regenerating a message with a Ctrl+Enter hotkey.', () => {
         accountStorage.setItem('RegenerateWithCtrlEnter', accountStorage.getItem('RegenerateWithCtrlEnter') === 'true' ? 'false' : 'true');
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.info('Regenerate warning is now ' + (accountStorage.getItem('RegenerateWithCtrlEnter') === 'true' ? 'disabled' : 'enabled'));
     });
 
@@ -10997,25 +11983,34 @@ API Settings: ${JSON.stringify(getSettingsContents[getSettingsContents.main_api 
 
         try {
             await copyText(logMessage);
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.info('Your ST API setup data has been copied to the clipboard.');
         } catch (error) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.error('Failed to copy ST Setup to clipboard:', error);
         }
     });
 }
 
+/**
+ *
+ */
 function initCharacterSearch() {
     const debouncedCharacterSearch = debounce((searchQuery) => {
         entitiesFilter.setFilterData(FILTER_TYPES.SEARCH, searchQuery);
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const searchForm = $('#form_character_search_form');
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const searchInput = $('#character_search_bar');
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const searchButton = $('#rm_button_search');
 
     const storageKey = 'characterSearchFormVisible';
 
     searchInput.on('input', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const searchQuery = String($(this).val());
         debouncedCharacterSearch(searchQuery);
     });
@@ -11038,27 +12033,37 @@ function initCharacterSearch() {
 }
 
 // MARK: DOM Handlers Start
+// @ts-expect-error TS(2304): Cannot find name 'jQuery'.
 jQuery(async function () {
     setTimeout(function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#groupControlsToggle').trigger('click');
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#groupCurrentMemberListToggle .inline-drawer-icon').trigger('click');
     }, 200);
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.api_loading', () => cancelStatusCheck('Canceled because connecting was manually canceled'));
 
     //////////INPUT BAR FOCUS-KEEPING LOGIC/////////////
     let S_TAPreviouslyFocused = false;
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#send_textarea').on('focusin focus click', () => {
         S_TAPreviouslyFocused = true;
     });
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#send_but, #option_regenerate, #option_continue, #mes_continue, #mes_impersonate').on('click', () => {
         if (S_TAPreviouslyFocused) {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#send_textarea').trigger('focus');
         }
     });
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', event => {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         if ($(':focus').attr('id') !== 'send_textarea') {
-            var validIDs = ['options_button', 'send_but', 'mes_impersonate', 'mes_continue', 'send_textarea', 'option_regenerate', 'option_continue'];
+            const validIDs = ['options_button', 'send_but', 'mes_impersonate', 'mes_continue', 'send_textarea', 'option_regenerate', 'option_continue'];
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             if (!validIDs.includes($(event.target).attr('id'))) {
                 S_TAPreviouslyFocused = false;
             }
@@ -11069,7 +12074,9 @@ jQuery(async function () {
 
     /////////////////
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#swipes-checkbox').on('change', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         swipes = !!$('#swipes-checkbox').prop('checked');
         if (swipes) {
             //console.log('toggle change calling showswipebtns');
@@ -11083,42 +12090,54 @@ jQuery(async function () {
     ///// SWIPE BUTTON CLICKS ///////
 
     //limit swiping to only last message clicks
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.last_mes .swipe_right', async (e, data) => await swipe(e, SWIPE_DIRECTION.RIGHT, data));
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.last_mes .swipe_left', async (e, data) => await swipe(e, SWIPE_DIRECTION.LEFT, data));
 
     initCharacterSearch();
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#mes_impersonate').on('click', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#option_impersonate').trigger('click');
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#mes_continue').on('click', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#option_continue').trigger('click');
     });
 
     const userInputGenerateMutex = new SimpleMutex(sendTextareaMessage);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#send_but').on('click', async function () {
         await userInputGenerateMutex.update();
     });
 
     //menu buttons setup
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#rm_button_settings').on('click', function () {
         selected_button = 'settings';
         selectRightMenuWithAnimation('rm_api_block');
     });
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#rm_button_characters').on('click', function () {
         selected_button = 'characters';
         select_rm_characters();
     });
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#rm_button_back').on('click', function () {
         selected_button = 'characters';
         select_rm_characters();
     });
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#rm_button_create').on('click', function () {
         selected_button = 'create';
         select_rm_create();
     });
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#rm_button_selected_ch').on('click', function () {
         if (selected_group) {
             select_group_chats(selected_group, false);
@@ -11126,17 +12145,23 @@ jQuery(async function () {
             selected_button = 'character_edit';
             select_selected_character(this_chid);
         }
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#character_search_bar').val('').trigger('input');
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.character_select', async function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const id = Number($(this).attr('data-chid'));
         await selectCharacterById(id);
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.bogus_folder_select', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const tagId = $(this).attr('tagid');
         console.debug('Bogus folder clicked', tagId);
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         chooseBogusFolder($(this), tagId);
     });
 
@@ -11184,23 +12209,32 @@ jQuery(async function () {
     };
     chatElementScroll.addEventListener('scroll', chatScrollHandler, { passive: true });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.mes', function () {
         //when a 'delete message' parent div is clicked
         // and we are in delete mode and del_checkbox is visible
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         if (!is_delete_mode || !$(this).children('.del_checkbox').is(':visible')) {
             return;
         }
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('.mes').children('.del_checkbox').each(function () {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(this).prop('checked', false);
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(this).parent().removeClass('selected');
         });
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(this).addClass('selected'); //sets the bg of the mes selected for deletion
-        var i = Number($(this).attr('mesid')); //checks the message ID in the chat
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        let i = Number($(this).attr('mesid')); //checks the message ID in the chat
         this_del_mes = i;
         //as long as the current message ID is less than the total chat length
         while (i < chat.length) {
             //sets the bg of the all msgs BELOW the selected .mes
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(`.mes[mesid="${i}"]`).addClass('selected');
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(`.mes[mesid="${i}"]`).children('.del_checkbox').prop('checked', true);
             i++;
         }
@@ -11208,14 +12242,14 @@ jQuery(async function () {
 
     /**
      * Handles the deletion of a chat file, including group chats.
-     *
      * @param {string} chatFile - The name of the chat file to delete.
      * @param {object} group - The group object if the chat is part of a group.
-     * @param {boolean} [fromSlashCommand=false] - Whether the deletion was triggered from a slash command.
+     * @param {boolean} [fromSlashCommand] - Whether the deletion was triggered from a slash command.
      * @returns {Promise<void>}
      */
     async function handleDeleteChat(chatFile, group, fromSlashCommand = false) {
         // Close past chat popup.
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#select_chat_cross').trigger('click');
 
         const loaderHandle = loader.show({
@@ -11237,19 +12271,24 @@ jQuery(async function () {
         }
 
         if (fromSlashCommand) {  // When called from `/delchat` command, don't re-open the history view.
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#options').hide();  // Hide option popup menu.
             await loaderHandle.hide();
         } else {  // Open the history view again after 2 seconds (delay to avoid edge cases for deleting last chat).
             setTimeout(async function () {
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $('#option_select_chat').trigger('click');
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $('#options').hide();  // Hide option popup menu.
                 await loaderHandle.hide();
             }, 2000);
         }
     }
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.PastChat_cross', async function (e, { fromSlashCommand = false } = {}) {
         e.stopPropagation();
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const deleteFileName = $(this).attr('file_name');
         console.debug('detected cross click for' + deleteFileName);
 
@@ -11265,10 +12304,13 @@ jQuery(async function () {
         }
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#advanced_div').on('click', function () {
         if (!is_advanced_char_open) {
             is_advanced_char_open = true;
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#character_popup').css({ 'display': 'flex', 'opacity': 0.0 }).addClass('open');
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#character_popup').transition({
                 opacity: 1.0,
                 duration: animation_duration,
@@ -11276,27 +12318,35 @@ jQuery(async function () {
             });
         } else {
             is_advanced_char_open = false;
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#character_popup').css('display', 'none').removeClass('open');
         }
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#character_cross').on('click', function () {
         is_advanced_char_open = false;
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#character_popup').transition({
             opacity: 0,
             duration: animation_duration,
             easing: animation_easing,
         });
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         setTimeout(function () { $('#character_popup').css('display', 'none'); }, animation_duration);
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#character_popup_ok').on('click', function () {
         is_advanced_char_open = false;
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#character_popup').css('display', 'none');
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#dialogue_popup_ok').on('click', async function (_e) {
         dialogueCloseStop = false;
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#shadow_popup').transition({
             opacity: 0,
             duration: animation_duration,
@@ -11304,14 +12354,19 @@ jQuery(async function () {
         });
         setTimeout(function () {
             if (dialogueCloseStop) return;
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#shadow_popup').css('display', 'none');
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#dialogue_popup').removeClass('large_dialogue_popup');
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#dialogue_popup').removeClass('wide_dialogue_popup');
         }, animation_duration);
 
         if (dialogueResolve) {
             if (popup_type == 'input') {
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 dialogueResolve($('#dialogue_popup_input').val());
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $('#dialogue_popup_input').val('');
             } else {
                 dialogueResolve(true);
@@ -11321,8 +12376,10 @@ jQuery(async function () {
         }
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#dialogue_popup_cancel').on('click', function (e) {
         dialogueCloseStop = false;
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#shadow_popup').transition({
             opacity: 0,
             duration: animation_duration,
@@ -11330,7 +12387,9 @@ jQuery(async function () {
         });
         setTimeout(function () {
             if (dialogueCloseStop) return;
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#shadow_popup').css('display', 'none');
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#dialogue_popup').removeClass('large_dialogue_popup');
         }, animation_duration);
 
@@ -11342,15 +12401,19 @@ jQuery(async function () {
         }
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#add_avatar_button').on('change', function () {
         const inputElement = /** @type {HTMLInputElement} */ (this);
         read_avatar_load(inputElement);
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#form_create').on('submit', (e) => createOrEditCharacter(e.originalEvent));
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#delete_button').on('click', async function () {
         if (this_chid === undefined || !characters[this_chid]) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.warning('No character selected.');
             return;
         }
@@ -11358,6 +12421,7 @@ jQuery(async function () {
         let deleteChats = false;
 
         const confirm = await Popup.show.confirm(t`Delete the character?`, await renderTemplateAsync('deleteConfirm'), {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             onClose: () => { deleteChats = !!$('#del_char_checkbox').prop('checked'); },
         });
         if (!confirm) {
@@ -11369,31 +12433,49 @@ jQuery(async function () {
 
     //////// OPTIMIZED ALL CHAR CREATION/EDITING TEXTAREA LISTENERS ///////////////
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#character_name_pole').on('input', function () {
         if (menu_type == 'create') {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             create_save.name = String($('#character_name_pole').val());
         }
     });
 
     const elementsToUpdate = {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         '#description_textarea': function () { create_save.description = String($('#description_textarea').val()); },
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         '#creator_notes_textarea': function () { create_save.creator_notes = String($('#creator_notes_textarea').val()); },
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         '#character_version_textarea': function () { create_save.character_version = String($('#character_version_textarea').val()); },
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         '#system_prompt_textarea': function () { create_save.system_prompt = String($('#system_prompt_textarea').val()); },
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         '#post_history_instructions_textarea': function () { create_save.post_history_instructions = String($('#post_history_instructions_textarea').val()); },
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         '#creator_textarea': function () { create_save.creator = String($('#creator_textarea').val()); },
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         '#tags_textarea': function () { create_save.tags = String($('#tags_textarea').val()); },
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         '#personality_textarea': function () { create_save.personality = String($('#personality_textarea').val()); },
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         '#scenario_pole': function () { create_save.scenario = String($('#scenario_pole').val()); },
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         '#mes_example_textarea': function () { create_save.mes_example = String($('#mes_example_textarea').val()); },
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         '#firstmessage_textarea': function () { create_save.first_message = String($('#firstmessage_textarea').val()); },
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         '#talkativeness_slider': function () { create_save.talkativeness = Number($('#talkativeness_slider').val()); },
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         '#depth_prompt_prompt': function () { create_save.depth_prompt_prompt = String($('#depth_prompt_prompt').val()); },
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         '#depth_prompt_depth': function () { create_save.depth_prompt_depth = Number($('#depth_prompt_depth').val()); },
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         '#depth_prompt_role': function () { create_save.depth_prompt_role = String($('#depth_prompt_role').val()); },
     };
 
     Object.keys(elementsToUpdate).forEach(function (id) {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(id).on('input', function () {
             if (menu_type == 'create') {
                 elementsToUpdate[id]();
@@ -11403,12 +12485,16 @@ jQuery(async function () {
         });
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#creator_notes_textarea').on('input', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const notes = String($('#creator_notes_textarea').val());
         const avatar = menu_type === 'create' ? '' : characters[this_chid]?.avatar;
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#creator_notes_spoiler').html(formatCreatorNotes(notes, avatar));
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#favorite_button').on('click', function () {
         updateFavButtonState(!fav_ch_checked);
         if (menu_type != 'create') {
@@ -11418,8 +12504,10 @@ jQuery(async function () {
 
     /* $("#renameCharButton").on('click', renameCharacter); */
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.renameChatButton', async function (e) {
         e.stopPropagation();
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const oldFileName = $(this).closest('.select_chat_block_wrapper').find('.select_chat_block_filename').text();
 
         const popupText = await renderTemplateAsync('chatRename');
@@ -11433,14 +12521,19 @@ jQuery(async function () {
         await renameChat(oldFileName, newName);
 
         await delay(250);
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#option_select_chat').trigger('click');
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#options').hide();
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.exportChatButton, .exportRawChatButton', async function (e) {
         e.stopPropagation();
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const format = $(this).data('format') || 'txt';
         await saveChatConditional();
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const filename = $(this).closest('.select_chat_block_wrapper').find('.select_chat_block_filename').text();
         console.log(`exporting ${filename} in ${format} format`);
 
@@ -11463,6 +12556,7 @@ jQuery(async function () {
                 // display error message
                 console.log(data.message);
                 await delay(250);
+                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                 toastr.error(`Error: ${data.message}`);
                 return;
             } else {
@@ -11470,6 +12564,7 @@ jQuery(async function () {
                 // success, handle response data
                 console.log(data);
                 await delay(250);
+                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                 toastr.success(data.message);
                 download(data.result, body.exportfilename, mimeType);
             }
@@ -11477,15 +12572,21 @@ jQuery(async function () {
             // display error message
             console.log(`An error has occurred: ${error.message}`);
             await delay(250);
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.error(`Error: ${error.message}`);
         }
     });
 
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const button = $('#options_button');
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const menu = $('#options');
     let isOptionsMenuVisible = false;
 
+    /**
+     *
+     */
     function showMenu() {
         showBookmarksButtons();
         menu.fadeIn(animation_duration);
@@ -11493,12 +12594,18 @@ jQuery(async function () {
         isOptionsMenuVisible = true;
     }
 
+    /**
+     *
+     */
     function hideMenu() {
         menu.fadeOut(animation_duration);
         optionsPopper.update();
         isOptionsMenuVisible = false;
     }
 
+    /**
+     *
+     */
     function isMouseOverButtonOrMenu() {
         return menu.is(':hover, :focus-within') || button.is(':hover, :focus');
     }
@@ -11510,6 +12617,7 @@ jQuery(async function () {
             showMenu();
         }
     });
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', function () {
         if (!isOptionsMenuVisible) return;
         if (!isMouseOverButtonOrMenu()) { hideMenu(); }
@@ -11518,9 +12626,11 @@ jQuery(async function () {
     /* $('#set_chat_character_settings').on('click', setScenarioOverride); */
 
     ///////////// OPTIMIZED LISTENERS FOR LEFT SIDE OPTIONS POPUP MENU //////////////////////
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#options [id]').on('click', async function (event, customData) {
         const fromSlashCommand = customData?.fromSlashCommand || false;
-        var id = $(this).attr('id');
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        const id = $(this).attr('id');
 
         // Check whether a custom prompt was provided via custom data (for example through a slash command)
         const additionalPrompt = customData?.additionalPrompt?.trim() || undefined;
@@ -11539,8 +12649,11 @@ jQuery(async function () {
                 //however, the dialog popup still gets one..
                 if (!fromSlashCommand) {
                     console.log('displaying shadow');
+                    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                     $('#shadow_select_chat_popup').css('display', 'block');
+                    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                     $('#shadow_select_chat_popup').css('opacity', 0.0);
+                    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                     $('#shadow_select_chat_popup').transition({
                         opacity: 1.0,
                         duration: animation_duration,
@@ -11552,6 +12665,7 @@ jQuery(async function () {
             if ((selected_group || this_chid !== undefined) && !is_send_press) {
                 let deleteCurrentChat = false;
                 const result = await Popup.show.confirm(t`Start new chat?`, await renderTemplateAsync('newChatConfirm'), {
+                    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                     onClose: () => { deleteCurrentChat = !!$('#del_chat_checkbox').prop('checked'); },
                 });
                 if (!result) {
@@ -11567,6 +12681,7 @@ jQuery(async function () {
         } else if (id == 'option_regenerate') {
             //Attempting to regenerate a user message will instead generate a new message.
             if (chat.length && chat.length - 1 === this_edit_mes_id && chat[this_edit_mes_id]?.is_user == false) {
+                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                 toastr.warning(t`Finish the edit before starting a generation.`, t`You cannot regenerate the message you are editing.`);
                 return;
             }
@@ -11585,10 +12700,12 @@ jQuery(async function () {
             }
         } else if (id == 'option_continue') {
             if (swipeState == SWIPE_STATE.EDITING) {
+                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                 toastr.warning(t`Confirm the edit to start a generation.`, t`You cannot send a message during a swipe-edit.`);
                 return;
             }
             if (chat.length && chat.length - 1 === this_edit_mes_id) {
+                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                 toastr.warning(t`Finish the edit before starting a generation.`, t`You cannot continue the message you are editing.`);
                 return;
             }
@@ -11603,9 +12720,9 @@ jQuery(async function () {
             await closeCurrentChat();
         } else if (id === 'option_settings') {
             //var checkBox = document.getElementById("waifuMode");
-            var topBar = document.getElementById('top-bar');
-            var topSettingsHolder = document.getElementById('top-settings-holder');
-            var divchat = document.getElementById('chat');
+            const topBar = document.getElementById('top-bar');
+            const topSettingsHolder = document.getElementById('top-settings-holder');
+            const divchat = document.getElementById('chat');
 
             //if (checkBox.checked) {
             if (topBar.style.display === 'none') {
@@ -11626,21 +12743,31 @@ jQuery(async function () {
         hideMenu();
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#newChatFromManageScreenButton').on('click', async function () {
         await doNewChat({ deleteCurrentChat: false });
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#select_chat_cross').trigger('click');
     });
 
     //////////////////////////////////////////////////////////////////////////////////////////////
 
     //functionality for the cancel delete messages button, reverts to normal display of input form
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#dialogue_del_mes_cancel').on('click', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#dialogue_del_mes').css('display', 'none');
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#send_form').css('display', css_send_form_display);
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('.del_checkbox').each(function () {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(this).css('display', 'none');
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(this).parent().children('.for_checkbox').css('display', 'block');
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(this).parent().removeClass('selected');
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(this).prop('checked', false);
         });
         showSwipeButtons();
@@ -11649,13 +12776,21 @@ jQuery(async function () {
     });
 
     //confirms message deletion with the "ok" button
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#dialogue_del_mes_ok').on('click', async function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#dialogue_del_mes').css('display', 'none');
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#send_form').css('display', css_send_form_display);
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('.del_checkbox').each(function () {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(this).css('display', 'none');
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(this).parent().children('.for_checkbox').css('display', 'block');
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(this).parent().removeClass('selected');
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(this).prop('checked', false);
         });
 
@@ -11666,6 +12801,7 @@ jQuery(async function () {
             chatElement.find(`.mes[mesid="${this_del_mes}"]`).nextAll('div').remove();
             chatElement.find(`.mes[mesid="${this_del_mes}"]`).remove();
             chat.length = this_del_mes;
+            // @ts-expect-error TS(2339): Property 'tainted' does not exist on type '{}'.
             chat_metadata.tainted = true;
             await saveChatConditional();
             chatElement.scrollTop(chatElement[0].scrollHeight);
@@ -11681,6 +12817,7 @@ jQuery(async function () {
         is_delete_mode = false;
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#main_api').on('change', async function () {
         cancelStatusCheck('Canceled because main api changed');
         changeMainAPI();
@@ -11690,23 +12827,28 @@ jQuery(async function () {
 
     ////////////////// OPTIMIZED RANGE SLIDER LISTENERS////////////////
 
-    var sliderLocked = true;
-    var sliderTimer;
+    let sliderLocked = true;
+    let sliderTimer;
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('input[type=\'range\']').on('touchstart', function () {
         // Unlock the slider after 300ms
         setTimeout(function () {
             sliderLocked = false;
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(this).css('background-color', 'var(--SmartThemeQuoteColor)');
         }.bind(this), 300);
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('input[type=\'range\']').on('touchend', function () {
         clearTimeout(sliderTimer);
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(this).css('background-color', '');
         sliderLocked = true;
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('input[type=\'range\']').on('touchmove', function (event) {
         if (sliderLocked) {
             event.preventDefault();
@@ -11729,10 +12871,13 @@ jQuery(async function () {
     ];
 
     sliders.forEach(slider => {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(document).on('input', slider.sliderId, function () {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const value = $(this).val();
             const formattedValue = slider.format(value);
             slider.setValue(value);
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(slider.counterId).val(formattedValue);
             saveSettingsDebounced();
         });
@@ -11740,21 +12885,27 @@ jQuery(async function () {
 
     //////////////////////////////////////////////////////////////
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#select_chat_cross').on('click', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#shadow_select_chat_popup').transition({
             opacity: 0,
             duration: animation_duration,
             easing: animation_easing,
         });
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         setTimeout(function () { $('#shadow_select_chat_popup').css('display', 'none'); }, animation_duration);
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('pointerup', '.mes_copy', async function () {
         if (this_chid !== undefined || selected_group || name2 === neutralCharacterName) {
             try {
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 const messageId = $(this).closest('.mes').attr('mesid');
                 const text = chat[messageId].mes;
                 await copyText(text);
+                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                 toastr.info('Copied!', '', { timeOut: 2000 });
             } catch (err) {
                 console.error('Failed to copy: ', err);
@@ -11764,6 +12915,7 @@ jQuery(async function () {
 
     //********************
     //***Message Editor***
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.mes_edit', async function () {
         if (is_delete_mode) {
             return;
@@ -11777,7 +12929,7 @@ jQuery(async function () {
             }*/
 
             if (this_edit_mes_id >= 0) {
-                let mes_edited = chatElement.find(`[mesid="${this_edit_mes_id}"]`).find('.mes_edit_done');
+                const mes_edited = chatElement.find(`[mesid="${this_edit_mes_id}"]`).find('.mes_edit_done');
                 if (Number(edit_mes_id) == chat.length - 1) { //if the generating swipe (...)
                     let run_edit = true;
                     if (chat[edit_mes_id].swipe_id !== undefined) {
@@ -11791,19 +12943,24 @@ jQuery(async function () {
                 }
                 await messageEditDone(mes_edited);
             }
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             var edit_mes_id = Number($(this).closest('.mes').attr('mesid'));
 
             await messageEdit(edit_mes_id);
         }
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('input', '#curEditTextarea', function () {
         if (power_user.auto_save_msg_edits === true) {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             messageEditAuto($(this));
         }
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.extraMesButtonsHint', function (e) {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const $hint = $(e.target);
         const $buttons = $hint.siblings('.extraMesButtons');
 
@@ -11828,6 +12985,7 @@ jQuery(async function () {
         });
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', function (e) {
         // Expanded options don't need to be closed
         if (power_user.expand_message_actions) {
@@ -11835,13 +12993,16 @@ jQuery(async function () {
         }
 
         // Check if the click was outside the relevant elements
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         if (!$(e.target).closest('.extraMesButtons, .extraMesButtonsHint').length) {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const $visibleButtons = $('.extraMesButtons.visible');
 
             if (!$visibleButtons.length) {
                 return;
             }
 
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const $hiddenHints = $('.extraMesButtonsHint:hidden');
 
             // Transition out the .extraMesButtons first
@@ -11851,6 +13012,7 @@ jQuery(async function () {
                 easing: animation_easing,
                 complete: function () {
                     // Hide the .extraMesButtons after the transition
+                    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                     $(this)
                         .hide()
                         .removeClass('visible');
@@ -11863,6 +13025,7 @@ jQuery(async function () {
                             duration: animation_duration,
                             easing: animation_easing,
                             complete: function () {
+                                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                                 $(this).css('opacity', '');
                             },
                         });
@@ -11871,10 +13034,12 @@ jQuery(async function () {
         }
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.mes_edit_cancel', async function () {
         await messageEditCancel.call(this, this_edit_mes_id);
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.mes_edit_up', async function () {
         if (this_edit_mes_id <= 0) {
             return;
@@ -11883,6 +13048,7 @@ jQuery(async function () {
         await messageEditMove(this_edit_mes_id, targetId);
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.mes_edit_down', async function () {
         if (this_edit_mes_id >= chat.length - 1) {
             return;
@@ -11892,6 +13058,7 @@ jQuery(async function () {
         await messageEditMove(this_edit_mes_id, targetId);
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.mes_edit_copy', async function () {
         const confirmation = await callGenericPopup(t`Create a copy of this message?`, POPUP_TYPE.CONFIRM);
         if (!confirmation) {
@@ -11902,6 +13069,7 @@ jQuery(async function () {
         const oldScroll = chatElement[0].scrollTop;
         const clone = structuredClone(chat[this_edit_mes_id]);
         clone.send_date = Date.now();
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const this_edit_mes_element = $(this).closest('.mes');
         clone.mes = this_edit_mes_element.find('.edit_textarea').val().toString();
 
@@ -11919,6 +13087,7 @@ jQuery(async function () {
         showSwipeButtons();
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.mes_edit_delete', async function (event, customData) {
         const fromSlashCommand = customData?.fromSlashCommand || false;
         const message = chat[this_edit_mes_id];
@@ -11928,18 +13097,24 @@ jQuery(async function () {
         await deleteMessage(Number(this_edit_mes_id), canDeleteSwipe ? selectedSwipe : undefined, power_user.confirm_message_delete && fromSlashCommand !== true);
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.mes_edit_done', async function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         await messageEditDone($(this));
     });
 
     //Select chat
 
     //**************************CHARACTER IMPORT EXPORT*************************//
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#character_import_button').on('click', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#character_import_file').trigger('click');
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#character_import_file').on('change', async function (e) {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#rm_info_avatar').html('');
 
         if (!(e.target instanceof HTMLInputElement)) {
@@ -11967,24 +13142,30 @@ jQuery(async function () {
         e.target.value = '';
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#export_button').on('click', function () {
         isExportPopupOpen = !isExportPopupOpen;
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#export_format_popup').toggle(isExportPopupOpen);
         exportPopper.update();
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.export_format', async function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const format = $(this).data('format');
 
         if (!format) {
             return;
         }
 
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#export_format_popup').hide();
         isExportPopupOpen = false;
         exportPopper.update();
 
         // Save before exporting
+        // @ts-expect-error TS(2554): Expected 1 arguments, but got 0.
         await createOrEditCharacter();
         const body = { format, avatar_url: characters[this_chid].avatar };
 
@@ -12007,10 +13188,13 @@ jQuery(async function () {
         }
     });
     //**************************CHAT IMPORT EXPORT*************************//
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#chat_import_button').on('click', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#chat_import_file').trigger('click');
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#chat_import_file').on('change', async function (e) {
         const targetElement = e.target;
         const formElement = document.getElementById('form_import_chat');
@@ -12025,11 +13209,13 @@ jQuery(async function () {
             const format = ext?.[1]?.toLowerCase();
 
             if (!['json', 'jsonl'].includes(format)) {
+                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                 toastr.warning(t`Only JSON and JSONL files are supported for chat imports.`);
                 continue;
             }
 
             if (selected_group && format === 'json') {
+                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                 toastr.warning(t`Only SillyTavern's own format is supported for group chat imports. Sorry!`);
                 continue;
             }
@@ -12045,6 +13231,7 @@ jQuery(async function () {
         }
 
         if (importedFileNames.length > 0) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.success(t`Successfully imported ${importedFileNames.length} chat(s).`);
         }
 
@@ -12053,46 +13240,58 @@ jQuery(async function () {
         targetElement.value = '';
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#rm_button_group_chats').on('click', function () {
         selected_button = 'group_chats';
         select_group_chats(null, false);
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#rm_button_back_from_group').on('click', function () {
         selected_button = 'characters';
         select_rm_characters();
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#dupe_button').on('click', async function () {
         await duplicateCharacter();
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.mes_stop', function () {
         stopGeneration();
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '#form_sheld .stscript_continue', function () {
         pauseScriptExecution();
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '#form_sheld .stscript_pause', function () {
         pauseScriptExecution();
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '#form_sheld .stscript_stop', function () {
         stopScriptExecution();
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.drawer-opener', doDrawerOpenClick);
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('.drawer-toggle').on('click', doNavbarIconClick);
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('html').on('touchstart mousedown', async function (e) {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const clickTarget = $(e.target);
 
         if (isExportPopupOpen
             && clickTarget.closest('#export_button').length == 0
             && clickTarget.closest('#export_format_popup').length == 0) {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#export_format_popup').hide();
             isExportPopupOpen = false;
             exportPopper.update();
@@ -12119,19 +13318,24 @@ jQuery(async function () {
         // This autocloses open drawers that are not pinned if a click happens inside the app which does not target them.
         const targetParentHasOpenDrawer = clickTarget.parents('.openDrawer').length;
         if (!clickTarget.hasClass('drawer-icon') && !clickTarget.hasClass('openDrawer')) {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const $openDrawers = $('.openDrawer').not('.pinnedOpen');
             if ($openDrawers.length && targetParentHasOpenDrawer === 0) {
                 // Toggle icon and drawer classes
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $('.openIcon').not('.drawerPinnedOpen').toggleClass('closedIcon openIcon');
                 $openDrawers.toggleClass('closedDrawer openDrawer');
             }
         }
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.inline-drawer-toggle', async function (e) {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         if ($(e.target).hasClass('text_pole')) {
             return;
         }
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const drawer = $(this).closest('.inline-drawer');
         const icon = drawer.find('>.inline-drawer-header .inline-drawer-icon');
         const drawerContent = drawer.find('>.inline-drawer-content');
@@ -12140,6 +13344,7 @@ jQuery(async function () {
         drawer.trigger('inline-drawer-toggle');
         drawerContent.stop().slideToggle({
             complete: () => {
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $(this).css('height', '');
             },
         });
@@ -12148,22 +13353,29 @@ jQuery(async function () {
         if (!CSS.supports('field-sizing', 'content')) {
             const textareas = drawerContent.find('textarea.autoSetHeight');
             for (const textarea of textareas) {
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 await resetScrollHeight($(textarea));
             }
         }
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.inline-drawer-maximize', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const icon = $(this).find('.inline-drawer-icon, .floating_panel_maximize');
         icon.toggleClass('fa-window-maximize fa-window-restore');
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const drawerContent = $(this).closest('.drawer-content');
         drawerContent.toggleClass('maximized');
         const drawerId = drawerContent.attr('id');
         resetMovableStyles(drawerId);
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.mes .avatar', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const messageElement = $(this).closest('.mes');
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const thumbURL = $(this).children('img').attr('src');
         const charsPath = '/characters/';
         const targetAvatarImg = thumbURL.substring(thumbURL.lastIndexOf('=') + 1);
@@ -12172,32 +13384,42 @@ jQuery(async function () {
 
         // Remove existing zoomed avatars for characters that are not the clicked character when moving UI is not enabled
         if (!power_user.movingUI) {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('.zoomed_avatar').each(function () {
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 const currentForChar = $(this).attr('forChar');
                 if (currentForChar !== charname && typeof currentForChar !== 'undefined') {
                     console.debug(`Removing zoomed avatar for character: ${currentForChar}`);
+                    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                     $(this).remove();
                 }
             });
         }
 
         const avatarSrc = (isDataURL(thumbURL) || /^\/?img\/(?:.+)/.test(thumbURL)) ? thumbURL : charsPath + targetAvatarImg;
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         if ($(`.zoomed_avatar[forChar="${charname}"]`).length) {
             console.debug('removing container as it already existed');
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(`.zoomed_avatar[forChar="${charname}"]`).fadeOut(animation_duration, () => {
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $(`.zoomed_avatar[forChar="${charname}"]`).remove();
             });
         } else {
             console.debug('making new container from template');
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const template = $('#zoomed_avatar_template').html();
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const newElement = $(template);
             newElement.attr('forChar', charname);
             newElement.attr('id', `zoomFor_${charname}`);
             newElement.addClass('draggable');
             newElement.find('.drag-grabber').attr('id', `zoomFor_${charname}header`);
 
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('body').append(newElement);
             newElement.fadeIn(animation_duration);
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const zoomedAvatarImgElement = $(`.zoomed_avatar[forChar="${charname}"] img`);
             if (messageElement.attr('is_user') == 'true' || (messageElement.attr('is_system') == 'true' && !isValidCharacter)) {
                 //handle user and system avatars
@@ -12215,16 +13437,21 @@ jQuery(async function () {
                 zoomedAvatarImgElement.attr('data-izoomify-url', avatarSrc);
             }
             loadMovingUIState();
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(`.zoomed_avatar[forChar="${charname}"]`).css('display', 'flex');
             dragElement(newElement);
 
             if (power_user.zoomed_avatar_magnification) {
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $('.zoomed_avatar_container').izoomify();
             }
 
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('.zoomed_avatar, .zoomed_avatar .dragClose').on('click touchend', (e) => {
                 if (e.target.closest('.dragClose')) {
+                    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                     $(`.zoomed_avatar[forChar="${charname}"]`).fadeOut(animation_duration, () => {
+                        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                         $(`.zoomed_avatar[forChar="${charname}"]`).remove();
                     });
                 }
@@ -12251,11 +13478,14 @@ jQuery(async function () {
         }
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.open_alternate_greetings', openAlternateGreetings);
     /* $('#set_character_world').on('click', openCharacterWorldPopup); */
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('focus', 'input.auto-select, textarea.auto-select', function () {
         if (!power_user.enable_auto_select_input) return;
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const control = $(this)[0];
         if (control instanceof HTMLInputElement || control instanceof HTMLTextAreaElement) {
             control.select();
@@ -12263,33 +13493,42 @@ jQuery(async function () {
         }
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('keydown', function (e) {
         if (e.key === 'Escape' && !e.originalEvent.isComposing) {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const isEditVisible = $('#curEditTextarea').is(':visible') || $('.reasoning_edit_textarea').length > 0;
             if (isEditVisible && power_user.auto_save_msg_edits === false) {
                 closeMessageEditor('all');
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $('#send_textarea').trigger('focus');
                 return;
             }
             if (isEditVisible && power_user.auto_save_msg_edits === true) {
                 chatElement.find(`.mes[mesid="${this_edit_mes_id}"] .mes_edit_done`).trigger('click');
                 closeMessageEditor('reasoning');
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $('#send_textarea').trigger('focus');
                 return;
             }
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             if (this_edit_mes_id === undefined && $('#mes_stop').is(':visible')) {
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $('#mes_stop').trigger('click');
                 if (chat.length === 0) return;
                 const lastMessage = chat[chat.length - 1];
                 if (Array.isArray(lastMessage.swipes) && lastMessage.swipe_id == lastMessage.swipes.length) {
+                    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                     $('.last_mes .swipe_left').trigger('click');
                 }
             }
         }
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#char-management-dropdown').on('change', async (e) => {
         const targetElement = /** @type {HTMLSelectElement} */ (e.target);
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const target = $(targetElement.selectedOptions).attr('id');
         switch (target) {
             case 'set_character_world':
@@ -12314,6 +13553,7 @@ jQuery(async function () {
                         window.open(source, '_blank');
                     }
                 } else {
+                    // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                     toastr.info('This character doesn\'t seem to have a source.');
                 }
             } break;
@@ -12341,12 +13581,19 @@ jQuery(async function () {
 
                 // Remember the chat currently selected, so we can reload it after the replacement
                 const currentChatFile = characters[this_chid].chat;
+                /**
+                 *
+                 */
                 async function postReplace() {
                     await openCharacterChat(currentChatFile);
                 }
 
                 switch (result) {
                     case POPUP_RESULT_FILE: {
+                        /**
+                         *
+                         * @param e
+                         */
                         async function uploadReplacementCard(e) {
                             const file = e.target.files[0];
                             if (!file) {
@@ -12359,9 +13606,11 @@ jQuery(async function () {
                                 await processDroppedFiles([file], data);
                                 await postReplace();
                             } catch {
+                                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                                 toastr.error('Failed to replace the character card.', 'Something went wrong');
                             }
                         }
+                        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                         $('#character_replace_file').off('change').on('change', uploadReplacementCard).trigger('click');
                         break;
                     }
@@ -12395,9 +13644,11 @@ jQuery(async function () {
             default:
                 await eventSource.emit(event_types.CHARACTER_MANAGEMENT_DROPDOWN, target);
         }
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#char-management-dropdown').prop('selectedIndex', 0);
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(window).on('beforeunload', () => {
         cancelTtsPlay();
         if (streamingProcessor) {
@@ -12407,14 +13658,17 @@ jQuery(async function () {
     });
 
 
-    var isManualInput = false;
-    var valueBeforeManualInput;
+    let isManualInput = false;
+    let valueBeforeManualInput;
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('input', '.range-block-counter input, .neo-range-input', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         valueBeforeManualInput = $(this).val();
         console.log(valueBeforeManualInput);
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('change', '.range-block-counter input, .neo-range-input', function (e) {
         if (!(e.target instanceof HTMLElement)) {
             return;
@@ -12422,60 +13676,81 @@ jQuery(async function () {
         e.target.dispatchEvent(new KeyboardEvent('keyup', { bubbles: true }));
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('keydown', '.range-block-counter input, .neo-range-input', function (e) {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const masterSelector = '#' + $(this).data('for');
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const masterElement = $(masterSelector);
         if (e.key === 'Enter') {
-            let manualInput = Number($(this).val());
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            const manualInput = Number($(this).val());
             if (isManualInput) {
                 //disallow manual inputs outside acceptable range
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 if (manualInput >= Number($(this).attr('min')) && manualInput <= Number($(this).attr('max'))) {
                     //if value is ok, assign to slider and update handle text and position
                     //newSlider.val(manualInput)
                     //handleSlideEvent.call(newSlider, null, { value: parseFloat(manualInput) }, 'manual');
                     valueBeforeManualInput = manualInput;
+                    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                     $(masterElement).val($(this).val()).trigger('input', { forced: true });
                 } else {
                     //if value not ok, warn and reset to last known valid value
+                    // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                     toastr.warning(`Invalid value. Must be between ${$(this).attr('min')} and ${$(this).attr('max')}`);
                     //newSlider.val(valueBeforeManualInput)
+                    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                     $(this).val(valueBeforeManualInput);
                 }
             }
         }
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('keyup', '.range-block-counter input, .neo-range-input', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         valueBeforeManualInput = $(this).val();
         isManualInput = true;
     });
 
     //trigger slider changes when user clicks away
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('mouseup blur', '.range-block-counter input, .neo-range-input', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const masterSelector = '#' + $(this).data('for');
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const masterElement = $(masterSelector);
-        let manualInput = Number($(this).val());
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        const manualInput = Number($(this).val());
         if (isManualInput) {
             //if value is between correct range for the slider
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             if (manualInput >= Number($(this).attr('min')) && manualInput <= Number($(this).attr('max'))) {
                 valueBeforeManualInput = manualInput;
                 //set the slider value to input value
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $(masterElement).val($(this).val()).trigger('input', { forced: true });
             } else {
                 //if value not ok, warn and reset to last known valid value
+                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                 toastr.warning(`Invalid value. Must be between ${$(this).attr('min')} and ${$(this).attr('max')}`);
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $(this).val(valueBeforeManualInput);
             }
         }
         isManualInput = false;
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('.user_stats_button').on('click', function () {
         userStatsHandler();
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.external_import_button, #external_import_button', async () => {
         const html = await renderTemplateAsync('importCharacters');
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const input = await callGenericPopup(html, POPUP_TYPE.INPUT, '', { allowVerticalScrolling: true, wider: true, okButton: $('#popup_template').attr('popup-button-import'), rows: 4 });
 
         if (!input) {
@@ -12502,24 +13777,30 @@ jQuery(async function () {
         const importFile = document.getElementById('chat_import_file');
         if (importFile instanceof HTMLInputElement) {
             importFile.files = event.originalEvent.dataTransfer.files;
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(importFile).trigger('change');
         }
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#charListGridToggle').on('click', async () => {
         doCharListDisplaySwitch();
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#hideCharPanelAvatarButton').on('click', () => {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#avatar-and-name-block').slideToggle();
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '#show_more_messages', async function (event) {
         event.stopPropagation();
         event.preventDefault();
         await showMoreMessages();
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.open_characters_library', async function () {
         await getCharacters();
         await eventSource.emit(event_types.OPEN_CHARACTER_LIBRARY);

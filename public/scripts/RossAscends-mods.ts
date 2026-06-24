@@ -44,21 +44,21 @@ import { accountStorage } from './util/AccountStorage.js';
 import { getCurrentUserHandle } from './user.js';
 import { kai_settings } from './kai-settings.js';
 
-var RPanelPin = document.getElementById('rm_button_panel_pin');
-var LPanelPin = document.getElementById('lm_button_panel_pin');
-var WIPanelPin = document.getElementById('WI_panel_pin');
+const RPanelPin = document.getElementById('rm_button_panel_pin');
+const LPanelPin = document.getElementById('lm_button_panel_pin');
+const WIPanelPin = document.getElementById('WI_panel_pin');
 
-var RightNavPanel = document.getElementById('right-nav-panel');
-var RightNavDrawerIcon = document.getElementById('rightNavDrawerIcon');
-var LeftNavPanel = document.getElementById('left-nav-panel');
-var LeftNavDrawerIcon = document.getElementById('leftNavDrawerIcon');
-var WorldInfo = document.getElementById('WorldInfo');
-var WIDrawerIcon = document.getElementById('WIDrawerIcon');
+const RightNavPanel = document.getElementById('right-nav-panel');
+const RightNavDrawerIcon = document.getElementById('rightNavDrawerIcon');
+const LeftNavPanel = document.getElementById('left-nav-panel');
+const LeftNavDrawerIcon = document.getElementById('leftNavDrawerIcon');
+const WorldInfo = document.getElementById('WorldInfo');
+const WIDrawerIcon = document.getElementById('WIDrawerIcon');
 
-var SelectedCharacterTab = document.getElementById('rm_button_selected_ch');
+const SelectedCharacterTab = document.getElementById('rm_button_selected_ch');
 
-var connection_made = false;
-var retry_delay = 500;
+let connection_made = false;
+let retry_delay = 500;
 let counterNonce = Date.now();
 
 const observerConfig = { childList: true, subtree: true };
@@ -96,7 +96,6 @@ observer.observe(document.documentElement, observerConfig);
  * The function takes total generation time as an input, then converts it to a format
  * of "_ Days, _ Hours, _ Minutes, _ Seconds". If the generation time does not exceed a
  * particular measure (like days or hours), that measure will not be included in the output.
- *
  * @param {number} total_gen_time - The total generation time in milliseconds.
  * @returns {string} - A human-readable string that represents the time spent generating characters.
  */
@@ -104,13 +103,13 @@ export function humanizeGenTime(total_gen_time) {
     //convert time_spent to humanized format of "_ Hours, _ Minutes, _ Seconds" from milliseconds
     let time_spent = total_gen_time || 0;
     time_spent = Math.floor(time_spent / 1000);
-    let seconds = time_spent % 60;
+    const seconds = time_spent % 60;
     time_spent = Math.floor(time_spent / 60);
-    let minutes = time_spent % 60;
+    const minutes = time_spent % 60;
     time_spent = Math.floor(time_spent / 60);
-    let hours = time_spent % 24;
+    const hours = time_spent % 24;
     time_spent = Math.floor(time_spent / 24);
-    let days = time_spent;
+    const days = time_spent;
     let result = '';
     if (days > 0) { result += `${days} Days, `; }
     if (hours > 0) { result += `${hours} Hours, `; }
@@ -122,8 +121,11 @@ export function humanizeGenTime(total_gen_time) {
 /**
  * DON'T OPTIMIZE, don't change this to a const or let, it needs to be a var.
  */
-var parsedUA = null;
+let parsedUA = null;
 
+/**
+ *
+ */
 export function getParsedUA() {
     if (!parsedUA) {
         try {
@@ -146,6 +148,10 @@ export function isMobile() {
     return mobileTypes.includes(getParsedUA()?.platform?.type);
 }
 
+/**
+ *
+ */
+// @ts-expect-error TS(7030): Not all code paths return a value.
 export function shouldSendOnEnter() {
     if (!power_user) {
         return false;
@@ -196,14 +202,21 @@ export function getMessageTimeStamp(timestamp = Date.now()) {
 
 
 // triggers:
+// @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
 $('#rm_button_create').on('click', function () {                 //when "+New Character" is clicked
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(SelectedCharacterTab).children('h2').html('');        // empty nav's 3rd panel tab
 });
 //when any input is made to the create/edit character form textareas
+// @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
 $('#rm_ch_create_block').on('input', function () { countTokensDebounced(); });
 //when any input is made to the advanced editing popup textareas
+// @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
 $('#character_popup').on('input', function () { countTokensDebounced(); });
 //function:
+/**
+ *
+ */
 export async function RA_CountCharTokens() {
     counterNonce = Date.now();
     const counterNonceLocal = counterNonce;
@@ -216,7 +229,9 @@ export async function RA_CountCharTokens() {
             return;
         }
 
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const counter = $(tokenCounter);
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const input = $(document.getElementById(counter.data('token-counter')));
         const isPermanent = counter.data('token-permanent') === true;
         const value = String(input.val());
@@ -256,9 +271,13 @@ export async function RA_CountCharTokens() {
     // Warn if total tokens exceeds the limit of half the max context
     const tokenLimit = Math.max(((main_api !== 'openai' ? max_context : oai_settings.openai_max_context) / 2), 1024);
     const showWarning = (total_tokens > tokenLimit);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#result_info_total_tokens').text(total_tokens);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#result_info_permanent_tokens').text(permanent_tokens);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#result_info_text').toggleClass('neutral_warning', showWarning);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#chartokenwarning').toggle(showWarning);
 }
 /**
@@ -277,6 +296,7 @@ async function RA_autoloadchat() {
             await selectCharacterById(active_character_id);
 
             // Do a little tomfoolery to spoof the tag selector
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const selectedCharElement = $(`#rm_print_characters_block .character_select[chid="${active_character_id}"]`);
             applyTagsOnCharacterSelect.call(selectedCharElement);
         } else {
@@ -302,8 +322,12 @@ async function RA_autoloadchat() {
     }
 }
 
+/**
+ *
+ */
 export async function favsToHotswap() {
     const entities = getEntitiesList({ doFilter: false });
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const container = $('#right-nav-panel .hotswap');
 
     // Hard limit is required because even if all hotswaps don't fit the screen, their images would still be loaded
@@ -321,30 +345,47 @@ export async function favsToHotswap() {
 }
 
 //changes input bar and send button display depending on connection status
+/**
+ *
+ */
 function RA_checkOnlineStatus() {
     if (online_status == 'no_connection') {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const send_textarea = $('#send_textarea');
         send_textarea.attr('placeholder', send_textarea.attr('no_connection_text')); //Input bar placeholder tells users they are not connected
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#send_form').addClass('no-connection');
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#send_but').addClass('displayNone'); //send button is hidden when not connected;
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#mes_continue').addClass('displayNone'); //continue button is hidden when not connected;
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#mes_impersonate').addClass('displayNone'); //continue button is hidden when not connected;
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#API-status-top').removeClass('fa-plug');
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#API-status-top').addClass('fa-plug-circle-exclamation redOverlayGlow');
         connection_made = false;
     } else {
         if (online_status !== undefined && online_status !== 'no_connection') {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const send_textarea = $('#send_textarea');
             send_textarea.attr('placeholder', send_textarea.attr('connected_text')); //on connect, placeholder tells user to type message
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#send_form').removeClass('no-connection');
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#API-status-top').removeClass('fa-plug-circle-exclamation redOverlayGlow');
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#API-status-top').addClass('fa-plug');
             connection_made = true;
             retry_delay = 100;
 
             if (!is_send_press && !(selected_group && is_group_generating)) {
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $('#send_but').removeClass('displayNone'); //on connect, send button shows
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $('#mes_continue').removeClass('displayNone'); //continue button is shown when connected
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $('#mes_impersonate').removeClass('displayNone'); //continue button is shown when connected
             }
         }
@@ -352,6 +393,11 @@ function RA_checkOnlineStatus() {
 }
 //Auto-connect to API (when set to kobold, API URL exists, and auto_connect is true)
 
+/**
+ *
+ * @param PrevApi
+ */
+// @ts-expect-error TS(6133): 'PrevApi' is declared but its value is never read.
 function RA_autoconnect(PrevApi) {
     // secrets.js or script.js not loaded
     if (SECRET_KEYS === undefined || online_status === undefined) {
@@ -362,11 +408,13 @@ function RA_autoconnect(PrevApi) {
         switch (main_api) {
             case 'kobold':
                 if (kai_settings.api_server && isValidUrl(kai_settings.api_server)) {
+                    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                     $('#api_button').trigger('click');
                 }
                 break;
             case 'novel':
                 if (secret_state[SECRET_KEYS.NOVEL]) {
+                    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                     $('#api_button_novel').trigger('click');
                 }
                 break;
@@ -378,8 +426,10 @@ function RA_autoconnect(PrevApi) {
                     || (textgen_settings.type === textgen_types.OPENROUTER && secret_state[SECRET_KEYS.OPENROUTER])
                     || (textgen_settings.type === textgen_types.FEATHERLESS && secret_state[SECRET_KEYS.FEATHERLESS])
                 ) {
+                    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                     $('#api_button_textgenerationwebui').trigger('click');
                 } else if (isValidUrl(getTextGenServer())) {
+                    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                     $('#api_button_textgenerationwebui').trigger('click');
                 }
                 break;
@@ -412,6 +462,7 @@ function RA_autoconnect(PrevApi) {
                     || (isValidUrl(oai_settings.custom_url) && oai_settings.chat_completion_source == chat_completion_sources.CUSTOM)
                     || (secret_state[SECRET_KEYS.AZURE_OPENAI] && oai_settings.chat_completion_source == chat_completion_sources.AZURE_OPENAI)
                 ) {
+                    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                     $('#api_button_openai').trigger('click');
                 }
                 break;
@@ -425,23 +476,29 @@ function RA_autoconnect(PrevApi) {
     }
 }
 
+/**
+ *
+ */
 function OpenNavPanels() {
     if (!isMobile()) {
         //auto-open R nav if locked and previously open
         if (accountStorage.getItem('NavLockOn') == 'true' && accountStorage.getItem('NavOpened') == 'true') {
             //console.log("RA -- clicking right nav to open");
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#rightNavDrawerIcon').trigger('click');
         }
 
         //auto-open L nav if locked and previously open
         if (accountStorage.getItem('LNavLockOn') == 'true' && accountStorage.getItem('LNavOpened') == 'true') {
             console.debug('RA -- clicking left nav to open');
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#leftNavDrawerIcon').trigger('click');
         }
 
         //auto-open WI if locked and previously open
         if (accountStorage.getItem('WINavLockOn') == 'true' && accountStorage.getItem('WINavOpened') == 'true') {
             console.debug('RA -- clicking WI to open');
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#WIDrawerIcon').trigger('click');
         }
     }
@@ -449,6 +506,9 @@ function OpenNavPanels() {
 
 const getUserInputKey = () => getCurrentUserHandle() + '_userInput';
 
+/**
+ *
+ */
 function restoreUserInput() {
     if (!power_user.restore_user_input) {
         console.debug('restoreUserInput disabled');
@@ -457,11 +517,16 @@ function restoreUserInput() {
 
     const userInput = localStorage.getItem(getUserInputKey());
     if (userInput) {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#send_textarea').val(userInput)[0].dispatchEvent(new Event('input', { bubbles: true }));
     }
 }
 
+/**
+ *
+ */
 function saveUserInput() {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const userInput = String($('#send_textarea').val());
     localStorage.setItem(getUserInputKey(), userInput);
     console.debug('User Input -- ', userInput);
@@ -483,10 +548,15 @@ export function dragElement($elmnt) {
         maxX, maxY, winHeight, winWidth;
 
     const elmntName = $elmnt.attr('id');
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const elmntNameEscaped = $.escapeSelector(elmntName);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const $elmntHeader = $(`#${elmntNameEscaped}header`);
 
     // Helper: Save position/size to state and emit events
+    /**
+     *
+     */
     function savePositionAndSize() {
         if (!power_user.movingUIState[elmntName]) power_user.movingUIState[elmntName] = {};
         power_user.movingUIState[elmntName].top = top;
@@ -503,6 +573,9 @@ export function dragElement($elmnt) {
     }
 
     // Helper: Clamp element within viewport
+    /**
+     *
+     */
     function clampToViewport() {
         if (top <= 0) $elmnt.css('top', '0px');
         else if (maxY >= winHeight) $elmnt.css('top', winHeight - maxY + top - 1 + 'px');
@@ -512,6 +585,7 @@ export function dragElement($elmnt) {
 
     // Observer for style changes (position/size)
     const observer = new MutationObserver((mutations) => {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const $target = $(mutations[0].target);
         if (
             !$target.is(':visible') ||
@@ -543,7 +617,7 @@ export function dragElement($elmnt) {
         if (!power_user.movingUIState[elmntName]) power_user.movingUIState[elmntName] = {};
 
         if (actionType === 'resize') {
-            let containerAspectRatio = height / width;
+            const containerAspectRatio = height / width;
             if ($elmnt.attr('id').startsWith('zoomFor_')) {
                 const zoomedAvatarImage = $elmnt.find('.zoomed_avatar_img');
                 const imgHeight = zoomedAvatarImage.height();
@@ -586,6 +660,10 @@ export function dragElement($elmnt) {
     });
 
     // Mouse event handlers
+    /**
+     *
+     * @param e
+     */
     function dragMouseDown(e) {
         if (e) {
             actionType = 'drag';
@@ -594,10 +672,16 @@ export function dragElement($elmnt) {
             pos3 = e.clientX;
             pos4 = e.clientY;
         }
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(document).on('mouseup', closeDragElement);
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(document).on('mousemove', elementDrag);
     }
 
+    /**
+     *
+     * @param e
+     */
     function elementDrag(e) {
         if (!power_user.movingUIState[elmntName]) power_user.movingUIState[elmntName] = {};
         e.preventDefault();
@@ -613,10 +697,15 @@ export function dragElement($elmnt) {
         $elmnt.css('width', width);
     }
 
+    /**
+     *
+     */
     function closeDragElement() {
         isMouseDown = false;
         actionType = null;
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(document).off('mouseup', closeDragElement);
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(document).off('mousemove', elementDrag);
         $elmnt.attr('data-dragged', 'false');
         observer.disconnect();
@@ -626,6 +715,7 @@ export function dragElement($elmnt) {
     // Setup event listeners
     if ($elmntHeader.length) {
         $elmntHeader.off('mousedown').on('mousedown', (e) => {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             if ($(e.target).hasClass('drag-grabber')) {
                 actionType = 'drag';
                 isMouseDown = true;
@@ -654,15 +744,25 @@ export function dragElement($elmnt) {
     });
 }
 
+/**
+ *
+ */
 export async function initMovingUI() {
     if (!isMobile() && power_user.movingUI === true) {
         console.debug('START MOVING UI');
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         dragElement($('#sheld'));
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         dragElement($('#left-nav-panel'));
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         dragElement($('#right-nav-panel'));
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         dragElement($('#WorldInfo'));
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         dragElement($('#floatingPrompt'));
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         dragElement($('#logprobsViewer'));
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         dragElement($('#cfgConfig'));
     }
 }
@@ -678,8 +778,10 @@ const isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
 function autoFitSendTextArea() {
     const originalScrollBottom = chatBlock.scrollHeight - (chatBlock.scrollTop + chatBlock.offsetHeight);
 
+    // @ts-expect-error TS(2339): Property 'style' does not exist on type 'Element'.
     sendTextArea.style.height = '1px'; // Reset height to 1px to force recalculation of scrollHeight
     const newHeight = sendTextArea.scrollHeight;
+    // @ts-expect-error TS(2339): Property 'style' does not exist on type 'Element'.
     sendTextArea.style.height = `${newHeight}px`;
 
     if (!isFirefox) {
@@ -690,6 +792,9 @@ export const autoFitSendTextAreaDebounced = debounce(autoFitSendTextArea, deboun
 
 // ---------------------------------------------------
 
+/**
+ *
+ */
 export function initRossMods() {
     // initial status check
     checkStatusDebounced();
@@ -699,65 +804,95 @@ export function initRossMods() {
     }
 
     if (power_user.auto_connect) {
+        // @ts-expect-error TS(2554): Expected 1 arguments, but got 0.
         RA_autoconnect();
     }
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#main_api').on('change', function () {
-        var PrevAPI = main_api;
+        const PrevAPI = main_api;
         setTimeout(() => RA_autoconnect(PrevAPI), 100);
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#api_button').on('click', () => checkStatusDebounced());
 
     //toggle pin class when lock toggle clicked
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(RPanelPin).on('click', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         accountStorage.setItem('NavLockOn', $(RPanelPin).prop('checked'));
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         if ($(RPanelPin).prop('checked') == true) {
             //console.log('adding pin class to right nav');
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(RightNavPanel).addClass('pinnedOpen');
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(RightNavDrawerIcon).addClass('drawerPinnedOpen');
         } else {
             //console.log('removing pin class from right nav');
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(RightNavPanel).removeClass('pinnedOpen');
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(RightNavDrawerIcon).removeClass('drawerPinnedOpen');
 
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             if ($(RightNavPanel).hasClass('openDrawer') && $('.openDrawer').length > 1) {
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 const toggle = $('#unimportantYes');
                 doNavbarIconClick.call(toggle);
             }
         }
     });
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(LPanelPin).on('click', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         accountStorage.setItem('LNavLockOn', $(LPanelPin).prop('checked'));
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         if ($(LPanelPin).prop('checked') == true) {
             //console.log('adding pin class to Left nav');
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(LeftNavPanel).addClass('pinnedOpen');
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(LeftNavDrawerIcon).addClass('drawerPinnedOpen');
         } else {
             //console.log('removing pin class from Left nav');
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(LeftNavPanel).removeClass('pinnedOpen');
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(LeftNavDrawerIcon).removeClass('drawerPinnedOpen');
 
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             if ($(LeftNavPanel).hasClass('openDrawer') && $('.openDrawer').length > 1) {
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 const toggle = $('#ai-config-button>.drawer-toggle');
                 doNavbarIconClick.call(toggle);
             }
         }
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(WIPanelPin).on('click', async function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         accountStorage.setItem('WINavLockOn', $(WIPanelPin).prop('checked'));
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         if ($(WIPanelPin).prop('checked') == true) {
             console.debug('adding pin class to WI');
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(WorldInfo).addClass('pinnedOpen');
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(WIDrawerIcon).addClass('drawerPinnedOpen');
         } else {
             console.debug('removing pin class from WI');
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(WorldInfo).removeClass('pinnedOpen');
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(WIDrawerIcon).removeClass('drawerPinnedOpen');
 
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             if ($(WorldInfo).hasClass('openDrawer') && $('.openDrawer').length > 1) {
                 console.debug('closing WI after lock removal');
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 const toggle = $('#WI-SP-button>.drawer-toggle');
                 doNavbarIconClick.call(toggle);
             }
@@ -766,72 +901,98 @@ export function initRossMods() {
 
     if (!isMobile()) { //only read/set pin states on non-mobile devices
         // read the state of right Nav Lock and apply to rightnav classlist
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(RPanelPin).prop('checked', accountStorage.getItem('NavLockOn') == 'true');
         if (accountStorage.getItem('NavLockOn') == 'true') {
             //console.log('setting pin class via local var');
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(RightNavPanel).addClass('pinnedOpen');
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(RightNavDrawerIcon).addClass('drawerPinnedOpen');
         }
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         if ($(RPanelPin).prop('checked')) {
             console.debug('setting pin class via checkbox state');
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(RightNavPanel).addClass('pinnedOpen');
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(RightNavDrawerIcon).addClass('drawerPinnedOpen');
         }
         // read the state of left Nav Lock and apply to leftnav classlist
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(LPanelPin).prop('checked', accountStorage.getItem('LNavLockOn') === 'true');
         if (accountStorage.getItem('LNavLockOn') == 'true') {
             //console.log('setting pin class via local var');
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(LeftNavPanel).addClass('pinnedOpen');
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(LeftNavDrawerIcon).addClass('drawerPinnedOpen');
         }
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         if ($(LPanelPin).prop('checked')) {
             console.debug('setting pin class via checkbox state');
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(LeftNavPanel).addClass('pinnedOpen');
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(LeftNavDrawerIcon).addClass('drawerPinnedOpen');
         }
 
         // read the state of left Nav Lock and apply to leftnav classlist
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(WIPanelPin).prop('checked', accountStorage.getItem('WINavLockOn') === 'true');
         if (accountStorage.getItem('WINavLockOn') == 'true') {
             //console.log('setting pin class via local var');
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(WorldInfo).addClass('pinnedOpen');
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(WIDrawerIcon).addClass('drawerPinnedOpen');
         }
 
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         if ($(WIPanelPin).prop('checked')) {
             console.debug('setting pin class via checkbox state');
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(WorldInfo).addClass('pinnedOpen');
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(WIDrawerIcon).addClass('drawerPinnedOpen');
         }
     }
 
 
     //save state of Right nav being open or closed
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#rightNavDrawerIcon').on('click', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         if (!$('#rightNavDrawerIcon').hasClass('openIcon')) {
             accountStorage.setItem('NavOpened', 'true');
         } else { accountStorage.setItem('NavOpened', 'false'); }
     });
 
     //save state of Left nav being open or closed
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#leftNavDrawerIcon').on('click', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         if (!$('#leftNavDrawerIcon').hasClass('openIcon')) {
             accountStorage.setItem('LNavOpened', 'true');
         } else { accountStorage.setItem('LNavOpened', 'false'); }
     });
 
     //save state of Left nav being open or closed
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#WorldInfo').on('click', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         if (!$('#WorldInfo').hasClass('openIcon')) {
             accountStorage.setItem('WINavOpened', 'true');
         } else { accountStorage.setItem('WINavOpened', 'false'); }
     });
 
-    var chatbarInFocus = false;
+    let chatbarInFocus = false;
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#send_textarea').on('focus', function () {
         chatbarInFocus = true;
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#send_textarea').on('blur', function () {
         chatbarInFocus = false;
     });
@@ -840,20 +1001,26 @@ export function initRossMods() {
         OpenNavPanels();
     }, 300);
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(SelectedCharacterTab).on('click', function () { accountStorage.setItem('SelectedNavTab', 'rm_button_selected_ch'); });
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#rm_button_characters').on('click', function () { accountStorage.setItem('SelectedNavTab', 'rm_button_characters'); });
 
     // when a char is selected from the list, save them as the auto-load character for next page load
 
     // when a char is selected from the list, save their name as the auto-load character for next page load
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.character_select', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const characterId = $(this).attr('data-chid');
         setActiveCharacter(characterId);
         setActiveGroup(null);
         saveSettingsDebounced();
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.group_select', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const groupId = $(this).attr('data-chid') || $(this).attr('data-grid');
         setActiveCharacter(null);
         setActiveGroup(groupId);
@@ -890,13 +1057,18 @@ export function initRossMods() {
 
         if (cssAutofit) {
             // Unset modifications made with a manual resize
+            // @ts-expect-error TS(2339): Property 'style' does not exist on type 'Element'.
             sendTextArea.style.height = 'auto';
             return;
         }
 
+        // @ts-expect-error TS(2339): Property 'value' does not exist on type 'Element'.
         const hasContent = sendTextArea.value !== '';
+        // @ts-expect-error TS(2339): Property 'offsetHeight' does not exist on type 'El... Remove this comment to see the full error message
         const fitsCurrentSize = sendTextArea.scrollHeight <= sendTextArea.offsetHeight;
+        // @ts-expect-error TS(2339): Property 'offsetWidth' does not exist on type 'Ele... Remove this comment to see the full error message
         const isScrollbarShown = sendTextArea.clientWidth < sendTextArea.offsetWidth;
+        // @ts-expect-error TS(2339): Property 'offsetHeight' does not exist on type 'El... Remove this comment to see the full error message
         const isHalfScreenHeight = sendTextArea.offsetHeight >= window.innerHeight / 2;
         const needsDebounce = hasContent && (fitsCurrentSize || (isScrollbarShown && isHalfScreenHeight));
         if (needsDebounce) autoFitSendTextAreaDebounced();
@@ -913,17 +1085,21 @@ export function initRossMods() {
         if (Popup.util.isPopupOpen()) {
             return;
         }
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         if (!$(e.target).closest('#sheld').length) {
             return;
         }
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         if ($('#curEditTextarea').length) {
             // Don't swipe while in text edit mode
             // the ios selection gestures get picked up
             // as swipe gestures
             return;
         }
-        var SwipeButR = $('.swipe_right:last');
-        var SwipeTargetMesClassParent = $(e.target).closest('.last_mes');
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        const SwipeButR = $('.swipe_right:last');
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        const SwipeTargetMesClassParent = $(e.target).closest('.last_mes');
         if (SwipeTargetMesClassParent !== null) {
             if (SwipeButR.is(':visible')) {
                 SwipeButR.trigger('click');
@@ -937,17 +1113,21 @@ export function initRossMods() {
         if (Popup.util.isPopupOpen()) {
             return;
         }
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         if (!$(e.target).closest('#sheld').length) {
             return;
         }
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         if ($('#curEditTextarea').length) {
             // Don't swipe while in text edit mode
             // the ios selection gestures get picked up
             // as swipe gestures
             return;
         }
-        var SwipeButL = $('.swipe_left:last');
-        var SwipeTargetMesClassParent = $(e.target).closest('.last_mes');
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        const SwipeButL = $('.swipe_left:last');
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        const SwipeTargetMesClassParent = $(e.target).closest('.last_mes');
         if (SwipeTargetMesClassParent !== null) {
             if (SwipeButL.is(':visible')) {
                 SwipeButL.trigger('click');
@@ -956,9 +1136,13 @@ export function initRossMods() {
     });
 
 
+    /**
+     *
+     */
     function isInputElementInFocus() {
         //return $(document.activeElement).is(":input");
-        var focused = $(':focus');
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        const focused = $(':focus');
         if (focused.is('input') || focused.is('textarea') || focused.prop('contenteditable') == 'true') {
             if (focused.attr('id') === 'send_textarea') {
                 return false;
@@ -968,6 +1152,10 @@ export function initRossMods() {
         return false;
     }
 
+    /**
+     *
+     * @param event
+     */
     function isModifiedKeyboardEvent(event) {
         return (event instanceof KeyboardEvent &&
             (event.shiftKey ||
@@ -976,6 +1164,7 @@ export function initRossMods() {
             event.metaKey));
     }
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('keydown', async function (event) {
         await processHotkeys(event.originalEvent);
     });
@@ -1007,6 +1196,7 @@ export function initRossMods() {
         if (document.activeElement == hotkeyTargets.dialogue_popup_input && !isMobile()) {
             if (!event.shiftKey && !event.ctrlKey && event.key == 'Enter') {
                 event.preventDefault();
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $('#dialogue_popup_ok').trigger('click');
                 return;
             }
@@ -1014,18 +1204,24 @@ export function initRossMods() {
         //ctrl+shift+up to scroll to context line
         if (event.shiftKey && event.ctrlKey && event.key == 'ArrowUp') {
             event.preventDefault();
-            let contextLine = $('.lastInContext');
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            const contextLine = $('.lastInContext');
             if (contextLine.length !== 0) {
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $('#chat').animate({
+                    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                     scrollTop: contextLine.offset().top - $('#chat').offset().top + $('#chat').scrollTop(),
                 }, 300);
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             } else { toastr.warning('Context line not found, send a message first!'); }
             return;
         }
         //ctrl+shift+down to scroll to bottom of chat
         if (event.shiftKey && event.ctrlKey && event.key == 'ArrowDown') {
             event.preventDefault();
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#chat').animate({
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 scrollTop: $('#chat').prop('scrollHeight'),
             }, 300);
             return;
@@ -1035,6 +1231,7 @@ export function initRossMods() {
         if ((event.altKey || (event.altKey && event.ctrlKey)) && event.key == 'Enter') {
             if (is_send_press == false) {
                 console.debug('Continuing with Alt+Enter');
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $('#option_continue').trigger('click');
                 return;
             }
@@ -1042,28 +1239,38 @@ export function initRossMods() {
 
         // Ctrl+Enter for Regeneration Last Response. If editing, accept the edits instead
         if (event.ctrlKey && event.key == 'Enter') {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const editMesDone = $('.mes_edit_done:visible');
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const reasoningMesDone = $('.mes_reasoning_edit_done:visible');
             if (editMesDone.length > 0) {
                 console.debug('Accepting edits with Ctrl+Enter');
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $('#send_textarea').trigger('focus');
                 editMesDone.trigger('click');
                 return;
             } else if (reasoningMesDone.length > 0) {
                 console.debug('Accepting edits with Ctrl+Enter');
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $('#send_textarea').trigger('focus');
                 reasoningMesDone.trigger('click');
                 return;
             } else if (is_send_press == false) {
                 const skipConfirmKey = 'RegenerateWithCtrlEnter';
                 const skipConfirm = accountStorage.getItem(skipConfirmKey) === 'true';
+                /**
+                 *
+                 */
                 function doRegenerate() {
                     console.debug('Regenerating with Ctrl+Enter');
+                    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                     $('#option_regenerate').trigger('click');
+                    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                     $('#options').hide();
                 }
 
                 // If there is input text, we do not trigger a regenerate - we just send it
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 if ($('#send_textarea').val() !== '') {
                     if (shouldSendOnEnter()) {
                         console.debug('Sending with Ctrl+Enter');
@@ -1099,6 +1306,9 @@ export function initRossMods() {
         }
 
         // Helper function to check if nanogallery2's lightbox is active
+        /**
+         *
+         */
         function isNanogallery2LightboxActive() {
             // Check if the body has the 'nGY2On' class, adjust this based on actual behavior
             return document.body.classList.contains('nGY2_body_scrollbar');
@@ -1108,13 +1318,17 @@ export function initRossMods() {
             if (
                 isSwipingAllowed() &&
                 !isNanogallery2LightboxActive() &&  // Check if lightbox is NOT active
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $('#send_textarea').val() === '' &&
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $('#character_popup').css('display') === 'none' &&
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $('#shadow_select_chat_popup').css('display') === 'none' &&
                 !isInputElementInFocus() &&
                 !isModifiedKeyboardEvent(event) &&
                 !(document.activeElement instanceof HTMLVideoElement)
             ) {
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $('.swipe_left:last').trigger('click', { source: SWIPE_SOURCE.KEYBOARD, repeated: event.repeat });
                 return;
             }
@@ -1123,13 +1337,17 @@ export function initRossMods() {
             if (
                 isSwipingAllowed() &&
                 !isNanogallery2LightboxActive() &&  // Check if lightbox is NOT active
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $('#send_textarea').val() === '' &&
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $('#character_popup').css('display') === 'none' &&
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $('#shadow_select_chat_popup').css('display') === 'none' &&
                 !isInputElementInFocus() &&
                 !isModifiedKeyboardEvent(event) &&
                 !(document.activeElement instanceof HTMLVideoElement)
             ) {
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $('.swipe_right:last').trigger('click', { source: SWIPE_SOURCE.KEYBOARD, repeated: event.repeat });
                 return;
             }
@@ -1138,16 +1356,21 @@ export function initRossMods() {
 
         if (event.ctrlKey && event.key == 'ArrowUp') { //edits last USER message if chatbar is empty and focused
             if (
+                // @ts-expect-error TS(2339): Property 'value' does not exist on type 'Element'.
                 hotkeyTargets.send_textarea.value === '' &&
                 chatbarInFocus === true &&
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 ($('.swipe_right:last').css('display') === 'flex' || $('.last_mes').attr('is_system') === 'true') &&
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $('#character_popup').css('display') === 'none' &&
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $('#shadow_select_chat_popup').css('display') === 'none'
             ) {
                 const isUserMesList = document.querySelectorAll('div[is_user="true"]');
                 const lastIsUserMes = isUserMesList[isUserMesList.length - 1];
                 const editMes = lastIsUserMes.querySelector('.mes_block .mes_edit');
                 if (editMes !== null) {
+                    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                     $(editMes).trigger('click');
                     return;
                 }
@@ -1157,16 +1380,21 @@ export function initRossMods() {
         if (event.key == 'ArrowUp') { //edits last message if chatbar is empty and focused
             console.log('got uparrow input');
             if (
+                // @ts-expect-error TS(2339): Property 'value' does not exist on type 'Element'.
                 hotkeyTargets.send_textarea.value === '' &&
                 chatbarInFocus === true &&
                 //$('.swipe_right:last').css('display') === 'flex' &&
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $('.last_mes .mes_buttons').is(':visible') &&
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $('#character_popup').css('display') === 'none' &&
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $('#shadow_select_chat_popup').css('display') === 'none'
             ) {
                 const lastMes = document.querySelector('.last_mes');
                 const editMes = lastMes.querySelector('.mes_block .mes_edit');
                 if (editMes !== null) {
+                    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                     $(editMes).trigger('click');
                     return;
                 }
@@ -1176,36 +1404,48 @@ export function initRossMods() {
         if (event.key == 'Escape') { //closes various panels
             //dont override Escape hotkey functions from script.js
             //"close edit box" and "cancel stream generation".
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             if ($('#curEditTextarea').is(':visible') || $('#mes_stop').is(':visible')) {
                 console.debug('escape key, but deferring to script.js routines');
                 return;
             }
 
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             if ($('#dialogue_popup').is(':visible')) {
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 if ($('#dialogue_popup_cancel').is(':visible')) {
+                    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                     $('#dialogue_popup_cancel').trigger('click');
                     return;
                 } else {
+                    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                     $('#dialogue_popup_ok').trigger('click');
                     return;
                 }
             }
 
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             if ($('#select_chat_popup').is(':visible')) {
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $('#select_chat_cross').trigger('click');
                 return;
             }
 
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             if ($('#character_popup').is(':visible')) {
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $('#character_cross').trigger('click');
                 return;
             }
 
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             if ($('#dialogue_del_mes_cancel').is(':visible')) {
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $('#dialogue_del_mes_cancel').trigger('click');
                 return;
             }
 
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             if ($('.drawer-content')
                 .not('#WorldInfo')
                 .not('#left-nav-panel')
@@ -1215,7 +1455,8 @@ export function initRossMods() {
                 .not('#logprobsViewer')
                 .not('#movingDivs > div')
                 .is(':visible')) {
-                let visibleDrawerContent = $('.drawer-content:visible')
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+                const visibleDrawerContent = $('.drawer-content:visible')
                     .not('#WorldInfo')
                     .not('#left-nav-panel')
                     .not('#right-nav-panel')
@@ -1223,51 +1464,71 @@ export function initRossMods() {
                     .not('#cfgConfig')
                     .not('#logprobsViewer')
                     .not('#movingDivs > div');
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $(visibleDrawerContent).parent().find('.drawer-icon').trigger('click');
                 return;
             }
 
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             if ($('#logprobsViewer').is(':visible')) {
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $('#logprobsViewerClose').trigger('click');
                 return;
             }
 
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             if ($('#cfgConfig').is(':visible')) {
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $('#CFGClose').trigger('click');
                 return;
             }
 
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             if ($('#floatingPrompt').is(':visible')) {
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $('#ANClose').trigger('click');
                 return;
             }
 
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             if ($('#WorldInfo').is(':visible')) {
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $('#WIDrawerIcon').trigger('click');
                 return;
             }
 
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const movingDivs = $('#movingDivs > div').toArray().reverse();
             for (const div of movingDivs) {
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 if ($(div).is(':visible')) {
+                    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                     $(div).find('.floating_panel_close, .dragClose').trigger('click');
                     return;
                 }
             }
 
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             if ($('#left-nav-panel').is(':visible') &&
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $(LPanelPin).prop('checked') === false) {
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $('#leftNavDrawerIcon').trigger('click');
                 return;
             }
 
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             if ($('#right-nav-panel').is(':visible') &&
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $(RPanelPin).prop('checked') === false) {
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $('#rightNavDrawerIcon').trigger('click');
                 return;
             }
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             if ($('.draggable').is(':visible')) {
                 // Remove the first matched element
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $('.draggable:first').remove();
                 return;
             }

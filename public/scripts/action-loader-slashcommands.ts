@@ -17,9 +17,9 @@ export function registerActionLoaderSlashCommands() {
      * Helper to create a closure-based handler from a SlashCommandClosure argument.
      * Allows all possible slash command arg types to be passed in, but only closure is accepted.
      * @param {string | SlashCommandClosure | (string | SlashCommandClosure)[]} closure - The closure argument
-     * @param {Object} options - Configuration options
-     * @param {string} [options.argName='onStop'] - Name of the argument for error messages
-     * @param {boolean} [options.throwInvalid=true] - Whether to throw an error for invalid input
+     * @param {object} options - Configuration options
+     * @param {string} [options.argName] - Name of the argument for error messages
+     * @param {boolean} [options.throwInvalid] - Whether to throw an error for invalid input
      * @returns {(() => Promise<void>)|null} The handler function, or null if no closure
      */
     function createClosureHandler(closure, { argName = 'onStop', throwInvalid = true } = {}) {
@@ -49,6 +49,7 @@ export function registerActionLoaderSlashCommands() {
             new SlashCommandEnumValue(ActionLoaderToastMode.STOPPABLE, 'Toast with stop button (default)', enumTypes.enum, enumIcons.stop),
         ],
         loaderHandleProvider: () => getActiveLoaderHandles().map(
+            // @ts-expect-error TS(2339): Property 'id' does not exist on type 'unknown'.
             handle => new SlashCommandEnumValue(handle.id, `Active loader: ${handle.id}`, enumTypes.enum, enumIcons.spinner),
         ).concat(
             new SlashCommandEnumValue('Temporary loader handle', 'Any loader handle saved in variables or similar', 'enum', '📄', () => true, () => ''),
@@ -314,7 +315,9 @@ export function registerActionLoaderSlashCommands() {
 
             if (handleId) {
                 const handle = getLoaderHandleById(handleId);
+                // @ts-expect-error TS(2339): Property 'isActive' does not exist on type 'unknow... Remove this comment to see the full error message
                 if (handle && handle.isActive) {
+                    // @ts-expect-error TS(2339): Property 'hide' does not exist on type 'unknown'.
                     await handle.hide();
                     return 'true';
                 }
@@ -354,12 +357,15 @@ export function registerActionLoaderSlashCommands() {
             const handleId = args.handle ? String(args.handle) : null;
 
             if (!handleId) {
+                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                 toastr.warning(t`No handle provided. You must specify which loader to stop.`);
                 return 'false';
             }
 
             const handle = getLoaderHandleById(handleId);
+            // @ts-expect-error TS(2339): Property 'isActive' does not exist on type 'unknow... Remove this comment to see the full error message
             if (handle && handle.isActive) {
+                // @ts-expect-error TS(2339): Property 'stop' does not exist on type 'unknown'.
                 await handle.stop();
                 return 'true';
             }

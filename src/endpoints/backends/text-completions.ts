@@ -439,7 +439,7 @@ router.post('/generate', async function (request, response) {
     } catch (error) {
         const status = error?.status ?? error?.code ?? 'UNKNOWN';
         const text = error?.error ?? error?.statusText ?? error?.message ?? 'Unknown error on /generate endpoint';
-        let value = { error: true, status: status, response: text };
+        const value = { error: true, status: status, response: text };
         console.error('Endpoint error:', error);
 
         return !response.headersSent

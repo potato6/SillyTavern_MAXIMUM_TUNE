@@ -12,7 +12,6 @@ import { createMacroRuntimeError, logMacroRegisterError, logMacroRegisterWarning
 /**
  * Enum of standard macro categories for grouping in documentation and autocomplete.
  * Extensions may use these or define custom category strings.
- *
  * @readonly
  * @enum {string}
  */
@@ -44,7 +43,6 @@ export const MacroCategory = Object.freeze({
 /**
  * Enum of standard macro value types for type checking and documentation.
  * Used for both argument types and return types.
- *
  * @readonly
  * @enum {string}
  */
@@ -60,7 +58,7 @@ export const MacroValueType = Object.freeze({
 });
 
 /**
- * @typedef {Object} MacroDefinitionOptions
+ * @typedef {object} MacroDefinitionOptions
  * @property {MacroAliasDef[]} [aliases] - Alternative names for this macro. Each alias creates a lookup entry pointing to the same definition.
  * @property {MacroCategory|string} [category=MacroCategory.UNCATEGORIZED] - Category for grouping in documentation/autocomplete. Use MacroCategory enum values or a custom string.
  * @property {number|MacroUnnamedArgDef[]} [unnamedArgs=0] - Specifies the macro's unnamed positional arguments. Can be a number (all required) or an array of definitions (supports optional args). Optional args must be a suffix.
@@ -76,13 +74,13 @@ export const MacroValueType = Object.freeze({
  */
 
 /**
- * @typedef {Object} MacroAliasDef
+ * @typedef {object} MacroAliasDef
  * @property {string} alias - The alias name.
  * @property {boolean} [visible=true] - Whether this alias appears in documentation/autocomplete. Defaults to true.
  */
 
 /**
- * @typedef {Object} MacroUnnamedArgDef
+ * @typedef {object} MacroUnnamedArgDef
  * @property {string} name
  * @property {boolean} [optional=false] - Whether this argument is optional. Optional args must form a contiguous suffix (no required args after an optional).
  * @property {string} [defaultValue] - Default value for optional args. ONLY meaningful when optional is true. Shown in docs/autocomplete.
@@ -92,7 +90,7 @@ export const MacroValueType = Object.freeze({
  */
 
 /**
- * @typedef {Object} MacroListSpec
+ * @typedef {object} MacroListSpec
  * @property {number} [min]
  * @property {number} [max]
  */
@@ -102,7 +100,7 @@ export const MacroValueType = Object.freeze({
  */
 
 /**
- * @typedef {Object} MacroExecutionContext
+ * @typedef {object} MacroExecutionContext
  * @property {string} name
  * @property {string[]} args - All unnamed arguments passed to the macro. If delayArgResolution is true, these contain raw (unresolved) text.
  * @property {string[]} unnamedArgs - Unnamed positional arguments (both required and optional, up to the defined count).
@@ -130,7 +128,7 @@ export const MacroValueType = Object.freeze({
  */
 
 /**
- * @typedef {Object} MacroDefinition
+ * @typedef {object} MacroDefinition
  * @property {string} name - Primary macro name.
  * @property {MacroResolvedAlias[]} aliases - Parsed alias definitions for this macro.
  * @property {MacroCategory|string} category
@@ -152,13 +150,13 @@ export const MacroValueType = Object.freeze({
  */
 
 /**
- * @typedef {Object} MacroResolvedAlias
+ * @typedef {object} MacroResolvedAlias
  * @property {string} alias - The alias name.
  * @property {boolean} visible - Whether this alias is visible in documentation/autocomplete.
  */
 
 /**
- * @typedef {Object} MacroSource
+ * @typedef {object} MacroSource
  * @property {string} name - Source identifier (extension name or script path)
  * @property {boolean} isExtension - True if registered from an extension
  * @property {boolean} isThirdParty - True if registered from a third-party extension
@@ -166,7 +164,6 @@ export const MacroValueType = Object.freeze({
 
 /**
  * The singleton instance of the MacroRegistry.
- *
  * @type {MacroRegistry}
  */
 let instance;
@@ -190,7 +187,6 @@ class MacroRegistry {
     /**
      * Registers a macro with the registry.
      * Errors during registration are caught and logged, the macro will not be registered, and the function returns null.
-     *
      * @param {string} name - Macro name (identifier).
      * @param {MacroDefinitionOptions} options - Macro registration options including handler and metadata.
      * @returns {MacroDefinition|null} The registered definition, or null if registration failed.
@@ -231,11 +227,10 @@ class MacroRegistry {
      * Registers an alias for an existing macro.
      * The alias will point to the same handler and metadata as the original macro.
      * Errors during registration are caught and logged, the alias will not be registered, and the function returns false.
-     *
      * @param {string} targetMacroName - The name of the existing macro to create an alias for.
      * @param {string} aliasName - The alias name (identifier).
-     * @param {Object} [options] - Alias registration options.
-     * @param {boolean} [options.visible=true] - Whether this alias appears in documentation/autocomplete.
+     * @param {object} [options] - Alias registration options.
+     * @param {boolean} [options.visible] - Whether this alias appears in documentation/autocomplete.
      * @returns {boolean} True if the alias was registered successfully, false if registration failed.
      */
     registerMacroAlias(targetMacroName, aliasName, { visible = true } = {}) {
@@ -291,12 +286,11 @@ class MacroRegistry {
 
     /**
      * Shared utility for registering macro entries (primary or alias).
-     *
      * @param {string} name - The registration name (primary macro or alias).
      * @param {MacroDefinition} definition - The definition to register.
-     * @param {Object} [options={}] - Options for alias registration.
-     * @param {string} [options.primaryMacroName=null] - For aliases, the primary macro name.
-     * @param {boolean} [options.aliasVisible=null] - For aliases, visibility flag.
+     * @param {object} [options] - Options for alias registration.
+     * @param {string} [options.primaryMacroName] - For aliases, the primary macro name.
+     * @param {boolean} [options.aliasVisible] - For aliases, visibility flag.
      */
     #registerMacroEntry(name, definition, { primaryMacroName = null, aliasVisible = null } = {}) {
         const nameKey = name.toLowerCase();
@@ -320,7 +314,6 @@ class MacroRegistry {
 
     /**
      * Unregisters a macro.
-     *
      * @param {string} name - Macro name (identifier).
      * @returns {boolean} True if a macro was removed.
      */
@@ -332,7 +325,6 @@ class MacroRegistry {
 
     /**
      * Checks whether a macro with the given name is registered.
-     *
      * @param {string} name - Macro name (identifier).
      * @returns {boolean}
      */
@@ -344,7 +336,6 @@ class MacroRegistry {
 
     /**
      * Returns the macro definition for a given name.
-     *
      * @param {string} name - Macro name (identifier).
      * @returns {MacroDefinition|undefined}
      */
@@ -357,7 +348,6 @@ class MacroRegistry {
     /**
      * Returns the primary (non-alias) definition for a macro.
      * If given an alias name, returns the primary definition it points to.
-     *
      * @param {string} name - Macro name or alias.
      * @returns {MacroDefinition|undefined}
      */
@@ -369,17 +359,18 @@ class MacroRegistry {
 
     /**
      * Returns an array of all registered macros.
-     *
-     * @param {Object} [options] - Filter options.
-     * @param {boolean} [options.excludeAliases=false] - If true, excludes alias entries (only returns primary definitions).
-     * @param {boolean} [options.excludeHiddenAliases=false] - If true, excludes alias entries where visible=false.
+     * @param {object} [options] - Filter options.
+     * @param {boolean} [options.excludeAliases] - If true, excludes alias entries (only returns primary definitions).
+     * @param {boolean} [options.excludeHiddenAliases] - If true, excludes alias entries where visible=false.
      * @returns {MacroDefinition[]}
      */
     getAllMacros({ excludeAliases = false, excludeHiddenAliases = false } = {}) {
         let macros = Array.from(this.#macros.values());
         if (excludeAliases) {
+            // @ts-expect-error TS(2339): Property 'aliasOf' does not exist on type 'unknown... Remove this comment to see the full error message
             macros = macros.filter(m => !m.aliasOf);
         } else if (excludeHiddenAliases) {
+            // @ts-expect-error TS(2339): Property 'aliasOf' does not exist on type 'unknown... Remove this comment to see the full error message
             macros = macros.filter(m => !m.aliasOf || m.aliasVisible !== false);
         }
         return macros;
@@ -387,13 +378,14 @@ class MacroRegistry {
 
     /**
      * Executes a macro for a given call.
-     *
      * @param {MacroCall} call - Macro call information.
-     * @param {Object} [options] - Additional options.
+     * @param {object} [options] - Additional options.
      * @param {MacroDefinition} [options.defOverride] - Override the macro definition.
      * @returns {string}
      */
-    executeMacro(call, { defOverride } = {}) {
+    executeMacro(call, {
+        defOverride
+    }: any = {}) {
         const name = call.name;
         const def = defOverride || this.getMacro(name);
         if (!def) {
@@ -416,8 +408,10 @@ class MacroRegistry {
 
             const message = `Macro "${def.name}" called with ${args.length} unnamed arguments but expects ${expectation}.`;
             if (def.strictArgs) {
+                // @ts-expect-error TS(2345): Argument of type '{ message: string; call: any; de... Remove this comment to see the full error message
                 throw createMacroRuntimeError({ message, call, def });
             }
+            // @ts-expect-error TS(2345): Argument of type '{ message: string; call: any; de... Remove this comment to see the full error message
             logMacroRuntimeWarning({ message, call, def });
         }
 
@@ -453,6 +447,7 @@ class MacroRegistry {
             resolve: (text, { offsetDelta = 0 } = {}) => MacroEngine.evaluate(text, call.env, {
                 contextOffset: call.globalOffset + offsetDelta,
             }),
+            // @ts-expect-error TS(2345): Argument of type '{ message: any; call: any; def: ... Remove this comment to see the full error message
             warn: (message, error = undefined) => logMacroRuntimeWarning({ message, call, def, error }),
         };
 
@@ -473,15 +468,16 @@ class MacroRegistry {
      * Validation includes checking for required fields, validating argument definitions,
      * and ensuring the handler function is callable.
      * It throws errors for invalid configurations.
-     *
      * @param {string} name - Macro name (identifier).
      * @param {MacroDefinitionOptions} options - Macro definition options.
-     * @param {Object} [buildOptions] - Additional options for building.
+     * @param {object} [buildOptions] - Additional options for building.
      * @param {MacroSource} [buildOptions.source] - Source information. Defaults to dynamic source.
      * @returns {MacroDefinition} The built macro definition.
      * @throws {Error} If validation fails.
      */
-    buildMacroDefFromOptions(name, options, { source } = {}) {
+    buildMacroDefFromOptions(name, options, {
+        source
+    }: any = {}) {
         name = typeof name === 'string' ? name.trim() : String(name);
 
         if (!isIdentifierValid(name)) throw new Error(`Macro name "${name}" is invalid. Must start with a letter, followed by alphanumeric characters or hyphens.`);
@@ -634,7 +630,7 @@ class MacroRegistry {
         }
 
         /** @type {string[]} */
-        let exampleUsage = [];
+        const exampleUsage = [];
         if (rawExampleUsage !== undefined && rawExampleUsage !== null) {
             const examples = Array.isArray(rawExampleUsage) ? rawExampleUsage : [rawExampleUsage];
             for (const [i, ex] of examples.entries()) {
@@ -684,10 +680,9 @@ instance = MacroRegistry.instance;
 
 /**
  * Validates a macro identifier.
- *
  * @param {string} name - The macro identifier to validate.
- * @param {Object} [options] - Validation options.
- * @param {boolean} [options.allowComment = true] - Whether return that the comment identifier '//' is valid.
+ * @param {object} [options] - Validation options.
+ * @param {boolean} [options.allowComment] - Whether return that the comment identifier '//' is valid.
  * @returns {boolean} True if the identifier is valid, false otherwise.
  */
 function isIdentifierValid(name, { allowComment = true } = {}) {
@@ -699,7 +694,6 @@ function isIdentifierValid(name, { allowComment = true } = {}) {
 /**
  * Validates the arguments for a macro definition.
  * Supports required args (minArgs), optional args (up to maxArgs), and list tail.
- *
  * @param {MacroDefinition} def - Macro definition.
  * @param {any[]} args - Arguments to validate.
  * @returns {boolean} True if the arguments are valid, false otherwise.
@@ -728,7 +722,6 @@ function isArgsValid(def, args) {
  * defined on the macro definition. When strictArgs is true, invalid argument
  * types cause an error to be thrown. When strictArgs is false, only warnings
  * are logged and execution continues.
- *
  * @param {MacroCall} call
  * @param {MacroDefinition} def
  * @param {string[]} unnamedArgs
@@ -752,8 +745,10 @@ function validateArgTypes(call, def, unnamedArgs) {
             const optionalLabel = argDef.optional ? ' (optional)' : '';
             const message = `Macro "${call.name}" (position ${i + 1}${optionalLabel}) argument "${argName}" expected type ${argDef.type} but got value "${value}".`;
             if (def.strictArgs) {
+                // @ts-expect-error TS(2345): Argument of type '{ message: string; call: any; de... Remove this comment to see the full error message
                 throw createMacroRuntimeError({ message, call, def: def });
             }
+            // @ts-expect-error TS(2345): Argument of type '{ message: string; call: any; de... Remove this comment to see the full error message
             logMacroRuntimeWarning({ message, call, def: def });
         }
     }
@@ -761,7 +756,6 @@ function validateArgTypes(call, def, unnamedArgs) {
 
 /**
  * Checks whether a string value conforms to the given macro argument type.
- *
  * @param {string} value
  * @param {MacroValueType} type
  * @returns {boolean}
@@ -790,7 +784,6 @@ function isValueOfType(value, type) {
 /**
  * Detects the source of a macro registration from the call stack.
  * Similar to how SlashCommandParser detects command sources.
- *
  * @returns {{ isExtension: boolean, isThirdParty: boolean, source: string }}
  */
 function detectMacroSource() {

@@ -38,14 +38,23 @@ export const DEFAULT_REASONING_TEMPLATE = 'Think XML';
  * @readonly
  */
 const UI = {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $select: $('#reasoning_select'),
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $suffix: $('#reasoning_suffix'),
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $prefix: $('#reasoning_prefix'),
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $separator: $('#reasoning_separator'),
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $autoParse: $('#reasoning_auto_parse'),
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $autoExpand: $('#reasoning_auto_expand'),
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $showHidden: $('#reasoning_show_hidden'),
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $addToPrompts: $('#reasoning_add_to_prompts'),
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $maxAdditions: $('#reasoning_max_additions'),
 };
 
@@ -67,6 +76,7 @@ export const ReasoningType = {
  * @returns {{messageId: number, message: object, messageBlock: JQuery<HTMLElement>}}
  */
 function getMessageFromJquery(element) {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const messageBlock = $(element).closest('.mes');
     const messageId = Number(messageBlock.attr('mesid'));
     const message = chat[messageId];
@@ -88,6 +98,11 @@ function toggleReasoningAutoExpand() {
 /**
  * Extracts the reasoning from the response data.
  * @param {object} data Response data
+ * @param root0
+ * @param root0.mainApi
+ * @param root0.ignoreShowThoughts
+ * @param root0.textGenType
+ * @param root0.chatCompletionSource
  * @returns {string} Extracted reasoning
  */
 export function extractReasoningFromData(data, {
@@ -228,8 +243,8 @@ export function isHiddenReasoningModel() {
 /**
  * Updates the Reasoning UI for a specific message
  * @param {number|JQuery<HTMLElement>|HTMLElement} messageIdOrElement The message ID or the message element
- * @param {Object} [options={}] - Optional arguments
- * @param {boolean} [options.reset=false] - Whether to reset state, and not take the current mess properties (for example when swiping)
+ * @param {object} [options] - Optional arguments
+ * @param {boolean} [options.reset] - Whether to reset state, and not take the current mess properties (for example when swiping)
  */
 export function updateReasoningUI(messageIdOrElement, { reset = false } = {}) {
     const handler = new ReasoningHandler();
@@ -254,6 +269,17 @@ export const ReasoningState = {
  * This class is used inside the {@link StreamingProcessor} to manage reasoning states and UI updates.
  */
 export class ReasoningHandler {
+    endTime: any;
+    initialTime: any;
+    messageDom: any;
+    messageReasoningContentDom: any;
+    messageReasoningDetailsDom: any;
+    messageReasoningHeaderDom: any;
+    reasoning: any;
+    reasoningDisplayText: any;
+    startTime: any;
+    state: any;
+    type: any;
     /** @type {boolean} True if the model supports reasoning, but hides the reasoning output */
     #isHiddenReasoningModel;
     /** @type {boolean} True if the handler is currently handling a manual parse of reasoning blocks */
@@ -262,7 +288,7 @@ export class ReasoningHandler {
     #parsingReasoningMesStartIndex = null;
 
     /**
-     * @param {Date?} [timeStarted=null] - When the generation started
+     * @param {Date?} [timeStarted] - When the generation started
      */
     constructor(timeStarted = null) {
         /** @type {ReasoningState} The current state of the reasoning process */
@@ -311,10 +337,9 @@ export class ReasoningHandler {
      * Can be used to update the DOM elements or read other reasoning states.
      * It will internally take the message-saved data and write the states back into the handler, as if during streaming of the message.
      * The state will always be either done/hidden or none.
-     *
      * @param {number|JQuery<HTMLElement>|HTMLElement} messageIdOrElement - The message ID or the message element
-     * @param {Object} [options={}] - Optional arguments
-     * @param {boolean} [options.reset=false] - Whether to reset state of the handler, and not take the current mess properties (for example when swiping)
+     * @param {object} [options] - Optional arguments
+     * @param {boolean} [options.reset] - Whether to reset state of the handler, and not take the current mess properties (for example when swiping)
      */
     initHandleMessage(messageIdOrElement, { reset = false } = {}) {
         /** @type {HTMLElement} */
@@ -322,6 +347,7 @@ export class ReasoningHandler {
             ? document.querySelector(`#chat [mesid="${messageIdOrElement}"]`)
             : messageIdOrElement instanceof HTMLElement
                 ? messageIdOrElement
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 : $(messageIdOrElement)[0];
         const messageId = Number(messageElement.getAttribute('mesid'));
 
@@ -371,7 +397,6 @@ export class ReasoningHandler {
 
     /**
      * Gets the duration of the reasoning in milliseconds.
-     *
      * @returns {number?} The duration in milliseconds, or null if the start or end time is not set
      */
     getDuration() {
@@ -383,12 +408,11 @@ export class ReasoningHandler {
 
     /**
      * Updates the reasoning text/string for a message.
-     *
      * @param {number} messageId - The ID of the message to update
-     * @param {string?} [reasoning=null] - The reasoning text to update - If null or empty, uses the current reasoning
-     * @param {Object} [options={}] - Optional arguments
-     * @param {boolean} [options.persist=false] - Whether to persist the reasoning to the message object
-     * @param {boolean} [options.allowReset=false] - Whether to allow empty reasoning provided to reset the reasoning, instead of just taking the existing one
+     * @param {string?} [reasoning] - The reasoning text to update - If null or empty, uses the current reasoning
+     * @param {object} [options] - Optional arguments
+     * @param {boolean} [options.persist] - Whether to persist the reasoning to the message object
+     * @param {boolean} [options.allowReset] - Whether to allow empty reasoning provided to reset the reasoning, instead of just taking the existing one
      * @returns {boolean} - Returns true if the reasoning was changed, otherwise false
      */
     updateReasoning(messageId, reasoning = null, { persist = false, allowReset = false } = {}) {
@@ -425,7 +449,6 @@ export class ReasoningHandler {
      * Handles processing of reasoning for a message.
      *
      * This is usually called by the message processor when a message is changed.
-     *
      * @param {number} messageId - The ID of the message to process
      * @param {boolean} mesChanged - Whether the message has changed
      * @param {PromptReasoning} promptReasoning - Prompt reasoning object
@@ -511,7 +534,6 @@ export class ReasoningHandler {
      *
      * Records the finish time if it was not set during streaming and updates the reasoning state.
      * Emits an event to signal the completion of reasoning and updates the DOM elements accordingly.
-     *
      * @param {number} messageId - The ID of the message to complete reasoning for
      * @returns {Promise<void>}
      */
@@ -536,7 +558,6 @@ export class ReasoningHandler {
      * Updates the reasoning UI elements for a message.
      *
      * Toggles the CSS class, updates states, reasoning message, and duration.
-     *
      * @param {number} messageId - The ID of the message to update
      */
     updateDom(messageId) {
@@ -576,7 +597,6 @@ export class ReasoningHandler {
 
     /**
      * Finds and caches reasoning-related DOM elements for the given message.
-     *
      * @param {number} messageId - The ID of the message to cache the DOM elements for
      */
     #checkDomElements(messageId) {
@@ -646,13 +666,20 @@ export class PromptReasoning {
     /**
      * An instance initiated during the latest prompt processing.
      * @type {PromptReasoning}
-     * */
+     */
     static #LATEST = null;
     /**
-     * @readonly Zero-width space character used as a placeholder for reasoning.
+     * @readonly
      * @type {string}
-    */
+     */
     static REASONING_PLACEHOLDER = '\u200B';
+
+    counter: any;
+    prefixDuration: any;
+    prefixIncomplete: any;
+    prefixLength: any;
+    prefixReasoning: any;
+    prefixReasoningFormatted: any;
 
     /**
      * Returns the latest formatted reasoning prefix if the prefix is incomplete.
@@ -772,45 +799,55 @@ export class PromptReasoning {
     }
 }
 
+/**
+ *
+ */
 function loadReasoningSettings() {
     UI.$addToPrompts.prop('checked', power_user.reasoning.add_to_prompts);
     UI.$addToPrompts.on('change', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         power_user.reasoning.add_to_prompts = !!$(this).prop('checked');
         saveSettingsDebounced();
     });
 
     UI.$prefix.val(power_user.reasoning.prefix);
     UI.$prefix.on('input', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         power_user.reasoning.prefix = String($(this).val());
         saveSettingsDebounced();
     });
 
     UI.$suffix.val(power_user.reasoning.suffix);
     UI.$suffix.on('input', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         power_user.reasoning.suffix = String($(this).val());
         saveSettingsDebounced();
     });
 
     UI.$separator.val(power_user.reasoning.separator);
     UI.$separator.on('input', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         power_user.reasoning.separator = String($(this).val());
         saveSettingsDebounced();
     });
 
     UI.$maxAdditions.val(power_user.reasoning.max_additions);
     UI.$maxAdditions.on('input', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         power_user.reasoning.max_additions = Number($(this).val());
         saveSettingsDebounced();
     });
 
     UI.$autoParse.prop('checked', power_user.reasoning.auto_parse);
     UI.$autoParse.on('change', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         power_user.reasoning.auto_parse = !!$(this).prop('checked');
         saveSettingsDebounced();
     });
 
     UI.$autoExpand.prop('checked', power_user.reasoning.auto_expand);
     UI.$autoExpand.on('change', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         power_user.reasoning.auto_expand = !!$(this).prop('checked');
         toggleReasoningAutoExpand();
         saveSettingsDebounced();
@@ -819,13 +856,17 @@ function loadReasoningSettings() {
 
     UI.$showHidden.prop('checked', power_user.reasoning.show_hidden);
     UI.$showHidden.on('change', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         power_user.reasoning.show_hidden = !!$(this).prop('checked');
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#chat').attr('data-show-hidden-reasoning', power_user.reasoning.show_hidden ? 'true' : null);
         saveSettingsDebounced();
     });
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#chat').attr('data-show-hidden-reasoning', power_user.reasoning.show_hidden ? 'true' : null);
 
     UI.$select.on('change', async function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const name = String($(this).val());
         const template = reasoning_templates.find(p => p.name === name);
         if (!template) {
@@ -845,6 +886,11 @@ function loadReasoningSettings() {
     });
 }
 
+/**
+ *
+ * @param args
+ * @param name
+ */
 function selectReasoningTemplateCallback(args, name) {
     if (!name) {
         return power_user.reasoning.name ?? '';
@@ -858,6 +904,7 @@ function selectReasoningTemplateCallback(args, name) {
         const result = performFuzzySearch('reasoning-templates', templateNames, [], name);
 
         if (result.length === 0) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             !quiet && toastr.warning(`Reasoning template "${name}" not found`);
             return '';
         }
@@ -866,10 +913,14 @@ function selectReasoningTemplateCallback(args, name) {
     }
 
     UI.$select.val(foundName).trigger('change');
+    // @ts-expect-error TS(2304): Cannot find name 'toastr'.
     !quiet && toastr.success(`Reasoning template "${foundName}" selected`);
     return foundName;
 }
 
+/**
+ *
+ */
 function registerReasoningSlashCommands() {
     SlashCommandParser.addCommandObject(SlashCommand.fromProps({
         name: 'reasoning-get',
@@ -934,7 +985,9 @@ function registerReasoningSlashCommands() {
             closeMessageEditor('reasoning');
             updateMessageBlock(messageId, message);
 
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             if (isTrueBoolean(String(args.collapse))) $(`#chat [mesid="${messageId}"] .mes_reasoning_details`).removeAttr('open');
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             if (isFalseBoolean(String(args.collapse))) $(`#chat [mesid="${messageId}"] .mes_reasoning_details`).attr('open', '');
             return message.extra.reasoning;
         },
@@ -986,10 +1039,12 @@ function registerReasoningSlashCommands() {
             }
 
             if (!power_user.reasoning.prefix || !power_user.reasoning.suffix) {
+                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                 toastr.warning(t`Both prefix and suffix must be set in the Reasoning Formatting settings.`, t`Reasoning Parse`);
                 return value;
             }
             if (typeof args.return !== 'string' || !['reasoning', 'content'].includes(args.return)) {
+                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                 toastr.warning(t`Invalid return type '${args.return}', defaulting to 'reasoning'.`, t`Reasoning Parse`);
             }
 
@@ -1035,11 +1090,13 @@ function registerReasoningSlashCommands() {
             const content = String(value ?? '');
 
             if (!power_user.reasoning.prefix || !power_user.reasoning.suffix) {
+                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                 toastr.warning(t`Both prefix and suffix must be set in the Reasoning Formatting settings.`, t`Reasoning Format`);
                 return '';
             }
 
             if (!reasoning) {
+                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                 toastr.warning(t`Reasoning argument is required.`, t`Reasoning Format`);
                 return '';
             }
@@ -1093,14 +1150,17 @@ function registerReasoningSlashCommands() {
     function getReasoningDetailsElements(value) {
         const range = value ? stringToRange(String(value), 0, chat.length - 1) : { start: chat.length - 1, end: chat.length - 1 };
         if (!range) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.warning(t`Invalid message ID or range: ${value}`);
             return null;
         }
         const selector = Array.from({ length: range.end - range.start + 1 }, (_, i) =>
             `#chat [mesid="${range.start + i}"] .mes_reasoning_details`,
         ).join(',');
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const details = $(selector);
         if (details.length === 0) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.warning(t`No reasoning blocks found for the specified messages.`);
             return null;
         }
@@ -1148,6 +1208,7 @@ function registerReasoningSlashCommands() {
             const details = getReasoningDetailsElements(value.toString());
             if (!details) return '';
             details.each(function () {
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 const $el = $(this);
                 if ($el.attr('open') !== undefined) {
                     $el.removeAttr('open');
@@ -1160,6 +1221,9 @@ function registerReasoningSlashCommands() {
     }));
 }
 
+/**
+ *
+ */
 function registerReasoningMacros() {
     macros.register('reasoningPrefix', {
         category: MacroCategory.PROMPTS,
@@ -1178,6 +1242,9 @@ function registerReasoningMacros() {
     });
 }
 
+/**
+ *
+ */
 function setReasoningEventHandlers() {
     /**
      * Updates the reasoning block of a message from a value.
@@ -1190,13 +1257,16 @@ function setReasoningEventHandlers() {
         message.extra.reasoning_type = message.extra.reasoning_type ? ReasoningType.Edited : ReasoningType.Manual;
     }
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.mes_reasoning_details', function (e) {
         if (!e.target.closest('.mes_reasoning_actions') && !e.target.closest('.mes_reasoning_header')) {
             e.preventDefault();
         }
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.mes_reasoning_header', function (e) {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const details = $(this).closest('.mes_reasoning_details');
         // Along with the CSS rules to mark blocks not toggle-able when they are empty, prevent them from actually being toggled, or being edited
         if (details.find('.mes_reasoning').is(':empty')) {
@@ -1205,9 +1275,11 @@ function setReasoningEventHandlers() {
         }
 
         // If we are in message edit mode and reasoning area is closed, a click opens and edits it
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const mes = $(this).closest('.mes');
         const mesEditArea = mes.find('#curEditTextarea');
         if (mesEditArea.length) {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const summary = $(mes).find('.mes_reasoning_summary');
             if (!summary.attr('open')) {
                 summary.find('.mes_reasoning_edit').trigger('click');
@@ -1215,11 +1287,13 @@ function setReasoningEventHandlers() {
         }
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.mes_reasoning_copy', (e) => {
         e.stopPropagation();
         e.preventDefault();
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.mes_reasoning_edit', function (e) {
         e.stopPropagation();
         e.preventDefault();
@@ -1234,6 +1308,7 @@ function setReasoningEventHandlers() {
         const reasoningBlock = messageBlock.find('.mes_reasoning');
         textarea.classList.add('reasoning_edit_textarea');
         textarea.value = reasoning;
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(textarea).insertBefore(reasoningBlock);
 
         if (!CSS.supports('field-sizing', 'content')) {
@@ -1261,13 +1336,16 @@ function setReasoningEventHandlers() {
         }
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.mes_reasoning_close_all', function (e) {
         e.stopPropagation();
         e.preventDefault();
 
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('.mes_reasoning_details[open] .mes_reasoning_header').trigger('click');
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.mes_reasoning_edit_done', async function (e) {
         e.stopPropagation();
         e.preventDefault();
@@ -1291,6 +1369,7 @@ function setReasoningEventHandlers() {
         await eventSource.emit(event_types.MESSAGE_REASONING_EDITED, messageId);
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.mes_reasoning_edit_cancel', function (e) {
         e.stopPropagation();
         e.preventDefault();
@@ -1304,6 +1383,7 @@ function setReasoningEventHandlers() {
         updateReasoningUI(messageBlock);
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.mes_edit_add_reasoning', async function () {
         const { message, messageBlock } = getMessageFromJquery(this);
         if (!message?.extra) {
@@ -1311,6 +1391,7 @@ function setReasoningEventHandlers() {
         }
 
         if (message.extra.reasoning) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.info(t`Reasoning already exists.`, t`Edit Message`);
             return;
         }
@@ -1329,6 +1410,7 @@ function setReasoningEventHandlers() {
         await saveChatConditional();
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.mes_reasoning_delete', async function (e) {
         e.stopPropagation();
         e.preventDefault();
@@ -1353,6 +1435,7 @@ function setReasoningEventHandlers() {
         await eventSource.emit(event_types.MESSAGE_REASONING_DELETED, messageId);
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('pointerup', '.mes_reasoning_copy', async function () {
         const { message } = getMessageFromJquery(this);
         const reasoning = String(message?.extra?.reasoning ?? '');
@@ -1362,9 +1445,11 @@ function setReasoningEventHandlers() {
         }
 
         await copyText(reasoning);
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.info(t`Copied!`, '', { timeOut: 2000 });
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('input', '.reasoning_edit_textarea', function () {
         if (!power_user.auto_save_msg_edits) {
             return;
@@ -1375,6 +1460,7 @@ function setReasoningEventHandlers() {
             return;
         }
 
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         updateReasoningFromValue(message, String($(this).val()));
         updateReasoningUI(messageBlock);
         saveChatDebounced();
@@ -1409,12 +1495,12 @@ export function getReasoningTemplateByName(name) {
 
 /**
  * Parses reasoning from a string using the power user reasoning settings or optional template.
- * @typedef {Object} ParsedReasoning
+ * @typedef {object} ParsedReasoning
  * @property {string} reasoning Reasoning block
  * @property {string} content Message content
  * @param {string} str Content of the message
- * @param {Object} options Optional arguments
- * @param {boolean} [options.strict=true] Whether the reasoning block **has** to be at the beginning of the provided string (excluding whitespaces), or can be anywhere in it
+ * @param {object} options Optional arguments
+ * @param {boolean} [options.strict] Whether the reasoning block **has** to be at the beginning of the provided string (excluding whitespaces), or can be anywhere in it
  * @param {ReasoningTemplate} template Optional reasoning template to use instead of power_user.reasoning
  * @returns {ParsedReasoning|null} Parsed reasoning block and message content
  */
@@ -1452,12 +1538,12 @@ export function parseReasoningFromString(str, { strict = true } = {}, template =
 /**
  * Formats reasoning and content into a string using the reasoning template.
  * This is the inverse of parseReasoningFromString.
- * @typedef {Object} FormattedReasoning
+ * @typedef {object} FormattedReasoning
  * @property {string} formatted The formatted string with reasoning wrapped in prefix/suffix
  * @property {string} contentOnly The content without reasoning
  * @param {string} reasoning The reasoning/thinking text
  * @param {string} content The main content/response text
- * @param {ReasoningTemplate} [template=null] Optional template to use. Defaults to power_user.reasoning
+ * @param {ReasoningTemplate} [template] Optional template to use. Defaults to power_user.reasoning
  * @returns {FormattedReasoning} Object containing both formatted (reasoning + content) and contentOnly
  */
 export function formatReasoning(reasoning, content, template = null) {
@@ -1511,6 +1597,9 @@ export function parseReasoningInSwipes(swipes, swipeInfoArray, duration) {
     }
 }
 
+/**
+ *
+ */
 function registerReasoningAppEvents() {
     const eventHandler = (/** @type {string} */ type, /** @type {number} */ idx) => {
         if (!power_user.reasoning.auto_parse) {
@@ -1596,11 +1685,13 @@ function registerReasoningAppEvents() {
 
         console.debug('[Reasoning] Auto-parsing reasoning block for impersonation');
 
+        // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
         if (!sendTextArea.value) {
             console.debug('[Reasoning] Reasoning is empty, skipping');
             return;
         }
 
+        // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
         sendTextArea.value = removeReasoningFromString(sendTextArea.value);
         sendTextArea.dispatchEvent(new Event('input', { bubbles: true }));
     });
@@ -1618,6 +1709,7 @@ export async function loadReasoningTemplates(data) {
     }
 
     for (const template of reasoning_templates) {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('<option>').val(template.name).text(template.name).appendTo(UI.$select);
     }
 

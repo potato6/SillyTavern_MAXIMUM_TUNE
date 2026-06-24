@@ -5,7 +5,6 @@
  *
  * Appends itself inside the topmost open `<dialog>` element (same approach as
  * fixToastrForDialogs in popup.js) so it renders above modal overlays.
- *
  * @example
  * const display = new StreamingDisplay();
  * display.show({ label: 'Generating...' });
@@ -20,13 +19,14 @@
 
 import { SVGInject } from '../lib.js';
 import { t } from './i18n.js';
+// @ts-expect-error TS(2792): Cannot find module '/script.js'. Did you mean to s... Remove this comment to see the full error message
 import { animation_duration, messageFormatting } from '/script.js';
 
 /** CSS class prefix */
 const CSS_PREFIX = 'streaming-display';
 
 /**
- * @typedef {Object} StreamingDisplayOptions
+ * @typedef {object} StreamingDisplayOptions
  * @property {string} [label] - Header label (e.g. "Generating greeting...")
  * @property {HTMLImageElement} [icon] - Optional API/model icon image (e.g. from createModelIcon). Will be SVG-injected when loaded.
  * @property {(() => (void | Promise<void>)) | null} [onStop] - Optional stop handler. When provided, a stop button is shown. Clicking it invokes this handler only — the display is not automatically hidden or completed.
@@ -293,9 +293,8 @@ export class StreamingDisplay {
      *
      * Changes the LED indicator to solid red, removes the stop button, and keeps the display
      * visible until the user manually closes it with the close button (no auto-hide).
-     *
-     * @param {Object} [options={}]
-     * @param {string|null} [options.label=null] - Optional label override (e.g. `'Generating... [Stopped]'`).
+     * @param {object} [options]
+     * @param {string|null} [options.label] - Optional label override (e.g. `'Generating... [Stopped]'`).
      * @returns {StreamingDisplay} this instance for chaining
      */
     markStopped({ label = null } = {}) {
@@ -325,10 +324,9 @@ export class StreamingDisplay {
      * - Changes the LED indicator from pulsing orange to solid green
      * - Waits for the specified delay to let the user see the final result
      * - Then hides the display with a fade-out animation
-     *
-     * @param {Object} [options={}]
-     * @param {string|null} [options.label=null] - Set the label automatically to a new one to display the completed state.
-     * @param {number|null} [options.delay=3000] - Delay in ms before hiding. Use `null` or negative value to keep displayed until user manually closes it.
+     * @param {object} [options]
+     * @param {string|null} [options.label] - Set the label automatically to a new one to display the completed state.
+     * @param {number|null} [options.delay] - Delay in ms before hiding. Use `null` or negative value to keep displayed until user manually closes it.
      * @returns {StreamingDisplay} this instance for chaining
      */
     complete({ label = null, delay = 3000 } = {}) {
@@ -364,9 +362,8 @@ export class StreamingDisplay {
      * **Note:** This is for immediate cleanup (e.g., when canceling generation
      * or closing the app). Prefer `complete()` when generation finishes normally,
      * as it shows the green LED and gives the user time to see the final result.
-     *
-     * @param {Object} [options={}]
-     * @param {boolean} [options.instant=false] - Skip the fade-out animation
+     * @param {object} [options]
+     * @param {boolean} [options.instant] - Skip the fade-out animation
      * @returns {StreamingDisplay} this instance for chaining
      */
     hide({ instant = false } = {}) {
@@ -387,8 +384,8 @@ export class StreamingDisplay {
 
     /**
      * Internal method to actually remove the DOM element.
-     * @param {Object} [options={}]
-     * @param {boolean} [options.instant=false]
+     * @param {object} [options]
+     * @param {boolean} [options.instant]
      */
     #performHide({ instant = false } = {}) {
         if (!this.#element) return;

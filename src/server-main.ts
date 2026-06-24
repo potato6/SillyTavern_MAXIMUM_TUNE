@@ -9,12 +9,14 @@ import http from 'node:http';
 import https from 'node:https';
 
 import cors from 'cors';
+// @ts-expect-error TS(2792): Cannot find module 'csrf-sync'. Did you mean to se... Remove this comment to see the full error message
 import { csrfSync } from 'csrf-sync';
 import express from 'express';
 import compression from 'compression';
 import cookieSession from 'cookie-session';
 import multer from 'multer';
 import responseTime from 'response-time';
+// @ts-expect-error TS(2792): Cannot find module 'helmet'. Did you mean to set t... Remove this comment to see the full error message
 import helmet from 'helmet';
 import bodyParser from 'body-parser';
 
@@ -89,7 +91,6 @@ util.inspect.defaultOptions.maxStringLength = null;
 util.inspect.defaultOptions.depth = 4;
 
 /** @type {import('./command-line.js').CommandLineArguments} */
-// @ts-expect-error TS(7017): Element implicitly has an 'any' type because type ... Remove this comment to see the full error message
 const cliArgs = globalThis.COMMAND_LINE_ARGS;
 
 if (!cliArgs.enableIPv6 && !cliArgs.enableIPv4) {
@@ -112,20 +113,13 @@ app.use(bodyParser.json({ limit: '500mb' }));
 app.use(bodyParser.urlencoded({ extended: true, limit: '500mb' }));
 
 // CORS Settings //
-// @ts-expect-error TS(2345): Argument of type 'true' is not assignable to param... Remove this comment to see the full error message
 const corsEnabled = getConfigValue('cors.enabled', true, 'boolean');
 if (corsEnabled) {
-    // @ts-expect-error TS(2345): Argument of type '"null"' is not assignable to par... Remove this comment to see the full error message
     const corsOrigin = getConfigValue('cors.origin', 'null');
-    // @ts-expect-error TS(2345): Argument of type 'string[]' is not assignable to p... Remove this comment to see the full error message
     const corsMethods = getConfigValue('cors.methods', ['OPTIONS']);
-    // @ts-expect-error TS(2345): Argument of type 'never[]' is not assignable to pa... Remove this comment to see the full error message
     const corsAllowedHeaders = getConfigValue('cors.allowedHeaders', []);
-    // @ts-expect-error TS(2345): Argument of type 'never[]' is not assignable to pa... Remove this comment to see the full error message
     const corsExposedHeaders = getConfigValue('cors.exposedHeaders', []);
-    // @ts-expect-error TS(2345): Argument of type 'false' is not assignable to para... Remove this comment to see the full error message
     const corsCredentials = getConfigValue('cors.credentials', false, 'boolean');
-    // @ts-expect-error TS(2345): Argument of type '"number"' is not assignable to p... Remove this comment to see the full error message
     const corsMaxAge = getConfigValue('cors.maxAge', null, 'number');
 
     /** @type {cors.CorsOptions} */
@@ -169,7 +163,6 @@ app.use(cookieSession({
     sameSite: 'lax',
     httpOnly: true,
     maxAge: getSessionCookieAge(),
-    // @ts-expect-error TS(7017): Element implicitly has an 'any' type because type ... Remove this comment to see the full error message
     secret: getCookieSecret(globalThis.DATA_ROOT),
 }));
 
@@ -209,12 +202,12 @@ if (!cliArgs.disableCsrf) {
 
     // Customize the error message
     csrfSyncProtection.invalidCsrfTokenError.message = color.red('Invalid CSRF token. Please refresh the page and try again.');
-    // @ts-expect-error TS(2412): Type 'undefined' is not assignable to type 'string... Remove this comment to see the full error message
     csrfSyncProtection.invalidCsrfTokenError.stack = undefined;
 
     app.use(csrfSyncProtection.csrfSynchronisedProtection);
 } else {
     console.warn('\nCSRF protection is disabled. This will make your server vulnerable to CSRF attacks.\n');
+    // @ts-expect-error TS(6133): 'req' is declared but its value is never read.
     app.get('/csrf-token', (req, res) => {
         res.json({
             'token': 'disabled',
@@ -260,6 +253,7 @@ app.use('/api/users', usersPublicRouter);
 // Everything below this line requires authentication
 app.use(requireLoginMiddleware);
 app.post('/api/ping', (request, response) => {
+    // @ts-expect-error TS(4111): Property 'extend' comes from an index signature, s... Remove this comment to see the full error message
     if (request.query.extend && request.session) {
         request.session.touch = Date.now();
     }
@@ -350,15 +344,10 @@ async function preSetupTasks() {
     // Add private request filter.
     const requestFilterOptions = {
         listen: cliArgs.listen,
-        // @ts-expect-error TS(2345): Argument of type 'false' is not assignable to para... Remove this comment to see the full error message
         enabled: !!getConfigValue('privateAddressWhitelist.enabled', false, 'boolean'),
-        // @ts-expect-error TS(2345): Argument of type 'string[]' is not assignable to p... Remove this comment to see the full error message
         privateAddressWhitelist: getConfigValue('privateAddressWhitelist.allowedRanges', ['127.0.0.0/8', '::1/128']),
-        // @ts-expect-error TS(2345): Argument of type 'true' is not assignable to param... Remove this comment to see the full error message
         logBlocked: !!getConfigValue('privateAddressWhitelist.log.blockedRequests', true, 'boolean'),
-        // @ts-expect-error TS(2345): Argument of type 'false' is not assignable to para... Remove this comment to see the full error message
         logAllowed: !!getConfigValue('privateAddressWhitelist.log.allowedRequests', false, 'boolean'),
-        // @ts-expect-error TS(2345): Argument of type 'false' is not assignable to para... Remove this comment to see the full error message
         allowUnresolvedHosts: !!getConfigValue('privateAddressWhitelist.allowUnresolvedHosts', false, 'boolean'),
         enableKeepAlive: cliArgs.enableKeepAlive,
     };
@@ -380,15 +369,18 @@ async function preSetupTasks() {
 async function postSetupTasks(result: any) {
     const browserLaunchHostname = await cliArgs.getBrowserLaunchHostname(result);
     const browserLaunchUrl = cliArgs.getBrowserLaunchUrl(browserLaunchHostname);
-    // @ts-expect-error TS(2345): Argument of type '"default"' is not assignable to ... Remove this comment to see the full error message
     const browserLaunchApp = String(getConfigValue('browserLaunch.browser', 'default') ?? '');
 
     if (cliArgs.browserLaunchEnabled) {
         try {
             // TODO: This should be converted to a regular import when support for Node 18 is dropped
+            // @ts-expect-error TS(2792): Cannot find module 'open'. Did you mean to set the... Remove this comment to see the full error message
             const openModule = await import('open');
             const { default: open, apps } = openModule;
 
+            /**
+             *
+             */
             function getBrowsers() {
                 const isAndroid = process.platform === 'android';
                 if (isAndroid) {
@@ -403,7 +395,6 @@ async function postSetupTasks(result: any) {
             }
 
             const validBrowsers = getBrowsers();
-            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             const appName = validBrowsers[browserLaunchApp.trim().toLowerCase()];
             const openOptions = appName ? { app: { name: appName } } : {};
 
@@ -417,7 +408,6 @@ async function postSetupTasks(result: any) {
     if (cliArgs.heartbeatInterval > 0) {
         // Convert seconds to milliseconds for the timer
         const intervalMs = cliArgs.heartbeatInterval * 1000;
-        // @ts-expect-error TS(7017): Element implicitly has an 'any' type because type ... Remove this comment to see the full error message
         const heartbeatPath = path.join(globalThis.DATA_ROOT, 'heartbeat.json');
 
         console.log(`Heartbeat enabled. Updating ${color.green(heartbeatPath)} every ${cliArgs.heartbeatInterval} seconds`);
@@ -426,7 +416,6 @@ async function postSetupTasks(result: any) {
             try {
                 fs.writeFileSync(heartbeatPath, JSON.stringify({ timestamp: Date.now() }));
             } catch (err) {
-                // @ts-expect-error TS(2571): Object is of type 'unknown'.
                 console.error(`Failed to write heartbeat file at ${color.green(heartbeatPath)}:`, err.message);
             }
         };
@@ -475,8 +464,8 @@ async function postSetupTasks(result: any) {
  * Registers a not-found error response if a not-found error page exists. Should only be called after all other middlewares have been registered.
  */
 function apply404Middleware() {
-    // @ts-expect-error TS(7017): Element implicitly has an 'any' type because type ... Remove this comment to see the full error message
     const notFoundWebpage = safeReadFileSync(path.join(globalThis.DATA_ROOT, '_errors', 'url-not-found.html')) ?? '';
+    // @ts-expect-error TS(6133): 'req' is declared but its value is never read.
     app.use((req, res) => {
         res.status(404).send(notFoundWebpage);
     });
@@ -501,7 +490,6 @@ function setDnsResolutionOrder() {
 }
 
 // User storage module needs to be initialized before starting the server
-// @ts-expect-error TS(7017): Element implicitly has an 'any' type because type ... Remove this comment to see the full error message
 initUserStorage(globalThis.DATA_ROOT)
     .then(setDnsResolutionOrder)
     .then(ensurePublicDirectoriesExist)

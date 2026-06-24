@@ -16,6 +16,7 @@ export function displayLogitBias(logitBias, containerSelector) {
         return;
     }
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const list = $(containerSelector).find('.logit_bias_list');
     list.empty();
 
@@ -38,6 +39,7 @@ export function displayLogitBias(logitBias, containerSelector) {
         stop: function () {
             const order = [];
             list.children().each(function () {
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 order.unshift($(this).data('id'));
             });
             logitBias.sort((a, b) => order.indexOf(a.id) - order.indexOf(b.id));
@@ -70,19 +72,23 @@ export function createNewLogitBiasEntry(logitBias, containerSelector) {
  */
 function createLogitBiasListItem(entry, logitBias, containerSelector) {
     const id = entry.id;
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const template = $('#logit_bias_template .logit_bias_form').clone();
     template.data('id', id);
     template.find('.logit_bias_text').val(entry.text).on('input', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         entry.text = $(this).val();
         BIAS_CACHE.delete(containerSelector);
         saveSettingsDebounced();
     });
     template.find('.logit_bias_value').val(entry.value).on('input', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         entry.value = Number($(this).val());
         BIAS_CACHE.delete(containerSelector);
         saveSettingsDebounced();
     });
     template.find('.logit_bias_remove').on('click', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(this).closest('.logit_bias_form').remove();
         const index = logitBias.indexOf(entry);
         if (index > -1) {
@@ -91,6 +97,7 @@ function createLogitBiasListItem(entry, logitBias, containerSelector) {
         BIAS_CACHE.delete(containerSelector);
         saveSettingsDebounced();
     });
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(containerSelector).find('.logit_bias_list').prepend(template);
 }
 

@@ -10,7 +10,6 @@ let charStats = {};
 
 /**
  * Creates an HTML stat block.
- *
  * @param {string} statName - The name of the stat to be displayed.
  * @param {number|string} statValue - The value of the stat to be displayed.
  * @returns {string} - An HTML string representing the stat block.
@@ -24,7 +23,6 @@ function createStatBlock(statName, statValue) {
 
 /**
  * Verifies and returns a numerical stat value. If the provided stat is not a number, returns 0.
- *
  * @param {number|string} stat - The stat value to be checked and returned.
  * @returns {number} - The stat value if it is a number, otherwise 0.
  */
@@ -34,11 +32,10 @@ function verifyStatValue(stat) {
 
 /**
  * Calculates total stats from character statistics.
- *
- * @returns {Object} - Object containing total statistics.
+ * @returns {object} - Object containing total statistics.
  */
 function calculateTotalStats() {
-    let totalStats = {
+    const totalStats = {
         total_gen_time: 0,
         user_msg_count: 0,
         non_user_msg_count: 0,
@@ -49,29 +46,39 @@ function calculateTotalStats() {
         date_first_chat: new Date('9999-12-31T23:59:59.999Z').getTime(),
     };
 
-    for (let stats of Object.values(charStats)) {
+    for (const stats of Object.values(charStats)) {
+        // @ts-expect-error TS(2339): Property 'total_gen_time' does not exist on type '... Remove this comment to see the full error message
         totalStats.total_gen_time += verifyStatValue(stats.total_gen_time);
+        // @ts-expect-error TS(2339): Property 'user_msg_count' does not exist on type '... Remove this comment to see the full error message
         totalStats.user_msg_count += verifyStatValue(stats.user_msg_count);
         totalStats.non_user_msg_count += verifyStatValue(
+            // @ts-expect-error TS(2339): Property 'non_user_msg_count' does not exist on ty... Remove this comment to see the full error message
             stats.non_user_msg_count,
         );
+        // @ts-expect-error TS(2339): Property 'user_word_count' does not exist on type ... Remove this comment to see the full error message
         totalStats.user_word_count += verifyStatValue(stats.user_word_count);
         totalStats.non_user_word_count += verifyStatValue(
+            // @ts-expect-error TS(2339): Property 'non_user_word_count' does not exist on t... Remove this comment to see the full error message
             stats.non_user_word_count,
         );
         totalStats.total_swipe_count += verifyStatValue(
+            // @ts-expect-error TS(2339): Property 'total_swipe_count' does not exist on typ... Remove this comment to see the full error message
             stats.total_swipe_count,
         );
 
+        // @ts-expect-error TS(2339): Property 'date_last_chat' does not exist on type '... Remove this comment to see the full error message
         if (verifyStatValue(stats.date_last_chat) != 0) {
             totalStats.date_last_chat = Math.max(
                 totalStats.date_last_chat,
+                // @ts-expect-error TS(2339): Property 'date_last_chat' does not exist on type '... Remove this comment to see the full error message
                 stats.date_last_chat,
             );
         }
+        // @ts-expect-error TS(2339): Property 'date_first_chat' does not exist on type ... Remove this comment to see the full error message
         if (verifyStatValue(stats.date_first_chat) != 0) {
             totalStats.date_first_chat = Math.min(
                 totalStats.date_first_chat,
+                // @ts-expect-error TS(2339): Property 'date_first_chat' does not exist on type ... Remove this comment to see the full error message
                 stats.date_first_chat,
             );
         }
@@ -86,9 +93,8 @@ function calculateTotalStats() {
  * This function creates an HTML report from the provided stats, including chat age,
  * chat time, number of user messages and character messages, word count, and swipe count.
  * The stat blocks are tailored depending on the stats type ("User" or "Character").
- *
  * @param {string} statsType - The type of stats (e.g., "User", "Character").
- * @param {Object} stats - The stats data. Expected keys in this object include:
+ * @param {object} stats - The stats data. Expected keys in this object include:
  *      total_gen_time - total generation time
  *      date_first_chat - timestamp of the first chat
  *      date_last_chat - timestamp of the most recent chat
@@ -100,14 +106,14 @@ function calculateTotalStats() {
  */
 function createHtml(statsType, stats) {
     // Get time string
-    let timeStirng = humanizeGenTime(stats.total_gen_time);
+    const timeStirng = humanizeGenTime(stats.total_gen_time);
     let chatAge = 'Never';
     if (stats.date_first_chat < Date.now()) {
         chatAge = moment
             .duration(stats.date_last_chat - stats.date_first_chat)
             .humanize();
     }
-    let statsTypeTranslated = translate(statsType, `stats_header_${statsType}`);
+    const statsTypeTranslated = translate(statsType, `stats_header_${statsType}`);
 
     // Create popup HTML with stats
     let html = '<h3>' + t`${statsTypeTranslated} Stats` + '</h3>';
@@ -137,7 +143,7 @@ async function userStatsHandler() {
     await getStats();
 
     // Calculate total stats
-    let totalStats = calculateTotalStats();
+    const totalStats = calculateTotalStats();
 
     // Create HTML with stats
     createHtml('User', totalStats);
@@ -145,8 +151,7 @@ async function userStatsHandler() {
 
 /**
  * Handles the character stats by getting them from the server and generating the HTML report.
- *
- * @param {Object} characters - Object containing character data.
+ * @param {object} characters - Object containing character data.
  * @param {string} this_chid - The character id.
  */
 async function characterStatsHandler(characters, this_chid) {
@@ -184,6 +189,7 @@ async function getStats() {
     });
 
     if (!response.ok) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.error('Stats could not be loaded. Try reloading the page.');
         throw new Error('Error getting stats');
     }
@@ -195,7 +201,6 @@ async function getStats() {
  *
  * Sends a POST request to the "/api/stats/recreate" endpoint. If the request fails,
  * it displays an error notification and throws an error.
- *
  * @throws {Error} If the request to recreate stats is unsuccessful.
  */
 async function recreateStats() {
@@ -207,9 +212,11 @@ async function recreateStats() {
     });
 
     if (!response.ok) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.error('Stats could not be loaded. Try reloading the page.');
         throw new Error('Error getting stats');
     } else {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.success('Stats file recreated successfully!');
     }
 }
@@ -217,7 +224,6 @@ async function recreateStats() {
 
 /**
  * Calculates the generation time based on start and finish times.
- *
  * @param {string} gen_started - The start time in ISO 8601 format.
  * @param {string} gen_finished - The finish time in ISO 8601 format.
  * @returns {number} - The difference in time in milliseconds.
@@ -226,8 +232,8 @@ function calculateGenTime(gen_started, gen_finished) {
     if (gen_started === undefined || gen_finished === undefined) {
         return 0;
     }
-    let startDate = new Date(gen_started);
-    let endDate = new Date(gen_finished);
+    const startDate = new Date(gen_started);
+    const endDate = new Date(gen_finished);
     return endDate.getTime() - startDate.getTime();
 }
 
@@ -250,7 +256,6 @@ async function updateStats() {
 /**
  * Returns the count of words in the given string.
  * A word is a sequence of alphanumeric characters (including underscore).
- *
  * @param {string} str - The string to count words in.
  * @returns {number} - Number of words.
  */
@@ -261,10 +266,9 @@ function countWords(str) {
 
 /**
  * Handles stat processing for messages.
- *
- * @param {Object} line - Object containing message data.
+ * @param {object} line - Object containing message data.
  * @param {string} type - The type of the message processing (e.g., 'append', 'continue', 'appendFinal', 'swipe').
- * @param {Object} characters - Object containing character data.
+ * @param {object} characters - Object containing character data.
  * @param {string} this_chid - The character id.
  * @param {string} oldMessage - The old message that's being processed.
  */
@@ -297,7 +301,7 @@ async function statMesProcess(line, type, characters, this_chid, oldMessage) {
             stat.user_msg_count++;
             stat.user_word_count += countWords(line.mes);
         } else {
-            let oldLen = oldMessage.split(' ').length;
+            const oldLen = oldMessage.split(' ').length;
             stat.user_word_count += countWords(line.mes) - oldLen;
         }
     } else {
@@ -307,7 +311,7 @@ async function statMesProcess(line, type, characters, this_chid, oldMessage) {
             stat.non_user_msg_count++;
             stat.non_user_word_count += countWords(line.mes);
         } else {
-            let oldLen = oldMessage.split(' ').length;
+            const oldLen = oldMessage.split(' ').length;
             stat.non_user_word_count += countWords(line.mes) - oldLen;
         }
     }
@@ -323,7 +327,11 @@ async function statMesProcess(line, type, characters, this_chid, oldMessage) {
     updateStats();
 }
 
+/**
+ *
+ */
 export function initStats() {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('.rm_stats_button').on('click', function () {
         characterStatsHandler(characters, this_chid);
     });

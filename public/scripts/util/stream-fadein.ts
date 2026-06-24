@@ -12,7 +12,7 @@ export function isSegmenterSupported() {
  * Segment text in the given HTML content using Intl.Segmenter.
  * @param {HTMLElement} htmlElement Target HTML element
  * @param {string} htmlContent HTML content to segment
- * @param {'word'|'grapheme'|'sentence'} [granularity='word'] Text split granularity
+ * @param {'word'|'grapheme'|'sentence'} [granularity] Text split granularity
  */
 export function segmentTextInElement(htmlElement, htmlContent, granularity = 'word') {
     htmlElement.innerHTML = htmlContent;
@@ -22,6 +22,7 @@ export function segmentTextInElement(htmlElement, htmlContent, granularity = 'wo
     }
 
     // TODO: Support more locales, make granularity configurable.
+    // @ts-expect-error TS(2322): Type 'string' is not assignable to type '"word" | ... Remove this comment to see the full error message
     const segmenter = new Intl.Segmenter('en-US', { granularity });
     const textNodes = [];
     const walker = document.createTreeWalker(htmlElement, NodeFilter.SHOW_TEXT);
@@ -34,6 +35,7 @@ export function segmentTextInElement(htmlElement, htmlContent, granularity = 'wo
         }
 
         // Skip text nodes that are empty or only whitespace
+        // @ts-expect-error TS(2339): Property 'data' does not exist on type 'Node'.
         if (/^\s*$/.test(textNode.data)) {
             continue;
         }

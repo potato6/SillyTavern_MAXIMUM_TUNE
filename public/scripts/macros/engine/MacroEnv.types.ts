@@ -18,7 +18,7 @@
  */
 
 /**
- * @typedef {Object} MacroEnvNames
+ * @typedef {object} MacroEnvNames
  * @property {string} user
  * @property {string} char
  * @property {string} group
@@ -27,7 +27,7 @@
  */
 
 /**
- * @typedef {Object} MacroEnvCharacter
+ * @typedef {object} MacroEnvCharacter
  * @property {string} [description]
  * @property {string} [personality]
  * @property {string} [scenario]
@@ -43,18 +43,18 @@
  */
 
 /**
- * @typedef {Object} MacroEnvSystem
+ * @typedef {object} MacroEnvSystem
  * @property {string} model
  */
 
 /**
- * @typedef {Object} MacroEnvFunctions
+ * @typedef {object} MacroEnvFunctions
  * @property {() => string} [original]
  * @property {(text: string) => string} postProcess
  */
 
 /**
- * @typedef {Object} MacroEnv
+ * @typedef {object} MacroEnv
  * @property {string} content - The full original input string that is being processed by the macro engine. This is the same value as substituteParams "content" and is provided so macros can build deterministic behavior based on the whole prompt when needed.
  * @property {number} contentHash - A hash of the content string, used for caching and comparison.
  * @property {MacroEnvNames} names

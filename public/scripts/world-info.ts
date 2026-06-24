@@ -59,7 +59,9 @@ export const scan_state = {
     MIN_ACTIVATIONS: 3,
 };
 
+// @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
 const WI_ENTRY_HEADER_TEMPLATE = $('#entry_edit_template .world_entry');
+// @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
 const WI_ENTRY_EDIT_TEMPLATE = $('#entry_edit_template .world_entry_edit');
 
 export let world_info = {};
@@ -89,6 +91,7 @@ const sortFn = (a, b) => b.order - a.order;
 let updateEditor = (navigation, flashOnNav = true) => { console.debug('Triggered WI navigation', navigation, flashOnNav); };
 
 // Do not optimize. updateEditor is a function that is updated by the displayWorldEntries with new data.
+// @ts-expect-error TS(2554): Expected 1-2 arguments, but got 0.
 export const worldInfoFilter = new FilterHelper(() => updateEditor());
 export const SORT_ORDER_KEY = 'world_info_sort_order';
 export const METADATA_KEY = 'world_info';
@@ -264,7 +267,7 @@ class WorldInfoBuffer {
      * @param {string} str The string to transform
      * @param {WIScanEntry} entry The entry that triggered the scan
      * @returns {string} The transformed string
-    */
+     */
     #transformString(str, entry) {
         const caseSensitive = entry.caseSensitive ?? world_info_case_sensitive;
         return caseSensitive ? str : str.toLowerCase();
@@ -522,6 +525,7 @@ class WorldInfoTimedEffects {
 
             const key = this.#getEntryKey(entry);
             const effect = this.#getEntryTimedEffect('cooldown', entry, true);
+            // @ts-expect-error TS(2339): Property 'timedWorldInfo' does not exist on type '... Remove this comment to see the full error message
             chat_metadata.timedWorldInfo.cooldown[key] = effect;
             console.log(`[WI] Adding cooldown entry ${key} on ended sticky: start=${effect.start}, end=${effect.end}, protected=${effect.protected}`);
             // Set the cooldown immediately for this evaluation
@@ -557,19 +561,25 @@ class WorldInfoTimedEffects {
      * Verify correct structure of chat metadata.
      */
     #ensureChatMetadata() {
+        // @ts-expect-error TS(2339): Property 'timedWorldInfo' does not exist on type '... Remove this comment to see the full error message
         if (!chat_metadata.timedWorldInfo) {
+            // @ts-expect-error TS(2339): Property 'timedWorldInfo' does not exist on type '... Remove this comment to see the full error message
             chat_metadata.timedWorldInfo = {};
         }
 
         ['sticky', 'cooldown'].forEach(type => {
             // Ensure the property exists and is an object
+            // @ts-expect-error TS(2339): Property 'timedWorldInfo' does not exist on type '... Remove this comment to see the full error message
             if (!chat_metadata.timedWorldInfo[type] || typeof chat_metadata.timedWorldInfo[type] !== 'object') {
+                // @ts-expect-error TS(2339): Property 'timedWorldInfo' does not exist on type '... Remove this comment to see the full error message
                 chat_metadata.timedWorldInfo[type] = {};
             }
 
             // Clean up invalid entries
+            // @ts-expect-error TS(2339): Property 'timedWorldInfo' does not exist on type '... Remove this comment to see the full error message
             Object.entries(chat_metadata.timedWorldInfo[type]).forEach(([key, value]) => {
                 if (!value || typeof value !== 'object') {
+                    // @ts-expect-error TS(2339): Property 'timedWorldInfo' does not exist on type '... Remove this comment to see the full error message
                     delete chat_metadata.timedWorldInfo[type][key];
                 }
             });
@@ -577,10 +587,10 @@ class WorldInfoTimedEffects {
     }
 
     /**
-    * Gets a hash for a WI entry.
-    * @param {WIScanEntry} entry WI entry
-    * @returns {number} String hash
-    */
+     * Gets a hash for a WI entry.
+     * @param {WIScanEntry} entry WI entry
+     * @returns {number} String hash
+     */
     #getEntryHash(entry) {
         return entry.hash;
     }
@@ -618,21 +628,27 @@ class WorldInfoTimedEffects {
      */
     #checkTimedEffectOfType(type, buffer, onEnded) {
         /** @type {[string, WITimedEffect][]} */
+        // @ts-expect-error TS(2339): Property 'timedWorldInfo' does not exist on type '... Remove this comment to see the full error message
         const effects = Object.entries(chat_metadata.timedWorldInfo[type]);
         for (const [key, value] of effects) {
             console.log(`[WI] Processing ${type} entry ${key}`, value);
+            // @ts-expect-error TS(2339): Property 'hash' does not exist on type 'unknown'.
             const entry = this.#entries.find(x => String(this.#getEntryHash(x)) === String(value.hash));
 
+            // @ts-expect-error TS(2339): Property 'start' does not exist on type 'unknown'.
             if (this.#chat.length <= Number(value.start) && !value.protected) {
                 console.log(`[WI] Removing ${type} entry ${key} from timedWorldInfo: chat not advanced`, value);
+                // @ts-expect-error TS(2339): Property 'timedWorldInfo' does not exist on type '... Remove this comment to see the full error message
                 delete chat_metadata.timedWorldInfo[type][key];
                 continue;
             }
 
             // Missing entries (they could be from another character's lorebook)
             if (!entry) {
+                // @ts-expect-error TS(2339): Property 'end' does not exist on type 'unknown'.
                 if (this.#chat.length >= Number(value.end)) {
                     console.log(`[WI] Removing ${type} entry from timedWorldInfo: entry not found and interval passed`, entry);
+                    // @ts-expect-error TS(2339): Property 'timedWorldInfo' does not exist on type '... Remove this comment to see the full error message
                     delete chat_metadata.timedWorldInfo[type][key];
                 }
                 continue;
@@ -641,12 +657,15 @@ class WorldInfoTimedEffects {
             // Ignore invalid entries (not configured for timed effects)
             if (!entry[type]) {
                 console.log(`[WI] Removing ${type} entry from timedWorldInfo: entry not ${type}`, entry);
+                // @ts-expect-error TS(2339): Property 'timedWorldInfo' does not exist on type '... Remove this comment to see the full error message
                 delete chat_metadata.timedWorldInfo[type][key];
                 continue;
             }
 
+            // @ts-expect-error TS(2339): Property 'end' does not exist on type 'unknown'.
             if (this.#chat.length >= Number(value.end)) {
                 console.log(`[WI] Removing ${type} entry from timedWorldInfo: ${type} interval passed`, entry);
+                // @ts-expect-error TS(2339): Property 'timedWorldInfo' does not exist on type '... Remove this comment to see the full error message
                 delete chat_metadata.timedWorldInfo[type][key];
                 if (typeof onEnded === 'function') {
                     onEnded(entry);
@@ -699,6 +718,7 @@ class WorldInfoTimedEffects {
         }
 
         const key = this.#getEntryKey(entry);
+        // @ts-expect-error TS(2339): Property 'timedWorldInfo' does not exist on type '... Remove this comment to see the full error message
         return chat_metadata.timedWorldInfo[type][key];
     }
 
@@ -715,8 +735,10 @@ class WorldInfoTimedEffects {
 
         const key = this.#getEntryKey(entry);
 
+        // @ts-expect-error TS(2339): Property 'timedWorldInfo' does not exist on type '... Remove this comment to see the full error message
         if (!chat_metadata.timedWorldInfo[type][key]) {
             const effect = this.#getEntryTimedEffect(type, entry, false);
+            // @ts-expect-error TS(2339): Property 'timedWorldInfo' does not exist on type '... Remove this comment to see the full error message
             chat_metadata.timedWorldInfo[type][key] = effect;
 
             console.log(`[WI] Adding ${type} entry ${key}: start=${effect.start}, end=${effect.end}, protected=${effect.protected}`);
@@ -750,10 +772,12 @@ class WorldInfoTimedEffects {
         }
 
         const key = this.#getEntryKey(entry);
+        // @ts-expect-error TS(2339): Property 'timedWorldInfo' does not exist on type '... Remove this comment to see the full error message
         delete chat_metadata.timedWorldInfo[type][key];
 
         if (newState) {
             const effect = this.#getEntryTimedEffect(type, entry, false);
+            // @ts-expect-error TS(2339): Property 'timedWorldInfo' does not exist on type '... Remove this comment to see the full error message
             chat_metadata.timedWorldInfo[type][key] = effect;
             console.log(`[WI] Adding ${type} entry ${key}: start=${effect.start}, end=${effect.end}, protected=${effect.protected}`);
         }
@@ -792,6 +816,9 @@ class WorldInfoTimedEffects {
     }
 }
 
+/**
+ *
+ */
 export function getWorldInfoSettings() {
     return {
         world_info,
@@ -876,9 +903,8 @@ export const wi_anchor_position = {
  *
  * This will return a deep clone of the data, so no way to modify the data without actually saving it.
  * Should generally be only used for readonly access.
- *
  * @type {StructuredCloneMap<string,object>}
- * */
+ */
 export const worldInfoCache = new StructuredCloneMap({ cloneOnGet: true, cloneOnSet: false });
 
 /**
@@ -914,6 +940,11 @@ export async function getWorldInfoPrompt(chat, maxContext, isDryRun, globalScanD
     };
 }
 
+/**
+ *
+ * @param settings
+ * @param data
+ */
 export function setWorldInfoSettings(settings, data) {
     if (settings.world_info_depth !== undefined)
         world_info_depth = Number(settings.world_info_depth);
@@ -964,32 +995,52 @@ export function setWorldInfoSettings(settings, data) {
 
     world_info = settings.world_info ?? {};
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_info_depth_counter').val(world_info_depth);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_info_depth').val(world_info_depth);
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_info_min_activations_counter').val(world_info_min_activations);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_info_min_activations').val(world_info_min_activations);
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_info_min_activations_depth_max_counter').val(world_info_min_activations_depth_max);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_info_min_activations_depth_max').val(world_info_min_activations_depth_max);
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_info_budget_counter').val(world_info_budget);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_info_budget').val(world_info_budget);
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_info_include_names').prop('checked', world_info_include_names);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_info_recursive').prop('checked', world_info_recursive);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_info_overflow_alert').prop('checked', world_info_overflow_alert);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_info_case_sensitive').prop('checked', world_info_case_sensitive);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_info_match_whole_words').prop('checked', world_info_match_whole_words);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_info_use_group_scoring').prop('checked', world_info_use_group_scoring);
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(`#world_info_character_strategy option[value='${world_info_character_strategy}']`).prop('selected', true);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_info_character_strategy').val(world_info_character_strategy);
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_info_budget_cap').val(world_info_budget_cap);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_info_budget_cap_counter').val(world_info_budget_cap);
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_info_max_recursion_steps').val(world_info_max_recursion_steps);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_info_max_recursion_steps_counter').val(world_info_max_recursion_steps);
 
     world_names = data.world_names?.length ? data.world_names : [];
@@ -998,20 +1049,27 @@ export function setWorldInfoSettings(settings, data) {
     selected_world_info = selected_world_info.concat(settings.world_info?.globalSelect?.filter((e) => world_names.includes(e)) ?? []);
 
     if (world_names.length > 0) {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#world_info').empty();
     }
 
     world_names.forEach((item, i) => {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#world_info').append(`<option value='${i}'${selected_world_info.includes(item) ? ' selected' : ''}>${item}</option>`);
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#world_editor_select').append(`<option value='${i}'>${item}</option>`);
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_info_sort_order').val(accountStorage.getItem(SORT_ORDER_KEY) || '0');
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_info').trigger('change');
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_editor_select').trigger('change');
 
     eventSource.on(event_types.CHAT_CHANGED, async () => {
         const hasWorldInfo = !!chat_metadata[METADATA_KEY] && world_names.includes(chat_metadata[METADATA_KEY]);
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('.chat_lorebook_button').toggleClass('world_set', hasWorldInfo);
         // Pre-cache the world info data for the chat for quicker first prompt generation
         await getSortedEntries();
@@ -1035,17 +1093,22 @@ export function setWorldInfoSettings(settings, data) {
 /**
  * Reloads the editor with the specified world info file
  * @param {string} file - The file to load in the editor
- * @param {boolean} [loadIfNotSelected=false] - Indicates whether to load the file even if it's not currently selected
+ * @param {boolean} [loadIfNotSelected] - Indicates whether to load the file even if it's not currently selected
  */
 export function reloadEditor(file, loadIfNotSelected = false) {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const currentIndex = Number($('#world_editor_select').val());
     const selectedIndex = world_names.indexOf(file);
     if (selectedIndex !== -1 && (loadIfNotSelected || currentIndex === selectedIndex)) {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#world_editor_select').val(selectedIndex).trigger('change');
     }
 }
 
 //MARK: regWISlashCommands
+/**
+ *
+ */
 function registerWorldInfoSlashCommands() {
     /**
      * Gets a *rough* approximation of the current chat context.
@@ -1057,8 +1120,17 @@ function registerWorldInfoSlashCommands() {
         return getContext().chat.filter(x => !x.is_system).map(x => x.mes);
     }
 
+    /**
+     *
+     * @param file
+     * @param root0
+     * @param root0.args
+     * @param root0.unnamed
+     * @param root0.callbackName
+     */
     async function getEntriesFromFile(file, { args = {}, unnamed = null, callbackName = 'getEntriesFromFile' } = {}) {
         if (!file || !world_names.includes(file)) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.warning(t`Valid World Info file name is required`);
             logSlashCommandWarn(`${callbackName}: Valid World Info file name is required`, args, unnamed);
             return '';
@@ -1067,6 +1139,7 @@ function registerWorldInfoSlashCommands() {
         const data = await loadWorldInfo(file);
 
         if (!data || !('entries' in data)) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.warning(t`World Info file has an invalid format`);
             logSlashCommandWarn(`${callbackName}: World Info file has an invalid format`, args, unnamed);
             return '';
@@ -1075,6 +1148,7 @@ function registerWorldInfoSlashCommands() {
         const entries = Object.values(data.entries);
 
         if (!entries || entries.length === 0) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.warning(t`World Info file has no entries`);
             logSlashCommandWarn(`${callbackName}: World Info file has no entries`, args, unnamed);
             return '';
@@ -1090,7 +1164,7 @@ function registerWorldInfoSlashCommands() {
      * @returns {Promise<string>} The name of the persona-bound lorebook
      */
     async function getPersonaBookCallback({ name, create }, _unnamedArg) {
-        let bookName = power_user.persona_description_lorebook || '';
+        const bookName = power_user.persona_description_lorebook || '';
         if (bookName) {
             return bookName;
         }
@@ -1119,6 +1193,7 @@ function registerWorldInfoSlashCommands() {
         characterIdentifier = String(characterIdentifier ?? '') || context.characters[context.characterId]?.avatar || null;
         const character = findChar({ name: characterIdentifier });
         if (!character) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.error(t`Character not found.`);
             logSlashCommandWarn('getCharBookCallback: Character not found', { type, name, create }, { characterIdentifier });
             return '';
@@ -1129,6 +1204,7 @@ function registerWorldInfoSlashCommands() {
         }
         if (type === 'all' || type === 'additional') {
             const fileName = getCharaFilename(context.characters.indexOf(character));
+            // @ts-expect-error TS(2339): Property 'charLore' does not exist on type '{}'.
             const extraCharLore = world_info.charLore?.find((e) => e.name === fileName);
             if (extraCharLore && Array.isArray(extraCharLore.extraBooks)) {
                 books.push(...extraCharLore.extraBooks.filter(onlyUnique).filter(Boolean));
@@ -1160,6 +1236,7 @@ function registerWorldInfoSlashCommands() {
         const chatId = getCurrentChatId();
 
         if (!chatId) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.warning(t`Open a chat to get a name of the chat-bound lorebook`);
             logSlashCommandWarn('getChatBookCallback: Open a chat to get a name of the chat-bound lorebook', args);
             return '';
@@ -1177,10 +1254,16 @@ function registerWorldInfoSlashCommands() {
 
         chat_metadata[METADATA_KEY] = name;
         await saveMetadata();
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('.chat_lorebook_button').addClass('world_set');
         return name;
     }
 
+    /**
+     *
+     * @param possibleName
+     * @param fallbackName
+     */
     async function createWorldWithName(possibleName = undefined, fallbackName = undefined) {
         let newName = (() => {
             // Use the provided name if it's not in use
@@ -1203,6 +1286,11 @@ function registerWorldInfoSlashCommands() {
         return newName;
     }
 
+    /**
+     *
+     * @param args
+     * @param value
+     */
     async function findBookEntryCallback(args, value) {
         const file = args.file;
         const field = args.field || 'key';
@@ -1247,6 +1335,11 @@ function registerWorldInfoSlashCommands() {
         return result;
     }
 
+    /**
+     *
+     * @param args
+     * @param uid
+     */
     async function getEntryFieldCallback(args, uid) {
         const file = args.file;
         const field = args.field || 'content';
@@ -1258,9 +1351,11 @@ function registerWorldInfoSlashCommands() {
             return '';
         }
 
+        // @ts-expect-error TS(2339): Property 'uid' does not exist on type 'unknown'.
         const entry = entries.find(x => String(x.uid) === String(uid));
 
         if (!entry) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.warning('Valid UID is required');
             logSlashCommandWarn('getEntryFieldCallback: Valid UID is required', args, { uid });
             console.warn();
@@ -1268,6 +1363,7 @@ function registerWorldInfoSlashCommands() {
         }
 
         if (!Object.hasOwn(newWorldInfoEntryDefinition, field)) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.warning('Valid field name is required');
             logSlashCommandWarn('getEntryFieldCallback: Valid field name is required', args, { uid });
             return '';
@@ -1277,21 +1373,28 @@ function registerWorldInfoSlashCommands() {
         let fieldValue;
         switch (field) {
             case 'characterFilterNames':
+                // @ts-expect-error TS(2339): Property 'characterFilter' does not exist on type ... Remove this comment to see the full error message
                 if (entry.characterFilter) {
+                    // @ts-expect-error TS(2339): Property 'characterFilter' does not exist on type ... Remove this comment to see the full error message
                     fieldValue = entry.characterFilter.names;
                 }
                 break;
             case 'characterFilterTags':
+                // @ts-expect-error TS(2339): Property 'characterFilter' does not exist on type ... Remove this comment to see the full error message
                 if (entry.characterFilter) {
+                    // @ts-expect-error TS(2339): Property 'characterFilter' does not exist on type ... Remove this comment to see the full error message
                     if (!entry.characterFilter.tags) {
                         return '';
                     }
                     //Find the tag objects corresponding to each ID in the array, then return the names
+                    // @ts-expect-error TS(2339): Property 'characterFilter' does not exist on type ... Remove this comment to see the full error message
                     fieldValue = tags.filter((tag) => entry.characterFilter.tags.includes(tag.id)).map((tag) => tag.name);
                 }
                 break;
             case 'characterFilterExclude':
+                // @ts-expect-error TS(2339): Property 'characterFilter' does not exist on type ... Remove this comment to see the full error message
                 if (entry.characterFilter) {
+                    // @ts-expect-error TS(2339): Property 'characterFilter' does not exist on type ... Remove this comment to see the full error message
                     fieldValue = entry.characterFilter.isExclude;
                 }
                 break;
@@ -1310,6 +1413,11 @@ function registerWorldInfoSlashCommands() {
         return substituteParams(String(fieldValue));
     }
 
+    /**
+     *
+     * @param args
+     * @param content
+     */
     async function createEntryCallback(args, content) {
         const file = args.file;
         const key = args.key;
@@ -1317,6 +1425,7 @@ function registerWorldInfoSlashCommands() {
         const data = await loadWorldInfo(file);
 
         if (!data || !('entries' in data)) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.warning('Valid World Info file name is required');
             logSlashCommandWarn('createEntryCallback: Valid World Info file name is required', args);
             return '';
@@ -1325,12 +1434,16 @@ function registerWorldInfoSlashCommands() {
         const entry = createWorldInfoEntry(file, data);
 
         if (key) {
+            // @ts-expect-error TS(2339): Property 'key' does not exist on type '{ uid: numb... Remove this comment to see the full error message
             entry.key.push(key);
+            // @ts-expect-error TS(2339): Property 'addMemo' does not exist on type '{ uid: ... Remove this comment to see the full error message
             entry.addMemo = true;
+            // @ts-expect-error TS(2339): Property 'comment' does not exist on type '{ uid: ... Remove this comment to see the full error message
             entry.comment = key;
         }
 
         if (content) {
+            // @ts-expect-error TS(2339): Property 'content' does not exist on type '{ uid: ... Remove this comment to see the full error message
             entry.content = content;
         }
 
@@ -1340,6 +1453,11 @@ function registerWorldInfoSlashCommands() {
         return String(entry.uid);
     }
 
+    /**
+     *
+     * @param args
+     * @param value
+     */
     async function setEntryFieldCallback(args, value) {
         const file = args.file;
         const uid = args.uid;
@@ -1363,6 +1481,7 @@ function registerWorldInfoSlashCommands() {
         };
 
         if (value === undefined) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.warning('Value is required');
             logSlashCommandWarn('setEntryFieldCallback: Value is required', args, { value });
             return '';
@@ -1373,6 +1492,7 @@ function registerWorldInfoSlashCommands() {
         const data = await loadWorldInfo(file);
 
         if (!data || !('entries' in data)) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.warning('Valid World Info file name is required');
             logSlashCommandWarn('setEntryFieldCallback: Valid World Info file name is required', args, { value });
             return '';
@@ -1381,12 +1501,14 @@ function registerWorldInfoSlashCommands() {
         const entry = data.entries[uid];
 
         if (!entry) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.warning('Valid UID is required');
             logSlashCommandWarn('setEntryFieldCallback: Valid UID is required', args, { value });
             return '';
         }
 
         if (!Object.hasOwn(newWorldInfoEntryDefinition, field)) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.warning('Valid field name is required');
             logSlashCommandWarn('setEntryFieldCallback: Valid field name is required', args, { value });
             return '';
@@ -1446,6 +1568,11 @@ function registerWorldInfoSlashCommands() {
         return '';
     }
 
+    /**
+     *
+     * @param args
+     * @param value
+     */
     async function getTimedEffectCallback(args, value) {
         if (!getCurrentChatId()) {
             throw new Error('This command can only be used in chat');
@@ -1462,19 +1589,23 @@ function registerWorldInfoSlashCommands() {
         }
 
         /** @type {WIScanEntry} */
+        // @ts-expect-error TS(2339): Property 'uid' does not exist on type 'unknown'.
         const entry = structuredClone(entries.find(x => String(x.uid) === String(uid)));
 
         if (!entry) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.warning('Valid UID is required');
             logSlashCommandWarn('getTimedEffectCallback: Valid UID is required', args, { uid });
             return '';
         }
 
+        // @ts-expect-error TS(2339): Property 'world' does not exist on type 'unknown'.
         entry.world = file; // Required by the timed effects manager
         const chat = getScanningChat();
         const timedEffects = new WorldInfoTimedEffects(chat, [entry]);
 
         if (!timedEffects.isValidEffectType(effect)) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.warning('Valid effect type is required');
             logSlashCommandWarn('getTimedEffectCallback: Valid effect type is required', args, { uid });
             return '';
@@ -1489,6 +1620,11 @@ function registerWorldInfoSlashCommands() {
         return String(!!data);
     }
 
+    /**
+     *
+     * @param args
+     * @param value
+     */
     async function setTimedEffectCallback(args, value) {
         if (!getCurrentChatId()) {
             throw new Error('This command can only be used in chat');
@@ -1499,6 +1635,7 @@ function registerWorldInfoSlashCommands() {
         const effect = args.effect;
 
         if (value === undefined) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.warning('New state is required');
             logSlashCommandWarn('setTimedEffectCallback: New state is required', args, { value });
             return '';
@@ -1511,25 +1648,30 @@ function registerWorldInfoSlashCommands() {
         }
 
         /** @type {WIScanEntry} */
+        // @ts-expect-error TS(2339): Property 'uid' does not exist on type 'unknown'.
         const entry = structuredClone(entries.find(x => String(x.uid) === String(uid)));
 
         if (!entry) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.warning('Valid UID is required');
             logSlashCommandWarn('setTimedEffectCallback: Valid UID is required', args, { value });
             return '';
         }
 
+        // @ts-expect-error TS(2339): Property 'world' does not exist on type 'unknown'.
         entry.world = file; // Required by the timed effects manager
         const chat = getScanningChat();
         const timedEffects = new WorldInfoTimedEffects(chat, [entry]);
 
         if (!timedEffects.isValidEffectType(effect)) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.warning('Valid effect type is required');
             logSlashCommandWarn('setTimedEffectCallback: Valid effect type is required', args, { value });
             return '';
         }
 
         if (!entry[effect]) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.warning('This entry does not have the selected effect. Configure it in the editor first.');
             logSlashCommandWarn('setTimedEffectCallback: This entry does not have the selected effect', args, { value });
             return '';
@@ -1557,6 +1699,7 @@ function registerWorldInfoSlashCommands() {
         timedEffects.setTimedEffect(effect, entry, newEffectState);
 
         await saveMetadata();
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.success(`Timed effect "${effect}" for entry ${entry.uid} is now ${newEffectState ? 'active' : 'inactive'}`);
 
         return '';
@@ -1569,7 +1712,10 @@ function registerWorldInfoSlashCommands() {
             new SlashCommandEnumValue(key, `[${value.type}] default: ${(typeof value.default === 'string' ? `'${value.default}'` : JSON.stringify(value.default))}`,
                 enumTypes.enum, enumIcons.getDataTypeIcon(value.type))),
 
-        /** All existing UIDs based on the file argument as world name */
+        /**
+         * All existing UIDs based on the file argument as world name
+         * @param executor
+         */
         wiUids: (/** @type {import('./slash-commands/SlashCommandExecutor.js').SlashCommandExecutor} */ executor) => {
             const file = executor.namedArgumentList.find(it => it.name == 'file')?.value;
             if (file instanceof SlashCommandClosure) throw new Error('Argument \'file\' does not support closures');
@@ -1578,6 +1724,7 @@ function registerWorldInfoSlashCommands() {
             const world = worldInfoCache.get(file);
             if (!world) return [];
             return Object.entries(world.entries).map(([uid, data]) =>
+                // @ts-expect-error TS(2339): Property 'comment' does not exist on type 'unknown... Remove this comment to see the full error message
                 new SlashCommandEnumValue(uid, `${data.comment ? `${data.comment}: ` : ''}${data.key.join(', ')}${data.keysecondary?.length ? ` [${Object.entries(world_info_logic).find(([_, value]) => value == data.selectiveLogic)[0]}] ${data.keysecondary.join(', ')}` : ''} [${getWiPositionString(data)}]`,
                     enumTypes.enum, enumIcons.getWiStatusIcon(data)));
         },
@@ -1588,6 +1735,10 @@ function registerWorldInfoSlashCommands() {
         ],
     };
 
+    /**
+     *
+     * @param entry
+     */
     function getWiPositionString(entry) {
         switch (entry.position) {
             case world_info_position.before: return '↑Char';
@@ -1601,12 +1752,15 @@ function registerWorldInfoSlashCommands() {
         }
     }
 
+    /**
+     *
+     */
     async function getGlobalBooksCallback() {
         if (!selected_world_info?.length) {
             return JSON.stringify([]);
         }
 
-        let entries = selected_world_info.slice();
+        const entries = selected_world_info.slice();
 
         console.debug(`[WI] Selected global world info has ${entries.length} entries`, selected_world_info);
 
@@ -2011,9 +2165,8 @@ function registerWorldInfoSlashCommands() {
 
 /**
  * Loads the given world into the World Editor.
- *
  * @param {string} name - The name of the world
- * @return {Promise<void>} A promise that resolves when the world editor is loaded
+ * @returns {Promise<void>} A promise that resolves when the world editor is loaded
  */
 export async function showWorldEditor(name) {
     if (!name) {
@@ -2029,9 +2182,8 @@ export async function showWorldEditor(name) {
  * Loads world info from the backend.
  *
  * This function will return from `worldInfoCache` if it has already been loaded before.
- *
  * @param {string} name - The name of the world to load
- * @return {Promise<Object|null>} A promise that resolves to the loaded world information, or null if the request fails.
+ * @returns {Promise<object | null>} A promise that resolves to the loaded world information, or null if the request fails.
  */
 export async function loadWorldInfo(name) {
     if (!name) {
@@ -2058,6 +2210,9 @@ export async function loadWorldInfo(name) {
     return null;
 }
 
+/**
+ *
+ */
 export async function updateWorldInfoList() {
     const result = await fetch('/api/settings/get', {
         method: 'POST',
@@ -2067,9 +2222,12 @@ export async function updateWorldInfoList() {
 
     if (result.ok) {
         const data = await result.json();
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const editorSelected = String($('#world_editor_select').find(':selected').text());
         world_names = data.world_names?.length ? data.world_names : [];
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#world_info').find('option[value!=""]').remove();
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#world_editor_select').find('option[value!=""]').remove();
 
         world_names.forEach((item, i) => {
@@ -2077,18 +2235,29 @@ export async function updateWorldInfoList() {
             globalListOption.selected = selected_world_info.includes(item);
             const editorListOption = new Option(item, i.toString());
             editorListOption.selected = editorSelected === item;
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#world_info').append(globalListOption);
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#world_editor_select').append(editorListOption);
         });
     }
 }
 
+/**
+ *
+ */
 async function hideWorldEditor() {
     await displayWorldEntries(null, null);
 }
 
+/**
+ *
+ * @param name
+ */
 function getWIElement(name) {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const wiElement = $('#world_info').children().filter(function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         return $(this).text().toLowerCase() === name.toLowerCase();
     });
 
@@ -2137,13 +2306,13 @@ function addMissingWorldInfoFields(data) {
 
 /**
  * Sorts the given data based on the selected sort option
- *
  * @param {any[]} data WI entries
- * @param {object} [options={}] - Optional arguments
- * @param {{sortField?: string, sortOrder?: string, sortRule?: string}} [options.customSort={}] - Custom sort options, instead of the chosen UI sort
+ * @param {object} [options] - Optional arguments
+ * @param {{sortField?: string, sortOrder?: string, sortRule?: string}} [options.customSort] - Custom sort options, instead of the chosen UI sort
  * @returns {any[]} Sorted data
  */
 export function sortWorldInfoEntries(data, { customSort = null } = {}) {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const option = $('#world_info_sort_order').find(':selected');
     const sortField = customSort?.sortField ?? option.data('field');
     const sortOrder = customSort?.sortOrder ?? option.data('order');
@@ -2209,7 +2378,11 @@ export function sortWorldInfoEntries(data, { customSort = null } = {}) {
     return data;
 }
 
+/**
+ *
+ */
 function nullWorldInfo() {
+    // @ts-expect-error TS(2304): Cannot find name 'toastr'.
     toastr.info('Create or import a new World Info file first.', 'World Info is not set', { timeOut: 10000, preventDuplicates: true });
 }
 
@@ -2220,8 +2393,8 @@ const worldEntryKeyOptionsCache = [];
  * Update the cache and all select options for the keys with new values to display
  * @param {string[]|Select2Option[]} keyOptions - An array of options to update
  * @param {object} options - Optional arguments
- * @param {boolean?} [options.remove=false] - Whether the option was removed, so the count should be reduced - otherwise it'll be increased
- * @param {boolean?} [options.reset=false] - Whether the cache should be reset. Reset will also not trigger update of the controls, as we expect them to be redrawn anyway
+ * @param {boolean?} [options.remove] - Whether the option was removed, so the count should be reduced - otherwise it'll be increased
+ * @param {boolean?} [options.reset] - Whether the cache should be reset. Reset will also not trigger update of the controls, as we expect them to be redrawn anyway
  */
 function updateWorldEntryKeyOptionsCache(keyOptions, { remove = false, reset = false } = {}) {
     if (!keyOptions.length) return;
@@ -2244,6 +2417,10 @@ function updateWorldEntryKeyOptionsCache(keyOptions, { remove = false, reset = f
     worldEntryKeyOptionsCache.sort((a, b) => b.count - a.count || a.text.localeCompare(b.text));
 }
 
+/**
+ *
+ * @param $list
+ */
 function clearEntryList($list) {
     console.time('clearEntryList');
 
@@ -2258,14 +2435,17 @@ function clearEntryList($list) {
 
     // Step 1: Clean all <option> elements within <select>
     $list.find('option').each(function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const $option = $(this);
         $option.off();
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $.cleanData([$option[0]]);
         $option.remove();
     });
 
     // Step 2: Clean all <select> elements
     $list.find('select').each(function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const $select = $(this);
         // Remove Select2-related data and container if present
         if ($select.data('select2')) {
@@ -2278,18 +2458,22 @@ function clearEntryList($list) {
         const $container = $select.parent();
         if ($container.length) {
             $container.find('*').off();
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $.cleanData($container.find('*').get());
             $container.remove();
         }
 
         $select.off();
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $.cleanData([$select[0]]);
     });
 
     // Step 3: Clean <div>, <span>, <input>
     $list.find('div, span, input').each(function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const $elem = $(this);
         $elem.off();
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $.cleanData([$elem[0]]);
         $elem.remove();
     });
@@ -2307,37 +2491,55 @@ function clearEntryList($list) {
 }
 
 //MARK: displayWorldEntries
+/**
+ *
+ * @param name
+ * @param data
+ * @param navigation
+ * @param flashOnNav
+ */
 async function displayWorldEntries(name, data, navigation = navigation_option.none, flashOnNav = true) {
     updateEditor = async (navigation, flashOnNav = true) => await displayWorldEntries(name, data, navigation, flashOnNav);
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const worldEntriesList = $('#world_popup_entries_list');
     clearEntryList(worldEntriesList);
     worldEntriesList.show();
 
     if (!data || !('entries' in data)) {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#world_popup_new').off('click').on('click', nullWorldInfo);
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#world_popup_name_button').off('click').on('click', nullWorldInfo);
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#world_popup_export').off('click').on('click', nullWorldInfo);
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#world_popup_delete').off('click').on('click', nullWorldInfo);
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#world_duplicate').off('click').on('click', nullWorldInfo);
         worldEntriesList.hide();
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#world_info_pagination').html('');
         return;
     }
 
     // Regardless of whether success is displayed or not. Make sure the delete button is available.
     // Do not put this code behind.
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_popup_delete').off('click').on('click', async () => {
         const confirmation = await Popup.show.confirm(`Delete the World/Lorebook: "${name}"?`, 'This action is irreversible!');
         if (!confirmation) {
             return;
         }
 
+        // @ts-expect-error TS(2339): Property 'charLore' does not exist on type '{}'.
         if (world_info.charLore) {
+            // @ts-expect-error TS(2339): Property 'charLore' does not exist on type '{}'.
             world_info.charLore.forEach((charLore, index) => {
                 if (charLore.extraBooks?.includes(name)) {
                     const tempCharLore = charLore.extraBooks.filter((e) => e !== name);
                     if (tempCharLore.length === 0) {
+                        // @ts-expect-error TS(2339): Property 'charLore' does not exist on type '{}'.
                         world_info.charLore.splice(index, 1);
                     } else {
                         charLore.extraBooks = tempCharLore;
@@ -2355,6 +2557,10 @@ async function displayWorldEntries(name, data, navigation = navigation_option.no
     // Before printing the WI, we check if we should enable/disable search sorting
     verifyWorldInfoSearchSortRule();
 
+    /**
+     *
+     * @param callback
+     */
     function getDataArray(callback) {
         // Convert the data.entries object into an array
         let entriesArray = Object.keys(data.entries).map(uid => {
@@ -2385,16 +2591,19 @@ async function displayWorldEntries(name, data, navigation = navigation_option.no
     let startPage = 1;
 
     if (navigation === navigation_option.previous) {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         startPage = $('#world_info_pagination').pagination('getCurrentPageNum');
     }
 
     if (typeof navigation === 'number' && Number(navigation) >= 0) {
+        // @ts-expect-error TS(2554): Expected 1 arguments, but got 0.
         const data = getDataArray();
         const uidIndex = data.findIndex(x => x.uid === navigation);
         const perPage = Number(accountStorage.getItem(storageKey)) || perPageDefault;
         startPage = Math.floor(uidIndex / perPage) + 1;
     }
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_info_pagination').pagination({
         dataSource: getDataArray,
         pageSize: Number(accountStorage.getItem(storageKey)) || perPageDefault,
@@ -2426,6 +2635,7 @@ async function displayWorldEntries(name, data, navigation = navigation_option.no
                     }
                 }
 
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 const isCustomOrder = $('#world_info_sort_order').find(':selected').data('rule') === 'custom';
                 if (!isCustomOrder) {
                     blocks.forEach(block => {
@@ -2443,7 +2653,9 @@ async function displayWorldEntries(name, data, navigation = navigation_option.no
             accountStorage.setItem(storageKey, e.target.value);
         },
         afterPaging: function () {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#world_popup_entries_list textarea[name="comment"]').each(function () {
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 initScrollHeight($(this));
             });
         },
@@ -2452,6 +2664,7 @@ async function displayWorldEntries(name, data, navigation = navigation_option.no
     if (typeof navigation === 'number' && Number(navigation) >= 0) {
         const selector = `#world_popup_entries_list [uid="${navigation}"]`;
         waitUntilCondition(() => document.querySelector(selector) !== null).finally(() => {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const element = $(selector);
 
             if (element.length === 0) {
@@ -2462,37 +2675,46 @@ async function displayWorldEntries(name, data, navigation = navigation_option.no
             const elementOffset = element.offset();
             const parentOffset = element.parent().offset();
             const scrollOffset = elementOffset.top - parentOffset.top;
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#WorldInfo').scrollTop(scrollOffset);
             if (flashOnNav) flashHighlight(element);
         });
     }
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_popup_new').off('click').on('click', () => {
         const entry = createWorldInfoEntry(name, data);
         if (entry) updateEditor(entry.uid);
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_popup_name_button').off('click').on('click', async () => {
         await renameWorldInfo(name, data);
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_backfill_memos').off('click').on('click', async () => {
         let counter = 0;
         for (const entry of Object.values(data.entries)) {
+            // @ts-expect-error TS(2339): Property 'comment' does not exist on type 'unknown... Remove this comment to see the full error message
             if (!entry.comment && Array.isArray(entry.key) && entry.key.length > 0) {
+                // @ts-expect-error TS(2339): Property 'comment' does not exist on type 'unknown... Remove this comment to see the full error message
                 entry.comment = entry.key.join(', ').slice(0, MAX_COMMENT_LENGTH);
+                // @ts-expect-error TS(2339): Property 'uid' does not exist on type 'unknown'.
                 setWIOriginalDataValue(data, entry.uid, 'comment', entry.comment);
                 counter++;
             }
         }
 
         if (counter > 0) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.info(`Backfilled ${counter} titles`);
             await saveWorldInfo(name, data);
             updateEditor(navigation_option.previous);
         }
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_apply_current_sorting').off('click').on('click', async () => {
         const entryCount = Object.keys(data.entries).length;
         const moreThan100 = entryCount > 100;
@@ -2507,10 +2729,12 @@ async function displayWorldEntries(name, data, navigation = navigation_option.no
 
         const start = Number(result);
         if (isNaN(start) || start < 0) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.error(t`Invalid number: ${result}`, t`Apply Current Sorting`);
             return;
         }
         if (start < entryCount) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.warning(t`A number lower than the entry count has been chosen. All entries below that will default to 0.`, t`Apply Current Sorting`);
         }
 
@@ -2521,22 +2745,28 @@ async function displayWorldEntries(name, data, navigation = navigation_option.no
         let updated = 0, current = start;
         for (const entry of entries) {
             const newOrder = Math.max(current--, 0);
+            // @ts-expect-error TS(2339): Property 'order' does not exist on type 'unknown'.
             if (entry.order === newOrder) continue;
 
+            // @ts-expect-error TS(2339): Property 'order' does not exist on type 'unknown'.
             entry.order = newOrder;
+            // @ts-expect-error TS(2339): Property 'order' does not exist on type 'unknown'.
             setWIOriginalDataValue(data, entry.order, 'order', entry.order);
             updated++;
         }
 
         if (updated > 0) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.info(`Updated ${updated} Order values`, 'Apply Custom Sorting');
             await saveWorldInfo(name, data, true);
             updateEditor(navigation_option.previous);
         } else {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.info('All values up to date', 'Apply Custom Sorting');
         }
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_popup_export').off('click').on('click', () => {
         if (name && data) {
             const jsonValue = JSON.stringify(data);
@@ -2545,8 +2775,10 @@ async function displayWorldEntries(name, data, navigation = navigation_option.no
         }
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_duplicate').off('click').on('click', async () => {
         // Find current name for the world selected
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const selectedIndex = String($('#world_editor_select').find(':selected').val());
         const worldName = world_names[selectedIndex] || null;
 
@@ -2560,6 +2792,7 @@ async function displayWorldEntries(name, data, navigation = navigation_option.no
 
             const selectedIndex = world_names.indexOf(finalName);
             if (selectedIndex !== -1) {
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $('#world_editor_select').val(selectedIndex).trigger('change');
             } else {
                 await hideWorldEditor();
@@ -2578,9 +2811,12 @@ async function displayWorldEntries(name, data, navigation = navigation_option.no
         delay: getSortableDelay(),
         handle: '.drag-handle',
         stop: async function (_event, _ui) {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const firstEntryUid = $('#world_popup_entries_list .world_entry').first().data('uid');
             const minDisplayIndex = data?.entries[firstEntryUid]?.displayIndex ?? 0;
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#world_popup_entries_list .world_entry').each(function (index) {
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 const uid = $(this).data('uid');
 
                 // Update the display index in the data array
@@ -2646,7 +2882,9 @@ export const originalWIDataKeyMap = {
 /** Checks the state of the current search, and adds/removes the search sorting option accordingly */
 function verifyWorldInfoSearchSortRule() {
     const searchTerm = worldInfoFilter.getFilterData(FILTER_TYPES.WORLD_INFO_SEARCH);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const searchOption = $('#world_info_sort_order option[data-rule="search"]');
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const selector = $('#world_info_sort_order');
     const isHidden = searchOption.attr('hidden') !== undefined;
 
@@ -2667,7 +2905,6 @@ function verifyWorldInfoSearchSortRule() {
  * Sets the value of a specific key in the original data entry corresponding to the given uid
  * This needs to be called whenever you update JSON data fields.
  * Use `originalWIDataKeyMap` to find the correct value to be set.
- *
  * @param {object} data - The data object containing the original data entries.
  * @param {number} uid - The unique identifier of the data entry.
  * @param {string} key - The key of the value to be set.
@@ -2675,7 +2912,7 @@ function verifyWorldInfoSearchSortRule() {
  */
 export function setWIOriginalDataValue(data, uid, key, value) {
     if (data.originalData && Array.isArray(data.originalData.entries)) {
-        let originalEntry = data.originalData.entries.find(x => x.uid === uid);
+        const originalEntry = data.originalData.entries.find(x => x.uid === uid);
 
         if (!originalEntry) {
             return;
@@ -2687,7 +2924,6 @@ export function setWIOriginalDataValue(data, uid, key, value) {
 
 /**
  * Deletes the original data entry corresponding to the given uid from the provided data object
- *
  * @param {object} data - The data object containing the original data entries
  * @param {string} uid - The unique identifier of the data entry to be deleted
  */
@@ -2710,13 +2946,12 @@ export function deleteWIOriginalDataValue(data, uid) {
  *
  * Each part can be a valid regex following the pattern `/myregex/flags` with optional flags. Commas inside the regex are allowed, slashes have to be escaped like this: `\/`
  * If a regex doesn't stand alone, it is not treated as a regex.
- *
  * @param {string} input - One or multiple keywords or regexes, separated by commas
  * @returns {string[]} An array of keywords and regexes
  */
 export function splitKeywordsAndRegexes(input) {
     /** @type {string[]} */
-    let keywordsAndRegexes = [];
+    const keywordsAndRegexes = [];
 
     // We can make this easy. Instead of writing another function to find and parse regexes,
     // we gonna utilize the custom tokenizer that also handles the input.
@@ -2736,7 +2971,6 @@ export function splitKeywordsAndRegexes(input) {
 
 /**
  * Tokenizer parsing input and splitting it into keywords and regexes
- *
  * @param {{_type: string, term: string}} input - The typed input
  * @param {{options: object}} _selection - The selection even object (?)
  * @param {function(Select2Option):void} callback - The original callback function to call if an item should be inserted
@@ -2749,7 +2983,7 @@ function customTokenizer(input, _selection, callback) {
 
     // Go over the input and check the current state, if we can get a token
     for (let i = 0; i < current.length; i++) {
-        let char = current[i];
+        const char = current[i];
 
         // If we find an unascaped slash, set the current regex state
         if (char === '/' && (i === 0 || current[i - 1] !== '\\')) {
@@ -2801,7 +3035,6 @@ function customTokenizer(input, _selection, callback) {
  * Validates if a string is a valid slash-delimited regex, that can be parsed and executed
  *
  * This is a wrapper around `parseRegexFromString`
- *
  * @param {string} input - A delimited regex string
  * @returns {boolean} Whether this would be a valid regex that can be parsed and executed
  */
@@ -2814,13 +3047,12 @@ function isValidRegex(input) {
  *
  * This function works with `/` as delimiter, and each occurance of it inside the regex has to be escaped.
  * Flags are optional, but can only be valid flags supported by JavaScript's `RegExp` (`g`, `i`, `m`, `s`, `u`, `y`).
- *
  * @param {string} input - A delimited regex string
  * @returns {RegExp|null} The regex object, or null if not a valid regex
  */
 export function parseRegexFromString(input) {
     // Extracting the regex pattern and flags
-    let match = input.match(/^\/([\w\W]+?)\/([gimsuy]*)$/);
+    const match = input.match(/^\/([\w\W]+?)\/([gimsuy]*)$/);
     if (!match) {
         return null; // Not a valid regex format
     }
@@ -2856,6 +3088,7 @@ export function parseRegexFromString(input) {
  * @param {object} params.data - The data object containing entries.
  */
 function enableKeysInputHelper({ template, entry, entryPropName, originalDataValueName, name, data }) {
+    // @ts-expect-error TS(2339): Property 'wi_key_input_plaintext' does not exist o... Remove this comment to see the full error message
     const isFancyInput = !isMobile() && !power_user.wi_key_input_plaintext;
     const input = isFancyInput ? template.find(`select[name="${entryPropName}"]`) : template.find(`textarea[name="${entryPropName}"]`);
     input.data('uid', entry.uid);
@@ -2864,15 +3097,25 @@ function enableKeysInputHelper({ template, entry, entryPropName, originalDataVal
         event.stopPropagation();
     });
 
+    /**
+     *
+     * @param item
+     * @param root0
+     * @param root0.searchStyle
+     */
     function templateStyling(item, { searchStyle = false } = {}) {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const content = $('<span>').addClass('item').text(item.text).attr('title', `${item.text}\n\nClick to edit`);
         const isRegex = isValidRegex(item.text);
         if (isRegex) {
             content.html(highlightRegex(item.text));
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             content.addClass('regex_item').prepend($('<span>').addClass('regex_icon').text('•*').attr('title', 'Regex'));
         }
         if (searchStyle && item.count) {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const wrapper = $('<span>').addClass('result_block').append(content);
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             wrapper.append($('<span>').addClass('item_count').text(item.count).attr('title', `Used as a key ${item.count} ${item.count != 1 ? 'times' : 'time'} in this lorebook`));
             return wrapper;
         }
@@ -2885,7 +3128,6 @@ function enableKeysInputHelper({ template, entry, entryPropName, originalDataVal
             ajax: dynamicSelect2DataViaAjax(() => worldEntryKeyOptionsCache),
             tags: true,
             tokenSeparators: [','],
-            // @ts-ignore
             tokenizer: customTokenizer,
             placeholder: input.attr('placeholder'),
             templateResult: item => templateStyling(item, { searchStyle: true }),
@@ -2898,7 +3140,9 @@ function enableKeysInputHelper({ template, entry, entryPropName, originalDataVal
          * @param {{ skipReset?: boolean, noSave?: boolean }} [arg]
          */
         input.on('change', async function (_event, arg) {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const uid = $(this).data('uid');
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const keys = ($(this).select2('data')).map(x => x.text);
             const skipReset = arg?.skipReset ?? false;
             const noSave = arg?.noSave ?? false;
@@ -2908,9 +3152,11 @@ function enableKeysInputHelper({ template, entry, entryPropName, originalDataVal
                 setWIOriginalDataValue(data, uid, originalDataValueName, data.entries[uid][entryPropName]);
                 await saveWorldInfo(name, data);
             }
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(this).toggleClass('empty', !data.entries[uid][entryPropName].length);
             // Update the commentInput's placeholder for primary keys
             if (entryPropName === 'key') {
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 const commentInput = $(_event.currentTarget).closest('.world_entry_form').find('textarea[name="comment"]');
                 setCommentPlaceholder(data.entries[uid][entryPropName].join(', '), commentInput);
             }
@@ -2921,10 +3167,11 @@ function enableKeysInputHelper({ template, entry, entryPropName, originalDataVal
         input.on('select2:unselect', event => updateWorldEntryKeyOptionsCache([event.params.data], { remove: true }));
 
         select2ChoiceClickSubscribe(input, target => {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const key = $(target.closest('.regex-highlight, .item')).text();
             const selected = input.val();
             if (!Array.isArray(selected)) return;
-            var index = selected.indexOf(getSelect2OptionId(key));
+            const index = selected.indexOf(getSelect2OptionId(key));
             if (index > -1) selected.splice(index, 1);
             input.val(selected).trigger('change');
             updateWorldEntryKeyOptionsCache([key], { remove: true });
@@ -2934,11 +3181,13 @@ function enableKeysInputHelper({ template, entry, entryPropName, originalDataVal
         template.find(`select[name="${entryPropName}"]`).hide();
         input.show();
         /**
-        * @param {Event} _event
-        * @param {{ skipReset?: boolean, noSave?: boolean }} [arg]
-        */
+         * @param {Event} _event
+         * @param {{ skipReset?: boolean, noSave?: boolean }} [arg]
+         */
         input.on('change', async function (_event, arg) {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const uid = $(this).data('uid');
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const value = String($(this).val());
             const skipReset = arg?.skipReset ?? false;
             const noSave = arg?.noSave ?? false;
@@ -2947,10 +3196,12 @@ function enableKeysInputHelper({ template, entry, entryPropName, originalDataVal
                 data.entries[uid][entryPropName] = splitKeywordsAndRegexes(value);
                 setWIOriginalDataValue(data, uid, originalDataValueName, data.entries[uid][entryPropName]);
                 await saveWorldInfo(name, data);
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $(this).toggleClass('empty', !data.entries[uid][entryPropName].length);
             }
             // Update the commentInput's placeholder for primary keys
             if (entryPropName === 'key') {
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 const commentInput = $(_event.currentTarget).closest('.world_entry_form').find('textarea[name="comment"]');
                 setCommentPlaceholder(value, commentInput);
             }
@@ -2974,11 +3225,13 @@ function handleMatchCheckboxHelper({ template, entry, fieldName, data, name }) {
     const checkBoxElem = template.find(`input[type="checkbox"][name="${fieldName}"]`);
     checkBoxElem.data('uid', entry.uid);
     checkBoxElem.on('input', async function (_, { noSave = false } = {}) {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const uid = $(this).data('uid');
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const value = $(this).prop('checked');
         data.entries[uid][fieldName] = value;
         setWIOriginalDataValue(data, uid, key, data.entries[uid][fieldName]);
-        !noSave && await saveWorldInfo(name, data);
+        !noSave && (await saveWorldInfo(name, data));
     });
     checkBoxElem.prop('checked', !!entry[fieldName]).trigger('input', { noSave: true });
 }
@@ -2991,7 +3244,7 @@ function handleMatchCheckboxHelper({ template, entry, fieldName, data, name }) {
  * @param {string} params.uid - The unique identifier of the entry to update.
  */
 function updatePosOrdDisplayHelper({ template, data, uid }) {
-    let entry = data.entries[uid];
+    const entry = data.entries[uid];
     let posText = entry.position;
     switch (entry.position) {
         case 0: posText = '↑CD'; break;
@@ -3009,6 +3262,7 @@ function updatePosOrdDisplayHelper({ template, data, uid }) {
  */
 function initCharacterFilterSelect2Helper(characterFilter) {
     if (!isMobile()) {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(characterFilter).select2({
             width: '100%',
             placeholder: t`Tie this entry to specific characters or characters with specific tags`,
@@ -3053,13 +3307,16 @@ function fillCharacterAndTagOptionsHelper({ characterFilter, entry }) {
  * @param {object} params.entry - The entry object to update.
  * @param {string} params.name - The name of the world info to save changes to.
  */
+// @ts-expect-error TS(6133): 'entry' is declared but its value is never read.
 function handleCharacterFilterChangeHelper({ characterFilter, data, entry, name }) {
     characterFilter.on('mousedown change', async function (e) {
         if (world_names.length === 0) {
             e.preventDefault();
             return;
         }
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const uid = $(this).data('uid');
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const selected = $(this).find(':selected');
         if ((!selected || selected?.length === 0) && !data.entries[uid].characterFilter?.isExclude) {
             delete data.entries[uid].characterFilter;
@@ -3093,17 +3350,20 @@ function handleCharacterFilterChangeHelper({ characterFilter, data, entry, name 
 function handleProbabilityInputHelper({ probabilityInput, data, entry, name }) {
     probabilityInput.data('uid', entry.uid);
     probabilityInput.on('input', async function (_, { noSave = false } = {}) {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const uid = $(this).data('uid');
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const value = Number($(this).val());
         data.entries[uid].probability = !isNaN(value) ? value : null;
         if (data.entries[uid].probability !== null) {
             data.entries[uid].probability = Math.min(100, Math.max(0, data.entries[uid].probability));
             if (data.entries[uid].probability !== value) {
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $(this).val(data.entries[uid].probability);
             }
         }
         setWIOriginalDataValue(data, uid, 'extensions.probability', data.entries[uid].probability);
-        !noSave && await saveWorldInfo(name, data);
+        !noSave && (await saveWorldInfo(name, data));
     });
     probabilityInput.val(entry.probability).trigger('input', { noSave: true });
     probabilityInput.css('width', 'calc(3em + 15px)');
@@ -3121,11 +3381,14 @@ function handleProbabilityInputHelper({ probabilityInput, data, entry, name }) {
 function handleProbabilityToggleHelper({ probabilityToggle, data, entry, name, probabilityInput }) {
     probabilityToggle.data('uid', entry.uid);
     probabilityToggle.on('input', async function (_, { noSave = false } = {}) {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const uid = $(this).data('uid');
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const value = $(this).prop('checked');
         data.entries[uid].useProbability = value;
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const probabilityContainer = $(this).closest('.world_entry').find('.probabilityContainer');
-        !noSave && await saveWorldInfo(name, data);
+        !noSave && (await saveWorldInfo(name, data));
         value ? probabilityContainer.show() : probabilityContainer.hide();
         if (value && data.entries[uid].probability === null) {
             data.entries[uid].probability = 100;
@@ -3151,11 +3414,13 @@ function handleProbabilityToggleHelper({ probabilityToggle, data, entry, name, p
 function handleBooleanSelectHelper({ selectElem, entry, entryKey, data, name }) {
     selectElem.data('uid', entry.uid);
     selectElem.on('input', async function (_, { noSave = false } = {}) {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const uid = $(this).data('uid');
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const value = $(this).val();
         data.entries[uid][entryKey] = value === 'null' ? null : value === 'true';
         setWIOriginalDataValue(data, uid, `extensions.${entryKey.replace(/[A-Z]/g, m => `_${m.toLowerCase()}`)}`, data.entries[uid][entryKey]);
-        !noSave && await saveWorldInfo(name, data);
+        !noSave && (await saveWorldInfo(name, data));
     });
     selectElem.val((entry[entryKey] === null || entry[entryKey] === undefined) ? 'null' : entry[entryKey] ? 'true' : 'false').trigger('input', { noSave: true });
 }
@@ -3170,25 +3435,29 @@ function handleBooleanSelectHelper({ selectElem, entry, entryKey, data, name }) 
  * @param {string} params.name - The name of the world info to save changes to.
  * @param {number} params.min - The minimum value for the number input.
  * @param {number} params.max - The maximum value for the number input.
- * @param {boolean} [params.clamp=false] - Whether to clamp the value within the min and max range.
+ * @param {boolean} [params.clamp] - Whether to clamp the value within the min and max range.
  */
 function handleNumberInputHelper({ inputElem, entry, entryKey, data, name, min, max, clamp = false }) {
     inputElem.data('uid', entry.uid);
     inputElem.on('input', async function (_, { noSave = false } = {}) {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const uid = $(this).data('uid');
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         let value = Number($(this).val());
         if (clamp) {
             if (value < min) {
                 value = min;
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $(this).val(min);
             } else if (value > max) {
                 value = max;
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $(this).val(max);
             }
         }
         data.entries[uid][entryKey] = !isNaN(value) ? value : null;
         setWIOriginalDataValue(data, uid, `extensions.${entryKey.replace(/[A-Z]/g, m => `_${m.toLowerCase()}`)}`, data.entries[uid][entryKey]);
-        !noSave && await saveWorldInfo(name, data);
+        !noSave && (await saveWorldInfo(name, data));
     });
     inputElem.val(entry[entryKey] ?? (clamp ? min : '')).trigger('input', { noSave: true });
 }
@@ -3208,6 +3477,7 @@ function handleEntryStateSelectorHelper({ entryStateSelector, entry, data, name 
     });
     entryStateSelector.on('input', async function (_, { noSave = false } = {}) {
         const uid = entry.uid;
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const value = $(this).val();
         switch (value) {
             case 'constant':
@@ -3229,7 +3499,7 @@ function handleEntryStateSelectorHelper({ entryStateSelector, entry, data, name 
                 setWIOriginalDataValue(data, uid, 'extensions.vectorized', true);
                 break;
         }
-        !noSave && await saveWorldInfo(name, data);
+        !noSave && (await saveWorldInfo(name, data));
     });
     const entryState = () => entry.constant === true ? 'constant' : entry.vectorized === true ? 'vectorized' : 'normal';
     entryStateSelector.find(`option[value=${entryState()}]`).prop('selected', true).trigger('input', { noSave: true });
@@ -3286,6 +3556,7 @@ export async function getWorldEntry(name, data, entry) {
     headerTemplate.data('uid', entry.uid);
     headerTemplate.attr('uid', entry.uid);
 
+    // @ts-expect-error TS(2339): Property 'wi_key_input_plaintext' does not exist o... Remove this comment to see the full error message
     if (typeof power_user.wi_key_input_plaintext === 'undefined') power_user.wi_key_input_plaintext = true;
 
     // Comment
@@ -3297,12 +3568,14 @@ export async function getWorldEntry(name, data, entry) {
 
     commentInput.data('uid', entry.uid);
     commentInput.on('input', async function (_, { skipReset = false, noSave = false } = {}) {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const uid = $(this).data('uid');
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const value = $(this).val();
-        !skipReset && await resetScrollHeight(this);
+        !skipReset && (await resetScrollHeight(this));
         data.entries[uid].comment = value;
         setWIOriginalDataValue(data, uid, 'comment', data.entries[uid].comment);
-        !noSave && await saveWorldInfo(name, data);
+        !noSave && (await saveWorldInfo(name, data));
     });
     commentInput.val(entry.comment).trigger('input', { skipReset: true, noSave: true });
 
@@ -3310,12 +3583,14 @@ export async function getWorldEntry(name, data, entry) {
     const orderInput = headerTemplate.find('input[name="order"]');
     orderInput.data('uid', entry.uid);
     orderInput.on('input', async function (_, { noSave = false } = {}) {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const uid = $(this).data('uid');
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const value = Number($(this).val());
         data.entries[uid].order = !isNaN(value) ? value : 0;
         updatePosOrdDisplayHelper({ template: headerTemplate, data, uid });
         setWIOriginalDataValue(data, uid, 'insertion_order', data.entries[uid].order);
-        !noSave && await saveWorldInfo(name, data);
+        !noSave && (await saveWorldInfo(name, data));
     });
     orderInput.val(entry.order).trigger('input', { noSave: true });
     orderInput.css('width', 'calc(3em + 15px)');
@@ -3336,13 +3611,16 @@ export async function getWorldEntry(name, data, entry) {
     positionInput.data('uid', entry.uid);
     positionInput.on('click', e => e.stopPropagation());
     positionInput.on('input', async function (_, { noSave = false } = {}) {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const uid = $(this).data('uid');
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const value = Number($(this).val());
         data.entries[uid].position = !isNaN(value) ? value : 0;
         const depthInput = headerTemplate.find('input[name="depth"]');
         if (value === world_info_position.atDepth) {
             depthInput.prop('disabled', false);
             depthInput.css('visibility', 'visible');
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const role = Number($(this).find(':selected').data('role'));
             data.entries[uid].role = role;
         } else {
@@ -3354,7 +3632,7 @@ export async function getWorldEntry(name, data, entry) {
         setWIOriginalDataValue(data, uid, 'position', data.entries[uid].position == 0 ? 'before_char' : 'after_char');
         setWIOriginalDataValue(data, uid, 'extensions.position', data.entries[uid].position);
         setWIOriginalDataValue(data, uid, 'extensions.role', data.entries[uid].role);
-        !noSave && await saveWorldInfo(name, data);
+        !noSave && (await saveWorldInfo(name, data));
     });
     const roleValue = entry.position === world_info_position.atDepth ? String(entry.role ?? extension_prompt_roles.SYSTEM) : '';
     headerTemplate.find(`select[name="position"] option[value="${entry.position}"][data-role="${roleValue}"]`).prop('selected', true).trigger('input', { noSave: true });
@@ -3373,6 +3651,7 @@ export async function getWorldEntry(name, data, entry) {
 
     // Duplicate/delete/move buttons
     headerTemplate.find('.duplicate_entry_button').data('uid', entry.uid).on('click', async function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const uid = $(this).data('uid');
         const entryDup = duplicateWorldInfoEntry(data, uid);
         if (entryDup) {
@@ -3382,6 +3661,7 @@ export async function getWorldEntry(name, data, entry) {
     });
     headerTemplate.find('.delete_entry_button').data('uid', entry.uid).on('click', async function (e) {
         e.stopPropagation();
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const uid = $(this).data('uid');
         const deleted = await deleteWorldInfoEntry(data, uid);
         if (!deleted) return;
@@ -3391,7 +3671,9 @@ export async function getWorldEntry(name, data, entry) {
     });
     headerTemplate.find('.move_entry_button').attr('data-uid', entry.uid).attr('data-current-world', name).on('click', async function (e) {
         e.stopPropagation();
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const sourceUid = $(this).attr('data-uid');
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const sourceWorld = $(this).attr('data-current-world');
         const sourceWorldInfo = await loadWorldInfo(sourceWorld);
         if (!sourceWorldInfo) return;
@@ -3415,6 +3697,7 @@ export async function getWorldEntry(name, data, entry) {
             }
         });
         if (selectableWorldCount === 0) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.warning(t`There are no other lorebooks to move to.`);
             return;
         }
@@ -3440,6 +3723,7 @@ export async function getWorldEntry(name, data, entry) {
         if (selectedWorldIndex === -1) return;
         const selectedValue = world_names[selectedWorldIndex];
         if (!selectedValue) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.warning(t`Please select a target lorebook.`);
             return;
         }
@@ -3472,6 +3756,9 @@ export async function getWorldEntry(name, data, entry) {
 
     const editOutlet = headerTemplate.find('.inline-drawer-outlet');
 
+    /**
+     *
+     */
     function addEditorDrawerContent() {
         const editTemplate = WI_ENTRY_EDIT_TEMPLATE.clone();
 
@@ -3486,13 +3773,18 @@ export async function getWorldEntry(name, data, entry) {
 
         // Key input switch
         editTemplate.find('.switch_input_type_icon').on('click', function () {
+            // @ts-expect-error TS(2339): Property 'wi_key_input_plaintext' does not exist o... Remove this comment to see the full error message
             power_user.wi_key_input_plaintext = !power_user.wi_key_input_plaintext;
             saveSettingsDebounced();
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const uid = ($(this).parents('.world_entry')).data('uid');
             updateEditor(uid, false);
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(`.world_entry[uid="${uid}"] .inline-drawer-icon`).trigger('click');
         }).each((_, icon) => {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(icon).attr('title', $(icon).data(power_user.wi_key_input_plaintext ? 'tooltip-on' : 'tooltip-off'));
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(icon).text($(icon).data(power_user.wi_key_input_plaintext ? 'icon-on' : 'icon-off'));
         });
 
@@ -3507,11 +3799,14 @@ export async function getWorldEntry(name, data, entry) {
         const commentToggle = editTemplate.find('input[name="addMemo"]');
         commentToggle.data('uid', entry.uid);
         commentToggle.on('input', async function (_, { noSave = false } = {}) {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const uid = $(this).data('uid');
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const value = $(this).prop('checked');
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const commentContainer = $(this).closest('.world_entry').find('.commentContainer');
             data.entries[uid].addMemo = value;
-            !noSave && await saveWorldInfo(name, data);
+            !noSave && (await saveWorldInfo(name, data));
             value ? commentContainer.show() : commentContainer.hide();
         });
         commentToggle.prop('checked', true).trigger('input', { noSave: true });
@@ -3522,11 +3817,13 @@ export async function getWorldEntry(name, data, entry) {
         selectiveLogicDropdown.data('uid', entry.uid);
         selectiveLogicDropdown.on('click', e => e.stopPropagation());
         selectiveLogicDropdown.on('input', async function (_, { noSave = false } = {}) {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const uid = $(this).data('uid');
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const value = Number($(this).val());
             data.entries[uid].selectiveLogic = !isNaN(value) ? value : world_info_logic.AND_ANY;
             setWIOriginalDataValue(data, uid, 'selectiveLogic', data.entries[uid].selectiveLogic);
-            !noSave && await saveWorldInfo(name, data);
+            !noSave && (await saveWorldInfo(name, data));
         });
         editTemplate.find(`select[name="entryLogicType"] option[value=${entry.selectiveLogic}]`).prop('selected', true).trigger('input', { noSave: true });
 
@@ -3534,13 +3831,18 @@ export async function getWorldEntry(name, data, entry) {
         const selectiveInput = editTemplate.find('input[name="selective"]');
         selectiveInput.data('uid', entry.uid);
         selectiveInput.on('input', async function (_, { noSave = false } = {}) {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const uid = $(this).data('uid');
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const value = $(this).prop('checked');
             data.entries[uid].selective = value;
             setWIOriginalDataValue(data, uid, 'selective', data.entries[uid].selective);
-            !noSave && await saveWorldInfo(name, data);
+            !noSave && (await saveWorldInfo(name, data));
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const keysecondary = $(this).closest('.world_entry').find('.keysecondary');
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const keysecondarytextpole = $(this).closest('.world_entry').find('.keysecondarytextpole');
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const keyprimaryselect = $(this).closest('.world_entry').find('.keyprimaryselect');
             const keyprimaryHeight = keyprimaryselect.outerHeight();
             keysecondarytextpole.css('height', keyprimaryHeight + 'px');
@@ -3555,7 +3857,9 @@ export async function getWorldEntry(name, data, entry) {
         const characterExclusionInput = editTemplate.find('input[name="character_exclusion"]');
         characterExclusionInput.data('uid', entry.uid);
         characterExclusionInput.on('input', async function (_, { noSave = false } = {}) {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const uid = $(this).data('uid');
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const value = $(this).prop('checked');
             characterFilterLabel.text(value ? 'Exclude Character(s)' : 'Filter to Character(s)');
             if (data.entries[uid].characterFilter) {
@@ -3575,7 +3879,7 @@ export async function getWorldEntry(name, data, entry) {
                 }
             }
             setWIOriginalDataValue(data, uid, 'character_filter', data.entries[uid].characterFilter);
-            !noSave && await saveWorldInfo(name, data);
+            !noSave && (await saveWorldInfo(name, data));
         });
         characterExclusionInput.prop('checked', entry.characterFilter?.isExclude ?? false).trigger('input', { noSave: true });
 
@@ -3589,6 +3893,7 @@ export async function getWorldEntry(name, data, entry) {
         const counter = editTemplate.find('.world_entry_form_token_counter');
         const countTokensDebounced = debounce(async function (counter, value) {
             const numberOfTokens = await getTokenCountAsync(value);
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(counter).text(numberOfTokens);
         }, debounce_timeout.relaxed);
         const contentInputId = `world_entry_content_${entry.uid}`;
@@ -3596,12 +3901,17 @@ export async function getWorldEntry(name, data, entry) {
         contentInput.data('uid', entry.uid);
         contentInput.attr('id', contentInputId);
         contentInput[0].dataset.macros = ''; // active
-        contentInput.on('input', async function (_, { skipCount, noSave } = {}) {
+        contentInput.on('input', async function (_, {
+            skipCount,
+            noSave
+        }: any = {}) {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const uid = $(this).data('uid');
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const value = $(this).val();
             data.entries[uid].content = value;
             setWIOriginalDataValue(data, uid, 'content', data.entries[uid].content);
-            !noSave && await saveWorldInfo(name, data);
+            !noSave && (await saveWorldInfo(name, data));
             if (!skipCount) countTokensDebounced(counter, value);
         });
         contentInput.val(entry.content).trigger('input', { skipCount: true, noSave: true });
@@ -3611,11 +3921,13 @@ export async function getWorldEntry(name, data, entry) {
         const outletNameInput = editTemplate.find('input[name="outletName"]');
         outletNameInput.data('uid', entry.uid);
         outletNameInput.on('input', async function (_, { noSave = false } = {}) {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const uid = $(this).data('uid');
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const value = $(this).val();
             data.entries[uid].outletName = value;
             setWIOriginalDataValue(data, uid, 'extensions.outlet_name', data.entries[uid].outletName);
-            !noSave && await saveWorldInfo(name, data);
+            !noSave && (await saveWorldInfo(name, data));
         });
         outletNameInput.val(entry.outletName ?? '').trigger('input', { noSave: true });
         setTimeout(() => createEntryInputAutocomplete(outletNameInput, getOutletNameCallback(data), { allowMultiple: true }), 1);
@@ -3624,22 +3936,29 @@ export async function getWorldEntry(name, data, entry) {
         const scanDepthInput = editTemplate.find('input[name="scanDepth"]');
         scanDepthInput.data('uid', entry.uid);
         scanDepthInput.on('input', async function (_, { noSave = false } = {}) {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const uid = $(this).data('uid');
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const isEmpty = $(this).val() === '';
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const value = Number($(this).val());
             if (value < 0) {
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $(this).val(0).trigger('input');
+                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                 toastr.warning('Scan depth cannot be negative');
                 return;
             }
             if (value > MAX_SCAN_DEPTH) {
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $(this).val(MAX_SCAN_DEPTH).trigger('input');
+                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                 toastr.warning(`Scan depth cannot exceed ${MAX_SCAN_DEPTH}`);
                 return;
             }
             data.entries[uid].scanDepth = !isEmpty && !isNaN(value) && value >= 0 && value <= MAX_SCAN_DEPTH ? Math.floor(value) : null;
             setWIOriginalDataValue(data, uid, 'extensions.scan_depth', data.entries[uid].scanDepth);
-            !noSave && await saveWorldInfo(name, data);
+            !noSave && (await saveWorldInfo(name, data));
         });
         scanDepthInput.val(entry.scanDepth ?? null).trigger('input', { noSave: true });
 
@@ -3647,11 +3966,13 @@ export async function getWorldEntry(name, data, entry) {
         const groupInput = editTemplate.find('input[name="group"]');
         groupInput.data('uid', entry.uid);
         groupInput.on('input', async function (_, { noSave = false } = {}) {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const uid = $(this).data('uid');
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const value = String($(this).val()).trim();
             data.entries[uid].group = value;
             setWIOriginalDataValue(data, uid, 'extensions.group', data.entries[uid].group);
-            !noSave && await saveWorldInfo(name, data);
+            !noSave && (await saveWorldInfo(name, data));
         });
         groupInput.val(entry.group ?? '').trigger('input', { noSave: true });
         setTimeout(() => createEntryInputAutocomplete(groupInput, getInclusionGroupCallback(data), { allowMultiple: true }), 1);
@@ -3660,11 +3981,13 @@ export async function getWorldEntry(name, data, entry) {
         const groupOverrideInput = editTemplate.find('input[name="groupOverride"]');
         groupOverrideInput.data('uid', entry.uid);
         groupOverrideInput.on('input', async function (_, { noSave = false } = {}) {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const uid = $(this).data('uid');
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const value = $(this).prop('checked');
             data.entries[uid].groupOverride = value;
             setWIOriginalDataValue(data, uid, 'extensions.group_override', data.entries[uid].groupOverride);
-            !noSave && await saveWorldInfo(name, data);
+            !noSave && (await saveWorldInfo(name, data));
         });
         groupOverrideInput.prop('checked', entry.groupOverride).trigger('input', { noSave: true });
 
@@ -3698,17 +4021,21 @@ export async function getWorldEntry(name, data, entry) {
         const delayUntilRecursionLevelInput = editTemplate.find('input[name="delayUntilRecursionLevel"]');
         delayUntilRecursionLevelInput.data('uid', entry.uid);
         delayUntilRecursionInput.on('input', async function (_, { noSave = false } = {}) {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const uid = $(this).data('uid');
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const toggled = $(this).prop('checked');
             const value = toggled ? data.entries[uid].delayUntilRecursion || true : false;
             if (!toggled) delayUntilRecursionLevelInput.val('');
             data.entries[uid].delayUntilRecursion = value;
             setWIOriginalDataValue(data, uid, 'extensions.delay_until_recursion', data.entries[uid].delayUntilRecursion);
-            !noSave && await saveWorldInfo(name, data);
+            !noSave && (await saveWorldInfo(name, data));
         });
         delayUntilRecursionInput.prop('checked', entry.delayUntilRecursion).trigger('input', { noSave: true });
         delayUntilRecursionLevelInput.on('input', async function (_, { noSave = false } = {}) {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const uid = $(this).data('uid');
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const content = $(this).val();
             const value = content === '' ? (typeof data.entries[uid].delayUntilRecursion === 'boolean' ? data.entries[uid].delayUntilRecursion : true)
                 : content === 1 ? true
@@ -3716,7 +4043,7 @@ export async function getWorldEntry(name, data, entry) {
                         : false;
             data.entries[uid].delayUntilRecursion = value;
             setWIOriginalDataValue(data, uid, 'extensions.delay_until_recursion', data.entries[uid].delayUntilRecursion);
-            !noSave && await saveWorldInfo(name, data);
+            !noSave && (await saveWorldInfo(name, data));
         });
         delayUntilRecursionLevelInput.val(['number', 'string'].includes(typeof entry.delayUntilRecursion) ? entry.delayUntilRecursion : '').trigger('input', { noSave: true });
 
@@ -3737,11 +4064,13 @@ export async function getWorldEntry(name, data, entry) {
         const automationIdInput = editTemplate.find('input[name="automationId"]');
         automationIdInput.data('uid', entry.uid);
         automationIdInput.on('input', async function (_, { noSave = false } = {}) {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const uid = $(this).data('uid');
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const value = $(this).val();
             data.entries[uid].automationId = value;
             setWIOriginalDataValue(data, uid, 'extensions.automation_id', data.entries[uid].automationId);
-            !noSave && await saveWorldInfo(name, data);
+            !noSave && (await saveWorldInfo(name, data));
         });
         automationIdInput.val(entry.automationId ?? '').trigger('input', { noSave: true });
         setTimeout(() => createEntryInputAutocomplete(automationIdInput, getAutomationIdCallback(data)), 1);
@@ -3750,11 +4079,13 @@ export async function getWorldEntry(name, data, entry) {
         const generationTypeTriggers = editTemplate.find('select[name="triggers"]');
         generationTypeTriggers.data('uid', entry.uid);
         generationTypeTriggers.on('input', async function (_, { noSave = false } = {}) {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const uid = $(this).data('uid');
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const value = $(this).val();
             data.entries[uid].triggers = Array.isArray(value) ? value : [];
             setWIOriginalDataValue(data, uid, 'extensions.triggers', data.entries[uid].triggers);
-            !noSave && await saveWorldInfo(name, data);
+            !noSave && (await saveWorldInfo(name, data));
         });
         if (!isMobile()) {
             generationTypeTriggers.select2({
@@ -3773,11 +4104,13 @@ export async function getWorldEntry(name, data, entry) {
         const ignoreBudgetInput = editTemplate.find('input[name="ignoreBudget"]');
         ignoreBudgetInput.data('uid', entry.uid);
         ignoreBudgetInput.on('input', async function (_, { noSave = false } = {}) {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const uid = $(this).data('uid');
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const value = $(this).prop('checked');
             data.entries[uid].ignoreBudget = value;
             setWIOriginalDataValue(data, uid, 'extensions.ignore_budget', data.entries[uid].ignoreBudget);
-            !noSave && await saveWorldInfo(name, data);
+            !noSave && (await saveWorldInfo(name, data));
         });
         ignoreBudgetInput.prop('checked', entry.ignoreBudget ?? false).trigger('input', { noSave: true });
 
@@ -3795,19 +4128,26 @@ export async function getWorldEntry(name, data, entry) {
 
 /**
  * Builds a jQuery UI autocomplete callback: (control, request, response) => void
- * @param {object} [opt={}] - Optional arguments
+ * @param {object} [opt] - Optional arguments
  * @param {{entries: Record<string, any>}} [opt.data]   - Your WI data
  * @param {(entry:any)=>string|string[]|null|undefined} [opt.collectValues] - Extract values from one entry
  * @param {() => Iterable<string>} [opt.includeExtras] - Optional global extras to include
  * @param {(ctx:{result:string[], control:JQuery, input:any, haystack:string[]})=>string[]} [opt.postFilter] - Optional final filter step (for special rules like your "group" de-dupe logic)
  */
-function buildAutocompleteCallback({ data, collectValues, includeExtras = () => [], postFilter } = {}) {
+function buildAutocompleteCallback({
+    data,
+    collectValues,
+    includeExtras = () => [],
+    postFilter
+}: any = {}) {
     return function (control, input, output) {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const uid = $(control).data('uid');
 
         // Collect unique values from all *other* entries
         const values = new Set();
         for (const entry of Object.values(data.entries ?? {})) {
+            // @ts-expect-error TS(2339): Property 'uid' does not exist on type 'unknown'.
             if (entry?.uid == uid) continue;
             const raw = collectValues(entry);
             if (raw == null) continue;
@@ -3825,14 +4165,17 @@ function buildAutocompleteCallback({ data, collectValues, includeExtras = () => 
         }
 
         // Sort stable & locale-aware
+        // @ts-expect-error TS(2339): Property 'localeCompare' does not exist on type 'u... Remove this comment to see the full error message
         const haystack = Array.from(values).sort((a, b) => a.localeCompare(b));
 
         // Case-insensitive contains
         const needle = String(input.term ?? '').toLowerCase();
+        // @ts-expect-error TS(2339): Property 'toLowerCase' does not exist on type 'unk... Remove this comment to see the full error message
         let result = haystack.filter(x => x.toLowerCase().includes(needle));
 
         // Optional final-pass semantics
         if (postFilter) {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             result = postFilter({ result, control: $(control), input, haystack });
         }
 
@@ -3857,6 +4200,7 @@ function getInclusionGroupCallback(data) {
         data,
         collectValues: entry => entry.group ? splitCsv(entry.group) : [],
         postFilter: ({ result, control, input, haystack }) => {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const thisGroups = splitCsv(String($(control).val()));
             const needle = String(input.term ?? '').toLowerCase();
             const hasExactMatch = haystack.some(x => x.toLowerCase() === needle);
@@ -3871,6 +4215,10 @@ function getInclusionGroupCallback(data) {
     });
 }
 
+/**
+ *
+ * @param data
+ */
 function getAutomationIdCallback(data) {
     return buildAutocompleteCallback({
         data,
@@ -3882,6 +4230,10 @@ function getAutomationIdCallback(data) {
     });
 }
 
+/**
+ *
+ * @param data
+ */
 function getOutletNameCallback(data) {
     return buildAutocompleteCallback({
         data,
@@ -3893,23 +4245,27 @@ function getOutletNameCallback(data) {
  * Create an autocomplete for an input element.
  * @param {JQuery<HTMLElement>} input - Input element to attach the autocomplete to
  * @param {(control: JQuery<HTMLElement>, input: any, output: any) => any} callback - Source data callbacks
- * @param {object} [options={}] - Optional arguments
- * @param {boolean} [options.allowMultiple=false] - Whether to allow multiple comma-separated values
+ * @param {object} [options] - Optional arguments
+ * @param {boolean} [options.allowMultiple] - Whether to allow multiple comma-separated values
  */
 function createEntryInputAutocomplete(input, callback, { allowMultiple = false } = {}) {
     const handleSelect = (event, ui) => {
         // Prevent default autocomplete select, so we can manually set the value
         event.preventDefault();
         if (!allowMultiple) {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(input).val(ui.item.value).trigger('input').trigger('blur');
         } else {
-            var terms = String($(input).val()).split(/,\s*/);
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            const terms = String($(input).val()).split(/,\s*/);
             terms.pop(); // remove the current input
             terms.push(ui.item.value); // add the selected item
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(input).val(terms.filter(x => x).join(', ')).trigger('input').trigger('blur');
         }
     };
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(input).autocomplete({
         minLength: 0,
         source: function (request, response) {
@@ -3924,7 +4280,9 @@ function createEntryInputAutocomplete(input, callback, { allowMultiple = false }
         select: handleSelect,
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(input).on('focus click', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(input).autocomplete('search', allowMultiple ? String($(input).val()).split(/,\s*/).pop() : String($(input).val()));
     });
 }
@@ -3938,6 +4296,7 @@ function createEntryInputAutocomplete(input, callback, { allowMultiple = false }
  */
 export function duplicateWorldInfoEntry(data, uid) {
     if (!data || !('entries' in data) || !data.entries[uid]) {
+        // @ts-expect-error TS(7030): Not all code paths return a value.
         return;
     }
 
@@ -3956,12 +4315,13 @@ export function duplicateWorldInfoEntry(data, uid) {
  * Deletes a WI entry, with a user confirmation dialog
  * @param {*[]} data - The data of the book
  * @param {number} uid - The uid of the entry to copy in this book
- * @param {object} [options={}] - Optional arguments
- * @param {boolean} [options.silent=false] - Whether to prompt the user for deletion or just do it
+ * @param {object} [options] - Optional arguments
+ * @param {boolean} [options.silent] - Whether to prompt the user for deletion or just do it
  * @returns {Promise<boolean>} Whether the entry deletion was successful
  */
 export async function deleteWorldInfoEntry(data, uid, { silent = false } = {}) {
     if (!data || !('entries' in data)) {
+        // @ts-expect-error TS(7030): Not all code paths return a value.
         return;
     }
 
@@ -3983,7 +4343,7 @@ export async function deleteWorldInfoEntry(data, uid, { silent = false } = {}) {
         ? `<strong>${t`Entry`}:</strong><br>${escapeHtml(previewText).replace(/\n/g, '<br>')}<br><br>${t`This action is irreversible!`}`
         : t`This action is irreversible!`;
 
-    const confirmation = silent || await Popup.show.confirm(popupHeader, popupText);
+    const confirmation = silent || (await Popup.show.confirm(popupHeader, popupText));
     if (!confirmation) {
         return false;
     }
@@ -3996,7 +4356,6 @@ export async function deleteWorldInfoEntry(data, uid, { silent = false } = {}) {
  * Definitions of types for new WI entries
  *
  * Use `newEntryTemplate` if you just need the template that contains default values
- *
  * @type {{[key: string]: WIEntryFieldDefinition}}
  */
 export const newWorldInfoEntryDefinition = {
@@ -4045,6 +4404,7 @@ export const newWorldInfoEntryDefinition = {
 };
 
 export const newWorldInfoEntryTemplate = Object.fromEntries(
+    // @ts-expect-error TS(2339): Property 'excludeFromTemplate' does not exist on t... Remove this comment to see the full error message
     Object.entries(newWorldInfoEntryDefinition).filter(([_, value]) => !value.excludeFromTemplate).map(([key, value]) => [key, value.default]),
 );
 
@@ -4059,6 +4419,7 @@ export function createWorldInfoEntry(_name, data) {
 
     if (!Number.isInteger(newUid)) {
         console.error('Couldn\'t assign UID to a new entry');
+        // @ts-expect-error TS(7030): Not all code paths return a value.
         return;
     }
 
@@ -4068,6 +4429,11 @@ export function createWorldInfoEntry(_name, data) {
     return newEntry;
 }
 
+/**
+ *
+ * @param name
+ * @param data
+ */
 async function _save(name, data) {
     // Prevent double saving if both immediate and debounced save are called
     cancelDebounce(saveWorldDebounced);
@@ -4088,11 +4454,10 @@ async function _save(name, data) {
  * Note, for performance reasons the saved cache will not make a deep clone of the data.
  * It is your responsibility to not modify the saved data object after calling this function, or there will be data inconsistencies.
  * Call `loadWorldInfoData` or query directly from cache if you need the object again.
- *
  * @param {string} name - The name of the world info
  * @param {any} data - The data to be saved
- * @param {boolean} [immediately=false] - Whether to save immediately or use debouncing
- * @return {Promise<void>} A promise that resolves when the world info is saved
+ * @param {boolean} [immediately] - Whether to save immediately or use debouncing
+ * @returns {Promise<void>} A promise that resolves when the world info is saved
  */
 export async function saveWorldInfo(name, data, immediately = false) {
     if (!name || !data) {
@@ -4109,6 +4474,11 @@ export async function saveWorldInfo(name, data, immediately = false) {
     saveWorldDebounced(name, data);
 }
 
+/**
+ *
+ * @param name
+ * @param data
+ */
 async function renameWorldInfo(name, data) {
     const oldName = name;
     const newName = await Popup.show.input('Rename World Info', 'Enter a new name:', oldName);
@@ -4118,6 +4488,7 @@ async function renameWorldInfo(name, data) {
         return;
     }
     if (equalsIgnoreCaseAndAccents(oldName, newName)) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.warning(t`Name not accepted, as it is the same as before (ignoring case and accents).`, t`Rename World Info`);
         return;
     }
@@ -4132,11 +4503,13 @@ async function renameWorldInfo(name, data) {
     if (entryPreviouslySelected !== -1) {
         const wiElement = getWIElement(newName);
         wiElement.prop('selected', true);
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#world_info').trigger('change');
     }
 
     const selectedIndex = world_names.indexOf(newName);
     if (selectedIndex !== -1) {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#world_editor_select').val(selectedIndex).trigger('change');
     }
 }
@@ -4148,6 +4521,7 @@ async function renameWorldInfo(name, data) {
  * @returns {Promise<void>}
  */
 async function updateWorldInfoLinks(oldName, newName) {
+    // @ts-expect-error TS(2339): Property 'charLore' does not exist on type '{}'.
     const existingCharLores = world_info.charLore?.filter((e) => e.extraBooks.includes(oldName));
     if (existingCharLores && existingCharLores.length > 0) {
         existingCharLores.forEach((charLore) => {
@@ -4171,10 +4545,10 @@ async function updateWorldInfoLinks(oldName, newName) {
     }
 
     // Trigger the confirmation popup
-    const updatePastLinksConfirm = await Popup.show.confirm(
+    const updatePastLinksConfirm = (await Popup.show.confirm(
         t`World/Lorebook renamed!`,
         `<p>${t`Auxiliary Lorebook links have been updated. Would you like to update primary lorebook links for ${linkedChIDs.length} character(s) as well?`}</p>`,
-    ) == POPUP_RESULT.AFFIRMATIVE;
+    )) == POPUP_RESULT.AFFIRMATIVE;
 
     if (updatePastLinksConfirm) {
         let activeCharacterUpdated = false;
@@ -4209,8 +4583,10 @@ async function updateWorldInfoLinks(oldName, newName) {
                     activeCharacterUpdated = true;
                 }
 
+                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                 toastr.success(`Successfully updated link for ${character.name}.`);
             } catch (e) {
+                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                 toastr.error(`Failed to update link for ${character.name}.`);
                 console.error(`Backend update for character ${character.name} failed:`, e);
             }
@@ -4227,7 +4603,6 @@ async function updateWorldInfoLinks(oldName, newName) {
 
 /**
  * Deletes a world info with the given name
- *
  * @param {string} worldInfoName - The name of the world info to delete
  * @returns {Promise<boolean>} A promise that resolves to true if the world info was successfully deleted, false otherwise
  */
@@ -4257,9 +4632,12 @@ export async function deleteWorldInfo(worldInfoName) {
     }
 
     await updateWorldInfoList();
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_editor_select').trigger('change');
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     if ($('#character_world').val() === worldInfoName) {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#character_world').val('').trigger('change');
         setWorldInfoButtonClass(undefined, false);
         if (menu_type != 'create') {
@@ -4273,6 +4651,7 @@ export async function deleteWorldInfo(worldInfoName) {
             const object = getOrCreatePersonaDescriptor();
             object.lorebook = '';
         }
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#persona_lore_button').toggleClass('world_set', false);
         saveSettingsDebounced();
     }
@@ -4280,6 +4659,10 @@ export async function deleteWorldInfo(worldInfoName) {
     return true;
 }
 
+/**
+ *
+ * @param data
+ */
 export function getFreeWorldEntryUid(data) {
     if (!data || !('entries' in data)) {
         return null;
@@ -4301,11 +4684,10 @@ export function getFreeWorldEntryUid(data) {
  * Generates a free world name based on the given input name.
  * If the input name is null, a default name is used.
  * If the input name already exists, a numbered suffix is added.
- *
  * @param {string|null} worldName - The name to base the new world name on. If null, a default name is used.
- * @param {Object} [options={}] - Optional parameters.
- * @param {boolean} [options.stripIndex=true] - Whether to strip any numbered suffix from the input name before generating the new name.
- * @return {string|undefined} The generated free world name, or undefined if no free name could be found after trying 100,000 times.
+ * @param {object} [options] - Optional parameters.
+ * @param {boolean} [options.stripIndex] - Whether to strip any numbered suffix from the input name before generating the new name.
+ * @returns {string|undefined} The generated free world name, or undefined if no free name could be found after trying 100,000 times.
  */
 export function getFreeWorldName(worldName = null, { stripIndex = true } = {}) {
     worldName ??= t`New World`;
@@ -4327,10 +4709,9 @@ export function getFreeWorldName(worldName = null, { stripIndex = true } = {}) {
 /**
  * Creates a new world info/lorebook with the given name.
  * Checks if a world with the same name already exists, providing a warning or optionally a user confirmation dialog.
- *
  * @param {string} worldName - The name of the new world info
- * @param {Object} options - Optional parameters
- * @param {boolean} [options.interactive=false] - Whether to show a confirmation dialog when overwriting an existing world
+ * @param {object} options - Optional parameters
+ * @param {boolean} [options.interactive] - Whether to show a confirmation dialog when overwriting an existing world
  * @returns {Promise<boolean>} - True if the world info was successfully created, false otherwise
  */
 export async function createNewWorldInfo(worldName, { interactive = false } = {}) {
@@ -4352,6 +4733,7 @@ export async function createNewWorldInfo(worldName, { interactive = false } = {}
 
     const selectedIndex = world_names.indexOf(worldName);
     if (selectedIndex !== -1) {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#world_editor_select').val(selectedIndex).trigger('change');
     } else {
         await hideWorldEditor();
@@ -4360,6 +4742,9 @@ export async function createNewWorldInfo(worldName, { interactive = false } = {}
     return true;
 }
 
+/**
+ *
+ */
 async function getCharacterLore() {
     const character = characters[this_chid];
     const name = character?.name;
@@ -4373,6 +4758,7 @@ async function getCharacterLore() {
 
     // TODO: Maybe make the utility function not use the window context?
     const fileName = getCharaFilename(this_chid);
+    // @ts-expect-error TS(2339): Property 'charLore' does not exist on type '{}'.
     const extraCharLore = world_info.charLore?.find((e) => e.name === fileName);
     if (extraCharLore) {
         worldsToSearch = new Set([...worldsToSearch, ...extraCharLore.extraBooks]);
@@ -4412,6 +4798,9 @@ async function getCharacterLore() {
     return entries;
 }
 
+/**
+ *
+ */
 async function getGlobalLore() {
     if (!selected_world_info?.length) {
         return [];
@@ -4429,6 +4818,9 @@ async function getGlobalLore() {
     return entries;
 }
 
+/**
+ *
+ */
 async function getChatLore() {
     const chatWorld = chat_metadata[METADATA_KEY];
 
@@ -4449,6 +4841,9 @@ async function getChatLore() {
     return entries;
 }
 
+/**
+ *
+ */
 async function getPersonaLore() {
     const chatWorld = chat_metadata[METADATA_KEY];
     const personaWorld = power_user.persona_description_lorebook;
@@ -4475,6 +4870,9 @@ async function getPersonaLore() {
     return entries;
 }
 
+/**
+ *
+ */
 export async function getSortedEntries() {
     try {
         const [
@@ -4536,13 +4934,13 @@ export async function getSortedEntries() {
  * Parse decorators from worldinfo content
  * @param {string} content The content to parse
  * @returns {[string[],string]} The decorators found in the content and the content without decorators
-*/
+ */
 function parseDecorators(content) {
     /**
      * Check if the decorator is known
      * @param {string} data string to check
      * @returns {boolean} true if the decorator is known
-    */
+     */
     const isKnownDecorator = (data) => {
         if (data.startsWith('@@@')) {
             data = data.substring(1);
@@ -4559,7 +4957,7 @@ function parseDecorators(content) {
     if (content.startsWith('@@')) {
         let newContent = content;
         const splited = content.split('\n');
-        let decorators = [];
+        const decorators = [];
         let fallbacked = false;
 
         for (let i = 0; i < splited.length; i++) {
@@ -4617,8 +5015,8 @@ export async function checkWorldInfo(chat, maxContext, isDryRun, globalScanData 
     let scanState = scan_state.INITIAL;
     let token_budget_overflowed = false;
     let count = 0;
-    let allActivatedEntries = new Map();
-    let failedProbabilityChecks = new Set();
+    const allActivatedEntries = new Map();
+    const failedProbabilityChecks = new Set();
     let allActivatedText = '';
 
     let budget = Math.round(world_info_budget * maxContext / 100) || 1;
@@ -4642,6 +5040,7 @@ export async function checkWorldInfo(chat, maxContext, isDryRun, globalScanData 
     const availableRecursionDelayLevels = [...new Set(sortedEntries
         .filter(entry => entry.delayUntilRecursion)
         .map(entry => entry.delayUntilRecursion === true ? 1 : entry.delayUntilRecursion),
+    // @ts-expect-error TS(2362): The left-hand side of an arithmetic operation must... Remove this comment to see the full error message
     )].sort((a, b) => a - b);
     // Already preset with the first level
     let currentRecursionDelayLevel = availableRecursionDelayLevels.shift() ?? 0;
@@ -4668,11 +5067,15 @@ export async function checkWorldInfo(chat, maxContext, isDryRun, globalScanData 
         let nextScanState = scan_state.NONE;
 
         // Loop and find all entries that can activate here
-        let activatedNow = new Set();
+        const activatedNow = new Set();
 
         for (const entry of sortedEntries) {
             // Logging preparation
             let headerLogged = false;
+            /**
+             *
+             * @param {...any} args
+             */
             function log(...args) {
                 if (!headerLogged) {
                     console.debug(`[WI] Entry ${entry.uid}`, `from '${entry.world}' processing`, entry);
@@ -4799,7 +5202,7 @@ export async function checkWorldInfo(chat, maxContext, isDryRun, globalScanData 
             const textToScan = buffer.get(entry, scanState);
 
             // PRIMARY KEYWORDS
-            let primaryKeyMatch = entry.key.find(key => {
+            const primaryKeyMatch = entry.key.find(key => {
                 const substituted = substituteParams(key);
                 return substituted && buffer.matchKeys(textToScan, substituted.trim(), entry);
             });
@@ -4831,7 +5234,7 @@ export async function checkWorldInfo(chat, maxContext, isDryRun, globalScanData 
             function matchSecondaryKeys() {
                 let hasAnyMatch = false;
                 let hasAllMatch = true;
-                for (let keysecondary of entry.keysecondary) {
+                for (const keysecondary of entry.keysecondary) {
                     const secondarySubstituted = substituteParams(keysecondary);
                     const hasSecondaryMatch = secondarySubstituted && buffer.matchKeys(textToScan, secondarySubstituted.trim(), entry);
 
@@ -4895,10 +5298,13 @@ export async function checkWorldInfo(chat, maxContext, isDryRun, globalScanData 
         console.debug('[WI] --- PROBABILITY CHECKS ---');
         !newEntries.length && console.debug('[WI] No probability checks to do');
 
+        // @ts-expect-error TS(2339): Property 'ignoreBudget' does not exist on type 'un... Remove this comment to see the full error message
         let ignoresBudget = newEntries.filter(e => e.ignoreBudget).length;
 
         for (const entry of newEntries) {
+            // @ts-expect-error TS(2339): Property 'ignoreBudget' does not exist on type 'un... Remove this comment to see the full error message
             ignoresBudget -= (entry.ignoreBudget ? 1 : 0);
+            // @ts-expect-error TS(2339): Property 'ignoreBudget' does not exist on type 'un... Remove this comment to see the full error message
             if (token_budget_overflowed && !entry.ignoreBudget) {
                 if (ignoresBudget > 0) {
                     continue;
@@ -4906,21 +5312,29 @@ export async function checkWorldInfo(chat, maxContext, isDryRun, globalScanData 
                 break;
             }
 
+            /**
+             *
+             */
             function verifyProbability() {
                 // If we don't need to roll, it's always true
+                // @ts-expect-error TS(2339): Property 'useProbability' does not exist on type '... Remove this comment to see the full error message
                 if (!entry.useProbability || entry.probability === 100) {
+                    // @ts-expect-error TS(2339): Property 'uid' does not exist on type 'unknown'.
                     console.debug(`WI entry ${entry.uid} does not use probability`);
                     return true;
                 }
 
                 const isSticky = timedEffects.isEffectActive('sticky', entry);
                 if (isSticky) {
+                    // @ts-expect-error TS(2339): Property 'uid' does not exist on type 'unknown'.
                     console.debug(`WI entry ${entry.uid} is sticky, does not need to re-roll probability`);
                     return true;
                 }
 
                 const rollValue = Math.random() * 100;
+                // @ts-expect-error TS(2339): Property 'probability' does not exist on type 'unk... Remove this comment to see the full error message
                 if (rollValue <= entry.probability) {
+                    // @ts-expect-error TS(2339): Property 'uid' does not exist on type 'unknown'.
                     console.debug(`WI entry ${entry.uid} passed probability check of ${entry.probability}%`);
                     return true;
                 }
@@ -4931,19 +5345,24 @@ export async function checkWorldInfo(chat, maxContext, isDryRun, globalScanData 
 
             const success = verifyProbability();
             if (!success) {
+                // @ts-expect-error TS(2339): Property 'uid' does not exist on type 'unknown'.
                 console.debug(`WI entry ${entry.uid} failed probability check, removing from activated entries`, entry);
                 continue;
             }
 
             // Substitute macros inline, for both this checking and also future processing
+            // @ts-expect-error TS(2339): Property 'content' does not exist on type 'unknown... Remove this comment to see the full error message
             entry.content = substituteParams(entry.content);
+            // @ts-expect-error TS(2339): Property 'content' does not exist on type 'unknown... Remove this comment to see the full error message
             newContent += `${entry.content}\n`;
 
+            // @ts-expect-error TS(2339): Property 'ignoreBudget' does not exist on type 'un... Remove this comment to see the full error message
             if (!entry.ignoreBudget && (textToScanTokens + (await getTokenCountAsync(newContent))) >= budget) {
                 if (!token_budget_overflowed) {
                     console.debug('[WI] --- BUDGET OVERFLOW CHECK ---');
                     if (world_info_overflow_alert) {
                         console.warn(`[WI] budget of ${budget} reached, stopping after ${allActivatedEntries.size} entries`);
+                        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                         toastr.warning(`World info budget reached after ${allActivatedEntries.size} entries.`, 'World Info');
                     } else {
                         console.debug(`[WI] budget of ${budget} reached, stopping after ${allActivatedEntries.size} entries`);
@@ -4953,11 +5372,14 @@ export async function checkWorldInfo(chat, maxContext, isDryRun, globalScanData 
                 continue;
             }
 
+            // @ts-expect-error TS(2339): Property 'world' does not exist on type 'unknown'.
             allActivatedEntries.set(`${entry.world}.${entry.uid}`, entry);
+            // @ts-expect-error TS(2339): Property 'uid' does not exist on type 'unknown'.
             console.debug(`[WI] Entry ${entry.uid} activation successful, adding to prompt`, entry);
         }
 
         const successfulNewEntries = newEntries.filter(x => !failedProbabilityChecks.has(x));
+        // @ts-expect-error TS(2339): Property 'preventRecursion' does not exist on type... Remove this comment to see the full error message
         const successfulNewEntriesForRecursion = successfulNewEntries.filter(x => !x.preventRecursion);
 
         console.debug(`[WI] --- LOOP #${count} RESULT ---`);
@@ -4969,6 +5391,10 @@ export async function checkWorldInfo(chat, maxContext, isDryRun, globalScanData 
             console.debug(`[WI] Successfully activated ${successfulNewEntries.length} new entries to prompt. ${allActivatedEntries.size} total entries activated.`, successfulNewEntries);
         }
 
+        /**
+         *
+         * @param {...any} args
+         */
         function logNextState(...args) {
             args.length && console.debug(args.shift(), ...args);
             console.debug('[WI] Setting scan state', Object.entries(scan_state).find(x => x[1] === scanState));
@@ -4992,7 +5418,7 @@ export async function checkWorldInfo(chat, maxContext, isDryRun, globalScanData 
         if (!nextScanState && !token_budget_overflowed && minActivationsNotSatisfied) {
             console.debug('[WI] --- MIN ACTIVATIONS CHECK ---');
 
-            let over_max = (
+            const over_max = (
                 world_info_min_activations_depth_max > 0 &&
                 buffer.getDepth() > world_info_min_activations_depth_max
             ) || (buffer.getDepth() > chat.length);
@@ -5018,6 +5444,7 @@ export async function checkWorldInfo(chat, maxContext, isDryRun, globalScanData 
         scanState = nextScanState;
         if (scanState) {
             const text = successfulNewEntriesForRecursion
+                // @ts-expect-error TS(2339): Property 'content' does not exist on type 'unknown... Remove this comment to see the full error message
                 .map(x => x.content).join('\n');
             if (text) {
                 buffer.addRecurse(text);
@@ -5149,6 +5576,7 @@ export async function checkWorldInfo(chat, maxContext, isDryRun, globalScanData 
     if (shouldWIAddPrompt) {
         const originalAN = context.extensionPrompts[NOTE_MODULE_NAME].value;
         const ANWithWI = `${ANTopEntries.join('\n')}\n${originalAN}\n${ANBottomEntries.join('\n')}`.replace(/(^\n)|(\n$)/g, '');
+        // @ts-expect-error TS(2339): Property 'allowWIScan' does not exist on type '{ d... Remove this comment to see the full error message
         context.setExtensionPrompt(NOTE_MODULE_NAME, ANWithWI, chat_metadata[metadata_keys.position], chat_metadata[metadata_keys.depth], extension_settings.note.allowWIScan, chat_metadata[metadata_keys.role]);
     }
 
@@ -5173,6 +5601,7 @@ export async function checkWorldInfo(chat, maxContext, isDryRun, globalScanData 
 function filterGroupsByScoring(groups, buffer, removeEntry, scanState, hasStickyMap) {
     for (const [key, group] of Object.entries(groups)) {
         // Group scoring is disabled both globally and for the group entries
+        // @ts-expect-error TS(2339): Property 'some' does not exist on type 'unknown'.
         if (!world_info_use_group_scoring && !group.some(x => x.useGroupScoring)) {
             console.debug(`[WI] Skipping group scoring for group '${key}'`);
             continue;
@@ -5185,11 +5614,13 @@ function filterGroupsByScoring(groups, buffer, removeEntry, scanState, hasSticky
             continue;
         }
 
+        // @ts-expect-error TS(2339): Property 'map' does not exist on type 'unknown'.
         const scores = group.map(entry => buffer.getScore(entry, scanState));
         const maxScore = Math.max(...scores);
         console.debug(`[WI] Group '${key}' max score:`, maxScore);
         //console.table(group.map((entry, i) => ({ uid: entry.uid, key: JSON.stringify(entry.key), score: scores[i] })));
 
+        // @ts-expect-error TS(2339): Property 'length' does not exist on type 'unknown'... Remove this comment to see the full error message
         for (let i = 0; i < group.length; i++) {
             const isScored = group[i].useGroupScoring ?? world_info_use_group_scoring;
 
@@ -5200,6 +5631,7 @@ function filterGroupsByScoring(groups, buffer, removeEntry, scanState, hasSticky
             if (scores[i] < maxScore) {
                 console.debug(`[WI] Entry ${group[i].uid}`, `removed as score loser from inclusion group '${key}'`, group[i]);
                 removeEntry(group[i]);
+                // @ts-expect-error TS(2339): Property 'splice' does not exist on type 'unknown'... Remove this comment to see the full error message
                 group.splice(i, 1);
                 scores.splice(i, 1);
                 i--;
@@ -5223,8 +5655,10 @@ function filterGroupsByTimedEffects(groups, timedEffects, removeEntry) {
         hasStickyMap.set(key, false);
 
         // If the group has any sticky entries, leave only the sticky entries
+        // @ts-expect-error TS(2339): Property 'filter' does not exist on type 'unknown'... Remove this comment to see the full error message
         const stickyEntries = group.filter(x => timedEffects.isEffectActive('sticky', x));
         if (stickyEntries.length) {
+            // @ts-expect-error TS(2488): Type 'unknown' must have a '[Symbol.iterator]()' m... Remove this comment to see the full error message
             for (const entry of group) {
                 if (stickyEntries.includes(entry)) {
                     continue;
@@ -5238,6 +5672,7 @@ function filterGroupsByTimedEffects(groups, timedEffects, removeEntry) {
         }
 
         // It should not be possible for an entry on cooldown/delay to event get into the grouping phase but @Wolfsblvt told me to leave it here.
+        // @ts-expect-error TS(2339): Property 'filter' does not exist on type 'unknown'... Remove this comment to see the full error message
         const cooldownEntries = group.filter(x => timedEffects.isEffectActive('cooldown', x));
         if (cooldownEntries.length) {
             console.debug(`[WI] Inclusion group '${key}' has entries on cooldown. They will be removed.`, cooldownEntries);
@@ -5246,6 +5681,7 @@ function filterGroupsByTimedEffects(groups, timedEffects, removeEntry) {
             }
         }
 
+        // @ts-expect-error TS(2339): Property 'filter' does not exist on type 'unknown'... Remove this comment to see the full error message
         const delayEntries = group.filter(x => timedEffects.isEffectActive('delay', x));
         if (delayEntries.length) {
             console.debug(`[WI] Inclusion group '${key}' has entries with delay. They will be removed.`, delayEntries);
@@ -5285,6 +5721,12 @@ function filterByInclusionGroups(newEntries, allActivatedEntries, buffer, scanSt
     }
 
     const removeEntry = (entry) => newEntries.splice(newEntries.indexOf(entry), 1);
+    /**
+     *
+     * @param group
+     * @param chosen
+     * @param logging
+     */
     function removeAllBut(group, chosen, logging = true) {
         for (const entry of group) {
             if (entry === chosen) {
@@ -5300,6 +5742,7 @@ function filterByInclusionGroups(newEntries, allActivatedEntries, buffer, scanSt
     filterGroupsByScoring(grouped, buffer, removeEntry, scanState, hasStickyMap);
 
     for (const [key, group] of Object.entries(grouped)) {
+        // @ts-expect-error TS(2339): Property 'length' does not exist on type 'unknown'... Remove this comment to see the full error message
         console.debug(`[WI] Checking inclusion group '${key}' with ${group.length} entries`, group);
 
         // If the group has any sticky entries, the rest are already removed by the timed effects filter
@@ -5309,6 +5752,7 @@ function filterByInclusionGroups(newEntries, allActivatedEntries, buffer, scanSt
             continue;
         }
 
+        // @ts-expect-error TS(2339): Property 'group' does not exist on type 'unknown'.
         if (Array.from(allActivatedEntries.values()).some(x => x.group === key)) {
             console.debug(`[WI] Skipping inclusion group check, group '${key}' was already activated`);
             // We need to forcefully deactivate all other entries in the group
@@ -5355,6 +5799,10 @@ function filterByInclusionGroups(newEntries, allActivatedEntries, buffer, scanSt
     }
 }
 
+/**
+ *
+ * @param inputObj
+ */
 function convertAgnaiMemoryBook(inputObj) {
     const outputObj = { entries: {} };
 
@@ -5400,6 +5848,10 @@ function convertAgnaiMemoryBook(inputObj) {
     return outputObj;
 }
 
+/**
+ *
+ * @param inputObj
+ */
 function convertRisuLorebook(inputObj) {
     const outputObj = { entries: {} };
 
@@ -5445,6 +5897,10 @@ function convertRisuLorebook(inputObj) {
     return outputObj;
 }
 
+/**
+ *
+ * @param inputObj
+ */
 function convertNovelLorebook(inputObj) {
     const outputObj = {
         entries: {},
@@ -5495,6 +5951,10 @@ function convertNovelLorebook(inputObj) {
     return outputObj;
 }
 
+/**
+ *
+ * @param characterBook
+ */
 export function convertCharacterBook(characterBook) {
     const result = { entries: {}, originalData: characterBook };
 
@@ -5554,8 +6014,14 @@ export function convertCharacterBook(characterBook) {
     return result;
 }
 
+/**
+ *
+ * @param chid
+ * @param forceValue
+ */
 export function setWorldInfoButtonClass(chid, forceValue = undefined) {
     if (forceValue !== undefined) {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#set_character_world, #world_button').toggleClass('world_set', forceValue);
         return;
     }
@@ -5566,10 +6032,16 @@ export function setWorldInfoButtonClass(chid, forceValue = undefined) {
 
     const world = characters[chid]?.data?.extensions?.world;
     const worldSet = Boolean(world && world_names.includes(world));
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#set_character_world, #world_button').toggleClass('world_set', worldSet);
 }
 
+/**
+ *
+ * @param chid
+ */
 export function checkEmbeddedWorld(chid) {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#import_character_info').hide();
 
     if (chid === undefined) {
@@ -5577,6 +6049,7 @@ export function checkEmbeddedWorld(chid) {
     }
 
     if (characters[chid]?.data?.character_book) {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#import_character_info').data('chid', chid).show();
 
         // Only show the alert once per character
@@ -5596,6 +6069,7 @@ export function checkEmbeddedWorld(chid) {
                 };
                 callGenericPopup(html, POPUP_TYPE.CONFIRM, '', { okButton: 'Yes' }).then(checkResult);
             } else {
+                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                 toastr.info(
                     'To import and use it, select "Import Card Lore" in the "More..." dropdown menu on the character panel.',
                     `${characters[chid].name} has an embedded World/Lorebook`,
@@ -5609,7 +6083,12 @@ export function checkEmbeddedWorld(chid) {
     return false;
 }
 
+/**
+ *
+ * @param skipPopup
+ */
 export async function importEmbeddedWorldInfo(skipPopup = false) {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const chid = $('#import_character_info').data('chid');
 
     if (chid === undefined || chid === -1) {
@@ -5635,21 +6114,30 @@ export async function importEmbeddedWorldInfo(skipPopup = false) {
 
     await saveWorldInfo(bookName, convertedBook, true);
     await updateWorldInfoList();
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#character_world').val(bookName).trigger('change');
 
+    // @ts-expect-error TS(2304): Cannot find name 'toastr'.
     toastr.success(t`The world '${bookName}' has been imported and linked to the character successfully.`, t`World/Lorebook imported`);
 
     const newIndex = world_names.indexOf(bookName);
     if (newIndex >= 0) {
         //show&draw the WI panel before..
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#WIDrawerIcon').trigger('click');
         //..auto-opening the new imported WI
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#world_editor_select').val(newIndex).trigger('change');
     }
 
     setWorldInfoButtonClass(chid, true);
 }
 
+/**
+ *
+ * @param args
+ * @param text
+ */
 export function onWorldInfoChange(args, text) {
     if (args !== '__notSlashCommand__') { // if it's a slash command
         const silent = isTrueBoolean(args.silent);
@@ -5665,8 +6153,10 @@ export function onWorldInfoChange(args, text) {
                             if (selected_world_info.includes(name)) {
                                 selected_world_info.splice(selected_world_info.indexOf(name), 1);
                                 wiElement.prop('selected', false);
+                                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                                 if (!silent) toastr.success(t`Deactivated world: ${name}`);
                             } else {
+                                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                                 if (!silent) toastr.error(t`World was not active: ${name}`);
                             }
                             break;
@@ -5675,10 +6165,12 @@ export function onWorldInfoChange(args, text) {
                             if (selected_world_info.includes(name)) {
                                 selected_world_info.splice(selected_world_info.indexOf(name), 1);
                                 wiElement.prop('selected', false);
+                                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                                 if (!silent) toastr.success(t`Deactivated world: ${name}`);
                             } else {
                                 selected_world_info.push(name);
                                 wiElement.prop('selected', true);
+                                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                                 if (!silent) toastr.success(t`Activated world: ${name}`);
                             }
                             break;
@@ -5687,21 +6179,27 @@ export function onWorldInfoChange(args, text) {
                         default: {
                             selected_world_info.push(name);
                             wiElement.prop('selected', true);
+                            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                             if (!silent) toastr.success(t`Activated world: ${name}`);
                         }
                     }
                 } else {
+                    // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                     if (!silent) toastr.error(t`No world found named: ${worldName}`);
                 }
             });
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#world_info').trigger('change');
         } else { // if no args, unset all worlds
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             if (!silent) toastr.success(t`Deactivated all worlds`);
             selected_world_info = [];
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#world_info').val(null).trigger('change');
         }
     } else { //if it's a pointer selection
         const tempWorldInfo = [];
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const val = $('#world_info').val();
         const selectedWorlds = (Array.isArray(val) ? val : [val]).map((e) => Number(e)).filter((e) => !isNaN(e));
         if (selectedWorlds.length > 0) {
@@ -5712,6 +6210,7 @@ export function onWorldInfoChange(args, text) {
                 } else {
                     const wiElement = getWIElement(existingWorldName);
                     wiElement.prop('selected', false);
+                    // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                     toastr.error(t`The world with ${existingWorldName} is invalid or corrupted.`);
                 }
             });
@@ -5728,8 +6227,10 @@ export function onWorldInfoChange(args, text) {
  * Imports world info from a file.
  * @param {File} file File to import
  */
+// @ts-expect-error TS(7030): Not all code paths return a value.
 export async function importWorldInfo(file) {
     if (!file) {
+        // @ts-expect-error TS(7030): Not all code paths return a value.
         return;
     }
 
@@ -5740,6 +6241,7 @@ export async function importWorldInfo(file) {
         let jsonData;
 
         if (file.name.endsWith('.png')) {
+            // @ts-expect-error TS(2769): No overload matches this call.
             const buffer = new Uint8Array(await getFileBuffer(file));
             jsonData = extractDataFromPng(buffer, 'naidata');
         } else {
@@ -5748,7 +6250,9 @@ export async function importWorldInfo(file) {
         }
 
         if (jsonData === undefined || jsonData === null) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.error(t`File is not valid: ${file.name}`);
+            // @ts-expect-error TS(7030): Not all code paths return a value.
             return;
         }
 
@@ -5770,7 +6274,9 @@ export async function importWorldInfo(file) {
             formData.append('convertedData', JSON.stringify(convertRisuLorebook(jsonData)));
         }
     } catch (error) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.error(`Error parsing file: ${error}`);
+        // @ts-expect-error TS(7030): Not all code paths return a value.
         return;
     }
 
@@ -5800,13 +6306,16 @@ export async function importWorldInfo(file) {
 
             const newIndex = world_names.indexOf(data.name);
             if (newIndex >= 0) {
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $('#world_editor_select').val(newIndex).trigger('change');
             }
 
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.success(t`World Info "${data.name}" imported successfully!`);
         }
     } catch (error) {
         console.error('Error importing world info:', error);
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.error(t`Failed to import World Info`);
     }
 }
@@ -5817,10 +6326,13 @@ export async function importWorldInfo(file) {
  */
 export function openWorldInfoEditor(worldName) {
     console.log(`Opening lorebook for ${worldName}`);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     if (!$('#WorldInfo').is(':visible')) {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#WIDrawerIcon').trigger('click');
     }
     const index = world_names.indexOf(worldName);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_editor_select').val(index).trigger('change');
 }
 
@@ -5837,6 +6349,7 @@ export async function assignLorebookToChat({ shiftKey, altKey }) {
         return;
     }
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const template = $(await renderTemplateAsync('chatLorebook'));
 
     const worldSelect = template.find('select');
@@ -5852,13 +6365,16 @@ export async function assignLorebookToChat({ shiftKey, altKey }) {
     }
 
     worldSelect.on('change', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const worldName = $(this).val();
 
         if (worldName) {
             chat_metadata[METADATA_KEY] = worldName;
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('.chat_lorebook_button').addClass('world_set');
         } else {
             delete chat_metadata[METADATA_KEY];
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('.chat_lorebook_button').removeClass('world_set');
         }
 
@@ -5870,12 +6386,11 @@ export async function assignLorebookToChat({ shiftKey, altKey }) {
 
 /**
  * Moves a World Info entry from a source lorebook to a target lorebook.
- *
  * @param {string} sourceName - The name of the source lorebook file.
  * @param {string} targetName - The name of the target lorebook file.
  * @param {string|number} uid - The UID of the entry to move from the source lorebook.
- * @param {Object} options - Additional options for the move operation.
- * @param {boolean} [options.deleteOriginal=true] - Whether to delete the original entry from the source lorebook after moving it.
+ * @param {object} options - Additional options for the move operation.
+ * @param {boolean} [options.deleteOriginal] - Whether to delete the original entry from the source lorebook after moving it.
  * @returns {Promise<boolean>} True if the move was successful, false otherwise.
  */
 export async function moveWorldInfoEntry(sourceName, targetName, uid, { deleteOriginal = true } = {}) {
@@ -5884,12 +6399,14 @@ export async function moveWorldInfoEntry(sourceName, targetName, uid, { deleteOr
     }
 
     if (!world_names.includes(sourceName)) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.error(t`Source lorebook '${sourceName}' not found.`);
         console.error(`[WI Move] Source lorebook '${sourceName}' does not exist.`);
         return false;
     }
 
     if (!world_names.includes(targetName)) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.error(t`Target lorebook '${targetName}' not found.`);
         console.error(`[WI Move] Target lorebook '${targetName}' does not exist.`);
         return false;
@@ -5902,17 +6419,20 @@ export async function moveWorldInfoEntry(sourceName, targetName, uid, { deleteOr
         const targetData = await loadWorldInfo(targetName);
 
         if (!sourceData || !sourceData.entries) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.error(t`Failed to load data for source lorebook '${sourceName}'.`);
             console.error(`[WI Move] Could not load source data for '${sourceName}'.`);
             return false;
         }
         if (!targetData || !targetData.entries) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.error(t`Failed to load data for target lorebook '${targetName}'.`);
             console.error(`[WI Move] Could not load target data for '${targetName}'.`);
             return false;
         }
 
         if (!sourceData.entries[entryUidString]) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.error(t`Entry not found in source lorebook '${sourceName}'.`);
             console.error(`[WI Move] Entry UID ${entryUidString} not found in '${sourceName}'.`);
             return false;
@@ -5928,7 +6448,9 @@ export async function moveWorldInfoEntry(sourceName, targetName, uid, { deleteOr
 
         entryToMove.uid = newUid;
         // Place the entry at the end of the target lorebook
+        // @ts-expect-error TS(2345): Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
         const maxDisplayIndex = Object.values(targetData.entries).reduce((max, entry) => Math.max(max, entry.displayIndex ?? -1), -1);
+        // @ts-expect-error TS(2365): Operator '+' cannot be applied to types 'unknown' ... Remove this comment to see the full error message
         entryToMove.displayIndex = maxDisplayIndex + 1;
 
         targetData.entries[newUid] = entryToMove;
@@ -5949,6 +6471,7 @@ export async function moveWorldInfoEntry(sourceName, targetName, uid, { deleteOr
         console.log(`[WI Move] ${entryToMove.comment} ${deleteOriginal ? 'moved' : 'copied'} successfully to '${targetName}'.`);
 
         // Check if the currently viewed book in the editor is the source or target and reload it
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const currentEditorBookIndex = Number($('#world_editor_select').val());
         if (!isNaN(currentEditorBookIndex)) {
             const currentEditorBookName = world_names[currentEditorBookIndex];
@@ -5957,12 +6480,14 @@ export async function moveWorldInfoEntry(sourceName, targetName, uid, { deleteOr
             }
         }
 
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.success(deleteOriginal
             ? t`Entry moved successfully from '${sourceName}' to '${targetName}'.`
             : t`Entry copied successfully to '${targetName}'.`);
 
         return true;
     } catch (error) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.error(t`An unexpected error occurred while moving the entry: ${error.message}`);
         console.error('[WI Move] Unexpected error:', error);
         return false;
@@ -5976,7 +6501,9 @@ export async function moveWorldInfoEntry(sourceName, targetName, uid, { deleteOr
  * @param {string} name - The name of the world info to link to the character.
  */
 export async function charUpdatePrimaryWorld(name) {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const previousValue = $('#character_world').val();
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#character_world').val(name);
 
     console.debug('Character world selected:', name);
@@ -5989,19 +6516,23 @@ export async function charUpdatePrimaryWorld(name) {
     if (previousValue && !name) {
         try {
             // Dirty hack to remove embedded lorebook from character JSON data.
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const data = JSON.parse(String($('#character_json_data').val()));
 
             if (data?.data?.character_book) {
                 data.data.character_book = undefined;
             }
 
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#character_json_data').val(JSON.stringify(data));
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.info(t`Embedded lorebook will be removed from this character.`);
         } catch {
             console.error('Failed to parse character JSON data.');
         }
     }
 
+    // @ts-expect-error TS(2554): Expected 1 arguments, but got 0.
     await createOrEditCharacter();
 
     setWorldInfoButtonClass(undefined, !!name);
@@ -6027,6 +6558,11 @@ export function charSetAuxWorlds(fileName, books) {
     updateAuxBooks(fileName, _ => Array.isArray(books) ? books : []);
 }
 
+/**
+ *
+ * @param fileName
+ * @param computeNext
+ */
 function updateAuxBooks(fileName, computeNext) {
     if (!fileName) return;
 
@@ -6036,6 +6572,7 @@ function updateAuxBooks(fileName, computeNext) {
         return; // no debounced save in create flow
     }
 
+    // @ts-expect-error TS(2339): Property 'charLore' does not exist on type '{}'.
     const charLore = world_info.charLore ?? [];
     const idx = charLore.findIndex(e => e.name === fileName);
     const current = idx !== -1 ? (charLore[idx].extraBooks ?? []) : [];
@@ -6053,7 +6590,11 @@ function updateAuxBooks(fileName, computeNext) {
     saveSettingsDebounced();
 }
 
+/**
+ *
+ */
 export function initWorldInfo() {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_info').on('mousedown change', async function (e) {
         // If there's no world names, don't do anything
         if (world_names.length === 0) {
@@ -6061,14 +6602,18 @@ export function initWorldInfo() {
             return;
         }
 
+        // @ts-expect-error TS(2554): Expected 2 arguments, but got 1.
         onWorldInfoChange('__notSlashCommand__');
     });
 
     //**************************WORLD INFO IMPORT EXPORT*************************//
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_import_button').on('click', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#world_import_file').trigger('click');
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_import_file').on('change', async function (e) {
         if (!(e.target instanceof HTMLInputElement)) {
             return;
@@ -6082,6 +6627,7 @@ export function initWorldInfo() {
         e.target.value = '';
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_create_button').on('click', async () => {
         const tempName = getFreeWorldName();
         const finalName = await Popup.show.input(t`Create a new World Info`, t`Enter a name for the new file:`, tempName);
@@ -6091,9 +6637,12 @@ export function initWorldInfo() {
         }
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_editor_select').on('change', async () => {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#world_info_search').val('');
         worldInfoFilter.setFilterData(FILTER_TYPES.WORLD_INFO_SEARCH, '', true);
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const selectedIndex = String($('#world_editor_select').find(':selected').val());
 
         if (selectedIndex === '') {
@@ -6109,18 +6658,26 @@ export function initWorldInfo() {
         eventSource.emit(event_types.WORLDINFO_SETTINGS_UPDATED);
     };
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_info_depth').on('input', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         world_info_depth = Number($(this).val());
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#world_info_depth_counter').val($(this).val());
         saveSettings();
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_info_min_activations').on('input', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         world_info_min_activations = Number($(this).val());
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#world_info_min_activations_counter').val(world_info_min_activations);
 
         if (world_info_min_activations !== 0 && world_info_max_recursion_steps !== 0) {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#world_info_max_recursion_steps').val(0).trigger('input');
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             flashHighlight($('#world_info_max_recursion_steps').parent()); // flash the other control to show it has changed
             console.info('[WI] Max recursion steps set to 0, as min activations is set to', world_info_min_activations);
         } else {
@@ -6128,64 +6685,92 @@ export function initWorldInfo() {
         }
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_info_min_activations_depth_max').on('input', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         world_info_min_activations_depth_max = Number($(this).val());
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#world_info_min_activations_depth_max_counter').val($(this).val());
         saveSettings();
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_info_budget').on('input', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         world_info_budget = Number($(this).val());
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#world_info_budget_counter').val($(this).val());
         saveSettings();
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_info_include_names').on('input', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         world_info_include_names = !!$(this).prop('checked');
         saveSettings();
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_info_recursive').on('input', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         world_info_recursive = !!$(this).prop('checked');
         saveSettings();
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_info_case_sensitive').on('input', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         world_info_case_sensitive = !!$(this).prop('checked');
         saveSettings();
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_info_match_whole_words').on('input', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         world_info_match_whole_words = !!$(this).prop('checked');
         saveSettings();
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_info_character_strategy').on('change', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         world_info_character_strategy = Number($(this).val());
         saveSettings();
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_info_overflow_alert').on('change', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         world_info_overflow_alert = !!$(this).prop('checked');
         saveSettingsDebounced();
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_info_use_group_scoring').on('change', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         world_info_use_group_scoring = !!$(this).prop('checked');
         saveSettingsDebounced();
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_info_budget_cap').on('input', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         world_info_budget_cap = Number($(this).val());
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#world_info_budget_cap_counter').val(world_info_budget_cap);
         saveSettings();
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_info_max_recursion_steps').on('input', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         world_info_max_recursion_steps = Number($(this).val());
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#world_info_max_recursion_steps_counter').val(world_info_max_recursion_steps);
         if (world_info_max_recursion_steps !== 0 && world_info_min_activations !== 0) {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#world_info_min_activations').val(0).trigger('input');
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             flashHighlight($('#world_info_min_activations').parent()); // flash the other control to show it has changed
             console.info('[WI] Min activations set to 0, as max recursion steps is set to', world_info_max_recursion_steps);
         } else {
@@ -6193,8 +6778,11 @@ export function initWorldInfo() {
         }
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_button').on('click', async function (event) {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const openSetWorldMenu = () => $('#char-management-dropdown').val($('#set_character_world').val()).trigger('change');
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const chid = $('#set_character_world').data('chid');
 
         if (chid === -1) {
@@ -6214,40 +6802,50 @@ export function initWorldInfo() {
         }
     });
     addLongPressEvent('#world_button', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(this).trigger($.Event('click', { shiftKey: true }));
     });
 
     const debouncedWorldInfoSearch = debounce((searchQuery) => {
         worldInfoFilter.setFilterData(FILTER_TYPES.WORLD_INFO_SEARCH, searchQuery);
     });
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_info_search').on('input', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const searchQuery = $(this).val();
         debouncedWorldInfoSearch(searchQuery);
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_refresh').on('click', () => {
         updateEditor(navigation_option.previous);
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_info_sort_order').on('change', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const value = String($(this).find(':selected').val());
         // Save sort order, but do not save search sorting, as this is a temporary sorting option
         if (value !== 'search') accountStorage.setItem(SORT_ORDER_KEY, value);
         updateEditor(navigation_option.none);
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.chat_lorebook_button', assignLorebookToChat);
     addLongPressEvent('.chat_lorebook_button', function () {
         assignLorebookToChat({ shiftKey: true, altKey: false });
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#group-chat-lorebook-dropdown').on('change', async function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(this).prop('selectedIndex', 0);
         await assignLorebookToChat({ shiftKey: true, altKey: false });
     });
 
     // Not needed on mobile
     if (!isMobile()) {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#world_editor_select').select2({
             placeholder: t`--- Pick to Edit ---`,
             searchInputPlaceholder: t`Search...`,
@@ -6256,6 +6854,7 @@ export function initWorldInfo() {
             multiple: false,
         });
 
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#world_info').select2({
             width: '100%',
             placeholder: t`No Worlds active. Click here to select.`,
@@ -6264,11 +6863,15 @@ export function initWorldInfo() {
         });
 
         // Subscribe world loading to the select2 multiselect items (We need to target the specific select2 control)
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         select2ChoiceClickSubscribe($('#world_info'), target => {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const name = $(target).text();
             const selectedIndex = world_names.indexOf(name);
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const alreadySelectedInEditor = $('#world_editor_select option:selected').text() === name;
             if (selectedIndex !== -1 && !alreadySelectedInEditor) {
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $('#world_editor_select').val(selectedIndex).trigger('change');
                 console.log('Quick selection of world', name);
             } else {
@@ -6277,11 +6880,15 @@ export function initWorldInfo() {
         }, { buttonStyle: true, closeDrawer: true });
     }
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#WorldInfo').on('scroll', () => {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('.world_entry input[name="group"], .world_entry input[name="automationId"]').each((_, el) => {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const instance = $(el).autocomplete('instance');
 
             if (instance !== undefined) {
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $(el).autocomplete('close');
             }
         });

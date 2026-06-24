@@ -12,6 +12,9 @@ if (!userAccount) {
     process.exit(1);
 }
 
+/**
+ *
+ */
 async function main() {
     setConfigFilePath(configPath);
     const { recoverPassword } = await import('./src/recover-password.js');

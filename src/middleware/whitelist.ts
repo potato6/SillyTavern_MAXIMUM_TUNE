@@ -22,7 +22,7 @@ if (fs.existsSync(whitelistPath)) {
     console.warn(color.yellow('whitelist.txt is deprecated and will be removed in a future release.'));
     console.warn(color.yellow('Please migrate its contents to the whitelist field in config.yaml. See the documentation for more details.'));
     try {
-        let whitelistTxt = fs.readFileSync(whitelistPath, 'utf-8');
+        const whitelistTxt = fs.readFileSync(whitelistPath, 'utf-8');
         whitelist = whitelistTxt.split('\n').filter(ip => ip).map(ip => ip.trim());
     } catch (e) {
         // Ignore errors that may occur when reading the whitelist (e.g. permissions)

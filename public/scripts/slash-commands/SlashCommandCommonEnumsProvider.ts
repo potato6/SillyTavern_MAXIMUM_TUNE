@@ -71,7 +71,6 @@ export const enumIcons = {
 
     /**
      * Returns the appropriate state icon based on a boolean
-     *
      * @param {boolean} state - The state to determine the icon for
      * @returns {string} The corresponding state icon
      */
@@ -81,8 +80,7 @@ export const enumIcons = {
 
     /**
      * Returns the appropriate WI icon based on the entry
-     *
-     * @param {Object} entry - WI entry
+     * @param {object} entry - WI entry
      * @returns {string} The corresponding WI icon
      */
     getWiStatusIcon: (entry) => {
@@ -94,7 +92,6 @@ export const enumIcons = {
 
     /**
      * Returns the appropriate icon based on the role
-     *
      * @param {extension_prompt_roles} role - The role to get the icon for
      * @returns {string} The corresponding icon
      */
@@ -109,7 +106,6 @@ export const enumIcons = {
 
     /**
      * A function to get the data type icon
-     *
      * @param {string} type - The type of the data
      * @returns {string} The corresponding data type icon
      */
@@ -129,8 +125,7 @@ export const commonEnumProviders = {
     /**
      * Enum values for booleans. Either using true/false or on/off
      * Optionally supports "toggle".
-     *
-     * @param {('onOff'|'onOffToggle'|'trueFalse')?} [mode='trueFalse'] - The mode to use. Default is 'trueFalse'.
+     * @param {('onOff'|'onOffToggle'|'trueFalse')?} [mode] - The mode to use. Default is 'trueFalse'.
      * @returns {() => SlashCommandEnumValue[]}
      */
     boolean: (mode = 'trueFalse') => () => {
@@ -146,7 +141,6 @@ export const commonEnumProviders = {
      * All possible variable names
      *
      * Can be filtered by `type` to only show global or local variables
-     *
      * @param {...('global'|'local'|'scope'|'all')} type - The type of variables to include in the array. Can be 'all', 'global', or 'local'.
      * @returns {(executor:SlashCommandExecutor, scope:SlashCommandScope) => SlashCommandEnumValue[]}
      */
@@ -154,9 +148,10 @@ export const commonEnumProviders = {
         const types = type.flat();
         const isAll = types.includes('all');
         return [
-            ...isAll || types.includes('scope') ? scope.allVariableNames.map(name => new SlashCommandEnumValue(name, null, enumTypes.variable, enumIcons.scopeVariable)) : [],
-            ...isAll || types.includes('local') ? Object.keys(chat_metadata.variables ?? []).map(name => new SlashCommandEnumValue(name, null, enumTypes.name, enumIcons.localVariable)) : [],
-            ...isAll || types.includes('global') ? Object.keys(extension_settings.variables.global ?? []).map(name => new SlashCommandEnumValue(name, null, enumTypes.macro, enumIcons.globalVariable)) : [],
+            ...(isAll || types.includes('scope') ? scope.allVariableNames.map(name => new SlashCommandEnumValue(name, null, enumTypes.variable, enumIcons.scopeVariable)) : []),
+            // @ts-expect-error TS(2339): Property 'variables' does not exist on type '{}'.
+            ...(isAll || types.includes('local') ? Object.keys(chat_metadata.variables ?? []).map(name => new SlashCommandEnumValue(name, null, enumTypes.name, enumIcons.localVariable)) : []),
+            ...(isAll || types.includes('global') ? Object.keys(extension_settings.variables.global ?? []).map(name => new SlashCommandEnumValue(name, null, enumTypes.macro, enumIcons.globalVariable)) : []),
         ].filter((item, idx, list) => idx == list.findIndex(it => it.value == item.value));
     },
 
@@ -164,7 +159,6 @@ export const commonEnumProviders = {
      * Enum values for numbers and variable names
      *
      * Includes all variable names and the ability to specify any number
-     *
      * @param {SlashCommandExecutor} executor - The executor of the slash command
      * @param {SlashCommandScope} scope - The scope of the slash command
      * @returns {SlashCommandEnumValue[]} The enum values
@@ -191,21 +185,19 @@ export const commonEnumProviders = {
 
     /**
      * All possible char entities, like characters and groups. Can be filtered down to just one type.
-     *
-     * @param {('all' | 'character' | 'group')?} [mode='all'] - Which type to return
+     * @param {('all' | 'character' | 'group')?} [mode] - Which type to return
      * @returns {() => SlashCommandEnumValue[]}
      */
     characters: (mode = 'all') => () => {
         return [
-            ...['all', 'character'].includes(mode) ? characters.map(char => new SlashCommandEnumValue(char.name, null, enumTypes.name, enumIcons.character)) : [],
-            ...['all', 'group'].includes(mode) ? groups.map(group => new SlashCommandEnumValue(group.name, null, enumTypes.qr, enumIcons.group)) : [],
-            ...(name2 === neutralCharacterName) ? [new SlashCommandEnumValue(neutralCharacterName, null, enumTypes.name, '🥸')] : [],
+            ...(['all', 'character'].includes(mode) ? characters.map(char => new SlashCommandEnumValue(char.name, null, enumTypes.name, enumIcons.character)) : []),
+            ...(['all', 'group'].includes(mode) ? groups.map(group => new SlashCommandEnumValue(group.name, null, enumTypes.qr, enumIcons.group)) : []),
+            ...(name2 === neutralCharacterName ? [new SlashCommandEnumValue(neutralCharacterName, null, enumTypes.name, '🥸')] : []),
         ];
     },
 
     /**
      * All group members of the given group, or default the current active one
-     *
      * @param {string?} groupId - The id of the group - pass in `undefined` to use the current active group
      * @returns {() =>SlashCommandEnumValue[]}
      */
@@ -213,7 +205,8 @@ export const commonEnumProviders = {
 
     /**
      * All possible personas
-     *
+     * @param root0
+     * @param root0.allowPersonaKey
      * @returns {() => SlashCommandEnumValue[]}
      */
     personas: ({ allowPersonaKey = false } = {}) => () => Object.entries(power_user.personas).map(([personaKey, personaName]) => {
@@ -224,20 +217,18 @@ export const commonEnumProviders = {
 
     /**
      * All possible tags, or only those that have been assigned
-     *
-     * @param {('all' | 'assigned')} [mode='all'] - Which types of tags to show
+     * @param {('all' | 'assigned')} [mode] - Which types of tags to show
      * @returns {() => SlashCommandEnumValue[]}
      */
     tags: (mode = 'all') => () => {
-        let assignedTags = mode === 'assigned' ? new Set(Object.values(tag_map).flat()) : new Set();
+        const assignedTags = mode === 'assigned' ? new Set(Object.values(tag_map).flat()) : new Set();
         return tags.filter(tag => mode === 'all' || (mode === 'assigned' && assignedTags.has(tag.id)))
             .map(tag => new SlashCommandEnumValue(tag.name, null, enumTypes.command, enumIcons.tag));
     },
 
     /**
      * All possible tags for a given char/group entity
-     *
-     * @param {('all' | 'existing' | 'not-existing')?} [mode='all'] - Which types of tags to show
+     * @param {('all' | 'existing' | 'not-existing')?} [mode] - Which types of tags to show
      * @returns {(executor:SlashCommandExecutor, scope:SlashCommandScope) => SlashCommandEnumValue[]}
      */
     tagsForChar: (mode = 'all') => (executor, _scope) => {
@@ -254,18 +245,17 @@ export const commonEnumProviders = {
      * All messages in the current chat, returning the message id
      *
      * Optionally supports variable names, and/or a placeholder for the last/new message id
-     *
-     * @param {object} [options={}] - Optional arguments
-     * @param {boolean} [options.allowIdAfter=false] - Whether to add an enum option for the new message id after the last message
-     * @param {boolean} [options.allowVars=false] - Whether to add enum option for variable names
+     * @param {object} [options] - Optional arguments
+     * @param {boolean} [options.allowIdAfter] - Whether to add an enum option for the new message id after the last message
+     * @param {boolean} [options.allowVars] - Whether to add enum option for variable names
      * @returns {(executor:SlashCommandExecutor, scope:SlashCommandScope) => SlashCommandEnumValue[]}
      */
     messages: ({ allowIdAfter = false, allowVars = false } = {}) => (executor, scope) => {
         const nameFilter = executor.namedArgumentList.find(it => it.name == 'name')?.value || '';
         return [
             ...chat.map((message, index) => new SlashCommandEnumValue(String(index), `${message.name}: ${message.mes}`, enumTypes.number, message.is_user ? enumIcons.user : message.is_system ? enumIcons.system : enumIcons.assistant)).filter(value => !nameFilter || value.description.startsWith(`${nameFilter}:`)),
-            ...allowIdAfter ? [new SlashCommandEnumValue(String(chat.length), '>> After Last Message >>', enumTypes.enum, '➕')] : [],
-            ...allowVars ? commonEnumProviders.variables('all')(executor, scope) : [],
+            ...(allowIdAfter ? [new SlashCommandEnumValue(String(chat.length), '>> After Last Message >>', enumTypes.enum, '➕')] : []),
+            ...(allowVars ? commonEnumProviders.variables('all')(executor, scope) : []),
         ];
     },
 
@@ -287,7 +277,6 @@ export const commonEnumProviders = {
 
     /**
      * All names used in the current chat.
-     *
      * @returns {SlashCommandEnumValue[]}
      */
     messageNames: () => chat
@@ -301,21 +290,23 @@ export const commonEnumProviders = {
 
     /**
      * All existing worlds / lorebooks
-     *
      * @returns {SlashCommandEnumValue[]}
      */
     worlds: () => world_names.map(worldName => new SlashCommandEnumValue(worldName, null, enumTypes.name, enumIcons.world)),
 
     /**
      * All existing injects for the current chat
-     *
      * @returns {SlashCommandEnumValue[]}
      */
     injects: () => {
+        // @ts-expect-error TS(2339): Property 'script_injects' does not exist on type '... Remove this comment to see the full error message
         if (!chat_metadata.script_injects || !Object.keys(chat_metadata.script_injects).length) return [];
+        // @ts-expect-error TS(2339): Property 'script_injects' does not exist on type '... Remove this comment to see the full error message
         return Object.entries(chat_metadata.script_injects)
             .map(([id, inject]) => {
+                // @ts-expect-error TS(2339): Property 'position' does not exist on type 'unknow... Remove this comment to see the full error message
                 const positionName = (Object.entries(extension_prompt_types)).find(([_, value]) => value === inject.position)?.[0] ?? 'unknown';
+                // @ts-expect-error TS(2339): Property 'role' does not exist on type 'unknown'.
                 return new SlashCommandEnumValue(id, `${enumIcons.getRoleIcon(inject.role ?? extension_prompt_roles.SYSTEM)}[Inject](${positionName}, depth: ${inject.depth}, scan: ${inject.scan ?? false}) ${inject.value}`,
                     enumTypes.enum, '💉');
             });
@@ -323,16 +314,22 @@ export const commonEnumProviders = {
 
     /**
      * Gets somewhat recognizable STscript types.
-     *
      * @returns {SlashCommandEnumValue[]}
      */
     types: () => [
+        // @ts-expect-error TS(2339): Property 'type' does not exist on type '{ enum: st... Remove this comment to see the full error message
         new SlashCommandEnumValue('string', null, enumTypes.type, enumIcons.string),
+        // @ts-expect-error TS(2339): Property 'type' does not exist on type '{ enum: st... Remove this comment to see the full error message
         new SlashCommandEnumValue('number', null, enumTypes.type, enumIcons.number),
+        // @ts-expect-error TS(2339): Property 'type' does not exist on type '{ enum: st... Remove this comment to see the full error message
         new SlashCommandEnumValue('boolean', null, enumTypes.type, enumIcons.boolean),
+        // @ts-expect-error TS(2339): Property 'type' does not exist on type '{ enum: st... Remove this comment to see the full error message
         new SlashCommandEnumValue('array', null, enumTypes.type, enumIcons.array),
+        // @ts-expect-error TS(2339): Property 'type' does not exist on type '{ enum: st... Remove this comment to see the full error message
         new SlashCommandEnumValue('object', null, enumTypes.type, enumIcons.dictionary),
+        // @ts-expect-error TS(2339): Property 'type' does not exist on type '{ enum: st... Remove this comment to see the full error message
         new SlashCommandEnumValue('null', null, enumTypes.type, enumIcons.null),
+        // @ts-expect-error TS(2339): Property 'type' does not exist on type '{ enum: st... Remove this comment to see the full error message
         new SlashCommandEnumValue('undefined', null, enumTypes.type, enumIcons.undefined),
     ],
 
@@ -347,7 +344,7 @@ export const commonEnumProviders = {
         .filter(it => it.value?.length),
 
     connectionProfiles: ({ includeNone = false } = {}) => () => [
-        ...includeNone ? [new SlashCommandEnumValue('<None>')] : [],
+        ...(includeNone ? [new SlashCommandEnumValue('<None>')] : []),
         ...extension_settings.connectionManager.profiles.map(p => new SlashCommandEnumValue(p.name, null, enumTypes.name, enumIcons.server)),
     ],
 };
@@ -364,8 +361,8 @@ export const commonEnumMatchProviders = {
      * Matches if the input starts with the check or vice versa (case-insensitive).
      * @param {string} input - The input string to match against
      * @param {string} check - The check string to match with
-     * @param {object} [options={}] - Options
-     * @param {boolean} [options.trueOnEmpty=true] - Whether to return true when input is empty
+     * @param {object} [options] - Options
+     * @param {boolean} [options.trueOnEmpty] - Whether to return true when input is empty
      * @returns {boolean} - True if the strings match according to the folder matching rules
      */
     folderEnum: (input, check, { trueOnEmpty = true } = {}) => {

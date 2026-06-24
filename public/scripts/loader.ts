@@ -8,11 +8,9 @@ let legacyLoaderHandle = null;
 
 /**
  * Shows the loader overlay.
- *
  * @deprecated Use `showActionLoader()` from action-loader.js instead.
  * This function now creates a blocking action loader with no toast.
  * The new system supports stacking multiple loaders and provides better control.
- *
  * @example
  * // New recommended approach:
  * import { showActionLoader } from './action-loader.js';
@@ -36,17 +34,14 @@ export function showLoader() {
 
 /**
  * Hides the loader overlay.
- *
  * @deprecated Use `hideActionLoader()` or `handle.hide()` from action-loader.js instead.
  * This function now hides the legacy loader created by showLoader().
- *
  * @example
  * // New recommended approach:
  * import { showActionLoader } from './action-loader.js';
  * const handle = showActionLoader({ message: 'Loading...' });
  * // ... do work ...
  * await handle.hide();
- *
  * @returns {Promise<void>}
  */
 export async function hideLoader() {

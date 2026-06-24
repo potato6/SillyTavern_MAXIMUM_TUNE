@@ -78,6 +78,9 @@ let requiresReload = false;
 let stateChanged = false;
 let saveMetadataTimeout = null;
 
+/**
+ *
+ */
 export function cancelDebouncedMetadataSave() {
     if (saveMetadataTimeout) {
         console.debug('Debounced metadata save cancelled');
@@ -86,6 +89,9 @@ export function cancelDebouncedMetadataSave() {
     }
 }
 
+/**
+ *
+ */
 export function saveMetadataDebounced() {
     const context = getContext();
     const groupId = context.groupId;
@@ -118,8 +124,9 @@ export function saveMetadataDebounced() {
  * @param {string} extensionName Extension name
  * @param {string} templateId Template ID
  * @param {object} templateData Additional data to pass to the template
+ * @param sanitize
+ * @param localize
  * @returns {string} Rendered HTML
- *
  * @deprecated Use renderExtensionTemplateAsync instead.
  */
 export function renderExtensionTemplate(extensionName, templateId, templateData = {}, sanitize = true, localize = true) {
@@ -132,6 +139,8 @@ export function renderExtensionTemplate(extensionName, templateId, templateData 
  * @param {string} extensionName Extension name
  * @param {string} templateId Template ID
  * @param {object} templateData Additional data to pass to the template
+ * @param sanitize
+ * @param localize
  * @returns {Promise<string>} Rendered HTML
  */
 export function renderExtensionTemplateAsync(extensionName, templateId, templateData = {}, sanitize = true, localize = true) {
@@ -225,8 +234,12 @@ export const extension_settings = {
     },
 };
 
+/**
+ *
+ */
 function showHideExtensionsMenu() {
     // Get the number of menu items that are not hidden
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const hasMenuItems = $('#extensionsMenu').children().filter((_, child) => $(child).css('display') !== 'none').length > 0;
 
     // We have menu items, so we can stop checking
@@ -235,6 +248,7 @@ function showHideExtensionsMenu() {
     }
 
     // Show or hide the menu button
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#extensionsMenuButton').toggle(hasMenuItems);
 }
 
@@ -262,15 +276,19 @@ export async function doExtrasFetch(endpoint, args = {}) {
         args = {};
     }
 
+    // @ts-expect-error TS(2339): Property 'method' does not exist on type '{}'.
     if (!args.method) {
         Object.assign(args, { method: 'GET' });
     }
 
+    // @ts-expect-error TS(2339): Property 'headers' does not exist on type '{}'.
     if (!args.headers) {
+        // @ts-expect-error TS(2339): Property 'headers' does not exist on type '{}'.
         args.headers = {};
     }
 
     if (extension_settings.apiKey) {
+        // @ts-expect-error TS(2339): Property 'headers' does not exist on type '{}'.
         Object.assign(args.headers, {
             'Authorization': `Bearer ${extension_settings.apiKey}`,
         });
@@ -311,21 +329,29 @@ async function discoverExtensions() {
     }
 }
 
+/**
+ *
+ */
 function onDisableExtensionClick() {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const name = $(this).data('name');
     disableExtension(name, false);
 }
 
+/**
+ *
+ */
 function onEnableExtensionClick() {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const name = $(this).data('name');
     enableExtension(name, false);
 }
 
 /**
  * Handles toggling all extensions on or off.
- * @param {Object[]} extensionsToToggle
+ * @param {object[]} extensionsToToggle
  * @param {JQuery<HTMLElement>} toggleContainer
- * @returns {Object[]} Updated extensionsToToggle array
+ * @returns {object[]} Updated extensionsToToggle array
  */
 function onToggleAllExtensions(extensionsToToggle, toggleContainer) {
     const extensionNames = Object.keys(manifests);
@@ -468,7 +494,7 @@ async function callExtensionHook(name, hookName) {
 /**
  * Enables an extension by name.
  * @param {string} name Extension name
- * @param {boolean} [reload=true] If true, reload the page after enabling the extension
+ * @param {boolean} [reload] If true, reload the page after enabling the extension
  */
 export async function enableExtension(name, reload = true) {
     await callExtensionHook(name, 'enable');
@@ -485,7 +511,7 @@ export async function enableExtension(name, reload = true) {
 /**
  * Disables an extension by name.
  * @param {string} name Extension name
- * @param {boolean} [reload=true] If true, reload the page after disabling the extension
+ * @param {boolean} [reload] If true, reload the page after disabling the extension
  */
 export async function disableExtension(name, reload = true) {
     await callExtensionHook(name, 'disable');
@@ -501,7 +527,6 @@ export async function disableExtension(name, reload = true) {
 
 /**
  * Finds an extension by name, allowing omission of the "third-party/" prefix.
- *
  * @param {string} name - The name of the extension to find
  * @returns {{name: string, enabled: boolean}|null} Object with name and enabled properties, or null if not found
  */
@@ -544,6 +569,7 @@ async function getManifests(names) {
                 if (response.ok) {
                     const json = await response.json();
                     obj[name] = json;
+                    // @ts-expect-error TS(2794): Expected 1 arguments, but got 0. Did you forget to... Remove this comment to see the full error message
                     resolve();
                 } else {
                     reject();
@@ -572,12 +598,16 @@ async function activateExtensions() {
     const extensionNames = extensions.map(x => x[0]);
     const promises = [];
 
-    for (let entry of extensions) {
+    for (const entry of extensions) {
         const name = entry[0];
         const manifest = entry[1];
+        // @ts-expect-error TS(2339): Property 'requires' does not exist on type 'unknow... Remove this comment to see the full error message
         const extrasRequirements = manifest.requires;
+        // @ts-expect-error TS(2339): Property 'dependencies' does not exist on type 'un... Remove this comment to see the full error message
         const extensionDependencies = manifest.dependencies;
+        // @ts-expect-error TS(2339): Property 'minimum_client_version' does not exist o... Remove this comment to see the full error message
         const minClientVersion = manifest.minimum_client_version;
+        // @ts-expect-error TS(2339): Property 'display_name' does not exist on type 'un... Remove this comment to see the full error message
         const displayName = manifest.display_name || name;
 
         if (activeExtensions.has(name)) {
@@ -662,44 +692,63 @@ async function activateExtensions() {
     }
 
     await Promise.allSettled(promises);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#extensions_details').toggleClass('warning', extensionLoadErrors.size > 0);
 }
 
+/**
+ *
+ */
 async function connectClickHandler() {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const baseUrl = String($('#extensions_url').val());
     extension_settings.apiUrl = baseUrl;
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const testApiKey = $('#extensions_api_key').val();
     extension_settings.apiKey = String(testApiKey);
     saveSettingsDebounced();
     await connectToApi(baseUrl);
 }
 
+/**
+ *
+ */
 function autoConnectInputHandler() {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const value = $(this).prop('checked');
     extension_settings.autoConnect = !!value;
 
     if (value && !connectedToApi) {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#extensions_connect').trigger('click');
     }
 
     saveSettingsDebounced();
 }
 
+/**
+ *
+ */
 async function addExtensionsButtonAndMenu() {
     const buttonHTML = await renderTemplateAsync('wandButton');
     const extensionsMenuHTML = await renderTemplateAsync('wandMenu');
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document.body).append(extensionsMenuHTML);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#leftSendForm').append(buttonHTML);
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const button = $('#extensionsMenuButton');
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const dropdown = $('#extensionsMenu');
     let isDropdownVisible = false;
 
-    let popper = Popper.createPopper(button.get(0), dropdown.get(0), {
+    const popper = Popper.createPopper(button.get(0), dropdown.get(0), {
         placement: 'top-start',
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(button).on('click', function () {
         if (isDropdownVisible) {
             dropdown.fadeOut(animation_duration);
@@ -711,8 +760,10 @@ async function addExtensionsButtonAndMenu() {
         popper.update();
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('html').on('click', function (e) {
         if (!isDropdownVisible) return;
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const clickTarget = $(e.target);
         const noCloseTargets = ['#sd_gen', '#extensionsMenuButton', '#roll_dice'];
         if (!noCloseTargets.some(id => clickTarget.closest(id).length > 0)) {
@@ -722,7 +773,11 @@ async function addExtensionsButtonAndMenu() {
     });
 }
 
+/**
+ *
+ */
 function notifyUpdatesInputHandler() {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     extension_settings.notifyUpdates = !!$('#extensions_notify_updates').prop('checked');
     saveSettingsDebounced();
 
@@ -768,7 +823,9 @@ function updateStatus(success) {
     connectedToApi = success;
     const _text = success ? t`Connected to API` : t`Could not connect to API`;
     const _class = success ? 'success' : 'failure';
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#extensions_status').text(_text);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#extensions_status').attr('class', _class);
 }
 
@@ -787,6 +844,7 @@ function addExtensionStyle(name, manifest) {
         const url = `/scripts/extensions/${name}/${manifest.css}`;
         const id = sanitizeSelector(`${name}-css`);
 
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         if ($(`link[id="${id}"]`).length === 0) {
             const link = document.createElement('link');
             link.id = id;
@@ -794,6 +852,7 @@ function addExtensionStyle(name, manifest) {
             link.type = 'text/css';
             link.href = url;
             link.onload = function () {
+                // @ts-expect-error TS(2794): Expected 1 arguments, but got 0. Did you forget to... Remove this comment to see the full error message
                 resolve();
             };
             link.onerror = function (e) {
@@ -820,6 +879,7 @@ function addExtensionScript(name, manifest) {
         const id = sanitizeSelector(`${name}-js`);
         let ready = false;
 
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         if ($(`script[id="${id}"]`).length === 0) {
             const script = document.createElement('script');
             script.id = id;
@@ -832,6 +892,7 @@ function addExtensionScript(name, manifest) {
             script.onload = function () {
                 if (!ready) {
                     ready = true;
+                    // @ts-expect-error TS(2794): Expected 1 arguments, but got 0. Did you forget to... Remove this comment to see the full error message
                     resolve();
                 }
             };
@@ -878,16 +939,18 @@ function addExtensionLocale(name, manifest) {
 
 /**
  * Generates an element for displaying an extension in the UI.
- *
  * @param {string} name - The name of the extension.
  * @param {object} manifest - The manifest of the extension.
  * @param {boolean} isActive - Whether the extension is active or not.
  * @param {boolean} isDisabled - Whether the extension is disabled or not.
  * @param {boolean} isExternal - Whether the extension is external or not.
  * @param {string} checkboxClass - The class for the checkbox HTML element.
- * @return {HTMLElement} - The element that represents the extension.
+ * @returns {HTMLElement} - The element that represents the extension.
  */
 function generateExtensionElement(name, manifest, isActive, isDisabled, isExternal, checkboxClass) {
+    /**
+     *
+     */
     function getExtensionIcon() {
         const type = getExtensionType(name);
         const icon = document.createElement('i');
@@ -921,6 +984,7 @@ function generateExtensionElement(name, manifest, isActive, isDisabled, isExtern
     // Root block
     const block = document.createElement('div');
     block.classList.add('extension_block');
+    // @ts-expect-error TS(4111): Property 'name' comes from an index signature, so ... Remove this comment to see the full error message
     block.dataset.name = externalId;
 
     // Toggle
@@ -928,6 +992,7 @@ function generateExtensionElement(name, manifest, isActive, isDisabled, isExtern
     toggleDiv.classList.add('extension_toggle');
     const toggle = document.createElement('input');
     toggle.type = 'checkbox';
+    // @ts-expect-error TS(4111): Property 'name' comes from an index signature, so ... Remove this comment to see the full error message
     toggle.dataset.name = name;
     if (isActive || isDisabled) {
         toggle.title = t`Click to toggle`;
@@ -1022,6 +1087,7 @@ function generateExtensionElement(name, manifest, isActive, isDisabled, isExtern
     function makeActionButton(cls, dataName, title, iconClasses) {
         const btn = document.createElement('button');
         btn.classList.add(cls, 'menu_button');
+        // @ts-expect-error TS(4111): Property 'name' comes from an index signature, so ... Remove this comment to see the full error message
         btn.dataset.name = dataName;
         btn.title = title;
         const icon = document.createElement('i');
@@ -1056,9 +1122,8 @@ function generateExtensionElement(name, manifest, isActive, isDisabled, isExtern
 
 /**
  * Gets extension data and generates the corresponding element for displaying the extension.
- *
  * @param {Array} extension - An array where the first element is the extension name and the second element is the extension manifest.
- * @return {{isExternal: boolean, extensionElement: HTMLElement}} - An object with 'isExternal' indicating whether the extension is external, and 'extensionElement' for the extension's HTML element.
+ * @returns {{isExternal: boolean, extensionElement: HTMLElement}} - An object with 'isExternal' indicating whether the extension is external, and 'extensionElement' for the extension's HTML element.
  */
 function getExtensionData(extension) {
     const name = extension[0];
@@ -1076,8 +1141,7 @@ function getExtensionData(extension) {
 
 /**
  * Gets the module information to be displayed.
- *
- * @return {HTMLElement} - The element containing the module information.
+ * @returns {HTMLElement} - The element containing the module information.
  */
 function getModuleInformation() {
     const container = document.createElement('div');
@@ -1112,6 +1176,7 @@ function getExtensionLoadErrors() {
 
     for (const error of extensionLoadErrors) {
         const errorElement = document.createElement('div');
+        // @ts-expect-error TS(2322): Type 'unknown' is not assignable to type 'string'.
         errorElement.textContent = error;
         container.appendChild(errorElement);
     }
@@ -1175,6 +1240,7 @@ async function showExtensionsDetails() {
             container.appendChild(extensionElement);
         });
 
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const extensionsMenu = $('<div></div>')
             .addClass('extensions_info')
             .append(errors)
@@ -1216,11 +1282,13 @@ async function showExtensionsDetails() {
             restoreBulkToggledExtensionsButton.title = t`Restore toggled extensions.\n\nIt does not restore extensions toggled individually.`;
 
             toggleAllExtensionsButton.addEventListener('click', () => {
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 extensionsToToggle = onToggleAllExtensions(extensionsToToggle, $(externalContainer));
 
                 for (const extension of extensionsToToggle) {
                     const { name } = extension;
 
+                    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                     $(externalContainer)
                         .find(`.extension_block[data-name="${getNameSelector(name)}"] .extension_toggle input`)
                         .off('click')
@@ -1239,6 +1307,7 @@ async function showExtensionsDetails() {
                     const { name } = extension;
                     const isDisabled = extension_settings.disabledExtensions.includes(name);
 
+                    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                     $(externalContainer)
                         .find(`.extension_block[data-name="${getNameSelector(name)}"] .extension_toggle input`)
                         .prop('checked', !isDisabled)
@@ -1294,14 +1363,17 @@ async function showExtensionsDetails() {
                         await toggleHandler(name, false);
                     } catch (error) {
                         console.error(`Could not toggle extension ${name}:`, error);
+                        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                         toastr.error(t`Could not toggle extension ${name}. See console for details.`);
                     }
                 }
 
                 if (stateChanged) {
                     waitingForSave = true;
+                    // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                     const toast = toastr.info(t`The page will be reloaded shortly...`, t`Extensions state changed`);
                     await saveSettings();
+                    // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                     toastr.clear(toast);
                     waitingForSave = false;
                     requiresReload = true;
@@ -1314,6 +1386,7 @@ async function showExtensionsDetails() {
         popup.content.scrollTop = initialScrollTop;
         checkForUpdatesManual(sortFn, abortController.signal).finally(() => loadingEl.remove());
     } catch (error) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.error(t`Error loading extensions. See browser console for details.`);
         console.error(error);
     }
@@ -1334,13 +1407,16 @@ async function showExtensionsDetails() {
  */
 async function onUpdateClick() {
     const isCurrentUserAdmin = isAdmin();
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const extensionName = $(this).data('name');
     const isGlobal = getExtensionType(extensionName) === 'global';
     if (isGlobal && !isCurrentUserAdmin) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.error(t`You don't have permission to update global extensions.`);
         return;
     }
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const icon = $(this).find('i');
     icon.addClass('fa-spin');
     await updateExtension(extensionName, false);
@@ -1356,6 +1432,7 @@ async function onUpdateClick() {
  */
 async function updateExtension(extensionName, quiet, timeout = null) {
     try {
+        // @ts-expect-error TS(2339): Property 'timeout' does not exist on type '{ new (... Remove this comment to see the full error message
         const signal = timeout ? AbortSignal.timeout(timeout) : undefined;
         const response = await fetch('/api/extensions/update', {
             method: 'POST',
@@ -1369,6 +1446,7 @@ async function updateExtension(extensionName, quiet, timeout = null) {
 
         if (!response.ok) {
             const text = await response.text();
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.error(text || response.statusText, t`Extension update failed`, { timeOut: 5000 });
             console.error('Extension update failed', response.status, response.statusText, text);
             return;
@@ -1382,11 +1460,13 @@ async function updateExtension(extensionName, quiet, timeout = null) {
 
         if (data.isUpToDate) {
             if (!quiet) {
+                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                 toastr.success('Extension is already up to date');
             }
         } else {
             const fullExtensionName = extensionName.startsWith('third-party') ? extensionName : `third-party${extensionName}`;
             await callExtensionHook(fullExtensionName, 'update');
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.success(t`Extension ${extensionName} updated to ${data.shortCommitHash}`, t`Reload the page to apply updates`);
         }
     } catch (error) {
@@ -1402,10 +1482,12 @@ async function updateExtension(extensionName, quiet, timeout = null) {
  * If the extension has a 'clean' hook, an optional checkbox to also run the cleanup is shown.
  */
 async function onDeleteClick() {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const extensionName = $(this).data('name');
     const isCurrentUserAdmin = isAdmin();
     const isGlobal = getExtensionType(extensionName) === 'global';
     if (isGlobal && !isCurrentUserAdmin) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.error(t`You don't have permission to delete global extensions.`);
         return;
     }
@@ -1428,6 +1510,7 @@ async function onDeleteClick() {
  * Runs the extension's 'clean' hook after user confirmation, then reloads the page.
  */
 async function onCleanClick() {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const extensionName = $(this).data('name');
 
     const confirmation = await Popup.show.confirm(t`Clean extension data`, t`Are you sure you want to clean up data for ${escapeHtml(extensionName)}? This action cannot be undone.`);
@@ -1450,15 +1533,21 @@ async function cleanExtension(extensionName) {
     // Clean might have updated settings, which could race with the page reload, so we'll force save here
     await saveSettings();
 
+    // @ts-expect-error TS(2304): Cannot find name 'toastr'.
     toastr.success(t`Extension ${extensionName} data cleaned`);
     delay(1000).then(() => location.reload());
 }
 
+/**
+ *
+ */
 async function onBranchClick() {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const extensionName = $(this).data('name');
     const isCurrentUserAdmin = isAdmin();
     const isGlobal = getExtensionType(extensionName) === 'global';
     if (isGlobal && !isCurrentUserAdmin) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.error(t`You don't have permission to switch branch.`);
         return;
     }
@@ -1492,11 +1581,16 @@ async function onBranchClick() {
     await switchExtensionBranch(extensionName, isGlobal, newBranch);
 }
 
+/**
+ *
+ */
 async function onMoveClick() {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const extensionName = $(this).data('name');
     const isCurrentUserAdmin = isAdmin();
     const isGlobal = getExtensionType(extensionName) === 'global';
     if (isGlobal && !isCurrentUserAdmin) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.error(t`You don't have permission to move extensions.`);
         return;
     }
@@ -1515,6 +1609,7 @@ async function onMoveClick() {
         return;
     }
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(this).find('i').addClass('fa-spin');
     await moveExtension(extensionName, source, destination);
 }
@@ -1540,11 +1635,13 @@ async function moveExtension(extensionName, source, destination) {
 
         if (!result.ok) {
             const text = await result.text();
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.error(text || result.statusText, t`Extension move failed`, { timeOut: 5000 });
             console.error('Extension move failed', result.status, result.statusText, text);
             return;
         }
 
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.success(t`Extension ${extensionName} moved.`);
         await loadExtensionSettings({}, false, false);
         void showExtensionsDetails();
@@ -1556,7 +1653,7 @@ async function moveExtension(extensionName, source, destination) {
 /**
  * Deletes an extension via the API.
  * @param {string} extensionName Extension name to delete
- * @param {boolean} [shouldClean=false] Whether to also run the 'clean' hook before deleting
+ * @param {boolean} [shouldClean] Whether to also run the 'clean' hook before deleting
  */
 export async function deleteExtension(extensionName, shouldClean = false) {
     const fullExtensionName = extensionName.startsWith('third-party') ? extensionName : `third-party${extensionName}`;
@@ -1583,16 +1680,16 @@ export async function deleteExtension(extensionName, shouldClean = false) {
     // Delete or clean might have updated settings, which could race with the page reload, so we'll force save here
     await saveSettings();
 
+    // @ts-expect-error TS(2304): Cannot find name 'toastr'.
     toastr.success(t`Extension ${extensionName} deleted`);
     delay(1000).then(() => location.reload());
 }
 
 /**
  * Fetches the version details of a specific extension.
- *
  * @param {string} extensionName - The name of the extension.
  * @param {AbortSignal} [abortSignal] - The signal to abort the operation.
- * @return {Promise<object>} - An object containing the extension's version details.
+ * @returns {Promise<object>} - An object containing the extension's version details.
  * This object includes the currentBranchName, currentCommitHash, isUpToDate, and remoteUrl.
  * @throws {error} - If there is an error during the fetch operation, it logs the error to the console.
  */
@@ -1642,6 +1739,7 @@ async function getExtensionBranches(extensionName, isGlobal) {
 
         if (!response.ok) {
             const text = await response.text();
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.error(text || response.statusText, t`Extension branches fetch failed`);
             console.error('Extension branches fetch failed', response.status, response.statusText, text);
             return [];
@@ -1675,11 +1773,13 @@ async function switchExtensionBranch(extensionName, isGlobal, branch) {
 
         if (!response.ok) {
             const text = await response.text();
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.error(text || response.statusText, t`Extension branch switch failed`);
             console.error('Extension branch switch failed', response.status, response.statusText, text);
             return;
         }
 
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.success(t`Extension ${extensionName} switched to ${branch}`, t`Reload the page to apply updates`);
         await loadExtensionSettings({}, false, false);
         void showExtensionsDetails();
@@ -1706,6 +1806,7 @@ export async function installExtension(url, global, branch = '') {
         url = parsedUrl.href;
     } catch (error) {
         console.error('Invalid URL:', error);
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.error(t`Only valid HTTP and HTTPS URLs are allowed.`, t`Invalid URL`);
         return false;
     }
@@ -1741,6 +1842,7 @@ export async function installExtension(url, global, branch = '') {
 
     console.debug('Extension installation started', url);
 
+    // @ts-expect-error TS(2304): Cannot find name 'toastr'.
     toastr.info(t`Please wait...`, t`Installing extension`);
 
     const request = await fetch('/api/extensions/install', {
@@ -1755,12 +1857,14 @@ export async function installExtension(url, global, branch = '') {
 
     if (!request.ok) {
         const text = await request.text();
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.warning(text || request.statusText, t`Extension installation failed`, { timeOut: 5000 });
         console.error('Extension installation failed', request.status, request.statusText, text);
         return false;
     }
 
     const response = await request.json();
+    // @ts-expect-error TS(2304): Cannot find name 'toastr'.
     toastr.success(t`Extension '${response.display_name}' has been installed successfully!`, t`Extension installation successful`);
     console.debug(`Extension "${response.display_name}" has been installed successfully at ${response.extensionPath}`);
     await loadExtensionSettings({}, false, false);
@@ -1785,9 +1889,13 @@ export async function loadExtensionSettings(settings, versionChanged, enableAuto
         Object.assign(extension_settings, settings.extension_settings);
     }
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#extensions_url').val(extension_settings.apiUrl);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#extensions_api_key').val(extension_settings.apiKey);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#extensions_autoconnect').prop('checked', extension_settings.autoConnect);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#extensions_notify_updates').prop('checked', extension_settings.notifyUpdates);
 
     // Activate offline extensions
@@ -1807,6 +1915,9 @@ export async function loadExtensionSettings(settings, versionChanged, enableAuto
     }
 }
 
+/**
+ *
+ */
 export function doDailyExtensionUpdatesCheck() {
     setTimeout(() => {
         if (extension_settings.notifyUpdates) {
@@ -1819,6 +1930,10 @@ const concurrencyLimit = 5;
 let activeRequestsCount = 0;
 const versionCheckQueue = [];
 
+/**
+ *
+ * @param fn
+ */
 function enqueueVersionCheck(fn) {
     return new Promise((resolve, reject) => {
         versionCheckQueue.push(() => fn().then(resolve).catch(reject));
@@ -1826,6 +1941,9 @@ function enqueueVersionCheck(fn) {
     });
 }
 
+/**
+ *
+ */
 function processVersionCheckQueue() {
     if (activeRequestsCount >= concurrencyLimit || versionCheckQueue.length === 0) {
         return;
@@ -1867,9 +1985,9 @@ async function checkForUpdatesManual(sortFn, abortSignal) {
                             nameElement.classList.add('update_available');
                         }
                     }
-                    let branch = data.currentBranchName;
-                    let commitHash = data.currentCommitHash;
-                    let origin = data.remoteUrl;
+                    const branch = data.currentBranchName;
+                    const commitHash = data.currentCommitHash;
+                    const origin = data.remoteUrl;
 
                     const originLink = extensionBlock.querySelector('a');
                     if (originLink) {
@@ -1937,23 +2055,28 @@ async function checkForExtensionUpdates(force) {
     for (const [id, manifest] of Object.entries(manifests)) {
         const isDisabled = extension_settings.disabledExtensions.includes(id);
         if (isDisabled) {
+            // @ts-expect-error TS(2339): Property 'display_name' does not exist on type 'un... Remove this comment to see the full error message
             console.debug(`Skipping extension: ${manifest.display_name} (${id}) for non-admin user`);
             continue;
         }
         const isGlobal = getExtensionType(id) === 'global';
         if (isGlobal && !isCurrentUserAdmin) {
+            // @ts-expect-error TS(2339): Property 'display_name' does not exist on type 'un... Remove this comment to see the full error message
             console.debug(`Skipping global extension: ${manifest.display_name} (${id}) for non-admin user`);
             continue;
         }
 
+        // @ts-expect-error TS(2339): Property 'auto_update' does not exist on type 'unk... Remove this comment to see the full error message
         if (manifest.auto_update && id.startsWith('third-party')) {
             const promise = enqueueVersionCheck(async () => {
                 try {
+                    // @ts-expect-error TS(2554): Expected 2 arguments, but got 1.
                     const data = await getExtensionVersion(id.replace('third-party', ''));
                     if (!data) {
                         return;
                     }
                     if (!data.isUpToDate) {
+                        // @ts-expect-error TS(2339): Property 'display_name' does not exist on type 'un... Remove this comment to see the full error message
                         updatesAvailable.push(manifest.display_name);
                     }
                 } catch (error) {
@@ -1967,6 +2090,7 @@ async function checkForExtensionUpdates(force) {
     await Promise.allSettled(promises);
 
     if (updatesAvailable.length > 0) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.info(`${updatesAvailable.map(x => `• ${x}`).join('\n')}`, t`Extension updates available`);
     }
 }
@@ -1977,10 +2101,12 @@ async function checkForExtensionUpdates(force) {
  * @returns {Promise<void>}
  */
 async function autoUpdateExtensions(forceAll) {
+    // @ts-expect-error TS(2339): Property 'auto_update' does not exist on type 'unk... Remove this comment to see the full error message
     if (!Object.values(manifests).some(x => x.auto_update)) {
         return;
     }
 
+    // @ts-expect-error TS(2304): Cannot find name 'toastr'.
     const banner = toastr.info(t`Auto-updating extensions. This may take several minutes.`, t`Please wait...`, { timeOut: 10000, extendedTimeOut: 10000 });
     const isCurrentUserAdmin = isAdmin();
     const promises = [];
@@ -1988,20 +2114,25 @@ async function autoUpdateExtensions(forceAll) {
     for (const [id, manifest] of Object.entries(manifests)) {
         const isDisabled = extension_settings.disabledExtensions.includes(id);
         if (!forceAll && isDisabled) {
+            // @ts-expect-error TS(2339): Property 'display_name' does not exist on type 'un... Remove this comment to see the full error message
             console.debug(`Skipping extension: ${manifest.display_name} (${id}) for non-admin user`);
             continue;
         }
         const isGlobal = getExtensionType(id) === 'global';
         if (isGlobal && !isCurrentUserAdmin) {
+            // @ts-expect-error TS(2339): Property 'display_name' does not exist on type 'un... Remove this comment to see the full error message
             console.debug(`Skipping global extension: ${manifest.display_name} (${id}) for non-admin user`);
             continue;
         }
+        // @ts-expect-error TS(2339): Property 'auto_update' does not exist on type 'unk... Remove this comment to see the full error message
         if ((forceAll || manifest.auto_update) && id.startsWith('third-party')) {
+            // @ts-expect-error TS(2339): Property 'display_name' does not exist on type 'un... Remove this comment to see the full error message
             console.debug(`Auto-updating 3rd-party extension: ${manifest.display_name} (${id})`);
             promises.push(updateExtension(id.replace('third-party', ''), true, autoUpdateTimeout));
         }
     }
     await Promise.allSettled(promises);
+    // @ts-expect-error TS(2304): Cannot find name 'toastr'.
     toastr.clear(banner);
 }
 
@@ -2021,12 +2152,15 @@ export async function runGenerationInterceptors(chat, contextSize, type) {
         exitImmediately = immediately;
     };
 
+    // @ts-expect-error TS(2339): Property 'generate_interceptor' does not exist on ... Remove this comment to see the full error message
     for (const manifest of Object.values(manifests).filter(x => x.generate_interceptor).sort((a, b) => sortManifestsByOrder(a, b))) {
+        // @ts-expect-error TS(2339): Property 'generate_interceptor' does not exist on ... Remove this comment to see the full error message
         const interceptorKey = manifest.generate_interceptor;
         if (typeof globalThis[interceptorKey] === 'function') {
             try {
                 await globalThis[interceptorKey](chat, contextSize, abort, type);
             } catch (e) {
+                // @ts-expect-error TS(2339): Property 'display_name' does not exist on type 'un... Remove this comment to see the full error message
                 console.error(`Failed running interceptor for ${manifest.display_name}`, e);
             }
         }
@@ -2086,6 +2220,7 @@ export async function writeExtensionField(characterId, key, value) {
 
         // Make sure the data doesn't get lost when saving the current character
         if (Number(characterId) === Number(context.characterId)) {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#character_json_data').val(character.json_data);
         }
     }
@@ -2125,13 +2260,12 @@ export async function writeExtensionField(characterId, key, value) {
  * When `value` is {@link UNSET_VALUE} the extension key is **deleted** from
  * each matching character card. Passing `null` sets the field to `null`
  * (the key is preserved).
- *
  * @param {string[]|null} avatars Avatar filenames to update. Pass `null` or an
  *   empty array to target **all** characters in the user's character directory.
  * @param {string} key Extension field name (e.g. "greeting_tools")
  * @param {any} value Field value, `null` to set null, or
  *   {@link UNSET_VALUE} to delete the key entirely
- * @param {object} [options={}] Optional settings
+ * @param {object} [options] Optional settings
  * @param {string} [options.filterPath] Dot-path filter — the server will only
  *   update characters where this path is present and not `undefined`;
  *   `null` still counts as a match. Useful when the frontend has shallow
@@ -2140,7 +2274,9 @@ export async function writeExtensionField(characterId, key, value) {
  *   automatically skip characters where the field is missing/`undefined`.
  * @returns {Promise<BulkExtensionFieldResult>} Summary of the bulk operation
  */
-export async function writeExtensionFieldBulk(avatars, key, value, { filterPath } = {}) {
+export async function writeExtensionFieldBulk(avatars, key, value, {
+    filterPath
+}: any = {}) {
     const context = getContext();
     const extensionPath = `data.extensions.${key}`;
     const isUnset = value === UNSET_VALUE;
@@ -2160,6 +2296,7 @@ export async function writeExtensionFieldBulk(avatars, key, value, { filterPath 
     // Default filter: when unsetting, only touch characters that have the field
     const resolvedFilterPath = filterPath ?? (isUnset ? extensionPath : undefined);
     if (resolvedFilterPath) {
+        // @ts-expect-error TS(2339): Property 'filter' does not exist on type '{ avatar... Remove this comment to see the full error message
         requestBody.filter = { path: resolvedFilterPath };
     }
 
@@ -2204,6 +2341,7 @@ export async function writeExtensionFieldBulk(avatars, key, value, { filterPath 
     if (context.characterId !== undefined) {
         const activeChar = context.characters[context.characterId];
         if (activeChar && updatedSet.has(activeChar.avatar) && activeChar.json_data) {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#character_json_data').val(activeChar.json_data);
         }
     }
@@ -2280,7 +2418,9 @@ export function getAuthorFromUrl(url) {
 
         // TODO: Handle non-GitHub URLs if needed
         if (parsedUrl.host === 'github.com' && pathSegments.length >= 2) {
+            // @ts-expect-error TS(2540): Cannot assign to 'name' because it is a read-only ... Remove this comment to see the full error message
             result.name = pathSegments[0];
+            // @ts-expect-error TS(2540): Cannot assign to 'url' because it is a read-only p... Remove this comment to see the full error message
             result.url = `${parsedUrl.protocol}//${parsedUrl.hostname}/${result.name}`;
         }
     } catch (error) {
@@ -2290,26 +2430,41 @@ export function getAuthorFromUrl(url) {
     return result;
 }
 
+/**
+ *
+ */
 export async function initExtensions() {
     await addExtensionsButtonAndMenu();
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#extensionsMenuButton').css('display', 'flex');
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#extensions_connect').on('click', connectClickHandler);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#extensions_autoconnect').on('input', autoConnectInputHandler);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#extensions_details').on('click', showExtensionsDetails);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#extensions_notify_updates').on('input', notifyUpdatesInputHandler);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.extensions_info .extension_block .toggle_disable', onDisableExtensionClick);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.extensions_info .extension_block .toggle_enable', onEnableExtensionClick);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.extensions_info .extension_block .btn_update', onUpdateClick);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.extensions_info .extension_block .btn_delete', onDeleteClick);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.extensions_info .extension_block .btn_clean', onCleanClick);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.extensions_info .extension_block .btn_move', onMoveClick);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.extensions_info .extension_block .btn_branch', onBranchClick);
 
     /**
      * Handles the click event for the third-party extension import button.
-     *
      * @listens #third_party_extension_button#click - The click event of the '#third_party_extension_button' element.
      */
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#third_party_extension_button').on('click', () => openThirdPartyExtensionMenu());
 }

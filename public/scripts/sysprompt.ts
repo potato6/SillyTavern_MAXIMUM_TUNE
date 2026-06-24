@@ -14,15 +14,25 @@ import { isTrueBoolean, resetScrollHeight } from './utils.js';
 
 export let system_prompts = [];
 
+// @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
 const $enabled = $('#sysprompt_enabled');
+// @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
 const $select = $('#sysprompt_select');
+// @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
 const $content = $('#sysprompt_content');
+// @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
 const $postHistory = $('#sysprompt_post_history');
+// @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
 const $contentBlock = $('#SystemPromptBlock');
 
+/**
+ *
+ */
 async function migrateSystemPromptFromInstructMode() {
     if ('system_prompt' in power_user.instruct) {
+        // @ts-expect-error TS(2339): Property 'system_prompt' does not exist on type '{... Remove this comment to see the full error message
         const prompt = String(power_user.instruct.system_prompt);
+        // @ts-expect-error TS(2339): Property 'system_prompt' does not exist on type '{... Remove this comment to see the full error message
         delete power_user.instruct.system_prompt;
         power_user.sysprompt.enabled = power_user.instruct.enabled;
         power_user.sysprompt.content = prompt;
@@ -39,6 +49,7 @@ async function migrateSystemPromptFromInstructMode() {
         }
 
         saveSettingsDebounced();
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.info('System prompt settings have been moved from the Instruct Mode.', 'Migration notice', { timeOut: 5000 });
     }
 }
@@ -56,6 +67,7 @@ export async function loadSystemPrompts(data) {
     toggleSystemPromptDisabledControls();
 
     for (const prompt of system_prompts) {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('<option>').val(prompt.name).text(prompt.name).appendTo($select);
     }
 
@@ -86,8 +98,10 @@ export async function checkForSystemPromptInInstructTemplate(name, template) {
             const prompt = { name: migratedName, content: template.system_prompt };
             const presetManager = getPresetManager('sysprompt');
             await presetManager.savePreset(migratedName, prompt);
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.success(`System prompt "${migratedName}" has been saved.`);
         } else {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.info('System prompt has been discarded.');
         }
 
@@ -95,6 +109,9 @@ export async function checkForSystemPromptInInstructTemplate(name, template) {
     }
 }
 
+/**
+ *
+ */
 function toggleSystemPromptDisabledControls() {
     $enabled.parent().find('i').toggleClass('toggleEnabled', !!power_user.sysprompt.enabled);
     $contentBlock.toggleClass('disabled', !power_user.sysprompt.enabled);
@@ -113,6 +130,11 @@ function setSystemPromptStateCallback(state) {
     return '';
 }
 
+/**
+ *
+ * @param _args
+ * @param state
+ */
 function toggleSystemPromptCallback(_args, state) {
     if (!state || typeof state !== 'string') {
         return String(power_user.sysprompt.enabled);
@@ -123,6 +145,11 @@ function toggleSystemPromptCallback(_args, state) {
     return String(power_user.sysprompt.enabled);
 }
 
+/**
+ *
+ * @param args
+ * @param name
+ */
 function selectSystemPromptCallback(args, name) {
     if (!power_user.sysprompt.enabled && !isTrueBoolean(args.forceGet)) {
         return '';
@@ -141,6 +168,7 @@ function selectSystemPromptCallback(args, name) {
         const result = fuse.search(name);
 
         if (result.length === 0) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             !quiet && toastr.warning(`System prompt "${name}" not found`);
             return '';
         }
@@ -149,12 +177,17 @@ function selectSystemPromptCallback(args, name) {
     }
 
     $select.val(foundName).trigger('change');
+    // @ts-expect-error TS(2304): Cannot find name 'toastr'.
     !quiet && toastr.success(`System prompt "${foundName}" selected`);
     return foundName;
 }
 
+/**
+ *
+ */
 export function initSystemPrompts() {
     $enabled.on('input', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         power_user.sysprompt.enabled = !!$(this).prop('checked');
         toggleSystemPromptDisabledControls();
         saveSettingsDebounced();
@@ -165,6 +198,7 @@ export function initSystemPrompts() {
             $enabled.prop('checked', true).trigger('input');
         }
 
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const name = String($(this).val());
         const prompt = system_prompts.find(p => p.name === name);
         if (prompt) {
@@ -184,11 +218,13 @@ export function initSystemPrompts() {
     });
 
     $content.on('input', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         power_user.sysprompt.content = String($(this).val());
         saveSettingsDebounced();
     });
 
     $postHistory.on('input', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         power_user.sysprompt.post_history = String($(this).val());
         saveSettingsDebounced();
     });

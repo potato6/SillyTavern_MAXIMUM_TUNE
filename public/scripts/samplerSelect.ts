@@ -23,12 +23,17 @@ const textGenObjectStore = localforage.createInstance({ name: 'SillyTavern_TextC
 let selectedSamplers = {};
 
 // Goal 1: show popup with all samplers for active API
+/**
+ *
+ */
 async function showSamplerSelectPopup() {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const html = $(document.createElement('div'));
     html.attr('id', 'sampler_view_list')
         .addClass('flex-container flexFlowColumn');
     html.append(await renderTemplateAsync('samplerSelector'));
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const listContainer = $('<div id="apiSamplersList" class="flex-container flexNoGap"></div>');
     const APISamplers = await listSamplers(main_api);
     listContainer.append(APISamplers.toString());
@@ -38,10 +43,12 @@ async function showSamplerSelectPopup() {
 
     setSamplerListListeners();
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#resetSelectedSamplers').off('click').on('click', async function () {
         console.log('saw sampler select reset click');
 
         if (main_api === 'textgenerationwebui') {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#prioritizeManuallySelectedSamplers').toggleClass('toggleEnabled', false);
             await resetApiSelectedSamplers(null, true);
         }
@@ -50,17 +57,24 @@ async function showSamplerSelectPopup() {
     });
 
     if (main_api === 'textgenerationwebui') {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#prioritizeManuallySelectedSamplers').show();
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#prioritizeManuallySelectedSamplers').toggleClass('toggleEnabled', isSamplerManualPriorityEnabled());
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#prioritizeManuallySelectedSamplers').off('click').on('click', function () {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(this).toggleClass('toggleEnabled');
 
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const isActive = $(this).hasClass('toggleEnabled');
 
             toggleSamplerManualPriority(isActive);
         });
     } else {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#prioritizeManuallySelectedSamplers').hide();
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#prioritizeManuallySelectedSamplers').off('click');
     }
 
@@ -68,90 +82,110 @@ async function showSamplerSelectPopup() {
     if (main_api === 'textgenerationwebui') await saveApiSelectedSamplers();
 }
 
+/**
+ *
+ * @param samplerName
+ */
 function getRelatedDOMElement(samplerName) {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     let relatedDOMElement = $(`#${samplerName}_${main_api}`).parent();
     let targetDisplayType = 'flex';
     let displayname;
 
     if (samplerName === 'json_schema') {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         relatedDOMElement = $('#json_schema_block');
         targetDisplayType = 'block';
         displayname = 'JSON Schema Block';
     }
 
     if (samplerName === 'grammar_string') {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         relatedDOMElement = $('#grammar_block_ooba');
         targetDisplayType = 'block';
         displayname = 'Grammar Block';
     }
 
     if (samplerName === 'guidance_scale') {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         relatedDOMElement = $('#cfg_block_ooba');
         targetDisplayType = 'block';
         displayname = 'CFG Block';
     }
 
     if (samplerName === 'mirostat_mode') {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         relatedDOMElement = $('#mirostat_block_ooba');
         targetDisplayType = 'block';
         displayname = 'Mirostat Block';
     }
 
     if (samplerName === 'dry_multiplier') {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         relatedDOMElement = $('#dryBlock');
         targetDisplayType = 'block';
         displayname = 'DRY Rep Pen Block';
     }
 
     if (samplerName === 'xtc_probability') {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         relatedDOMElement = $('#xtc_block');
         targetDisplayType = 'block';
         displayname = 'XTC Block';
     }
 
     if (samplerName === 'dynatemp') {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         relatedDOMElement = $('#dynatemp_block_ooba');
         targetDisplayType = 'block';
         displayname = 'DynaTemp Block';
     }
 
     if (samplerName === 'banned_tokens') {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         relatedDOMElement = $('#banned_tokens_block_ooba');
         targetDisplayType = 'block';
     }
 
     if (samplerName === 'sampler_order') { //this is for kcpp sampler order
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         relatedDOMElement = $('#sampler_order_block_kcpp');
         displayname = 'KCPP Sampler Order Block';
     }
 
     if (samplerName === 'samplers') { //this is for lcpp sampler order
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         relatedDOMElement = $('#sampler_order_block_lcpp');
         displayname = 'LCPP Sampler Order Block';
     }
 
     if (samplerName === 'sampler_priority') { //this is for ooba's sampler priority
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         relatedDOMElement = $('#sampler_priority_block_ooba');
         displayname = 'Ooba Sampler Priority Block';
     }
 
     if (samplerName === 'samplers_priorities') { //this is for aphrodite's sampler priority
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         relatedDOMElement = $('#sampler_priority_block_aphrodite');
         displayname = 'Aphrodite Sampler Priority Block';
     }
 
     if (samplerName === 'penalty_alpha') { //contrastive search only has one sampler, does it need its own block?
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         relatedDOMElement = $('#contrastiveSearchBlock');
         displayname = 'Contrast Search Block';
     }
 
     if (samplerName === 'num_beams') { // num_beams is the killswitch for Beam Search
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         relatedDOMElement = $('#beamSearchBlock');
         targetDisplayType = 'block';
         displayname = 'Beam Search Block';
     }
 
     if (samplerName === 'smoothing_factor') { // num_beams is the killswitch for Beam Search
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         relatedDOMElement = $('#smoothingBlock');
         targetDisplayType = 'block';
         displayname = 'Smoothing Block';
@@ -160,16 +194,22 @@ function getRelatedDOMElement(samplerName) {
     return { relatedDOMElement, targetDisplayType, displayname };
 }
 
+/**
+ *
+ */
 function setSamplerListListeners() {
     // Goal 2: hide unchecked samplers from DOM
-    let listContainer = $('#apiSamplersList');
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    const listContainer = $('#apiSamplersList');
     listContainer.find('input').off('change').on('change', async function () {
         const samplerName = this.name.replace('_checkbox', '');
         const { relatedDOMElement, targetDisplayType } = getRelatedDOMElement(samplerName);
 
         // Get the current state of the custom data attribute
         const previousState = relatedDOMElement.data(SELECT_SAMPLER.DATA);
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const isChecked = $(this).prop('checked');
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const popupInputLabel = $(this).parent().find('.sampler_name');
 
         if (isChecked === false) {
@@ -205,6 +245,10 @@ function setSamplerListListeners() {
     });
 }
 
+/**
+ *
+ * @param element
+ */
 function isElementVisibleInDOM(element) {
     while (element && element !== document.body) {
         if (window.getComputedStyle(element).display === 'none') {
@@ -216,6 +260,11 @@ function isElementVisibleInDOM(element) {
 }
 
 
+/**
+ *
+ * @param main_api
+ * @param arrayOnly
+ */
 async function listSamplers(main_api, arrayOnly = false) {
     let availableSamplers;
     if (main_api === 'textgenerationwebui') {
@@ -272,6 +321,10 @@ async function listSamplers(main_api, arrayOnly = false) {
 // Goal 3: make "sampler is hidden/disabled" status persistent (save settings)
 // this runs on initial getSettings as well as after API changes
 
+/**
+ *
+ * @param redraw
+ */
 export async function validateDisabledSamplers(redraw = false) {
     const APISamplers = await listSamplers(main_api, true);
 
@@ -301,7 +354,8 @@ export async function validateDisabledSamplers(redraw = false) {
     }
 
     if (redraw) {
-        let samplersHTML = await listSamplers(main_api);
+        const samplersHTML = await listSamplers(main_api);
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#apiSamplersList').empty().append(samplersHTML.toString());
         setSamplerListListeners();
     }
@@ -316,7 +370,7 @@ export async function validateDisabledSamplers(redraw = false) {
 export async function loadApiSelectedSamplers() {
     try {
         console.debug('Text Completions: loading selected samplers');
-        selectedSamplers = await textGenObjectStore.getItem('selectedSamplers') || {};
+        selectedSamplers = (await textGenObjectStore.getItem('selectedSamplers')) || {};
     } catch (error) {
         console.log('Text Completions: unable to load selected samplers, using default samplers', error);
         selectedSamplers = {};
@@ -351,6 +405,7 @@ export async function resetApiSelectedSamplers(tcApiType = '', silent = false) {
         console.debug('Text Completions: resetting selected samplers');
         delete selectedSamplers[tcApiType];
         await saveApiSelectedSamplers();
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         if (!silent) toastr.success('Selected samplers cleared.');
     } catch (error) {
         console.log('Text Completions: unable to reset selected preset samplers', error);
@@ -401,6 +456,7 @@ export function getActiveManualApiSamplers(tcApiType = '') {
 
         return presetSamplers
             .filter(([key, val]) => val === true && key !== 'st_manual_priority')
+            // @ts-expect-error TS(6133): 'val' is declared but its value is never read.
             .map(([key, val]) => key);
     } catch (error) {
         console.log('Text Completions: unable to fetch active preset samplers', error);
@@ -434,8 +490,12 @@ export function isSamplerManualPriorityEnabled(tcApiType = '') {
     return selectedSamplers[tcApiType]?.st_manual_priority ?? false;
 }
 
+/**
+ *
+ */
 export async function initCustomSelectedSamplers() {
     await saveSettingsDebounced();
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#samplerSelectButton').off('click').on('click', showSamplerSelectPopup);
 }
 

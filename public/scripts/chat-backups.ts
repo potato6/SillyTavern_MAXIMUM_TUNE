@@ -1,6 +1,7 @@
 import { t } from './i18n.js';
 import { callGenericPopup, Popup, POPUP_TYPE } from './popup.js';
 import { getFileExtension, sortMoments, timestampToMoment } from './utils.js';
+// @ts-expect-error TS(2792): Cannot find module '/script.js'. Did you mean to s... Remove this comment to see the full error message
 import { displayPastChats, getRequestHeaders, importCharacterChat } from '/script.js';
 import { importGroupChat } from './group-chats.js';
 
@@ -33,6 +34,7 @@ class BackupsBrowser {
         });
 
         if (!response.ok) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.error(t`Failed to download backup, try again later.`);
             console.error('Failed to download chat backup:', response.statusText);
             return;
@@ -60,6 +62,7 @@ class BackupsBrowser {
             await callGenericPopup(textArea, POPUP_TYPE.TEXT, '', { allowVerticalScrolling: true, large: true, wide: true });
         } catch (error) {
             console.error('Failed to parse chat backup content:', error);
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.error(t`Failed to parse backup content.`);
             return;
         }
@@ -78,6 +81,7 @@ class BackupsBrowser {
         });
 
         if (!response.ok) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.error(t`Failed to download backup, try again later.`);
             console.error('Failed to download chat backup:', response.statusText);
             return;
@@ -89,6 +93,7 @@ class BackupsBrowser {
         const extension = getFileExtension(file);
 
         if (extension !== 'jsonl') {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.warning(t`Only .jsonl files are supported for chat imports.`);
             return;
         }
@@ -98,18 +103,24 @@ class BackupsBrowser {
         const formData = new FormData();
         formData.set('file_type', extension);
         formData.set('avatar', file);
+        // @ts-expect-error TS(2339): Property 'characters' does not exist on type '() =... Remove this comment to see the full error message
         formData.set('avatar_url', context.characters[context.characterId]?.avatar || '');
+        // @ts-expect-error TS(2339): Property 'name1' does not exist on type '() => { a... Remove this comment to see the full error message
         formData.set('user_name', context.name1);
+        // @ts-expect-error TS(2339): Property 'name2' does not exist on type '() => { a... Remove this comment to see the full error message
         formData.set('character_name', context.name2);
 
+        // @ts-expect-error TS(2339): Property 'groupId' does not exist on type '() => {... Remove this comment to see the full error message
         const importFn = context.groupId ? importGroupChat : importCharacterChat;
         const result = await importFn(formData, { refresh: false });
 
         if (result.length === 0) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.error(t`Failed to import chat backup, try again later.`);
             return;
         }
 
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.success(`Chat imported: ${result.join(', ')}`);
         await displayPastChats(result);
     }
@@ -120,6 +131,7 @@ class BackupsBrowser {
      * @returns {Promise<boolean>} True if deleted, false otherwise.
      */
     async deleteBackup(name) {
+        // @ts-expect-error TS(2554): Expected 2-3 arguments, but got 1.
         const confirm = await Popup.show.confirm(t`Are you sure?`);
         if (!confirm) {
             return false;
@@ -132,11 +144,13 @@ class BackupsBrowser {
         });
 
         if (!response.ok) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.error(t`Failed to delete backup, try again later.`);
             console.error('Failed to delete chat backup:', response.statusText);
             return false;
         }
 
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.success(t`Backup deleted successfully.`);
         return true;
     }
@@ -323,6 +337,9 @@ class BackupsBrowser {
 
 const backupsBrowser = new BackupsBrowser();
 
+/**
+ *
+ */
 export function addChatBackupsBrowser() {
     backupsBrowser.renderButton();
     backupsBrowser.renderBackupsList();

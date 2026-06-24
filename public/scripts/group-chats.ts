@@ -141,6 +141,9 @@ const saveGroupDebounced = debounce(async (group, reload) => await _save(group, 
 /** @type {Map<string, number>} */
 let groupChatQueueOrder = new Map();
 
+/**
+ *
+ */
 function setAutoModeWorker() {
     clearInterval(autoModeWorker);
     const autoModeDelay = groups.find(x => x.id === selected_group)?.auto_mode_delay ?? DEFAULT_AUTO_MODE_DELAY;
@@ -164,8 +167,11 @@ async function _save(group, reload = true) {
 }
 
 // Group chats
+/**
+ *
+ */
 async function regenerateGroup() {
-    let generationId = getLastMessageGenerationId();
+    const generationId = getLastMessageGenerationId();
 
     while (chat.length > 0) {
         const lastMes = chat[chat.length - 1];
@@ -224,6 +230,7 @@ async function validateGroup(group) {
         const character = characters.find(x => x.avatar === member || x.name === member);
         if (!character) {
             const msg = t`Warning: Listed member ${member} does not exist as a character. It will be removed from the group.`;
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.warning(msg, t`Group Validation`);
             console.warn(msg);
             dirty = true;
@@ -283,7 +290,7 @@ export async function getGroupChat(groupId, reload = false) {
     if (group && Array.isArray(group.members) && freshChat) {
         chat.splice(0, chat.length);
         chatElement.find('.mes').remove();
-        for (let member of group.members) {
+        for (const member of group.members) {
             const character = characters.find(x => x.avatar === member || x.name === member);
             if (!character) {
                 continue;
@@ -292,6 +299,7 @@ export async function getGroupChat(groupId, reload = false) {
             const mes = await getFirstCharacterMessage(character);
 
             // No first message
+            // @ts-expect-error TS(2339): Property 'mes' does not exist on type '{}'.
             if (!(mes?.mes)) {
                 continue;
             }
@@ -321,8 +329,7 @@ export async function getGroupChat(groupId, reload = false) {
 
 /**
  * Retrieves the members of a group
- *
- * @param {string} [groupId=selected_group] - The ID of the group to retrieve members from. Defaults to the currently selected group.
+ * @param {string} [groupId] - The ID of the group to retrieve members from. Defaults to the currently selected group.
  * @returns {Character[]} An array of character objects representing the members of the group. If the group is not found, an empty array is returned.
  */
 export function getGroupMembers(groupId = selected_group) {
@@ -347,8 +354,8 @@ export function getGroupNames() {
 /**
  * Finds the character ID for a group member.
  * @param {number|string} arg 0-based member index or character name
- * @param {Boolean} full Whether to return a key-value object containing extra data
- * @returns {number|Object} 0-based character ID or key-value object if full is true
+ * @param {boolean} full Whether to return a key-value object containing extra data
+ * @returns {number | object} 0-based character ID or key-value object if full is true
  */
 export function findGroupMemberId(arg, full = false) {
     arg = arg?.toString()?.trim();
@@ -480,9 +487,13 @@ export function getGroupCharacterCards(groupId, characterId) {
 
     // Resolve all lazy fields into a plain object
     return {
+        // @ts-expect-error TS(2339): Property 'description' does not exist on type '{}'... Remove this comment to see the full error message
         description: lazy.description,
+        // @ts-expect-error TS(2339): Property 'personality' does not exist on type '{}'... Remove this comment to see the full error message
         personality: lazy.personality,
+        // @ts-expect-error TS(2339): Property 'scenario' does not exist on type '{}'.
         scenario: lazy.scenario,
+        // @ts-expect-error TS(2339): Property 'mesExamples' does not exist on type '{}'... Remove this comment to see the full error message
         mesExamples: lazy.mesExamples,
     };
 }
@@ -558,7 +569,9 @@ export function getGroupCharacterCardsLazy(groupId, characterId) {
         return values.filter(x => x.length).join('\n');
     }
 
+    // @ts-expect-error TS(2339): Property 'scenario' does not exist on type '{}'.
     const scenarioOverride = String(chat_metadata.scenario || '');
+    // @ts-expect-error TS(2339): Property 'mes_example' does not exist on type '{}'... Remove this comment to see the full error message
     const mesExamplesOverride = String(chat_metadata.mes_example || '');
 
     return createLazyFields({
@@ -592,15 +605,23 @@ async function getFirstCharacterMessage(character) {
     }
 
     const mes = {};
+    // @ts-expect-error TS(2339): Property 'is_user' does not exist on type '{}'.
     mes.is_user = false;
+    // @ts-expect-error TS(2339): Property 'is_system' does not exist on type '{}'.
     mes.is_system = false;
+    // @ts-expect-error TS(2339): Property 'name' does not exist on type '{}'.
     mes.name = character.name;
+    // @ts-expect-error TS(2339): Property 'send_date' does not exist on type '{}'.
     mes.send_date = getMessageTimeStamp();
+    // @ts-expect-error TS(2339): Property 'original_avatar' does not exist on type ... Remove this comment to see the full error message
     mes.original_avatar = character.avatar;
+    // @ts-expect-error TS(2339): Property 'extra' does not exist on type '{}'.
     mes.extra = { 'gen_id': Date.now() * Math.random() * 1000000 };
+    // @ts-expect-error TS(2339): Property 'mes' does not exist on type '{}'.
     mes.mes = messageText
         ? substituteParams(messageText.trim(), { name2Override: character.name })
         : '';
+    // @ts-expect-error TS(2339): Property 'force_avatar' does not exist on type '{}... Remove this comment to see the full error message
     mes.force_avatar =
         character.avatar != 'none'
             ? getThumbnailUrl('avatar', character.avatar)
@@ -608,6 +629,9 @@ async function getFirstCharacterMessage(character) {
     return mes;
 }
 
+/**
+ *
+ */
 function resetSelectedGroup() {
     selected_group = null;
     is_group_generating = false;
@@ -645,6 +669,7 @@ async function saveGroupChat(groupId, shouldSaveGroup, force = false) {
         const errorData = await response.json();
         const isIntegrityError = errorData?.error === 'integrity' && !force;
         if (!isIntegrityError) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.error(t`Check the server connection and reload the page to prevent data loss.`, t`Group Chat could not be saved`);
             console.error('Group chat could not be saved', response);
             return;
@@ -799,7 +824,7 @@ async function getGroups() {
  */
 export function getGroupBlock(group) {
     let count = 0;
-    let namesList = [];
+    const namesList = [];
 
     // Build inline name list
     if (Array.isArray(group.members) && group.members.length) {
@@ -812,6 +837,7 @@ export function getGroupBlock(group) {
         }
     }
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const template = $('#group_list_template .group_select').clone();
     template.data('id', group.id);
     template.attr('data-grid', group.id);
@@ -828,6 +854,7 @@ export function getGroupBlock(group) {
 
     const avatar = getGroupAvatar(group);
     if (avatar) {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(template).find('.avatar').replaceWith(avatar);
     }
 
@@ -839,10 +866,14 @@ export function getGroupBlock(group) {
  * @param {Group} group Group object
  */
 function updateGroupAvatar(group) {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#group_avatar_preview').empty().append(getGroupAvatar(group));
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('.group_select').each(function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         if ($(this).data('id') == group.id) {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(this).find('.avatar').replaceWith(getGroupAvatar(group));
         }
     });
@@ -870,10 +901,12 @@ function isValidImageUrl(url) {
  */
 function getGroupAvatar(group) {
     if (!group) {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         return $(`<div class="avatar"><img src="${default_avatar}"></div>`);
     }
     // if isDataURL or if it's a valid local file url
     if (isValidImageUrl(group.avatar_url)) {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         return $(`<div class="avatar" title="[Group] ${group.name}"><img src="${group.avatar_url}"></div>`);
     }
 
@@ -894,6 +927,7 @@ function getGroupAvatar(group) {
     const avatarCount = memberAvatars.length;
 
     if (avatarCount >= 1 && avatarCount <= 4) {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const groupAvatar = $(`#group_avatars_template .collage_${avatarCount}`).clone();
 
         for (let i = 0; i < avatarCount; i++) {
@@ -906,10 +940,12 @@ function getGroupAvatar(group) {
 
     // catch edge case where group had one member and that member is deleted
     if (avatarCount === 0) {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         return $('<div class="missing-avatar fa-solid fa-user-slash"></div>');
     }
 
     // default avatar
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const groupAvatar = $('#group_avatars_template .collage_1').clone();
     groupAvatar.find('.img_1').attr('src', group.avatar_url || system_avatar);
     groupAvatar.attr('title', `[Group] ${group.name}`);
@@ -943,7 +979,11 @@ function getGroupChatNames(groupId) {
  * @returns {Promise<string|void>} Generated text or nothing if no generation occurred
  */
 async function generateGroupWrapper(byAutoMode, type = null, params = {}) {
+    /**
+     *
+     */
     function throwIfAborted() {
+        // @ts-expect-error TS(2339): Property 'signal' does not exist on type '{}'.
         if (params.signal instanceof AbortSignal && params.signal.aborted) {
             throw new Error('AbortSignal was fired. Group generation stopped');
         }
@@ -982,6 +1022,7 @@ async function generateGroupWrapper(byAutoMode, type = null, params = {}) {
         is_group_generating = true;
         setCharacterName('');
         setCharacterId(undefined);
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const userInput = String($('#send_textarea').val());
 
         // id of this specific batch for regeneration purposes
@@ -1003,7 +1044,9 @@ async function generateGroupWrapper(byAutoMode, type = null, params = {}) {
         const enabledMembers = group.members.filter(x => !group.disabled_members.includes(x));
         let activatedMembers = [];
 
+        // @ts-expect-error TS(2339): Property 'force_chid' does not exist on type '{}'.
         if (params && typeof params.force_chid == 'number') {
+            // @ts-expect-error TS(2339): Property 'force_chid' does not exist on type '{}'.
             activatedMembers = [params.force_chid];
         } else if (type === 'quiet') {
             activatedMembers = activateSwipe(group.members, { allowSystem: true }).slice(0, 1);
@@ -1015,6 +1058,7 @@ async function generateGroupWrapper(byAutoMode, type = null, params = {}) {
             activatedMembers = activateSwipe(group.members, { allowSystem: false });
 
             if (activatedMembers.length === 0) {
+                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                 toastr.warning(t`Deleted group member swiped. To get a reply, add them back to the group.`);
                 throw new Error('Deleted group member swiped');
             }
@@ -1037,6 +1081,7 @@ async function generateGroupWrapper(byAutoMode, type = null, params = {}) {
             const bias = getBiasStrings(userInput, type);
             await sendMessageAsUser(userInput, bias.messageBias);
             await saveChatConditional();
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#send_textarea').val('')[0].dispatchEvent(new Event('input', { bubbles: true }));
         }
         groupChatQueueOrder = new Map();
@@ -1061,11 +1106,13 @@ async function generateGroupWrapper(byAutoMode, type = null, params = {}) {
             // Wait for generation to finish
             const generateType = ['swipe', 'impersonate', 'quiet', 'continue'].includes(type) ? type : 'normal';
             textResult = await Generate(generateType, { automatic_trigger: byAutoMode, ...(params || {}) });
+            // @ts-expect-error TS(2339): Property 'messageChunk' does not exist on type 'st... Remove this comment to see the full error message
             let messageChunk = textResult?.messageChunk;
 
             if (messageChunk) {
                 while (shouldAutoContinue(messageChunk, type === 'impersonate')) {
                     textResult = await Generate('continue', { automatic_trigger: byAutoMode, ...(params || {}) });
+                    // @ts-expect-error TS(2339): Property 'messageChunk' does not exist on type 'st... Remove this comment to see the full error message
                     messageChunk = textResult?.messageChunk;
                 }
             }
@@ -1123,12 +1170,12 @@ function activateImpersonate(members) {
 /**
  * Activates a group member based on the last message.
  * @param {string[]} members Array of group member avatar ids
- * @param {Object} [options] Options object
+ * @param {object} [options] Options object
  * @param {boolean} [options.allowSystem] Whether to allow system messages
  * @returns {number[]} Array of character ids
  */
 function activateSwipe(members, { allowSystem = false } = {}) {
-    let activatedNames = [];
+    const activatedNames = [];
     const lastMessage = chat[chat.length - 1];
 
     if (!lastMessage) {
@@ -1178,7 +1225,7 @@ function activateSwipe(members, { allowSystem = false } = {}) {
  * @returns {number[]} Array of character ids
  */
 function activateListOrder(members) {
-    let activatedMembers = members.filter(onlyUnique);
+    const activatedMembers = members.filter(onlyUnique);
 
     // map to character ids
     const memberIds = activatedMembers
@@ -1190,7 +1237,7 @@ function activateListOrder(members) {
 /**
  * Activate group members based on the last message.
  * @param {string[]} members List of member avatars
- * @param {Object} lastMessage Last message
+ * @param {object} lastMessage Last message
  * @param {boolean} isUserInput Whether the user has input text
  * @returns {number[]} List of character ids
  */
@@ -1252,8 +1299,8 @@ function activateNaturalOrder(members, input, lastMessage, allowSelfResponses, i
 
     // find mentions (excluding self)
     if (input && input.length) {
-        for (let inputWord of extractAllWords(input)) {
-            for (let member of members) {
+        for (const inputWord of extractAllWords(input)) {
+            for (const member of members) {
                 const character = characters.find(x => x.avatar === member);
 
                 if (!character || character.name === bannedUser) {
@@ -1271,7 +1318,7 @@ function activateNaturalOrder(members, input, lastMessage, allowSelfResponses, i
     const chattyMembers = [];
     // activation by talkativeness (in shuffled order, except banned)
     const shuffledMembers = shuffle([...members]);
-    for (let member of shuffledMembers) {
+    for (const member of shuffledMembers) {
         const character = characters.find((x) => x.avatar === member);
 
         if (!character || character.name === bannedUser) {
@@ -1345,6 +1392,7 @@ async function deleteGroup(id) {
 
         select_rm_info('group_delete', id);
 
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#rm_button_selected_ch').children('h2').text('');
     }
 }
@@ -1357,7 +1405,7 @@ async function deleteGroup(id) {
  * @returns {Promise<void>} Promise that resolves when the group is edited
  */
 export async function editGroup(id, immediately, reload = true) {
-    let group = groups.find((x) => x.id === id);
+    const group = groups.find((x) => x.id === id);
 
     if (!group) {
         return;
@@ -1395,6 +1443,9 @@ export async function unshallowGroupMembers(groupId) {
 
 let groupAutoModeAbortController = null;
 
+/**
+ *
+ */
 async function groupChatAutoModeWorker() {
     if (!is_group_automode_enabled || online_status === 'no_connection') {
         return;
@@ -1448,6 +1499,7 @@ async function modifyGroupMember(groupId, groupMember, isDelete) {
     printTagFilters(tag_filter_type.group_members_list);
 
     const groupHasMembers = getGroupCharacters({ doFilter: false, onlyMembers: true }).length > 0;
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#rm_group_submit').prop('disabled', !groupHasMembers);
 }
 
@@ -1488,17 +1540,25 @@ async function reorderGroupMember(groupId, groupMember, direction) {
     }
 }
 
+/**
+ *
+ * @param e
+ */
 async function onGroupActivationStrategyInput(e) {
     if (openGroupId) {
-        let _thisGroup = groups.find((x) => x.id == openGroupId);
+        const _thisGroup = groups.find((x) => x.id == openGroupId);
         _thisGroup.activation_strategy = Number(e.target.value);
         await editGroup(openGroupId, false, false);
     }
 }
 
+/**
+ *
+ * @param e
+ */
 async function onGroupGenerationModeInput(e) {
     if (openGroupId) {
-        let _thisGroup = groups.find((x) => x.id == openGroupId);
+        const _thisGroup = groups.find((x) => x.id == openGroupId);
         _thisGroup.generation_mode = Number(e.target.value);
         await editGroup(openGroupId, false, false);
 
@@ -1506,28 +1566,42 @@ async function onGroupGenerationModeInput(e) {
     }
 }
 
+/**
+ *
+ * @param e
+ */
 async function onGroupAutoModeDelayInput(e) {
     if (openGroupId) {
-        let _thisGroup = groups.find((x) => x.id == openGroupId);
+        const _thisGroup = groups.find((x) => x.id == openGroupId);
         _thisGroup.auto_mode_delay = Number(e.target.value);
         await editGroup(openGroupId, false, false);
         setAutoModeWorker();
     }
 }
 
+/**
+ *
+ * @param e
+ */
 async function onGroupGenerationModeTemplateInput(e) {
     if (openGroupId) {
-        let _thisGroup = groups.find((x) => x.id == openGroupId);
+        const _thisGroup = groups.find((x) => x.id == openGroupId);
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const prop = $(e.target).attr('setting');
         _thisGroup[prop] = String(e.target.value);
         await editGroup(openGroupId, false, false);
     }
 }
 
+/**
+ *
+ */
 async function onGroupNameInput() {
     if (openGroupId) {
-        let _thisGroup = groups.find((x) => x.id == openGroupId);
+        const _thisGroup = groups.find((x) => x.id == openGroupId);
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         _thisGroup.name = $(this).val();
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#rm_button_selected_ch').children('h2').text(_thisGroup.name);
         await editGroup(openGroupId, false);
     }
@@ -1550,22 +1624,34 @@ function isGroupMember(group, avatarId) {
 /**
  * Gets group characters based on filters.
  * @param {object} param
- * @param {boolean} [param.doFilter=false] Whether to apply filters
- * @param {boolean} [param.onlyMembers=false] Whether to include only group members
+ * @param {boolean} [param.doFilter] Whether to apply filters
+ * @param {boolean} [param.onlyMembers] Whether to include only group members
  * @returns {Array<{item: Character, id: number, type: string}>} Array of group character objects
  */
 function getGroupCharacters({ doFilter = false, onlyMembers = false } = {}) {
+    /**
+     *
+     * @param results
+     * @param filter
+     * @param filterSelector
+     */
     function applyFilterAndSort(results, filter, filterSelector) {
         let filtered = results;
         if (doFilter) {
             filtered = filter.applyFilters(filtered);
         }
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const useFilterOrder = doFilter && !!$(filterSelector).val();
         sortEntitiesList(filtered, useFilterOrder, filter);
         filter.clearFuzzySearchCaches();
         return filtered;
     }
 
+    /**
+     *
+     * @param results
+     * @param thisGroup
+     */
     function handleMembers(results, thisGroup) {
         const membersArray = thisGroup?.members ?? newGroupMembers;
 
@@ -1573,9 +1659,15 @@ function getGroupCharacters({ doFilter = false, onlyMembers = false } = {}) {
         // (separate from characterIndexMap which maps character objects to their array indices)
         const memberIndexMap = new Map(membersArray.map((avatar, index) => [avatar, index]));
 
+        /**
+         *
+         * @param a
+         * @param b
+         */
         function sortMembersFn(a, b) {
             const aIndex = memberIndexMap.get(a.item.avatar) ?? -1;
             const bIndex = memberIndexMap.get(b.item.avatar) ?? -1;
+            // @ts-expect-error TS(2362): The left-hand side of an arithmetic operation must... Remove this comment to see the full error message
             return aIndex - bIndex;
         }
 
@@ -1587,6 +1679,7 @@ function getGroupCharacters({ doFilter = false, onlyMembers = false } = {}) {
         filtered.sort(sortMembersFn);
 
         // Apply conditional filter-based sort and cleanup
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const useFilterOrder = doFilter && !!$('#rm_group_members_filter').val();
         if (useFilterOrder) {
             sortEntitiesList(filtered, useFilterOrder, groupMembersFilter);
@@ -1614,10 +1707,14 @@ function getGroupCharacters({ doFilter = false, onlyMembers = false } = {}) {
     return handleMembers(results, thisGroup);
 }
 
+/**
+ *
+ */
 function printGroupCandidates() {
     const storageKey = 'GroupCandidates_PerPage';
     const pageSize = Number(accountStorage.getItem(storageKey)) || 5;
     const sizeChangerOptions = [5, 10, 25, 50, 100, 200, 500, 1000];
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#rm_group_add_members_pagination').pagination({
         dataSource: getGroupCharacters({ doFilter: true, onlyMembers: false }),
         pageRange: 1,
@@ -1635,21 +1732,29 @@ function printGroupCandidates() {
             paginationDropdownChangeHandler(e, size);
         },
         callback: function (data) {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#rm_group_add_members').empty();
             for (const i of data) {
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $('#rm_group_add_members').append(getGroupCharacterBlock(i.item));
             }
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             localizePagination($('#rm_group_add_members_pagination'));
         },
     });
 }
 
+/**
+ *
+ */
 function printGroupMembers() {
     const storageKey = 'GroupMembers_PerPage';
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('.rm_group_members_pagination').each(function () {
-        let that = this;
+        const that = this;
         const pageSize = Number(accountStorage.getItem(storageKey)) || 5;
         const sizeChangerOptions = [5, 10, 25, 50, 100, 200, 500, 1000];
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(this).pagination({
             dataSource: getGroupCharacters({ doFilter: true, onlyMembers: true }),
             pageRange: 1,
@@ -1667,10 +1772,13 @@ function printGroupMembers() {
                 paginationDropdownChangeHandler(e, size);
             },
             callback: function (data) {
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $('.rm_group_members').empty();
                 for (const i of data) {
+                    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                     $('.rm_group_members').append(getGroupCharacterBlock(i.item));
                 }
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 localizePagination($(that));
             },
         });
@@ -1684,6 +1792,7 @@ function printGroupMembers() {
  */
 function getGroupCharacterBlock(character) {
     const avatar = getThumbnailUrl('avatar', character.avatar);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const template = $('#group_member_template .group_member').clone();
     const isFav = !!character.fav || character.fav == 'true';
     template.data('id', character.avatar);
@@ -1701,7 +1810,7 @@ function getGroupCharacterBlock(character) {
         template.find('.character_version').hide();
     }
 
-    let queuePosition = groupChatQueueOrder.get(character.avatar);
+    const queuePosition = groupChatQueueOrder.get(character.avatar);
     if (queuePosition) {
         template.find('.queue_position').text(queuePosition);
         template.toggleClass('is_queued', queuePosition > 1);
@@ -1733,12 +1842,17 @@ function isGroupMemberDisabled(avatarId) {
     return Boolean(thisGroup && thisGroup.disabled_members.includes(avatarId));
 }
 
+/**
+ *
+ */
 async function onDeleteGroupClick() {
     if (!openGroupId) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.warning(t`Currently no group selected.`);
         return;
     }
     if (is_group_generating) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.warning(t`Not so fast! Wait for the characters to stop typing before deleting the group.`);
         return;
     }
@@ -1749,28 +1863,39 @@ async function onDeleteGroupClick() {
     }
 }
 
+/**
+ *
+ */
 async function onFavoriteGroupClick() {
     updateFavButtonState(!fav_grp_checked);
     if (openGroupId) {
-        let _thisGroup = groups.find((x) => x.id == openGroupId);
+        const _thisGroup = groups.find((x) => x.id == openGroupId);
         _thisGroup.fav = fav_grp_checked;
         await editGroup(openGroupId, false, false);
         favsToHotswap();
     }
 }
 
+/**
+ *
+ */
 async function onGroupSelfResponsesClick() {
     if (openGroupId) {
-        let _thisGroup = groups.find((x) => x.id == openGroupId);
+        const _thisGroup = groups.find((x) => x.id == openGroupId);
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const value = $(this).prop('checked');
         _thisGroup.allow_self_responses = value;
         await editGroup(openGroupId, false, false);
     }
 }
 
+/**
+ *
+ * @param value
+ */
 async function onHideMutedSpritesClick(value) {
     if (openGroupId) {
-        let _thisGroup = groups.find((x) => x.id == openGroupId);
+        const _thisGroup = groups.find((x) => x.id == openGroupId);
         _thisGroup.hideMutedSprites = value;
         console.log(`_thisGroup.hideMutedSprites = ${_thisGroup.hideMutedSprites}`);
         await editGroup(openGroupId, false, false);
@@ -1785,11 +1910,15 @@ async function onHideMutedSpritesClick(value) {
  */
 function toggleHiddenControls(group, generationMode = null) {
     const isJoin = [group_generation_mode.APPEND, group_generation_mode.APPEND_DISABLED].includes(generationMode ?? group?.generation_mode);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#rm_group_generation_mode_join_prefix').parent().toggle(isJoin);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#rm_group_generation_mode_join_suffix').parent().toggle(isJoin);
 
     if (!CSS.supports('field-sizing', 'content')) {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         initScrollHeight($('#rm_group_generation_mode_join_prefix'));
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         initScrollHeight($('#rm_group_generation_mode_join_suffix'));
     }
 }
@@ -1808,14 +1937,23 @@ function select_group_chats(groupId, skipAnimation) {
     const generationMode = Number(group?.generation_mode ?? group_generation_mode.SWAP);
 
     setMenuType(group ? 'group_edit' : 'group_create');
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#group_avatar_preview').empty().append(getGroupAvatar(group));
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#rm_group_restore_avatar').toggle(!!group && isValidImageUrl(group.avatar_url));
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#rm_group_filter').val('').trigger('input');
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#rm_group_members_filter').val('').trigger('input');
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#rm_group_activation_strategy').val(replyStrategy);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(`#rm_group_activation_strategy option[value="${replyStrategy}"]`).prop('selected', true);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#rm_group_generation_mode').val(generationMode);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(`#rm_group_generation_mode option[value="${generationMode}"]`).prop('selected', true);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#rm_group_chat_name').val(groupName);
 
     if (!skipAnimation) {
@@ -1829,34 +1967,55 @@ function select_group_chats(groupId, skipAnimation) {
     printGroupCandidates();
     printGroupMembers();
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const groupHasMembers = !!$('#rm_group_members').children().length;
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#rm_group_submit').prop('disabled', !groupHasMembers);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#rm_group_allow_self_responses').prop('checked', group && group.allow_self_responses);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#rm_group_hidemutedsprites').prop('checked', group && group.hideMutedSprites);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#rm_group_automode_delay').val(group?.auto_mode_delay ?? DEFAULT_AUTO_MODE_DELAY);
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#rm_group_generation_mode_join_prefix').val(group?.generation_mode_join_prefix ?? '').attr('setting', 'generation_mode_join_prefix');
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#rm_group_generation_mode_join_suffix').val(group?.generation_mode_join_suffix ?? '').attr('setting', 'generation_mode_join_suffix');
     toggleHiddenControls(group, generationMode);
 
     // bottom buttons
     if (openGroupId) {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#rm_group_submit').hide();
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#rm_group_delete').show();
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#rm_group_scenario').show();
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#group-metadata-controls .chat_lorebook_button').removeClass('disabled').prop('disabled', false);
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#group_open_media_overrides').show();
         const isMediaAllowed = isExternalMediaAllowed();
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#group_media_allowed_icon').toggle(isMediaAllowed);
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#group_media_forbidden_icon').toggle(!isMediaAllowed);
     } else {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#rm_group_submit').show();
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         if ($('#groupAddMemberListToggle .inline-drawer-content').css('display') !== 'block') {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#groupAddMemberListToggle').trigger('click');
         }
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#rm_group_delete').hide();
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#rm_group_scenario').hide();
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#group-metadata-controls .chat_lorebook_button').addClass('disabled').prop('disabled', true);
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#group_open_media_overrides').hide();
     }
 
@@ -1865,20 +2024,25 @@ function select_group_chats(groupId, skipAnimation) {
 
     // top bar
     if (group) {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#rm_group_automode_label').show();
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#rm_button_selected_ch').children('h2').text(groupName);
     } else {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#rm_group_automode_label').hide();
     }
 
     // Toggle textbox sizes, as input events have not fired here
     if (!CSS.supports('field-sizing', 'content')) {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#rm_group_chats_block .autoSetHeight').each(element => {
             resetScrollHeight(element);
         });
     }
 
     hideMutedSprites = group?.hideMutedSprites ?? false;
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#rm_group_hidemutedsprites').prop('checked', hideMutedSprites);
 
     eventSource.emit('groupSelected', { detail: { id: openGroupId, group: group } });
@@ -1888,9 +2052,7 @@ function select_group_chats(groupId, skipAnimation) {
  * Handles the upload and processing of a group avatar.
  * The selected image is read, cropped using a popup, processed into a thumbnail,
  * and then uploaded to the server.
- *
  * @param {Event} event - The event triggered by selecting a file input, containing the image file to upload.
- *
  * @returns {Promise<void>} - A promise that resolves when the processing and upload is complete.
  */
 async function uploadGroupAvatar(event) {
@@ -1906,6 +2068,7 @@ async function uploadGroupAvatar(event) {
 
     const result = await getBase64Async(file);
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#dialogue_popup').addClass('large_dialogue_popup wide_dialogue_popup');
 
     const croppedImage = await callGenericPopup('Set the crop position of the avatar image', POPUP_TYPE.CROP, '', { cropImage: result });
@@ -1916,23 +2079,31 @@ async function uploadGroupAvatar(event) {
 
     let thumbnail = await createThumbnail(String(croppedImage), 200, 300);
     //remove data:image/whatever;base64
+    // @ts-expect-error TS(2339): Property 'replace' does not exist on type 'unknown... Remove this comment to see the full error message
     thumbnail = thumbnail.replace(/^data:image\/[a-z]+;base64,/, '');
-    let _thisGroup = groups.find((x) => x.id == openGroupId);
+    const _thisGroup = groups.find((x) => x.id == openGroupId);
     // filename should be group id + human readable timestamp
     const filename = _thisGroup ? `${_thisGroup.id}_${humanizedDateTime()}` : humanizedDateTime();
-    let thumbnailUrl = await saveBase64AsFile(thumbnail, String(openGroupId ?? ''), filename, 'jpg');
+    const thumbnailUrl = await saveBase64AsFile(thumbnail, String(openGroupId ?? ''), filename, 'jpg');
     if (!openGroupId) {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#group_avatar_preview img').attr('src', thumbnailUrl);
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#rm_group_restore_avatar').show();
         return;
     }
 
     _thisGroup.avatar_url = thumbnailUrl;
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#group_avatar_preview').empty().append(getGroupAvatar(_thisGroup));
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#rm_group_restore_avatar').show();
     await editGroup(openGroupId, true, true);
 }
 
+/**
+ *
+ */
 async function restoreGroupAvatar() {
     const confirm = await Popup.show.confirm('Are you sure you want to restore the group avatar?', 'Your custom image will be deleted, and a collage will be used instead.');
     if (!confirm) {
@@ -1940,21 +2111,31 @@ async function restoreGroupAvatar() {
     }
 
     if (!openGroupId) {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#group_avatar_preview img').attr('src', default_avatar);
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#rm_group_restore_avatar').hide();
         return;
     }
 
-    let _thisGroup = groups.find((x) => x.id == openGroupId);
+    const _thisGroup = groups.find((x) => x.id == openGroupId);
     _thisGroup.avatar_url = '';
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#group_avatar_preview').empty().append(getGroupAvatar(_thisGroup));
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#rm_group_restore_avatar').hide();
     await editGroup(openGroupId, true, true);
 }
 
+/**
+ *
+ * @param event
+ */
 async function onGroupActionClick(event) {
     event.stopPropagation();
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const action = $(this).data('action');
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const member = $(this).closest('.group_member');
 
     if (action === 'remove') {
@@ -2002,10 +2183,17 @@ async function onGroupActionClick(event) {
     await eventSource.emit(event_types.GROUP_UPDATED);
 }
 
+/**
+ *
+ * @param state
+ */
 function updateFavButtonState(state) {
     fav_grp_checked = state;
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#rm_group_fav').val(String(fav_grp_checked));
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#group_favorite_button').toggleClass('fav_on', fav_grp_checked);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#group_favorite_button').toggleClass('fav_off', !fav_grp_checked);
 }
 
@@ -2016,6 +2204,7 @@ function updateFavButtonState(state) {
  */
 export async function openGroupById(groupId) {
     if (isChatSaving) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.info(t`Please wait until the chat is saved before switching characters.`, t`Your chat is still saving...`);
         return false;
     }
@@ -2053,6 +2242,7 @@ export async function openGroupById(groupId) {
  */
 async function openCharacterDefinition(characterSelect) {
     if (is_group_generating) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.warning(t`Can't peek a character while group reply is being generated`);
         console.warn('Can\'t peek a character def while group reply is being generated');
         return;
@@ -2073,22 +2263,38 @@ async function openCharacterDefinition(characterSelect) {
     applyTagsOnCharacterSelect.call(characterSelect);
 }
 
+/**
+ *
+ */
 function filterGroupMembers() {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const searchValue = String($(this).val()).toLowerCase();
     groupCandidatesFilter.setFilterData(FILTER_TYPES.SEARCH, searchValue);
 }
 
+/**
+ *
+ */
 function filterGroupMemberList() {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const searchValue = String($(this).val()).toLowerCase();
     groupMembersFilter.setFilterData(FILTER_TYPES.SEARCH, searchValue);
 }
 
+/**
+ *
+ */
 async function createGroup() {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     let name = $('#rm_group_chat_name').val().toString();
-    let allowSelfResponses = !!$('#rm_group_allow_self_responses').prop('checked');
-    let activationStrategy = Number($('#rm_group_activation_strategy').find(':selected').val()) ?? group_activation_strategy.NATURAL;
-    let generationMode = Number($('#rm_group_generation_mode').find(':selected').val()) ?? group_generation_mode.SWAP;
-    let autoModeDelay = Number($('#rm_group_automode_delay').val()) ?? DEFAULT_AUTO_MODE_DELAY;
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    const allowSelfResponses = !!$('#rm_group_allow_self_responses').prop('checked');
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    const activationStrategy = Number($('#rm_group_activation_strategy').find(':selected').val()) ?? group_activation_strategy.NATURAL;
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    const generationMode = Number($('#rm_group_generation_mode').find(':selected').val()) ?? group_generation_mode.SWAP;
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    const autoModeDelay = Number($('#rm_group_automode_delay').val()) ?? DEFAULT_AUTO_MODE_DELAY;
     const members = newGroupMembers;
     const memberNames = characters.filter(x => members.includes(x.avatar)).map(x => x.name).join(', ');
 
@@ -2096,6 +2302,7 @@ async function createGroup() {
         name = t`Group: ${memberNames}`;
     }
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const avatarUrl = $('#group_avatar_preview img').attr('src');
     const chatName = humanizedDateTime();
     const chats = [chatName];
@@ -2253,6 +2460,7 @@ export async function deleteGroupChatByName(groupId, chatName) {
     });
 
     if (!response.ok) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.error(t`Check the server connection and reload the page to prevent data loss.`, t`Group chat could not be deleted`);
         console.error('Group chat could not be deleted');
         return;
@@ -2272,8 +2480,8 @@ export async function deleteGroupChatByName(groupId, chatName) {
  * Deletes a group chat by name.
  * @param {string} groupId The ID of the group containing the chat to delete.
  * @param {string} chatId The id/name of the chat to delete.
- * @param {object} [options={}] Options for the deletion.
- * @param {boolean} [options.jumpToNewChat=true] Whether to jump to a new chat after deletion (existing one, or create a new one if none exists)
+ * @param {object} [options] Options for the deletion.
+ * @param {boolean} [options.jumpToNewChat] Whether to jump to a new chat after deletion (existing one, or create a new one if none exists)
  */
 export async function deleteGroupChat(groupId, chatId, { jumpToNewChat = true } = {}) {
     const group = groups.find(x => x.id === groupId);
@@ -2311,7 +2519,7 @@ export async function deleteGroupChat(groupId, chatId, { jumpToNewChat = true } 
 /**
  * Imports a group chat from a file and adds it to the group.
  * @param {FormData} formData Form data to send to the server
- * @param {object} [options={}] Options for the import
+ * @param {object} [options] Options for the import
  * @param {boolean} [options.refresh] Whether to refresh the group chat list after import
  * @returns {Promise<string[]>} List of imported file names
  */
@@ -2388,38 +2596,54 @@ export async function saveGroupBookmarkChat(groupId, name, metadata, mesId, chat
     const response = await fetch('/api/chats/group/save', saveChatRequest);
 
     if (!response.ok) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.error(t`Check the server connection and reload the page to prevent data loss.`, t`Group chat could not be saved`);
         console.error('Group chat could not be saved', response);
     }
 }
 
+/**
+ *
+ */
 function onSendTextareaInput() {
     if (is_group_automode_enabled) {
         // Wait for current automode generation to finish
         is_group_automode_enabled = false;
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#rm_group_automode').prop('checked', false);
     }
 }
 
+/**
+ *
+ */
 function stopAutoModeGeneration() {
     if (groupAutoModeAbortController) {
         groupAutoModeAbortController.abort();
     }
 
     is_group_automode_enabled = false;
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#rm_group_automode').prop('checked', false);
 }
 
+/**
+ *
+ */
 function doCurMemberListPopout() {
     //repurposes the zoomed avatar template to server as a floating group member list
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     if ($('#groupMemberListPopout').length === 0) {
         console.debug('did not see popout yet, creating');
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const memberListClone = $(this).parent().parent().find('.inline-drawer-content').html();
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const template = $('#zoomed_avatar_template').html();
         const controlBarHtml = `<div class="panelControlBar flex-container">
         <div id="groupMemberListPopoutheader" class="fa-solid fa-grip drag-grabber hoverglow"></div>
         <div id="groupMemberListPopoutClose" class="fa-solid fa-circle-xmark hoverglow"></div>
     </div>`;
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const newElement = $(template);
 
         newElement.attr('id', 'groupMemberListPopout')
@@ -2432,11 +2656,15 @@ function doCurMemberListPopout() {
         // Remove pagination from popout
         newElement.find('.group_pagination').empty();
 
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#movingDivs').append(newElement);
         loadMovingUIState();
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#groupMemberListPopout').fadeIn(animation_duration);
         dragElement(newElement);
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#groupMemberListPopoutClose').off('click').on('click', function () {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#groupMemberListPopout').fadeOut(animation_duration, () => { $('#groupMemberListPopout').remove(); });
         });
 
@@ -2444,47 +2672,75 @@ function doCurMemberListPopout() {
         printGroupMembers();
     } else {
         console.debug('saw existing popout, removing');
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#groupMemberListPopout').fadeOut(animation_duration, () => { $('#groupMemberListPopout').remove(); });
     }
 }
 
+// @ts-expect-error TS(2304): Cannot find name 'jQuery'.
 jQuery(() => {
     if (!CSS.supports('field-sizing', 'content')) {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(document).on('input', '#rm_group_chats_block .autoSetHeight', function () {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             resetScrollHeight($(this));
         });
     }
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.group_select', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const groupId = $(this).attr('data-chid') || $(this).attr('data-grid');
         openGroupById(groupId);
     });
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#rm_group_filter').on('input', filterGroupMembers);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#rm_group_members_filter').on('input', filterGroupMemberList);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#rm_group_submit').on('click', createGroup);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#rm_group_scenario').on('click', setCharacterSettingsOverrides);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#rm_group_automode').on('input', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const value = $(this).prop('checked');
         is_group_automode_enabled = value;
         eventSource.once(event_types.GENERATION_STOPPED, stopAutoModeGeneration);
     });
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#rm_group_hidemutedsprites').on('input', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const value = $(this).prop('checked');
         hideMutedSprites = value;
         onHideMutedSpritesClick(value);
     });
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#send_textarea').on('keyup', onSendTextareaInput);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#groupCurrentMemberPopoutButton').on('click', doCurMemberListPopout);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#rm_group_chat_name').on('input', onGroupNameInput);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#rm_group_delete').off().on('click', onDeleteGroupClick);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#group_favorite_button').on('click', onFavoriteGroupClick);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#rm_group_allow_self_responses').on('input', onGroupSelfResponsesClick);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#rm_group_activation_strategy').on('change', onGroupActivationStrategyInput);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#rm_group_generation_mode').on('change', onGroupGenerationModeInput);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#rm_group_automode_delay').on('input', onGroupAutoModeDelayInput);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#rm_group_generation_mode_join_prefix').on('input', onGroupGenerationModeTemplateInput);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#rm_group_generation_mode_join_suffix').on('input', onGroupGenerationModeTemplateInput);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#group_avatar_button').on('input', uploadGroupAvatar);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#rm_group_restore_avatar').on('click', restoreGroupAvatar);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.group_member .right_menu_button', onGroupActionClick);
 });

@@ -111,6 +111,9 @@ import { updateReasoningUI, parseReasoningFromString, getReasoningTemplateByName
 import { IGNORE_SYMBOL } from './constants.js';
 import { macros } from './macros/macro-system.js';
 
+/**
+ *
+ */
 export function getContext() {
     return {
         accountStorage,

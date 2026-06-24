@@ -8,13 +8,16 @@ import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 
+// @ts-expect-error TS(2792): Cannot find module 'simple-git'. Did you mean to s... Remove this comment to see the full error message
 import { default as git, CheckRepoActions } from 'simple-git';
 import { createGitClient } from './src/git/client.js';
 import { color } from './src/util.js';
 
+// @ts-expect-error TS(2339): Property 'dirname' does not exist on type 'ImportM... Remove this comment to see the full error message
 const __dirname = import.meta.dirname ?? path.dirname(fileURLToPath(import.meta.url));
 process.chdir(__dirname);
 const pluginsPath = './plugins';
+// @ts-expect-error TS(4111): Property 'SILLYTAVERN_GIT_BACKEND' comes from an i... Remove this comment to see the full error message
 const gitBackend = process.env.SILLYTAVERN_GIT_BACKEND || 'auto';
 
 const command = process.argv[2];
@@ -38,6 +41,9 @@ if (command === 'install') {
     installPlugin(pluginName);
 }
 
+/**
+ *
+ */
 async function updatePlugins() {
     const directories = fs.readdirSync(pluginsPath)
         .filter(file => !file.startsWith('.'))
@@ -81,6 +87,10 @@ async function updatePlugins() {
     console.log(color.magenta('All plugins updated!'));
 }
 
+/**
+ *
+ * @param pluginName
+ */
 async function installPlugin(pluginName) {
     try {
         const pluginPath = path.join(pluginsPath, path.basename(pluginName, '.git'));

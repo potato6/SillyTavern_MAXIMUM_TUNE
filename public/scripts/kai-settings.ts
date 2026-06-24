@@ -75,6 +75,10 @@ const MIN_GRAMMAR_KCPPVERSION = '1.44';
 const MIN_MIN_P_KCPPVERSION = '1.48';
 const KOBOLDCPP_ORDER = [6, 0, 1, 3, 4, 2, 5];
 
+/**
+ *
+ * @param value
+ */
 export function formatKoboldUrl(value) {
     try {
         const url = new URL(value);
@@ -88,24 +92,39 @@ export function formatKoboldUrl(value) {
     return null;
 }
 
+/**
+ *
+ */
 function selectKoboldGuiPreset() {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#settings_preset option[value=gui]')
         .attr('selected', 'true')
         .trigger('change');
 }
 
+/**
+ *
+ * @param data
+ * @param preset
+ * @param settings
+ */
 export function loadKoboldSettings(data, preset, settings) {
     koboldai_setting_names = data.koboldai_setting_names;
     koboldai_settings = data.koboldai_settings;
+    // @ts-expect-error TS(6133): 'arr' is declared but its value is never read.
     koboldai_settings.forEach(function (item, i, arr) {
         koboldai_settings[i] = JSON.parse(item);
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#settings_preset').empty();
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#settings_preset').append('<option value="gui">GUI KoboldAI Settings</option>');
     const names = {};
+    // @ts-expect-error TS(6133): 'arr' is declared but its value is never read.
     koboldai_setting_names.forEach(function (item, i, arr) {
         names[item] = i;
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#settings_preset').append(`<option value=${i}>${item}</option>`);
     });
     koboldai_setting_names = names;
@@ -117,6 +136,7 @@ export function loadKoboldSettings(data, preset, settings) {
         selectKoboldGuiPreset();
     } else {
         if (typeof koboldai_setting_names[kai_settings.preset_settings] !== 'undefined') {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(`#settings_preset option[value=${koboldai_setting_names[kai_settings.preset_settings]}]`)
                 .attr('selected', 'true');
         } else {
@@ -128,9 +148,14 @@ export function loadKoboldSettings(data, preset, settings) {
     loadKoboldSettingsFromPreset(preset);
 
     //Load the API server URL from settings
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#api_url_text').val(kai_settings.api_server);
 }
 
+/**
+ *
+ * @param preset
+ */
 function loadKoboldSettingsFromPreset(preset) {
     for (const name of Object.keys(kai_settings)) {
         if (name === 'extensions') {
@@ -147,16 +172,20 @@ function loadKoboldSettingsFromPreset(preset) {
 
         const formattedValue = slider.format(value);
         slider.setValue(value);
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(slider.sliderId).val(value);
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(slider.counterId).val(formattedValue);
     }
 
     if (Object.hasOwn(preset, 'streaming_kobold')) {
         kai_settings.streaming_kobold = preset.streaming_kobold;
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#streaming_kobold').prop('checked', kai_settings.streaming_kobold);
     }
     if (Object.hasOwn(preset, 'use_default_badwordsids')) {
         kai_settings.use_default_badwordsids = preset.use_default_badwordsids;
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#use_default_badwordsids').prop('checked', kai_settings.use_default_badwordsids);
     }
 }
@@ -176,7 +205,7 @@ export function getKoboldGenerationData(finalPrompt, settings, maxLength, maxCon
     const isContinue = type === 'continue';
     const sampler_order = kai_settings.sampler_order || settings.sampler_order;
 
-    let generate_data = {
+    const generate_data = {
         prompt: finalPrompt,
         gui_settings: false,
         sampler_order: sampler_order,
@@ -209,6 +238,11 @@ export function getKoboldGenerationData(finalPrompt, settings, maxLength, maxCon
     return generate_data;
 }
 
+/**
+ *
+ * @param response
+ * @param decoded
+ */
 function tryParseStreamingError(response, decoded) {
     try {
         const data = JSON.parse(decoded);
@@ -218,6 +252,7 @@ function tryParseStreamingError(response, decoded) {
         }
 
         if (data.error) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.error(data.error.message || response.statusText, 'KoboldAI API');
             throw new Error(data);
         }
@@ -226,6 +261,11 @@ function tryParseStreamingError(response, decoded) {
     }
 }
 
+/**
+ *
+ * @param generate_data
+ * @param signal
+ */
 export async function generateKoboldWithStreaming(generate_data, signal) {
     const response = await fetch('/api/backends/kobold/generate', {
         headers: getRequestHeaders(),
@@ -385,6 +425,7 @@ export function setKoboldFlags(koboldUnitedVersion, koboldCppVersion) {
     kai_flags.can_use_grammar = versionCompare(koboldCppVersion, MIN_GRAMMAR_KCPPVERSION);
     kai_flags.can_use_min_p = versionCompare(koboldCppVersion, MIN_MIN_P_KCPPVERSION);
     const isKoboldCpp = versionCompare(koboldCppVersion, '1.0.0');
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#koboldcpp_hint').toggleClass('displayNone', !isKoboldCpp);
 }
 
@@ -394,6 +435,7 @@ export function setKoboldFlags(koboldUnitedVersion, koboldCppVersion) {
  */
 function sortItemsByOrder(orderArray) {
     console.debug('Preset samplers order: ' + orderArray);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const $draggableItems = $('#kobold_order');
 
     for (let i = 0; i < orderArray.length; i++) {
@@ -403,8 +445,11 @@ function sortItemsByOrder(orderArray) {
     }
 }
 
+/**
+ *
+ */
 export async function getStatusKobold() {
-    let endpoint = kai_settings.api_server;
+    const endpoint = kai_settings.api_server;
 
     if (!endpoint) {
         console.warn('No endpoint for status check');
@@ -439,6 +484,7 @@ export async function getStatusKobold() {
 
         // We didn't get a 200 status code, but the endpoint has an explanation. Which means it DID connect, but I digress.
         if (online_status === 'no_connection' && data.response) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.error(data.response, t`API Error`, { timeOut: 5000, preventDuplicates: true });
         }
     } catch (err) {
@@ -449,26 +495,37 @@ export async function getStatusKobold() {
     return resultCheckStatus();
 }
 
+/**
+ *
+ */
 export function initKoboldSettings() {
     sliders.forEach(slider => {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(document).on('input', slider.sliderId, function () {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const value = $(this).val();
             const formattedValue = slider.format(value);
             slider.setValue(value);
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(slider.counterId).val(formattedValue);
             saveSettingsDebounced();
         });
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#api_button').on('click', function (e) {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         if ($('#api_url_text').val() != '') {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const value = formatKoboldUrl(String($('#api_url_text').val()).trim());
 
             if (!value) {
+                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                 toastr.error('Please enter a valid URL.');
                 return;
             }
 
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#api_url_text').val(value);
             kai_settings.api_server = value;
             startStatusLoading();
@@ -477,23 +534,30 @@ export function initKoboldSettings() {
         }
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#streaming_kobold').on('input', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const value = !!$(this).prop('checked');
         kai_settings.streaming_kobold = value;
         saveSettingsDebounced();
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#use_default_badwordsids').on('input', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const value = !!$(this).prop('checked');
         kai_settings.use_default_badwordsids = value;
         saveSettingsDebounced();
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#kobold_order').sortable({
         delay: getSortableDelay(),
         stop: function () {
             const order = [];
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#kobold_order').children().each(function () {
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 order.push($(this).data('id'));
             });
             kai_settings.sampler_order = order;
@@ -502,29 +566,39 @@ export function initKoboldSettings() {
         },
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#samplers_order_recommended').on('click', function () {
         kai_settings.sampler_order = KOBOLDCPP_ORDER;
         sortItemsByOrder(kai_settings.sampler_order);
         saveSettingsDebounced();
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#settings_preset').on('change', async function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         if ($('#settings_preset').find(':selected').val() != 'gui') {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             kai_settings.preset_settings = $('#settings_preset').find(':selected').text();
             const preset = koboldai_settings[koboldai_setting_names[kai_settings.preset_settings]];
             loadKoboldSettingsFromPreset(preset);
             setGenerationParamsFromPreset(preset);
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#kobold_api-settings').find('input').prop('disabled', false);
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#kobold_api-settings').css('opacity', 1.0);
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#kobold_order')
                 .css('opacity', 1)
                 .sortable('enable');
         } else {
             kai_settings.preset_settings = 'gui';
 
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#kobold_api-settings').find('input').prop('disabled', true);
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#kobold_api-settings').css('opacity', 0.5);
 
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#kobold_order')
                 .css('opacity', 0.5)
                 .sortable('disable');

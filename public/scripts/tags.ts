@@ -13,6 +13,7 @@ import {
     DEFAULT_PRINT_TIMEOUT,
     printCharacters,
 } from '../script.js';
+// @ts-expect-error TS(6133): 'FilterHelper' is declared but its value is never ... Remove this comment to see the full error message
 import { FILTER_TYPES, FILTER_STATES, DEFAULT_FILTER_STATE, isFilterState, FilterHelper } from './filters.js';
 
 import { groupCandidatesFilter, groupMembersFilter, groups, selected_group } from './group-chats.js';
@@ -57,8 +58,11 @@ export {
 const CHARACTER_FILTER_SELECTOR = '#rm_characters_block .rm_tag_filter';
 const GROUP_FILTER_SELECTOR = '#rm_group_add_members_header ~ .rm_tag_controls .rm_tag_filter';
 const GROUP_MEMBERS_FILTER_SELECTOR = '#rm_group_members_header ~ .rm_tag_controls .rm_tag_filter';
+// @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
 const TAG_TEMPLATE = $('#tag_template .tag');
+// @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
 const FOLDER_TEMPLATE = $('#bogus_folder_template .bogus_folder_select');
+// @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
 const VIEW_TAG_TEMPLATE = $('#tag_view_template .tag_view_item');
 
 /**
@@ -93,6 +97,7 @@ function getFilterContext(filterHelper) {
  * @returns {FilterHelper} The appropriate filter helper instance
  */
 function getFilterHelper(listSelector) {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const $element = typeof listSelector === 'string' ? $(listSelector) : listSelector;
 
     // Check if this filter is in the group members section
@@ -331,7 +336,6 @@ const TAG_FOLDER_DEFAULT_TYPE = 'NONE';
  * @property {string} [color2] - The foreground color of the tag
  * @property {number} [create_date] - A number representing the date when this tag was created
  * @property {boolean} [is_hidden_on_character_card] - Whether this tag is hidden on the character card
- *
  * @property {function} [action] - An optional function that gets executed when this tag is an actionable tag and is clicked on.
  * @property {string} [class] - An optional css class added to the control representing this tag when printed. Used for custom tags in the filters.
  * @property {string} [icon] - An optional css class of an icon representing this tag when printed. This will replace the tag name with the icon. Used for custom tags in the filters.
@@ -355,15 +359,15 @@ let tag_map = {};
  * It contains the key of the entity.
  * @type {string[]} ids
  */
-let expanded_tags_cache = [];
+const expanded_tags_cache = [];
 
 /**
  * Applies the basic filter for the current state of the tags and their selection on an entity list.
- * @param {Array<Object>} entities List of entities for display, consisting of tags, characters and groups.
- * @param {Object} param1 Optional parameters, explained below.
- * @param {Boolean} [param1.globalDisplayFilters] When enabled, applies the final filter for the global list. Icludes filtering out entities in closed/hidden folders and empty folders.
- * @param {Object} [param1.subForEntity] When given an entity, the list of entities gets filtered specifically for that one as a "sub list", filtering out other tags, elements not tagged for this and hidden elements.
- * @param {Boolean} [param1.filterHidden] Optional switch with which filtering out hidden items (from closed folders) can be disabled.
+ * @param {Array<object>} entities List of entities for display, consisting of tags, characters and groups.
+ * @param {object} param1 Optional parameters, explained below.
+ * @param {boolean} [param1.globalDisplayFilters] When enabled, applies the final filter for the global list. Icludes filtering out entities in closed/hidden folders and empty folders.
+ * @param {object} [param1.subForEntity] When given an entity, the list of entities gets filtered specifically for that one as a "sub list", filtering out other tags, elements not tagged for this and hidden elements.
+ * @param {boolean} [param1.filterHidden] Optional switch with which filtering out hidden items (from closed folders) can be disabled.
  * @returns The filtered list of entities
  */
 function filterByTagState(entities, { globalDisplayFilters = false, subForEntity = undefined, filterHidden = true } = {}) {
@@ -372,6 +376,7 @@ function filterByTagState(entities, { globalDisplayFilters = false, subForEntity
     entities = entities.filter(entity => {
         if (entity.type === 'tag') {
             // Remove folders that are already filtered on
+            // @ts-expect-error TS(2339): Property 'selected' does not exist on type 'string... Remove this comment to see the full error message
             if (filterData.selected.includes(entity.id) || filterData.excluded.includes(entity.id)) {
                 return false;
             }
@@ -386,6 +391,7 @@ function filterByTagState(entities, { globalDisplayFilters = false, subForEntity
 
         entities = entities.filter(entity => {
             // Hide entities that are in a closed folder, unless that one is opened
+            // @ts-expect-error TS(2339): Property 'selected' does not exist on type 'string... Remove this comment to see the full error message
             if (filterHidden && entity.type !== 'tag' && closedFolders.some(f => entitiesFilter.isElementTagged(entity, f.id) && !filterData.selected.includes(f.id))) {
                 return false;
             }
@@ -409,7 +415,6 @@ function filterByTagState(entities, { globalDisplayFilters = false, subForEntity
 
 /**
  * Filter a a list of entities based on a given tag, returning all entities that represent "sub entities"
- *
  * @param {Tag} tag - The to filter the entities for
  * @param {object[]} entities - The list of possible entities (tag, group, folder) that should get filtered
  * @param {object} param2 - optional parameteres
@@ -428,6 +433,7 @@ function filterTagSubEntities(tag, entities, { filterHidden = true } = {}) {
         }
 
         // Hide entities that are in a closed folder, unless the closed folder is opened or we display a closed folder
+        // @ts-expect-error TS(2339): Property 'selected' does not exist on type 'string... Remove this comment to see the full error message
         if (filterHidden && sub.type !== 'tag' && TAG_FOLDER_TYPES[tag.folder_type] !== TAG_FOLDER_TYPES.CLOSED && closedFolders.some(f => entitiesFilter.isElementTagged(sub, f.id) && !filterData.selected.includes(f.id))) {
             return false;
         }
@@ -440,7 +446,6 @@ function filterTagSubEntities(tag, entities, { filterHidden = true } = {}) {
 
 /**
  * Indicates whether a given tag is defined as a folder. Meaning it's neither undefined nor 'NONE'.
- *
  * @param {Tag} tag - The tag to check
  * @returns {boolean} Whether it's a tag folder
  */
@@ -450,10 +455,10 @@ function isBogusFolder(tag) {
 
 /**
  * Retrieves all currently open bogus folders
- *
- * @return {Tag[]} An array of open bogus folders
+ * @returns {Tag[]} An array of open bogus folders
  */
 function getOpenBogusFolders() {
+    // @ts-expect-error TS(2339): Property 'selected' does not exist on type 'string... Remove this comment to see the full error message
     return entitiesFilter.getFilterData(FILTER_TYPES.TAG)?.selected
         .map(tagId => tags.find(x => x.id === tagId))
         .filter(isBogusFolder) ?? [];
@@ -461,7 +466,6 @@ function getOpenBogusFolders() {
 
 /**
  * Indicates whether a user is currently in a bogus folder
- *
  * @returns {boolean} If currently viewing a folder
  */
 function isBogusFolderOpen() {
@@ -470,7 +474,6 @@ function isBogusFolderOpen() {
 
 /**
  * Function to be called when a specific tag/folder is chosen to "drill down".
- *
  * @param {*} source The jQuery element clicked when choosing the folder
  * @param {string} tagId The tag id that is behind the chosen folder
  * @param {boolean} remove Whether the given tag should be removed (otherwise it is added/chosen)
@@ -479,6 +482,7 @@ function chooseBogusFolder(source, tagId, remove = false) {
     // If we are here via the 'back' action, we implicitly take the last filtered folder as one to remove
     const isBack = tagId === 'back';
     if (isBack) {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const drilldown = $(source).closest('#rm_characters_block').find('.rm_tag_bogus_drilldown');
         const lastTag = drilldown.find('.tag:last').last();
         tagId = lastTag.attr('id');
@@ -487,7 +491,9 @@ function chooseBogusFolder(source, tagId, remove = false) {
 
     // Instead of manually updating the filter conditions, we just "click" on the filter tag
     // We search inside which filter block we are located in and use that one
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const FILTER_SELECTOR = ($(source).closest('#rm_characters_block') ?? $(source).closest('#rm_group_chats_block')).find('.rm_tag_filter');
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const tagElement = $(FILTER_SELECTOR).find(`.tag[id=${tagId}]`);
 
     toggleTagThreeState(tagElement, { stateOverride: !remove ? FILTER_STATES.SELECTED : DEFAULT_FILTER_STATE, simulateClick: true });
@@ -495,7 +501,6 @@ function chooseBogusFolder(source, tagId, remove = false) {
 
 /**
  * Builds the tag block for the specified item.
- *
  * @param {Tag} tag The tag item
  * @param {any[]} entities The list ob sub items for this tag
  * @param {number} hidden A count of how many sub items are hidden
@@ -503,7 +508,7 @@ function chooseBogusFolder(source, tagId, remove = false) {
  * @returns The html for the tag block
  */
 function getTagBlock(tag, entities, hidden = 0, isUseless = false) {
-    let count = entities.length;
+    const count = entities.length;
 
     const tagFolder = TAG_FOLDER_TYPES[tag.folder_type];
 
@@ -532,6 +537,7 @@ function getTagBlock(tag, entities, hidden = 0, isUseless = false) {
  * @param {string} storageKey - The storage key base for persistence
  */
 function applyActionableTagFilter(filterHelper, tag, filterType, storageKey) {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const state = toggleTagThreeState($(this));
 
     // Persist to storage for all contexts
@@ -602,8 +608,10 @@ function filterByGroups(filterHelper) {
  */
 function filterByFolder(filterHelper) {
     if (!power_user.bogus_folders) {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#bogus_folders').prop('checked', true).trigger('input');
         onViewTagsListClick();
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         flashHighlight($('#tag_view_list .tag_as_folder, #tag_view_list .tag_folder_indicator'));
         return;
     }
@@ -611,11 +619,20 @@ function filterByFolder(filterHelper) {
     applyActionableTagFilter.call(this, filterHelper, ACTIONABLE_TAGS.FOLDER, FILTER_TYPES.FOLDER, ACTIONABLE_FILTER_STORAGE_KEYS.FOLDER);
 }
 
+/**
+ *
+ * @param settings
+ */
 function loadTagsSettings(settings) {
     tags = settings.tags !== undefined ? settings.tags : DEFAULT_TAGS;
     tag_map = settings.tag_map !== undefined ? settings.tag_map : Object.create(null);
 }
 
+/**
+ *
+ * @param oldKey
+ * @param newKey
+ */
 function renameTagKey(oldKey, newKey) {
     const value = tag_map[oldKey];
     tag_map[newKey] = value || [];
@@ -623,7 +640,13 @@ function renameTagKey(oldKey, newKey) {
     saveSettingsDebounced();
 }
 
+/**
+ *
+ * @param listElement
+ * @param key
+ */
 function createTagMapFromList(listElement, key) {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const tagIds = [...($(listElement).find('.tag').map((_, el) => $(el).attr('id')))];
     tag_map[key] = tagIds;
     saveSettingsDebounced();
@@ -632,9 +655,8 @@ function createTagMapFromList(listElement, key) {
 /**
  * Gets a list of all tags for a given entity key.
  * If you have an entity, you can get it's key easily via `getTagKeyForEntity(entity)`.
- *
  * @param {string} key - The key for which to get tags via the tag map
- * @param {boolean} [sort=true] - Whether the tag list should be sorted
+ * @param {boolean} [sort] - Whether the tag list should be sorted
  * @returns {Tag[]} A list of tags
  */
 function getTagsList(key, sort = true) {
@@ -654,6 +676,9 @@ function getTagsList(key, sort = true) {
     return list;
 }
 
+/**
+ *
+ */
 function getInlineListSelector() {
     if (selected_group && menu_type === 'group_edit') {
         return `.group_select[grid="${selected_group}"] .tags`;
@@ -684,7 +709,6 @@ function getTagKey() {
 /**
  * Gets the tag key for any provided entity/id/key. If a valid tag key is provided, it just returns this.
  * Robust method to find a valid tag key for any entity.
- *
  * @param {object|number|string} entityOrKey An entity with id property (character, group, tag), or directly an id or tag key.
  * @returns {string|undefined} The tag key that can be found.
  */
@@ -724,12 +748,12 @@ export function getTagKeyForEntity(entityOrKey) {
 /**
  * Checks for a tag key based on an entity for a given element.
  * It checks the given element and upwards parents for a set character id (chid) or group id (grid), and if there is any, returns its unique entity key.
- *
  * @param {JQuery<HTMLElement>|string} element - The element to search the entity id on
  * @returns {string|undefined} The tag key that can be found.
  */
 export function getTagKeyForEntityElement(element) {
     if (typeof element === 'string') {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         element = $(element);
     }
     // Start with the given element and traverse up the DOM tree
@@ -751,10 +775,9 @@ export function getTagKeyForEntityElement(element) {
 /**
  * Gets the key for char/group by searching based on the name or avatar. If none can be found, a toastr will be shown and null returned.
  * This function is mostly used in slash commands.
- *
  * @param {string?} [charName] The optionally provided char name
  * @param {object} [options] - Optional arguments
- * @param {boolean} [options.suppressLogging=false] - Whether to suppress the toastr warning
+ * @param {boolean} [options.suppressLogging] - Whether to suppress the toastr warning
  * @returns {string?} - The char/group key, or null if none found
  */
 export function searchCharByName(charName, { suppressLogging = false } = {}) {
@@ -763,6 +786,7 @@ export function searchCharByName(charName, { suppressLogging = false } = {}) {
         : (selected_group ? groups.find(x => x.id == selected_group) : characters[this_chid]);
     const key = getTagKeyForEntity(entity);
     if (!key) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         if (!suppressLogging) toastr.warning(`Character ${charName} not found.`);
         return null;
     }
@@ -771,11 +795,10 @@ export function searchCharByName(charName, { suppressLogging = false } = {}) {
 
 /**
  * Adds one or more tags to a given entity
- *
  * @param {Tag|Tag[]} tag - The tag or tags to add
  * @param {string|string[]} entityId - The entity or entities to add this tag to. Has to be the entity key (e.g. `addTagToEntity`).
- * @param {object} [options={}] - Optional arguments
- * @param {JQuery<HTMLElement>|string?} [options.tagListSelector=null] - An optional selector if a specific list should be updated with the new tag too (for example because the add was triggered for that function)
+ * @param {object} [options] - Optional arguments
+ * @param {JQuery<HTMLElement>|string?} [options.tagListSelector] - An optional selector if a specific list should be updated with the new tag too (for example because the add was triggered for that function)
  * @param {PrintTagListOptions} [options.tagListOptions] - Optional parameters for printing the tag list. Can be set to be consistent with the expected behavior of tags in the list that was defined before.
  * @returns {boolean} Whether at least one tag was added
  */
@@ -797,12 +820,14 @@ export function addTagsToEntity(tag, entityId, { tagListSelector = null, tagList
     saveSettingsDebounced();
 
     // We should manually add the selected tag to the print tag function, so we cover places where the tag list did not automatically include it
+    // @ts-expect-error TS(2339): Property 'addTag' does not exist on type '{}'.
     tagListOptions.addTag = tags;
 
     // add tag to the UI and internal map - we reprint so sorting and new markup is done correctly
     if (tagListSelector) printTagList(tagListSelector, tagListOptions);
     const inlineSelector = getInlineListSelector();
     if (inlineSelector) {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         printTagList($(inlineSelector), tagListOptions);
     }
 
@@ -813,9 +838,9 @@ export function addTagsToEntity(tag, entityId, { tagListSelector = null, tagList
  * Removes a tag from a given entity
  * @param {Tag} tag - The tag to remove
  * @param {string|string[]} entityId - The entity to remove this tag from. Has to be the entity key (e.g. `addTagToEntity`). (Also allows multiple entities to be passed in)
- * @param {object} [options={}] - Optional arguments
- * @param {JQuery<HTMLElement>|string?} [options.tagListSelector=null] - An optional selector if a specific list should be updated with the tag removed too (for example because the add was triggered for that function)
- * @param {JQuery<HTMLElement>?} [options.tagElement=null] - Optionally a direct html element of the tag to be removed, so it can be removed from the UI
+ * @param {object} [options] - Optional arguments
+ * @param {JQuery<HTMLElement>|string?} [options.tagListSelector] - An optional selector if a specific list should be updated with the tag removed too (for example because the add was triggered for that function)
+ * @param {JQuery<HTMLElement>?} [options.tagElement] - Optionally a direct html element of the tag to be removed, so it can be removed from the UI
  * @returns {boolean} Whether at least one tag was removed
  */
 export function removeTagFromEntity(tag, entityId, { tagListSelector = null, tagElement = null } = {}) {
@@ -833,10 +858,12 @@ export function removeTagFromEntity(tag, entityId, { tagListSelector = null, tag
 
     // We don't reprint the lists, we can just remove the html elements from them.
     if (tagListSelector) {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const $selector = (typeof tagListSelector === 'string') ? $(tagListSelector) : tagListSelector;
         $selector.find(`.tag[id="${tag.id}"]`).remove();
     }
     if (tagElement) tagElement.remove();
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(`${getInlineListSelector()} .tag[id="${tag.id}"]`).remove();
 
     return result;
@@ -891,7 +918,14 @@ function removeTagFromMap(tagId, characterId = null) {
     }
 }
 
+/**
+ *
+ * @param request
+ * @param resolve
+ * @param listSelector
+ */
 function findTag(request, resolve, listSelector) {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const skipIds = [...($(listSelector).find('.tag').map((_, el) => $(el).attr('id')))];
     const haystack = tags.filter(t => !skipIds.includes(t.id)).sort(compareTagsForSort).map(t => t.name);
     const needle = request.term;
@@ -907,7 +941,6 @@ function findTag(request, resolve, listSelector) {
 
 /**
  * Select a tag and add it to the list. This function is (mostly) used as an event handler for the tag selector control.
- *
  * @param {*} event - The event that fired on autocomplete select
  * @param {*} ui - An Object with label and value properties for the selected option
  * @param {*} listSelector - The selector of the list to print/add to
@@ -916,7 +949,7 @@ function findTag(request, resolve, listSelector) {
  * @returns {boolean} <c>false</c>, to keep the input clear
  */
 function selectTag(event, ui, listSelector, { tagListOptions = {} } = {}) {
-    let tagName = ui.item.value;
+    const tagName = ui.item.value;
     let tag = getTag(tagName);
 
     // create new tag if it doesn't exist
@@ -925,6 +958,7 @@ function selectTag(event, ui, listSelector, { tagListOptions = {} } = {}) {
     }
 
     // unfocus and clear the input
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(event.target).val('').trigger('input');
 
     // Optional, check for multiple character ids being present.
@@ -941,14 +975,13 @@ function selectTag(event, ui, listSelector, { tagListOptions = {} } = {}) {
 
 /**
  * Get a list of existing tags matching a list of provided new tag names
- *
  * @param {string[]} newTags - A list of strings representing tag names
  * @returns {Tag[]} List of existing tags
  */
 function getExistingTags(newTags) {
-    let existingTags = [];
-    for (let tagName of newTags) {
-        let foundTag = getTag(tagName);
+    const existingTags = [];
+    for (const tagName of newTags) {
+        const foundTag = getTag(tagName);
         if (foundTag) {
             existingTags.push(foundTag);
         }
@@ -961,10 +994,9 @@ const ANTI_TROLL_MAX_TAGS = 50;
 
 /**
  * Imports tags for a given character
- *
  * @param {Character} character - The character
  * @param {object} [options] - Options
- * @param {tag_import_setting} [options.importSetting=null] - Force a tag import setting
+ * @param {tag_import_setting} [options.importSetting] - Force a tag import setting
  * @returns {Promise<boolean>} Boolean indicating whether any tag was imported
  */
 async function importTags(character, { importSetting = null } = {}) {
@@ -972,6 +1004,7 @@ async function importTags(character, { importSetting = null } = {}) {
     const tagNamesToImport = await handleTagImport(character, { importSetting });
     if (!tagNamesToImport?.length) {
         console.debug('No tags to import');
+        // @ts-expect-error TS(7030): Not all code paths return a value.
         return;
     }
 
@@ -980,8 +1013,10 @@ async function importTags(character, { importSetting = null } = {}) {
     const tagNames = tagsToImport.map(x => escapeHtml(x.name)).join(', ');
 
     if (added) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.success(t`Imported tags:` + `<br />${tagNames}`, t`Importing Tags`, { escapeHtml: false });
     } else {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.error(t`Couldn't import tags:` + `<br />${tagNames}`, t`Importing Tags`, { escapeHtml: false });
     }
 
@@ -990,10 +1025,9 @@ async function importTags(character, { importSetting = null } = {}) {
 
 /**
  * Handles the import of tags for a given character and returns the resulting list of tags to add
- *
  * @param {Character} character - The character
  * @param {object} [options] - Options
- * @param {tag_import_setting} [options.importSetting=null] - Force a tag import setting
+ * @param {tag_import_setting} [options.importSetting] - Force a tag import setting
  * @returns {Promise<string[]>} Array of strings representing the tags to import
  */
 async function handleTagImport(character, { importSetting = null } = {}) {
@@ -1034,7 +1068,6 @@ async function handleTagImport(character, { importSetting = null } = {}) {
 
 /**
  * Shows a popup to import tags for a given character and returns the resulting list of tags to add
- *
  * @param {Character} character - The character
  * @param {Tag[]} existingTags - List of existing tags
  * @param {Tag[]} newTags - List of new tags
@@ -1055,6 +1088,7 @@ async function showTagImportPopup(character, existingTags, newTags, folderTags) 
         [importButtons.EXISTING.result]: tag_import_setting.ONLY_EXISTING,
     };
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const popupContent = $(await renderTemplateAsync('charTagImport', { charName: character.name }));
 
     // Print tags after popup is shown, so that events can be added
@@ -1064,11 +1098,16 @@ async function showTagImportPopup(character, existingTags, newTags, folderTags) 
 
     if (folderTags.length === 0) popupContent.find('#folder_tags_block').hide();
 
+    /**
+     *
+     * @param popup
+     */
     function onCloseRemember(/** @type {Popup} */ popup) {
         if (popup.result && popup.inputResults.get('import_remember_option')) {
             const setting = buttonSettingsMap[popup.result];
             if (!setting) return;
             power_user.tag_import_setting = setting;
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#tag_import_setting').val(power_user.tag_import_setting);
             saveSettingsDebounced();
             console.log('Remembered tag import setting:', Object.entries(tag_import_setting).find(x => x[1] === setting)[0], setting);
@@ -1100,10 +1139,9 @@ async function showTagImportPopup(character, existingTags, newTags, folderTags) 
 /**
  * Gets a tag from the tags array based on the provided tag name (insensitive soft matching)
  * Optionally creates the tag if it doesn't exist
- *
  * @param {string} tagName - The name of the tag to search for
- * @param {object} [options={}] - Optional parameters
- * @param {boolean} [options.createNew=false] - Whether to create the tag if it doesn't exist
+ * @param {object} [options] - Optional parameters
+ * @param {boolean} [options.createNew] - Whether to create the tag if it doesn't exist
  * @returns {Tag?} The tag object that matches the provided tag name, or undefined if no match is found
  */
 function getTag(tagName, { createNew = false } = {}) {
@@ -1118,13 +1156,13 @@ function getTag(tagName, { createNew = false } = {}) {
  * Creates a new tag with default properties and a randomly generated id
  *
  * Does **not** trigger a save, so it's up to the caller to do that
- *
  * @param {string} tagName - name of the tag
  * @returns {Tag} the newly created tag, or the existing tag if it already exists (with a logged warning)
  */
 function createNewTag(tagName) {
     const existing = getTag(tagName);
     if (existing) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.warning(`Cannot create new tag. A tag with the name already exists:<br />${escapeHtml(existing.name)}`, 'Creating Tag', { escapeHtml: false });
         return existing;
     }
@@ -1140,9 +1178,8 @@ function createNewTag(tagName) {
  *
  * Not to be confused with `createNewTag`, which actually creates the tag and adds it to the existing list of tags.
  * Use this one to create temporary tag objects, for example for drawing.
- *
  * @param {string} tagName - The name of the tag
- * @return {Tag} The newly created tag object
+ * @returns {Tag} The newly created tag object
  */
 function newTag(tagName) {
     return {
@@ -1177,7 +1214,7 @@ function newTag(tagName) {
  * @property {object|number|string} [forEntityOrKey=undefined] - Optional override for the chosen entity, otherwise the currently selected is chosen. Can be an entity with id property (character, group, tag), or directly an id or tag key.
  * @property {boolean|string} [empty=true] - Whether the list should be initially empty. If a string string is provided, 'always' will always empty the list, otherwise it'll evaluate to a boolean.
  * @property {boolean} [sort=true] - Whether the tags should be sorted via the sort function, or kept as is.
- * @property {function(object): function} [tagActionSelector=undefined] - An optional override for the action property that can be assigned to each tag via tagOptions.
+ * @property {function(object): Function} [tagActionSelector=undefined] - An optional override for the action property that can be assigned to each tag via tagOptions.
  * If set, the selector is executed on each tag as input argument. This allows a list of tags to be provided and each tag can have it's action based on the tag object itself.
  * @property {TagOptions} [tagOptions={}] - Options for tag behavior. (Same object will be passed into "appendTagToList")
  * @property {string[]} [inactiveTags=[]] - List of tag IDs that are considered inactive (for styling purposes).
@@ -1185,25 +1222,28 @@ function newTag(tagName) {
 
 /**
  * Prints the list of tags
- *
  * @param {JQuery<HTMLElement>|string} element - The container element where the tags are to be printed. (Optionally can also be a string selector for the element, which will then be resolved)
  * @param {PrintTagListOptions} [options] - Optional parameters for printing the tag list.
  */
 function printTagList(element, { tags = undefined, addTag = undefined, forEntityOrKey = undefined, empty = true, sort = true, tagActionSelector = undefined, tagOptions = {}, inactiveTags = [] } = {}) {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const $element = (typeof element === 'string') ? $(element) : element;
     const key = forEntityOrKey !== undefined ? getTagKeyForEntity(forEntityOrKey) : getTagKey();
     let printableTags = tags ? (typeof tags === 'function' ? tags() : tags) : getTagsList(key, sort);
 
+    // @ts-expect-error TS(2339): Property 'isCharacterList' does not exist on type ... Remove this comment to see the full error message
     if (tagOptions.isCharacterList) {
         printableTags = printableTags.filter(tag => !tag.is_hidden_on_character_card);
     }
 
+    // @ts-expect-error TS(2367): This condition will always return 'false' since th... Remove this comment to see the full error message
     if (empty === 'always' || (empty && (printableTags?.length > 0 || key))) {
         $element.empty();
     }
 
     if (addTag) {
         const addTags = Array.isArray(addTag) ? addTag : [addTag];
+        // @ts-expect-error TS(2339): Property 'skipExistsCheck' does not exist on type ... Remove this comment to see the full error message
         printableTags = printableTags.concat(addTags.filter(tag => tagOptions.skipExistsCheck || !printableTags.some(t => t.id === tag.id)));
     }
 
@@ -1239,6 +1279,7 @@ function printTagList(element, { tags = undefined, addTag = undefined, forEntity
             if (action && typeof action !== 'function') {
                 console.error('The action parameter must return a function for tag.', tag);
             } else {
+                // @ts-expect-error TS(2339): Property 'action' does not exist on type '{}'.
                 tagOptions.action = action;
             }
         }
@@ -1284,21 +1325,21 @@ function printTagList(element, { tags = undefined, addTag = undefined, forEntity
 
 /**
  * Appends a tag to the list element
- *
  * @param {JQuery<HTMLElement>} listElement - List element
  * @param {Tag} tag - Tag object to append
- * @param {TagOptions} [options={}] - Options for tag behavior
+ * @param {TagOptions} [options] - Options for tag behavior
  * @returns {void}
  */
 function appendTagToList(listElement, tag, { removable = false, isFilter = false, action = undefined, removeAction = undefined, isGeneralList = false, skipExistsCheck = false, isInactive = false } = {}) {
     if (!listElement) {
         return;
     }
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     if (!skipExistsCheck && $(listElement).find(`.tag[id="${tag.id}"]`).length > 0) {
         return;
     }
 
-    let tagElement = TAG_TEMPLATE.clone();
+    const tagElement = TAG_TEMPLATE.clone();
     tagElement.attr('id', tag.id);
 
     //tagElement.css('color', 'var(--SmartThemeBodyColor)');
@@ -1335,6 +1376,7 @@ function appendTagToList(listElement, tag, { removable = false, isFilter = false
 
     // If this is a tag for a general list and its either a filter or actionable, lets mark its current state
     if ((isFilter || clickableAction) && isGeneralList) {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const filterHelper = getFilterHelper($(listElement));
         const isFilterActionable = clickableAction && 'filter_state' in tag;
 
@@ -1350,21 +1392,31 @@ function appendTagToList(listElement, tag, { removable = false, isFilter = false
     }
 
     if (clickableAction) {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const filter = getFilterHelper($(listElement));
         tagElement.on('click', (e) => clickableAction.bind(tagElement)(filter, e));
         tagElement.addClass('clickable-action').addClass(INTERACTABLE_CONTROL_CLASS);
     }
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(listElement).append(tagElement);
 }
 
+/**
+ *
+ * @param listElement
+ */
 function onTagFilterClick(listElement) {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const tagId = $(this).attr('id');
     const existingTag = tags.find((tag) => tag.id === tagId);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const parent = $(this).parents('.tags');
 
-    let state = toggleTagThreeState($(this));
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    const state = toggleTagThreeState($(this));
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const filterHelper = getFilterHelper($(listElement));
 
     // Update the tag's filter_state for the main character list (backward compatibility)
@@ -1440,7 +1492,6 @@ function loadFilterStatesForContext(filterHelper, storagePrefix) {
 
 /**
  * Toggle the filter state of a given tag element
- *
  * @param {JQuery<HTMLElement>} element - The jquery element representing the tag for which the state should be toggled
  * @param {object} param1 - Optional parameters
  * @param {import('./filters.js').FilterState|string} [param1.stateOverride] - Optional state override to which the state should be toggled to. If not set, the state will move to the next one in the chain.
@@ -1451,6 +1502,11 @@ function toggleTagThreeState(element, { stateOverride = undefined, simulateClick
     const states = Object.keys(FILTER_STATES);
 
     // Make it clear we're getting indexes and handling the 'not found' case in one place
+    /**
+     *
+     * @param key
+     * @param fallback
+     */
     function getStateIndex(key, fallback) {
         const index = states.indexOf(key);
         return index !== -1 ? index : states.indexOf(fallback);
@@ -1471,6 +1527,7 @@ function toggleTagThreeState(element, { stateOverride = undefined, simulateClick
         }
 
         for (let i = 0; i < clickCount; i++) {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(element).trigger('click');
         }
 
@@ -1492,13 +1549,24 @@ function toggleTagThreeState(element, { stateOverride = undefined, simulateClick
     return states[targetStateIndex];
 }
 
+/**
+ *
+ * @param listElement
+ */
 function runTagFilters(listElement) {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const tagIds = [...($(listElement).find('.tag.selected:not(.actionable)').map((_, el) => $(el).attr('id')))];
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const excludedTagIds = [...($(listElement).find('.tag.excluded:not(.actionable)').map((_, el) => $(el).attr('id')))];
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const filterHelper = getFilterHelper($(listElement));
     filterHelper.setFilterData(FILTER_TYPES.TAG, { excluded: excludedTagIds, selected: tagIds });
 }
 
+/**
+ *
+ * @param type
+ */
 function printTagFilters(type = tag_filter_type.character) {
     removeMissingTagFilters();
 
@@ -1518,6 +1586,7 @@ function printTagFilters(type = tag_filter_type.character) {
             break;
     }
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(FILTER_SELECTOR).empty();
 
     // Print all action tags. (Rework 'Folder' button to some kind of onboarding if no folders are enabled yet)
@@ -1529,9 +1598,11 @@ function printTagFilters(type = tag_filter_type.character) {
         actionTags = filterActionableTagsForGroupContext(actionTags);
     }
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     printTagList($(FILTER_SELECTOR), { empty: false, sort: false, tags: actionTags, tagActionSelector: tag => tag.action, tagOptions: { isGeneralList: true } });
 
     const inListActionTags = Object.values(InListActionable);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     printTagList($(FILTER_SELECTOR), { empty: false, sort: false, tags: inListActionTags, tagActionSelector: tag => tag.action, tagOptions: { isGeneralList: true } });
 
     // Determine which character tags to display based on context
@@ -1569,10 +1640,12 @@ function printTagFilters(type = tag_filter_type.character) {
         tagsToDisplay = tags.filter(x => characterTagIds.includes(x.id)).sort(compareTagsForSort);
     }
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     printTagList($(FILTER_SELECTOR), { empty: false, tags: tagsToDisplay, tagOptions: { isFilter: true, isGeneralList: true }, inactiveTags: inactiveTags });
 
 
     // Print bogus folder navigation
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const bogusDrilldown = $(FILTER_SELECTOR).siblings('.rm_tag_bogus_drilldown');
     bogusDrilldown.empty();
     if (power_user.bogus_folders && bogusDrilldown.length > 0) {
@@ -1586,14 +1659,17 @@ function printTagFilters(type = tag_filter_type.character) {
 
     // Initialize the tag list visibility based on saved settings for this context
     const shouldShowTags = getTagFilterVisibility(type);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const showTagListButton = $(FILTER_SELECTOR).closest('.rm_tag_controls').find('.showTagList');
 
     // Update button state to match the saved setting
     showTagListButton.toggleClass('selected', shouldShowTags);
 
     if (shouldShowTags) {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(FILTER_SELECTOR).find('.tag:not(.actionable)').show();
     } else {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(FILTER_SELECTOR).find('.tag:not(.actionable)').hide();
     }
 
@@ -1606,14 +1682,20 @@ function printTagFilters(type = tag_filter_type.character) {
  */
 function updateTagFilterIndicator(filterSelector) {
     const selector = filterSelector || CHARACTER_FILTER_SELECTOR;
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const tagFilter = typeof selector === 'string' ? $(selector) : selector;
     const showTagListButton = tagFilter.closest('.rm_tag_controls').find('.showTagList');
     const hasActiveTags = tagFilter.find('.tag:not(.actionable)').is('.selected, .excluded');
     showTagListButton.toggleClass('indicator', hasActiveTags);
 }
 
+/**
+ *
+ * @param event
+ */
 function onTagRemoveClick(event) {
     event.stopPropagation();
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const tagElement = $(this).closest('.tag');
     const tagId = tagElement.attr('id');
 
@@ -1624,8 +1706,10 @@ function onTagRemoveClick(event) {
     }
 
     // Check if we are inside the drilldown. If so, we call remove on the bogus folder
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     if ($(this).closest('.rm_tag_bogus_drilldown').length > 0) {
         console.debug('Bogus drilldown remove', tagId);
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         chooseBogusFolder($(this), tagId, true);
         return;
     }
@@ -1641,50 +1725,80 @@ function onTagRemoveClick(event) {
     applyCharacterTagsToMessageDivs();
 }
 
-// @ts-ignore
+/**
+ *
+ * @param event
+ */
+// @ts-expect-error TS(6133): 'event' is declared but its value is never read.
 function onTagInput(event) {
-    let val = $(this).val();
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    const val = $(this).val();
     if (getTag(String(val))) return;
-    // @ts-ignore
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(this).autocomplete('search', val);
 }
 
+/**
+ *
+ */
 function onTagInputFocus() {
-    // @ts-ignore
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(this).autocomplete('search', $(this).val());
 }
 
+/**
+ *
+ */
 function onCharacterCreateClick() {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#tagList').empty();
 }
 
+/**
+ *
+ */
 function onGroupCreateClick() {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#groupTagList').empty();
 }
 
+/**
+ *
+ * @param chid
+ */
 export function applyTagsOnCharacterSelect(chid = null) {
     // If we are in create window, we cannot simply redraw, as there are no real persisted tags. Grab them, and pass them in
     if (menu_type === 'create') {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const currentTagIds = $('#tagList').find('.tag').map((_, el) => $(el).attr('id')).get();
         const currentTags = tags.filter(x => currentTagIds.includes(x.id));
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         printTagList($('#tagList'), { forEntityOrKey: undefined, tags: currentTags, tagOptions: { removable: true } });
         return;
     }
 
     chid = chid ?? (this_chid !== undefined ? Number(this_chid) : undefined);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     printTagList($('#tagList'), { forEntityOrKey: chid, tagOptions: { removable: true } });
 }
 
+/**
+ *
+ * @param groupId
+ */
 export function applyTagsOnGroupSelect(groupId = null) {
     // If we are in create window, we explicitly have to tell the system to print for the new group, not the one selected in the background
     if (menu_type === 'group_create') {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const currentTagIds = $('#groupTagList').find('.tag').map((_, el) => $(el).attr('id')).get();
         const currentTags = tags.filter(x => currentTagIds.includes(x.id));
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         printTagList($('#groupTagList'), { forEntityOrKey: undefined, tags: currentTags, tagOptions: { removable: true } });
         return;
     }
 
     groupId = groupId ?? (selected_group ? Number(selected_group) : undefined);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     printTagList($('#groupTagList'), { forEntityOrKey: groupId, tagOptions: { removable: true } });
     printTagFilters(tag_filter_type.group_candidates_list);
     printTagFilters(tag_filter_type.group_members_list);
@@ -1692,14 +1806,13 @@ export function applyTagsOnGroupSelect(groupId = null) {
 
 /**
  * Create a tag input by enabling the autocomplete feature of a given input element. Tags will be added to the given list.
- *
  * @param {string} inputSelector - the selector for the tag input control
  * @param {string} listSelector - the selector for the list of the tags modified by the input control
  * @param {PrintTagListOptions} [tagListOptions] - Optional parameters for printing the tag list. Can be set to be consistent with the expected behavior of tags in the list that was defined before.
  */
 export function createTagInput(inputSelector, listSelector, tagListOptions = {}) {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(inputSelector)
-        // @ts-ignore
         .autocomplete({
             source: (i, o) => findTag(i, o, listSelector),
             select: (e, u) => selectTag(e, u, listSelector, { tagListOptions: tagListOptions }),
@@ -1708,17 +1821,23 @@ export function createTagInput(inputSelector, listSelector, tagListOptions = {})
         .on('focus', onTagInputFocus); // <== show tag list on click
 }
 
+/**
+ *
+ */
 async function onViewTagsListClick() {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const html = $(document.createElement('div'));
     html.attr('id', 'tag_view_list');
     html.append(await renderTemplateAsync('tagManagement', { bogus_folders: power_user.bogus_folders }));
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const tagContainer = $('<div class="tag_view_list_tags ui-sortable"></div>');
     html.append(tagContainer);
 
     const $sortModeSelect = html.find('#tag_sort_mode_select');
     $sortModeSelect.val(power_user.tag_sort_mode);
     $sortModeSelect.on('change', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const newMode = $(this).val().toString();
         power_user.tag_sort_mode = newMode;
         saveSettingsDebounced();
@@ -1731,9 +1850,14 @@ async function onViewTagsListClick() {
     await callGenericPopup(html, POPUP_TYPE.TEXT, null, { allowVerticalScrolling: true, wide: true, large: true });
 }
 
+/**
+ *
+ * @param tagContainer
+ */
 function makeTagListDraggable(tagContainer) {
     const onTagsSort = () => {
         tagContainer.find('.tag_view_item').each(function (i, tagElement) {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const id = $(tagElement).attr('id');
             const tag = tags.find(x => x.id === id);
 
@@ -1744,7 +1868,9 @@ function makeTagListDraggable(tagContainer) {
         // If tags were dragged manually, we have to disable auto sorting
         if (power_user.tag_sort_mode !== tag_sort_mode.MANUAL) {
             power_user.tag_sort_mode = tag_sort_mode.MANUAL;
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#tag_sort_mode_select').val(tag_sort_mode.MANUAL);
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.info('Switched to Manual sorting mode.');
         }
 
@@ -1753,7 +1879,7 @@ function makeTagListDraggable(tagContainer) {
         saveSettingsDebounced();
     };
 
-    // @ts-ignore
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(tagContainer).sortable({
         delay: getSortableDelay(),
         stop: () => onTagsSort(),
@@ -1763,9 +1889,8 @@ function makeTagListDraggable(tagContainer) {
 
 /**
  * Sorts the given tags, returning a shallow copy of it
- *
  * @param {Tag[]} tags - The tags
- * @param {Map<string, number>} [counts=null] - Optional map of tag ID to usage count
+ * @param {Map<string, number>} [counts] - Optional map of tag ID to usage count
  * @returns {Tag[]} The sorted tags
  */
 function sortTags(tags, counts = null) {
@@ -1774,10 +1899,9 @@ function sortTags(tags, counts = null) {
 
 /**
  * Compares two given tags and returns the compare result
- *
  * @param {Tag} a - First tag
  * @param {Tag} b - Second tag
- * @param {Map<string, number>} [counts=null] - Optional map of tag ID to usage count
+ * @param {Map<string, number>} [counts] - Optional map of tag ID to usage count
  * @returns {number} The compare result
  */
 function compareTagsForSort(a, b, counts = null) {
@@ -1808,6 +1932,10 @@ function compareTagsForSort(a, b, counts = null) {
     }
 }
 
+/**
+ *
+ * @param e
+ */
 async function onTagRestoreFileSelect(e) {
     const file = e.target.files[0];
 
@@ -1819,12 +1947,15 @@ async function onTagRestoreFileSelect(e) {
     const data = await parseJsonFile(file);
 
     if (!data) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.warning('Empty file data', 'Tag Restore');
         console.log('Tag restore: File data empty.');
         return;
     }
 
+    // @ts-expect-error TS(2339): Property 'tags' does not exist on type 'unknown'.
     if (!data.tags || !data.tag_map || !Array.isArray(data.tags) || typeof data.tag_map !== 'object') {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.warning('Invalid file format', 'Tag Restore');
         console.log('Tag restore: Invalid file format.');
         return;
@@ -1843,6 +1974,7 @@ async function onTagRestoreFileSelect(e) {
     const idToActualTagIdMap = new Map();
 
     // Import tags
+    // @ts-expect-error TS(2339): Property 'tags' does not exist on type 'unknown'.
     for (const tag of data.tags) {
         if (!tag.id || !tag.name) {
             warnings.push(`Tag object is invalid: ${JSON.stringify(tag)}.`);
@@ -1876,7 +2008,9 @@ async function onTagRestoreFileSelect(e) {
     }
 
     // Import tag_map
+    // @ts-expect-error TS(2339): Property 'tag_map' does not exist on type 'unknown... Remove this comment to see the full error message
     for (const key of Object.keys(data.tag_map)) {
+        // @ts-expect-error TS(2339): Property 'tag_map' does not exist on type 'unknown... Remove this comment to see the full error message
         const tagIds = data.tag_map[key];
 
         if (!Array.isArray(tagIds)) {
@@ -1906,31 +2040,43 @@ async function onTagRestoreFileSelect(e) {
     }
 
     if (warnings.length) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.warning('Tags restored with warnings. Check console or click on this message for details.', 'Tag Restore', {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             timeOut: toastr.options.timeOut * 2, // Display double the time
             onclick: () => Popup.show.text('Tag Restore Warnings', `<samp class="justifyLeft">${DOMPurify.sanitize(warnings.join('\n'))}<samp>`, { allowVerticalScrolling: true }),
         });
         console.warn(`TAG RESTORE REPORT\n====================\n${warnings.join('\n')}`);
     } else {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.success('Tags restored successfully.', 'Tag Restore');
     }
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#tag_view_restore_input').val('');
     printCharactersDebounced();
     saveSettingsDebounced();
 
     // Reprint the tag management popup, without having it to be opened again
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const tagContainer = $('#tag_view_list .tag_view_list_tags');
     printViewTagList(tagContainer);
 }
 
+/**
+ *
+ */
 function onBackupRestoreClick() {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#tag_view_restore_input')
         .off('change')
         .on('change', onTagRestoreFileSelect)
         .trigger('click');
 }
 
+/**
+ *
+ */
 function onTagsBackupClick() {
     const timestamp = new Date().toISOString().split('T')[0].replace(/-/g, '');
     const filename = `tags_${timestamp}.json`;
@@ -1942,6 +2088,9 @@ function onTagsBackupClick() {
     download(blob, filename, 'application/json');
 }
 
+/**
+ *
+ */
 async function onTagsPruneClick() {
     // Get tags which have zero tag map entries
     const allTagsInTagMaps = new Set(Object.values(tag_map).flat());
@@ -1952,6 +2101,7 @@ async function onTagsPruneClick() {
     const tagMapsToPrune = Object.keys(tag_map).filter(key => !allEntityKeys.has(key));
 
     if (!tagsToPrune.length && !tagMapsToPrune.length) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.info(t`No unused tags or references found.`);
         return;
     }
@@ -1974,17 +2124,24 @@ async function onTagsPruneClick() {
     saveSettingsDebounced();
 
     // Reprint the tag management popup, without having it to be opened again
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const tagContainer = $('#tag_view_list .tag_view_list_tags');
     printViewTagList(tagContainer);
 
+    // @ts-expect-error TS(2304): Cannot find name 'toastr'.
     toastr.success(t`Unused tags pruned successfully.`);
 }
 
+/**
+ *
+ */
 function onTagCreateClick() {
     const tagName = getFreeName('New Tag', tags.map(x => x.name));
     const tag = createNewTag(tagName);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     printViewTagList($('#tag_view_list .tag_view_list_tags'));
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const tagElement = ($('#tag_view_list .tag_view_list_tags')).find(`.tag_view_item[id="${tag.id}"]`);
     tagElement[0]?.scrollIntoView();
     flashHighlight(tagElement);
@@ -1992,6 +2149,7 @@ function onTagCreateClick() {
     printCharactersDebounced();
     saveSettingsDebounced();
 
+    // @ts-expect-error TS(2304): Cannot find name 'toastr'.
     toastr.success('Tag created', 'Create Tag');
 }
 
@@ -2019,17 +2177,21 @@ function appendViewTagToList(list, tag, count) {
         template.find('.tag_as_folder').hide();
     }
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const primaryColorPicker = $('<toolcool-color-picker></toolcool-color-picker>')
         .addClass('tag-color')
         .attr({ id: colorPickerId, color: tag.color || 'rgba(0, 0, 0, 0.5)', 'data-default-color': 'rgba(0, 0, 0, 0.5)' });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const secondaryColorPicker = $('<toolcool-color-picker></toolcool-color-picker>')
         .addClass('tag-color2')
         .attr({ id: colorPicker2Id, color: tag.color2 || power_user.main_text_color, 'data-default-color': power_user.main_text_color });
 
     template.find('.tag_view_color_picker[data-value="color"]').append(primaryColorPicker)
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         .append($('<div class="fas fa-link fa-xs link_icon right_menu_button" title="Link to theme color"></div>'));
     template.find('.tag_view_color_picker[data-value="color2"]').append(secondaryColorPicker)
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         .append($('<div class="fas fa-link fa-xs link_icon right_menu_button" title="Link to theme color"></div>'));
 
     template.find('.tag_as_folder').attr('id', tagAsFolderId);
@@ -2037,9 +2199,9 @@ function appendViewTagToList(list, tag, count) {
     primaryColorPicker.on('change', (evt) => onTagColorize(evt, (tag, color) => tag.color = color, 'background-color'));
     secondaryColorPicker.on('change', (evt) => onTagColorize(evt, (tag, color) => tag.color2 = color, 'color'));
     template.find('.tag_view_color_picker .link_icon').on('click', (evt) => {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const colorPicker = $(evt.target).closest('.tag_view_color_picker').find('toolcool-color-picker');
         const defaultColor = colorPicker.attr('data-default-color');
-        // @ts-ignore
         colorPicker[0].color = defaultColor;
     });
 
@@ -2079,7 +2241,11 @@ function appendViewTagToList(list, tag, count) {
     updateDrawTagFolder(template, tag);
 }
 
+/**
+ *
+ */
 function onTagAsFolderClick() {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const element = $(this).closest('.tag_view_item');
     const id = element.attr('id');
     const tag = tags.find(x => x.id === id);
@@ -2096,6 +2262,11 @@ function onTagAsFolderClick() {
     saveSettingsDebounced();
 }
 
+/**
+ *
+ * @param element
+ * @param tag
+ */
 function updateDrawTagFolder(element, tag) {
     const tagFolder = TAG_FOLDER_TYPES[tag.folder_type] || TAG_FOLDER_TYPES[TAG_FOLDER_DEFAULT_TYPE];
     const folderElement = element.find('.tag_as_folder');
@@ -2114,11 +2285,16 @@ function updateDrawTagFolder(element, tag) {
     indicator.css('font-size', `calc(var(--mainFontSize) * ${tagFolder.size})`);
 }
 
+/**
+ *
+ */
 async function onTagDeleteClick() {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const id = $(this).closest('.tag_view_item').attr('id');
     const tag = tags.find(x => x.id === id);
     const otherTags = sortTags(tags.filter(x => x.id !== id).map(x => ({ id: x.id, name: x.name })));
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const popupContent = $(await renderTemplateAsync('deleteTag', { otherTags }));
 
     appendTagToList(popupContent.find('#tag_to_delete'), tag);
@@ -2139,6 +2315,7 @@ async function onTagDeleteClick() {
         return;
     }
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const mergeTagId = $('#merge_tag_select').val() ? String($('#merge_tag_select').val()) : null;
 
     // Remove the tag from all entities that use it
@@ -2152,9 +2329,12 @@ async function onTagDeleteClick() {
 
     const index = tags.findIndex(x => x.id === id);
     tags.splice(index, 1);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(`.tag[id="${id}"]`).remove();
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(`.tag_view_item[id="${id}"]`).remove();
 
+    // @ts-expect-error TS(2304): Cannot find name 'toastr'.
     toastr.success(`'${tag.name}' deleted${mergeTagId ? ` and merged into '${tags.find(x => x.id === mergeTagId).name}'` : ''}`, 'Delete Tag');
 
     printCharactersDebounced();
@@ -2163,12 +2343,19 @@ async function onTagDeleteClick() {
     applyCharacterTagsToMessageDivs();
 }
 
+/**
+ *
+ */
 function onTagRenameInput() {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const id = $(this).closest('.tag_view_item').attr('id');
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const newName = $(this).text();
     const tag = tags.find(x => x.id === id);
     tag.name = newName;
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(this).attr('dirty', '');
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(`.tag[id="${id}"] .tag_name`).text(newName);
     saveSettingsDebounced();
 
@@ -2177,19 +2364,22 @@ function onTagRenameInput() {
 
 /**
  * Handles the colorization of a tag when the user interacts with the color picker
- *
  * @param {*} evt - The custom colorize event object
  * @param {(tag: Tag, val: string) => void} setColor - A function that sets the color of the tag
  * @param {string} cssProperty - The CSS property to apply the color to
  */
 function onTagColorize(evt, setColor, cssProperty) {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const isDefaultColor = $(evt.target).data('default-color') === evt.detail.rgba;
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(evt.target).closest('.tag_view_color_picker').find('.link_icon').toggle(!isDefaultColor);
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const id = $(evt.target).closest('.tag_view_item').attr('id');
     let newColor = evt.detail.rgba;
     if (isDefaultColor) newColor = '';
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(evt.target).closest('.tag_view_item').find('.tag_view_name').css(cssProperty, newColor);
     const tag = tags.find(x => x.id === id);
     setColor(tag, newColor);
@@ -2200,27 +2390,37 @@ function onTagColorize(evt, setColor, cssProperty) {
 }
 
 const debouncedTagColoring = debounce((tagId, cssProperty, newColor) => {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(`.tag[id="${tagId}"]`).css(cssProperty, newColor);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(`.bogus_folder_select[tagid="${tagId}"] .avatar`).css(cssProperty, newColor);
 }, debounce_timeout.quick);
 
+/**
+ *
+ */
 function onTagListHintClick() {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(this).toggleClass('selected');
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const $tagSiblings = $(this).siblings('.tag:not(.actionable)');
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     if ($(this).hasClass('selected')) {
         $tagSiblings.show();
     } else {
         $tagSiblings.hide();
     }
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(this).siblings('.innerActionable').toggleClass('hidden');
 
     // Determine which context this button belongs to and save the setting
     let filterType = tag_filter_type.character;
 
     // Check which section we're in by looking at the sibling header
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const $tagControls = $(this).closest('.rm_tag_controls');
     if ($tagControls.prev().is('#rm_group_add_members_header')) {
         filterType = tag_filter_type.group_candidates_list;
@@ -2228,6 +2428,7 @@ function onTagListHintClick() {
         filterType = tag_filter_type.group_members_list;
     }
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const isSelected = $(this).hasClass('selected');
     setTagFilterVisibility(filterType, isSelected);
     console.debug('show_tag_filters for type', filterType, ':', isSelected);
@@ -2248,15 +2449,19 @@ function onClearAllFiltersClick(filterHelper) {
 
     // We have to manually go through the elements and unfilter by clicking...
     // Thankfully nearly all filter controls are three-state-toggles
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const filterTags = $(context.selector).find('.tag');
     for (const tag of filterTags) {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const toggleState = $(tag).attr('data-toggle-state');
         if (toggleState !== undefined && !isFilterState(toggleState ?? FILTER_STATES.UNDEFINED, FILTER_STATES.UNDEFINED)) {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             toggleTagThreeState($(tag), { stateOverride: FILTER_STATES.UNDEFINED, simulateClick: true });
         }
     }
 
     // Reset search input for this context
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(context.searchInput).val('').trigger('input');
 }
 
@@ -2286,6 +2491,9 @@ function printViewTagList(tagContainer, empty = true) {
     }
 }
 
+/**
+ *
+ */
 function removeMissingTagFilters() {
     const tagIds = new Set(tags.map(tag => tag.id));
     const assignedTagIds = new Set(Object.values(tag_map).flat());
@@ -2293,6 +2501,7 @@ function removeMissingTagFilters() {
     const isEmptyOpenBogusFolder = (tagId) => openBogusFolderIds.has(tagId) && !assignedTagIds.has(tagId);
 
     for (const helper of [groupCandidatesFilter, groupMembersFilter, entitiesFilter]) {
+        // @ts-expect-error TS(2339): Property 'selected' does not exist on type 'string... Remove this comment to see the full error message
         const { selected, excluded } = helper.getFilterData(FILTER_TYPES.TAG);
         let anyRemoved = false;
 
@@ -2320,16 +2529,20 @@ function removeMissingTagFilters() {
     }
 }
 
+/**
+ *
+ */
 function registerTagsSlashCommands() {
     /**
      * Gets a tag by its name. Optionally can create the tag if it does not exist.
      * @param {string} tagName - The name of the tag
      * @param {object} options - Optional arguments
-     * @param {boolean} [options.allowCreate=false] - Whether a new tag should be created if no tag with the name exists
+     * @param {boolean} [options.allowCreate] - Whether a new tag should be created if no tag with the name exists
      * @returns {Tag?} The tag, or null if not found
      */
     function paraGetTag(tagName, { allowCreate = false } = {}) {
         if (!tagName) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.warning('Tag name must be provided.');
             return null;
         }
@@ -2338,6 +2551,7 @@ function registerTagsSlashCommands() {
             tag = createNewTag(tagName);
         }
         if (!tag) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.warning(`Tag ${tagName} not found.`);
             return null;
         }
@@ -2347,7 +2561,10 @@ function registerTagsSlashCommands() {
     SlashCommandParser.addCommandObject(SlashCommand.fromProps({
         name: 'tag-add',
         returns: 'true/false - Whether the tag was added or was assigned already',
-        /** @param {{name: string}} namedArgs @param {string} tagName @returns {string} */
+        /**
+         * @param {{name: string}} namedArgs @param {string} tagName @returns {string}
+         * @param tagName
+         */
         callback: ({ name }, tagName) => {
             const key = searchCharByName(name);
             if (!key) return 'false';
@@ -2394,7 +2611,10 @@ function registerTagsSlashCommands() {
     SlashCommandParser.addCommandObject(SlashCommand.fromProps({
         name: 'tag-remove',
         returns: 'true/false - Whether the tag was removed or wasn\'t assigned already',
-        /** @param {{name: string}} namedArgs @param {string} tagName @returns {string} */
+        /**
+         * @param {{name: string}} namedArgs @param {string} tagName @returns {string}
+         * @param tagName
+         */
         callback: ({ name }, tagName) => {
             const key = searchCharByName(name);
             if (!key) return 'false';
@@ -2440,7 +2660,10 @@ function registerTagsSlashCommands() {
     SlashCommandParser.addCommandObject(SlashCommand.fromProps({
         name: 'tag-exists',
         returns: 'true/false - Whether the given tag name is assigned to the character',
-        /** @param {{name: string}} namedArgs @param {string} tagName @returns {string} */
+        /**
+         * @param {{name: string}} namedArgs @param {string} tagName @returns {string}
+         * @param tagName
+         */
         callback: ({ name }, tagName) => {
             const key = searchCharByName(name);
             if (!key) return 'false';
@@ -2523,6 +2746,7 @@ function registerTagsSlashCommands() {
         /** @param {{name: string, mode: 'all'|'existing'|'none'|'ask'}} namedArgs @returns {Promise<string>} */
         callback: async ({ name, mode }) => {
             if (selected_group !== null) {
+                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                 toastr.warning(t`Tag import does not support group chats.`);
                 return 'false';
             }
@@ -2537,6 +2761,7 @@ function registerTagsSlashCommands() {
                 'ask': tag_import_setting.ASK,
             };
             if (mode && !modeMap[mode]) {
+                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                 toastr.warning(`Invalid tag import mode: ${mode}. Valid modes are: ${Object.keys(modeMap).join(', ')}`);
                 return 'false';
             }
@@ -2598,7 +2823,7 @@ function registerTagsSlashCommands() {
 /**
  * Function to apply character tags to message divs when rendering the chat
  * @param {object} options Options for applying character tags
- * @param {number|number[]} [options.mesIds=[]] An id or array of message IDs to filter by.
+ * @param {number|number[]} [options.mesIds] An id or array of message IDs to filter by.
  * If empty, all messages will be processed.
  * @returns {void}
  * @description This function iterates through the chat messages and applies character tags
@@ -2606,6 +2831,7 @@ function registerTagsSlashCommands() {
 export function applyCharacterTagsToMessageDivs({ mesIds = [] } = {}) {
     try {
         const messagesFilter = buildMessagesFilter(mesIds);
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const messages = $('#chat').children(messagesFilter);
 
         // Clear existing tags
@@ -2634,6 +2860,7 @@ export function applyCharacterTagsToMessageDivs({ mesIds = [] } = {}) {
 
         // Iterate each message div
         messages.each(function () {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const $this = $(this); // Store the jQuery object
             const avatarFileName = extractCharacterAvatar($this.find('.avatar img').attr('src'));
 
@@ -2761,6 +2988,9 @@ function extractCharacterAvatar(avatarSrc) {
     }
 }
 
+/**
+ *
+ */
 function restoreSavedTagFilters() {
     try {
         // Load persisted filter states for all contexts (including character list)
@@ -2772,49 +3002,73 @@ function restoreSavedTagFilters() {
     }
 }
 
+/**
+ *
+ */
 export function initTags() {
     createTagInput('#tagInput', '#tagList', { tagOptions: { removable: true } });
     createTagInput('#groupTagInput', '#groupTagList', { tagOptions: { removable: true } });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '#rm_button_create', onCharacterCreateClick);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '#rm_button_group_chats', onGroupCreateClick);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.tag_remove', onTagRemoveClick);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('input', '.tag_input', onTagInput);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.tags_view', function (event) {
         // 1. Prevent the label from toggling the checkbox
         event.preventDefault();
         // 2. Open the tag view list dialog
         onViewTagsListClick();
     });
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.tag_delete', onTagDeleteClick);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.tag_as_folder', onTagAsFolderClick);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('input', '.tag_view_name', onTagRenameInput);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.tag_view_create', onTagCreateClick);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.tag_view_backup', onTagsBackupClick);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.tag_view_restore', onBackupRestoreClick);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.tag_view_prune', onTagsPruneClick);
     eventSource.on(event_types.CHARACTER_DUPLICATED, copyTags);
     eventSource.makeFirst(event_types.CHAT_CHANGED, () => selected_group ? applyTagsOnGroupSelect() : applyTagsOnCharacterSelect());
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('focusout', '#tag_view_list .tag_view_name', (evt) => {
         // Reorder/reprint tags, but only if the name actually has changed
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         if (!$(evt.target).is('[dirty]')) return;
 
         // Remember the order, so we can flash highlight if it changed after reprinting
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const tagId = ($(evt.target).closest('.tag_view_item')).attr('id');
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const oldOrder = $('#tag_view_list .tag_view_item').map((_, el) => el.id).get();
 
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         printViewTagList($('#tag_view_list .tag_view_list_tags'));
 
         // If the new focus would've been inside the now redrawn tag list, we should at least move back the focus to the current name
         // Otherwise tab-navigation gets a bit weird
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         if (evt.relatedTarget instanceof HTMLElement && $(evt.relatedTarget).closest('#tag_view_list')) {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(`#tag_view_list .tag_view_item[id="${tagId}"] .tag_view_name`)[0]?.focus();
         }
 
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const newOrder = $('#tag_view_list .tag_view_item').map((_, el) => el.id).get();
         const orderChanged = !oldOrder.every((id, index) => id === newOrder[index]);
         if (orderChanged) {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             flashHighlight($(`#tag_view_list .tag_view_item[id="${tagId}"]`));
         }
     });

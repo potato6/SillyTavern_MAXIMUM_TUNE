@@ -80,6 +80,12 @@ export function registerChatMacros() {
     });
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.exclude_swipe_in_propress
+ * @param root0.filter
+ */
 function getLastMessageId({ exclude_swipe_in_propress = true, filter = null } = {}) {
     if (!Array.isArray(chat) || chat.length === 0) {
         return null;
@@ -100,26 +106,42 @@ function getLastMessageId({ exclude_swipe_in_propress = true, filter = null } = 
     return null;
 }
 
+/**
+ *
+ */
 function getLastMessage() {
     const mid = getLastMessageId();
     return typeof mid === 'number' ? (chat[mid]?.mes ?? '') : '';
 }
 
+/**
+ *
+ */
 function getLastUserMessage() {
     const mid = getLastMessageId({ filter: m => m.is_user && !m.is_system });
     return typeof mid === 'number' ? (chat[mid]?.mes ?? '') : '';
 }
 
+/**
+ *
+ */
 function getLastCharMessage() {
     const mid = getLastMessageId({ filter: m => !m.is_user && !m.is_system });
     return typeof mid === 'number' ? (chat[mid]?.mes ?? '') : '';
 }
 
+/**
+ *
+ */
 function getFirstIncludedMessageId() {
+    // @ts-expect-error TS(2339): Property 'lastInContextMessageId' does not exist o... Remove this comment to see the full error message
     const value = chat_metadata.lastInContextMessageId;
     return typeof value === 'number' ? value : null;
 }
 
+/**
+ *
+ */
 function getFirstDisplayedMessageId() {
     const mesElement = document.querySelector('#chat .mes');
     const mesId = Number(mesElement?.getAttribute('mesid'));
@@ -129,6 +151,9 @@ function getFirstDisplayedMessageId() {
     return null;
 }
 
+/**
+ *
+ */
 function getLastSwipeId() {
     const mid = getLastMessageId({ exclude_swipe_in_propress: false });
     if (typeof mid !== 'number') {
@@ -138,6 +163,9 @@ function getLastSwipeId() {
     return Array.isArray(swipes) ? swipes.length : null;
 }
 
+/**
+ *
+ */
 function getCurrentSwipeId() {
     const mid = getLastMessageId({ exclude_swipe_in_propress: false });
     if (typeof mid !== 'number') {

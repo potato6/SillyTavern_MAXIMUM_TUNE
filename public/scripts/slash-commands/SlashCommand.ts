@@ -1,9 +1,14 @@
 import { hljs } from '../../lib.js';
 import { t } from '../i18n.js';
+// @ts-expect-error TS(6133): 'SlashCommandAbortController' is declared but its ... Remove this comment to see the full error message
 import { SlashCommandAbortController } from './SlashCommandAbortController.js';
+// @ts-expect-error TS(6192): All imports in import declaration are unused.
 import { SlashCommandArgument, SlashCommandNamedArgument } from './SlashCommandArgument.js';
+// @ts-expect-error TS(6133): 'SlashCommandClosure' is declared but its value is... Remove this comment to see the full error message
 import { SlashCommandClosure } from './SlashCommandClosure.js';
+// @ts-expect-error TS(6133): 'SlashCommandDebugController' is declared but its ... Remove this comment to see the full error message
 import { SlashCommandDebugController } from './SlashCommandDebugController.js';
+// @ts-expect-error TS(6133): 'SlashCommandScope' is declared but its value is n... Remove this comment to see the full error message
 import { SlashCommandScope } from './SlashCommandScope.js';
 
 /**
@@ -23,18 +28,18 @@ import { SlashCommandScope } from './SlashCommandScope.js';
 
 /**
  * @typedef {string|SlashCommandClosure|(string|SlashCommandClosure)[]} UnnamedArguments
-*/
+ */
 
 
 export class SlashCommand {
     /**
      * Creates a SlashCommand from a properties object.
-     * @param {Object} props
+     * @param {object} props
      * @param {string} [props.name]
      * @param {(namedArguments:NamedArguments|NamedArgumentsCapture, unnamedArguments:string|SlashCommandClosure|(string|SlashCommandClosure)[])=>string|SlashCommandClosure|Promise<string|SlashCommandClosure>} [props.callback]
      * @param {string} [props.helpString]
      * @param {boolean} [props.splitUnnamedArgument]
-     * @param {Number} [props.splitUnnamedArgumentCount]
+     * @param {number} [props.splitUnnamedArgumentCount]
      * @param {boolean} [props.rawQuotes] If set to true, does not remove wrapping quotes from the unnamed argument.
      * @param {string[]} [props.aliases]
      * @param {string} [props.returns]

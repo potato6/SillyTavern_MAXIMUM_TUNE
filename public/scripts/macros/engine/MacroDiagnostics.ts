@@ -3,14 +3,19 @@
 /** @typedef {import('chevrotain').ILexingError} ILexingError */
 /** @typedef {import('chevrotain').IRecognitionException} IRecognitionException */
 
+// @ts-expect-error TS(2792): Cannot find module '/scripts/i18n.js'. Did you mea... Remove this comment to see the full error message
 import { t } from '/scripts/i18n.js';
+// @ts-expect-error TS(2792): Cannot find module '/scripts/popup.js'. Did you me... Remove this comment to see the full error message
 import { Popup, POPUP_RESULT } from '/scripts/popup.js';
+// @ts-expect-error TS(2792): Cannot find module '/scripts/power-user.js'. Did y... Remove this comment to see the full error message
 import { power_user } from '/scripts/power-user.js';
+// @ts-expect-error TS(2792): Cannot find module '/scripts/util/AccountStorage.j... Remove this comment to see the full error message
 import { accountStorage } from '/scripts/util/AccountStorage.js';
+// @ts-expect-error TS(2792): Cannot find module '/scripts/util/SimpleMutex.js'.... Remove this comment to see the full error message
 import { SimpleMutex } from '/scripts/util/SimpleMutex.js';
 
 /**
- * @typedef {Object} MacroErrorContext
+ * @typedef {object} MacroErrorContext
  * @property {string} [macroName]
  * @property {MacroCall} [call]
  * @property {MacroDefinition} [def]
@@ -18,13 +23,11 @@ import { SimpleMutex } from '/scripts/util/SimpleMutex.js';
 
 /**
  * Options for creating a macro runtime error.
- *
  * @typedef {MacroErrorContext & { message: string }} MacroRuntimeErrorOptions
  */
 
 /**
  * Options for logging macro warnings or errors.
- *
  * @typedef {MacroErrorContext & { message: string, error?: any }} MacroLogOptions
  */
 
@@ -35,12 +38,15 @@ export const onboardingExperimentalMacroEngineMutex = new SimpleMutex(onboarding
 /**
  * Onboards the user to use the experimental macro engine.
  * Asks the user to enable it if they haven't already.
- *
  * @param {string|null} feature - The feature that requires the experimental macro engine, or null if not applicable or unknown.
  * @returns {Promise<void>} - A promise that resolves when the user has been onboarded.
  */
 export const onboardingExperimentalMacroEngine = onboardingExperimentalMacroEngineMutex.update.bind(onboardingExperimentalMacroEngineMutex);
 
+/**
+ *
+ * @param feature
+ */
 async function onboardingExperimentalMacroEngineUnsafe(feature = null) {
     // Show a popup once telling a user that they are using experimental features that only work with the new engine.
     // Ask them if they want to turn the experimental engine on.
@@ -60,6 +66,7 @@ async function onboardingExperimentalMacroEngineUnsafe(feature = null) {
         <p>${t`Would you like to enable it now?`}</p>`);
     if (result == POPUP_RESULT.AFFIRMATIVE) {
         power_user.experimental_macro_engine = true;
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#experimental_macro_engine').prop('checked', power_user.experimental_macro_engine).trigger('input');
     }
 
@@ -72,7 +79,6 @@ async function onboardingExperimentalMacroEngineUnsafe(feature = null) {
  * arity or type mismatches). These errors are intended to be caught by the
  * MacroEngine, which will log them as runtime warnings and leave the macro
  * raw in the evaluated text.
- *
  * @param {MacroRuntimeErrorOptions} options
  * @returns {Error}
  */
@@ -81,15 +87,15 @@ export function createMacroRuntimeError({ message, call, def, macroName }) {
 
     const error = new Error(message);
     error.name = 'MacroRuntimeError';
-    // @ts-ignore - custom tagging for downstream classification
+    // @ts-expect-error TS(2339): Property 'isMacroRuntimeError' does not exist on t... Remove this comment to see the full error message
     error.isMacroRuntimeError = true;
-    // @ts-ignore - helpful metadata for debugging
+    // @ts-expect-error TS(2339): Property 'macroName' does not exist on type 'Error... Remove this comment to see the full error message
     error.macroName = inferredName;
-    // @ts-ignore - best-effort location information
+    // @ts-expect-error TS(2339): Property 'macroRange' does not exist on type 'Erro... Remove this comment to see the full error message
     error.macroRange = call && call.range ? call.range : null;
-    // @ts-ignore - attach raw call/definition for convenience
+    // @ts-expect-error TS(2339): Property 'macroCall' does not exist on type 'Error... Remove this comment to see the full error message
     if (call) error.macroCall = call;
-    // @ts-ignore
+    // @ts-expect-error TS(2339): Property 'macroDefinition' does not exist on type ... Remove this comment to see the full error message
     if (def) error.macroDefinition = def;
 
     return error;
@@ -99,7 +105,6 @@ export function createMacroRuntimeError({ message, call, def, macroName }) {
  * Logs a macro runtime warning with consistent, helpful context. These
  * correspond to issues in how a macro was written in the text (e.g. invalid
  * arguments), not bugs in macro definitions or the engine itself.
- *
  * @param {MacroLogOptions} options
  */
 export function logMacroRuntimeWarning({ message, call, def, macroName, error }) {
@@ -110,7 +115,6 @@ export function logMacroRuntimeWarning({ message, call, def, macroName, error })
 /**
  * Logs an internal macro error (definition or engine bug) with a consistent
  * schema. These are surfaced as red errors in the console.
- *
  * @param {MacroLogOptions} options
  */
 export function logMacroInternalError({ message, call, macroName, error }) {
@@ -120,10 +124,10 @@ export function logMacroInternalError({ message, call, macroName, error }) {
 
 /**
  * Logs a warning during macro registration.
- *
  * @param {{ message: string, macroName?: string, error?: any }} options
  */
 export function logMacroRegisterWarning({ message, macroName, error = undefined }) {
+    // @ts-expect-error TS(2345): Argument of type '{ macroName: any; error: any; }'... Remove this comment to see the full error message
     const payload = buildMacroPayload({ macroName, error });
     console.warn('[Macro] Warning:', message, payload);
 }
@@ -131,17 +135,16 @@ export function logMacroRegisterWarning({ message, macroName, error = undefined 
 /**
  * Logs an error during macro registration. Used when registration fails
  * and the macro will not be available.
- *
  * @param {{ message: string, macroName?: string, error?: any }} options
  */
 export function logMacroRegisterError({ message, macroName, error = undefined }) {
+    // @ts-expect-error TS(2345): Argument of type '{ macroName: any; error: any; }'... Remove this comment to see the full error message
     const payload = buildMacroPayload({ macroName, error });
     console.error('[Macro] Registration Error:', message, payload);
 }
 
 /**
  * Logs a macro error with a consistent schema.
- *
  * @param {{ message: string, error?: any }} options
  */
 export function logMacroGeneralError({ message, error }) {
@@ -151,7 +154,6 @@ export function logMacroGeneralError({ message, error }) {
 /**
  * Logs lexer/parser syntax warnings for the macro engine with a compact,
  * human-readable payload.
- *
  * @param {{ phase: 'lexing', input: string, errors: ILexingError[] }|{ phase: 'parsing', input: string, errors: IRecognitionException[] }} options
  */
 export function logMacroSyntaxWarning({ phase, input, errors }) {
@@ -200,7 +202,6 @@ export function logMacroSyntaxWarning({ phase, input, errors }) {
 
 /**
  * Builds a structured payload for macro logging.
- *
  * @param {MacroErrorContext & { error?: any }} ctx
  */
 function buildMacroPayload({ call, def, macroName, error }) {
@@ -211,10 +212,15 @@ function buildMacroPayload({ call, def, macroName, error }) {
         macroName: inferredName,
     };
 
+    // @ts-expect-error TS(2339): Property 'range' does not exist on type '{ macroNa... Remove this comment to see the full error message
     if (call && call.range) payload.range = call.range;
+    // @ts-expect-error TS(2339): Property 'raw' does not exist on type '{ macroName... Remove this comment to see the full error message
     if (call && typeof call.rawInner === 'string') payload.raw = call.rawInner;
+    // @ts-expect-error TS(2339): Property 'call' does not exist on type '{ macroNam... Remove this comment to see the full error message
     if (call) payload.call = call;
+    // @ts-expect-error TS(2339): Property 'def' does not exist on type '{ macroName... Remove this comment to see the full error message
     if (def) payload.def = def;
+    // @ts-expect-error TS(2339): Property 'error' does not exist on type '{ macroNa... Remove this comment to see the full error message
     if (error) payload.error = error;
 
     return payload;
@@ -222,7 +228,6 @@ function buildMacroPayload({ call, def, macroName, error }) {
 
 /**
  * Infers the most appropriate macro name from the available context.
- *
  * @param {MacroCall} [call]
  * @param {MacroDefinition} [def]
  * @param {string} [explicit]

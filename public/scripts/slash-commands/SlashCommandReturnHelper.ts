@@ -13,13 +13,12 @@ export const slashCommandReturnHelper = {
 
     /**
      * Gets/creates the enum list of types of return relevant for a slash command
-     *
-     * @param {object} [options={}] Options
-     * @param {boolean} [options.allowPipe=true] Allow option to pipe the return value
-     * @param {boolean} [options.allowObject=false] Allow option to return the value as an object
-     * @param {boolean} [options.allowChat=false] Allow option to return the value as a chat message
-     * @param {boolean} [options.allowPopup=false] Allow option to return the value as a popup
-     * @param {boolean}[options.allowTextVersion=true] Used in combination with chat/popup/toast, some of them do not make sense for text versions, e.g.if you are building a HTML string anyway
+     * @param {object} [options] Options
+     * @param {boolean} [options.allowPipe] Allow option to pipe the return value
+     * @param {boolean} [options.allowObject] Allow option to return the value as an object
+     * @param {boolean} [options.allowChat] Allow option to return the value as a chat message
+     * @param {boolean} [options.allowPopup] Allow option to return the value as a popup
+     * @param {boolean}[options.allowTextVersion] Used in combination with chat/popup/toast, some of them do not make sense for text versions, e.g.if you are building a HTML string anyway
      * @returns {SlashCommandEnumValue[]} The enum list
      */
     enumList: ({ allowPipe = true, allowObject = false, allowChat = false, allowPopup = false, allowTextVersion = true } = {}) => [
@@ -37,12 +36,11 @@ export const slashCommandReturnHelper = {
 
     /**
      * Handles the return value based on the specified type
-     *
      * @param {SlashCommandReturnType} type The type of return
      * @param {object|number|string} value The value to return
-     * @param {object} [options={}] Options
-     * @param {(o: object) => string} [options.objectToStringFunc=null] Function to convert the object to a string, if object was provided and 'object' was not the chosen return type
-     * @param {(o: object) => string} [options.objectToHtmlFunc=null] Analog to 'objectToStringFunc', which will be used here if not provided - but can do a different string layout if HTML is requested
+     * @param {object} [options] Options
+     * @param {(o: object) => string} [options.objectToStringFunc] Function to convert the object to a string, if object was provided and 'object' was not the chosen return type
+     * @param {(o: object) => string} [options.objectToHtmlFunc] Analog to 'objectToStringFunc', which will be used here if not provided - but can do a different string layout if HTML is requested
      * @returns {Promise<*>} The processed return value
      */
     async doReturn(type, value, { objectToStringFunc = o => o?.toString(), objectToHtmlFunc = null } = {}) {
@@ -61,6 +59,7 @@ export const slashCommandReturnHelper = {
 
                 if (type.startsWith('popup')) await callGenericPopup(htmlOrNotHtml, POPUP_TYPE.TEXT, '', { allowVerticalScrolling: true, wide: true });
                 if (type.startsWith('chat')) sendSystemMessage(system_message_types.GENERIC, htmlOrNotHtml);
+                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                 if (type.startsWith('toast')) toastr.info(htmlOrNotHtml, null, { escapeHtml: !shouldHtml });
 
                 return '';

@@ -12,7 +12,6 @@ import { MEDIA_EXTENSIONS, MEDIA_REQUEST_TYPE } from '../constants.js';
 /**
  * Ensure the directory for the provided file path exists.
  * If not, it will recursively create the directory.
- *
  * @param {string} filePath - The full path of the file for which the directory should be ensured.
  */
 // @ts-expect-error TS(7030): Not all code paths return a value.
@@ -31,12 +30,11 @@ export const router = express.Router();
  * Endpoint to handle image uploads.
  * The image should be provided in the request body in base64 format.
  * Optionally, a character name can be provided to save the image in a sub-folder.
- *
  * @route POST /api/images/upload
- * @param {Object} request.body - The request payload.
+ * @param {object} request.body - The request payload.
  * @param {string} request.body.image - The base64 encoded image data.
  * @param {string} [request.body.ch_name] - Optional character name to determine the sub-directory.
- * @returns {Object} response - The response object containing the path where the image was saved.
+ * @returns {object} response - The response object containing the path where the image was saved.
  */
 // @ts-expect-error TS(7030): Not all code paths return a value.
 router.post('/upload', async (request, response) => {

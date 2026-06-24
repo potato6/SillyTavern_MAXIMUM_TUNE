@@ -149,19 +149,27 @@ async function onUserSelected(user) {
         return await performLogin(user.handle, '');
     }
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#passwordRecoveryBlock').hide();
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#passwordEntryBlock').show();
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#loginButton').off('click').on('click', async () => {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const password = String($('#userPassword').val());
         await performLogin(user.handle, password);
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#recoverPassword').off('click').on('click', async () => {
         await sendRecoveryPart1(user.handle);
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#sendRecovery').off('click').on('click', async () => {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const code = String($('#recoveryCode').val());
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const newPassword = String($('#newPassword').val());
         await sendRecoveryPart2(user.handle, code, newPassword);
     });
@@ -174,6 +182,7 @@ async function onUserSelected(user) {
  * @param {string} message Error message
  */
 function displayError(message) {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#errorMessage').text(message);
 }
 
@@ -200,7 +209,9 @@ function redirectToHome() {
  * Hides the password entry block and shows the password recovery block.
  */
 function showRecoveryBlock() {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#passwordEntryBlock').hide();
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#passwordRecoveryBlock').show();
     displayError('');
 }
@@ -209,7 +220,9 @@ function showRecoveryBlock() {
  * Hides the password recovery block and shows the password entry block.
  */
 function onCancelRecoveryClick() {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#passwordRecoveryBlock').hide();
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#passwordEntryBlock').show();
     displayError('');
 }
@@ -220,18 +233,27 @@ function onCancelRecoveryClick() {
  */
 function configureNormalLogin(userList) {
     console.log('Discreet login is disabled');
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#handleEntryBlock').hide();
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#normalLoginPrompt').show();
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#discreetLoginPrompt').hide();
     console.log(userList);
     for (const user of userList) {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const userBlock = $('<div></div>').addClass('userSelect');
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const avatarBlock = $('<div></div>').addClass('avatar');
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         avatarBlock.append($('<img>').attr('src', user.avatar));
         userBlock.append(avatarBlock);
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         userBlock.append($('<span></span>').addClass('userName').text(user.name));
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         userBlock.append($('<small></small>').addClass('userHandle').text(user.handle));
         userBlock.on('click', () => onUserSelected(user));
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#userList').append(userBlock);
     }
 }
@@ -241,26 +263,41 @@ function configureNormalLogin(userList) {
  */
 function configureDiscreetLogin() {
     console.log('Discreet login is enabled');
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#handleEntryBlock').show();
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#normalLoginPrompt').hide();
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#discreetLoginPrompt').show();
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#userList').hide();
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#passwordRecoveryBlock').hide();
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#passwordEntryBlock').show();
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#loginButton').off('click').on('click', async () => {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const handle = String($('#userHandle').val());
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const password = String($('#userPassword').val());
         await performLogin(handle, password);
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#recoverPassword').off('click').on('click', async () => {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const handle = String($('#userHandle').val());
         await sendRecoveryPart1(handle);
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#sendRecovery').off('click').on('click', async () => {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const handle = String($('#userHandle').val());
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const code = String($('#recoveryCode').val());
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const newPassword = String($('#newPassword').val());
         await sendRecoveryPart2(handle, code, newPassword);
     });
@@ -278,12 +315,17 @@ function configureDiscreetLogin() {
         configureNormalLogin(userList);
     }
     document.getElementById('shadow_popup').style.opacity = '';
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#cancelRecovery').on('click', onCancelRecoveryClick);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('keydown', (evt) => {
         if (evt.key === 'Enter' && document.activeElement.tagName === 'INPUT') {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             if ($('#passwordRecoveryBlock').is(':visible')) {
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $('#sendRecovery').trigger('click');
             } else {
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $('#loginButton').trigger('click');
             }
         }

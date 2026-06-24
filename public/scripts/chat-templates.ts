@@ -117,6 +117,11 @@ const parse_derivation = derivation => (typeof derivation === 'string') ? {
 
 const not_found = { context: null, instruct: null };
 
+/**
+ *
+ * @param chat_template
+ * @param hash
+ */
 export async function deriveTemplatesFromChatTemplate(chat_template, hash) {
     if (chat_template.trim() === '') {
         console.log('Missing chat template.');
@@ -138,6 +143,11 @@ export async function deriveTemplatesFromChatTemplate(chat_template, hash) {
     return not_found;
 }
 
+/**
+ *
+ * @param power_user
+ * @param online_status
+ */
 export async function bindModelTemplates(power_user, online_status) {
     if (online_status === 'no_connection') {
         return false;
@@ -157,6 +167,7 @@ export async function bindModelTemplates(power_user, online_status) {
         // unmap current preset
         delete power_user.model_templates_mappings[chatTemplateHash];
         delete power_user.model_templates_mappings[online_status];
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.info(t`Context preset for ${online_status} will use defaults when loaded the next time.`);
     } else {
         if (power_user.context_derived) {
@@ -168,6 +179,7 @@ export async function bindModelTemplates(power_user, online_status) {
                 bindModelTemplates.context = power_user.context.preset;
             }
         } else {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.warning(t`Note: Context derivation is disabled. Not including context preset.`);
         }
         if (power_user.instruct.enabled) {
@@ -177,14 +189,17 @@ export async function bindModelTemplates(power_user, online_status) {
                     bindModelTemplates.instruct = power_user.instruct.preset;
                 }
             } else {
+                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                 toastr.warning(t`Note: Instruct derivation is disabled. Not including instruct preset.`);
             }
         }
         if (bound.length == 0) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.warning(t`No applicable presets available.`);
             return false;
         }
 
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.info(t`Bound ${online_status} to ${bound.join(', ')}.`);
         if (!online_status.startsWith('koboldcpp/ggml-model-')) {
             power_user.model_templates_mappings[online_status] = bindModelTemplates;

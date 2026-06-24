@@ -168,16 +168,22 @@ export function guesstimate(str) {
     return Math.ceil(byteLength / BYTES_PER_TOKEN);
 }
 
+/**
+ *
+ */
 async function loadTokenCache() {
     try {
         console.debug('Chat Completions: loading token cache');
-        tokenCache = await objectStore.getItem('tokenCache') || {};
+        tokenCache = (await objectStore.getItem('tokenCache')) || {};
     } catch (e) {
         console.log('Chat Completions: unable to load token cache, using default value', e);
         tokenCache = {};
     }
 }
 
+/**
+ *
+ */
 export async function saveTokenCache() {
     try {
         console.debug('Chat Completions: saving token cache');
@@ -187,11 +193,15 @@ export async function saveTokenCache() {
     }
 }
 
+/**
+ *
+ */
 async function resetTokenCache() {
     try {
         console.debug('Chat Completions: resetting token cache');
         Object.keys(tokenCache).forEach(key => delete tokenCache[key]);
         await objectStore.removeItem('tokenCache');
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.success('Token cache cleared. Please reload the chat to re-tokenize it.');
     } catch (e) {
         console.log('Chat Completions: unable to reset token cache', e);
@@ -210,6 +220,7 @@ async function resetTokenCache() {
  * @returns {Tokenizer[]} Tokenizer info.
  */
 export function getAvailableTokenizers() {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const tokenizerOptions = $('#tokenizer').find('option').toArray();
     return tokenizerOptions.map(tokenizerOption => ({
         tokenizerId: Number(tokenizerOption.value),
@@ -229,7 +240,9 @@ export function selectTokenizer(tokenizerId) {
             console.warn('Failed to find tokenizer with id', tokenizerId);
             return;
         }
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#tokenizer').val(tokenizer.tokenizerId).trigger('change');
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.info(`Tokenizer: "${tokenizer.tokenizerName}" selected`);
     }
 }
@@ -244,6 +257,7 @@ export function getFriendlyTokenizerName(forApi) {
         forApi = main_api;
     }
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const tokenizerOption = $('#tokenizer').find(':selected');
     let tokenizerId = Number(tokenizerOption.val());
     let tokenizerName = tokenizerOption.text();
@@ -259,6 +273,7 @@ export function getFriendlyTokenizerName(forApi) {
                 tokenizerName = 'API (Text Completion)';
                 break;
             default:
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 tokenizerName = $(`#tokenizer option[value="${tokenizerId}"]`).text();
                 break;
         }
@@ -365,6 +380,9 @@ export function getTokenizerBestMatch(forApi) {
 }
 
 // Get the current remote tokenizer API based on the current text generation API.
+/**
+ *
+ */
 function currentRemoteTokenizerAPI() {
     switch (main_api) {
         case 'kobold':
@@ -389,8 +407,10 @@ function callTokenizer(type, str) {
         case tokenizers.API_CURRENT:
             return callTokenizer(currentRemoteTokenizerAPI(), str);
         case tokenizers.API_KOBOLD:
+            // @ts-expect-error TS(2554): Expected 2 arguments, but got 1.
             return countTokensFromKoboldAPI(str);
         case tokenizers.API_TEXTGENERATIONWEBUI:
+            // @ts-expect-error TS(2554): Expected 2 arguments, but got 1.
             return countTokensFromTextgenAPI(str);
         default: {
             const endpointUrl = TOKENIZER_URLS[type]?.count;
@@ -398,6 +418,7 @@ function callTokenizer(type, str) {
                 console.warn('Unknown tokenizer type', type);
                 return apiFailureTokenCount(str);
             }
+            // @ts-expect-error TS(2554): Expected 3 arguments, but got 2.
             return countTokensFromServer(endpointUrl, str);
         }
     }
@@ -566,6 +587,9 @@ function counterWrapperOpenAIAsync(text) {
     return countTokensOpenAIAsync(message, true);
 }
 
+/**
+ *
+ */
 export function getTokenizerModel() {
     // OpenAI models always provide their own tokenizer
     if (oai_settings.chat_completion_source == chat_completion_sources.OPENAI) {
@@ -790,7 +814,8 @@ export function getTokenizerModel() {
 }
 
 /**
- * @param {any[] | Object} messages
+ * @param {any[] | object} messages
+ * @param full
  * @deprecated Use countTokensOpenAIAsync instead.
  */
 export function countTokensOpenAI(messages, full = false) {
@@ -817,6 +842,7 @@ export function countTokensOpenAI(messages, full = false) {
         if (typeof cachedCount === 'number') {
             token_count += cachedCount;
         } else {
+            // @ts-expect-error TS(2304): Cannot find name 'jQuery'.
             jQuery.ajax({
                 async: false,
                 type: 'POST', //
@@ -867,6 +893,7 @@ export async function countTokensOpenAIAsync(messages, full = false) {
         if (typeof cachedCount === 'number') {
             token_count += cachedCount;
         } else {
+            // @ts-expect-error TS(2304): Cannot find name 'jQuery'.
             const data = await jQuery.ajax({
                 async: true,
                 type: 'POST', //
@@ -888,7 +915,7 @@ export async function countTokensOpenAIAsync(messages, full = false) {
 
 /**
  * Gets the token cache object for the current chat.
- * @returns {Object} Token cache object for the current chat.
+ * @returns {object} Token cache object for the current chat.
  */
 function getTokenCacheObject() {
     let chatId = 'undefined';
@@ -921,6 +948,7 @@ function countTokensFromServer(endpoint, str, resolve) {
     const isAsync = typeof resolve === 'function';
     let tokenCount = 0;
 
+    // @ts-expect-error TS(2304): Cannot find name 'jQuery'.
     jQuery.ajax({
         async: isAsync,
         type: 'POST',
@@ -952,6 +980,7 @@ function countTokensFromKoboldAPI(str, resolve) {
     const isAsync = typeof resolve === 'function';
     let tokenCount = 0;
 
+    // @ts-expect-error TS(2304): Cannot find name 'jQuery'.
     jQuery.ajax({
         async: isAsync,
         type: 'POST',
@@ -976,6 +1005,10 @@ function countTokensFromKoboldAPI(str, resolve) {
     return tokenCount;
 }
 
+/**
+ *
+ * @param str
+ */
 function getTextgenAPITokenizationParams(str) {
     return {
         text: str,
@@ -995,6 +1028,7 @@ function countTokensFromTextgenAPI(str, resolve) {
     const isAsync = typeof resolve === 'function';
     let tokenCount = 0;
 
+    // @ts-expect-error TS(2304): Cannot find name 'jQuery'.
     jQuery.ajax({
         async: isAsync,
         type: 'POST',
@@ -1016,6 +1050,10 @@ function countTokensFromTextgenAPI(str, resolve) {
     return tokenCount;
 }
 
+/**
+ *
+ * @param str
+ */
 function apiFailureTokenCount(str) {
     console.error('Error counting tokens');
     let shouldTryAgain = false;
@@ -1047,6 +1085,7 @@ function apiFailureTokenCount(str) {
 function getTextTokensFromServer(endpoint, str, resolve) {
     const isAsync = typeof resolve === 'function';
     let ids = [];
+    // @ts-expect-error TS(2304): Cannot find name 'jQuery'.
     jQuery.ajax({
         async: isAsync,
         type: 'POST',
@@ -1077,6 +1116,7 @@ function getTextTokensFromServer(endpoint, str, resolve) {
 function getTextTokensFromTextgenAPI(str, resolve) {
     const isAsync = typeof resolve === 'function';
     let ids = [];
+    // @ts-expect-error TS(2304): Cannot find name 'jQuery'.
     jQuery.ajax({
         async: isAsync,
         type: 'POST',
@@ -1102,6 +1142,7 @@ function getTextTokensFromKoboldAPI(str, resolve) {
     const isAsync = typeof resolve === 'function';
     let ids = [];
 
+    // @ts-expect-error TS(2304): Cannot find name 'jQuery'.
     jQuery.ajax({
         async: isAsync,
         type: 'POST',
@@ -1132,6 +1173,7 @@ function decodeTextTokensFromServer(endpoint, ids, resolve) {
     const isAsync = typeof resolve === 'function';
     let text = '';
     let chunks = [];
+    // @ts-expect-error TS(2304): Cannot find name 'jQuery'.
     jQuery.ajax({
         async: isAsync,
         type: 'POST',
@@ -1159,8 +1201,10 @@ export function getTextTokens(tokenizerType, str) {
         case tokenizers.API_CURRENT:
             return getTextTokens(currentRemoteTokenizerAPI(), str);
         case tokenizers.API_TEXTGENERATIONWEBUI:
+            // @ts-expect-error TS(2554): Expected 2 arguments, but got 1.
             return getTextTokensFromTextgenAPI(str);
         case tokenizers.API_KOBOLD:
+            // @ts-expect-error TS(2554): Expected 2 arguments, but got 1.
             return getTextTokensFromKoboldAPI(str);
         default: {
             const tokenizerEndpoints = TOKENIZER_URLS[tokenizerType];
@@ -1178,6 +1222,7 @@ export function getTextTokens(tokenizerType, str) {
             if (tokenizerType === tokenizers.OPENAI) {
                 endpointUrl += `?model=${getTokenizerModel()}`;
             }
+            // @ts-expect-error TS(2554): Expected 3 arguments, but got 2.
             return getTextTokensFromServer(endpointUrl, str);
         }
     }
@@ -1207,9 +1252,13 @@ export function decodeTextTokens(tokenizerType, ids) {
     if (tokenizerType === tokenizers.OPENAI) {
         endpointUrl += `?model=${getTokenizerModel()}`;
     }
+    // @ts-expect-error TS(2554): Expected 3 arguments, but got 2.
     return decodeTextTokensFromServer(endpointUrl, ids);
 }
 
+/**
+ *
+ */
 export async function initTokenizers() {
     TEXTGEN_TOKENIZERS.push(
         textgen_types.OOBA,

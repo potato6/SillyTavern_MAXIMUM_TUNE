@@ -201,6 +201,9 @@ class PinnedChatsManager {
     }
 }
 
+/**
+ *
+ */
 export function getPermanentAssistantAvatar() {
     const assistantAvatar = accountStorage.getItem(assistantAvatarKey);
     if (assistantAvatar === null) {
@@ -239,6 +242,7 @@ export async function openWelcomeScreen({ force = false, expand = false } = {}) 
     if (chatAfterFetch === undefined && force) {
         console.debug('Forcing welcome screen open.');
         chat.splice(0, chat.length);
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#chat').empty();
     }
 
@@ -266,7 +270,7 @@ async function unshallowPermanentAssistant() {
  * Returns a greeting message for the assistant based on the character.
  * @param {Character} character Character data
  * @returns {string} Greeting message
-*/
+ */
 function getAssistantGreeting(character) {
     const defaultGreeting = t`If you're connected to an API, try asking me something!` + '\n***\n' + t`**Hint:** Set any character as your welcome page assistant from their "More..." menu.`;
 
@@ -277,6 +281,9 @@ function getAssistantGreeting(character) {
     return getRegexedString(character.first_mes || '', regex_placement.AI_OUTPUT, { depth: 0 }) || defaultGreeting;
 }
 
+/**
+ *
+ */
 function sendAssistantMessage() {
     const currentAssistantAvatar = getPermanentAssistantAvatar();
     const character = characters.find(x => x.avatar === currentAssistantAvatar);
@@ -301,7 +308,11 @@ function sendAssistantMessage() {
     addOneMessage(message, { scroll: false });
 }
 
+/**
+ *
+ */
 function sendWelcomePrompt() {
+    // @ts-expect-error TS(2554): Expected 2-3 arguments, but got 1.
     const message = getSystemMessageByType(system_message_types.WELCOME_PROMPT);
     chat.push(message);
     addOneMessage(message, { scroll: false });
@@ -310,7 +321,7 @@ function sendWelcomePrompt() {
 /**
  * Sends the welcome panel to the chat.
  * @param {RecentChat[]} chats List of recent chats
- * @param {boolean} [expand=false] If true, expands the recent chats section
+ * @param {boolean} [expand] If true, expands the recent chats section
  */
 async function sendWelcomePanel(chats, expand = false) {
     try {
@@ -398,6 +409,7 @@ async function sendWelcomePanel(chats, expand = false) {
                     return;
                 }
                 const groupAvatar = getGroupAvatar(group);
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $(avatar).replaceWith(groupAvatar);
             }
         });
@@ -494,6 +506,7 @@ async function openRecentCharacterChat(avatarId, fileName) {
         await openCharacterChat(fileName);
     } catch (error) {
         console.error('Error opening recent chat:', error);
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.error(t`Failed to open recent chat. See console for details.`);
     }
 }
@@ -522,6 +535,7 @@ async function openRecentGroupChat(groupId, fileName) {
         await openGroupChat(groupId, fileName);
     } catch (error) {
         console.error('Error opening recent group chat:', error);
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.error(t`Failed to open recent group chat. See console for details.`);
     }
 }
@@ -544,6 +558,7 @@ async function renameRecentCharacterChat(avatarId, fileName) {
             console.log('No new name provided, aborting');
             return;
         }
+        // @ts-expect-error TS(2345): Argument of type '{ characterId: string; oldFileNa... Remove this comment to see the full error message
         await renameGroupOrCharacterChat({
             characterId: String(characterId),
             oldFileName: fileName,
@@ -552,9 +567,11 @@ async function renameRecentCharacterChat(avatarId, fileName) {
         });
         await updateRemoteChatName(characterId, newName);
         await refreshWelcomeScreen();
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.success(t`Chat renamed.`);
     } catch (error) {
         console.error('Error renaming recent character chat:', error);
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.error(t`Failed to rename recent chat. See console for details.`);
     }
 }
@@ -577,6 +594,7 @@ async function renameRecentGroupChat(groupId, fileName) {
             console.log('No new name provided, aborting');
             return;
         }
+        // @ts-expect-error TS(2345): Argument of type '{ groupId: string; oldFileName: ... Remove this comment to see the full error message
         await renameGroupOrCharacterChat({
             groupId: String(groupId),
             oldFileName: fileName,
@@ -584,9 +602,11 @@ async function renameRecentGroupChat(groupId, fileName) {
             loader: false,
         });
         await refreshWelcomeScreen();
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.success(t`Group chat renamed.`);
     } catch (error) {
         console.error('Error renaming recent group chat:', error);
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.error(t`Failed to rename recent group chat. See console for details.`);
     }
 }
@@ -610,9 +630,11 @@ async function deleteRecentCharacterChat(avatarId, fileName) {
         }
         await deleteCharacterChatByName(String(characterId), fileName);
         await refreshWelcomeScreen();
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.success(t`Chat deleted.`);
     } catch (error) {
         console.error('Error deleting recent character chat:', error);
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.error(t`Failed to delete recent chat. See console for details.`);
     }
 }
@@ -636,9 +658,11 @@ async function deleteRecentGroupChat(groupId, fileName) {
         }
         await deleteGroupChatByName(groupId, fileName);
         await refreshWelcomeScreen();
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.success(t`Group chat deleted.`);
     } catch (error) {
         console.error('Error deleting recent group chat:', error);
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.error(t`Failed to delete recent group chat. See console for details.`);
     }
 }
@@ -676,6 +700,7 @@ async function refreshWelcomeScreen({ flashChat = null } = {}) {
             if (!isElementInViewport(chatToFlash)) {
                 chatElement.scrollTop = chatToFlash.offsetTop - chatElement.offsetTop - (chatToFlash.clientHeight / 2);
             }
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             flashHighlight($(chatToFlash), 1000);
         }
     } else {
@@ -742,7 +767,6 @@ async function openRecentChatsSettingsPopup() {
 /**
  * Gets the list of recent chats from the server.
  * @returns {Promise<RecentChat[]>} List of recent chats
- *
  * @typedef {object} RecentChat
  * @property {string} file_name Name of the chat file
  * @property {string} chat_name Name of the chat (without extension)
@@ -816,6 +840,12 @@ async function getRecentChats() {
     return dataWithEntities.map(t => t.chat);
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.tryCreate
+ * @param root0.created
+ */
 export async function openPermanentAssistantChat({ tryCreate = true, created = false } = {}) {
     const avatar = getPermanentAssistantAvatar();
     const characterId = characters.findIndex(x => x.avatar === avatar);
@@ -831,6 +861,7 @@ export async function openPermanentAssistantChat({ tryCreate = true, created = f
             return openPermanentAssistantChat({ tryCreate: false, created: true });
         } catch (error) {
             console.error('Error creating permanent assistant:', error);
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.error(t`Failed to create ${neutralCharacterName}. See console for details.`);
             return;
         }
@@ -844,10 +875,14 @@ export async function openPermanentAssistantChat({ tryCreate = true, created = f
         console.log(`Opened permanent assistant chat for ${neutralCharacterName}.`, getCurrentChatId());
     } catch (error) {
         console.error('Error opening permanent assistant chat:', error);
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.error(t`Failed to open permanent assistant chat. See console for details.`);
     }
 }
 
+/**
+ *
+ */
 async function createPermanentAssistant() {
     if (is_group_generating || is_send_press) {
         throw new Error(t`Cannot create while generating.`);
@@ -880,10 +915,14 @@ async function createPermanentAssistant() {
     await getCharacters();
 }
 
+/**
+ *
+ */
 export async function openPermanentAssistantCard() {
     const avatar = getPermanentAssistantAvatar();
     const characterId = characters.findIndex(x => x.avatar === avatar);
     if (characterId === -1) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.info(t`Assistant not found. Try sending a chat message.`);
         return;
     }
@@ -908,10 +947,12 @@ export function assignCharacterAsAssistant(characterId) {
     const currentAssistantAvatar = getPermanentAssistantAvatar();
     if (currentAssistantAvatar === character.avatar) {
         if (character.avatar === defaultAssistantAvatar) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.info(t`${character.name} is a system assistant. Choose another character.`);
             return;
         }
 
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.info(t`${character.name} is no longer your assistant.`);
         accountStorage.removeItem(assistantAvatarKey);
         return;
@@ -919,9 +960,13 @@ export function assignCharacterAsAssistant(characterId) {
 
     accountStorage.setItem(assistantAvatarKey, character.avatar);
     printCharactersDebounced();
+    // @ts-expect-error TS(2304): Cannot find name 'toastr'.
     toastr.success(t`Set ${character.name} as your assistant.`);
 }
 
+/**
+ *
+ */
 export function initWelcomeScreen() {
     PinnedChatsManager.init();
 

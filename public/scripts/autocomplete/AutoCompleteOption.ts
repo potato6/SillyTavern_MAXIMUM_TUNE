@@ -1,3 +1,4 @@
+// @ts-expect-error TS(6133): 'AutoCompleteFuzzyScore' is declared but its value... Remove this comment to see the full error message
 import { AutoCompleteFuzzyScore } from './AutoCompleteFuzzyScore.js';
 
 
@@ -33,7 +34,7 @@ export class AutoCompleteOption {
     /**
      * Used as a comparison value when removing duplicates (e.g., when a SlashCommand has aliases).
      * @type {any}
-     * */
+     */
     get value() {
         return this.name;
     }
@@ -45,6 +46,11 @@ export class AutoCompleteOption {
 
     /**
      * @param {string} name
+     * @param typeIcon
+     * @param type
+     * @param matchProvider
+     * @param valueProvider
+     * @param makeSelectable
      */
     constructor(name, typeIcon = ' ', type = '', matchProvider = null, valueProvider = null, makeSelectable = false) {
         this.name = name;

@@ -1,7 +1,10 @@
 import { uuidv4 } from '../utils.js';
+// @ts-expect-error TS(6133): 'SlashCommand' is declared but its value is never ... Remove this comment to see the full error message
 import { SlashCommand } from './SlashCommand.js';
 import { SlashCommandClosure } from './SlashCommandClosure.js';
+// @ts-expect-error TS(6133): 'SlashCommandNamedArgumentAssignment' is declared ... Remove this comment to see the full error message
 import { SlashCommandNamedArgumentAssignment } from './SlashCommandNamedArgumentAssignment.js';
+// @ts-expect-error TS(6133): 'SlashCommandUnnamedArgumentAssignment' is declare... Remove this comment to see the full error message
 import { SlashCommandUnnamedArgumentAssignment } from './SlashCommandUnnamedArgumentAssignment.js';
 
 export class SlashCommandExecutor {

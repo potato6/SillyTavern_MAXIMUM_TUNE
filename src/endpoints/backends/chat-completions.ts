@@ -499,6 +499,9 @@ async function sendMakerSuiteRequest(request: any, response: any) {
         seed: request.body.seed,
     };
 
+    /**
+     *
+     */
     function getGeminiBody() {
         // #region UGLY MODEL LISTS AREA
         const imageGenerationModels = [
@@ -607,7 +610,7 @@ async function sendMakerSuiteRequest(request: any, response: any) {
             generationConfig.thinkingConfig = thinkingConfig;
         }
 
-        let body = {
+        const body = {
             contents: prompt.contents,
             safetySettings: safetySettings,
             generationConfig: generationConfig,
@@ -669,7 +672,7 @@ async function sendMakerSuiteRequest(request: any, response: any) {
         const responseType = (stream ? 'streamGenerateContent' : 'generateContent');
 
         let url;
-        let headers = {
+        const headers = {
             'Content-Type': 'application/json',
         };
 
@@ -764,7 +767,7 @@ async function sendMakerSuiteRequest(request: any, response: any) {
 
             const responseText = typeof responseContent === 'string' ? responseContent : responseContent?.parts?.filter((part: any) => !part.thought)?.map((part: any) => part.text)?.join('\n\n');
             if (!responseText && !functionCall && !inlineData) {
-                let message = `${apiName} Candidate text empty`;
+                const message = `${apiName} Candidate text empty`;
                 console.warn(message, generateResponseJson);
                 return response.send({ error: { message } });
             }
@@ -1076,7 +1079,7 @@ async function sendDeepSeekRequest(request: any, response: any) {
     });
 
     try {
-        let bodyParams = {};
+        const bodyParams = {};
 
         if (request.body.logprobs > 0) {
             bodyParams['top_logprobs'] = request.body.logprobs;
@@ -1191,7 +1194,7 @@ async function sendXaiRequest(request: any, response: any) {
     });
 
     try {
-        let bodyParams = {};
+        const bodyParams = {};
 
         if (request.body.logprobs > 0) {
             bodyParams['top_logprobs'] = request.body.logprobs;
@@ -1297,7 +1300,7 @@ async function sendAimlapiRequest(request: any, response: any) {
     });
 
     try {
-        let bodyParams = {};
+        const bodyParams = {};
 
         if (request.body.logprobs > 0) {
             bodyParams['top_logprobs'] = request.body.logprobs;
@@ -1402,7 +1405,7 @@ async function sendElectronHubRequest(request: any, response: any) {
     });
 
     try {
-        let bodyParams = {};
+        const bodyParams = {};
 
         if (request.body.enable_web_search) {
             bodyParams['web_search'] = true;
@@ -1514,7 +1517,7 @@ async function sendChutesRequest(request: any, response: any) {
     });
 
     try {
-        let bodyParams = {};
+        const bodyParams = {};
 
         if (Array.isArray(request.body.tools) && request.body.tools.length > 0) {
             bodyParams['tools'] = request.body.tools;
@@ -1620,7 +1623,7 @@ async function sendMinimaxRequest(request: any, response: any) {
         // Merge them into a single message to avoid "invalid chat setting (2013)".
         const messages = postProcessPrompt(request.body.messages, PROMPT_PROCESSING_TYPE.MERGE_TOOLS, getPromptNames(request));
 
-        let bodyParams = {};
+        const bodyParams = {};
 
         if (Array.isArray(request.body.tools) && request.body.tools.length > 0) {
             bodyParams['tools'] = request.body.tools;
@@ -2077,7 +2080,7 @@ router.post('/status', async function (request, statusResponse) {
             }
 
             if (request.body.chat_completion_source === CHAT_COMPLETION_SOURCES.OPENROUTER && Array.isArray(data?.data)) {
-                let models: any = [];
+                const models: any = [];
 
                 data.data.forEach((model: any) => {
                     const context_length = model.context_length;

@@ -1,7 +1,10 @@
+// @ts-expect-error TS(6133): 'SlashCommandClosure' is declared but its value is... Remove this comment to see the full error message
 import { SlashCommandClosure } from './SlashCommandClosure.js';
 import { commonEnumProviders } from './SlashCommandCommonEnumsProvider.js';
 import { SlashCommandEnumValue } from './SlashCommandEnumValue.js';
+// @ts-expect-error TS(6133): 'SlashCommandExecutor' is declared but its value i... Remove this comment to see the full error message
 import { SlashCommandExecutor } from './SlashCommandExecutor.js';
+// @ts-expect-error TS(6133): 'SlashCommandScope' is declared but its value is n... Remove this comment to see the full error message
 import { SlashCommandScope } from './SlashCommandScope.js';
 
 
@@ -22,15 +25,15 @@ export const ARGUMENT_TYPE = {
 export class SlashCommandArgument {
     /**
      * Creates an unnamed argument from a properties object.
-     * @param {Object} props
+     * @param {object} props
      * @param {string} props.description description of the argument
-     * @param {ARGUMENT_TYPE|ARGUMENT_TYPE[]} [props.typeList=[ARGUMENT_TYPE.STRING]] default: ARGUMENT_TYPE.STRING - list of accepted types (from ARGUMENT_TYPE)
-     * @param {boolean} [props.isRequired=false] default: false - whether the argument is required (false = optional argument)
-     * @param {boolean} [props.acceptsMultiple=false] default: false - whether argument accepts multiple values
-     * @param {string|SlashCommandClosure} [props.defaultValue=null] default value if no value is provided
-     * @param {string|SlashCommandEnumValue|(string|SlashCommandEnumValue)[]} [props.enumList=[]] list of accepted values
-     * @param {(executor:SlashCommandExecutor, scope:SlashCommandScope)=>SlashCommandEnumValue[]} [props.enumProvider=null] function that returns auto complete options
-     * @param {boolean} [props.forceEnum=false] default: false - whether the input must match one of the enum values
+     * @param {ARGUMENT_TYPE|ARGUMENT_TYPE[]} [props.typeList] default: ARGUMENT_TYPE.STRING - list of accepted types (from ARGUMENT_TYPE)
+     * @param {boolean} [props.isRequired] default: false - whether the argument is required (false = optional argument)
+     * @param {boolean} [props.acceptsMultiple] default: false - whether argument accepts multiple values
+     * @param {string|SlashCommandClosure} [props.defaultValue] default value if no value is provided
+     * @param {string|SlashCommandEnumValue|(string|SlashCommandEnumValue)[]} [props.enumList] list of accepted values
+     * @param {(executor:SlashCommandExecutor, scope:SlashCommandScope)=>SlashCommandEnumValue[]} [props.enumProvider] function that returns auto complete options
+     * @param {boolean} [props.forceEnum] default: false - whether the input must match one of the enum values
      */
     static fromProps(props) {
         return new SlashCommandArgument(
@@ -57,9 +60,12 @@ export class SlashCommandArgument {
     /**
      * @param {string} description
      * @param {ARGUMENT_TYPE|ARGUMENT_TYPE[]} types
+     * @param isRequired
+     * @param acceptsMultiple
      * @param {string|SlashCommandClosure} defaultValue
      * @param {string|SlashCommandEnumValue|(string|SlashCommandEnumValue)[]} enums
      * @param {(executor:SlashCommandExecutor, scope:SlashCommandScope)=>SlashCommandEnumValue[]} enumProvider function that returns auto complete options
+     * @param forceEnum
      */
     constructor(description, types, isRequired = false, acceptsMultiple = false, defaultValue = null, enums = [], enumProvider = null, forceEnum = false) {
         this.description = description;
@@ -82,18 +88,19 @@ export class SlashCommandArgument {
 export class SlashCommandNamedArgument extends SlashCommandArgument {
     /**
      * Creates an unnamed argument from a properties object.
-     * @param {Object} props
+     * @param {object} props
      * @param {string} props.name the argument's name
      * @param {string} props.description description of the argument
-     * @param {string[]} [props.aliasList=[]] list of aliases
-     * @param {ARGUMENT_TYPE|ARGUMENT_TYPE[]} [props.typeList=[ARGUMENT_TYPE.STRING]] default: ARGUMENT_TYPE.STRING - list of accepted types (from ARGUMENT_TYPE)
-     * @param {boolean} [props.isRequired=false] default: false - whether the argument is required (false = optional argument)
-     * @param {boolean} [props.acceptsMultiple=false] default: false - whether argument accepts multiple values
-     * @param {string|SlashCommandClosure} [props.defaultValue=null] default value if no value is provided
-     * @param {string|SlashCommandEnumValue|(string|SlashCommandEnumValue)[]} [props.enumList=[]] list of accepted values
-     * @param {(executor:SlashCommandExecutor, scope:SlashCommandScope)=>SlashCommandEnumValue[]} [props.enumProvider=null] function that returns auto complete options
-     * @param {boolean} [props.forceEnum=false] default: false - whether the input must match one of the enum values
+     * @param {string[]} [props.aliasList] list of aliases
+     * @param {ARGUMENT_TYPE|ARGUMENT_TYPE[]} [props.typeList] default: ARGUMENT_TYPE.STRING - list of accepted types (from ARGUMENT_TYPE)
+     * @param {boolean} [props.isRequired] default: false - whether the argument is required (false = optional argument)
+     * @param {boolean} [props.acceptsMultiple] default: false - whether argument accepts multiple values
+     * @param {string|SlashCommandClosure} [props.defaultValue] default value if no value is provided
+     * @param {string|SlashCommandEnumValue|(string|SlashCommandEnumValue)[]} [props.enumList] list of accepted values
+     * @param {(executor:SlashCommandExecutor, scope:SlashCommandScope)=>SlashCommandEnumValue[]} [props.enumProvider] function that returns auto complete options
+     * @param {boolean} [props.forceEnum] default: false - whether the input must match one of the enum values
      */
+    // @ts-expect-error TS(4114): This member must have an 'override' modifier becau... Remove this comment to see the full error message
     static fromProps(props) {
         return new SlashCommandNamedArgument(
             props.name,
@@ -116,13 +123,13 @@ export class SlashCommandNamedArgument extends SlashCommandArgument {
      * @param {string} name
      * @param {string} description
      * @param {ARGUMENT_TYPE|ARGUMENT_TYPE[]} types
-     * @param {boolean} [isRequired=false]
-     * @param {boolean} [acceptsMultiple=false]
-     * @param {string|SlashCommandClosure} [defaultValue=null]
-     * @param {string|SlashCommandEnumValue|(string|SlashCommandEnumValue)[]} [enums=[]]
-     * @param {string[]} [aliases=[]]
-     * @param {(executor:SlashCommandExecutor, scope:SlashCommandScope)=>SlashCommandEnumValue[]} [enumProvider=null] function that returns auto complete options
-     * @param {boolean} [forceEnum=false]
+     * @param {boolean} [isRequired]
+     * @param {boolean} [acceptsMultiple]
+     * @param {string|SlashCommandClosure} [defaultValue]
+     * @param {string|SlashCommandEnumValue|(string|SlashCommandEnumValue)[]} [enums]
+     * @param {string[]} [aliases]
+     * @param {(executor:SlashCommandExecutor, scope:SlashCommandScope)=>SlashCommandEnumValue[]} [enumProvider] function that returns auto complete options
+     * @param {boolean} [forceEnum]
      */
     constructor(name, description, types, isRequired = false, acceptsMultiple = false, defaultValue = null, enums = [], aliases = [], enumProvider = null, forceEnum = false) {
         super(description, types, isRequired, acceptsMultiple, defaultValue, enums, enumProvider, forceEnum);

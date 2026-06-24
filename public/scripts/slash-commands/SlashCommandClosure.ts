@@ -1,15 +1,21 @@
 import { substituteParams } from '../../script.js';
 import { power_user } from '../power-user.js';
 import { delay, escapeRegex, uuidv4 } from '../utils.js';
+// @ts-expect-error TS(6133): 'SlashCommand' is declared but its value is never ... Remove this comment to see the full error message
 import { SlashCommand } from './SlashCommand.js';
+// @ts-expect-error TS(6133): 'SlashCommandAbortController' is declared but its ... Remove this comment to see the full error message
 import { SlashCommandAbortController } from './SlashCommandAbortController.js';
 import { SlashCommandBreak } from './SlashCommandBreak.js';
+// @ts-expect-error TS(6133): 'SlashCommandBreakController' is declared but its ... Remove this comment to see the full error message
 import { SlashCommandBreakController } from './SlashCommandBreakController.js';
 import { SlashCommandBreakPoint } from './SlashCommandBreakPoint.js';
 import { SlashCommandClosureResult } from './SlashCommandClosureResult.js';
+// @ts-expect-error TS(6133): 'SlashCommandDebugController' is declared but its ... Remove this comment to see the full error message
 import { SlashCommandDebugController } from './SlashCommandDebugController.js';
 import { SlashCommandExecutionError } from './SlashCommandExecutionError.js';
+// @ts-expect-error TS(6133): 'SlashCommandExecutor' is declared but its value i... Remove this comment to see the full error message
 import { SlashCommandExecutor } from './SlashCommandExecutor.js';
+// @ts-expect-error TS(6133): 'SlashCommandNamedArgumentAssignment' is declared ... Remove this comment to see the full error message
 import { SlashCommandNamedArgumentAssignment } from './SlashCommandNamedArgumentAssignment.js';
 import { SlashCommandScope } from './SlashCommandScope.js';
 
@@ -95,6 +101,7 @@ export class SlashCommandClosure {
                 list: { min: 0, max: Number.MAX_SAFE_INTEGER },
                 handler: (context) => {
                     // Sort to prefer exact matches over wildcard matches
+                    // @ts-expect-error TS(2339): Property 'toSorted' does not exist on type 'unknow... Remove this comment to see the full error message
                     const sortedMacroArgs = macroArguments.toSorted((a, b) => {
                         const aHasWildcard = a.args.includes('*');
                         const bHasWildcard = b.args.includes('*');
@@ -154,7 +161,7 @@ export class SlashCommandClosure {
      */
     substituteParams(text, scope = null) {
         let isList = false;
-        let listValues = [];
+        const listValues = [];
         scope = scope ?? this.scope;
         const escapeMacro = (it, isAnchored = false) => {
             const regexText = escapeRegex(it.key.replace(/\*/g, '~~~WILDCARD~~~'))
@@ -182,6 +189,7 @@ export class SlashCommandClosure {
             const match = re.exec(remaining);
             const before = substituteParams(remaining.slice(0, match.index));
             const after = remaining.slice(match.index + match[0].length);
+            // @ts-expect-error TS(4111): Property 'pipe' comes from an index signature, so ... Remove this comment to see the full error message
             const replacer = match.groups.pipe ? scope.pipe : match.groups.var ? scope.getVariable(match.groups.var, match.groups.index) : macroList.find(it => it.key == match.groups.macro || new RegExp(escapeMacro(it, true)).test(match.groups.macro))?.value;
             if (replacer instanceof SlashCommandClosure) {
                 replacer.abortController = this.abortController;
@@ -217,6 +225,7 @@ export class SlashCommandClosure {
     }
 
     getCopy() {
+        // @ts-expect-error TS(2554): Expected 1 arguments, but got 0.
         const closure = new SlashCommandClosure();
         closure.scope = this.scope.getCopy();
         closure.executeNow = this.executeNow;
@@ -377,6 +386,7 @@ export class SlashCommandClosure {
      *  - after arguments are resolved
      *  - after execution
      */
+    // @ts-expect-error TS(7030): Not all code paths return a value.
     async* executeStep() {
         let done = 0;
         let isFirst = true;
@@ -392,8 +402,7 @@ export class SlashCommandClosure {
             // or stepping into)
             yield executor;
             /**@type {import('./SlashCommand.js').NamedArguments} */
-            // @ts-ignore
-            let args = {
+            const args = {
                 _scope: this.scope,
                 _parserFlags: executor.parserFlags,
                 _abortController: this.abortController,
@@ -416,7 +425,7 @@ export class SlashCommandClosure {
             } else {
                 // regular commands do all the argument resolving logic...
                 await this.substituteNamedArguments(executor, args);
-                let value = await this.substituteUnnamedArgument(executor, isFirst, args);
+                const value = await this.substituteUnnamedArgument(executor, isFirst, args);
 
                 let abortResult = await this.testAbortController();
                 if (abortResult) {
@@ -429,6 +438,7 @@ export class SlashCommandClosure {
                 // then yield for "before exec"
                 yield executor;
                 // followed by command execution
+                // @ts-expect-error TS(6133): 'subTotal' is declared but its value is never read... Remove this comment to see the full error message
                 executor.onProgress = (subDone, subTotal) => this.onProgress?.(done + subDone, this.commandCount);
                 const isStepping = this.debugController?.testStepping(this);
                 if (this.debugController) {
@@ -463,6 +473,7 @@ export class SlashCommandClosure {
             await delay(200);
         }
     }
+    // @ts-expect-error TS(7030): Not all code paths return a value.
     async testAbortController() {
         await this.testPaused();
         if (this.abortController?.signal?.aborted) {

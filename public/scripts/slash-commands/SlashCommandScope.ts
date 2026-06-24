@@ -1,3 +1,4 @@
+// @ts-expect-error TS(6133): 'SlashCommandClosure' is declared but its value is... Remove this comment to see the full error message
 import { SlashCommandClosure } from './SlashCommandClosure.js';
 import { convertValueType } from '../utils.js';
 
@@ -7,9 +8,7 @@ export class SlashCommandScope {
         const names = [...this.variableNames, ...(this.parent?.allVariableNames ?? [])];
         return names.filter((it, idx) => idx == names.indexOf(it));
     }
-    // @ts-ignore
     /** @type {object.<string, string|SlashCommandClosure>} */ variables = {};
-    // @ts-ignore
     /** @type {object.<string, string|SlashCommandClosure>} */ macros = {};
     /** @type {{key:string, value:string|SlashCommandClosure}[]} */
     get macroList() {

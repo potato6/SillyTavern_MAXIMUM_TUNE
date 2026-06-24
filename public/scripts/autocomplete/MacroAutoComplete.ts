@@ -60,12 +60,11 @@ const elementAutoCompleteMap = new WeakMap();
  * - Cursor is right after typing `{{`
  * - Cursor is inside a macro `{{...}}`
  * - Cursor is in scoped content of an unclosed scoped macro (e.g., after `{{setvar myvar}}`)
- *
  * @param {string} text - The full text content.
  * @param {number} cursorPos - The cursor position.
- * @param {Object} [options={}] - Additional options.
- * @param {boolean} [options.isForced=false] - Whether this is a forced activation (e.g., Ctrl+Space).
- * @param {MACRO_AUTOCOMPLETE_MODE} [options.autocompleteMode=MACRO_AUTOCOMPLETE_MODE.DEFAULT] - The autocomplete mode.
+ * @param {object} [options] - Additional options.
+ * @param {boolean} [options.isForced] - Whether this is a forced activation (e.g., Ctrl+Space).
+ * @param {MACRO_AUTOCOMPLETE_MODE} [options.autocompleteMode] - The autocomplete mode.
  * @returns {boolean}
  */
 function shouldActivateMacroAutocomplete(text, cursorPos, { isForced = false, autocompleteMode = MACRO_AUTOCOMPLETE_MODE.DEFAULT } = {}) {
@@ -109,11 +108,10 @@ function shouldActivateMacroAutocomplete(text, cursorPos, { isForced = false, au
 /**
  * Sets up macro autocomplete for a text input element.
  * The autocomplete will trigger when typing `{{` inside the element.
- *
  * @param {HTMLTextAreaElement|HTMLInputElement} textarea - The input element.
- * @param {Object} [options={}] - Options for the autocomplete.
- * @param {MACRO_AUTOCOMPLETE_MODE} [options.autocompleteMode=MACRO_AUTOCOMPLETE_MODE.DEFAULT] - The autocomplete mode.
- * @param {MACRO_AUTOCOMPLETE_STYLE} [options.autocompleteStyle=MACRO_AUTOCOMPLETE_STYLE.SMALL] - The autocomplete style.
+ * @param {object} [options] - Options for the autocomplete.
+ * @param {MACRO_AUTOCOMPLETE_MODE} [options.autocompleteMode] - The autocomplete mode.
+ * @param {MACRO_AUTOCOMPLETE_STYLE} [options.autocompleteStyle] - The autocomplete style.
  * @returns {AutoComplete} The autocomplete instance.
  */
 export function setMacroAutoComplete(textarea, { autocompleteMode = MACRO_AUTOCOMPLETE_MODE.DEFAULT, autocompleteStyle = MACRO_AUTOCOMPLETE_STYLE.SMALL } = {}) {
@@ -134,7 +132,6 @@ export function setMacroAutoComplete(textarea, { autocompleteMode = MACRO_AUTOCO
 
 /**
  * Gets the autocomplete mode from an element's data-macros-autocomplete attribute.
- *
  * @param {Element} element - The element to check.
  * @returns {MACRO_AUTOCOMPLETE_MODE} The mode ('default', 'always', 'hide').
  */
@@ -151,7 +148,6 @@ function getAutocompleteMode(element) {
 
 /**
  * Gets the autocomplete style from an element's data-autocomplete-style attribute.
- *
  * @param {Element} element - The element to check.
  * @returns {MACRO_AUTOCOMPLETE_STYLE} The style ('expanded', 'small').
  */
@@ -168,7 +164,6 @@ function getAutocompleteStyle(element) {
 
 /**
  * Initializes macro autocomplete on a single element if not already initialized.
- *
  * @param {HTMLTextAreaElement|HTMLInputElement} element - The element to initialize.
  * @returns {AutoComplete|null} The autocomplete instance, or null if already initialized.
  */
@@ -190,7 +185,6 @@ function initializeElement(element) {
 /**
  * Checks if an element has the macro autocomplete attribute enabled.
  * Supports both `data-macros` (presence) and `data-macros="true"`.
- *
  * @param {Element} element - The element to check.
  * @returns {boolean}
  */
@@ -205,7 +199,6 @@ function hasMacroAttribute(element) {
 
 /**
  * Handles node changes from MutationObserver - checks for macro autocomplete attribute.
- *
  * @param {Node} node - The node to check.
  */
 function handleNodeChange(node) {
@@ -256,7 +249,6 @@ const observer = new MutationObserver(mutations => {
  * Initializes macro autocomplete for all elements with the `data-macros` attribute.
  * Also starts the MutationObserver to watch for dynamically added elements.
  * Should be called after DOM is ready.
- *
  * @returns {AutoComplete[]} Array of autocomplete instances created.
  */
 export function initMacroAutoComplete() {
@@ -288,7 +280,6 @@ export function initMacroAutoComplete() {
 /**
  * Enables macro autocomplete on a specific element by ID.
  * Adds the attribute and initializes autocomplete.
- *
  * @param {string} elementId - The element ID (without #).
  * @returns {AutoComplete|null} The autocomplete instance, or null if element not found.
  */

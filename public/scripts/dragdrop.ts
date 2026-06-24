@@ -6,16 +6,18 @@ import { debounce_timeout } from './constants.js';
  * Can be used on any element, enabling drag&drop styling and callback on drop.
  */
 export class DragAndDropHandler {
-    /** @private @type {JQuery.Selector} */ selector;
-    /** @private @type {(files: File[], event:JQuery.DropEvent<HTMLElement, undefined, any, any>) => void} */ onDropCallback;
-    /** @private @type {NodeJS.Timeout} Remark: Not actually NodeJS timeout, but it's close */ dragLeaveTimeout;
+    /** @private */ selector;
+    /** @private */ onDropCallback;
+    /** @private */ dragLeaveTimeout;
 
-    /** @private @type {boolean} */ noAnimation;
+    /** @private */ noAnimation;
 
     /**
      * Create a DragAndDropHandler
      * @param {JQuery.Selector} selector - The CSS selector for the elements to enable drag and drop
      * @param {(files: File[], event:JQuery.DropEvent<HTMLElement, undefined, any, any>) => void} onDropCallback - The callback function to handle the drop event
+     * @param root0
+     * @param root0.noAnimation
      */
     constructor(selector, onDropCallback, { noAnimation = false } = {}) {
         this.selector = selector;
@@ -32,15 +34,22 @@ export class DragAndDropHandler {
      */
     destroy() {
         if (this.selector === 'body') {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(document.body).off('dragover', this.handleDragOver.bind(this));
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(document.body).off('dragleave', this.handleDragLeave.bind(this));
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(document.body).off('drop', this.handleDrop.bind(this));
         } else {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(document.body).off('dragover', this.selector, this.handleDragOver.bind(this));
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(document.body).off('dragleave', this.selector, this.handleDragLeave.bind(this));
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(document.body).off('drop', this.selector, this.handleDrop.bind(this));
         }
 
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(this.selector).remove('drop_target no_animation');
     }
 
@@ -51,16 +60,24 @@ export class DragAndDropHandler {
      */
     init() {
         if (this.selector === 'body') {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(document.body).on('dragover', this.handleDragOver.bind(this));
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(document.body).on('dragleave', this.handleDragLeave.bind(this));
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(document.body).on('drop', this.handleDrop.bind(this));
         } else {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(document.body).on('dragover', this.selector, this.handleDragOver.bind(this));
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(document.body).on('dragleave', this.selector, this.handleDragLeave.bind(this));
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(document.body).on('drop', this.selector, this.handleDrop.bind(this));
         }
 
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(this.selector).addClass('drop_target');
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         if (this.noAnimation) $(this.selector).addClass('no_animation');
     }
 
@@ -72,7 +89,9 @@ export class DragAndDropHandler {
         event.preventDefault();
         event.stopPropagation();
         clearTimeout(this.dragLeaveTimeout);
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(this.selector).addClass('drop_target dragover');
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         if (this.noAnimation) $(this.selector).addClass('no_animation');
     }
 
@@ -87,6 +106,7 @@ export class DragAndDropHandler {
         // Debounce the removal of the class, so it doesn't "flicker" on dragging over
         clearTimeout(this.dragLeaveTimeout);
         this.dragLeaveTimeout = setTimeout(() => {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(this.selector).removeClass('dragover');
         }, debounce_timeout.quick);
     }
@@ -99,6 +119,7 @@ export class DragAndDropHandler {
         event.preventDefault();
         event.stopPropagation();
         clearTimeout(this.dragLeaveTimeout);
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(this.selector).removeClass('dragover');
 
         const files = Array.from(event.originalEvent.dataTransfer.files);

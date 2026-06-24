@@ -267,7 +267,7 @@ async function writeCharacterData(inputFile: any, data: any, outputFile: any, re
 }
 
 /**
- * @typedef {Object} Crop
+ * @typedef {object} Crop
  * @property {number} x X-coordinate
  * @property {number} y Y-coordinate
  * @property {number} width Width
@@ -337,9 +337,8 @@ async function tryReadImage(imgPath: any, crop: any) {
 
 /**
  * calculateChatSize - Calculates the total chat size for a given character.
- *
  * @param  {string} charDir The directory where the chats are stored.
- * @return { {chatSize: number, dateLastChat: number} }         The total chat size.
+ * @returns { {chatSize: number, dateLastChat: number} }         The total chat size.
  */
 const calculateChatSize = (charDir: any) => {
     let chatSize = 0;
@@ -399,12 +398,11 @@ const toShallow = (character: any) => {
 
 /**
  * processCharacter - Process a given character, read its data and calculate its statistics.
- *
  * @param  {string} item The name of the character.
  * @param  {import('../users.js').UserDirectoryList} directories User directories
  * @param  {object} options Options for the character processing
  * @param  {boolean} options.shallow If true, only return the core character's metadata
- * @return {Promise<object>}     A Promise that resolves when the character processing is done.
+ * @returns {Promise<object>}     A Promise that resolves when the character processing is done.
  */
 const processCharacter = async (item: any, directories: any, {
     shallow
@@ -414,7 +412,7 @@ const processCharacter = async (item: any, directories: any, {
         const imgData = await readCharacterData(imgFile);
         if (imgData === undefined) throw new Error('Failed to read character file');
 
-        let jsonObject = getCharaCardV2(JSON.parse(imgData), directories, false);
+        const jsonObject = getCharaCardV2(JSON.parse(imgData), directories, false);
         jsonObject.avatar = item;
         const character = jsonObject;
         character.json_data = imgData;
@@ -499,6 +497,7 @@ function convertToV2(char: any, directories: any) {
 
 /**
  * Removes fields that are not meant to be shared.
+ * @param char
  */
 function unsetPrivateFields(char: any) {
     _.set(char, 'fav', false);
@@ -506,6 +505,10 @@ function unsetPrivateFields(char: any) {
     _.unset(char, 'chat');
 }
 
+/**
+ *
+ * @param char
+ */
 function readFromV2(char: any) {
     if (_.isUndefined(char.data)) {
         console.warn(`Char ${char.name} has Spec v2 data missing`);
@@ -740,7 +743,7 @@ async function importFromYaml(uploadPath: any, context: any, preservedFileName: 
     console.info('Importing from YAML');
     yamlData.name = sanitize(yamlData.name);
     const fileName = preservedFileName || getPngName(yamlData.name, context.request.user.directories);
-    let char = convertToV2({
+    const char = convertToV2({
         'name': yamlData.name,
         'description': yamlData.context ?? '',
         'first_mes': yamlData.greeting ?? '',
@@ -783,7 +786,7 @@ async function importFromCharX(uploadPath: any, {
         card.data.name = sanitize(card.data.name);
     }
     card.name = sanitize(card.data?.name || card.name);
-    let processedCard = readFromV2(card);
+    const processedCard = readFromV2(card);
     unsetPrivateFields(processedCard);
     processedCard.create_date = new Date().toISOString();
 
@@ -807,6 +810,13 @@ async function importFromCharX(uploadPath: any, {
     return result ? fileName : '';
 }
 
+/**
+ *
+ * @param uploadPath
+ * @param root0
+ * @param root0.request
+ * @param preservedFileName
+ */
 async function importFromByaf(uploadPath: any, {
     request
 }: any, preservedFileName: any) {
@@ -822,7 +832,7 @@ async function importFromByaf(uploadPath: any, {
     if (!preservedFileName) {
         /**
          * @param {Partial<ByafScenario>} scenario
-        */
+         */
         const createChatAsCurrentPersona = (scenario: any) => {
             const chatName = sanitize(`${scenario.title || card.name} - ${humanizedDateTime()} imported.jsonl`, { replacement: sanitizeSafeCharacterReplacements });
             const filePath = path.join(request.user.directories.chats, path.basename(fileName), chatName);
@@ -934,7 +944,7 @@ async function importFromJson(uploadPath: any, {
             'tags': jsonData.tags ?? '',
         };
         char = convertToV2(char, request.user.directories);
-        let charJSON = JSON.stringify(char);
+        const charJSON = JSON.stringify(char);
         const result = await writeCharacterData(DEFAULT_AVATAR_PATH, charJSON, pngName, request);
         return result ? pngName : '';
     } else if (jsonData.char_name !== undefined) {
@@ -1130,7 +1140,7 @@ router.post('/edit', validateAvatarUrlMiddleware, async function (request, respo
     char.chat = request.body.chat;
     char.create_date = request.body.create_date;
     char = JSON.stringify(char);
-    let targetFile = (request.body.avatar_url).replace('.png', '');
+    const targetFile = (request.body.avatar_url).replace('.png', '');
 
     try {
         if (!request.file) {
@@ -1202,9 +1212,8 @@ router.post('/edit-avatar', validateAvatarUrlMiddleware, async function (request
  *
  * This function reads the character data from a file, updates the specified attribute,
  * and writes the updated data back to the file.
- *
- * @param {Object} request - The HTTP request object.
- * @param {Object} response - The HTTP response object.
+ * @param {object} request - The HTTP request object.
+ * @param {object} response - The HTTP response object.
  * @returns {void}
  */
 router.post('/edit-attribute', validateAvatarUrlMiddleware, async function (request, response) {
@@ -1239,7 +1248,7 @@ router.post('/edit-attribute', validateAvatarUrlMiddleware, async function (requ
         }
         char[request.body.field] = request.body.value;
         char.data[request.body.field] = request.body.value;
-        let newCharJSON = JSON.stringify(char);
+        const newCharJSON = JSON.stringify(char);
         const targetFile = (request.body.avatar_url).replace('.png', '');
         await writeCharacterData(avatarPath, newCharJSON, targetFile, request);
         return response.sendStatus(200);
@@ -1338,7 +1347,6 @@ async function mergeCharacterUpdate(avatarPath: any, avatar: any, updateData: an
  *
  * In both modes, any value equal to the sentinel `__@@UNSET@@__` will cause
  * that key to be **deleted** from the character card instead of being set.
- *
  * @param {import("express").Request} request - The HTTP request object
  * @param {import("express").Response} response - The HTTP response object
  * @returns {void}
@@ -1450,7 +1458,7 @@ router.post('/delete', validateAvatarUrlMiddleware, async function (request, res
 
     fs.unlinkSync(avatarPath);
     invalidateThumbnail(request.user.directories, 'avatar', request.body.avatar_url);
-    let dir_name = (request.body.avatar_url.replace('.png', ''));
+    const dir_name = (request.body.avatar_url.replace('.png', ''));
 
     if (!dir_name.length) {
         console.error('Malicious dirname prevented');
@@ -1478,10 +1486,9 @@ router.post('/delete', validateAvatarUrlMiddleware, async function (request, res
  * the `charStats` variable.
  * The stats are calculated by the `calculateStats` function.
  * The characters are processed by the `processCharacter` function.
- *
  * @param  {import("express").Request} request The HTTP request object.
  * @param  {import("express").Response} response The HTTP response object.
- * @return {void}
+ * @returns {void}
  */
 // @ts-expect-error TS(7030): Not all code paths return a value.
 router.post('/all', async function (request, response) {
@@ -1630,7 +1637,7 @@ router.post('/duplicate', validateAvatarUrlMiddleware, async function (request, 
             console.debug(request.body);
             return response.sendStatus(400);
         }
-        let filename = path.join(request.user.directories.characters, sanitize(request.body.avatar_url));
+        const filename = path.join(request.user.directories.characters, sanitize(request.body.avatar_url));
         if (!fs.existsSync(filename)) {
             console.error('file for dupe not found', filename);
             return response.sendStatus(404);
@@ -1654,7 +1661,7 @@ router.post('/duplicate', validateAvatarUrlMiddleware, async function (request, 
         newFilename = path.join(request.user.directories.characters, `${baseName}_${suffix}${path.extname(filename)}`);
 
         while (fs.existsSync(newFilename)) {
-            let suffixStr = '_' + suffix;
+            const suffixStr = '_' + suffix;
             newFilename = path.join(request.user.directories.characters, `${baseName}${suffixStr}${path.extname(filename)}`);
             suffix++;
         }
@@ -1675,7 +1682,7 @@ router.post('/export', validateAvatarUrlMiddleware, async function (request, res
             return response.sendStatus(400);
         }
 
-        let filename = path.join(request.user.directories.characters, sanitize(request.body.avatar_url));
+        const filename = path.join(request.user.directories.characters, sanitize(request.body.avatar_url));
 
         if (!fs.existsSync(filename)) {
             return response.sendStatus(404);

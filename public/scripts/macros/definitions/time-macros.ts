@@ -118,6 +118,9 @@ export function registerTimeMacros() {
     });
 }
 
+/**
+ *
+ */
 function getTimeSinceLastMessage() {
     const now = moment();
 

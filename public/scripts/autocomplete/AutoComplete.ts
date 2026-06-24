@@ -1,8 +1,10 @@
 import { power_user } from '../power-user.js';
 import { debounce, escapeRegex } from '../utils.js';
+// @ts-expect-error TS(6133): 'AutoCompleteOption' is declared but its value is ... Remove this comment to see the full error message
 import { AutoCompleteOption } from './AutoCompleteOption.js';
 import { AutoCompleteFuzzyScore } from './AutoCompleteFuzzyScore.js';
 import { BlankAutoCompleteOption } from './BlankAutoCompleteOption.js';
+// @ts-expect-error TS(6133): 'AutoCompleteNameResult' is declared but its value... Remove this comment to see the full error message
 import { AutoCompleteNameResult } from './AutoCompleteNameResult.js';
 import { AutoCompleteSecondaryNameResult } from './AutoCompleteSecondaryNameResult.js';
 
@@ -22,7 +24,7 @@ export const AUTOCOMPLETE_SELECT_KEY = {
 };
 
 /** @readonly */
-/** @enum {Number} */
+/** @enum {number} */
 export const AUTOCOMPLETE_STATE = {
     DISABLED: 0,
     MIN_LENGTH: 1,
@@ -30,6 +32,7 @@ export const AUTOCOMPLETE_STATE = {
 };
 
 export class AutoComplete {
+    isShowForced: any;
     /**@type {HTMLTextAreaElement|HTMLInputElement}*/ textarea;
     /**@type {boolean}*/ isFloating = false;
     /**@type {()=>boolean}*/ checkIfActivate;
@@ -154,6 +157,7 @@ export class AutoComplete {
     updateName(item) {
         const chars = Array.from(item.dom.querySelector('.name').children);
         if (item.forceFullNameMatch) {
+            // @ts-expect-error TS(2339): Property 'classList' does not exist on type 'unkno... Remove this comment to see the full error message
             chars.forEach(c => c.classList.toggle('matched', true));
             return;
         }
@@ -161,8 +165,10 @@ export class AutoComplete {
             case 'strict': {
                 chars.forEach((it, idx) => {
                     if (idx + item.nameOffset < item.name.length) {
+                        // @ts-expect-error TS(2339): Property 'classList' does not exist on type 'unkno... Remove this comment to see the full error message
                         it.classList.add('matched');
                     } else {
+                        // @ts-expect-error TS(2339): Property 'classList' does not exist on type 'unkno... Remove this comment to see the full error message
                         it.classList.remove('matched');
                     }
                 });
@@ -172,10 +178,13 @@ export class AutoComplete {
                 const start = item.name.toLowerCase().search(this.name);
                 chars.forEach((it, idx) => {
                     if (idx + item.nameOffset < start) {
+                        // @ts-expect-error TS(2339): Property 'classList' does not exist on type 'unkno... Remove this comment to see the full error message
                         it.classList.remove('matched');
                     } else if (idx + item.nameOffset < start + item.name.length) {
+                        // @ts-expect-error TS(2339): Property 'classList' does not exist on type 'unkno... Remove this comment to see the full error message
                         it.classList.add('matched');
                     } else {
+                        // @ts-expect-error TS(2339): Property 'classList' does not exist on type 'unkno... Remove this comment to see the full error message
                         it.classList.remove('matched');
                     }
                 });
@@ -185,14 +194,18 @@ export class AutoComplete {
                 item.name.replace(this.fuzzyRegex, (_, ...parts) => {
                     parts.splice(-2, 2);
                     if (parts.length == 2) {
+                        // @ts-expect-error TS(2339): Property 'classList' does not exist on type 'unkno... Remove this comment to see the full error message
                         chars.forEach(c => c.classList.remove('matched'));
                     } else {
                         let cIdx = item.nameOffset;
+                        // @ts-expect-error TS(7030): Not all code paths return a value.
                         parts.forEach((it, idx) => {
                             if (it === null || it.length == 0) return '';
                             if (idx % 2 == 1) {
+                                // @ts-expect-error TS(2339): Property 'classList' does not exist on type 'unkno... Remove this comment to see the full error message
                                 chars.slice(cIdx, cIdx + it.length).forEach(c => c.classList.add('matched'));
                             } else {
+                                // @ts-expect-error TS(2339): Property 'classList' does not exist on type 'unkno... Remove this comment to see the full error message
                                 chars.slice(cIdx, cIdx + it.length).forEach(c => c.classList.remove('matched'));
                             }
                             cIdx += it.length;
@@ -218,7 +231,7 @@ export class AutoComplete {
         }
         const parts = this.fuzzyRegex.exec(option.name).slice(1, -1);
         let start = null;
-        let consecutive = [];
+        const consecutive = [];
         let current = '';
         let offset = 0;
         parts.forEach((part, idx) => {
@@ -397,6 +410,7 @@ export class AutoComplete {
                 return option;
             })
             // sort by priority first, then by fuzzy score or alphabetical
+            // @ts-expect-error TS(2339): Property 'toSorted' does not exist on type 'any[]'... Remove this comment to see the full error message
             .toSorted((a, b) => {
                 // First compare by sortPriority (lower = higher priority)
                 const priorityA = a.sortPriority ?? 100;

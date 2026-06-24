@@ -16,6 +16,13 @@ import { delay, getConfigValue, trimTrailingSlash } from '../util.js';
 const API_MAKERSUITE = 'https://generativelanguage.googleapis.com';
 const API_VERTEX_AI = 'https://us-central1-aiplatform.googleapis.com';
 
+/**
+ *
+ * @param dataSize
+ * @param sampleRate
+ * @param numChannels
+ * @param bitsPerSample
+ */
 function createWavHeader(dataSize: any, sampleRate: any, numChannels = 1, bitsPerSample = 16) {
     const header = Buffer.alloc(44);
     header.write('RIFF', 0);
@@ -34,12 +41,21 @@ function createWavHeader(dataSize: any, sampleRate: any, numChannels = 1, bitsPe
     return header;
 }
 
+/**
+ *
+ * @param pcmData
+ * @param sampleRate
+ */
 function createCompleteWavFile(pcmData: any, sampleRate: any) {
     const header = createWavHeader(pcmData.length, sampleRate);
     return Buffer.concat([header, pcmData]);
 }
 
 // Vertex AI authentication helper functions
+/**
+ *
+ * @param request
+ */
 export async function getVertexAIAuth(request: any) {
     const authMode = request.body.vertexai_auth_mode || 'express';
 
@@ -117,6 +133,10 @@ export async function generateJWTToken(serviceAccount: any) {
     return `${signatureInput}.${signature}`;
 }
 
+/**
+ *
+ * @param jwtToken
+ */
 export async function getAccessToken(jwtToken: any) {
     const response = await fetch('https://oauth2.googleapis.com/token', {
         method: 'POST',
@@ -171,7 +191,7 @@ export async function getGoogleApiConfig(request: any, model: any, endpoint = 'g
 
     let url;
     let baseUrl;
-    let headers = {
+    const headers = {
         'Content-Type': 'application/json',
     };
 

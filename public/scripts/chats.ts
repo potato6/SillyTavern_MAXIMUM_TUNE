@@ -59,7 +59,7 @@ import { accountStorage } from './util/AccountStorage.js';
 import { MEDIA_DISPLAY, MEDIA_SOURCE, MEDIA_TYPE, SCROLL_BEHAVIOR, SWIPE_DIRECTION } from './constants.js';
 
 /**
- * @typedef {Object} FileAttachment
+ * @typedef {object} FileAttachment
  * @property {string} url File URL
  * @property {number} size File size
  * @property {string} name File name
@@ -157,6 +157,7 @@ export async function hideChatMessageRange(start, end, unhide, nameFitler = null
         message.is_system = hide;
 
         // Also toggle "hidden" state for all visible messages
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const messageBlock = $(`.mes[mesid="${messageId}"]`);
         if (!messageBlock.length) continue;
         messageBlock.attr('is_system', String(hide));
@@ -193,6 +194,7 @@ export async function unhideChatMessage(messageId, _messageBlock) {
 /**
  * Adds a file attachment to the message.
  * @param {ChatMessage} message Message object
+ * @param inputId
  * @returns {Promise<void>} A promise that resolves when file is uploaded.
  */
 export async function populateFileAttachment(message, inputId = 'file_form_input') {
@@ -206,6 +208,7 @@ export async function populateFileAttachment(message, inputId = 'file_form_input
             const slug = getStringHash(file.name);
             const fileNamePrefix = `${Date.now()}_${slug}`;
             const fileBase64 = await getBase64Async(file);
+            // @ts-expect-error TS(2339): Property 'split' does not exist on type 'unknown'.
             let base64Data = fileBase64.split(',')[1];
             const extension = getFileExtension(file);
 
@@ -234,6 +237,7 @@ export async function populateFileAttachment(message, inputId = 'file_form_input
                         const fileText = await converter(file);
                         base64Data = convertTextToBase64(fileText);
                     } catch (error) {
+                        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                         toastr.error(String(error), t`Could not convert file`);
                         console.error('Could not convert file', error);
                     }
@@ -259,8 +263,10 @@ export async function populateFileAttachment(message, inputId = 'file_form_input
         }
     } catch (error) {
         console.error('Could not upload file', error);
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.error(t`Either the file is corrupted or its format is not supported.`, t`Could not upload the file`);
     } finally {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#file_form').trigger('reset');
     }
 }
@@ -290,6 +296,7 @@ export async function uploadFileAttachment(fileName, base64Data) {
         const responseData = await result.json();
         return responseData.path;
     } catch (error) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.error(String(error), t`Could not upload file`);
         console.error('Could not upload file', error);
     }
@@ -300,6 +307,7 @@ export async function uploadFileAttachment(fileName, base64Data) {
  * @param {string} url File URL
  * @returns {Promise<string>} File text
  */
+// @ts-expect-error TS(7030): Not all code paths return a value.
 export async function getFileAttachment(url) {
     try {
         const result = await fetch(url, {
@@ -316,6 +324,7 @@ export async function getFileAttachment(url) {
         const text = await result.text();
         return text;
     } catch (error) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.error(error, t`Could not download file`);
         console.error('Could not download file', error);
     }
@@ -332,12 +341,14 @@ async function validateFile(file) {
     const isBinary = /^[\x00-\x08\x0E-\x1F\x7F-\xFF]*$/.test(fileText);
 
     if (!isMedia && file.size > fileSizeLimit) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.error(t`File is too big. Maximum size is ${humanFileSize(fileSizeLimit)}.`);
         return false;
     }
 
     // If file is binary
     if (isBinary && !isMedia && !isConvertible(file.type)) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.error(t`Binary files are not supported. Select a text file or image.`);
         return false;
     }
@@ -345,6 +356,9 @@ async function validateFile(file) {
     return true;
 }
 
+/**
+ *
+ */
 export function hasPendingFileAttachment() {
     const fileInput = document.getElementById('file_form_input');
     if (!(fileInput instanceof HTMLInputElement)) return false;
@@ -364,7 +378,9 @@ async function onFileAttach(fileList) {
 
         // If file is binary
         if (!isValid) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.warning(t`File ${file.name} is not supported.`);
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#file_form').trigger('reset');
             return;
         }
@@ -373,14 +389,18 @@ async function onFileAttach(fileList) {
     const name = fileList.length === 1 ? fileList[0].name : t`${fileList.length} files selected`;
     const size = [...fileList].reduce((acc, file) => acc + file.size, 0);
     const title = [...fileList].map(x => x.name).join('\n');
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#file_form .file_name').text(name).attr('title', title);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#file_form .file_size').text(humanFileSize(size)).attr('title', size);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#file_form').removeClass('displayNone');
 
     // Reset form on chat change (if not on a welcome screen)
     const currentChatId = getCurrentChatId();
     if (currentChatId) {
         eventSource.once(event_types.CHAT_CHANGED, () => {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#file_form').trigger('reset');
         });
     }
@@ -473,11 +493,16 @@ function embedMessageFile(messageId, messageBlock) {
         return;
     }
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#embed_file_input')
         .off('change')
         .on('change', parseAndUploadEmbed)
         .trigger('click');
 
+    /**
+     *
+     * @param e
+     */
     async function parseAndUploadEmbed(/** @type {JQuery.ChangeEvent} */ e) {
         if (!(e.target instanceof HTMLInputElement)) return;
         if (!e.target.files.length) return;
@@ -486,7 +511,9 @@ function embedMessageFile(messageId, messageBlock) {
             const isValid = await validateFile(file);
 
             if (!isValid) {
+                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                 toastr.warning(t`File ${file.name} is not supported.`);
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $('#file_form').trigger('reset');
                 return;
             }
@@ -552,6 +579,10 @@ export function decodeStyleTags(text, { prefix } = { prefix: '.mes_text ' }) {
     const styleDecodeRegex = /<custom-style>(.+?)<\/custom-style>/gms;
     const mediaAllowed = isExternalMediaAllowed();
 
+    /**
+     *
+     * @param rule
+     */
     function sanitizeRule(rule) {
         if (Array.isArray(rule.selectors)) {
             for (let i = 0; i < rule.selectors.length; i++) {
@@ -566,12 +597,17 @@ export function decodeStyleTags(text, { prefix } = { prefix: '.mes_text ' }) {
         }
     }
 
+    /**
+     *
+     * @param selector
+     */
     function sanitizeSelector(selector) {
         // Handle pseudo-classes that can contain nested selectors
         const pseudoClasses = ['has', 'not', 'where', 'is', 'matches', 'any'];
         const pseudoRegex = new RegExp(`:(${pseudoClasses.join('|')})\\(([^)]+)\\)`, 'g');
 
         // First, sanitize any nested selectors within pseudo-classes
+        // @ts-expect-error TS(6133): 'match' is declared but its value is never read.
         selector = selector.replace(pseudoRegex, (match, pseudoClass, content) => {
             // Recursively sanitize the content within the pseudo-class
             const sanitizedContent = sanitizeSimpleSelector(content);
@@ -582,6 +618,10 @@ export function decodeStyleTags(text, { prefix } = { prefix: '.mes_text ' }) {
         return sanitizeSimpleSelector(selector);
     }
 
+    /**
+     *
+     * @param selector
+     */
     function sanitizeSimpleSelector(selector) {
         // Split by spaces but preserve complex selectors
         return selector.split(/\s+/).map((part) => {
@@ -596,6 +636,10 @@ export function decodeStyleTags(text, { prefix } = { prefix: '.mes_text ' }) {
         }).join(' ');
     }
 
+    /**
+     *
+     * @param ruleSet
+     */
     function sanitizeRuleSet(ruleSet) {
         if (Array.isArray(ruleSet.selectors) || Array.isArray(ruleSet.declarations)) {
             sanitizeRule(ruleSet);
@@ -612,7 +656,7 @@ export function decodeStyleTags(text, { prefix } = { prefix: '.mes_text ' }) {
 
     return text.replaceAll(styleDecodeRegex, (_, style) => {
         try {
-            let styleCleaned = decodeURIComponent(style).replaceAll(/<br\/>/g, '');
+            const styleCleaned = decodeURIComponent(style).replaceAll(/<br\/>/g, '');
             const ast = css.parse(styleCleaned);
             const sheet = ast?.stylesheet;
             if (sheet) {
@@ -629,6 +673,7 @@ export function decodeStyleTags(text, { prefix } = { prefix: '.mes_text ' }) {
  * Class to manage style preferences for characters.
  */
 class StylesPreference {
+    avatarId: any;
     /**
      * Creates a new StylesPreference instance.
      * @param {string|null} avatarId - The avatar ID of the character
@@ -702,8 +747,12 @@ export function formatCreatorNotes(text, avatarId) {
     return html;
 }
 
+/**
+ *
+ */
 async function openGlobalStylesPreferenceDialog() {
     if (selected_group) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.info(t`To change the global styles preference, please select a character individually.`);
         return;
     }
@@ -712,6 +761,7 @@ async function openGlobalStylesPreferenceDialog() {
     const preference = new StylesPreference(entityId);
     const currentValue = preference.get();
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const template = $(await renderTemplateAsync('globalStylesPreference'));
 
     const allowedRadio = template.find('#global_styles_allowed');
@@ -737,11 +787,15 @@ async function openGlobalStylesPreferenceDialog() {
     // Re-render the notes if the preference changed
     const newValue = preference.get();
     if (newValue !== currentValue) {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#rm_button_selected_ch').trigger('click');
         setGlobalStylesButtonClass(newValue);
     }
 }
 
+/**
+ *
+ */
 async function checkForCreatorNotesStyles() {
     // Don't do anything if in group chat or not in a chat
     if (selected_group || this_chid === undefined) {
@@ -760,6 +814,7 @@ async function checkForCreatorNotesStyles() {
     const preference = new StylesPreference(avatarId);
     const hasPreference = preference.exists();
     if (!hasPreference) {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const template = $(await renderTemplateAsync('globalStylesPopup'));
         template.find('textarea').val(styleContents);
         const confirmResult = await callGenericPopup(template, POPUP_TYPE.CONFIRM, '', {
@@ -781,6 +836,7 @@ async function checkForCreatorNotesStyles() {
                 break;
         }
 
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#rm_button_selected_ch').trigger('click');
     }
 
@@ -793,6 +849,7 @@ async function checkForCreatorNotesStyles() {
  * @param {boolean|null} state State of the button
  */
 function setGlobalStylesButtonClass(state) {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const button = $('#creators_note_styles_button');
     button.toggleClass('empty', state === null);
     button.toggleClass('allowed', state === true);
@@ -818,14 +875,19 @@ function getStyleContentsFromMarkdown(text) {
         .join('\n\n');
 }
 
+/**
+ *
+ */
 async function openExternalMediaOverridesDialog() {
     const entityId = getCurrentEntityId();
 
     if (!entityId) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.info(t`No character or group selected`);
         return;
     }
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const template = $(await renderTemplateAsync('forbidMedia'));
     template.find('.forbid_media_global_state_forbidden').toggle(power_user.forbid_external_media);
     template.find('.forbid_media_global_state_allowed').toggle(!power_user.forbid_external_media);
@@ -841,6 +903,9 @@ async function openExternalMediaOverridesDialog() {
     callGenericPopup(template, POPUP_TYPE.TEXT, '', { wide: false, large: false });
 }
 
+/**
+ *
+ */
 export function getCurrentEntityId() {
     if (selected_group) {
         return String(selected_group);
@@ -849,6 +914,9 @@ export function getCurrentEntityId() {
     return characters[this_chid]?.avatar ?? null;
 }
 
+/**
+ *
+ */
 export function isExternalMediaAllowed() {
     const entityId = getCurrentEntityId();
     if (!entityId) {
@@ -875,6 +943,7 @@ export function isExternalMediaAllowed() {
 function expandMessageMedia(messageId, mediaIndex) {
     if (isNaN(messageId) || isNaN(mediaIndex)) {
         console.warn('Invalid message ID or media index');
+        // @ts-expect-error TS(7030): Not all code paths return a value.
         return;
     }
 
@@ -883,6 +952,7 @@ function expandMessageMedia(messageId, mediaIndex) {
 
     if (!Array.isArray(message?.extra?.media) || message.extra.media.length === 0) {
         console.warn('Message has no media to expand');
+        // @ts-expect-error TS(7030): Not all code paths return a value.
         return;
     }
 
@@ -890,11 +960,13 @@ function expandMessageMedia(messageId, mediaIndex) {
     const title = mediaAttachment.title || message.extra.title || '';
 
     if (!mediaAttachment) {
+        // @ts-expect-error TS(7030): Not all code paths return a value.
         return;
     }
 
     if (mediaAttachment.type === MEDIA_TYPE.AUDIO) {
         console.warn('Audio media cannot be expanded');
+        // @ts-expect-error TS(7030): Not all code paths return a value.
         return;
     }
 
@@ -903,6 +975,9 @@ function expandMessageMedia(messageId, mediaIndex) {
      * @returns {HTMLElement} Media element
      */
     function getMediaElement() {
+        /**
+         *
+         */
         function getImageElement() {
             const img = document.createElement('img');
             img.src = mediaAttachment.url;
@@ -910,6 +985,9 @@ function expandMessageMedia(messageId, mediaIndex) {
             return img;
         }
 
+        /**
+         *
+         */
         function getVideoElement() {
             const video = document.createElement('video');
             video.src = mediaAttachment.url;
@@ -1091,7 +1169,7 @@ async function switchMessageMediaDisplay(messageId, messageBlock, targetDisplay)
 /**
  * Deletes media file from the server.
  * @param {string} url Path to the media file on the server
- * @param {boolean} [silent=false] If true, do not show error messages
+ * @param {boolean} [silent] If true, do not show error messages
  * @returns {Promise<boolean>} True if media file was deleted, false otherwise.
  */
 export async function deleteMediaFromServer(url, silent = false) {
@@ -1113,6 +1191,7 @@ export async function deleteMediaFromServer(url, silent = false) {
         await eventSource.emit(event_types.MEDIA_ATTACHMENT_DELETED, url);
         return true;
     } catch (error) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.error(String(error), t`Could not delete image`);
         console.error('Could not delete image', error);
         return false;
@@ -1122,7 +1201,7 @@ export async function deleteMediaFromServer(url, silent = false) {
 /**
  * Deletes file from the server.
  * @param {string} url Path to the file on the server
- * @param {boolean} [silent=false] If true, do not show error messages
+ * @param {boolean} [silent] If true, do not show error messages
  * @returns {Promise<boolean>} True if file was deleted, false otherwise.
  */
 export async function deleteFileFromServer(url, silent = false) {
@@ -1144,6 +1223,7 @@ export async function deleteFileFromServer(url, silent = false) {
         await eventSource.emit(event_types.FILE_ATTACHMENT_DELETED, url);
         return true;
     } catch (error) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.error(String(error), t`Could not delete file`);
         console.error('Could not delete file', error);
         return false;
@@ -1157,6 +1237,7 @@ export async function deleteFileFromServer(url, silent = false) {
 async function openFilePopup(attachment) {
     const fileText = attachment.text || (await getFileAttachment(attachment.url));
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const modalTemplate = $('<div><pre><code></code></pre></div>');
     modalTemplate.find('code').addClass('txt').text(fileText);
     modalTemplate.addClass('file_modal').addClass('textarea_compact').addClass('fontsize90p');
@@ -1173,15 +1254,18 @@ async function openFilePopup(attachment) {
  */
 async function editAttachment(attachment, source, callback) {
     const originalFileText = attachment.text || (await getFileAttachment(attachment.url));
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const template = $(await renderExtensionTemplateAsync('attachments', 'notepad'));
 
     let editedFileText = originalFileText;
     template.find('[name="notepadFileContent"]').val(editedFileText).on('input', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         editedFileText = String($(this).val());
     });
 
     let editedFileName = attachment.name;
     template.find('[name="notepadFileName"]').val(editedFileName).on('input', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         editedFileName = String($(this).val());
     });
 
@@ -1252,8 +1336,10 @@ function disableAttachment(attachment, callback) {
 async function moveAttachment(attachment, source, callback) {
     let selectedTarget = source;
     const targets = getAvailableTargets();
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const template = $(await renderExtensionTemplateAsync('attachments', 'move-attachment', { name: attachment.name, targets }));
     template.find('.moveAttachmentTarget').val(source).on('input', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         selectedTarget = String($(this).val());
     });
 
@@ -1281,7 +1367,7 @@ async function moveAttachment(attachment, source, callback) {
  * @param {FileAttachment} attachment Attachment to delete
  * @param {string} source Source of the attachment
  * @param {function} callback Callback function
- * @param {boolean} [confirm=true] If true, show a confirmation dialog
+ * @param {boolean} [confirm] If true, show a confirmation dialog
  * @returns {Promise<void>} A promise that resolves when the attachment is deleted.
  */
 export async function deleteAttachment(attachment, source, callback, confirm = true) {
@@ -1301,6 +1387,7 @@ export async function deleteAttachment(attachment, source, callback, confirm = t
             saveSettingsDebounced();
             break;
         case 'chat':
+            // @ts-expect-error TS(2339): Property 'attachments' does not exist on type '{}'... Remove this comment to see the full error message
             chat_metadata.attachments = chat_metadata.attachments.filter((a) => a.url !== attachment.url);
             saveMetadataDebounced();
             break;
@@ -1374,6 +1461,7 @@ async function openAttachmentManager() {
         const selected = template
             .find(sources[source])
             .find('.attachmentListItemCheckbox:checked')
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             .map((_, el) => $(el).closest('.attachmentListItem').attr('data-attachment-url'))
             .get();
 
@@ -1448,15 +1536,18 @@ async function openAttachmentManager() {
             const button = template.find(selector).find('.openActionModalButton').get(0);
 
             if (!button) {
+                // @ts-expect-error TS(7030): Not all code paths return a value.
                 return;
             }
 
             const bodyListener = (e) => {
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 if (modal.is(':visible') && (!$(e.target).closest('.openActionModalButton').length)) {
                     modal.hide();
                 }
 
                 // Replay a click if the modal was already open by another button
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 if ($(e.target).closest('.openActionModalButton').length && !modal.is(':visible')) {
                     modal.show();
                 }
@@ -1483,10 +1574,14 @@ async function openAttachmentManager() {
         };
     }
 
+    /**
+     *
+     */
     async function renderAttachments() {
         /** @type {FileAttachment[]} */
         const globalAttachments = extension_settings.attachments ?? [];
         /** @type {FileAttachment[]} */
+        // @ts-expect-error TS(2339): Property 'attachments' does not exist on type '{}'... Remove this comment to see the full error message
         const chatAttachments = chat_metadata.attachments ?? [];
         /** @type {FileAttachment[]} */
         const characterAttachments = extension_settings.character_attachments?.[characters[this_chid]?.avatar] ?? [];
@@ -1507,12 +1602,15 @@ async function openAttachmentManager() {
         template.find('.chatAttachmentsName').text(chatName);
     }
 
+    // @ts-expect-error TS(6133): 'event' is declared but its value is never read.
     const dragDropHandler = new DragAndDropHandler('.popup', async (files, event) => {
         let selectedTarget = ATTACHMENT_SOURCE.GLOBAL;
         const targets = getAvailableTargets();
 
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const targetSelectTemplate = $(await renderExtensionTemplateAsync('attachments', 'files-dropped', { count: files.length, targets: targets }));
         targetSelectTemplate.find('.droppedFilesTarget').on('input', function () {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             selectedTarget = String($(this).val());
         });
         const result = await callGenericPopup(targetSelectTemplate, POPUP_TYPE.CONFIRM, '', { wide: false, large: false, okButton: 'Upload', cancelButton: 'Cancel' });
@@ -1530,9 +1628,11 @@ async function openAttachmentManager() {
     let sortOrder = accountStorage.getItem('DataBank_sortOrder') || 'desc';
     let filterString = '';
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const template = $(await renderExtensionTemplateAsync('attachments', 'manager', {}));
 
     template.find('.attachmentSearch').on('input', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         filterString = String($(this).val());
         renderAttachments();
     });
@@ -1547,11 +1647,16 @@ async function openAttachmentManager() {
         accountStorage.setItem('DataBank_sortOrder', sortOrder);
         renderAttachments();
     });
+    /**
+     *
+     * @param action
+     */
     function handleBulkAction(action) {
         return async () => {
             const selectedAttachments = document.querySelectorAll('.attachmentListItemCheckboxContainer .attachmentListItemCheckbox:checked');
 
             if (selectedAttachments.length === 0) {
+                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                 toastr.info(t`No attachments selected.`, t`Data Bank`);
                 return;
             }
@@ -1570,7 +1675,9 @@ async function openAttachmentManager() {
                 if (!(listItem instanceof HTMLElement)) {
                     return;
                 }
+                // @ts-expect-error TS(4111): Property 'attachmentUrl' comes from an index signa... Remove this comment to see the full error message
                 const url = listItem.dataset.attachmentUrl;
+                // @ts-expect-error TS(4111): Property 'attachmentSource' comes from an index si... Remove this comment to see the full error message
                 const source = listItem.dataset.attachmentSource;
                 const attachment = attachments.find(a => a.url === url);
                 if (!attachment) {
@@ -1603,6 +1710,7 @@ async function openAttachmentManager() {
     }));
 
     template.find('.bulkActionSelectAll').on('click', () => {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('.attachmentListItemCheckbox:visible').each((_, checkbox) => {
             if (checkbox instanceof HTMLInputElement) {
                 checkbox.checked = true;
@@ -1610,6 +1718,7 @@ async function openAttachmentManager() {
         });
     });
     template.find('.bulkActionSelectNone').on('click', () => {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('.attachmentListItemCheckbox:visible').each((_, checkbox) => {
             if (checkbox instanceof HTMLInputElement) {
                 checkbox.checked = false;
@@ -1666,6 +1775,7 @@ async function runScraper(scraperId, target, callback) {
 
         if (files.length === 0) {
             console.warn('Scraping returned no files');
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.info(t`No files were scraped.`, t`Data Bank`);
             return;
         }
@@ -1674,10 +1784,12 @@ async function runScraper(scraperId, target, callback) {
             await uploadFileAttachmentToServer(file, target);
         }
 
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.success(t`Scraped ${files.length} files from ${scraperId} to ${target}.`, t`Data Bank`);
         callback();
     } catch (error) {
         console.error('Scraping failed', error);
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.error(t`Check browser console for details.`, t`Scraping failed`);
     }
 }
@@ -1705,6 +1817,7 @@ export async function uploadFileAttachmentToServer(file, target) {
             const fileText = await converter(file);
             base64Data = convertTextToBase64(fileText);
         } catch (error) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.error(String(error), t`Could not convert file`);
             console.error('Could not convert file', error);
         }
@@ -1714,6 +1827,7 @@ export async function uploadFileAttachmentToServer(file, target) {
     }
 
     const fileUrl = await uploadFileAttachment(uniqueFileName, base64Data);
+    // @ts-expect-error TS(2339): Property 'length' does not exist on type 'unknown'... Remove this comment to see the full error message
     const convertedSize = Math.round(base64Data.length * 0.75);
 
     if (!fileUrl) {
@@ -1735,6 +1849,7 @@ export async function uploadFileAttachmentToServer(file, target) {
             saveSettingsDebounced();
             break;
         case ATTACHMENT_SOURCE.CHAT:
+            // @ts-expect-error TS(2339): Property 'attachments' does not exist on type '{}'... Remove this comment to see the full error message
             chat_metadata.attachments.push(attachment);
             saveMetadataDebounced();
             break;
@@ -1747,6 +1862,9 @@ export async function uploadFileAttachmentToServer(file, target) {
     return fileUrl;
 }
 
+/**
+ *
+ */
 function ensureAttachmentsExist() {
     if (!Array.isArray(extension_settings.disabled_attachments)) {
         extension_settings.disabled_attachments = [];
@@ -1756,7 +1874,9 @@ function ensureAttachmentsExist() {
         extension_settings.attachments = [];
     }
 
+    // @ts-expect-error TS(2339): Property 'attachments' does not exist on type '{}'... Remove this comment to see the full error message
     if (!Array.isArray(chat_metadata.attachments)) {
+        // @ts-expect-error TS(2339): Property 'attachments' does not exist on type '{}'... Remove this comment to see the full error message
         chat_metadata.attachments = [];
     }
 
@@ -1773,12 +1893,13 @@ function ensureAttachmentsExist() {
 
 /**
  * Gets all currently available attachments. Ignores disabled attachments by default.
- * @param {boolean} [includeDisabled=false] If true, include disabled attachments
+ * @param {boolean} [includeDisabled] If true, include disabled attachments
  * @returns {FileAttachment[]} List of attachments
  */
 export function getDataBankAttachments(includeDisabled = false) {
     ensureAttachmentsExist();
     const globalAttachments = extension_settings.attachments ?? [];
+    // @ts-expect-error TS(2339): Property 'attachments' does not exist on type '{}'... Remove this comment to see the full error message
     const chatAttachments = chat_metadata.attachments ?? [];
     const characterAttachments = extension_settings.character_attachments?.[characters[this_chid]?.avatar] ?? [];
 
@@ -1788,17 +1909,21 @@ export function getDataBankAttachments(includeDisabled = false) {
 /**
  * Gets all attachments for a specific source. Includes disabled attachments by default.
  * @param {string} source Attachment source
- * @param {boolean} [includeDisabled=true] If true, include disabled attachments
+ * @param {boolean} [includeDisabled] If true, include disabled attachments
  * @returns {FileAttachment[]} List of attachments
  */
 export function getDataBankAttachmentsForSource(source, includeDisabled = true) {
     ensureAttachmentsExist();
 
+    /**
+     *
+     */
     function getBySource() {
         switch (source) {
             case ATTACHMENT_SOURCE.GLOBAL:
                 return extension_settings.attachments ?? [];
             case ATTACHMENT_SOURCE.CHAT:
+                // @ts-expect-error TS(2339): Property 'attachments' does not exist on type '{}'... Remove this comment to see the full error message
                 return chat_metadata.attachments ?? [];
             case ATTACHMENT_SOURCE.CHARACTER:
                 return extension_settings.character_attachments?.[characters[this_chid]?.avatar] ?? [];
@@ -1854,6 +1979,9 @@ async function verifyAttachmentsForSource(source) {
 
 const NEUTRAL_CHAT_KEY = 'neutralChat';
 
+/**
+ *
+ */
 export function preserveNeutralChat() {
     if (this_chid !== undefined || selected_group || name2 !== neutralCharacterName) {
         return;
@@ -1862,6 +1990,9 @@ export function preserveNeutralChat() {
     sessionStorage.setItem(NEUTRAL_CHAT_KEY, JSON.stringify({ chat, chat_metadata }));
 }
 
+/**
+ *
+ */
 export function restoreNeutralChat() {
     if (this_chid !== undefined || selected_group || name2 !== neutralCharacterName) {
         return;
@@ -1898,6 +2029,9 @@ export function registerFileConverter(mimeType, converter) {
     converters[mimeType] = converter;
 }
 
+/**
+ *
+ */
 export function addDOMPurifyHooks() {
     // Allow target="_blank" in links
     DOMPurify.addHook('afterSanitizeAttributes', function (node) {
@@ -1948,6 +2082,7 @@ export function addDOMPurifyHooks() {
             const walker = document.createTreeWalker(node, NodeFilter.SHOW_TEXT);
             while (walker.nextNode()) {
                 const textNode = /** @type {Text} */ (walker.currentNode);
+                // @ts-expect-error TS(2339): Property 'data' does not exist on type 'Node'.
                 if (!textNode.data.includes('\n')) continue;
 
                 // Skip if this text node is within a <pre> (any ancestor)
@@ -2035,12 +2170,14 @@ export function addDOMPurifyHooks() {
             const warningShownKey = `mediaWarningShown:${entityId}`;
 
             if (accountStorage.getItem(warningShownKey) === null) {
+                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                 const warningToast = toastr.warning(
                     t`Use the 'Ext. Media' button to allow it. Click on this message to dismiss.`,
                     t`External media has been blocked`,
                     {
                         timeOut: 0,
                         preventDuplicates: true,
+                        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                         onclick: () => toastr.clear(warningToast),
                     },
                 );
@@ -2106,35 +2243,49 @@ async function onImageSwiped(messageId, element, direction) {
     appendMediaToMessage(message, element);
 }
 
+/**
+ *
+ */
 export function initChatUtilities() {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.mes_hide', async function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const messageBlock = $(this).closest('.mes');
         const messageId = Number(messageBlock.attr('mesid'));
         await hideChatMessageRange(messageId, messageId, false);
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.mes_unhide', async function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const messageBlock = $(this).closest('.mes');
         const messageId = Number(messageBlock.attr('mesid'));
         await hideChatMessageRange(messageId, messageId, true);
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.mes_file_delete', async function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const messageBlock = $(this).closest('.mes');
         const messageId = Number(messageBlock.attr('mesid'));
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const fileBlock = $(this).closest('.mes_file_container');
         const fileIndex = Number(fileBlock.attr('data-index'));
         await deleteMessageFile(messageBlock, messageId, fileIndex);
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.mes_file_open', async function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const messageBlock = $(this).closest('.mes');
         const messageId = Number(messageBlock.attr('mesid'));
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const fileBlock = $(this).closest('.mes_file_container');
         const fileIndex = Number(fileBlock.attr('data-index'));
         await viewMessageFile(messageId, fileIndex);
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.assistant_note_export', async function (_e) {
         /** @type {ChatHeader} */
         const chatHeader = {
@@ -2150,6 +2301,7 @@ export function initChatUtilities() {
         download(chatToSave.map((m) => JSON.stringify(m)).join('\n'), `Assistant - ${humanizedDateTime()}.jsonl`, 'application/json');
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.assistant_note_import', async function () {
         const importFile = async () => {
             const file = fileInput.files[0];
@@ -2159,9 +2311,11 @@ export function initChatUtilities() {
 
             try {
                 const text = await getFileText(file);
+                // @ts-expect-error TS(2339): Property 'split' does not exist on type 'unknown'.
                 const lines = text.split('\n').filter(line => line.trim() !== '');
                 const messages = lines.map(line => JSON.parse(line));
                 const metadata = messages.shift()?.chat_metadata || {};
+                // @ts-expect-error TS(2554): Expected 2-3 arguments, but got 1.
                 messages.unshift(getSystemMessageByType(system_message_types.ASSISTANT_NOTE));
                 await clearChat();
                 chat.splice(0, chat.length, ...messages);
@@ -2169,6 +2323,7 @@ export function initChatUtilities() {
                 await printMessages();
             } catch (error) {
                 console.error('Error importing assistant chat:', error);
+                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                 toastr.error(t`It's either corrupted or not a valid JSONL file.`, t`Failed to import chat`);
             }
         };
@@ -2182,8 +2337,10 @@ export function initChatUtilities() {
     const fileInput = document.getElementById('file_form_input');
 
     // Do not change. #attachFile is added by extension.
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '#attachFile', function () {
         if (!(fileInput instanceof HTMLInputElement)) return;
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const $fileInput = $(fileInput);
 
         // Preserve existing files in DataTransfer
@@ -2207,23 +2364,30 @@ export function initChatUtilities() {
     });
 
     // Do not change. #manageAttachments is added by extension.
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '#manageAttachments', function () {
         openAttachmentManager();
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.mes_embed', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const messageBlock = $(this).closest('.mes');
         const messageId = Number(messageBlock.attr('mesid'));
         embedMessageFile(messageId, messageBlock);
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.editor_maximize', async function (e) {
         e.preventDefault();
         e.stopPropagation();
 
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const broId = $(this).attr('data-for');
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const bro = $(`#${broId}`);
         const contentEditable = bro.is('[contenteditable]');
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const withTab = $(this).attr('data-tab');
 
         if (!bro.length) {
@@ -2235,10 +2399,14 @@ export function initChatUtilities() {
         wrapper.classList.add('height100p', 'wide100p', 'flex-container');
         wrapper.classList.add('flexFlowColumn', 'justifyCenter', 'alignitemscenter');
         const textarea = document.createElement('textarea');
+        // @ts-expect-error TS(4111): Property 'for' comes from an index signature, so i... Remove this comment to see the full error message
         textarea.dataset.for = broId;
         if (bro[0].dataset.macros !== undefined) {
+            // @ts-expect-error TS(4111): Property 'macros' comes from an index signature, s... Remove this comment to see the full error message
             textarea.dataset.macros = bro[0].dataset.macros;
+            // @ts-expect-error TS(4111): Property 'macrosAutocomplete' comes from an index ... Remove this comment to see the full error message
             textarea.dataset.macrosAutocomplete = 'always'; // Always show autocomplete in expanded editor
+            // @ts-expect-error TS(4111): Property 'macrosAutocompleteStyle' comes from an i... Remove this comment to see the full error message
             textarea.dataset.macrosAutocompleteStyle = 'expanded'; // Use expanded autocomplete style
         }
         textarea.value = String(contentEditable ? bro[0].innerText : bro.val());
@@ -2288,17 +2456,24 @@ export function initChatUtilities() {
         await callGenericPopup(wrapper, POPUP_TYPE.TEXT, '', { wide: true, large: true });
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', 'body .mes .mes_text, body .mes .mes_reasoning', function (event) {
         if (!power_user.click_to_edit) return;
         if (window.getSelection().toString()) return;
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         if ($('.edit_textarea').length) return;
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(this).closest('.mes').find('.mes_edit').trigger('click');
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         if ($(event.target).closest('.mes_reasoning').length) {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('.reasoning_edit_textarea').trigger('focus');
         }
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.open_media_overrides', openExternalMediaOverridesDialog);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('input', '#forbid_media_override_allowed', function () {
         const entityId = getCurrentEntityId();
         if (!entityId) return;
@@ -2307,6 +2482,7 @@ export function initChatUtilities() {
         saveSettingsDebounced();
         reloadCurrentChat();
     });
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('input', '#forbid_media_override_forbidden', function () {
         const entityId = getCurrentEntityId();
         if (!entityId) return;
@@ -2315,6 +2491,7 @@ export function initChatUtilities() {
         saveSettingsDebounced();
         reloadCurrentChat();
     });
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('input', '#forbid_media_override_global', function () {
         const entityId = getCurrentEntityId();
         if (!entityId) return;
@@ -2324,6 +2501,7 @@ export function initChatUtilities() {
         reloadCurrentChat();
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#creators_note_styles_button').on('click', function (e) {
         e.stopPropagation();
         openGlobalStylesPreferenceDialog();
@@ -2331,6 +2509,7 @@ export function initChatUtilities() {
 
     /**
      * Returns information about the closest media container.
+     * @param containerClass
      * @returns {MediaContainerInfo} Information about the media container
      * @typedef {object} MediaContainerInfo
      * @property {JQuery<HTMLElement>} messageBlock The closest message block
@@ -2339,8 +2518,10 @@ export function initChatUtilities() {
      * @property {number} mediaIndex The media index within the message
      */
     function getMediaContainerInfo(containerClass = '.mes_media_container') {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const messageBlock = $(this).closest('.mes');
         const messageId = Number(messageBlock.attr('mesid'));
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const mediaBlock = $(this).closest(containerClass);
         const mediaIndex = Number(mediaBlock.attr('data-index'));
         return { messageBlock, messageId, mediaBlock, mediaIndex };
@@ -2374,7 +2555,9 @@ export function initChatUtilities() {
         await onImageSwiped(messageId, messageBlock, SWIPE_DIRECTION.RIGHT);
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#file_form').on('reset', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#file_form').addClass('displayNone');
     });
 

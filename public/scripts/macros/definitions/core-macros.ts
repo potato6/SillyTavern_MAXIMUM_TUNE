@@ -14,7 +14,6 @@ import { MacroCstWalker } from '../engine/MacroCstWalker.js';
  *
  * This marker is used internally by the macro engine to separate if/else branches.
  * It should never appear in user-generated content.
- *
  * @type {string}
  */
 export const ELSE_MARKER = '\u0000\u001FELSE\u001F\u0000';
@@ -97,7 +96,6 @@ export function registerCoreMacros() {
      * Splits raw content on the first {{else}} macro at nesting depth 0.
      * Tracks scoped {{if}}/{{/if}} pairs to find the correct top-level else.
      * Only {{if}} with 1 argument (condition only) are considered scoped blocks.
-     *
      * @param {string} content - The raw content to split
      * @returns {{ thenBranch: string, elseBranch: string | undefined }}
      */
@@ -229,6 +227,7 @@ export function registerCoreMacros() {
         category: MacroCategory.UTILITY,
         description: 'Current text from the send textarea.',
         returns: 'Current text from the send textarea.',
+        // @ts-expect-error TS(2339): Property 'value' does not exist on type 'Element'.
         handler: () => (/** @type {HTMLTextAreaElement} */(document.querySelector('#send_textarea')))?.value ?? '',
     });
 
@@ -396,6 +395,7 @@ export function registerCoreMacros() {
             const offset = globalOffset;
 
             // Reroll seed allows users to reset all picks in the chat via /reroll-pick command
+            // @ts-expect-error TS(2339): Property 'pick_reroll_seed' does not exist on type... Remove this comment to see the full error message
             const rerollSeed = chat_metadata.pick_reroll_seed || null;
 
             const combinedSeedString = [chatIdHash, rawContentHash, offset, rerollSeed].filter(it => it !== null).join('-');
@@ -468,14 +468,20 @@ export function registerCoreMacros() {
     });
 }
 
+/**
+ *
+ */
 function getChatIdHash() {
+    // @ts-expect-error TS(2339): Property 'chat_id_hash' does not exist on type '{}... Remove this comment to see the full error message
     const cachedIdHash = chat_metadata.chat_id_hash;
     if (typeof cachedIdHash === 'number') {
         return cachedIdHash;
     }
 
+    // @ts-expect-error TS(2339): Property 'main_chat' does not exist on type '{}'.
     const chatId = chat_metadata.main_chat ?? getCurrentChatId();
     const chatIdHash = getStringHash(chatId);
+    // @ts-expect-error TS(2339): Property 'chat_id_hash' does not exist on type '{}... Remove this comment to see the full error message
     chat_metadata.chat_id_hash = chatIdHash;
     return chatIdHash;
 }

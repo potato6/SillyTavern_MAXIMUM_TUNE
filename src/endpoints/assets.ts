@@ -100,15 +100,13 @@ export const router = express.Router();
 
 /**
  * HTTP POST handler function to retrieve name of all files of a given folder path.
- *
- * @param {Object} request - HTTP Request object. Require folder path in query
- * @param {Object} response - HTTP Response object will contain a list of file path.
- *
+ * @param {object} request - HTTP Request object. Require folder path in query
+ * @param {object} response - HTTP Response object will contain a list of file path.
  * @returns {void}
  */
 router.post('/get', async (request, response) => {
     const folderPath = path.join(request.user.directories.assets);
-    let output = {};
+    const output = {};
 
     try {
         if (fs.existsSync(folderPath) && fs.statSync(folderPath).isDirectory()) {
@@ -127,7 +125,7 @@ router.post('/get', async (request, response) => {
                     const live2d_folder = path.normalize(path.join(folderPath, folder));
                     const files = getFiles(live2d_folder);
                     //console.debug("FILE FOUND:",files)
-                    for (let file of files) {
+                    for (const file of files) {
                         if (file.includes('model') && file.endsWith('.json')) {
                             //console.debug("Asset live2d model found:",file)
                             output[folder].push(clientRelativePath(request.user.directories.root, file));
@@ -143,7 +141,7 @@ router.post('/get', async (request, response) => {
                     const vrm_model_folder = path.normalize(path.join(folderPath, 'vrm', 'model'));
                     let files = getFiles(vrm_model_folder);
                     //console.debug("FILE FOUND:",files)
-                    for (let file of files) {
+                    for (const file of files) {
                         if (!file.endsWith('.placeholder')) {
                             //console.debug("Asset VRM model found:",file)
                             // @ts-expect-error TS(2339): Property 'vrm' does not exist on type '{}'.
@@ -155,7 +153,7 @@ router.post('/get', async (request, response) => {
                     const vrm_animation_folder = path.normalize(path.join(folderPath, 'vrm', 'animation'));
                     files = getFiles(vrm_animation_folder);
                     //console.debug("FILE FOUND:",files)
-                    for (let file of files) {
+                    for (const file of files) {
                         if (!file.endsWith('.placeholder')) {
                             //console.debug("Asset VRM animation found:",file)
                             // @ts-expect-error TS(2339): Property 'vrm' does not exist on type '{}'.
@@ -184,10 +182,8 @@ router.post('/get', async (request, response) => {
 
 /**
  * HTTP POST handler function to download the requested asset.
- *
- * @param {Object} request - HTTP Request object, expects a url, a category and a filename.
- * @param {Object} response - HTTP Response only gives status.
- *
+ * @param {object} request - HTTP Request object, expects a url, a category and a filename.
+ * @param {object} response - HTTP Response only gives status.
  * @returns {void}
  */
 // @ts-expect-error TS(7030): Not all code paths return a value.
@@ -209,7 +205,7 @@ router.post('/download', async (request, response) => {
 
         // Check category
         let category = null;
-        for (let i of VALID_CATEGORIES)
+        for (const i of VALID_CATEGORIES)
             if (i == inputCategory)
                 category = i;
 
@@ -264,10 +260,8 @@ router.post('/download', async (request, response) => {
 
 /**
  * HTTP POST handler function to delete the requested asset.
- *
- * @param {Object} request - HTTP Request object, expects a category and a filename
- * @param {Object} response - HTTP Response only gives stats.
- *
+ * @param {object} request - HTTP Request object, expects a category and a filename
+ * @param {object} response - HTTP Response only gives stats.
  * @returns {void}
  */
 router.post('/delete', async (request, response) => {
@@ -275,7 +269,7 @@ router.post('/delete', async (request, response) => {
 
     // Check category
     let category = null;
-    for (let i of VALID_CATEGORIES)
+    for (const i of VALID_CATEGORIES)
         if (i == inputCategory)
             category = i;
 
@@ -310,10 +304,8 @@ router.post('/delete', async (request, response) => {
 ///////////////////////////////
 /**
  * HTTP POST handler function to retrieve a character background music list.
- *
- * @param {Object} request - HTTP Request object, expects a character name in the query.
- * @param {Object} response - HTTP Response object will contain a list of audio file path.
- *
+ * @param {object} request - HTTP Request object, expects a character name in the query.
+ * @param {object} response - HTTP Response object will contain a list of audio file path.
  * @returns {void}
  */
 router.post('/character', async (request, response) => {
@@ -328,7 +320,7 @@ router.post('/character', async (request, response) => {
 
     // Check category
     let category = null;
-    for (let i of VALID_CATEGORIES)
+    for (const i of VALID_CATEGORIES)
         if (i == inputCategory)
             category = i;
 
@@ -339,7 +331,7 @@ router.post('/character', async (request, response) => {
 
     const folderPath = path.join(request.user.directories.characters, name, category);
 
-    let output = [];
+    const output = [];
     try {
         if (fs.existsSync(folderPath) && fs.statSync(folderPath).isDirectory()) {
             // Live2d assets
@@ -350,7 +342,7 @@ router.post('/character', async (request, response) => {
 
                     const modelFolder = folderInfo.name;
                     const live2dModelPath = path.join(folderPath, modelFolder);
-                    for (let file of fs.readdirSync(live2dModelPath)) {
+                    for (const file of fs.readdirSync(live2dModelPath)) {
                         //console.debug("Character live2d model found:", file)
                         if (file.includes('model') && file.endsWith('.json'))
                             output.push(path.join('characters', name, category, modelFolder, file));
@@ -365,7 +357,7 @@ router.post('/character', async (request, response) => {
                     return filename != '.placeholder';
                 });
 
-            for (let i of files)
+            for (const i of files)
                 output.push(`/characters/${name}/${category}/${i}`);
         }
         return response.send(output);

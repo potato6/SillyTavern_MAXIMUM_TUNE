@@ -99,8 +99,8 @@ export function invalidateThumbnail(directories: any, type: any, file: any) {
  * @param {import('../users.js').UserDirectoryList} directories - User's directory configuration.
  * @param {ThumbnailType} type - Type of thumbnail ('bg', 'avatar', 'persona').
  * @param {string} file - The filename of the image.
- * @param {boolean} [forceGenerate=false] - Whether to force generation even if a thumbnail exists.
- * @param {boolean|null} [isKnownAnimated=null] - If true, skips generation. If false, assumes static. If null, checks.
+ * @param {boolean} [forceGenerate] - Whether to force generation even if a thumbnail exists.
+ * @param {boolean|null} [isKnownAnimated] - If true, skips generation. If false, assumes static. If null, checks.
  * @returns {Promise<{path: string|null, aspectRatio: number|null, resolution: number|null}>} Path to thumbnail, its aspect ratio, and resolution.
  */
 export async function generateThumbnail(directories: any, type: any, file: any, forceGenerate = false, isKnownAnimated = null) {

@@ -8,7 +8,7 @@ import EventSourceStream from './sse-stream.js';
 
 // #region Type Definitions
 /**
- * @typedef {Object} TextCompletionRequestBase
+ * @typedef {object} TextCompletionRequestBase
  * @property {boolean?} [stream=false] - Whether to stream the response
  * @property {number} max_tokens - Maximum number of tokens to generate
  * @property {string} [model] - Optional model name
@@ -19,7 +19,7 @@ import EventSourceStream from './sse-stream.js';
  */
 
 /**
- * @typedef {Object} TextCompletionPayloadBase
+ * @typedef {object} TextCompletionPayloadBase
  * @property {boolean?} [stream=false] - Whether to stream the response
  * @property {string} prompt - The text prompt for completion
  * @property {number} max_tokens - Maximum number of tokens to generate
@@ -33,14 +33,14 @@ import EventSourceStream from './sse-stream.js';
 /** @typedef {Record<string, any> & TextCompletionPayloadBase} TextCompletionPayload */
 
 /**
- * @typedef {Object} ChatCompletionMessage
+ * @typedef {object} ChatCompletionMessage
  * @property {string} [name] - The name of the message author (optional)
  * @property {string} role - The role of the message author (e.g., "user", "assistant", "system")
  * @property {string} content - The content of the message
  */
 
 /**
- * @typedef {Object} ChatCompletionPayloadBase
+ * @typedef {object} ChatCompletionPayloadBase
  * @property {boolean?} [stream=false] - Whether to stream the response
  * @property {ChatCompletionMessage[]} messages - Array of chat messages
  * @property {string} [model] - Optional model name to use for completion
@@ -57,16 +57,16 @@ import EventSourceStream from './sse-stream.js';
 /** @typedef {Record<string, any> & ChatCompletionPayloadBase} ChatCompletionPayload */
 
 /**
- * @typedef {Object} ExtractedData
+ * @typedef {object} ExtractedData
  * @property {string} content - Extracted content.
  * @property {string} reasoning - Extracted reasoning.
  */
 
 /**
- * @typedef {Object} StreamResponse
+ * @typedef {object} StreamResponse
  * @property {string} text - Generated text.
  * @property {string[]} swipes - Generated swipes
- * @property {Object} state - Generated state
+ * @property {object} state - Generated state
  * @property {string?} [state.reasoning] - Generated reasoning
  * @property {string?} [state.image] - Generated image
  */
@@ -173,7 +173,7 @@ export class TextCompletionService {
 
                 tryParseStreamingError(response, value.data, { quiet: true });
 
-                let data = JSON.parse(value.data);
+                const data = JSON.parse(value.data);
 
                 if (data?.choices?.[0]?.index > 0) {
                     const swipeIndex = data.choices[0].index - 1;
@@ -190,11 +190,11 @@ export class TextCompletionService {
     }
 
     /**
-    * Return a formatted prompt string given an array of messages, a chosen instruct preset, and instruct settings.
-    * @param {(ChatCompletionMessage & {ignoreInstruct?: boolean})[]} prompt An array of messages
-    * @param {InstructSettings|string} instructPreset Either the name of an instruct preset or the instruct preset object itself.
-    * @param {Partial<InstructSettings>} instructSettings Optional instruct settings
-    */
+     * Return a formatted prompt string given an array of messages, a chosen instruct preset, and instruct settings.
+     * @param {(ChatCompletionMessage & {ignoreInstruct?: boolean})[]} prompt An array of messages
+     * @param {InstructSettings|string} instructPreset Either the name of an instruct preset or the instruct preset object itself.
+     * @param {Partial<InstructSettings>} instructSettings Optional instruct settings
+     */
     static constructPrompt(prompt, instructPreset, instructSettings) {
         // InstructPreset may either be a name or itself a preset
         if (typeof instructPreset === 'string') {
@@ -210,6 +210,7 @@ export class TextCompletionService {
 
         // Make the type check shut up. We 100% don't have a string here.
         if (typeof instructPreset === 'string') {
+            // @ts-expect-error TS(7030): Not all code paths return a value.
             return;
         }
 
@@ -271,7 +272,7 @@ export class TextCompletionService {
     /**
      * Process and send a text completion request with optional preset & instruct
      * @param {TextCompletionPayload} requestData
-     * @param {Object} options - Configuration options
+     * @param {object} options - Configuration options
      * @param {string?} [options.presetName] - Name of the preset to use for generation settings
      * @param {string?} [options.instructName] - Name of instruct preset for message formatting
      * @param {Partial<InstructSettings>?} [options.instructSettings] - Override instruct settings
@@ -281,6 +282,7 @@ export class TextCompletionService {
      * @throws {Error}
      */
     static async processRequest(requestData, options = {}, extractData = true, signal = null) {
+        // @ts-expect-error TS(2339): Property 'presetName' does not exist on type '{}'.
         const { presetName, instructName } = options;
 
         // remove any undefined params in given request data
@@ -295,6 +297,7 @@ export class TextCompletionService {
                 const instructPresetManager = getPresetManager('instruct');
                 instructPreset = instructPresetManager?.getCompletionPresetByName(instructName);
                 if (instructPreset) {
+                    // @ts-expect-error TS(2339): Property 'instructSettings' does not exist on type... Remove this comment to see the full error message
                     requestData.prompt = this.constructPrompt(prompt, instructPreset, options.instructSettings);
                     const stoppingStrings = getInstructStoppingSequences({ customInstruct: instructPreset, useStopStrings: false });
                     requestData.stop = stoppingStrings;
@@ -331,7 +334,6 @@ export class TextCompletionService {
         // Remove stopping strings from the end
         if (!requestData.stream && extractData) {
             /** @type {ExtractedData} */
-            // @ts-ignore
             const extractedData = response;
 
             let message = extractedData.content;
@@ -387,10 +389,10 @@ export class TextCompletionService {
     /**
      * Converts a preset to a valid text completion payload.
      * Only supports temperature.
-     * @param {Object} preset - The preset configuration
-     * @param {Object} overridePreset - Additional parameters to override preset values
-     * @param {Object} overridePayload - Additional parameters to override payload values
-     * @returns {Object} - Formatted payload for text completion API
+     * @param {object} preset - The preset configuration
+     * @param {object} overridePreset - Additional parameters to override preset values
+     * @param {object} overridePayload - Additional parameters to override payload values
+     * @returns {object} - Formatted payload for text completion API
      */
     static presetToGeneratePayload(preset, overridePreset = {}, overridePayload = {}) {
         if (!preset || typeof preset !== 'object') {
@@ -408,6 +410,7 @@ export class TextCompletionService {
         }
 
         // convert to a generation payload
+        // @ts-expect-error TS(2339): Property 'model' does not exist on type '{}'.
         const payload = createTextGenGenerationData(settings, overridePayload.model, overridePayload.prompt, preset.genamt);
 
         // apply overrides
@@ -534,9 +537,9 @@ export class ChatCompletionService {
     /**
      * Process and send a chat completion request with optional preset
      * @param {ChatCompletionPayload} requestData - payload data, overriding preset if given
-     * @param {Object} options - Configuration options
+     * @param {object} options - Configuration options
      * @param {string?} [options.presetName] - Name of the preset to use for generation settings
-     * @param {boolean} [extractData=true] - Whether to extract structured data from response
+     * @param {boolean} [extractData] - Whether to extract structured data from response
      * @param {AbortSignal?} [signal] - Abort signal
      * @returns {Promise<ExtractedData | (() => AsyncGenerator<StreamResponse>)>} If not streaming, returns extracted data; if streaming, returns a function that creates an AsyncGenerator
      * @throws {Error}
@@ -567,9 +570,9 @@ export class ChatCompletionService {
     /**
      * Converts a preset to a valid chat completion payload
      * Only supports temperature.
-     * @param {Object} preset - The preset configuration
-     * @param {Object} overridePreset - Additional parameters to override preset values
-     * @param {Object} overridePayload - Additional parameters to override payload values
+     * @param {object} preset - The preset configuration
+     * @param {object} overridePreset - Additional parameters to override preset values
+     * @param {object} overridePayload - Additional parameters to override payload values
      * @returns {Promise<any>} - Formatted payload for chat completion API
      */
     static async presetToGeneratePayload(preset, overridePreset = {}, overridePayload = {}) {
@@ -598,10 +601,12 @@ export class ChatCompletionService {
         });
 
         // Convert from settings to generation payload
+        // @ts-expect-error TS(2339): Property 'model' does not exist on type '{}'.
         const data = await createGenerationParameters(settings, overridePayload.model, 'quiet', overridePayload.messages);
         const payload = data.generate_data;
 
         // apply overrides
+        // @ts-expect-error TS(2345): Argument of type '{ type: any; messages: any; mode... Remove this comment to see the full error message
         return this.createRequestData({ ...payload, ...overridePayload });
     }
 }

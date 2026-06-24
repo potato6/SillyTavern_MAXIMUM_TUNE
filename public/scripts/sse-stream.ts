@@ -8,12 +8,18 @@ const NOT_PRIMARY = Symbol('not_primary_swipe');
  * A stream which handles Server-Sent Events from a binary ReadableStream like you get from the fetch API.
  */
 class EventSourceStream {
+    readable: any;
+    writable: any;
     constructor() {
         const decoder = new TextDecoderStream('utf-8');
 
         let streamBuffer = '';
         let lastEventId = '';
 
+        /**
+         *
+         * @param controller
+         */
         function processChunk(controller) {
             // Events are separated by two newlines
             const events = streamBuffer.split(/\r\n\r\n|\r\r|\n\n/g);
@@ -199,6 +205,7 @@ async function* parseStreamData(json) {
         // llama.cpp?
         const isNotPrimary = json?.index > 0;
         if (isNotPrimary) {
+            // @ts-expect-error TS(2322): Type 'symbol' is not assignable to type 'Error'.
             throw new Error('Not a primary swipe', { cause: NOT_PRIMARY });
         }
         for (let i = 0; i < json.content.length; i++) {
@@ -213,6 +220,7 @@ async function* parseStreamData(json) {
         // OpenAI-likes and friends
         const isNotPrimary = json?.choices?.[0]?.index > 0;
         if (isNotPrimary || json.choices.length === 0) {
+            // @ts-expect-error TS(2322): Type 'symbol' is not assignable to type 'Error'.
             throw new Error('Not a primary swipe', { cause: NOT_PRIMARY });
         }
 
@@ -338,6 +346,8 @@ async function* parseStreamData(json) {
  * Like the default one, but multiplies the events by the number of letters in the event data.
  */
 export class SmoothEventSourceStream extends EventSourceStream {
+    // @ts-expect-error TS(2612): Property 'readable' will overwrite the base proper... Remove this comment to see the full error message
+    readable: any;
     constructor() {
         super();
         let lastStr = '';
@@ -361,11 +371,12 @@ export class SmoothEventSourceStream extends EventSourceStream {
                     }
 
                     for await (const parsed of parseStreamData(json)) {
-                        !(power_user.smooth_streaming_no_think && parsed.reasoning) && hasFocus && await delay(getDelay(lastStr));
+                        !(power_user.smooth_streaming_no_think && parsed.reasoning) && hasFocus && (await delay(getDelay(lastStr)));
                         controller.enqueue(new MessageEvent(event.type, { data: JSON.stringify(parsed.data) }));
                         lastStr = parsed.chunk;
                     }
                 } catch (error) {
+                    // @ts-expect-error TS(2367): This condition will always return 'true' since the... Remove this comment to see the full error message
                     if (error instanceof Error && error.cause !== NOT_PRIMARY) {
                         console.debug('Smooth Streaming parsing error', error);
                     }
@@ -378,6 +389,9 @@ export class SmoothEventSourceStream extends EventSourceStream {
     }
 }
 
+/**
+ *
+ */
 export function getEventSourceStream() {
     if (power_user.smooth_streaming) {
         return new SmoothEventSourceStream();

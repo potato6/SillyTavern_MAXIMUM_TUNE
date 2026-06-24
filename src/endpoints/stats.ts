@@ -28,7 +28,7 @@ const monthNames = [
 ];
 
 /**
- * @type {Map<string, Object>} The stats object for each user.
+ * @type {Map<string, object>} The stats object for each user.
  */
 const STATS = new Map();
 /**
@@ -47,10 +47,8 @@ const TIMESTAMPS = new Map();
  *
  * The function returns the timestamp as the number of milliseconds since
  * the Unix Epoch, which can be converted to a JavaScript Date object with new Date().
- *
  * @param {string|number|Date} timestamp - The timestamp to convert.
  * @returns {number} The timestamp in milliseconds since the Unix Epoch, or 0 if the input cannot be parsed.
- *
  * @example
  * // Unix timestamp
  * parseTimestamp(1609459200);
@@ -83,7 +81,7 @@ function parseTimestamp(timestamp: any) {
         return new Date(timestamp).getTime();
     }
 
-    let dateFormats = [];
+    const dateFormats = [];
 
     // meridiem-based format
     const convertFromMeridiemBased = (_: any, month: any, day: any, year: any, hour: any, minute: any, meridiem: any) => {
@@ -118,23 +116,22 @@ function parseTimestamp(timestamp: any) {
 
 /**
  * Collects and aggregates stats for all characters.
- *
  * @param {string} chatsPath - The path to the directory containing the chat files.
  * @param {string} charactersPath - The path to the directory containing the character files.
- * @returns {Promise<Object>} The aggregated stats object.
+ * @returns {Promise<object>} The aggregated stats object.
  */
 async function collectAndCreateStats(chatsPath: any, charactersPath: any) {
     const files = await readdir(charactersPath);
 
     const pngFiles = files.filter((file) => file.endsWith('.png'));
 
-    let processingPromises = pngFiles.map((file) =>
+    const processingPromises = pngFiles.map((file) =>
         calculateStats(chatsPath, file),
     );
     const statsArr = await Promise.all(processingPromises);
 
     let finalStats = {};
-    for (let stat of statsArr) {
+    for (const stat of statsArr) {
         finalStats = { ...finalStats, ...stat };
     }
     // tag with timestamp on when stats were generated
@@ -222,15 +219,14 @@ export async function onExit() {
 
 /**
  * Reads the contents of a file and returns the lines in the file as an array.
- *
  * @param {string} filepath - The path of the file to be read.
  * @returns {Array<string>} - The lines in the file.
  * @throws Will throw an error if the file cannot be read.
  */
 function readAndParseFile(filepath: any) {
     try {
-        let file = fs.readFileSync(filepath, 'utf8');
-        let lines = file.split('\n');
+        const file = fs.readFileSync(filepath, 'utf8');
+        const lines = file.split('\n');
         return lines;
     } catch (error) {
         console.error(`Error reading file at ${filepath}: ${error}`);
@@ -240,20 +236,18 @@ function readAndParseFile(filepath: any) {
 
 /**
  * Calculates the time difference between two dates.
- *
  * @param {string} gen_started - The start time in ISO 8601 format.
  * @param {string} gen_finished - The finish time in ISO 8601 format.
  * @returns {number} - The difference in time in milliseconds.
  */
 function calculateGenTime(gen_started: any, gen_finished: any) {
-    let startDate = new Date(gen_started);
-    let endDate = new Date(gen_finished);
+    const startDate = new Date(gen_started);
+    const endDate = new Date(gen_finished);
     return Number(endDate) - Number(startDate);
 }
 
 /**
  * Counts the number of words in a string.
- *
  * @param {string} str - The string to count words in.
  * @returns {number} - The number of words in the string.
  */
@@ -264,10 +258,9 @@ function countWordsInString(str: any) {
 
 /**
  * calculateStats - Calculate statistics for a given character chat directory.
- *
  * @param  {string} chatsPath The directory containing the chat files.
  * @param  {string} item     The name of the character.
- * @return {object}          An object containing the calculated statistics.
+ * @returns {object}          An object containing the calculated statistics.
  */
 const calculateStats = (chatsPath: any, item: any) => {
     const chatDir = path.join(chatsPath, item.replace('.png', ''));
@@ -282,7 +275,7 @@ const calculateStats = (chatsPath: any, item: any) => {
         date_last_chat: 0,
         date_first_chat: new Date('9999-12-31T23:59:59.999Z').getTime(),
     };
-    let uniqueGenStartTimes = new Set();
+    const uniqueGenStartTimes = new Set();
 
     if (fs.existsSync(chatDir)) {
         const chats = fs.readdirSync(chatDir);
@@ -320,8 +313,8 @@ const calculateStats = (chatsPath: any, item: any) => {
 /**
  * Sets the current charStats object.
  * @param {string} handle - The user handle.
- * @param {Object} stats - The new charStats object.
- **/
+ * @param {object} stats - The new charStats object.
+ */
 function setCharStats(handle: any, stats: any) {
     stats.timestamp = Date.now();
     STATS.set(handle, stats);
@@ -329,10 +322,10 @@ function setCharStats(handle: any, stats: any) {
 
 /**
  * Calculates the total generation time and word count for a chat with a character.
- *
  * @param {string} chatDir - The directory path where character chat files are stored.
  * @param {string} chat - The name of the chat file.
- * @returns {Object} - An object containing the total generation time, user word count, and non-user word count.
+ * @param uniqueGenStartTimes
+ * @returns {object} - An object containing the total generation time, user word count, and non-user word count.
  * @throws Will throw an error if the file cannot be read or parsed.
  */
 function calculateTotalGenTimeAndWordCount(
@@ -340,8 +333,8 @@ function calculateTotalGenTimeAndWordCount(
     chat: any,
     uniqueGenStartTimes: any,
 ) {
-    let filepath = path.join(chatDir, chat);
-    let lines = readAndParseFile(filepath);
+    const filepath = path.join(chatDir, chat);
+    const lines = readAndParseFile(filepath);
 
     let totalGenTime = 0;
     let userWordCount = 0;
@@ -351,12 +344,12 @@ function calculateTotalGenTimeAndWordCount(
     let totalSwipeCount = 0;
     let firstChatTime = new Date('9999-12-31T23:59:59.999Z').getTime();
 
-    for (let line of lines) {
+    for (const line of lines) {
         if (line.length) {
             try {
-                let json = JSON.parse(line);
+                const json = JSON.parse(line);
                 if (json.mes) {
-                    let hash = crypto
+                    const hash = crypto
                         .createHash('sha256')
                         .update(json.mes)
                         .digest('hex');
@@ -369,7 +362,7 @@ function calculateTotalGenTimeAndWordCount(
                 }
 
                 if (json.gen_started && json.gen_finished) {
-                    let genTime = calculateGenTime(
+                    const genTime = calculateGenTime(
                         json.gen_started,
                         json.gen_finished,
                     );
@@ -382,7 +375,7 @@ function calculateTotalGenTimeAndWordCount(
                 }
 
                 if (json.mes) {
-                    let wordCount = countWordsInString(json.mes);
+                    const wordCount = countWordsInString(json.mes);
                     json.is_user
                         ? (userWordCount += wordCount)
                         : (nonUserWordCount += wordCount);
@@ -393,9 +386,9 @@ function calculateTotalGenTimeAndWordCount(
                     totalSwipeCount += json.swipes.length - 1; // Subtract 1 to not count the first swipe
                     for (let i = 1; i < json.swipes.length; i++) {
                         // Start from the second swipe
-                        let swipeText = json.swipes[i];
+                        const swipeText = json.swipes[i];
 
-                        let wordCount = countWordsInString(swipeText);
+                        const wordCount = countWordsInString(swipeText);
                         json.is_user
                             ? (userWordCount += wordCount)
                             : (nonUserWordCount += wordCount);
@@ -406,7 +399,7 @@ function calculateTotalGenTimeAndWordCount(
                 if (json.swipe_info && json.swipe_info.length > 1) {
                     for (let i = 1; i < json.swipe_info.length; i++) {
                         // Start from the second swipe
-                        let swipe = json.swipe_info[i];
+                        const swipe = json.swipe_info[i];
                         if (swipe.gen_started && swipe.gen_finished) {
                             totalGenTime += calculateGenTime(
                                 swipe.gen_started,
@@ -462,7 +455,7 @@ router.post('/recreate', async function (request, response) {
 
 /**
  * Handle a POST request to update the stats object
-*/
+ */
 router.post('/update', function (request, response) {
     if (!request.body) return response.sendStatus(400);
     setCharStats(request.user.profile.handle, request.body);

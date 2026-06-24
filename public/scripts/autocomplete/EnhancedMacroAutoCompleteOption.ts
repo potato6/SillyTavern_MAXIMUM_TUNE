@@ -19,7 +19,7 @@ import { onboardingExperimentalMacroEngine } from '../macros/engine/MacroDiagnos
 
 /**
  * Macro context passed from the parser to provide cursor position info.
- * @typedef {Object} MacroAutoCompleteContext
+ * @typedef {object} MacroAutoCompleteContext
  * @property {string} fullText - The full macro text being typed (without {{ }}).
  * @property {number} cursorOffset - Cursor position within the macro text.
  * @property {string} paddingBefore - Padding before the macro identifier/flags.
@@ -55,7 +55,7 @@ import { onboardingExperimentalMacroEngine } from '../macros/engine/MacroDiagnos
  */
 
 /**
- * @typedef {Object} EnhancedMacroAutoCompleteOptions
+ * @typedef {object} EnhancedMacroAutoCompleteOptions
  * @property {boolean} [noBraces=false] - If true, display without {{ }} braces (for use as values, e.g., in {{if}} conditions).
  * @property {string} [paddingAfter=''] - Whitespace to add before closing }} (for matching opening whitespace style).
  * @property {boolean} [closeWithBraces=false] - If true, the completion will add }} to close the macro.
@@ -139,6 +139,7 @@ export class EnhancedMacroAutoCompleteOption extends AutoCompleteOption {
      * Tight display: [icon] [signature] [description] [alias icon?] [source icon]
      * @returns {HTMLElement}
      */
+    // @ts-expect-error TS(4114): This member must have an 'override' modifier becau... Remove this comment to see the full error message
     renderItem() {
         const li = document.createElement('li');
         li.classList.add('item', 'macro-ac-item');
@@ -204,6 +205,7 @@ export class EnhancedMacroAutoCompleteOption extends AutoCompleteOption {
      * Reuses renderMacroDetails from MacroBrowser with autocomplete-specific options.
      * @returns {DocumentFragment}
      */
+    // @ts-expect-error TS(4114): This member must have an 'override' modifier becau... Remove this comment to see the full error message
     renderDetails() {
         const frag = document.createDocumentFragment();
 
@@ -465,6 +467,7 @@ export class MacroFlagAutoCompleteOption extends AutoCompleteOption {
      * Uses the same structure as other autocomplete options for consistent styling.
      * @returns {HTMLElement}
      */
+    // @ts-expect-error TS(4114): This member must have an 'override' modifier becau... Remove this comment to see the full error message
     renderItem() {
         // Use base class makeItem for consistent styling
         const li = this.makeItem(
@@ -485,6 +488,7 @@ export class MacroFlagAutoCompleteOption extends AutoCompleteOption {
      * Renders the details panel for this flag.
      * @returns {DocumentFragment}
      */
+    // @ts-expect-error TS(4114): This member must have an 'override' modifier becau... Remove this comment to see the full error message
     renderDetails() {
         const frag = document.createDocumentFragment();
 
@@ -535,7 +539,7 @@ export const VariableShorthandType = Object.freeze({
 });
 
 /**
- * @typedef {Object} VariableShorthandDefinition
+ * @typedef {object} VariableShorthandDefinition
  * @property {VariableShorthandType} type - The prefix symbol.
  * @property {string} name - Human-readable name.
  * @property {string} description - Description of what this prefix does.
@@ -613,6 +617,7 @@ export class VariableShorthandAutoCompleteOption extends AutoCompleteOption {
      * Renders the autocomplete list item for this variable shorthand.
      * @returns {HTMLElement}
      */
+    // @ts-expect-error TS(4114): This member must have an 'override' modifier becau... Remove this comment to see the full error message
     renderItem() {
         const li = this.makeItem(
             `${this.#varDef.type} ${this.#varDef.name}`,
@@ -632,6 +637,7 @@ export class VariableShorthandAutoCompleteOption extends AutoCompleteOption {
      * Renders the details panel for this variable shorthand.
      * @returns {DocumentFragment}
      */
+    // @ts-expect-error TS(4114): This member must have an 'override' modifier becau... Remove this comment to see the full error message
     renderDetails() {
         const frag = document.createDocumentFragment();
 
@@ -722,8 +728,8 @@ export class VariableNameAutoCompleteOption extends AutoCompleteOption {
     /**
      * @param {string} varName - The variable name.
      * @param {'local'|'global'} scope - Whether this is a local or global variable.
-     * @param {boolean} [isNewVariable=false] - Whether this is a "create new variable" option.
-     * @param {boolean} [isInvalidName=false] - Whether this name is invalid for shorthand syntax.
+     * @param {boolean} [isNewVariable] - Whether this is a "create new variable" option.
+     * @param {boolean} [isInvalidName] - Whether this name is invalid for shorthand syntax.
      */
     constructor(varName, scope, isNewVariable = false, isInvalidName = false) {
         const icon = scope === 'local' ? 'L' : 'G';
@@ -758,6 +764,7 @@ export class VariableNameAutoCompleteOption extends AutoCompleteOption {
      * Renders the autocomplete list item for this variable.
      * @returns {HTMLElement}
      */
+    // @ts-expect-error TS(4114): This member must have an 'override' modifier becau... Remove this comment to see the full error message
     renderItem() {
         const scopeLabel = this.#scope === 'local' ? 'Local' : 'Global';
         let description;
@@ -793,6 +800,7 @@ export class VariableNameAutoCompleteOption extends AutoCompleteOption {
      * Renders the details panel for this variable.
      * @returns {DocumentFragment}
      */
+    // @ts-expect-error TS(4114): This member must have an 'override' modifier becau... Remove this comment to see the full error message
     renderDetails() {
         const frag = document.createDocumentFragment();
 
@@ -1017,6 +1025,7 @@ export class VariableOperatorAutoCompleteOption extends AutoCompleteOption {
      * Renders the autocomplete list item for this operator.
      * @returns {HTMLElement}
      */
+    // @ts-expect-error TS(4114): This member must have an 'override' modifier becau... Remove this comment to see the full error message
     renderItem() {
         const li = this.makeItem(
             `${this.#operatorDef.symbol} ${this.#operatorDef.name}`,
@@ -1036,6 +1045,7 @@ export class VariableOperatorAutoCompleteOption extends AutoCompleteOption {
      * Renders the details panel for this operator.
      * @returns {DocumentFragment}
      */
+    // @ts-expect-error TS(4114): This member must have an 'override' modifier becau... Remove this comment to see the full error message
     renderDetails() {
         const frag = document.createDocumentFragment();
 
@@ -1077,7 +1087,7 @@ export class VariableValueContextAutoCompleteOption extends AutoCompleteOption {
 
     /**
      * @param {{ symbol: string, name: string, description: string, needsValue: boolean }} operatorDef - The operator definition.
-     * @param {string} [currentValue=''] - The value currently being typed.
+     * @param {string} [currentValue] - The value currently being typed.
      */
     constructor(operatorDef, currentValue = '') {
         super('value', '📝');
@@ -1095,6 +1105,7 @@ export class VariableValueContextAutoCompleteOption extends AutoCompleteOption {
      * Renders the autocomplete list item for this value context.
      * @returns {HTMLElement}
      */
+    // @ts-expect-error TS(4114): This member must have an 'override' modifier becau... Remove this comment to see the full error message
     renderItem() {
         const li = this.makeItem(
             '<value>',
@@ -1114,6 +1125,7 @@ export class VariableValueContextAutoCompleteOption extends AutoCompleteOption {
      * Renders the details panel for this value context.
      * @returns {DocumentFragment}
      */
+    // @ts-expect-error TS(4114): This member must have an 'override' modifier becau... Remove this comment to see the full error message
     renderDetails() {
         const frag = document.createDocumentFragment();
 
@@ -1170,25 +1182,30 @@ export class MacroClosingTagAutoCompleteOption extends AutoCompleteOption {
 
     /**
      * @param {string} macroName - The name of the macro to close.
-     * @param {Object} [options] - Optional configuration.
-     * @param {string} [options.paddingBefore=''] - Whitespace after {{ in opening tag (target padding).
-     * @param {string} [options.paddingAfter=''] - Whitespace before }} in opening tag (target padding).
-     * @param {string} [options.currentPadding=''] - Whitespace the user has already typed after {{.
-     * @param {boolean} [options.isOptional=false] - Whether this closing tag is for an optional scope.
-     * @param {number} [options.nestingLevel=0] - Nesting level (0 = innermost).
+     * @param {object} [options] - Optional configuration.
+     * @param {string} [options.paddingBefore] - Whitespace after {{ in opening tag (target padding).
+     * @param {string} [options.paddingAfter] - Whitespace before }} in opening tag (target padding).
+     * @param {string} [options.currentPadding] - Whitespace the user has already typed after {{.
+     * @param {boolean} [options.isOptional] - Whether this closing tag is for an optional scope.
+     * @param {number} [options.nestingLevel] - Nesting level (0 = innermost).
      */
     constructor(macroName, options = {}) {
         // The closing tag is what we're suggesting - use /macroName as the name for matching
         const closingTag = `/${macroName}`;
         super(closingTag, '{/');
         this.#macroName = macroName;
+        // @ts-expect-error TS(2339): Property 'paddingBefore' does not exist on type '{... Remove this comment to see the full error message
         this.#paddingBefore = options.paddingBefore ?? '';
+        // @ts-expect-error TS(2339): Property 'paddingAfter' does not exist on type '{}... Remove this comment to see the full error message
         this.#paddingAfter = options.paddingAfter ?? '';
+        // @ts-expect-error TS(2339): Property 'isOptional' does not exist on type '{}'.
         this.#isOptional = options.isOptional ?? false;
+        // @ts-expect-error TS(2339): Property 'nestingLevel' does not exist on type '{}... Remove this comment to see the full error message
         this.#nestingLevel = options.nestingLevel ?? 0;
 
         // Calculate the replacement offset to replace any existing whitespace the user typed
         // This allows us to normalize the whitespace to match the opening tag's style
+        // @ts-expect-error TS(2339): Property 'currentPadding' does not exist on type '... Remove this comment to see the full error message
         const currentPadding = options.currentPadding ?? '';
         // Negative offset to start replacement earlier (eating the user's whitespace)
         this.replacementStartOffset = -currentPadding.length;
@@ -1221,6 +1238,7 @@ export class MacroClosingTagAutoCompleteOption extends AutoCompleteOption {
      * Uses the same structure as other macro options for consistent styling.
      * @returns {HTMLElement}
      */
+    // @ts-expect-error TS(4114): This member must have an 'override' modifier becau... Remove this comment to see the full error message
     renderItem() {
         const li = document.createElement('li');
         li.classList.add('item', 'macro-ac-item');
@@ -1283,6 +1301,7 @@ export class MacroClosingTagAutoCompleteOption extends AutoCompleteOption {
      * Renders the details panel for this closing tag.
      * @returns {DocumentFragment}
      */
+    // @ts-expect-error TS(4114): This member must have an 'override' modifier becau... Remove this comment to see the full error message
     renderDetails() {
         const frag = document.createDocumentFragment();
 
@@ -1320,7 +1339,6 @@ export class MacroClosingTagAutoCompleteOption extends AutoCompleteOption {
 /**
  * Parses the macro text to determine current argument context.
  * Handles leading whitespace and flags before the identifier.
- *
  * @param {string} macroText - The text inside {{ }}, e.g., "roll::1d20" or "!user" or "  description  ".
  * @param {number} cursorOffset - Cursor position within macroText.
  * @returns {MacroAutoCompleteContext}
@@ -1765,8 +1783,7 @@ export function parseMacroContext(macroText, cursorOffset) {
 /**
  * A simple, generic autocomplete option for displaying basic items with name, symbol, and description.
  * Useful for simple options like inversion markers, prefixes, etc. without needing a full custom class.
- *
- * @extends AutoCompleteOption
+ * @augments AutoCompleteOption
  */
 export class SimpleAutoCompleteOption extends AutoCompleteOption {
     /** @type {string} */
@@ -1776,12 +1793,12 @@ export class SimpleAutoCompleteOption extends AutoCompleteOption {
     #detailedDescription;
 
     /**
-     * @param {Object} config - Configuration for the option.
+     * @param {object} config - Configuration for the option.
      * @param {string} config.name - The option name/key (used for matching).
-     * @param {string} [config.symbol=' '] - Icon/symbol shown in the type column.
-     * @param {string} [config.description=''] - Short description shown inline.
+     * @param {string} [config.symbol] - Icon/symbol shown in the type column.
+     * @param {string} [config.description] - Short description shown inline.
      * @param {string} [config.detailedDescription] - Longer description for details panel (supports HTML). Falls back to description if not provided.
-     * @param {string} [config.type='simple'] - Type identifier for CSS/data attributes.
+     * @param {string} [config.type] - Type identifier for CSS/data attributes.
      */
     constructor({ name, symbol = ' ', description = '', detailedDescription = null, type = 'simple' }) {
         super(name, symbol, type);
@@ -1802,6 +1819,7 @@ export class SimpleAutoCompleteOption extends AutoCompleteOption {
     /**
      * @returns {HTMLElement}
      */
+    // @ts-expect-error TS(4114): This member must have an 'override' modifier becau... Remove this comment to see the full error message
     renderItem() {
         const li = document.createElement('li');
         li.classList.add('item');
@@ -1847,6 +1865,7 @@ export class SimpleAutoCompleteOption extends AutoCompleteOption {
     /**
      * @returns {DocumentFragment}
      */
+    // @ts-expect-error TS(4114): This member must have an 'override' modifier becau... Remove this comment to see the full error message
     renderDetails() {
         const frag = document.createDocumentFragment();
 

@@ -26,6 +26,7 @@ export function registerVariableMacros() {
         returns: '',
         exampleUsage: ['{{setvar::myvar::foo}}', '{{setvar::myintvar::3}}'],
         handler: ({ unnamedArgs: [name, value] }) => {
+            // @ts-expect-error TS(2339): Property 'variables' does not exist on type '() =>... Remove this comment to see the full error message
             ctx.variables.local.set(name, value);
             return '';
         },
@@ -50,6 +51,7 @@ export function registerVariableMacros() {
         returns: '',
         exampleUsage: ['{{addvar::mystrvar::foo}}', '{{addvar::myintvar::3}}'],
         handler: ({ unnamedArgs: [name, value] }) => {
+            // @ts-expect-error TS(2339): Property 'variables' does not exist on type '() =>... Remove this comment to see the full error message
             ctx.variables.local.add(name, value);
             return '';
         },
@@ -70,6 +72,7 @@ export function registerVariableMacros() {
         returnType: MacroValueType.NUMBER,
         exampleUsage: ['{{incvar::myintvar}}', '{{incvar some-local-int-var}}'],
         handler: ({ unnamedArgs: [name], normalize }) => {
+            // @ts-expect-error TS(2339): Property 'variables' does not exist on type '() =>... Remove this comment to see the full error message
             const result = ctx.variables.local.inc(name);
             return normalize(result);
         },
@@ -90,6 +93,7 @@ export function registerVariableMacros() {
         returnType: MacroValueType.NUMBER,
         exampleUsage: ['{{decvar::myintvar}}', '{{decvar some-local-int-var}}'],
         handler: ({ unnamedArgs: [name], normalize }) => {
+            // @ts-expect-error TS(2339): Property 'variables' does not exist on type '() =>... Remove this comment to see the full error message
             const result = ctx.variables.local.dec(name);
             return normalize(result);
         },
@@ -110,6 +114,7 @@ export function registerVariableMacros() {
         returnType: [MacroValueType.STRING, MacroValueType.NUMBER],
         exampleUsage: ['{{getvar::myvar}}', '{{getvar myintvar}}'],
         handler: ({ unnamedArgs: [name], normalize }) => {
+            // @ts-expect-error TS(2339): Property 'variables' does not exist on type '() =>... Remove this comment to see the full error message
             const result = ctx.variables.local.get(name);
             return normalize(result);
         },
@@ -131,6 +136,7 @@ export function registerVariableMacros() {
         returnType: MacroValueType.STRING,
         exampleUsage: ['{{hasvar::myvar}}', '{{hasvar some-local-var}}'],
         handler: ({ unnamedArgs: [name] }) => {
+            // @ts-expect-error TS(2339): Property 'variables' does not exist on type '() =>... Remove this comment to see the full error message
             return ctx.variables.local.has(name) ? 'true' : 'false';
         },
     });
@@ -150,6 +156,7 @@ export function registerVariableMacros() {
         returns: '',
         exampleUsage: ['{{deletevar::myvar}}', '{{deletevar some-local-var}}'],
         handler: ({ unnamedArgs: [name] }) => {
+            // @ts-expect-error TS(2339): Property 'variables' does not exist on type '() =>... Remove this comment to see the full error message
             ctx.variables.local.del(name);
             return '';
         },
@@ -174,6 +181,7 @@ export function registerVariableMacros() {
         returns: '',
         exampleUsage: ['{{setglobalvar::myvar::foo}}', '{{setglobalvar::myintvar::3}}'],
         handler: ({ unnamedArgs: [name, value] }) => {
+            // @ts-expect-error TS(2339): Property 'variables' does not exist on type '() =>... Remove this comment to see the full error message
             ctx.variables.global.set(name, value);
             return '';
         },
@@ -198,6 +206,7 @@ export function registerVariableMacros() {
         returns: '',
         exampleUsage: ['{{addglobalvar::mystrvar::foo}}', '{{addglobalvar::myintvar::3}}'],
         handler: ({ unnamedArgs: [name, value] }) => {
+            // @ts-expect-error TS(2339): Property 'variables' does not exist on type '() =>... Remove this comment to see the full error message
             ctx.variables.global.add(name, value);
             return '';
         },
@@ -218,6 +227,7 @@ export function registerVariableMacros() {
         returnType: MacroValueType.NUMBER,
         exampleUsage: ['{{incglobalvar::myintvar}}', '{{incglobalvar some-global-int-var}}'],
         handler: ({ unnamedArgs: [name], normalize }) => {
+            // @ts-expect-error TS(2339): Property 'variables' does not exist on type '() =>... Remove this comment to see the full error message
             const result = ctx.variables.global.inc(name);
             return normalize(result);
         },
@@ -238,6 +248,7 @@ export function registerVariableMacros() {
         returnType: MacroValueType.NUMBER,
         exampleUsage: ['{{decglobalvar::myintvar}}', '{{decglobalvar some-global-int-var}}'],
         handler: ({ unnamedArgs: [name], normalize }) => {
+            // @ts-expect-error TS(2339): Property 'variables' does not exist on type '() =>... Remove this comment to see the full error message
             const result = ctx.variables.global.dec(name);
             return normalize(result);
         },
@@ -258,6 +269,7 @@ export function registerVariableMacros() {
         returnType: [MacroValueType.STRING, MacroValueType.NUMBER],
         exampleUsage: ['{{getglobalvar::myvar}}', '{{getglobalvar myintvar}}'],
         handler: ({ unnamedArgs: [name], normalize }) => {
+            // @ts-expect-error TS(2339): Property 'variables' does not exist on type '() =>... Remove this comment to see the full error message
             const result = ctx.variables.global.get(name);
             return normalize(result);
         },
@@ -279,6 +291,7 @@ export function registerVariableMacros() {
         returnType: MacroValueType.STRING,
         exampleUsage: ['{{hasglobalvar::myvar}}', '{{hasglobalvar some-global-var}}'],
         handler: ({ unnamedArgs: [name] }) => {
+            // @ts-expect-error TS(2339): Property 'variables' does not exist on type '() =>... Remove this comment to see the full error message
             return ctx.variables.global.has(name) ? 'true' : 'false';
         },
     });
@@ -298,6 +311,7 @@ export function registerVariableMacros() {
         returns: '',
         exampleUsage: ['{{deleteglobalvar::myvar}}', '{{deleteglobalvar some-global-var}}'],
         handler: ({ unnamedArgs: [name] }) => {
+            // @ts-expect-error TS(2339): Property 'variables' does not exist on type '() =>... Remove this comment to see the full error message
             ctx.variables.global.del(name);
             return '';
         },

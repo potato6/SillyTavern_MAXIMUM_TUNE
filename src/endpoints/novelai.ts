@@ -72,6 +72,10 @@ const eratoLogitBiasExp = [
     { 'sequence': [128041], 'bias': -0.08, 'ensure_sequence_finish': false, 'generate_once': false },
 ];
 
+/**
+ *
+ * @param model
+ */
 function getBadWordsList(model: any) {
     let list: any = [];
 
@@ -91,6 +95,10 @@ function getBadWordsList(model: any) {
     return list.slice();
 }
 
+/**
+ *
+ * @param model
+ */
 function getLogitBiasList(model: any) {
     let list: any = [];
 
@@ -105,6 +113,10 @@ function getLogitBiasList(model: any) {
     return list.slice();
 }
 
+/**
+ *
+ * @param model
+ */
 function getRepPenaltyWhitelist(model: any) {
     if (model.includes('clio') || model.includes('kayra')) {
         return repPenaltyAllowList.flat();
@@ -117,6 +129,12 @@ function getRepPenaltyWhitelist(model: any) {
     return null;
 }
 
+/**
+ *
+ * @param width
+ * @param height
+ * @param modelName
+ */
 function calculateSkipCfgAboveSigma(width: any, height: any, modelName: any) {
     const magicConstant = modelName?.includes('nai-diffusion-4-5')
         ? SIGMA_MAGIC_NUMBER_V4_5

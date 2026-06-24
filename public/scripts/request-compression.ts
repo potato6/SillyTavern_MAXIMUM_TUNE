@@ -1,9 +1,9 @@
+// @ts-expect-error TS(2792): Cannot find module '/lib.js'. Did you mean to set ... Remove this comment to see the full error message
 import { gzip } from '/lib.js';
 
 /**
  * @type {RequestCompressionConfig}
- *
- * @typedef {Object} RequestCompressionConfig
+ * @typedef {object} RequestCompressionConfig
  * @property {boolean} enabled Whether request compression is enabled.
  * @property {number} minPayloadSize Minimum payload size in bytes to trigger compression.
  * @property {number} maxPayloadSize Hard upper payload size limit for compression.
@@ -76,7 +76,6 @@ async function withTimeout(promise, timeoutMs, label) {
  * Compresses a fetch request using gzip when supported and worthwhile.
  * Compression is skipped when feature-toggle is disabled, body is too small,
  * body is not a string, or compression fails/timeouts.
- *
  * @param {RequestInit} request fetch request parameters
  * @returns {Promise<RequestInit>} A request init object that may include gzip-compressed body
  */

@@ -45,6 +45,7 @@ export function canUseNegativeLookbehind() {
      * @type {{ (): boolean; result?: boolean }}
      */
     const fn = canUseNegativeLookbehind;
+    // @ts-expect-error TS(2339): Property 'result' does not exist on type '() => an... Remove this comment to see the full error message
     let result = fn.result;
     if (typeof result !== 'boolean') {
         try {
@@ -53,6 +54,7 @@ export function canUseNegativeLookbehind() {
         } catch (e) {
             result = false;
         }
+        // @ts-expect-error TS(2339): Property 'result' does not exist on type '() => an... Remove this comment to see the full error message
         fn.result = result;
     }
     return result;
@@ -87,7 +89,8 @@ export const renderPaginationDropdown = function (pageSize, sizeChangerOptions) 
 };
 
 export const paginationDropdownChangeHandler = function (event, size) {
-    let dropdown = $(event?.originalEvent?.currentTarget || event.delegateTarget).find('select');
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    const dropdown = $(event?.originalEvent?.currentTarget || event.delegateTarget).find('select');
     dropdown.find('[selected]').removeAttr('selected');
     dropdown.find(`[value=${size}]`).attr('selected', '');
 };
@@ -117,7 +120,7 @@ export function isObject(item) {
  * @returns {object} Merged object
  */
 export function deepMerge(target, source) {
-    let output = Object.assign({}, target);
+    const output = Object.assign({}, target);
     if (isObject(target) && isObject(source)) {
         Object.keys(source).forEach(key => {
             if (isObject(source[key])) {
@@ -136,7 +139,7 @@ export function deepMerge(target, source) {
 /**
  * Ensures that the provided object is a plain object.
  * @param {object} obj Object to ensure is a plain object
- * @return {object} A plain object, or an empty object if the input is not an object.
+ * @returns {object} A plain object, or an empty object if the input is not an object.
  */
 export function ensurePlainObject(obj) {
     if (typeof obj !== 'object' || obj === null || Array.isArray(obj)) {
@@ -170,6 +173,10 @@ export function sanitizeSelector(str, replacement = '_') {
     return String(str).replace(/[^a-z0-9_-]/ig, replacement);
 }
 
+/**
+ *
+ * @param value
+ */
 export function isValidUrl(value) {
     try {
         new URL(value);
@@ -322,7 +329,6 @@ export function onlyUniqueJson(value, index, array) {
 
 /**
  * Removes the first occurrence of a specified item from an array
- *
  * @param {*[]} array - The array from which to remove the item
  * @param {*} item - The item to remove from the array
  * @returns {boolean} - Returns true if the item was successfully removed, false otherwise.
@@ -363,6 +369,10 @@ export function getSortableDelay() {
     return isMobile() ? 750 : 50;
 }
 
+/**
+ *
+ * @param buffer
+ */
 export async function bufferToBase64(buffer) {
     // use a FileReader to generate a base64 data URI:
     const base64url = await new Promise(resolve => {
@@ -371,6 +381,7 @@ export async function bufferToBase64(buffer) {
         reader.readAsDataURL(new Blob([buffer]));
     });
     // remove the `data:...;base64,` part from the start
+    // @ts-expect-error TS(2339): Property 'slice' does not exist on type 'unknown'.
     return base64url.slice(base64url.indexOf(',') + 1);
 }
 
@@ -516,7 +527,7 @@ export async function parseJsonFile(file) {
  * A fast and simple 53-bit string hash function with decent collision resistance.
  * Largely inspired by MurmurHash2/3, but with a focus on speed/simplicity.
  * @param {string} str The string to hash.
- * @param {number} [seed=0] The seed to use for the hash.
+ * @param {number} [seed] The seed to use for the hash.
  * @returns {number} The hash code.
  */
 export function getStringHash(str, seed = 0) {
@@ -543,6 +554,7 @@ export function getStringHash(str, seed = 0) {
  * @param {string} text - The text to copy to the clipboard.
  * @returns {Promise<void>} A promise that resolves when the text has been copied to the clipboard.
  */
+// @ts-expect-error TS(7030): Not all code paths return a value.
 export function copyText(text) {
     if (navigator.clipboard) {
         return navigator.clipboard.writeText(text);
@@ -561,19 +573,19 @@ export function copyText(text) {
 /**
  * Map of debounced functions to their timers.
  * Weak map is used to avoid memory leaks.
- * @type {WeakMap<function, any>}
+ * @type {WeakMap<Function, any>}
  */
 const debounceMap = new WeakMap();
 
 /**
  * Creates a debounced function that delays invoking func until after wait milliseconds have elapsed since the last time the debounced function was invoked.
  * @param {function} func The function to debounce.
- * @param {debounce_timeout|number} [timeout=debounce_timeout.default] The timeout based on the common enum values, or in milliseconds.
+ * @param {debounce_timeout|number} [timeout] The timeout based on the common enum values, or in milliseconds.
  * @returns {function} The debounced function.
  */
 export function debounce(func, timeout = debounce_timeout.standard) {
     let timer;
-    let fn = (...args) => {
+    const fn = (...args) => {
         clearTimeout(timer);
         timer = setTimeout(() => { func.apply(this, args); }, timeout);
         debounceMap.set(func, timer);
@@ -586,7 +598,7 @@ export function debounce(func, timeout = debounce_timeout.standard) {
 /**
  * Creates a debounced function that delays invoking func until after wait milliseconds have elapsed since the last time the debounced function was invoked.
  * @param {Function} func The function to debounce.
- * @param {Number} [timeout=300] The timeout in milliseconds.
+ * @param {number} [timeout] The timeout in milliseconds.
  * @returns {Function} The debounced function.
  */
 export function debounceAsync(func, timeout = debounce_timeout.standard) {
@@ -625,7 +637,7 @@ export function cancelDebounce(func) {
 /**
  * Creates a throttled function that only invokes func at most once per every limit milliseconds.
  * @param {function} func The function to throttle.
- * @param {number} [limit=300] The limit in milliseconds.
+ * @param {number} [limit] The limit in milliseconds.
  * @returns {function} The throttled function.
  */
 export function throttle(func, limit = 300) {
@@ -642,15 +654,15 @@ export function throttle(func, limit = 300) {
 /**
  * Creates a debounced throttle function that only invokes func at most once per every limit milliseconds.
  * @param {function} func The function to throttle.
- * @param {number} [limit=300] The limit in milliseconds.
+ * @param {number} [limit] The limit in milliseconds.
  * @returns {function} The throttled function.
  */
 export function debouncedThrottle(func, limit = 300) {
     let last, deferTimer;
-    let db = debounce(func);
+    const db = debounce(func);
 
     return function () {
-        let now = +new Date, args = arguments;
+        const now = +new Date, args = arguments;
         if (!last || (last && now < last + limit)) {
             clearTimeout(deferTimer);
             db.apply(this, args);
@@ -674,10 +686,11 @@ export function isElementInViewport(el) {
     if (!el) {
         return false;
     }
+    // @ts-expect-error TS(2304): Cannot find name 'jQuery'.
     if (typeof jQuery === 'function' && el instanceof jQuery) {
         el = el[0];
     }
-    var rect = el.getBoundingClientRect();
+    const rect = el.getBoundingClientRect();
     return (
         rect.top >= 0 &&
         rect.left >= 0 &&
@@ -690,11 +703,11 @@ export function isElementInViewport(el) {
  * Returns a name that is unique among the names that exist.
  * @param {string} baseName The name to check.
  * @param {{ (name: string): boolean; }} exists Function to check if name exists.
- * @param {Object} [options] The options.
- * @param {((baseName: string, i: number) => string)|null} [options.nameBuilder=null] Function to build the name.
+ * @param {object} [options] The options.
+ * @param {((baseName: string, i: number) => string)|null} [options.nameBuilder] Function to build the name.
  *        Starts with the index provided by `startIndex` (default is 1). If not provided, uses "${baseName} (${i})".
- * @param {number} [options.maxTries=1000] The maximum number of tries to find a unique name. Default is 1000.
- * @param {number} [options.startIndex=1] The index to start with when building the name. Default is 1.
+ * @param {number} [options.maxTries] The maximum number of tries to find a unique name. Default is 1000.
+ * @param {number} [options.startIndex] The index to start with when building the name. Default is 1.
  *        When set to 0, the intention is to also check if the basename (without applied index) is free.
  * @returns {string|null} A unique name. Null if no unique name could be found in `maxTries`.
  */
@@ -822,8 +835,14 @@ export function restoreCaretPosition(element, position) {
     selection.addRange(range);
 }
 
+/**
+ *
+ * @param element
+ */
 export async function resetScrollHeight(element) {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(element).css('height', '0px');
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(element).css('height', $(element).prop('scrollHeight') + 3 + 'px');
 }
 
@@ -835,7 +854,9 @@ export async function resetScrollHeight(element) {
 export async function initScrollHeight(element) {
     await delay(1);
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const curHeight = Number($(element).css('height').replace('px', ''));
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const curScrollHeight = Number($(element).prop('scrollHeight'));
     const diff = curScrollHeight - curHeight;
 
@@ -843,7 +864,9 @@ export async function initScrollHeight(element) {
 
     const newHeight = curHeight + diff + 3; //the +3 here is to account for padding/line-height on text inputs
     //console.log(`init height to ${newHeight}`);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(element).css('height', '');
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(element).css('height', `${newHeight}px`);
     //resetScrollHeight(element);
 }
@@ -855,7 +878,9 @@ export async function initScrollHeight(element) {
  * @returns {number} A negative number if a is before b, a positive number if a is after b, or 0 if they are equal.
  */
 export function sortByCssOrder(a, b) {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const _a = Number($(a).css('order'));
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const _b = Number($(b).css('order'));
     return _a - _b;
 }
@@ -866,6 +891,10 @@ export function sortByCssOrder(a, b) {
  * @returns {string} The trimmed string if trimming is enabled; otherwise, returns the original string
  */
 
+/**
+ *
+ * @param input
+ */
 export function trimSpaces(input) {
     if (!input || typeof input !== 'string') {
         return input;
@@ -894,7 +923,9 @@ export function trimToEndSentence(input) {
         const char = characters[i];
         const emoji = isEmoji(char);
 
+        // @ts-expect-error TS(2345): Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
         if (punctuation.has(char) || emoji) {
+            // @ts-expect-error TS(2345): Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
             if (!emoji && i > 0 && /[\s\n]/.test(characters[i - 1])) {
                 last = i - 1;
             } else {
@@ -911,15 +942,19 @@ export function trimToEndSentence(input) {
     return characters.slice(0, last + 1).join('').trimEnd();
 }
 
+/**
+ *
+ * @param input
+ */
 export function trimToStartSentence(input) {
     if (!input) {
         return '';
     }
 
-    let p1 = input.indexOf('.');
-    let p2 = input.indexOf('!');
-    let p3 = input.indexOf('?');
-    let p4 = input.indexOf('\n');
+    const p1 = input.indexOf('.');
+    const p2 = input.indexOf('!');
+    const p3 = input.indexOf('?');
+    const p4 = input.indexOf('\n');
     let first = p1;
     let skip1 = false;
     if (p2 > 0 && p2 < first) { first = p2; }
@@ -937,13 +972,11 @@ export function trimToStartSentence(input) {
 
 /**
  * Format bytes as human-readable text.
- *
  * @param bytes Number of bytes.
  * @param si True to use metric (SI) units, aka powers of 1000. False to use
  *           binary (IEC), aka powers of 1024.
  * @param dp Number of decimal places to display.
- *
- * @return Formatted string.
+ * @returns Formatted string.
  */
 export function humanFileSize(bytes, si = false, dp = 1) {
     const thresh = si ? 1000 : 1024;
@@ -1114,7 +1147,7 @@ function parseTimestamp(timestamp) {
         return timestamp;
     }
 
-    let dtFmt = [];
+    const dtFmt = [];
 
     // meridiem-based format
     const convertFromMeridiemBased = (_, month, day, year, hour, minute, meridiem) => {
@@ -1138,7 +1171,7 @@ function parseTimestamp(timestamp) {
     dtFmt.push({ callback: convertFromHumanized, pattern: /(\d{4})-(\d{1,2})-(\d{1,2}) @(\d{1,2})h (\d{1,2})m (\d{1,2})s (\d{1,3})ms/ });
 
     for (const x of dtFmt) {
-        let rgxMatch = timestamp.match(x.pattern);
+        const rgxMatch = timestamp.match(x.pattern);
         if (!rgxMatch) continue;
         return x.callback(...rgxMatch);
     }
@@ -1146,14 +1179,15 @@ function parseTimestamp(timestamp) {
     return;
 }
 
-/** Split string to parts no more than length in size.
+/**
+ * Split string to parts no more than length in size.
  * @param {string} input The string to split.
  * @param {number} length The maximum length of each part.
  * @param {string[]} delimiters The delimiters to use when splitting the string.
  * @returns {string[]} The split string.
  * @example
  * splitRecursive('Hello, world!', 3); // ['Hel', 'lo,', 'wor', 'ld!']
-*/
+ */
 export function splitRecursive(input, length, delimiters = ['\n\n', '\n', ' ', '']) {
     // Invalid length
     if (length <= 0) {
@@ -1240,9 +1274,9 @@ export function getVideoDurationFromDataURL(dataUrl) {
 /**
  * Gets a thumbnail image from a video URL.
  * @param {string} videoUrl URL of the video
- * @param {number|null} [maxWidth=null] Maximum width of the thumbnail
- * @param {number|null} [maxHeight=null] Maximum height of the thumbnail
- * @param {string} [type='image/jpeg'] MIME type of the thumbnail
+ * @param {number|null} [maxWidth] Maximum width of the thumbnail
+ * @param {number|null} [maxHeight] Maximum height of the thumbnail
+ * @param {string} [type] MIME type of the thumbnail
  * @returns {Promise<string>} Promise that resolves to a data URL of the video thumbnail
  */
 export function getVideoThumbnail(videoUrl, maxWidth = null, maxHeight = null, type = 'image/jpeg') {
@@ -1335,9 +1369,9 @@ export function getAudioDurationFromDataURL(dataUrl) {
 
 /**
  * Gets the filename of the character avatar without extension
- * @param {string|number?} [chid=null] - Character ID. If not provided, uses the current character ID
- * @param {object} [options={}] - Options arguments
- * @param {string?} [options.manualAvatarKey=null] - Manually take the following avatar key, instead of using the chid to determine the name
+ * @param {string|number?} [chid] - Character ID. If not provided, uses the current character ID
+ * @param {object} [options] - Options arguments
+ * @param {string?} [options.manualAvatarKey] - Manually take the following avatar key, instead of using the chid to determine the name
  * @returns {string?} The filename of the character avatar without extension, or null if the character ID is invalid
  */
 export function getCharaFilename(chid = null, { manualAvatarKey = null } = {}) {
@@ -1362,7 +1396,7 @@ export function extractAllWords(value) {
     }
 
     const matches = value.matchAll(/\b\w+\b/gim);
-    for (let match of matches) {
+    for (const match of matches) {
         words.push(match[0].toLowerCase());
     }
     return words;
@@ -1388,7 +1422,7 @@ export function escapeRegex(string) {
 export function regexFromString(input) {
     try {
         // Parse input
-        var m = input.match(/(\/?)(.+)\1([a-z]*)/i);
+        const m = input.match(/(\/?)(.+)\1([a-z]*)/i);
 
         // Invalid flags
         if (m[3] && !/^(?!.*?(.).*?\1)[gmixXsuUAJ]+$/.test(m[3])) {
@@ -1398,11 +1432,14 @@ export function regexFromString(input) {
         // Create the regular expression
         return new RegExp(m[2], m[3]);
     } catch {
+        // @ts-expect-error TS(7030): Not all code paths return a value.
         return;
     }
 }
 
 export class Stopwatch {
+    interval: any;
+    lastAction: any;
     /**
      * Initializes a Stopwatch class.
      * @param {number} interval Update interval in milliseconds. Must be a finite number above zero.
@@ -1438,6 +1475,9 @@ export class Stopwatch {
  * Provides an interface for rate limiting function calls.
  */
 export class RateLimiter {
+    interval: any;
+    lastResolveTime: any;
+    pendingResolve: any;
     /**
      * Creates a new RateLimiter.
      * @param {number} interval The interval in milliseconds.
@@ -1465,6 +1505,7 @@ export class RateLimiter {
 
         return new Promise((resolve, reject) => {
             const timeoutId = setTimeout(() => {
+                // @ts-expect-error TS(2794): Expected 1 arguments, but got 0. Did you forget to... Remove this comment to see the full error message
                 resolve();
             }, remainingTime);
 
@@ -1502,8 +1543,8 @@ export class RateLimiter {
  */
 export function extractDataFromPng(data, identifier = 'chara') {
     console.log('Attempting PNG import...');
-    let uint8 = new Uint8Array(4);
-    let uint32 = new Uint32Array(uint8.buffer);
+    const uint8 = new Uint8Array(4);
+    const uint32 = new Uint32Array(uint8.buffer);
 
     //check if png header is valid
     if (!data || data[0] !== 0x89 || data[1] !== 0x50 || data[2] !== 0x4E || data[3] !== 0x47 || data[4] !== 0x0D || data[5] !== 0x0A || data[6] !== 0x1A || data[7] !== 0x0A) {
@@ -1512,7 +1553,7 @@ export function extractDataFromPng(data, identifier = 'chara') {
     }
 
     let ended = false;
-    let chunks = [];
+    const chunks = [];
     let idx = 8;
 
     while (idx < data.length) {
@@ -1524,15 +1565,15 @@ export function extractDataFromPng(data, identifier = 'chara') {
         uint8[0] = data[idx++];
 
         // Chunk includes name/type for CRC check (see below).
-        let length = uint32[0] + 4;
-        let chunk = new Uint8Array(length);
+        const length = uint32[0] + 4;
+        const chunk = new Uint8Array(length);
         chunk[0] = data[idx++];
         chunk[1] = data[idx++];
         chunk[2] = data[idx++];
         chunk[3] = data[idx++];
 
         // Get the name in ASCII for identification.
-        let name = (
+        const name = (
             String.fromCharCode(chunk[0]) +
             String.fromCharCode(chunk[1]) +
             String.fromCharCode(chunk[2]) +
@@ -1570,7 +1611,7 @@ export function extractDataFromPng(data, identifier = 'chara') {
 
         // The chunk data is now copied to remove the 4 preceding
         // bytes used for the chunk name/type.
-        let chunkData = new Uint8Array(chunk.buffer.slice(4));
+        const chunkData = new Uint8Array(chunk.buffer.slice(4));
 
         chunks.push({
             name: name,
@@ -1583,7 +1624,7 @@ export function extractDataFromPng(data, identifier = 'chara') {
     }
 
     //find the chunk with the chara name, just check first and last letter
-    let found = chunks.filter(x => (
+    const found = chunks.filter(x => (
         x.name == 'tEXt'
         && x.data.length > identifier.length
         && x.data.slice(0, identifier.length).every((v, i) => String.fromCharCode(v) == identifier[i])));
@@ -1594,11 +1635,11 @@ export function extractDataFromPng(data, identifier = 'chara') {
     } else {
         try {
             let b64buf = '';
-            let bytes = found[0].data; //skip the chara
+            const bytes = found[0].data; //skip the chara
             for (let i = identifier.length + 1; i < bytes.length; i++) {
                 b64buf += String.fromCharCode(bytes[i]);
             }
-            let decoded = JSON.parse(atob(b64buf));
+            const decoded = JSON.parse(atob(b64buf));
             console.log(decoded);
             return decoded;
         } catch (e) {
@@ -1610,7 +1651,6 @@ export function extractDataFromPng(data, identifier = 'chara') {
 
 /**
  * Sends a request to the server to sanitize a given filename
- *
  * @param {string} fileName - The name of the file to sanitize
  * @returns {Promise<string>} A Promise that resolves to the sanitized filename if successful, or rejects with an error message if unsuccessful
  */
@@ -1632,6 +1672,7 @@ export async function getSanitizedFilename(fileName) {
         const responseData = await result.json();
         return responseData.fileName;
     } catch (error) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.error(String(error), 'Could not sanitize fileName');
         console.error('Could not sanitize fileName', error);
         throw error;
@@ -1640,12 +1681,10 @@ export async function getSanitizedFilename(fileName) {
 
 /**
  * Sends a base64 encoded image to the backend to be saved as a file.
- *
  * @param {string} base64Data - The base64 encoded image data.
  * @param {string} subFolder - The character name to determine the sub-directory for saving.
  * @param {string} fileName - The name of the file to save the image as (without extension).
  * @param {string} extension - The file extension for the image (e.g., 'jpg', 'png', 'webp').
- *
  * @returns {Promise<string>} - Resolves to the saved image's path on the server.
  *                              Rejects with an error if the upload fails.
  */
@@ -1686,7 +1725,6 @@ export function getFileExtension(file) {
 
 /**
  * Converts UTF-8 string into Base64-encoded string.
- *
  * @param {string} text The UTF-8 string
  * @returns {string} The Base64-encoded string
  */
@@ -1698,6 +1736,7 @@ export function convertTextToBase64(text) {
      * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array/toBase64|MDN Reference}
      */
     if ('toBase64' in Uint8Array.prototype) {
+        // @ts-expect-error TS(2339): Property 'toBase64' does not exist on type 'Uint8A... Remove this comment to see the full error message
         return utf8Bytes.toBase64();
     }
     // Creates binary string, where each character's code point directly matches the byte value (0-255).
@@ -1711,7 +1750,6 @@ export function convertTextToBase64(text) {
 
 /**
  * Loads either a CSS or JS file and appends it to the appropriate document section.
- *
  * @param {string} url - The URL of the file to be loaded.
  * @param {string} type - The type of file to load: "css" or "js".
  * @returns {Promise} - Resolves when the file has loaded, rejects if there's an error or invalid type.
@@ -1750,6 +1788,7 @@ export async function promptForAvatarFile() {
         const input = document.createElement('input');
         input.type = 'file';
         input.accept = supportedImageMimeTypes.join(',');
+        // @ts-expect-error TS(7030): Not all code paths return a value.
         input.onchange = async (e) => {
             if (!(e.target instanceof HTMLInputElement)) {
                 return '';
@@ -1757,6 +1796,7 @@ export async function promptForAvatarFile() {
             const file = e.target?.files?.[0];
             if (!file) {
                 resolve(null);
+                // @ts-expect-error TS(7030): Not all code paths return a value.
                 return;
             }
             try {
@@ -1765,10 +1805,12 @@ export async function promptForAvatarFile() {
                 resolve(base64);
             } catch (error) {
                 console.error('Error processing selected image:', error);
+                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                 toastr.error(t`Failed to process selected image: ${error.message}`);
                 resolve(null);
             }
         };
+        // @ts-expect-error TS(2339): Property 'oncancel' does not exist on type 'HTMLIn... Remove this comment to see the full error message
         input.oncancel = () => resolve(null);
         input.click();
     });
@@ -1798,6 +1840,7 @@ export async function resolveAvatarData(input) {
 
     // External URLs are not supported
     if (isExternalUrl(trimmed)) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.warning(t`External URLs are not supported for avatars. Use a local file path or "prompt" to select a file.`);
         return null;
     }
@@ -1829,6 +1872,7 @@ export async function resolveAvatarData(input) {
             return await getBase64Async(converted);
         } catch (error) {
             console.error('Error fetching local avatar:', error);
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.warning(t`Failed to load avatar from path: ${error.message}`);
             return null;
         }
@@ -1836,6 +1880,7 @@ export async function resolveAvatarData(input) {
 
     // Unknown format
     console.warn('Unknown avatar format:', trimmed.substring(0, 50));
+    // @ts-expect-error TS(2304): Cannot find name 'toastr'.
     toastr.warning(t`Unknown avatar format. Use "prompt" to select a file, or provide a local file path.`);
     return null;
 }
@@ -1876,6 +1921,7 @@ export async function ensureImageFormatSupported(file) {
 export async function convertImageFile(inputFile, type = 'image/png') {
     const base64 = await getBase64Async(inputFile);
     const thumbnail = await createThumbnail(base64, null, null, type);
+    // @ts-expect-error TS(2769): No overload matches this call.
     const blob = await fetch(thumbnail).then(res => res.blob());
     const outputFile = new File([blob], inputFile.name, { type });
     return outputFile;
@@ -1886,7 +1932,7 @@ export async function convertImageFile(inputFile, type = 'image/png') {
  * @param {string} dataUrl The data URL encoded data of the image.
  * @param {number|null} maxWidth The maximum width of the thumbnail.
  * @param {number|null} maxHeight The maximum height of the thumbnail.
- * @param {string} [type='image/jpeg'] The type of the thumbnail.
+ * @param {string} [type] The type of the thumbnail.
  * @returns {Promise<string>} A promise that resolves to the thumbnail data URL.
  */
 export function createThumbnail(dataUrl, maxWidth = null, maxHeight = null, type = 'image/jpeg') {
@@ -1926,13 +1972,14 @@ export function createThumbnail(dataUrl, maxWidth = null, maxHeight = null, type
 /**
  * Waits for a condition to be true. Throws an error if the condition is not true within the timeout.
  * @param {{ (): boolean; }} condition The condition to wait for.
- * @param {number} [timeout=1000] The timeout in milliseconds.
- * @param {number} [interval=100] The interval in milliseconds.
+ * @param {number} [timeout] The timeout in milliseconds.
+ * @param {number} [interval] The interval in milliseconds.
  * @param {object} [options] Options object
- * @param {boolean} [options.rejectOnTimeout=true] Whether to reject the promise on timeout or resolve it.
+ * @param {boolean} [options.rejectOnTimeout] Whether to reject the promise on timeout or resolve it.
  * @returns {Promise<void>} A promise that resolves when the condition is true.
  */
 export async function waitUntilCondition(condition, timeout = 1000, interval = 100, options = {}) {
+    // @ts-expect-error TS(2339): Property 'rejectOnTimeout' does not exist on type ... Remove this comment to see the full error message
     const { rejectOnTimeout = true } = options;
 
     return new Promise((resolve, reject) => {
@@ -1946,6 +1993,7 @@ export async function waitUntilCondition(condition, timeout = 1000, interval = 1
             if (condition()) {
                 clearTimeout(timeoutId);
                 clearInterval(intervalId);
+                // @ts-expect-error TS(2794): Expected 1 arguments, but got 0. Did you forget to... Remove this comment to see the full error message
                 resolve();
             }
         }, interval);
@@ -1978,6 +2026,11 @@ export function collapseSpaces(s) {
     return s.replace(/\s+/g, ' ').trim();
 }
 
+/**
+ *
+ * @param text
+ * @param collapse
+ */
 function postProcessText(text, collapse = true) {
     // Remove carriage returns
     text = text.replace(/\r/g, '');
@@ -2006,7 +2059,7 @@ function postProcessText(text, collapse = true) {
 /**
  * Uses Readability.js to parse the text from a web page.
  * @param {Document} document HTML document
- * @param {string} [textSelector='body'] The fallback selector for the text to parse.
+ * @param {string} [textSelector] The fallback selector for the text to parse.
  * @returns {Promise<string>} A promise that resolves to the parsed text.
  */
 export async function getReadableText(document, textSelector = 'body') {
@@ -2017,6 +2070,7 @@ export async function getReadableText(document, textSelector = 'body') {
     }
 
     const elements = document.querySelectorAll(textSelector);
+    // @ts-expect-error TS(2339): Property 'textContent' does not exist on type 'unk... Remove this comment to see the full error message
     const rawText = Array.from(elements).map(e => e.textContent).join('\n');
     const text = postProcessText(rawText);
     return text;
@@ -2048,6 +2102,7 @@ export async function extractTextFromPDF(blob) {
 /**
  * Use DOMParser to load and parse text from HTML
  * @param {Blob} blob HTML content blob
+ * @param textSelector
  * @returns {Promise<string>} A promise that resolves to the parsed text.
  */
 export async function extractTextFromHTML(blob, textSelector = 'body') {
@@ -2068,6 +2123,10 @@ export async function extractTextFromMarkdown(blob) {
     return text;
 }
 
+/**
+ *
+ * @param blob
+ */
 export async function extractTextFromEpub(blob) {
     if (!('ePub' in window)) {
         await import('../lib/jszip.min.js');
@@ -2101,6 +2160,9 @@ export async function extractTextFromEpub(blob) {
  * @returns {Promise<string>} A promise that resolves to the extracted text.
  */
 export async function extractTextFromOffice(blob) {
+    /**
+     *
+     */
     async function checkPluginAvailability() {
         try {
             const result = await fetch('/api/plugins/office/probe', {
@@ -2205,7 +2267,6 @@ export function flashHighlight(element, timespan = 2000) {
 
 /**
  * Checks if the given control has an animation applied to it
- *
  * @param {HTMLElement} control - The control element to check for animation
  * @returns {boolean} Whether the control has an animation applied
  */
@@ -2219,7 +2280,7 @@ export function hasAnimation(control) {
  * The action will be executed after the animation ends or after the timeout, whichever comes first.
  * @param {HTMLElement} control - The control element to listen for animation end event
  * @param {(control:*?) => void} callback - The callback function to be executed when the animation ends
- * @param {number} [timeout=500] - The timeout in milliseconds to wait for the animation to end before executing the callback
+ * @param {number} [timeout] - The timeout in milliseconds to wait for the animation to end before executing the callback
  */
 export function runAfterAnimation(control, callback, timeout = 500) {
     if (hasAnimation(control)) {
@@ -2234,7 +2295,6 @@ export function runAfterAnimation(control, callback, timeout = 500) {
 
 /**
  * A common base function for case-insensitive and accent-insensitive string comparisons.
- *
  * @param {string} a - The first string to compare.
  * @param {string} b - The second string to compare.
  * @param {(a:string,b:string)=>T} comparisonFunction - The function to use for the comparison.
@@ -2255,7 +2315,6 @@ export function compareIgnoreCaseAndAccents(a, b, comparisonFunction) {
 /**
  * Performs a case-insensitive and accent-insensitive substring search.
  * This function normalizes the strings to remove diacritical marks and converts them to lowercase to ensure the search is insensitive to case and accents.
- *
  * @param {string} text - The text in which to search for the substring
  * @param {string} searchTerm - The substring to search for in the text
  * @returns {boolean} true if the searchTerm is found within the text, otherwise returns false
@@ -2267,7 +2326,6 @@ export function includesIgnoreCaseAndAccents(text, searchTerm) {
 /**
  * Performs a case-insensitive and accent-insensitive equality check.
  * This function normalizes the strings to remove diacritical marks and converts them to lowercase to ensure the search is insensitive to case and accents.
- *
  * @param {string} a - The first string to compare
  * @param {string} b - The second string to compare
  * @returns {boolean} true if the strings are equal, otherwise returns false
@@ -2295,7 +2353,6 @@ export function sortIgnoreCaseAndAccents(a, b) {
 
 /**
  * Returns a unique hash as ID for a select2 option text
- *
  * @param {string} option - The option
  * @returns {string} A hashed version of that option
  */
@@ -2305,12 +2362,11 @@ export function getSelect2OptionId(option) {
 
 /**
  * Modifies the select2 options by adding not existing one and optionally selecting them
- *
  * @param {JQuery<HTMLElement>} element - The "select" element to add the options to
  * @param {string[]|Select2Option[]} items - The option items to build, add or select
  * @param {object} [options] - Optional arguments
- * @param {boolean} [options.select=false] - Whether the options should be selected right away
- * @param {object} [options.changeEventArgs=null] - Optional event args being passed into the "change" event when its triggered because a new options is selected
+ * @param {boolean} [options.select] - Whether the options should be selected right away
+ * @param {object} [options.changeEventArgs] - Optional event args being passed into the "change" event when its triggered because a new options is selected
  */
 export function select2ModifyOptions(element, items, { select = false, changeEventArgs = null } = {}) {
     if (!items.length) return;
@@ -2326,7 +2382,7 @@ export function select2ModifyOptions(element, items, { select = false, changeEve
             if (select) optionsToSelect.push(item.id);
         } else {
             // Create a DOM Option and optionally pre-select by default
-            var newOption = new Option(item.text, item.id, select, select);
+            const newOption = new Option(item.text, item.id, select, select);
             // Append it to the select
             newOptions.push(newOption);
             if (select) optionsToSelect.push(item.id);
@@ -2340,20 +2396,26 @@ export function select2ModifyOptions(element, items, { select = false, changeEve
 /**
  * Returns the ajax settings that can be used on the select2 ajax property to dynamically get the data.
  * Can be used on a single global array, querying data from the server or anything similar.
- *
  * @param {function():Select2Option[]} dataProvider - The provider/function to retrieve the data - can be as simple as "() => myData" for arrays
- * @return {{transport: (params, success, failure) => any}} The ajax object with the transport function to use on the select2 ajax property
+ * @returns {{transport: (params, success, failure) => any}} The ajax object with the transport function to use on the select2 ajax property
  */
 export function dynamicSelect2DataViaAjax(dataProvider) {
+    /**
+     *
+     * @param params
+     * @param success
+     * @param failure
+     */
     function dynamicSelect2DataTransport(params, success, failure) {
-        var items = dataProvider();
+        let items = dataProvider();
         // fitering if params.data.q available
         if (params.data && params.data.q) {
             items = items.filter(function (item) {
                 return includesIgnoreCaseAndAccents(item.text, params.data.q);
             });
         }
-        var promise = new Promise(function (resolve, reject) {
+        // @ts-expect-error TS(6133): 'reject' is declared but its value is never read.
+        const promise = new Promise(function (resolve, reject) {
             resolve({ results: items });
         });
         promise.then(success);
@@ -2371,19 +2433,19 @@ export function dynamicSelect2DataViaAjax(dataProvider) {
  * @returns {boolean} Whether this is a choice element
  */
 export function isSelect2ChoiceElement(element) {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const $element = $(element);
     return ($element.hasClass('select2-selection__choice__display') || $element.parents('.select2-selection__choice__display').length > 0);
 }
 
 /**
  * Subscribes a 'click' event handler to the choice elements of a select2 multi-select control
- *
  * @param {JQuery<HTMLElement>} control The original control the select2 was applied to
  * @param {function(HTMLElement):void} action - The action to execute when a choice element is clicked
  * @param {object} options - Optional parameters
- * @param {boolean} [options.buttonStyle=false] - Whether the choices should be styles as a clickable button with color and hover transition, instead of just changed cursor
- * @param {boolean} [options.closeDrawer=false] - Whether the drawer should be closed and focus removed after the choice item was clicked
- * @param {boolean} [options.openDrawer=false] - Whether the drawer should be opened, even if this click would normally close it
+ * @param {boolean} [options.buttonStyle] - Whether the choices should be styles as a clickable button with color and hover transition, instead of just changed cursor
+ * @param {boolean} [options.closeDrawer] - Whether the drawer should be closed and focus removed after the choice item was clicked
+ * @param {boolean} [options.openDrawer] - Whether the drawer should be opened, even if this click would normally close it
  */
 export function select2ChoiceClickSubscribe(control, action, { buttonStyle = false, closeDrawer = false, openDrawer = false } = {}) {
     // Add class for styling (hover color, changed cursor, etc)
@@ -2414,7 +2476,6 @@ export function select2ChoiceClickSubscribe(control, action, { buttonStyle = fal
 
 /**
  * Applies syntax highlighting to a given regex string by generating HTML with classes
- *
  * @param {string} regexStr - The javascript compatible regex string
  * @returns {string} The html representation of the highlighted regex
  */
@@ -2428,6 +2489,9 @@ export function highlightRegex(regexStr) {
     regexStr = escape(regexStr);
 
     // Patterns that we want to highlight only if they are not escaped
+    /**
+     *
+     */
     function getPatterns() {
         try {
             return {
@@ -2471,14 +2535,13 @@ export function highlightRegex(regexStr) {
 /**
  * Confirms if the user wants to overwrite an existing data object (like character, world info, etc) if one exists.
  * If no data with the name exists, this simply returns true.
- *
  * @param {string} type - The type of the check ("World Info", "Character", etc)
  * @param {string[]} existingNames - The list of existing names to check against
  * @param {string} name - The new name
  * @param {object} options - Optional parameters
- * @param {boolean} [options.interactive=false] - Whether to show a confirmation dialog when needing to overwrite an existing data object
- * @param {string} [options.actionName='overwrite'] - The action name to display in the confirmation dialog
- * @param {(existingName:string)=>void} [options.deleteAction=null] - Optional action to execute wen deleting an existing data object on overwrite
+ * @param {boolean} [options.interactive] - Whether to show a confirmation dialog when needing to overwrite an existing data object
+ * @param {string} [options.actionName] - The action name to display in the confirmation dialog
+ * @param {(existingName:string)=>void} [options.deleteAction] - Optional action to execute wen deleting an existing data object on overwrite
  * @returns {Promise<boolean>} True if the user confirmed the overwrite or there is no overwrite needed, false otherwise
  */
 export async function checkOverwriteExistingData(type, existingNames, name, { interactive = false, actionName = 'Overwrite', deleteAction = null } = {}) {
@@ -2487,12 +2550,14 @@ export async function checkOverwriteExistingData(type, existingNames, name, { in
         return true;
     }
 
-    const overwrite = interactive && await Popup.show.confirm(`${type} ${actionName}`, `<p>A ${type.toLowerCase()} with the same name already exists:<br />${escapeHtml(existing)}</p>Do you want to overwrite it?`);
+    const overwrite = interactive && (await Popup.show.confirm(`${type} ${actionName}`, `<p>A ${type.toLowerCase()} with the same name already exists:<br />${escapeHtml(existing)}</p>Do you want to overwrite it?`));
     if (!overwrite) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.warning(`${type} ${actionName.toLowerCase()} cancelled. A ${type.toLowerCase()} with the same name already exists:<br />${escapeHtml(existing)}`, `${type} ${actionName}`, { escapeHtml: false });
         return false;
     }
 
+    // @ts-expect-error TS(2304): Cannot find name 'toastr'.
     toastr.info(`Overwriting Existing ${type}:<br />${escapeHtml(existing)}`, `${type} ${actionName}`, { escapeHtml: false });
 
     // If there is an action to delete the existing data, do it, as the name might be slightly different so file name would not be the same
@@ -2505,10 +2570,9 @@ export async function checkOverwriteExistingData(type, existingNames, name, { in
 
 /**
  * Generates a free name by appending a counter to the given name if it already exists in the list
- *
  * @param {string} name - The original name to check for existence in the list
  * @param {string[]} list - The list of names to check for existence
- * @param {(n: number) => string} [numberFormatter=(n) => ` #${n}`] - The function used to format the counter
+ * @param {(n: number) => string} [numberFormatter] - The function used to format the counter
  * @returns {string} The generated free name
  */
 export function getFreeName(name, list, numberFormatter = (n) => ` #${n}`) {
@@ -2526,9 +2590,8 @@ export function getFreeName(name, list, numberFormatter = (n) => ` #${n}`) {
 /**
  * Toggles the visibility of a drawer by changing the display style of its content.
  * This function skips the usual drawer animation.
- *
  * @param {HTMLElement} drawer - The drawer element to toggle
- * @param {boolean} [expand=true] - Whether to expand or collapse the drawer
+ * @param {boolean} [expand] - Whether to expand or collapse the drawer
  */
 export function toggleDrawer(drawer, expand = true) {
     /** @type {HTMLElement} */
@@ -2563,7 +2626,6 @@ export function toggleDrawer(drawer, expand = true) {
  * Sets or removes a dataset property on an HTMLElement
  *
  * Utility function to make it easier to reset dataset properties on null, without them being "null" as value.
- *
  * @param {HTMLElement} element - The element to modify
  * @param {string} name - The name of the dataset property
  * @param {string|null} value - The value to set - If null, the dataset property will be removed
@@ -2576,6 +2638,10 @@ export function setDatasetProperty(element, name, value) {
     }
 }
 
+/**
+ *
+ * @param name
+ */
 export async function fetchFaFile(name) {
     const style = document.createElement('style');
     style.innerHTML = await (await fetch(`/css/${name}`)).text();
@@ -2584,10 +2650,12 @@ export async function fetchFaFile(name) {
     style.remove();
     return [...sheet.cssRules]
         .filter(rule => (rule instanceof CSSStyleRule && rule.style?.content))
-        .map(rule => rule['selectorText'].split(/,\s*/).map(selector => selector.split('::').shift().slice(1)))
-    ;
+        .map(rule => rule['selectorText'].split(/,\s*/).map(selector => selector.split('::').shift().slice(1)));
 }
 
+/**
+ *
+ */
 export async function fetchFa() {
     return [...new Set((await Promise.all([
         fetchFaFile('fontawesome.min.css'),
@@ -2595,11 +2663,12 @@ export async function fetchFa() {
 }
 /**
  * Opens a popup with all the available Font Awesome icons and returns the selected icon's name.
- * @prop {string[]} customList A custom list of Font Awesome icons to use instead of all available icons.
+ * @param customList
+ * @property {string[]} customList A custom list of Font Awesome icons to use instead of all available icons.
  * @returns {Promise<string>} The icon name (fa-pencil) or null if cancelled.
  */
 export async function showFontAwesomePicker(customList = null) {
-    const faList = customList ?? await fetchFa();
+    const faList = customList ?? (await fetchFa());
     const fas = {};
     const dom = document.createElement('div'); {
         dom.classList.add('faPicker-container');
@@ -2635,6 +2704,7 @@ export async function showFontAwesomePicker(customList = null) {
                     opt.classList.add('fa-solid');
                     opt.classList.add(fa[0]);
                     opt.title = fa.map(it => it.slice(3)).join(', ');
+                    // @ts-expect-error TS(4111): Property 'result' comes from an index signature, s... Remove this comment to see the full error message
                     opt.dataset.result = POPUP_RESULT.AFFIRMATIVE.toString();
                     opt.addEventListener('click', () => value = fa[0]);
                     grid.append(opt);
@@ -2654,12 +2724,12 @@ export async function showFontAwesomePicker(customList = null) {
 
 /**
  * Finds a persona by name, with optional filtering and precedence for avatars
- * @param {object} [options={}] - The options for the search
- * @param {string?} [options.name=null] - The name to search for
- * @param {boolean} [options.allowAvatar=true] - Whether to allow searching by avatar
- * @param {boolean} [options.insensitive=true] - Whether the search should be case insensitive
- * @param {boolean} [options.preferCurrentPersona=true] - Whether to prefer the current persona(s)
- * @param {boolean} [options.quiet=false] - Whether to suppress warnings
+ * @param {object} [options] - The options for the search
+ * @param {string?} [options.name] - The name to search for
+ * @param {boolean} [options.allowAvatar] - Whether to allow searching by avatar
+ * @param {boolean} [options.insensitive] - Whether the search should be case insensitive
+ * @param {boolean} [options.preferCurrentPersona] - Whether to prefer the current persona(s)
+ * @param {boolean} [options.quiet] - Whether to suppress warnings
  * @returns {PersonaViewModel} The persona object
  * @typedef {object} PersonaViewModel
  * @property {string} avatar - The avatar of the persona
@@ -2687,6 +2757,7 @@ export function findPersona({ name = null, allowAvatar = true, insensitive = tru
     // Search for matching personas by name
     const matchingPersonas = personas.filter(a => matches(a));
     if (matchingPersonas.length > 1) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         if (!quiet) toastr.warning(t`Multiple personas found for given conditions.`);
         else console.warn(t`Multiple personas found for given conditions. Returning the first match.`);
     }
@@ -2696,13 +2767,13 @@ export function findPersona({ name = null, allowAvatar = true, insensitive = tru
 
 /**
  * Finds a character by name, with optional filtering and precedence for avatars
- * @param {object} [options={}] - The options for the search
- * @param {string?} [options.name=null] - The name to search for
- * @param {boolean} [options.allowAvatar=true] - Whether to allow searching by avatar
- * @param {boolean} [options.insensitive=true] - Whether the search should be case insensitive
- * @param {string[]?} [options.filteredByTags=null] - Tags to filter characters by
- * @param {boolean} [options.preferCurrentChar=true] - Whether to prefer the current character(s)
- * @param {boolean} [options.quiet=false] - Whether to suppress warnings
+ * @param {object} [options] - The options for the search
+ * @param {string?} [options.name] - The name to search for
+ * @param {boolean} [options.allowAvatar] - Whether to allow searching by avatar
+ * @param {boolean} [options.insensitive] - Whether the search should be case insensitive
+ * @param {string[]?} [options.filteredByTags] - Tags to filter characters by
+ * @param {boolean} [options.preferCurrentChar] - Whether to prefer the current character(s)
+ * @param {boolean} [options.quiet] - Whether to suppress warnings
  * @returns {Character?} - The found character or null if not found
  */
 export function findChar({ name = null, allowAvatar = true, insensitive = true, filteredByTags = null, preferCurrentChar = true, quiet = false } = {}) {
@@ -2726,6 +2797,7 @@ export function findChar({ name = null, allowAvatar = true, insensitive = true, 
     if (preferCurrentChar) {
         const preferredCharSearch = currentChars.filter(matches);
         if (preferredCharSearch.length > 1) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             if (!quiet) toastr.warning(t`Multiple characters found for given conditions.`);
             else console.warn(t`Multiple characters found for given conditions. Returning the first match.`);
         }
@@ -2745,6 +2817,7 @@ export function findChar({ name = null, allowAvatar = true, insensitive = true, 
     // Search for matching characters by name
     const matchingCharacters = name ? filteredCharacters.filter(matches) : filteredCharacters;
     if (matchingCharacters.length > 1) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         if (!quiet) toastr.warning('Multiple characters found for given conditions.');
         else console.warn('Multiple characters found for given conditions. Returning the first match.');
     }
@@ -2786,7 +2859,7 @@ export function arraysEqual(a, b) {
  * Updates the content and style of an information block
  * @param {string | HTMLElement} target - The CSS selector or the HTML element of the information block
  * @param {string | HTMLElement?} content - The message to display inside the information block (supports HTML) or an HTML element
- * @param {'hint' | 'info' | 'warning' | 'error'} [type='info'] - The type of message, which determines the styling of the information block
+ * @param {'hint' | 'info' | 'warning' | 'error'} [type] - The type of message, which determines the styling of the information block
  */
 export function setInfoBlock(target, content, type = 'info') {
     if (!content) {
@@ -2822,7 +2895,7 @@ export function clearInfoBlock(target) {
  * Provides a matcher function for select2 that matches both the text and value of options.
  * @param {import('select2').SearchOptions} params
  * @param {import('select2').OptGroupData|import('select2').OptionData} data
- * @return {import('select2').OptGroupData|import('select2').OptionData|null}
+ * @returns {import('select2').OptGroupData|import('select2').OptionData|null}
  */
 export function textValueMatcher(params, data) {
     // Always return the object if there is nothing to compare
@@ -2834,6 +2907,7 @@ export function textValueMatcher(params, data) {
     if (data.children && data.children.length > 0) {
         // Clone the data object if there are children
         // This is required as we modify the object to remove any non-matches
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const match = $.extend(true, {}, data);
 
         // Check each child of the option
@@ -2882,8 +2956,8 @@ export function versionCompare(srcVersion, minVersion) {
  * Logs a warning to the console for slash command executions.
  * Strips internal arguments (starting with '_') from the args object for cleaner logging.
  * @param {string} message - The warning message to log.
- * @param {Object} args - The arguments object from the slash command, including named arguments and internal values.
- * @param {{[unnamedArgName: string]: string}} [valueObj=null] - The user-built object containing context for the warning (e.g., { uid: uid }).
+ * @param {object} args - The arguments object from the slash command, including named arguments and internal values.
+ * @param {{[unnamedArgName: string]: string}} [valueObj] - The user-built object containing context for the warning (e.g., { uid: uid }).
  * @returns {void}
  */
 export function logSlashCommandWarn(message, args, valueObj = null) {
@@ -2893,6 +2967,10 @@ export function logSlashCommandWarn(message, args, valueObj = null) {
         console.warn(message, stripInternalArgs(args));
     }
     return;
+    /**
+     *
+     * @param args
+     */
     function stripInternalArgs(args) {
         // strip all args/properties that start with an underscore
         const result = {};
@@ -2970,8 +3048,8 @@ export function setupScrollToTop({ scrollContainerId, buttonId, drawerId, visibi
 /**
  * Imports content from an external URL.
  * @param {string} url URL or UUID of the content to import.
- * @param {Object} [options={}] Options object.
- * @param {string|null} [options.preserveFileName=null] Optional file name to use for the imported content.
+ * @param {object} [options] Options object.
+ * @param {string|null} [options.preserveFileName] Optional file name to use for the imported content.
  * @returns {Promise<void>} A promise that resolves when the import is complete.
  */
 export async function importFromExternalUrl(url, { preserveFileName = null } = {}) {
@@ -2994,6 +3072,7 @@ export async function importFromExternalUrl(url, { preserveFileName = null } = {
     }
 
     if (!request.ok) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.info(request.statusText, 'Custom content import failed');
         console.error('Custom content import failed', request.status, request.statusText);
         return;
@@ -3018,6 +3097,7 @@ export async function importFromExternalUrl(url, { preserveFileName = null } = {
             await importWorldInfo(file);
             break;
         default:
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.warning('Unknown content type');
             console.error('Unknown content type', customContentType);
             break;
@@ -3044,6 +3124,7 @@ export const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
 export function shakeElement(targetElement, distance = 10, duration = 100, easing = 'ease-in-out') {
     // Don't call the JQuery animation.
     // https://developer.mozilla.org/en-US/docs/Web/API/Element/animate
+    // @ts-expect-error TS(2304): Cannot find name 'jQuery'.
     if (targetElement instanceof jQuery) targetElement = targetElement[0];
 
     return targetElement.animate([
@@ -3057,7 +3138,7 @@ export function shakeElement(targetElement, distance = 10, duration = 100, easin
  * Creates a promise that rejects after a specified delay.
  * Used for Promise.race fallbacks.
  * @param {number} ms The delay in milliseconds.
- * @param {string?} [errorMessage='']
+ * @param {string?} [errorMessage]
  * @returns {Promise<never>} A promise that rejects.
  */
 export function createTimeout(ms, errorMessage = '') {
@@ -3072,7 +3153,7 @@ export function createTimeout(ms, errorMessage = '') {
  * Supports event delegation for dynamically created elements.
  * @param {string} selector CSS selector for target elements
  * @param {(e: TouchEvent) => void} callback Callback to invoke on long-press, `this` is the matched element
- * @param {number} [delay=500] Long-press duration in ms
+ * @param {number} [delay] Long-press duration in ms
  */
 export function addLongPressEvent(selector, callback, delay = 500) {
     let timer = null;
@@ -3105,6 +3186,9 @@ export function addLongPressEvent(selector, callback, delay = 500) {
         }
     }, true);
 
+    /**
+     *
+     */
     function cancelTimer() {
         clearTimeout(timer);
         timer = null;

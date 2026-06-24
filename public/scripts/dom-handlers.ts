@@ -1,5 +1,8 @@
 import { throttle } from './utils.js';
 
+/**
+ *
+ */
 export function initDomHandlers() {
     handleInputWheel();
 }

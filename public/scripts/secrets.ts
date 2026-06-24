@@ -7,8 +7,10 @@ import { SlashCommand } from './slash-commands/SlashCommand.js';
 import { ARGUMENT_TYPE, SlashCommandArgument, SlashCommandNamedArgument } from './slash-commands/SlashCommandArgument.js';
 import { enumIcons } from './slash-commands/SlashCommandCommonEnumsProvider.js';
 import { enumTypes, SlashCommandEnumValue } from './slash-commands/SlashCommandEnumValue.js';
+// @ts-expect-error TS(6133): 'SlashCommandExecutor' is declared but its value i... Remove this comment to see the full error message
 import { SlashCommandExecutor } from './slash-commands/SlashCommandExecutor.js';
 import { SlashCommandParser } from './slash-commands/SlashCommandParser.js';
+// @ts-expect-error TS(6133): 'SlashCommandScope' is declared but its value is n... Remove this comment to see the full error message
 import { SlashCommandScope } from './slash-commands/SlashCommandScope.js';
 import { renderTemplateAsync } from './templates.js';
 import { textgen_types } from './textgen-settings.js';
@@ -198,6 +200,7 @@ const getLabel = () => moment().format('L LT');
  * @returns {string|null} The secret key corresponding to the selected API, or null if no key is found.
  */
 export function resolveSecretKey() {
+    // @ts-expect-error TS(2339): Property 'mainApi' does not exist on type '() => {... Remove this comment to see the full error message
     const { mainApi, chatCompletionSettings, textCompletionSettings } = SillyTavern.getContext();
     const chatCompletionSource = chatCompletionSettings.chat_completion_source;
     const textCompletionType = textCompletionSettings.type;
@@ -255,12 +258,17 @@ export function getSecretLabelById(id) {
     return '';
 }
 
+/**
+ *
+ */
 export function updateSecretDisplay() {
     for (const [secret_key, input_selector] of Object.entries(INPUT_MAP)) {
         const validSecret = !!secret_state[secret_key];
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const placeholder = $('#viewSecrets').attr(validSecret ? 'key_saved_text' : 'missing_key_text');
         const label = getActiveSecretLabel(secret_key);
         const placeholderWithLabel = label ? `${placeholder} (${label})` : placeholder;
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(input_selector).attr('placeholder', placeholderWithLabel);
     }
 }
@@ -305,6 +313,9 @@ export async function canViewSecrets() {
     }
 }
 
+/**
+ *
+ */
 async function viewSecrets() {
     const response = await fetch('/api/secrets/view', {
         method: 'POST',
@@ -323,9 +334,11 @@ async function viewSecrets() {
     const data = await response.json();
     const table = document.createElement('table');
     table.classList.add('responsiveTable');
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(table).append('<thead><th>Key</th><th>Value</th></thead>');
 
     for (const [key, value] of Object.entries(data)) {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(table).append(`<tr><td>${DOMPurify.sanitize(key)}</td><td>${DOMPurify.sanitize(value)}</td></tr>`);
     }
 
@@ -342,14 +355,17 @@ export let secret_state = {};
  * @param {string} key Secret key
  * @param {string} value Secret value to write
  * @param {string} [label] (Optional) Label for the key. If not provided, generated automatically.
- * @param {Object} [options] Additional options
+ * @param {object} [options] Additional options
  * @param {boolean} [options.allowEmpty] Whether to allow writing empty values. If false and value is empty, the secret will be deleted.
- * @return {Promise<string?>} The ID of the newly created secret key, or null if no value is provided.
+ * @returns {Promise<string?>} The ID of the newly created secret key, or null if no value is provided.
  */
-export async function writeSecret(key, value, label, { allowEmpty } = {}) {
+export async function writeSecret(key, value, label, {
+    allowEmpty
+}: any = {}) {
     try {
         if (!value && !allowEmpty) {
             console.warn(`No value provided for ${key} in writeSecret, redirecting to deleteSecret`);
+            // @ts-expect-error TS(2554): Expected 2 arguments, but got 1.
             await deleteSecret(key);
             return null;
         }
@@ -370,6 +386,7 @@ export async function writeSecret(key, value, label, { allowEmpty } = {}) {
 
         const { id } = await response.json();
         // Clear the input field
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(INPUT_MAP[key]).val('').trigger('input');
         await readSecretState();
         await eventSource.emit(event_types.SECRET_WRITTEN, key);
@@ -396,6 +413,7 @@ export async function deleteSecret(key, id) {
         if (response.ok) {
             await readSecretState();
             // Force reconnection to the API with the new key
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#main_api').trigger('change');
             await eventSource.emit(event_types.SECRET_DELETED, key);
         }
@@ -467,6 +485,7 @@ export async function rotateSecret(key, id) {
         if (response.ok) {
             await readSecretState();
             // Force reconnection to the API with the new key
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#main_api').trigger('change');
             await eventSource.emit(event_types.SECRET_ROTATED, key);
         }
@@ -581,14 +600,17 @@ export async function checkOpenRouterAuth() {
                 throw new Error('OpenRouter invalid response');
             }
 
+            // @ts-expect-error TS(2554): Expected 3-4 arguments, but got 2.
             await writeSecret(SECRET_KEYS.OPENROUTER, data.key);
 
             if (secret_state[SECRET_KEYS.OPENROUTER]) {
+                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                 toastr.success('OpenRouter token saved');
             } else {
                 throw new Error('OpenRouter token not saved');
             }
         } catch (err) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.error('Could not verify OpenRouter token. Please try again.');
             console.error('OpenRouter OAuth error:', err);
         } finally {
@@ -658,6 +680,7 @@ function updateInputDataLists() {
  */
 async function openKeyManagerDialog(key) {
     const name = FRIENDLY_NAMES[key] || key;
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const template = $(await renderTemplateAsync('secretKeyManager', { name, key }));
     template.find('button[data-action="add-secret"]').on('click', async function () {
         let label = '';
@@ -691,6 +714,9 @@ async function openKeyManagerDialog(key) {
     await renderSecretsList();
     await callGenericPopup(template, POPUP_TYPE.TEXT, '', { wide: true, large: true, onOpen: scrollToActive });
 
+    /**
+     *
+     */
     async function renderSecretsList() {
         const secrets = secret_state[key] ?? [];
         const list = template.find('.secretKeyManagerList');
@@ -701,9 +727,11 @@ async function openKeyManagerDialog(key) {
 
         const itemBlocks = [];
         for (const secret of secrets) {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const itemTemplate = $(await renderTemplateAsync('secretKeyManagerListItem', secret));
             itemTemplate.find('[data-action="copy-id"]').on('click', async function () {
                 await copyText(secret.id);
+                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                 toastr.info(t`Secret ID copied to clipboard.`);
             });
             itemTemplate.find('button[data-action="rotate-secret"]').on('click', async function () {
@@ -713,10 +741,12 @@ async function openKeyManagerDialog(key) {
             itemTemplate.find('button[data-action="copy-secret"]').on('click', async function () {
                 const secretValue = await findSecret(key, secret.id);
                 if (secretValue === null) {
+                    // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                     toastr.error(t`The key exposure might be disabled by the server config.`, t`Failed to copy secret value`);
                     return;
                 }
                 await copyText(secretValue);
+                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                 toastr.info(t`Secret value copied to clipboard.`);
             });
             itemTemplate.find('button[data-action="rename-secret"]').on('click', async function () {
@@ -741,6 +771,9 @@ async function openKeyManagerDialog(key) {
         list.empty().append(itemBlocks).scrollTop(previousScrollTop);
     }
 
+    /**
+     *
+     */
     function scrollToActive() {
         const list = template.find('.secretKeyManagerList');
         const activeKey = list.find('.active');
@@ -751,6 +784,9 @@ async function openKeyManagerDialog(key) {
     }
 }
 
+/**
+ *
+ */
 function registerSecretSlashCommands() {
     const secretKeyEnumProvider = () => Object.values(SECRET_KEYS).map(key => new SlashCommandEnumValue(key, FRIENDLY_NAMES[key] || key, enumTypes.name, enumIcons.key));
     const secretIdEnumProvider = (/** @type {SlashCommandExecutor} */ executor, /** @type {SlashCommandScope} */ _scope) => {
@@ -800,6 +836,7 @@ function registerSecretSlashCommands() {
 
             if (!key) {
                 if (!quiet) {
+                    // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                     toastr.error(t`No secret key provided, and the key can't be resolved for the currently selected API type.`);
                 }
                 return '';
@@ -808,6 +845,7 @@ function registerSecretSlashCommands() {
             const secrets = secret_state[key];
             if (!Array.isArray(secrets) || secrets.length === 0) {
                 if (!quiet) {
+                    // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                     toastr.error(t`No saved secrets found for the key: ${key}`);
                 }
                 return '';
@@ -817,6 +855,7 @@ function registerSecretSlashCommands() {
                 const activeSecret = secrets.find(s => s.active);
                 if (!activeSecret) {
                     if (!quiet) {
+                        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                         toastr.error(t`No active secret found for the key: ${key}`);
                     }
                     return '';
@@ -827,6 +866,7 @@ function registerSecretSlashCommands() {
             const savedSecret = secrets.find(s => s.id === id) ?? secrets.find(s => s.label === id);
             if (!savedSecret) {
                 if (!quiet) {
+                    // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                     toastr.error(t`No secret found with ID: ${id} for the key: ${key}`);
                 }
                 return '';
@@ -835,6 +875,7 @@ function registerSecretSlashCommands() {
             // Set the secret as active
             await rotateSecret(key, savedSecret.id);
             if (!quiet) {
+                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                 toastr.success(t`Secret with ID: ${id} is now active for the key: ${key}`);
             }
 
@@ -876,6 +917,7 @@ function registerSecretSlashCommands() {
 
             if (!key) {
                 if (!quiet) {
+                    // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                     toastr.error(t`No secret key provided, and the key can't be resolved for the currently selected API type.`);
                 }
                 return '';
@@ -884,6 +926,7 @@ function registerSecretSlashCommands() {
             const secrets = secret_state[key];
             if (!Array.isArray(secrets) || secrets.length === 0) {
                 if (!quiet) {
+                    // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                     toastr.error(t`No saved secrets found for the key: ${key}`);
                 }
                 return '';
@@ -892,6 +935,7 @@ function registerSecretSlashCommands() {
             const savedSecret = secrets.find(s => s.id === id) ?? secrets.find(s => s.label === id) ?? secrets.find(s => s.active);
             if (!savedSecret) {
                 if (!quiet) {
+                    // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                     toastr.error(t`No secret found with ID: ${id} for the key: ${key}`);
                 }
                 return '';
@@ -900,6 +944,7 @@ function registerSecretSlashCommands() {
             // Delete the secret
             await deleteSecret(key, savedSecret.id);
             if (!quiet) {
+                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                 toastr.success(t`Secret with ID: ${id} has been deleted for the key: ${key}`);
             }
 
@@ -954,6 +999,7 @@ function registerSecretSlashCommands() {
 
             if (!key) {
                 if (!quiet) {
+                    // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                     toastr.error(t`No secret key provided, and the key can't be resolved for the currently selected API type.`);
                 }
                 return '';
@@ -962,6 +1008,7 @@ function registerSecretSlashCommands() {
             const secrets = secret_state[key];
             if (!Array.isArray(secrets) || secrets.length === 0) {
                 if (!quiet) {
+                    // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                     toastr.error(t`No saved secrets found for the key: ${key}`);
                 }
                 return '';
@@ -970,6 +1017,7 @@ function registerSecretSlashCommands() {
             const valueStr = value?.toString()?.trim();
             if (!valueStr && !allowEmpty) {
                 if (!quiet) {
+                    // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                     toastr.error(t`No value provided for the secret key: ${key}`);
                 }
                 return '';
@@ -979,6 +1027,7 @@ function registerSecretSlashCommands() {
             const id = await writeSecret(key, valueStr, label, { allowEmpty });
 
             if (!quiet) {
+                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                 toastr.success(t`Secret has been written for the key: ${key}`);
             }
 
@@ -1025,6 +1074,7 @@ function registerSecretSlashCommands() {
 
             if (!key) {
                 if (!quiet) {
+                    // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                     toastr.error(t`No secret key provided, and the key can't be resolved for the currently selected API type.`);
                 }
                 return '';
@@ -1033,6 +1083,7 @@ function registerSecretSlashCommands() {
             const secrets = secret_state[key];
             if (!Array.isArray(secrets) || secrets.length === 0) {
                 if (!quiet) {
+                    // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                     toastr.error(t`No saved secrets found for the key: ${key}`);
                 }
                 return '';
@@ -1041,6 +1092,7 @@ function registerSecretSlashCommands() {
             const newLabel = value?.toString()?.trim();
             if (!newLabel) {
                 if (!quiet) {
+                    // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                     toastr.error(t`No new label provided for the secret key: ${key}`);
                 }
                 return '';
@@ -1049,6 +1101,7 @@ function registerSecretSlashCommands() {
             const savedSecret = secrets.find(s => s.id === id) ?? secrets.find(s => s.label === id) ?? secrets.find(s => s.active);
             if (!savedSecret) {
                 if (!quiet) {
+                    // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                     toastr.error(t`No secret found with ID: ${id} for the key: ${key}`);
                 }
                 return '';
@@ -1057,6 +1110,7 @@ function registerSecretSlashCommands() {
             // Rename the secret
             await renameSecret(key, savedSecret.id, newLabel);
             if (!quiet) {
+                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                 toastr.success(t`Secret with ID: ${id} has been renamed to "${newLabel}" for the key: ${key}`);
             }
 
@@ -1100,6 +1154,7 @@ function registerSecretSlashCommands() {
 
             if (!key) {
                 if (!quiet) {
+                    // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                     toastr.error(t`No secret key provided, and the key can't be resolved for the currently selected API type.`);
                 }
                 return '';
@@ -1108,6 +1163,7 @@ function registerSecretSlashCommands() {
             const secrets = secret_state[key];
             if (!Array.isArray(secrets) || secrets.length === 0) {
                 if (!quiet) {
+                    // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                     toastr.error(t`No saved secrets found for the key: ${key}`);
                 }
                 return '';
@@ -1116,6 +1172,7 @@ function registerSecretSlashCommands() {
             const savedSecret = secrets.find(s => s.id === id) ?? secrets.find(s => s.label === id) ?? secrets.find(s => s.active);
             if (!savedSecret) {
                 if (!quiet) {
+                    // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                     toastr.error(t`No secret found with ID: ${id} for the key: ${key}`);
                 }
                 return '';
@@ -1124,6 +1181,7 @@ function registerSecretSlashCommands() {
             const secretValue = await findSecret(key, savedSecret.id);
             if (secretValue === null) {
                 if (!quiet) {
+                    // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                     toastr.error(t`Could not retrieve the secret value for key: ${key}. Key exposure might be disabled.`);
                 }
                 return '';
@@ -1134,9 +1192,15 @@ function registerSecretSlashCommands() {
     }));
 }
 
+/**
+ *
+ */
 export async function initSecrets() {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#viewSecrets').on('click', viewSecrets);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.manage-api-keys', async function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const key = $(this).data('key');
         if (!key || !Object.values(SECRET_KEYS).includes(key)) {
             console.error('Invalid key for manage-api-keys:', key);
@@ -1144,8 +1208,11 @@ export async function initSecrets() {
         }
         await openKeyManagerDialog(key);
     });
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('input', Object.values(INPUT_MAP).join(','), function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const id = $(this).attr('id');
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const value = $(this).val();
 
         // Find the key based on the entered value
@@ -1159,17 +1226,22 @@ export async function initSecrets() {
             }
             const secretMatch = secrets.find(secret => secret.id === value);
             if (secretMatch) {
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $(this).val('');
                 return rotateSecret(key, secretMatch.id);
             }
         }
 
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const warningElement = $(`[data-for="${id}"]`);
         warningElement.toggle(value.length > 0);
     });
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('.openrouter_authorize').on('click', authorizeOpenRouter);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.openrouter_view_credits', async function (event) {
         event.preventDefault();
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const display = $(this).siblings('.openrouter_credits_display').first();
         display.text(t`Loading…`);
         try {
@@ -1188,6 +1260,7 @@ export async function initSecrets() {
         } catch (error) {
             console.error('Failed to fetch OpenRouter credits:', error);
             display.text('');
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.error(t`Could not fetch OpenRouter credits. Please try again.`);
         }
     });
@@ -1202,7 +1275,9 @@ export async function initSecrets() {
     };
 
     const createNanoGptCreditsPopup = (credits) => {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const root = $('<div class="nanogpt-credits-popup"></div>');
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         root.append($('<h3></h3>').text(t`NanoGPT Credits & Usage`));
 
         const rows = [
@@ -1226,15 +1301,19 @@ export async function initSecrets() {
         }
 
         for (const [label, value] of rows) {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             root.append($('<div></div>').text(label));
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             root.append($('<div></div>').text(value));
         }
 
         return root;
     };
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.nanogpt_view_credits', async function (event) {
         event.preventDefault();
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const display = $(this).siblings('.nanogpt_credits_display').first();
         display.empty().text(t`Loading…`);
 
@@ -1256,7 +1335,7 @@ export async function initSecrets() {
                 throw new Error('Invalid response');
             }
 
-            let balances = [`$${formatNanoGptNumber(usdBalance, 2)}`];
+            const balances = [`$${formatNanoGptNumber(usdBalance, 2)}`];
             if (nanoBalance > 0) {
                 balances.push(`${formatNanoGptNumber(nanoBalance, 3)} NANO`);
             }
@@ -1268,6 +1347,7 @@ export async function initSecrets() {
 
             display.empty().text(shortInlineText + ' ');
 
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const infoBtn = $('<i class="fa-solid fa-circle-info cursor-pointer nanogpt_info_btn"></i>');
             infoBtn.attr('title', t`View details`);
             infoBtn.data('credits', {
@@ -1279,11 +1359,14 @@ export async function initSecrets() {
         } catch (error) {
             console.error('Failed to fetch NanoGPT credits:', error);
             display.empty().text('');
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.error(t`Could not fetch NanoGPT credits. Please try again.`);
         }
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.nanogpt_info_btn', async function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const credits = $(this).data('credits');
         if (credits) {
             await callGenericPopup(createNanoGptCreditsPopup(credits), POPUP_TYPE.TEXT);

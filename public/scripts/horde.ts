@@ -22,7 +22,7 @@ export {
 
 let models = [];
 
-export let horde_settings = {
+export const horde_settings = {
     models: [],
     auto_adjust_response_length: true,
     auto_adjust_context_length: false,
@@ -67,7 +67,7 @@ async function getModels(force) {
 /**
  * Gets the status of a Horde task.
  * @param {string} taskId Task ID
- * @returns {Promise<Object>} Task status
+ * @returns {Promise<object>} Task status
  */
 async function getTaskStatus(taskId) {
     const response = await fetch('/api/horde/task-status', {
@@ -122,6 +122,9 @@ export async function checkHordeStatus() {
     }
 }
 
+/**
+ *
+ */
 export async function getStatusHorde() {
     try {
         const hordeStatus = await checkHordeStatus();
@@ -133,10 +136,14 @@ export async function getStatusHorde() {
     return resultCheckStatus();
 }
 
+/**
+ *
+ */
 function validateHordeModel() {
-    let selectedModels = models.filter(m => horde_settings.models.includes(m.name));
+    const selectedModels = models.filter(m => horde_settings.models.includes(m.name));
 
     if (selectedModels.length === 0) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.warning('No Horde model selected or the selected models are no longer available. Please choose another model');
         throw new Error('No Horde model available');
     }
@@ -144,13 +151,18 @@ function validateHordeModel() {
     return selectedModels;
 }
 
+/**
+ *
+ * @param max_context_length
+ * @param max_length
+ */
 export async function adjustHordeGenerationParams(max_context_length, max_length) {
     console.log(max_context_length, max_length);
     const workers = await getWorkers(false);
     let maxContextLength = max_context_length;
     let maxLength = max_length;
-    let availableWorkers = [];
-    let selectedModels = validateHordeModel();
+    const availableWorkers = [];
+    const selectedModels = validateHordeModel();
 
     if (selectedModels.length === 0) {
         return { maxContextLength, maxLength };
@@ -179,19 +191,25 @@ export async function adjustHordeGenerationParams(max_context_length, max_length
         }
     }
     console.log(maxContextLength, maxLength);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#adjustedHordeParams').text(t`Context` + `: ${maxContextLength}, ` + t`Response` + `: ${maxLength}`);
     return { maxContextLength, maxLength };
 }
 
+/**
+ *
+ */
 function setContextSizePreview() {
     if (horde_settings.models.length) {
         adjustHordeGenerationParams(max_context, amount_gen);
     } else {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#adjustedHordeParams').text(t`Context` + ': --, ' + t`Response` + ': --');
     }
 }
 
-/** Generates text using the Horde API.
+/**
+ * Generates text using the Horde API.
  * @param {string} prompt
  * @param params
  * @param signal
@@ -225,6 +243,7 @@ export async function generateHorde(prompt, params, signal, reportProgress) {
     });
 
     if (!response.ok) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.error(response.statusText, 'Horde generation failed');
         throw new Error(`Horde generation failed: ${response.statusText}`);
     }
@@ -233,6 +252,7 @@ export async function generateHorde(prompt, params, signal, reportProgress) {
 
     if (responseJson.error) {
         const reason = responseJson.error?.message || 'Unknown error';
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.error(reason, 'Horde generation failed');
         throw new Error(`Horde generation failed: ${reason}`);
     }
@@ -251,11 +271,13 @@ export async function generateHorde(prompt, params, signal, reportProgress) {
         console.log(statusCheckJson);
 
         if (statusCheckJson.faulted === true) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.error('Horde request faulted. Please try again.');
             throw new Error('Horde generation failed: Faulted');
         }
 
         if (statusCheckJson.is_possible === false) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.error('There are no Horde workers that are able to generate text with your request. Please change the parameters or try again later.');
             throw new Error('Horde generation failed: Unsatisfiable request');
         }
@@ -272,7 +294,7 @@ export async function generateHorde(prompt, params, signal, reportProgress) {
             queue_position_first = statusCheckJson.queue_position;
             reportProgress && setGenerationProgress(0);
         } else if (statusCheckJson.queue_position >= 0) {
-            let queue_position = statusCheckJson.queue_position;
+            const queue_position = statusCheckJson.queue_position;
             const progress = Math.round(100 - (queue_position / queue_position_first * 100));
             reportProgress && setGenerationProgress(progress);
         }
@@ -294,6 +316,7 @@ export async function getHordeModels(force) {
     const sortByWhitelisted = (a, b) => b.is_whitelisted - a.is_whitelisted;
     const sortByPopular = (a, b) => b.tags?.includes('popular') - a.tags?.includes('popular');
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#horde_model').empty();
     models = (await getModels(force)).sort((a, b) => {
         return sortByWhitelisted(a, b) || sortByPopular(a, b) || sortByPerformance(a, b);
@@ -303,6 +326,7 @@ export async function getHordeModels(force) {
         option.value = model.name;
         option.innerText = hordeModelTextString(model);
         option.selected = horde_settings.models.includes(model.name);
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#horde_model').append(option);
     }
 
@@ -314,16 +338,26 @@ export async function getHordeModels(force) {
     setContextSizePreview();
 }
 
+/**
+ *
+ * @param settings
+ */
 export function loadHordeSettings(settings) {
     if (settings.horde_settings) {
         Object.assign(horde_settings, settings.horde_settings);
     }
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#horde_auto_adjust_response_length').prop('checked', horde_settings.auto_adjust_response_length);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#horde_auto_adjust_context_length').prop('checked', horde_settings.auto_adjust_context_length);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#horde_trusted_workers_only').prop('checked', horde_settings.trusted_workers_only);
 }
 
+/**
+ *
+ */
 async function showKudos() {
     const response = await fetch('/api/horde/user-info', {
         method: 'POST',
@@ -331,6 +365,7 @@ async function showKudos() {
     });
 
     if (!response.ok) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.warning('Could not load user info from Horde. Please try again later.');
         return;
     }
@@ -338,26 +373,40 @@ async function showKudos() {
     const data = await response.json();
 
     if (data.anonymous) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.info('You are in anonymous mode. Set your personal Horde API key to see kudos.');
         return;
     }
 
     console.log('Horde user data', data.user, 'shared key data', data.sharedKey);
     const kudos = data.sharedKey?.kudos ?? data.user?.kudos ?? 0;
+    // @ts-expect-error TS(2304): Cannot find name 'toastr'.
     toastr.info(`Kudos: ${kudos}`, data.user.username);
 }
 
+/**
+ *
+ * @param model
+ */
 function hordeModelTextString(model) {
     const q = hordeModelQueueStateString(model);
     return `${model.name} (${q})`;
 }
 
+/**
+ *
+ * @param model
+ */
 function hordeModelQueueStateString(model) {
     return `ETA: ${model.eta}s, Speed: ${model.performance}, Queue: ${model.queued}, Workers: ${model.count}`;
 }
 
+/**
+ *
+ */
 export function isHordeGenerationNotAllowed() {
     if (main_api == 'koboldhorde' && kai_settings.preset_settings == 'gui') {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.error(t`GUI Settings preset is not supported for Horde. Please select another preset.`);
         return true;
     }
@@ -365,6 +414,10 @@ export function isHordeGenerationNotAllowed() {
     return false;
 }
 
+/**
+ *
+ * @param option
+ */
 function getHordeModelTemplate(option) {
     const model = models.find(x => x.name === option?.element?.value);
 
@@ -401,6 +454,7 @@ function getHordeModelTemplate(option) {
         tagSpans ? `<span class="tags tags_inline inline-flex margin-r2">${tagSpans}</span>` : '',
     ].filter(Boolean).join(' | ');
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     return $((`
         <div class="flex-container flexFlowColumn">
             <div>
@@ -413,9 +467,14 @@ function getHordeModelTemplate(option) {
     `));
 }
 
+/**
+ *
+ */
 export function initHorde() {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#horde_model').on('mousedown change', async function (e) {
         console.log('Horde model change', e);
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const modelValue = $('#horde_model').val();
         horde_settings.models = Array.isArray(modelValue) ? modelValue : [];
         console.log('Updated Horde models', horde_settings.models);
@@ -425,44 +484,58 @@ export function initHorde() {
         if (horde_settings.models.length) {
             adjustHordeGenerationParams(max_context, amount_gen);
         } else {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#adjustedHordeParams').text(t`Context` + ': --, ' + t`Response` + ': --');
         }
 
         saveSettingsDebounced();
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#horde_auto_adjust_response_length').on('input', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         horde_settings.auto_adjust_response_length = !!$(this).prop('checked');
         setContextSizePreview();
         saveSettingsDebounced();
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#horde_auto_adjust_context_length').on('input', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         horde_settings.auto_adjust_context_length = !!$(this).prop('checked');
         setContextSizePreview();
         saveSettingsDebounced();
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#horde_trusted_workers_only').on('input', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         horde_settings.trusted_workers_only = !!$(this).prop('checked');
         setContextSizePreview();
         saveSettingsDebounced();
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#horde_api_key_button').on('click', async function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const key = String($('#horde_api_key').val()).trim();
         if (!key) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.warning(t`Please enter your Horde API key`);
             return;
         }
+        // @ts-expect-error TS(2554): Expected 3-4 arguments, but got 2.
         await writeSecret(SECRET_KEYS.HORDE, key);
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#horde_refresh').on('click', () => getHordeModels(true));
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#horde_kudos').on('click', showKudos);
 
     // Not needed on mobile
     if (!isMobile()) {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#horde_model').select2({
             width: '100%',
             placeholder: t`Select Horde models`,

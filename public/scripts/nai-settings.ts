@@ -82,13 +82,20 @@ const samplers = {
 };
 
 let novel_data = null;
-let badWordsCache = {};
+const badWordsCache = {};
 const BIAS_KEY = '#range_block_novel';
 
+/**
+ *
+ * @param data
+ */
 export function setNovelData(data) {
     novel_data = data;
 }
 
+/**
+ *
+ */
 export function getKayraMaxContextTokens() {
     switch (novel_data?.tier) {
         case 1:
@@ -102,6 +109,9 @@ export function getKayraMaxContextTokens() {
     return null;
 }
 
+/**
+ *
+ */
 export function getNovelMaxResponseTokens() {
     switch (novel_data?.tier) {
         case 1:
@@ -115,6 +125,10 @@ export function getNovelMaxResponseTokens() {
     return maximum_output_length;
 }
 
+/**
+ *
+ * @param data
+ */
 export function convertNovelPreset(data) {
     if (!data || typeof data !== 'object' || data.presetVersion !== 3 || !data.parameters || typeof data.parameters !== 'object') {
         return data;
@@ -147,18 +161,30 @@ export function convertNovelPreset(data) {
     };
 }
 
+/**
+ *
+ */
 export function getNovelTier() {
     return nai_tiers[novel_data?.tier] ?? 'no_connection';
 }
 
+/**
+ *
+ */
 export function getNovelAnlas() {
     return novel_data?.trainingStepsLeft?.fixedTrainingStepsLeft ?? 0;
 }
 
+/**
+ *
+ */
 export function getNovelUnlimitedImageGeneration() {
     return novel_data?.perks?.unlimitedImageGeneration ?? false;
 }
 
+/**
+ *
+ */
 export async function loadNovelSubscriptionData() {
     const result = await fetch('/api/novelai/status', {
         method: 'POST',
@@ -174,11 +200,18 @@ export async function loadNovelSubscriptionData() {
     return result.ok;
 }
 
+/**
+ *
+ * @param preset
+ */
 export function loadNovelPreset(preset) {
     if (preset.genamt === undefined) {
         const needsUnlock = preset.max_context > MAX_CONTEXT_DEFAULT || preset.max_length > MAX_RESPONSE_DEFAULT;
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#amount_gen').val(preset.max_length).trigger('input');
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#max_context_unlocked').prop('checked', needsUnlock).trigger('change');
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#max_context').val(preset.max_context).trigger('input');
     } else {
         setGenerationParamsFromPreset(preset);
@@ -196,8 +229,11 @@ export function loadNovelPreset(preset) {
     nai_settings.top_a = preset.top_a;
     nai_settings.typical_p = preset.typical_p;
     nai_settings.min_length = preset.min_length;
+    // @ts-expect-error TS(2339): Property 'phrase_rep_pen' does not exist on type '... Remove this comment to see the full error message
     nai_settings.phrase_rep_pen = preset.phrase_rep_pen;
+    // @ts-expect-error TS(2339): Property 'mirostat_lr' does not exist on type '{ t... Remove this comment to see the full error message
     nai_settings.mirostat_lr = preset.mirostat_lr;
+    // @ts-expect-error TS(2339): Property 'mirostat_tau' does not exist on type '{ ... Remove this comment to see the full error message
     nai_settings.mirostat_tau = preset.mirostat_tau;
     nai_settings.prefix = preset.prefix;
     nai_settings.banned_tokens = preset.banned_tokens || '';
@@ -212,24 +248,35 @@ export function loadNovelPreset(preset) {
     loadNovelSettingsUi(nai_settings);
 }
 
+/**
+ *
+ * @param data
+ * @param settings
+ */
 export function loadNovelSettings(data, settings) {
     novelai_setting_names = data.novelai_setting_names;
     novelai_settings = data.novelai_settings;
+    // @ts-expect-error TS(6133): 'arr' is declared but its value is never read.
     novelai_settings.forEach(function (item, i, arr) {
         novelai_settings[i] = JSON.parse(item);
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#settings_preset_novel').empty();
     const presetNames = {};
+    // @ts-expect-error TS(6133): 'arr' is declared but its value is never read.
     novelai_setting_names.forEach(function (item, i, arr) {
         presetNames[item] = i;
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#settings_preset_novel').append(`<option value=${i}>${item}</option>`);
     });
     novelai_setting_names = presetNames;
 
     //load the rest of the Novel settings without any checks
     nai_settings.model_novel = settings.model_novel;
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#model_novel_select').val(nai_settings.model_novel);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(`#model_novel_select option[value=${nai_settings.model_novel}]`).prop('selected', true);
 
     if (settings.nai_preamble !== undefined) {
@@ -249,8 +296,11 @@ export function loadNovelSettings(data, settings) {
     nai_settings.top_a = settings.top_a;
     nai_settings.typical_p = settings.typical_p;
     nai_settings.min_length = settings.min_length;
+    // @ts-expect-error TS(2339): Property 'phrase_rep_pen' does not exist on type '... Remove this comment to see the full error message
     nai_settings.phrase_rep_pen = settings.phrase_rep_pen;
+    // @ts-expect-error TS(2339): Property 'mirostat_lr' does not exist on type '{ t... Remove this comment to see the full error message
     nai_settings.mirostat_lr = settings.mirostat_lr;
+    // @ts-expect-error TS(2339): Property 'mirostat_tau' does not exist on type '{ ... Remove this comment to see the full error message
     nai_settings.mirostat_tau = settings.mirostat_tau;
     nai_settings.streaming_novel = !!settings.streaming_novel;
     nai_settings.preamble = settings.preamble || default_preamble;
@@ -266,49 +316,95 @@ export function loadNovelSettings(data, settings) {
     loadNovelSettingsUi(nai_settings);
 }
 
+/**
+ *
+ * @param ui_settings
+ */
 function loadNovelSettingsUi(ui_settings) {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#temp_novel').val(ui_settings.temperature);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#temp_counter_novel').val(Number(ui_settings.temperature).toFixed(2));
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#rep_pen_novel').val(ui_settings.repetition_penalty);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#rep_pen_counter_novel').val(Number(ui_settings.repetition_penalty).toFixed(3));
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#rep_pen_size_novel').val(ui_settings.repetition_penalty_range);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#rep_pen_size_counter_novel').val(Number(ui_settings.repetition_penalty_range).toFixed(0));
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#rep_pen_slope_novel').val(ui_settings.repetition_penalty_slope);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#rep_pen_slope_counter_novel').val(Number(`${ui_settings.repetition_penalty_slope}`).toFixed(2));
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#rep_pen_freq_novel').val(ui_settings.repetition_penalty_frequency);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#rep_pen_freq_counter_novel').val(Number(ui_settings.repetition_penalty_frequency).toFixed(3));
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#rep_pen_presence_novel').val(ui_settings.repetition_penalty_presence);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#rep_pen_presence_counter_novel').val(Number(ui_settings.repetition_penalty_presence).toFixed(3));
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#tail_free_sampling_novel').val(ui_settings.tail_free_sampling);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#tail_free_sampling_counter_novel').val(Number(ui_settings.tail_free_sampling).toFixed(3));
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#top_k_novel').val(ui_settings.top_k);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#top_k_counter_novel').val(Number(ui_settings.top_k).toFixed(0));
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#top_p_novel').val(ui_settings.top_p);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#top_p_counter_novel').val(Number(ui_settings.top_p).toFixed(3));
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#top_a_novel').val(ui_settings.top_a);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#top_a_counter_novel').val(Number(ui_settings.top_a).toFixed(3));
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#typical_p_novel').val(ui_settings.typical_p);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#typical_p_counter_novel').val(Number(ui_settings.typical_p).toFixed(3));
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#phrase_rep_pen_novel').val(ui_settings.phrase_rep_pen || 'off');
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#mirostat_lr_novel').val(ui_settings.mirostat_lr);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#mirostat_lr_counter_novel').val(Number(ui_settings.mirostat_lr).toFixed(2));
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#mirostat_tau_novel').val(ui_settings.mirostat_tau);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#mirostat_tau_counter_novel').val(Number(ui_settings.mirostat_tau).toFixed(2));
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#min_length_novel').val(ui_settings.min_length);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#min_length_counter_novel').val(Number(ui_settings.min_length).toFixed(0));
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#nai_preamble_textarea').val(ui_settings.preamble);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#nai_prefix').val(ui_settings.prefix || 'vanilla');
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#nai_banned_tokens').val(ui_settings.banned_tokens || '');
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#min_p_novel').val(ui_settings.min_p);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#min_p_counter_novel').val(Number(ui_settings.min_p).toFixed(3));
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#math1_temp_novel').val(ui_settings.math1_temp);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#math1_temp_counter_novel').val(Number(ui_settings.math1_temp).toFixed(2));
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#math1_quad_novel').val(ui_settings.math1_quad);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#math1_quad_counter_novel').val(Number(ui_settings.math1_quad).toFixed(2));
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#math1_quad_entropy_scale_novel').val(ui_settings.math1_quad_entropy_scale);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#math1_quad_entropy_scale_counter_novel').val(Number(ui_settings.math1_quad_entropy_scale).toFixed(2));
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(`#settings_preset_novel option[value=${novelai_setting_names[nai_settings.preset_settings_novel]}]`).prop('selected', true);
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#streaming_novel').prop('checked', ui_settings.streaming_novel);
     sortItemsByOrder(ui_settings.order);
     displayLogitBias(ui_settings.logit_bias, BIAS_KEY);
@@ -385,12 +481,14 @@ const sliders = [
         sliderId: '#mirostat_tau_novel',
         counterId: '#mirostat_tau_counter_novel',
         format: (val) => Number(val).toFixed(2),
+        // @ts-expect-error TS(2339): Property 'mirostat_tau' does not exist on type '{ ... Remove this comment to see the full error message
         setValue: (val) => { nai_settings.mirostat_tau = Number(val); },
     },
     {
         sliderId: '#mirostat_lr_novel',
         counterId: '#mirostat_lr_counter_novel',
         format: (val) => Number(val).toFixed(2),
+        // @ts-expect-error TS(2339): Property 'mirostat_lr' does not exist on type '{ t... Remove this comment to see the full error message
         setValue: (val) => { nai_settings.mirostat_lr = Number(val); },
     },
     {
@@ -431,6 +529,11 @@ const sliders = [
     },
 ];
 
+/**
+ *
+ * @param banned_tokens
+ * @param tokenizerType
+ */
 function getBadWordIds(banned_tokens, tokenizerType) {
     if (tokenizerType === tokenizers.NONE) {
         return [];
@@ -446,7 +549,7 @@ function getBadWordIds(banned_tokens, tokenizerType) {
     const result = [];
     const sequence = banned_tokens.split('\n');
 
-    for (let token of sequence) {
+    for (const token of sequence) {
         const trimmed = token.trim();
 
         // Skip empty lines
@@ -485,6 +588,10 @@ function getBadWordIds(banned_tokens, tokenizerType) {
     return result;
 }
 
+/**
+ *
+ * @param text
+ */
 function getBadWordPermutations(text) {
     const result = [];
 
@@ -512,6 +619,16 @@ function getBadWordPermutations(text) {
     return result.filter(onlyUnique);
 }
 
+/**
+ *
+ * @param finalPrompt
+ * @param settings
+ * @param maxLength
+ * @param isImpersonate
+ * @param isContinue
+ * @param _cfgValues
+ * @param type
+ */
 export function getNovelGenerationData(finalPrompt, settings, maxLength, isImpersonate, isContinue, _cfgValues, type) {
     console.debug('NovelAI generation data for', type);
     const isKayra = nai_settings.model_novel.includes('kayra');
@@ -591,8 +708,11 @@ export function getNovelGenerationData(finalPrompt, settings, maxLength, isImper
         'math1_quad': Number(nai_settings.math1_quad),
         'math1_quad_entropy_scale': Number(nai_settings.math1_quad_entropy_scale),
         'typical_p': Number(nai_settings.typical_p),
+        // @ts-expect-error TS(2339): Property 'mirostat_lr' does not exist on type '{ t... Remove this comment to see the full error message
         'mirostat_lr': Number(nai_settings.mirostat_lr),
+        // @ts-expect-error TS(2339): Property 'mirostat_tau' does not exist on type '{ ... Remove this comment to see the full error message
         'mirostat_tau': Number(nai_settings.mirostat_tau),
+        // @ts-expect-error TS(2339): Property 'phrase_rep_pen' does not exist on type '... Remove this comment to see the full error message
         'phrase_rep_pen': nai_settings.phrase_rep_pen,
         'stop_sequences': stopSequences,
         'bad_words_ids': badWordIds,
@@ -607,6 +727,11 @@ export function getNovelGenerationData(finalPrompt, settings, maxLength, isImper
 }
 
 // Check if the prefix needs to be overridden to use instruct mode
+/**
+ *
+ * @param selected_prefix
+ * @param finalPrompt
+ */
 function selectPrefix(selected_prefix, finalPrompt) {
     let useInstruct = false;
     const clio = nai_settings.model_novel.includes('clio');
@@ -624,6 +749,10 @@ function selectPrefix(selected_prefix, finalPrompt) {
     return 'vanilla';
 }
 
+/**
+ *
+ * @param model
+ */
 function getTokenizerTypeForModel(model) {
     if (model.includes('clio')) {
         return tokenizers.NERD;
@@ -638,8 +767,13 @@ function getTokenizerTypeForModel(model) {
 }
 
 // Sort the samplers by the order array
+/**
+ *
+ * @param orderArray
+ */
 function sortItemsByOrder(orderArray) {
     console.debug('Preset samplers order: ' + orderArray);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const $draggableItems = $('#novel_order');
 
     // Sort the items by the order array
@@ -651,22 +785,31 @@ function sortItemsByOrder(orderArray) {
 
     // Update the disabled class for each sampler
     $draggableItems.children().each(function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const isEnabled = orderArray.includes(parseInt($(this).data('id')));
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(this).toggleClass('disabled', !isEnabled);
 
         // If the sampler is disabled, move it to the bottom of the list
         if (!isEnabled) {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const item = $(this).detach();
             $draggableItems.append(item);
         }
     });
 }
 
+/**
+ *
+ */
 function saveSamplingOrder() {
     const order = [];
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#novel_order').children().each(function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const isEnabled = !$(this).hasClass('disabled');
         if (isEnabled) {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             order.push($(this).data('id'));
         }
     });
@@ -721,6 +864,11 @@ export function adjustNovelInstructionPrompt(prompt) {
     return stripedPrompt;
 }
 
+/**
+ *
+ * @param response
+ * @param decoded
+ */
 function tryParseStreamingError(response, decoded) {
     try {
         const data = JSON.parse(decoded);
@@ -730,6 +878,7 @@ function tryParseStreamingError(response, decoded) {
         }
 
         if (data.message || data.error) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.error(data.message || data.error?.message || response.statusText, 'NovelAI API');
             throw new Error(data);
         }
@@ -738,6 +887,11 @@ function tryParseStreamingError(response, decoded) {
     }
 }
 
+/**
+ *
+ * @param generate_data
+ * @param signal
+ */
 export async function generateNovelWithStreaming(generate_data, signal) {
     generate_data.streaming = nai_settings.streaming_novel;
 
@@ -788,7 +942,7 @@ export async function generateNovelWithStreaming(generate_data, signal) {
 /**
  * Represents all logprob data for a single token, including its
  * before, after, and the ultimately selected token.
- * @typedef {Object} NAITokenLogprobs
+ * @typedef {object} NAITokenLogprobs
  * @property {TokenLogprobTuple[]} chosen - always length 1
  * @property {TokenLogprobTuple[]} before - always `top_logprobs` length
  * @property {TokenLogprobTuple[]} after - maybe less than `top_logprobs` length
@@ -816,7 +970,7 @@ export function parseNovelAILogprobs(data) {
 
     // Add the chosen token to `merged` if it's not already there. This can
     // happen if the chosen token was not among the top 10 most likely ones.
-    // eslint-disable-next-line no-unused-vars
+     
     const [[chosenId], [_, chosenAfter]] = data.chosen[0];
     if (!merged.some(([id]) => id === chosenId)) {
         merged.push([chosenId, chosenAfter]);
@@ -827,21 +981,27 @@ export function parseNovelAILogprobs(data) {
     // text so we will use the IDs instead and bulk decode them in
     // StreamingProcessor. JSDoc typechecking may complain about this, but it's
     // intentional.
-    // @ts-ignore
     return { token: chosenId, topLogprobs: merged };
 }
 
+// @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
 $('#nai_preamble_textarea').on('input', function () {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     nai_settings.preamble = String($('#nai_preamble_textarea').val());
     saveSettingsDebounced();
 });
 
+// @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
 $('#nai_preamble_restore').on('click', function () {
     nai_settings.preamble = default_preamble;
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#nai_preamble_textarea').val(nai_settings.preamble);
     saveSettingsDebounced();
 });
 
+/**
+ *
+ */
 export async function getStatusNovel() {
     try {
         const result = await loadNovelSubscriptionData();
@@ -858,22 +1018,31 @@ export async function getStatusNovel() {
     return resultCheckStatus();
 }
 
+/**
+ *
+ */
 export function initNovelAISettings() {
     sliders.forEach(slider => {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(document).on('input', slider.sliderId, function () {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const value = $(this).val();
             const formattedValue = slider.format(value);
             slider.setValue(value);
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(slider.counterId).val(formattedValue);
             saveSettingsDebounced();
         });
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#api_button_novel').on('click', async function (e) {
         e.stopPropagation();
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const api_key_novel = String($('#api_key_novel').val()).trim();
 
         if (api_key_novel.length) {
+            // @ts-expect-error TS(2554): Expected 3-4 arguments, but got 2.
             await writeSecret(SECRET_KEYS.NOVEL, api_key_novel);
         }
 
@@ -886,7 +1055,9 @@ export function initNovelAISettings() {
         await getStatusNovel();
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#settings_preset_novel').on('change', async function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         nai_settings.preset_settings_novel = $('#settings_preset_novel').find(':selected').text();
         const preset = novelai_settings[novelai_setting_names[nai_settings.preset_settings_novel]];
         loadNovelPreset(preset);
@@ -894,39 +1065,53 @@ export function initNovelAISettings() {
         await eventSource.emit(event_types.PRESET_CHANGED, { apiId: 'novel', name: nai_settings.preset_settings_novel });
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#streaming_novel').on('input', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const value = !!$(this).prop('checked');
         nai_settings.streaming_novel = value;
         saveSettingsDebounced();
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#model_novel_select').on('change', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         nai_settings.model_novel = String($('#model_novel_select').find(':selected').val());
         saveSettingsDebounced();
 
         // Update the selected preset to something appropriate
         const default_preset = default_presets[nai_settings.model_novel];
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#settings_preset_novel').val(novelai_setting_names[default_preset]);
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(`#settings_preset_novel option[value=${novelai_setting_names[default_preset]}]`).attr('selected', 'true');
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#settings_preset_novel').trigger('change');
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#nai_prefix').on('change', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         nai_settings.prefix = String($('#nai_prefix').find(':selected').val());
         saveSettingsDebounced();
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#phrase_rep_pen_novel').on('change', function () {
+        // @ts-expect-error TS(2339): Property 'phrase_rep_pen' does not exist on type '... Remove this comment to see the full error message
         nai_settings.phrase_rep_pen = String($('#phrase_rep_pen_novel').find(':selected').val());
         saveSettingsDebounced();
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#novel_order').sortable({
         delay: getSortableDelay(),
         stop: saveSamplingOrder,
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#novel_order .toggle_button').on('click', function () {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const $item = $(this).closest('[data-id]');
         const isEnabled = !$item.hasClass('disabled');
         $item.toggleClass('disabled', isEnabled);
@@ -934,5 +1119,6 @@ export function initNovelAISettings() {
         saveSamplingOrder();
     });
 
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#novelai_logit_bias_new_entry').on('click', () => createNewLogitBiasEntry(nai_settings.logit_bias, BIAS_KEY));
 }

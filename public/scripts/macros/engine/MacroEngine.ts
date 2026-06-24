@@ -11,7 +11,6 @@ import { ELSE_MARKER } from '../definitions/core-macros.js';
 
 /**
  * A processor function that transforms text before or after macro evaluation.
- *
  * @callback MacroProcessor
  * @param {string} text - The text to process.
  * @param {MacroEnv} env - The macro environment.
@@ -19,7 +18,7 @@ import { ELSE_MARKER } from '../definitions/core-macros.js';
  */
 
 /**
- * @typedef {Object} RegisteredProcessor
+ * @typedef {object} RegisteredProcessor
  * @property {MacroProcessor} handler - The processor function.
  * @property {number} priority - Execution priority (lower = earlier).
  * @property {string} source - Identifier for debugging/tracking.
@@ -27,7 +26,6 @@ import { ELSE_MARKER } from '../definitions/core-macros.js';
 
 /**
  * The singleton instance of the MacroEngine.
- *
  * @type {MacroEngine}
  */
 let instance;
@@ -49,11 +47,10 @@ class MacroEngine {
 
     /**
      * Registers a pre-processor to run before macro evaluation.
-     *
      * @param {MacroProcessor} handler - The processor function.
-     * @param {Object} [options] - Configuration options.
-     * @param {number} [options.priority=100] - Execution priority (lower = earlier).
-     * @param {string} [options.source='unknown'] - Identifier for debugging.
+     * @param {object} [options] - Configuration options.
+     * @param {number} [options.priority] - Execution priority (lower = earlier).
+     * @param {string} [options.source] - Identifier for debugging.
      */
     addPreProcessor(handler, { priority = 100, source = 'unknown' } = {}) {
         this.#preProcessors.push({ handler, priority, source });
@@ -62,7 +59,6 @@ class MacroEngine {
 
     /**
      * Removes a previously registered pre-processor.
-     *
      * @param {MacroProcessor} handler - The processor function to remove.
      * @returns {boolean} True if the processor was found and removed.
      */
@@ -77,11 +73,10 @@ class MacroEngine {
 
     /**
      * Registers a post-processor to run after macro evaluation.
-     *
      * @param {MacroProcessor} handler - The processor function.
-     * @param {Object} [options] - Configuration options.
-     * @param {number} [options.priority=100] - Execution priority (lower = earlier).
-     * @param {string} [options.source='unknown'] - Identifier for debugging.
+     * @param {object} [options] - Configuration options.
+     * @param {number} [options.priority] - Execution priority (lower = earlier).
+     * @param {string} [options.source] - Identifier for debugging.
      */
     addPostProcessor(handler, { priority = 100, source = 'unknown' } = {}) {
         this.#postProcessors.push({ handler, priority, source });
@@ -90,7 +85,6 @@ class MacroEngine {
 
     /**
      * Removes a previously registered post-processor.
-     *
      * @param {MacroProcessor} handler - The processor function to remove.
      * @returns {boolean} True if the processor was found and removed.
      */
@@ -105,11 +99,10 @@ class MacroEngine {
 
     /**
      * Evaluates a string containing macros and resolves them.
-     *
      * @param {string} input - The input string to evaluate.
      * @param {MacroEnv} env - The environment to pass to the macro handler.
-     * @param {Object} [options={}] - Optional evaluation settings.
-     * @param {number} [options.contextOffset=0] - Base offset from the original top-level document.
+     * @param {object} [options] - Optional evaluation settings.
+     * @param {number} [options.contextOffset] - Base offset from the original top-level document.
      *        Used when evaluating nested content (via resolve() in handlers) to preserve global
      *        positioning for macros like {{pick}} that seed on position.
      * @returns {string} The resolved string.
@@ -160,7 +153,6 @@ class MacroEngine {
 
     /**
      * Resolves a macro call.
-     *
      * @param {MacroCall} call - The macro call to resolve.
      * @returns {string} The resolved macro.
      */
@@ -194,11 +186,13 @@ class MacroEngine {
                     defOverride = MacroRegistry.buildMacroDefFromOptions(name, options);
                 } catch (error) {
                     // If building fails, log warning and fall through to check registered macros
+                    // @ts-expect-error TS(2345): Argument of type '{ message: string; call: any; }'... Remove this comment to see the full error message
                     logMacroRuntimeWarning({ message: `Dynamic macro "${name}" has invalid options: ${error.message}`, call });
                 }
             } else if (['string', 'number', 'boolean', 'function'].includes((typeof impl))) {
                 // Case 1 & 2: string or handler function
                 if (['number', 'boolean'].includes(typeof impl)) {
+                    // @ts-expect-error TS(2345): Argument of type '{ message: string; call: any; }'... Remove this comment to see the full error message
                     logMacroRuntimeWarning({ message: `Dynamic macro "${name}" uses unsupported number/boolean format.`, call });
                 }
                 defOverride = MacroRegistry.buildMacroDefFromOptions(name, {
@@ -208,6 +202,7 @@ class MacroEngine {
                     returnType: MacroValueType.STRING,
                 });
             } else {
+                // @ts-expect-error TS(2345): Argument of type '{ message: string; call: any; }'... Remove this comment to see the full error message
                 logMacroRuntimeWarning({ message: `Dynamic macro "${name}" is not defined correctly (must be string, a handler function, or a macro def options object with handler property).`, call });
             }
         }
@@ -223,14 +218,17 @@ class MacroEngine {
             try {
                 return call.env.functions.postProcess(result);
             } catch (error) {
+                // @ts-expect-error TS(2345): Argument of type '{ message: string; call: any; er... Remove this comment to see the full error message
                 logMacroInternalError({ message: `Macro "${name}" postProcess function failed.`, call, error });
                 return result;
             }
         } catch (error) {
             const isRuntimeError = !!(error && (error.name === 'MacroRuntimeError' || error.isMacroRuntimeError));
             if (isRuntimeError) {
+                // @ts-expect-error TS(2345): Argument of type '{ message: any; call: any; error... Remove this comment to see the full error message
                 logMacroRuntimeWarning({ message: (error.message || `Macro "${name}" execution failed.`), call, error });
             } else {
+                // @ts-expect-error TS(2345): Argument of type '{ message: string; call: any; er... Remove this comment to see the full error message
                 logMacroInternalError({ message: `Macro "${name}" internal execution error.`, call, error });
             }
             return raw;
@@ -239,7 +237,6 @@ class MacroEngine {
 
     /**
      * Runs pre-processors on the input text, before the engine processes the input.
-     *
      * @param {string} text - The input text to process.
      * @param {MacroEnv} env - The environment to pass to the macro handler.
      * @returns {string} The processed text.
@@ -254,7 +251,6 @@ class MacroEngine {
 
     /**
      * Runs post-processors on the input text, after the engine finished processing the input.
-     *
      * @param {string} text - The input text to process.
      * @param {MacroEnv} env - The environment to pass to the macro handler.
      * @returns {string} The processed text.
@@ -323,12 +319,11 @@ class MacroEngine {
     }
 
     /**
-    * Normalizes macro results into a string.
-    * This mirrors the behavior of the legacy macro system in a simplified way.
-    *
-    * @param {any} value
-    * @returns {string}
-    */
+     * Normalizes macro results into a string.
+     * This mirrors the behavior of the legacy macro system in a simplified way.
+     * @param {any} value
+     * @returns {string}
+     */
     normalizeMacroResult(value) {
         if (value === null || value === undefined) {
             return '';
@@ -363,10 +358,9 @@ class MacroEngine {
      * {{/if}}
      * ```
      * To produce "# Heading\nContent here" instead of "# Heading\n  Content here"
-     *
      * @param {string} content - The content to trim
-     * @param {Object} options - Configuration options
-     * @param {boolean} [options.trimIndent=true] - Whether to also dedent consistent indentation
+     * @param {object} options - Configuration options
+     * @param {boolean} [options.trimIndent] - Whether to also dedent consistent indentation
      * @returns {string} The trimmed content
      */
     trimScopedContent(content, { trimIndent = true } = {}) {

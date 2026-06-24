@@ -113,7 +113,7 @@ class PrivateRequestAgent extends Agent {
         /**
          * Raise an error and log it if necessary.
          * @param {string} message The error message.
-         * @param {boolean} [log=true] Whether to log the error to the console.
+         * @param {boolean} [log] Whether to log the error to the console.
          */
         const raiseError = (message: any, log = true) => {
             if (log) {

@@ -3,6 +3,10 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import { getVersion } from '../util.js';
 
+/**
+ *
+ * @param forceDist
+ */
 async function getLibOutputPath(forceDist = false) {
     const appVersion = await getVersion();
     const webpackRoot = forceDist
@@ -19,6 +23,9 @@ async function getLibOutputPath(forceDist = false) {
     };
 }
 
+/**
+ *
+ */
 export default function getLibServeMiddleware() {
     /**
      * A very spartan recreation of webpack-dev-middleware.
@@ -41,7 +48,7 @@ export default function getLibServeMiddleware() {
     /**
      * Wait until Bun is done compiling.
      * @param {object} param Parameters.
-     * @param {boolean} [param.forceDist=false] Whether to force the use the /dist folder.
+     * @param {boolean} [param.forceDist] Whether to force the use the /dist folder.
      * @returns {Promise<void>}
      */
     devMiddleware.runBunBuild = async ({ forceDist = false } = {}) => {

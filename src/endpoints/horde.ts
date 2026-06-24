@@ -80,11 +80,19 @@ router.post('/text-workers', async (request, response) => {
     }
 });
 
+/**
+ *
+ */
 async function getHordeTextModelMetadata() {
     const response = await fetch(HORDE_TEXT_MODEL_METADATA_URL);
     return await response.json();
 }
 
+/**
+ *
+ * @param models
+ * @param metadata
+ */
 async function mergeModelsAndMetadata(models: any, metadata: any) {
     return models.map((model: any) => {
         const metadataModel = metadata[model.name];

@@ -28,7 +28,6 @@ class CharacterContextMenu {
     /**
      * Tag one or more characters,
      * opens a popup.
-     *
      * @param {Array<number>} selectedCharacters
      */
     static tag = (selectedCharacters) => {
@@ -37,7 +36,6 @@ class CharacterContextMenu {
 
     /**
      * Duplicate one or more characters
-     *
      * @param {number} characterId
      * @returns {Promise<any>}
      */
@@ -62,7 +60,6 @@ class CharacterContextMenu {
     /**
      * Favorite a character
      * and highlight it.
-     *
      * @param {number} characterId
      * @returns {Promise<void>}
      */
@@ -88,6 +85,7 @@ class CharacterContextMenu {
         });
 
         if (!mergeResponse.ok) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             mergeResponse.json().then(json => toastr.error(`Character not saved. Error: ${json.message}. Field: ${json.error}`));
         }
 
@@ -98,7 +96,6 @@ class CharacterContextMenu {
     /**
      * Convert one or more characters to persona,
      * may open a popup for one or more characters.
-     *
      * @param {number} characterId
      * @returns {Promise<void>}
      */
@@ -107,7 +104,6 @@ class CharacterContextMenu {
     /**
      * Delete one or more characters,
      * opens a popup.
-     *
      * @param {string|string[]} characterKey
      * @param {boolean} [deleteChats]
      * @returns {Promise<void>}
@@ -120,12 +116,11 @@ class CharacterContextMenu {
 
     /**
      * Show the context menu at the given position
-     *
      * @param positionX
      * @param positionY
      */
     static show = (positionX, positionY) => {
-        let contextMenu = document.getElementById(BulkEditOverlay.contextMenuId);
+        const contextMenu = document.getElementById(BulkEditOverlay.contextMenuId);
         contextMenu.style.left = `${positionX}px`;
         contextMenu.style.top = `${positionY}px`;
 
@@ -148,7 +143,6 @@ class CharacterContextMenu {
 
     /**
      * Sets up the context menu for the given overlay
-     *
      * @param characterGroupOverlay
      */
     constructor(characterGroupOverlay) {
@@ -189,7 +183,6 @@ class BulkTagPopupHandler {
 
     /**
      * Gets the HTML as a string that is going to be the popup for the bulk tag edit
-     *
      * @returns String containing the html for the popup
      */
     #getHtml = () => {
@@ -232,7 +225,6 @@ class BulkTagPopupHandler {
 
     /**
      * Append and show the tag control
-     *
      * @param {number[]} characterIds - The characters that are shown inside the popup
      */
     show(characterIds) {
@@ -247,9 +239,11 @@ class BulkTagPopupHandler {
         document.body.insertAdjacentHTML('beforeend', this.#getHtml());
 
         const entities = this.characterIds.map(id => characterToEntity(characters[id], id)).filter(entity => entity.item !== undefined);
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         buildAvatarList($('#bulk_tags_avatars_block'), entities);
 
         // Print the tag list with all mutuable tags, marking them as removable. That is the initial fill
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         printTagList($('#bulkTagList'), { tags: () => this.getMutualTags(), tagOptions: { removable: true } });
 
         // Tag input with resolvable list for the mutual tags to get redrawn, so that newly added tags get sorted correctly
@@ -270,6 +264,7 @@ class BulkTagPopupHandler {
             await importTags(characters[characterId], { importSetting: tag_import_setting.ONLY_EXISTING });
         }
 
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#bulkTagList').empty();
     }
 
@@ -281,12 +276,12 @@ class BulkTagPopupHandler {
             await importTags(characters[characterId], { importSetting: tag_import_setting.ALL });
         }
 
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#bulkTagList').empty();
     }
 
     /**
      * Builds a list of all tags that the provided characters have in common.
-     *
      * @returns {Array<object>} A list of mutual tags
      */
     getMutualTags() {
@@ -313,7 +308,7 @@ class BulkTagPopupHandler {
      * Hide and remove the tag control
      */
     hide() {
-        let popupElement = document.querySelector('#bulk_tag_shadow_popup');
+        const popupElement = document.querySelector('#bulk_tag_shadow_popup');
         if (popupElement) {
             document.body.removeChild(popupElement);
         }
@@ -330,6 +325,7 @@ class BulkTagPopupHandler {
             if (key) tag_map[key] = [];
         }
 
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#bulkTagList').empty();
 
         printCharactersDebounced();
@@ -347,6 +343,7 @@ class BulkTagPopupHandler {
             }
         }
 
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#bulkTagList').empty();
 
         printCharactersDebounced();
@@ -370,7 +367,6 @@ class BulkEditOverlayState {
 /**
  * Implement a SingletonPattern, allowing access to the group overlay instance
  * from everywhere via (new CharacterGroupOverlay())
- *
  * @type {Readonly<BulkEditOverlay>}
  */
 let bulkEditOverlayInstance = null;
@@ -407,14 +403,12 @@ class BulkEditOverlay {
 
     /**
      * Locks other pointer actions when the context menu is open
-     *
      * @type {boolean}
      */
     #contextMenuOpen = false;
 
     /**
      * Whether the next character select should be skipped
-     *
      * @type {boolean}
      */
     #cancelNextToggle = false;
@@ -460,7 +454,6 @@ class BulkEditOverlay {
 
     /**
      * The instance of the bulk tag popup handler that handles tagging of all selected characters
-     *
      * @returns {BulkTagPopupHandler}
      */
     get bulkTagPopupHandler() {
@@ -555,6 +548,7 @@ class BulkEditOverlay {
         document.removeEventListener('click', this.handleContextMenuHide);
     };
 
+    // @ts-expect-error TS(7030): Not all code paths return a value.
     handleDefaultContextMenu = (event) => {
         if (this.isLongPress) {
             event.preventDefault();
@@ -565,7 +559,6 @@ class BulkEditOverlay {
 
     /**
      * Opens menu on long-press.
-     *
      * @param event - Pointer event
      */
     handleHold = (event) => {
@@ -579,6 +572,7 @@ class BulkEditOverlay {
 
         let cancel = false;
 
+        // @ts-expect-error TS(6133): 'event' is declared but its value is never read.
         const cancelHold = (event) => cancel = true;
         this.container.addEventListener('mouseup', cancelHold);
         this.container.addEventListener('touchend', cancelHold);
@@ -613,7 +607,6 @@ class BulkEditOverlay {
 
     /**
      * Returns the position of the mouse/touch location
-     *
      * @param event
      * @returns {(boolean|number|*)[]}
      */
@@ -670,7 +663,6 @@ class BulkEditOverlay {
      * If the last clicked character was deselected, and the current one was deselected too, it will deselect all currently selected characters between those two.
      * If the last clicked character was selected, and the current one was selected too, it will select all currently not selected characters between those two.
      * If the states do not match, nothing will happen.
-     *
      * @param {HTMLElement} currentCharacter - The html element of the currently toggled character
      */
     handleShiftClick = (currentCharacter) => {
@@ -687,7 +679,6 @@ class BulkEditOverlay {
 
     /**
      * Toggles the selection of a given characters
-     *
      * @param {HTMLElement} character - The html element of a character
      * @param {object} param1 - Optional params
      * @param {boolean} [param1.markState] - Whether the toggle of this character should be remembered as the last done toggle
@@ -718,18 +709,17 @@ class BulkEditOverlay {
 
     /**
      * Updates the selected count element with the current count
-     *
      * @param {number} [countOverride] - optional override for a manual number to set
      */
     updateSelectedCount = (countOverride = undefined) => {
         const count = countOverride ?? this.selectedCharacters.length;
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(`#${BulkEditOverlay.bulkSelectedCountId}`).text(count).attr('title', `${count} characters selected`);
     };
 
     /**
      * Toggles the selection of characters in a given range.
      * The range is provided by the given character and the last selected one remembered in the selection state.
-     *
      * @param {HTMLElement} currentCharacter - The html element of the currently toggled character
      * @param {boolean} select - <c>true</c> if the characters in the range are to be selected, <c>false</c> if deselected
      */
@@ -761,7 +751,7 @@ class BulkEditOverlay {
     };
 
     handleContextMenuHide = (event) => {
-        let contextMenu = document.getElementById(BulkEditOverlay.contextMenuId);
+        const contextMenu = document.getElementById(BulkEditOverlay.contextMenuId);
         if (false === contextMenu.contains(event.target)) {
             CharacterContextMenu.hide();
             this.#contextMenuOpen = false;
@@ -770,7 +760,6 @@ class BulkEditOverlay {
 
     /**
      * Concurrently handle character favorite requests.
-     *
      * @returns {Promise<void>}
      */
     handleContextMenuFavorite = async () => {
@@ -788,7 +777,6 @@ class BulkEditOverlay {
 
     /**
      * Concurrently handle character duplicate requests.
-     *
      * @returns {Promise<number>}
      */
     handleContextMenuDuplicate = () => Promise.all(this.selectedCharacters.map(async characterId => CharacterContextMenu.duplicate(characterId)))
@@ -797,7 +785,6 @@ class BulkEditOverlay {
 
     /**
      * Sequentially handle all character-to-persona conversions.
-     *
      * @returns {Promise<void>}
      */
     handleContextMenuPersona = async () => {
@@ -810,7 +797,6 @@ class BulkEditOverlay {
 
     /**
      * Gets the HTML as a string that is displayed inside the popup for the bulk delete
-     *
      * @param {Array<number>} characterIds - The characters that are shown inside the popup
      * @returns String containing the html for the popup content
      */
@@ -834,15 +820,16 @@ class BulkEditOverlay {
     /**
      * Request user input before concurrently handle deletion
      * requests.
-     *
      * @returns {Promise<number>}
      */
     handleContextMenuDelete = () => {
         const characterIds = this.selectedCharacters;
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const popupContent = $(BulkEditOverlay.#getDeletePopupContentHtml(characterIds));
         const checkbox = popupContent.find('#del_char_checkbox');
         const promise = callGenericPopup(popupContent, POPUP_TYPE.CONFIRM)
             .then((accept) => {
+                // @ts-expect-error TS(7030): Not all code paths return a value.
                 if (!accept) return;
 
                 const deleteChats = checkbox.prop('checked') ?? false;
@@ -861,6 +848,7 @@ class BulkEditOverlay {
 
         // At this moment the popup is already changed in the dom, but not yet closed/resolved. We build the avatar list here
         const entities = characterIds.map(id => characterToEntity(characters[id], id)).filter(entity => entity.item !== undefined);
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         buildAvatarList($('#bulk_delete_avatars_block'), entities);
 
         return promise;

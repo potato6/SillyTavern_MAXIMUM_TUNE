@@ -64,7 +64,7 @@ class AccountStorage {
 
     /**
      * Initialize the account storage.
-     * @param {Object} state Initial state
+     * @param {object} state Initial state
      */
     init(state) {
         if (state && typeof state === 'object') {

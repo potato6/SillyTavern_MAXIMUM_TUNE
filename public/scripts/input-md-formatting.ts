@@ -1,11 +1,15 @@
 import { power_user } from './power-user.js';
 
+/**
+ *
+ */
 export function initInputMarkdown() {
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('keydown', 'textarea.mdHotkeys', function (e) {
         if (!power_user.enable_md_hotkeys) { return; }
 
         // Ensure that the element is a textarea
-        let textarea = this;
+        const textarea = this;
         if (!(textarea instanceof HTMLTextAreaElement)) {
             return;
         }
@@ -51,13 +55,13 @@ export function initInputMarkdown() {
         }
 
         let selectedText = '';
-        let start = textarea.selectionStart;
+        const start = textarea.selectionStart;
         let end = textarea.selectionEnd;
-        let beforeCaret = textarea.value.substring(start - 1, start);
-        let afterCaret = textarea.value.substring(end, end + 1);
-        let isTextSelected = (start !== end);
+        const beforeCaret = textarea.value.substring(start - 1, start);
+        const afterCaret = textarea.value.substring(end, end + 1);
+        const isTextSelected = (start !== end);
         let cursorShift = charsToAdd.length;
-        let selectedTextandPossibleFormatting = textarea.value.substring(start - possiblePreviousFormattingMargin, end + possiblePreviousFormattingMargin).trim();
+        const selectedTextandPossibleFormatting = textarea.value.substring(start - possiblePreviousFormattingMargin, end + possiblePreviousFormattingMargin).trim();
 
         if (isTextSelected) {
             //if text is selected
@@ -108,7 +112,7 @@ export function initInputMarkdown() {
                 //make a selection of the discovered word
                 textarea.setSelectionRange(midCaretExpandedStart, midCaretExpandedEnd);
                 //set variables for comparison
-                let discoveredWordWithPossibleFormatting = textarea.value.substring(midCaretExpandedStart, midCaretExpandedEnd).trim();
+                const discoveredWordWithPossibleFormatting = textarea.value.substring(midCaretExpandedStart, midCaretExpandedEnd).trim();
                 let discoveredWord = '';
 
                 if (discoveredWordWithPossibleFormatting.endsWith(charsToAdd) && discoveredWordWithPossibleFormatting.startsWith(charsToAdd)) {
@@ -136,7 +140,7 @@ export function initInputMarkdown() {
         }
 
         // Manually trigger the 'input' event to make undo/redo work
-        let event = new Event('input', { bubbles: true });
+        const event = new Event('input', { bubbles: true });
         textarea.dispatchEvent(event); // This notifies the browser of a change, allowing undo/redo to function.
 
         // Update the cursor position

@@ -9,9 +9,11 @@ export class BlankAutoCompleteOption extends AutoCompleteOption {
         this.dom = this.renderItem();
     }
 
+    // @ts-expect-error TS(4114): This member must have an 'override' modifier becau... Remove this comment to see the full error message
     get value() { return null; }
 
 
+    // @ts-expect-error TS(4114): This member must have an 'override' modifier becau... Remove this comment to see the full error message
     renderItem() {
         const li = document.createElement('li'); {
             li.classList.add('item');
@@ -22,6 +24,7 @@ export class BlankAutoCompleteOption extends AutoCompleteOption {
     }
 
 
+    // @ts-expect-error TS(4114): This member must have an 'override' modifier becau... Remove this comment to see the full error message
     renderDetails() {
         const frag = document.createDocumentFragment();
         return frag;

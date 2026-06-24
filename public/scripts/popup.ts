@@ -5,7 +5,7 @@ import { power_user, toastPositionClasses } from './power-user.js';
 import { clamp, removeFromArray, runAfterAnimation, uuidv4 } from './utils.js';
 
 /** @readonly */
-/** @enum {Number} */
+/** @enum {number} */
 export const POPUP_TYPE = {
     /** Main popup type. Containing any content displayed, with buttons below. Can also contain additional input controls. */
     TEXT: 1,
@@ -89,6 +89,7 @@ export const POPUP_RESULT = {
 
 /**
  * @typedef {object} ShowPopupHelper
+ * @property
  * Local implementation of the helper functionality to show several popups.
  *
  * Should be called via `Popup.show.xxxx()`.
@@ -96,12 +97,11 @@ export const POPUP_RESULT = {
 const showPopupHelper = {
     /**
      * Asynchronously displays an input popup with the given header and text, and returns the user's input.
-     *
      * @param {string?} header - The header text for the popup.
      * @param {string?} [text] - The main text for the popup.
-     * @param {string} [defaultValue=''] - The default value for the input field.
-     * @param {PopupOptions} [popupOptions={}] - Options for the popup.
-     * @return {Promise<string?>} A Promise that resolves with the user's input.
+     * @param {string} [defaultValue] - The default value for the input field.
+     * @param {PopupOptions} [popupOptions] - Options for the popup.
+     * @returns {Promise<string?>} A Promise that resolves with the user's input.
      */
     input: async (header, text, defaultValue = '', popupOptions = {}) => {
         const content = PopupUtils.BuildTextWithHeader(header, text);
@@ -115,11 +115,10 @@ const showPopupHelper = {
 
     /**
      * Asynchronously displays a confirmation popup with the given header and text, returning the clicked result button value.
-     *
      * @param {string?} header - The header text for the popup.
      * @param {string?} [text] - The main text for the popup.
-     * @param {PopupOptions} [popupOptions={}] - Options for the popup.
-     * @return {Promise<POPUP_RESULT?>} A Promise that resolves with the result of the user's interaction.
+     * @param {PopupOptions} [popupOptions] - Options for the popup.
+     * @returns {Promise<POPUP_RESULT?>} A Promise that resolves with the result of the user's interaction.
      */
     confirm: async (header, text, popupOptions = {}) => {
         const content = PopupUtils.BuildTextWithHeader(header, text);
@@ -130,11 +129,10 @@ const showPopupHelper = {
     },
     /**
      * Asynchronously displays a text popup with the given header and text, returning the clicked result button value.
-     *
      * @param {string?} header - The header text for the popup.
      * @param {string?} text - The main text for the popup.
-     * @param {PopupOptions} [popupOptions={}] - Options for the popup.
-     * @return {Promise<POPUP_RESULT?>} A Promise that resolves with the result of the user's interaction.
+     * @param {PopupOptions} [popupOptions] - Options for the popup.
+     * @returns {Promise<POPUP_RESULT?>} A Promise that resolves with the result of the user's interaction.
      */
     text: async (header, text, popupOptions = {}) => {
         const content = PopupUtils.BuildTextWithHeader(header, text);
@@ -146,24 +144,24 @@ const showPopupHelper = {
 };
 
 export class Popup {
-    /** @readonly @type {POPUP_TYPE} */ type;
+    /** @readonly */ type;
 
-    /** @readonly @type {string} */ id;
+    /** @readonly */ id;
 
-    /** @readonly @type {HTMLDialogElement} */ dlg;
-    /** @readonly @type {HTMLDivElement} */ body;
-    /** @readonly @type {HTMLDivElement} */ content;
-    /** @readonly @type {HTMLTextAreaElement} */ mainInput;
-    /** @readonly @type {HTMLDivElement} */ inputControls;
-    /** @readonly @type {HTMLDivElement} */ buttonControls;
-    /** @readonly @type {HTMLDivElement} */ okButton;
-    /** @readonly @type {HTMLDivElement} */ cancelButton;
-    /** @readonly @type {HTMLDivElement} */ closeButton;
-    /** @readonly @type {HTMLDivElement} */ cropWrap;
-    /** @readonly @type {HTMLImageElement} */ cropImage;
-    /** @readonly @type {POPUP_RESULT|number?} */ defaultResult;
-    /** @readonly @type {CustomPopupButton[]|string[]?} */ customButtons;
-    /** @readonly @type {CustomPopupInput[]} */ customInputs;
+    /** @readonly */ dlg;
+    /** @readonly */ body;
+    /** @readonly */ content;
+    /** @readonly */ mainInput;
+    /** @readonly */ inputControls;
+    /** @readonly */ buttonControls;
+    /** @readonly */ okButton;
+    /** @readonly */ cancelButton;
+    /** @readonly */ closeButton;
+    /** @readonly */ cropWrap;
+    /** @readonly */ cropImage;
+    /** @readonly */ defaultResult;
+    /** @readonly */ customButtons;
+    /** @readonly */ customInputs;
 
     /** @type {(popup: Popup) => Promise<boolean?>|boolean?} */ onClosing;
     /** @type {(popup: Popup) => Promise<void?>|void?} */ onClose;
@@ -186,11 +184,10 @@ export class Popup {
 
     /**
      * Constructs a new Popup object with the given text content, type, inputValue, and options
-     *
      * @param {JQuery<HTMLElement>|string|Element} content - Text content to display in the popup
      * @param {POPUP_TYPE} type - The type of the popup
-     * @param {string} [inputValue=''] - The initial value of the input field
-     * @param {PopupOptions} [options={}] - Additional options for the popup
+     * @param {string} [inputValue] - The initial value of the input field
+     * @param {PopupOptions} [options] - Additional options for the popup
      */
     constructor(content, type, inputValue = '', {
         okButton = null,
@@ -232,7 +229,7 @@ export class Popup {
 
         /**@type {HTMLTemplateElement}*/
         const template = document.querySelector('#popup_template');
-        // @ts-ignore
+        // @ts-expect-error TS(2339): Property 'content' does not exist on type 'Element... Remove this comment to see the full error message
         this.dlg = template.content.cloneNode(true).querySelector('.popup');
         if (!this.dlg.showModal) {
             this.dlg.classList.add('poly_dialog');
@@ -273,7 +270,10 @@ export class Popup {
         this.cancelButton.textContent = typeof cancelButton === 'string' ? cancelButton : template.getAttribute('popup-button-cancel');
         this.cancelButton.dataset.i18n = this.cancelButton.textContent;
 
-        /** @param {HTMLElement} control @param {string} text Sets the title attribute and translation, if text is provided  */
+        /**
+         * @param {HTMLElement} control @param {string} text Sets the title attribute and translation, if text is provided
+         * @param text
+         */
         function setTitleFromTooltip(control, text) {
             if (!text) return;
             control.title = text;
@@ -291,6 +291,7 @@ export class Popup {
             const buttonElement = document.createElement('div');
             buttonElement.classList.add('menu_button', 'popup-button-custom', 'result-control');
             buttonElement.classList.add(...(button.classes ?? []));
+            // @ts-expect-error TS(4111): Property 'result' comes from an index signature, s... Remove this comment to see the full error message
             buttonElement.dataset.result = String(button.result); // This is expected to also write 'null' or 'staging', to indicate cancel and no action respectively
             buttonElement.tabIndex = 0;
 
@@ -300,11 +301,13 @@ export class Popup {
                 buttonElement.appendChild(icon);
                 const textSpan = document.createElement('span');
                 textSpan.textContent = button.text;
+                // @ts-expect-error TS(4111): Property 'i18n' comes from an index signature, so ... Remove this comment to see the full error message
                 textSpan.dataset.i18n = button.text;
                 buttonElement.classList.add('menu_button_icon');
                 buttonElement.appendChild(textSpan);
             } else {
                 buttonElement.textContent = button.text;
+                // @ts-expect-error TS(4111): Property 'i18n' comes from an index signature, so ... Remove this comment to see the full error message
                 buttonElement.dataset.i18n = buttonElement.textContent;
             }
             setTitleFromTooltip(buttonElement, button.tooltip);
@@ -339,6 +342,7 @@ export class Popup {
                 label.appendChild(inputElement);
                 const labelText = document.createElement('span');
                 labelText.innerText = input.label;
+                // @ts-expect-error TS(4111): Property 'i18n' comes from an index signature, so ... Remove this comment to see the full error message
                 labelText.dataset.i18n = input.label;
                 label.appendChild(labelText);
 
@@ -366,6 +370,7 @@ export class Popup {
 
                 const labelText = document.createElement('span');
                 labelText.innerText = input.label;
+                // @ts-expect-error TS(4111): Property 'i18n' comes from an index signature, so ... Remove this comment to see the full error message
                 labelText.dataset.i18n = input.label;
 
                 label.appendChild(labelText);
@@ -388,6 +393,7 @@ export class Popup {
 
                 const labelText = document.createElement('span');
                 labelText.innerText = input.label;
+                // @ts-expect-error TS(4111): Property 'i18n' comes from an index signature, so ... Remove this comment to see the full error message
                 labelText.dataset.i18n = input.label;
 
                 label.appendChild(labelText);
@@ -421,12 +427,14 @@ export class Popup {
 
                     if (clamped !== value) {
                         inputElement.value = String(clamped);
+                        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                         toastr.warning(t`Value must be between ${min} and ${max}. Clamped to ${clamped}.`);
                     }
                 });
 
                 const labelText = document.createElement('span');
                 labelText.innerText = input.label;
+                // @ts-expect-error TS(4111): Property 'i18n' comes from an index signature, so ... Remove this comment to see the full error message
                 labelText.dataset.i18n = input.label;
 
                 label.appendChild(labelText);
@@ -484,6 +492,7 @@ export class Popup {
             case POPUP_TYPE.CROP: {
                 this.cropWrap.style.display = 'block';
                 this.cropImage.src = cropImage;
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $(this.cropImage).cropper({
                     aspectRatio: cropAspect ?? 2 / 3,
                     autoCropArea: 1,
@@ -521,7 +530,9 @@ export class Popup {
         }
 
         this.content.innerHTML = '';
+        // @ts-expect-error TS(2304): Cannot find name 'jQuery'.
         if (content instanceof jQuery) {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(this.content).append(content);
         } else if (content instanceof HTMLElement) {
             this.content.append(content);
@@ -541,13 +552,18 @@ export class Popup {
         this.dlg.querySelectorAll('[data-result]').forEach(resultControl => {
             if (!(resultControl instanceof HTMLElement)) return;
             // If no value was set, we exit out and don't bind an action
+            // @ts-expect-error TS(4111): Property 'result' comes from an index signature, s... Remove this comment to see the full error message
             if (String(resultControl.dataset.result) === String(undefined)) return;
 
             // Make sure that both `POPUP_RESULT` numbers and also `null` as 'cancelled' are supported
+            // @ts-expect-error TS(4111): Property 'result' comes from an index signature, s... Remove this comment to see the full error message
             const result = String(resultControl.dataset.result) === String(null) ? null
+                // @ts-expect-error TS(4111): Property 'result' comes from an index signature, s... Remove this comment to see the full error message
                 : Number(resultControl.dataset.result);
 
+            // @ts-expect-error TS(4111): Property 'result' comes from an index signature, s... Remove this comment to see the full error message
             if (result !== null && isNaN(result)) throw new Error('Invalid result control. Result must be a number. ' + resultControl.dataset.result);
+            // @ts-expect-error TS(4111): Property 'resultEvent' comes from an index signatu... Remove this comment to see the full error message
             const type = resultControl.dataset.resultEvent || 'click';
             resultControl.addEventListener(type, async () => await this.complete(result));
         });
@@ -583,6 +599,7 @@ export class Popup {
 
                         // If the the main popup closes while the force-close popup is still being displayed, we gracefully cancel that.
                         const originalOnClose = this.onClose;
+                        // @ts-expect-error TS(6133): 'x' is declared but its value is never read.
                         this.onClose = async (x) => {
                             if (originalOnClose) await originalOnClose;
                             await confirmPopup.completeCancelled();
@@ -668,7 +685,6 @@ export class Popup {
     /**
      * Asynchronously shows the popup element by appending it to the document body,
      * setting its display to 'block' and focusing on the input if the popup type is INPUT.
-     *
      * @returns {Promise<string|number|boolean?>} A promise that resolves with the value of the popup when it is completed.
      */
     async show() {
@@ -742,9 +758,7 @@ export class Popup {
      * - All other will return the result value as provided as `POPUP_RESULT` or a custom number value
      *
      * <b>IMPORTANT:</b> If the popup closing was cancelled via the `onClosing` handler, the return value will be `Promise<undefined>`.
-     *
      * @param {POPUP_RESULT|number} result - The result of the popup (either an existing `POPUP_RESULT` or a custom result value)
-     *
      * @returns {Promise<string|number|boolean|undefined?>} A promise that resolves with the value of the popup when it is completed. <b>Returns `undefined` if the closing action was cancelled.</b>
      */
     async complete(result) {
@@ -762,6 +776,7 @@ export class Popup {
         // Cropped image should be returned as a data URL
         if (this.type === POPUP_TYPE.CROP) {
             value = result >= POPUP_RESULT.AFFIRMATIVE
+                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 ? $(this.cropImage).data('cropper').getCroppedCanvas().toDataURL('image/jpeg')
                 : null;
         }
@@ -858,7 +873,7 @@ export class Popup {
      * Contains the list of all currently open popups, and it'll remember the result of the last closed popup.
      */
     static util = {
-        /** @readonly @type {Popup[]} Remember all popups */
+        /** @readonly */
         popups: [],
 
         /** @type {{value: any, result: POPUP_RESULT|number?, inputResults: Map<string, string|boolean>?}?} Last popup result */
@@ -872,8 +887,7 @@ export class Popup {
         /**
          * Returns the topmost modal layer in the document. If there is an open dialog popup,
          * it returns the dialog element. Otherwise, it returns the document body.
-         *
-         * @return {HTMLElement} The topmost modal layer element
+         * @returns {HTMLElement} The topmost modal layer element
          */
         getTopmostModalLayer() {
             return getTopmostModalLayer();
@@ -884,7 +898,6 @@ export class Popup {
 export class PopupUtils {
     /**
      * Builds popup content with header and text below
-     *
      * @param {string?} header - The header to be added to the text
      * @param {string?} text - The main text content
      */
@@ -899,11 +912,10 @@ export class PopupUtils {
 
 /**
  * Displays a blocking popup with a given content and type
- *
  * @param {JQuery<HTMLElement>|string|Element} content - Content or text to display in the popup
  * @param {POPUP_TYPE} type
  * @param {string} inputValue - Value to set the input to
- * @param {PopupOptions} [popupOptions={}] - Options for the popup
+ * @param {PopupOptions} [popupOptions] - Options for the popup
  * @returns {Promise<POPUP_RESULT|string|boolean?>} The value for this popup, which can either be the popup retult or the input value if chosen
  */
 export function callGenericPopup(content, type, inputValue = '', popupOptions = {}) {
@@ -919,8 +931,7 @@ export function callGenericPopup(content, type, inputValue = '', popupOptions = 
 /**
  * Returns the topmost modal layer in the document. If there is an open dialog,
  * it returns the dialog element. Otherwise, it returns the document body.
- *
- * @return {HTMLElement} The topmost modal layer element
+ * @returns {HTMLElement} The topmost modal layer element
  */
 export function getTopmostModalLayer() {
     const dlg = Array.from(document.querySelectorAll('dialog[open]:not([closing])')).pop();
@@ -940,6 +951,7 @@ export function fixToastrForDialogs() {
     if (!toastContainer) {
         toastContainer = document.createElement('div');
         toastContainer.setAttribute('id', 'toast-container');
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         if (toastr.options.positionClass) toastContainer.classList.add(toastr.options.positionClass);
     }
 
@@ -960,6 +972,7 @@ export function fixToastrForDialogs() {
         } else {
             document.body.appendChild(toastContainer);
             toastContainer.classList.remove(...toastPositionClasses);
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastContainer.classList.add(toastr.options.positionClass);
         }
     }

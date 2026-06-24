@@ -17,6 +17,7 @@ function getExtensionActionCallback(action) {
         if (args?.reload instanceof SlashCommandClosure) throw new Error('\'reload\' argument cannot be a closure.');
         if (typeof extensionName !== 'string') throw new Error('Extension name must be a string. Closures or arrays are not allowed.');
         if (!extensionName) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.warning(`Extension name must be provided as an argument to ${action} this extension.`);
             return '';
         }
@@ -24,16 +25,19 @@ function getExtensionActionCallback(action) {
         const reload = !isFalseBoolean(args?.reload?.toString());
         const extension = findExtension(extensionName);
         if (!extension) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.warning(`Extension ${extensionName} does not exist.`);
             return '';
         }
 
         if (action === 'enable' && extension.enabled) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.info(`Extension ${extension.name} is already enabled.`);
             return extension.name;
         }
 
         if (action === 'disable' && !extension.enabled) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.info(`Extension ${extension.name} is already disabled.`);
             return extension.name;
         }
@@ -43,10 +47,12 @@ function getExtensionActionCallback(action) {
         }
 
         if (reload) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.info(`${action.charAt(0).toUpperCase() + action.slice(1)}ing extension ${extension.name} and reloading...`);
 
             // Clear input, so it doesn't stay because the command didn't "finish",
             // and wait for a bit to both show the toast and let the clear bubble through.
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#send_textarea').val('')[0].dispatchEvent(new Event('input', { bubbles: true }));
             await new Promise(resolve => setTimeout(resolve, 100));
         }
@@ -57,6 +63,7 @@ function getExtensionActionCallback(action) {
             await disableExtension(extension.name, reload);
         }
 
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.success(`Extension ${extension.name} ${action}d.`);
 
 
@@ -72,7 +79,6 @@ function getExtensionActionCallback(action) {
 /**
  * Provides an array of SlashCommandEnumValue objects based on the extension names.
  * Each object contains the name of the extension and a description indicating if it is a third-party extension.
- *
  * @returns {SlashCommandEnumValue[]} An array of SlashCommandEnumValue objects
  */
 const extensionNamesEnumProvider = () => extensionNames.map(name => {
@@ -84,6 +90,9 @@ const extensionNamesEnumProvider = () => extensionNames.map(name => {
     return new SlashCommandEnumValue(name, description, !isThirdParty ? enumTypes.name : enumTypes.enum);
 });
 
+/**
+ *
+ */
 export function registerExtensionSlashCommands() {
     SlashCommandParser.addCommandObject(SlashCommand.fromProps({
         name: 'extension-enable',
@@ -232,6 +241,7 @@ export function registerExtensionSlashCommands() {
             if (typeof extensionName !== 'string') throw new Error('Extension name must be a string. Closures or arrays are not allowed.');
             const extension = findExtension(extensionName);
             if (!extension) {
+                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                 toastr.warning(`Extension ${extensionName} does not exist.`);
                 return '';
             }
@@ -297,6 +307,7 @@ export function registerExtensionSlashCommands() {
     SlashCommandParser.addCommandObject(SlashCommand.fromProps({
         name: 'reload-page',
         callback: async () => {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.info('Reloading the page...');
             location.reload();
             return '';

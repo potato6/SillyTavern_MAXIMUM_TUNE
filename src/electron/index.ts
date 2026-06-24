@@ -22,6 +22,9 @@ const cliArguments = yargs(process.argv)
 /** @type {string} The URL to load in the window. */
 let appUrl: any;
 
+/**
+ *
+ */
 function createSillyTavernWindow() {
     if (!appUrl) {
         console.error('The server has not started yet.');
@@ -33,6 +36,9 @@ function createSillyTavernWindow() {
     }).loadURL(appUrl);
 }
 
+/**
+ *
+ */
 function startServer() {
     return new Promise((_resolve, _reject) => {
         serverEvents.addListener(EVENT_NAMES.SERVER_STARTED, ({ url }) => {

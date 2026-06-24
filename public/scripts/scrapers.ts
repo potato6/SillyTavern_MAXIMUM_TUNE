@@ -7,7 +7,7 @@ import { SlashCommandParser } from './slash-commands/SlashCommandParser.js';
 import { isValidUrl } from './utils.js';
 
 /**
- * @typedef {Object} Scraper
+ * @typedef {object} Scraper
  * @property {string} id
  * @property {string} name
  * @property {string} description
@@ -19,7 +19,7 @@ import { isValidUrl } from './utils.js';
  */
 
 /**
- * @typedef {Object} ScraperInfo
+ * @typedef {object} ScraperInfo
  * @property {string} id
  * @property {string} name
  * @property {string} description
@@ -92,6 +92,11 @@ export class ScraperManager {
  * @implements {Scraper}
  */
 class Notepad {
+    description: any;
+    iconAvailable: any;
+    iconClass: any;
+    id: any;
+    name: any;
     constructor() {
         this.id = 'text';
         this.name = 'Notepad';
@@ -113,19 +118,23 @@ class Notepad {
      * @returns {Promise<File[]>} File attachments scraped from the text
      */
     async scrape() {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const template = $(await renderExtensionTemplateAsync('attachments', 'notepad', {}));
         let fileName = `Untitled - ${new Date().toLocaleString()}`;
         let text = '';
         template.find('input[name="notepadFileName"]').val(fileName).on('input', function () {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             fileName = String($(this).val()).trim();
         });
         template.find('textarea[name="notepadFileContent"]').on('input', function () {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             text = String($(this).val());
         });
 
         const result = await callGenericPopup(template, POPUP_TYPE.CONFIRM, '', { wide: true, large: true, okButton: 'Save', cancelButton: 'Cancel' });
 
         if (!result || text === '') {
+            // @ts-expect-error TS(7030): Not all code paths return a value.
             return;
         }
 
@@ -139,6 +148,11 @@ class Notepad {
  * @implements {Scraper}
  */
 class WebScraper {
+    description: any;
+    iconAvailable: any;
+    iconClass: any;
+    id: any;
+    name: any;
     constructor() {
         this.id = 'web';
         this.name = 'Web';
@@ -156,10 +170,10 @@ class WebScraper {
     }
 
     /**
-    * Parse the title of an HTML file from a Blob.
-    * @param {Blob} blob Blob of the HTML file
-    * @returns {Promise<string>} Title of the HTML file
-    */
+     * Parse the title of an HTML file from a Blob.
+     * @param {Blob} blob Blob of the HTML file
+     * @returns {Promise<string>} Title of the HTML file
+     */
     async getTitleFromHtmlBlob(blob) {
         const text = await blob.text();
         const titleMatch = text.match(/<title>(.*?)<\/title>/i);
@@ -171,20 +185,25 @@ class WebScraper {
      * @returns {Promise<File[]>} File attachments scraped from the webpage
      */
     async scrape() {
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const template = $(await renderExtensionTemplateAsync('attachments', 'web-scrape', {}));
         const linksString = await callGenericPopup(template, POPUP_TYPE.INPUT, '', { wide: false, large: false, okButton: 'Scrape', cancelButton: 'Cancel', rows: 4 });
 
         if (!linksString) {
+            // @ts-expect-error TS(7030): Not all code paths return a value.
             return;
         }
 
         const links = String(linksString).split('\n').map(l => l.trim()).filter(l => l).filter(l => isValidUrl(l));
 
         if (links.length === 0) {
+            // @ts-expect-error TS(2552): Cannot find name 'toastr'. Did you mean 'toast'?
             toastr.error('Invalid URL');
+            // @ts-expect-error TS(7030): Not all code paths return a value.
             return;
         }
 
+        // @ts-expect-error TS(2552): Cannot find name 'toastr'. Did you mean 'toast'?
         const toast = toastr.info('Working, please wait...');
 
         const files = [];
@@ -199,11 +218,12 @@ class WebScraper {
             const blob = await result.blob();
             const domain = new URL(link).hostname;
             const timestamp = Date.now();
-            const title = await this.getTitleFromHtmlBlob(blob) || 'webpage';
+            const title = (await this.getTitleFromHtmlBlob(blob)) || 'webpage';
             const file = new File([blob], `${title} - ${domain} - ${timestamp}.html`, { type: 'text/html' });
             files.push(file);
         }
 
+        // @ts-expect-error TS(2552): Cannot find name 'toastr'. Did you mean 'toast'?
         toastr.clear(toast);
         return files;
     }
@@ -214,6 +234,11 @@ class WebScraper {
  * @implements {Scraper}
  */
 class FileScraper {
+    description: any;
+    iconAvailable: any;
+    iconClass: any;
+    id: any;
+    name: any;
     constructor() {
         this.id = 'file';
         this.name = 'File';
@@ -247,6 +272,11 @@ class FileScraper {
 }
 
 class MediaWikiScraper {
+    description: any;
+    iconAvailable: any;
+    iconClass: any;
+    id: any;
+    name: any;
     constructor() {
         this.id = 'mediawiki';
         this.name = 'MediaWiki';
@@ -274,28 +304,36 @@ class MediaWikiScraper {
         let filter = '';
         let output = 'single';
 
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const template = $(await renderExtensionTemplateAsync('attachments', 'mediawiki-scrape', {}));
         template.find('input[name="scrapeInput"]').on('input', function () {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             url = String($(this).val()).trim();
         });
         template.find('input[name="scrapeFilter"]').on('input', function () {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             filter = String($(this).val());
         });
         template.find('input[name="scrapeOutput"]').on('input', function () {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             output = String($(this).val());
         });
 
         const confirm = await callGenericPopup(template, POPUP_TYPE.CONFIRM, '', { wide: false, large: false, okButton: 'Scrape', cancelButton: 'Cancel' });
 
         if (confirm !== POPUP_RESULT.AFFIRMATIVE) {
+            // @ts-expect-error TS(7030): Not all code paths return a value.
             return;
         }
 
         if (!url) {
+            // @ts-expect-error TS(2552): Cannot find name 'toastr'. Did you mean 'toast'?
             toastr.error('URL name is required');
+            // @ts-expect-error TS(7030): Not all code paths return a value.
             return;
         }
 
+        // @ts-expect-error TS(2552): Cannot find name 'toastr'. Did you mean 'toast'?
         const toast = toastr.info('Working, please wait...');
 
         const result = await fetch('/api/plugins/fandom/scrape-mediawiki', {
@@ -310,6 +348,7 @@ class MediaWikiScraper {
         }
 
         const data = await result.json();
+        // @ts-expect-error TS(2552): Cannot find name 'toastr'. Did you mean 'toast'?
         toastr.clear(toast);
 
         if (output === 'multi') {
@@ -336,6 +375,11 @@ class MediaWikiScraper {
  * @implements {Scraper}
  */
 class FandomScraper {
+    description: any;
+    iconAvailable: any;
+    iconClass: any;
+    id: any;
+    name: any;
     constructor() {
         this.id = 'fandom';
         this.name = 'Fandom';
@@ -381,28 +425,36 @@ class FandomScraper {
         let filter = '';
         let output = 'single';
 
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const template = $(await renderExtensionTemplateAsync('attachments', 'fandom-scrape', {}));
         template.find('input[name="fandomScrapeInput"]').on('input', function () {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             fandom = String($(this).val()).trim();
         });
         template.find('input[name="fandomScrapeFilter"]').on('input', function () {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             filter = String($(this).val());
         });
         template.find('input[name="fandomScrapeOutput"]').on('input', function () {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             output = String($(this).val());
         });
 
         const confirm = await callGenericPopup(template, POPUP_TYPE.CONFIRM, '', { wide: false, large: false, okButton: 'Scrape', cancelButton: 'Cancel' });
 
         if (confirm !== POPUP_RESULT.AFFIRMATIVE) {
+            // @ts-expect-error TS(7030): Not all code paths return a value.
             return;
         }
 
         if (!fandom) {
+            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.error('Fandom name is required');
+            // @ts-expect-error TS(7030): Not all code paths return a value.
             return;
         }
 
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         const toast = toastr.info('Working, please wait...');
 
         const result = await fetch('/api/plugins/fandom/scrape', {
@@ -417,6 +469,7 @@ class FandomScraper {
         }
 
         const data = await result.json();
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.clear(toast);
 
         if (output === 'multi') {
@@ -461,6 +514,11 @@ const iso6391Codes = [
  * @implements {Scraper}
  */
 class YouTubeScraper {
+    description: any;
+    iconAvailable: any;
+    iconClass: any;
+    id: any;
+    name: any;
     constructor() {
         this.id = 'youtube';
         this.name = 'YouTube';
@@ -482,6 +540,7 @@ class YouTubeScraper {
                     const { transcript } = await this.getScript(String(url).trim(), lang);
                     return transcript;
                 } catch (error) {
+                    // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                     toastr.error(error.message);
                     return '';
                 }
@@ -527,19 +586,24 @@ class YouTubeScraper {
      */
     async scrape() {
         let lang = '';
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const template = $(await renderExtensionTemplateAsync('attachments', 'youtube-scrape', {}));
         const videoUrl = await callGenericPopup(template, POPUP_TYPE.INPUT, '', { wide: false, large: false, okButton: 'Scrape', cancelButton: 'Cancel' });
 
         template.find('input[name="youtubeLanguageCode"]').on('input', function () {
+            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             lang = String($(this).val()).trim();
         });
 
         if (!videoUrl) {
+            // @ts-expect-error TS(7030): Not all code paths return a value.
             return;
         }
 
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         const toast = toastr.info('Working, please wait...');
         const { transcript, id } = await this.getScript(String(videoUrl), lang);
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.clear(toast);
 
         const file = new File([transcript], `YouTube - ${id} - ${Date.now()}.txt`, { type: 'text/plain' });
@@ -571,6 +635,9 @@ class YouTubeScraper {
     }
 }
 
+/**
+ *
+ */
 export async function initScrapers() {
     await ScraperManager.registerDataBankScraper(new FileScraper());
     await ScraperManager.registerDataBankScraper(new Notepad());

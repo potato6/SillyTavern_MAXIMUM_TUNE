@@ -10,6 +10,9 @@ import { serverDirectory } from './server-directory.js';
 
 configureTransformers();
 
+/**
+ *
+ */
 function configureTransformers() {
     // Limit the number of threads to 1 to avoid issues on Android
     env.backends.onnx.wasm.numThreads = 1;
@@ -85,6 +88,9 @@ function getModelForTask(task: any) {
     }
 }
 
+/**
+ *
+ */
 async function migrateCacheToDataDir() {
     const oldCacheDir = path.join(process.cwd(), 'cache');
     const newCacheDir = path.join(globalThis.DATA_ROOT, '_cache');

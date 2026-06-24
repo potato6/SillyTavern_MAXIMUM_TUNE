@@ -21,7 +21,7 @@ const OPTIONS = Object.freeze({ timeout: { block: 5 * 60 * 1000 } });
 /**
  * This function extracts the extension information from the manifest file.
  * @param {string} extensionPath - The path of the extension folder
- * @returns {Promise<Object>} - Returns the manifest data as an object
+ * @returns {Promise<object>} - Returns the manifest data as an object
  */
 async function getManifest(extensionPath: any) {
     const manifestPath = path.join(extensionPath, 'manifest.json');
@@ -38,7 +38,7 @@ async function getManifest(extensionPath: any) {
 /**
  * This function checks if the local repository is up-to-date with the remote repository.
  * @param {string} extensionPath - The path of the extension folder
- * @returns {Promise<Object>} - Returns the extension information as an object
+ * @returns {Promise<object>} - Returns the extension information as an object
  */
 async function checkIfRepoIsUpToDate(extensionPath: any) {
     const git = simpleGit({ baseDir: extensionPath, ...OPTIONS });
@@ -85,10 +85,8 @@ router.use(extensionsEnabledFeatureGuard);
 /**
  * HTTP POST handler function to clone a git repository from a provided URL, read the extension manifest,
  * and return extension information and path.
- *
- * @param {Object} request - HTTP Request object, expects a JSON body with a 'url' property.
- * @param {Object} response - HTTP Response object used to respond to the HTTP request.
- *
+ * @param {object} request - HTTP Request object, expects a JSON body with a 'url' property.
+ * @param {object} response - HTTP Response object used to respond to the HTTP request.
  * @returns {void}
  */
 router.post('/install', async (request, response) => {
@@ -163,10 +161,8 @@ router.post('/install', async (request, response) => {
  * based on the extension name provided in the request body. It returns the latest commit hash,
  * the path of the extension, the status of the repository (whether it's up-to-date or not),
  * and the remote URL of the repository.
- *
- * @param {Object} request - HTTP Request object, expects a JSON body with an 'extensionName' property.
- * @param {Object} response - HTTP Response object used to respond to the HTTP request.
- *
+ * @param {object} request - HTTP Request object, expects a JSON body with an 'extensionName' property.
+ * @param {object} response - HTTP Response object used to respond to the HTTP request.
  * @returns {void}
  */
 router.post('/update', async (request, response) => {
@@ -382,10 +378,8 @@ router.post('/move', async (request, response) => {
  * HTTP POST handler function to get the current git commit hash and branch name for a given extension.
  * It checks whether the repository is up-to-date with the remote, and returns the status along with
  * the remote URL of the repository.
- *
- * @param {Object} request - HTTP Request object, expects a JSON body with an 'extensionName' property.
- * @param {Object} response - HTTP Response object used to respond to the HTTP request.
- *
+ * @param {object} request - HTTP Request object, expects a JSON body with an 'extensionName' property.
+ * @param {object} response - HTTP Response object used to respond to the HTTP request.
  * @returns {void}
  */
 router.post('/version', async (request, response) => {
@@ -437,10 +431,8 @@ router.post('/version', async (request, response) => {
 
 /**
  * HTTP POST handler function to delete a git repository based on the extension name provided in the request body.
- *
- * @param {Object} request - HTTP Request object, expects a JSON body with a 'extensionName' property.
- * @param {Object} response - HTTP Response object used to respond to the HTTP request.
- *
+ * @param {object} request - HTTP Request object, expects a JSON body with a 'extensionName' property.
+ * @param {object} response - HTTP Response object used to respond to the HTTP request.
  * @returns {void}
  */
 router.post('/delete', async (request, response) => {

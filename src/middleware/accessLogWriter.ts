@@ -9,6 +9,9 @@ const knownIPs = new Set();
 
 export const getAccessLogPath = () => path.join(globalThis.DATA_ROOT, 'access.log');
 
+/**
+ *
+ */
 export function migrateAccessLog() {
     try {
         if (!fs.existsSync('access.log')) {

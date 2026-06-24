@@ -304,10 +304,10 @@ export class ToolManager {
     }
 
     /**
-    * Parse tool call parameters -- they're usually JSON, but they can also be empty strings (which are not valid JSON apparently).
-    * @param {object} parameters The parameters for a tool call, usually a string with JSON inside
-    * @returns {object} The parsed parameters
-    */
+     * Parse tool call parameters -- they're usually JSON, but they can also be empty strings (which are not valid JSON apparently).
+     * @param {object} parameters The parameters for a tool call, usually a string with JSON inside
+     * @returns {object} The parsed parameters
+     */
     static #parseParameters(parameters) {
         return parameters === ''
             ? {}
@@ -769,6 +769,8 @@ export class ToolManager {
     /**
      * Check for function tool calls in the response data and invoke them.
      * @param {any} data Reply data
+     * @param root0
+     * @param root0.reasoningText
      * @returns {Promise<ToolInvocationResult>} Successful tool invocations
      */
     static async invokeFunctionTools(data, { reasoningText = null } = {}) {
@@ -796,8 +798,10 @@ export class ToolManager {
             const displayName = ToolManager.getDisplayName(name);
             const isStealth = ToolManager.isStealthTool(name);
             const message = await ToolManager.formatToolCallMessage(name, parameters);
+            // @ts-expect-error TS(2552): Cannot find name 'toastr'. Did you mean 'toast'?
             const toast = message && toastr.info(message, 'Tool Calling', { timeOut: 0 });
             const toolResult = await ToolManager.invokeFunctionTool(name, parameters);
+            // @ts-expect-error TS(2552): Cannot find name 'toastr'. Did you mean 'toast'?
             toastr.clear(toast);
             console.log('[ToolManager] Function tool result:', result);
 
@@ -898,6 +902,7 @@ export class ToolManager {
                 isSmallSys: true,
                 tool_invocations: invocations,
                 api: getGeneratingApi(),
+                // @ts-expect-error TS(2554): Expected 1 arguments, but got 0.
                 model: getGeneratingModel(),
             },
         };
@@ -914,6 +919,7 @@ export class ToolManager {
      * @returns {void}
      */
     static showToolCallError(errors) {
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.error('An error occurred while invoking function tools. Click here for more details.', 'Tool Calling', {
             onclick: () => Popup.show.text('Tool Calling Errors', DOMPurify.sanitize(errors.map(e => `${e.cause}: ${e.message}`).join('<br>'))),
             timeOut: 5000,

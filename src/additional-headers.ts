@@ -199,6 +199,10 @@ function getGenericHeaders(directories: any, secretId = null) {
     }) : {};
 }
 
+/**
+ *
+ * @param urlHost
+ */
 export function getOverrideHeaders(urlHost: any) {
     const requestOverrides = getConfigValue('requestOverrides', []);
     const overrideHeaders = requestOverrides?.find((e: any) => e.hosts?.includes(urlHost))?.headers;

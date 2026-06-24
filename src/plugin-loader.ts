@@ -90,6 +90,12 @@ export async function loadPlugins(app: any, pluginsPath: any) {
     }
 }
 
+/**
+ *
+ * @param app
+ * @param pluginDirectoryPath
+ * @param exitHooks
+ */
 async function loadFromDirectory(app: any, pluginDirectoryPath: any, exitHooks: any) {
     const files = fs.readdirSync(pluginDirectoryPath);
 

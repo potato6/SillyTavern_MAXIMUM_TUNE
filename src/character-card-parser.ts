@@ -84,7 +84,7 @@ export const read = (image: any) => {
  * @returns {Promise<string>} Character data
  */
 export const parse = async (cardUrl: any, format: any) => {
-    let fileFormat = format === undefined ? 'png' : format;
+    const fileFormat = format === undefined ? 'png' : format;
 
     switch (fileFormat) {
         case 'png': {

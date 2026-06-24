@@ -29,9 +29,8 @@ export const enumTypes = {
      * Gets the value of the enum type based on the provided index
      *
      * Can be used to get differing colors or even random colors, by providing the index of a unique set
-     *
      * @param {number?} index - The index used to retrieve the enum type
-     * @return {EnumType} The enum type corresponding to the index
+     * @returns {EnumType} The enum type corresponding to the index
      */
     getBasedOnIndex(index) {
         const keys = Object.keys(this);
@@ -50,7 +49,6 @@ export class SlashCommandEnumValue {
 
     /**
      * A constructor for creating a SlashCommandEnumValue instance.
-     *
      * @param {string} value - The value
      * @param {string?} description - Optional description, displayed in a second line
      * @param {EnumType?} type - type of the enum (defining its color)

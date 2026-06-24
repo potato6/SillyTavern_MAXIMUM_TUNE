@@ -24,7 +24,7 @@ const WHITELIST_GENERIC_URL_DOWNLOAD_SOURCES = getConfigValue('whitelistImportDo
 const USER_AGENT = 'SillyTavern';
 
 /**
- * @typedef {Object} ContentItem
+ * @typedef {object} ContentItem
  * @property {string} filename
  * @property {string} type
  * @property {string} [name]
@@ -398,6 +398,10 @@ function getContentLog(contentLogPath: any) {
     return contentLogText.split('\n');
 }
 
+/**
+ *
+ * @param id
+ */
 async function downloadChubLorebook(id: any) {
     const [lorebooks, creatorName, projectName] = id.split('/');
     const result = await fetch(`https://api.chub.ai/api/${lorebooks}/${creatorName}/${projectName}`, {
@@ -439,6 +443,10 @@ async function downloadChubLorebook(id: any) {
     return { buffer, fileName, fileType };
 }
 
+/**
+ *
+ * @param id
+ */
 async function downloadChubCharacter(id: any) {
     const [creatorName, projectName] = id.split('/');
     const result = await fetch(`https://api.chub.ai/api/characters/${creatorName}/${projectName}?full=true`, {
@@ -553,7 +561,7 @@ async function downloadPygmalionCharacter(id: any) {
 
 /**
  *
- * @param {String} str
+ * @param {string} str
  * @returns { { id: string, type: "character" | "lorebook" } | null }
  */
 function parseChubUrl(str: any) {
@@ -594,6 +602,10 @@ function parseChubUrl(str: any) {
 }
 
 // Warning: Some characters might not exist in JannyAI.me
+/**
+ *
+ * @param uuid
+ */
 async function downloadJannyCharacter(uuid: any) {
     // This endpoint is being guarded behind Bot Fight Mode of Cloudflare
     // So hosted ST on Azure/AWS/GCP/Collab might get blocked by IP
@@ -627,6 +639,10 @@ async function downloadJannyCharacter(uuid: any) {
 }
 
 //Download Character Cards from AICharactersCards.com (AICC) API.
+/**
+ *
+ * @param id
+ */
 async function downloadAICCCharacter(id: any) {
     const apiURL = `https://aicharactercards.com/wp-json/pngapi/v1/image/${id}`;
     try {
@@ -680,7 +696,7 @@ function parseAICC(url: any) {
 
 /**
  * Download character card from generic url.
- * @param {String} url
+ * @param {string} url
  */
 async function downloadGenericPng(url: any) {
     try {
@@ -750,7 +766,8 @@ async function downloadRisuCharacter(uuid: any) {
     return { buffer, fileName, fileType };
 }
 
-/** * Check if the given string is a valid Perchance UUID.
+/**
+ * Check if the given string is a valid Perchance UUID.
  * @param {string} uuid UUID string to check
  * @returns {boolean} True if the UUID is valid, false otherwise
  */
@@ -854,7 +871,7 @@ async function downloadPerchanceCharacter(slug: any) {
 /**
  * Extracts Perchance character data from a gzipped response.
  * @param {import('node-fetch').Response} result Fetch response containing gzipped character data
- * @returns {Promise<Object>} Parsed Perchance character data
+ * @returns {Promise<object>} Parsed Perchance character data
  * @throws {Error} If the character data is invalid or missing required fields
  */
 async function extractPerchanceCharacterFromGz(result: any) {
@@ -879,7 +896,8 @@ async function extractPerchanceCharacterFromGz(result: any) {
     return perchanceCharData.addCharacter;
 }
 
-/** * Fetches the avatar from Perchance URL or uses a default avatar if not available.
+/**
+ * Fetches the avatar from Perchance URL or uses a default avatar if not available.
  * @param {string} avatarUrl URL of the avatar
  * @param {boolean} isAvatarBase64 Flag indicating if the avatar URL is a base64 string
  * @returns {Promise<Buffer>} Buffer containing the avatar image
@@ -939,9 +957,9 @@ async function fetchPerchanceAvatar(avatarUrl: any, isAvatarBase64: any) {
 }
 
 /**
-* @param {String} url
-* @returns {String | null } UUID of the character
-*/
+ * @param {string} url
+ * @returns {string | null} UUID of the character
+ */
 function getUuidFromUrl(url: any) {
     // Extract UUID from URL
     const uuidRegex = /[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}/;
@@ -954,8 +972,8 @@ function getUuidFromUrl(url: any) {
 
 /**
  * Filter to get the domain host of a url instead of a blanket string search.
- * @param {String} url URL to strip
- * @returns {String} Domain name
+ * @param {string} url URL to strip
+ * @returns {string} Domain name
  */
 export function getHostFromUrl(url: any) {
     try {
@@ -968,7 +986,7 @@ export function getHostFromUrl(url: any) {
 
 /**
  * Checks if host is part of generic download source whitelist.
- * @param {String} host Host to check
+ * @param {string} host Host to check
  * @returns {boolean} If the host is on the whitelist.
  */
 export function isHostWhitelisted(host: any) {

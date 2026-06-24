@@ -261,10 +261,18 @@ function importKoboldLiteChat(_userName: any, _characterName: any, data: any) {
  */
 // @ts-expect-error TS(6133): 'userName' is declared but its value is never read... Remove this comment to see the full error message
 function flattenChubChat(userName: any, characterName: any, lines: any) {
+    /**
+     *
+     * @param swipe
+     */
     function flattenSwipe(swipe: any) {
         return swipe.message ? swipe.message : swipe;
     }
 
+    /**
+     *
+     * @param line
+     */
     function convert(line: any) {
         const lineData = tryParse(line);
         if (!lineData) return line;
@@ -341,7 +349,7 @@ async function checkChatIntegrity(filePath: any, integritySlug: any) {
 }
 
 /**
- * @typedef {Object} ChatInfo
+ * @typedef {object} ChatInfo
  * @property {string} [file_id] - The name of the chat file (without extension)
  * @property {string} [file_name] - The name of the chat file (with extension)
  * @property {string} [file_size] - The size of the chat file in a human-readable format
@@ -359,7 +367,6 @@ async function checkChatIntegrity(filePath: any, integritySlug: any) {
  * @param {boolean} withMetadata - Whether to read chat metadata
  * @param {ChatMatchFunction|null} matcher - Optional function to match messages
  * @returns {Promise<ChatInfo>}
- *
  * @typedef {(textArray: string[]) => boolean} ChatMatchFunction
  */
 export async function getChatInfo(pathToFile: any, additionalData = {}, withMetadata = false, matcher = null) {
@@ -621,7 +628,7 @@ router.post('/export', validateAvatarUrlMiddleware, async function (request, res
     if (!request.body.is_group && !isPathUnderParent(request.user.directories.chats, filename)) {
         return response.sendStatus(400);
     }
-    let exportfilename = request.body.exportfilename;
+    const exportfilename = request.body.exportfilename;
     if (!fs.existsSync(filename)) {
         const errorMessage = {
             message: `Could not find JSONL file to export. Source chat file: ${filename}.`,
@@ -766,7 +773,7 @@ router.post('/import', validateAvatarUrlMiddleware, function (request, response)
         }
 
         if (format === 'jsonl') {
-            let lines = data.split('\n');
+            const lines = data.split('\n');
             const header = lines[0];
 
             const jsonData = JSON.parse(header);

@@ -26,6 +26,7 @@ import { MacroFlagDefinitions, MacroFlagType } from '../macros/engine/MacroFlags
 import { MacroParser } from '../macros/engine/MacroParser.js';
 import { MacroCstWalker } from '../macros/engine/MacroCstWalker.js';
 import { onboardingExperimentalMacroEngine } from '../macros/engine/MacroDiagnostics.js';
+// @ts-expect-error TS(2792): Cannot find module '/script.js'. Did you mean to s... Remove this comment to see the full error message
 import { chat_metadata } from '/script.js';
 import { extension_settings } from '../extensions.js';
 
@@ -35,14 +36,14 @@ import { extension_settings } from '../extensions.js';
 /*** @typedef {import('../macros/macro-system.js').MacroDefinition} MacroDefinition */
 
 /**
- * @typedef {Object} MacroInfo
+ * @typedef {object} MacroInfo
  * @property {number} start - Start position of the macro in text (at first {)
  * @property {number} end - End position of the macro in text (after last })
  * @property {string} content - The content between {{ and }}
  */
 
 /**
- * @typedef {Object} UnclosedScope
+ * @typedef {object} UnclosedScope
  * @property {string} name - Macro name
  * @property {number} startOffset - Start position in text
  * @property {number} endOffset - End position of opening tag
@@ -51,7 +52,7 @@ import { extension_settings } from '../extensions.js';
  */
 
 /**
- * @typedef {Object} BuildMacroAutoCompleteOptions
+ * @typedef {object} BuildMacroAutoCompleteOptions
  * @property {MacroInfo|null} [macro=null] - Macro info if cursor is inside a macro
  * @property {string|null} [textUpToCursor=null] - Pre-computed text up to cursor
  * @property {UnclosedScope[]|null} [unclosedScopes=null] - Pre-computed unclosed scopes
@@ -63,7 +64,6 @@ import { extension_settings } from '../extensions.js';
 /**
  * Finds unclosed scoped macros in the text up to cursor position.
  * Uses the MacroParser and MacroCstWalker for accurate analysis.
- *
  * @param {string} textUpToCursor - The document text up to the cursor position.
  * @returns {Array<{ name: string, startOffset: number, endOffset: number, paddingBefore: string, paddingAfter: string }>}
  */
@@ -86,7 +86,6 @@ export function findUnclosedScopes(textUpToCursor) {
 /**
  * Fallback regex-based approach for finding unclosed scopes.
  * Used when the parser fails on incomplete input.
- *
  * @param {string} text - The text to analyze.
  * @returns {Array<{ name: string, startOffset: number, endOffset: number, paddingBefore: string, paddingAfter: string }>}
  */
@@ -105,6 +104,7 @@ export function findUnclosedScopesRegex(text) {
         if (isClosing) {
             // Find matching opener in stack (case-insensitive)
             // When closing an outer scope, all inner unclosed scopes are implicitly closed
+            // @ts-expect-error TS(2339): Property 'findLastIndex' does not exist on type 'a... Remove this comment to see the full error message
             const matchIndex = stack.findLastIndex(s => s.name.toLowerCase() === name.toLowerCase());
             if (matchIndex !== -1) {
                 // Pop everything from matchIndex to end (inclusive) - closes the matched scope and all nested ones
@@ -140,7 +140,6 @@ export function findUnclosedScopesRegex(text) {
 /**
  * Checks if a scoped macro's scope content is optional (i.e., all required args are already filled).
  * Used to determine whether to show the scope hint by default or only when forced.
- *
  * @param {UnclosedScope} scope - The unclosed scope info.
  * @param {string} textUpToCursor - The text up to cursor to parse the macro content.
  * @returns {boolean} - True if the scope content is optional.
@@ -185,7 +184,6 @@ function isScopeOptional(scope, textUpToCursor) {
 /**
  * Filters unclosed scopes to exclude those with optional scope content.
  * Used when autocomplete is not force-triggered (Ctrl+Space).
- *
  * @param {UnclosedScope[]} unclosedScopes - The unclosed scopes to filter.
  * @param {string} textUpToCursor - The text up to cursor.
  * @param {boolean} isForced - Whether autocomplete was force-triggered.
@@ -204,12 +202,13 @@ function filterOptionalScopes(unclosedScopes, textUpToCursor, isForced) {
 /**
  * Builds autocomplete options for variable shorthand syntax (.varName or $varName).
  * @param {MacroAutoCompleteContext} context
- * @param {Object} [opts] - Optional configuration.
- * @param {boolean} [opts.forIfCondition=false] - If true, options are for {{if}} condition (closes with }}).
- * @param {string} [opts.paddingAfter=''] - Whitespace to add before closing }}.
+ * @param {object} [opts] - Optional configuration.
+ * @param {boolean} [opts.forIfCondition] - If true, options are for {{if}} condition (closes with }}).
+ * @param {string} [opts.paddingAfter] - Whitespace to add before closing }}.
  * @returns {AnyMacroAutoCompleteOption[]}
  */
 export function buildVariableShorthandOptions(context, opts = {}) {
+    // @ts-expect-error TS(2339): Property 'forIfCondition' does not exist on type '... Remove this comment to see the full error message
     const { forIfCondition = false, paddingAfter = '' } = opts;
     /** @type {AnyMacroAutoCompleteOption[]} */
     const options = [];
@@ -454,10 +453,11 @@ export function buildVariableShorthandOptions(context, opts = {}) {
  * When typing arguments (after ::), prioritizes the exact macro match.
  * @param {MacroAutoCompleteContext} context
  * @param {string} [textUpToCursor] - Full document text up to cursor, for unclosed scope detection.
- * @param {Object} [opts] - Additional options.
- * @param {boolean} [opts.isForced=false] - Whether autocomplete was force-triggered (Ctrl+Space).
+ * @param {object} [opts] - Additional options.
+ * @param {boolean} [opts.isForced] - Whether autocomplete was force-triggered (Ctrl+Space).
  * @returns {AnyMacroAutoCompleteOption[]}
  */
+// @ts-expect-error TS(6133): 'isForced' is declared but its value is never read... Remove this comment to see the full error message
 export function buildEnhancedMacroOptions(context, textUpToCursor, { isForced = false } = {}) {
     /** @type {AnyMacroAutoCompleteOption[]} */
     const options = [];
@@ -470,7 +470,7 @@ export function buildEnhancedMacroOptions(context, textUpToCursor, { isForced = 
     // Iterate from innermost to outermost, adding optional scopes and stopping at first required scope
     const unclosedScopes = findUnclosedScopes(textUpToCursor);
     if (unclosedScopes.length > 0) {
-        let firstRequiredPriority = 1; // Priority for the first required (non-optional) scope
+        const firstRequiredPriority = 1; // Priority for the first required (non-optional) scope
         let optionalPriority = 3; // Lower priority for optional scopes
         let foundRequired = false;
         let elseOptionAdded = false;
@@ -788,7 +788,6 @@ export function buildIfConditionOptions(context, allMacros, macroInnerText) {
 /**
  * Finds macro boundaries at a given cursor position in any text.
  * Works independently of slash command parsing.
- *
  * @param {string} text - The full text content.
  * @param {number} cursorPos - The cursor position in the text.
  * @returns {{ start: number, end: number, content: string } | null}
@@ -874,7 +873,6 @@ export function findMacroAtCursor(text, cursorPos) {
 
 /**
  * Gets variable names from the specified scope.
- *
  * @param {'local'|'global'} scope - The variable scope.
  * @returns {string[]} Array of variable names.
  */
@@ -904,10 +902,9 @@ export function getVariableNames(scope) {
  * - Variable shorthand syntax (.var, $var)
  * - Flag handling
  * - Regular macro options
- *
  * @param {string} text - The full text content.
  * @param {number} cursorPos - The cursor position.
- * @param {BuildMacroAutoCompleteOptions} [options={}] - Optional pre-computed values.
+ * @param {BuildMacroAutoCompleteOptions} [options] - Optional pre-computed values.
  * @returns {Promise<AutoCompleteNameResult|null>}
  */
 export async function buildMacroAutoCompleteResult(text, cursorPos, {
@@ -1204,11 +1201,10 @@ export async function buildMacroAutoCompleteResult(text, cursorPos, {
 /**
  * Entry point for macro autocomplete in free text contexts.
  * Finds the macro at cursor position and delegates to the shared builder.
- *
  * @param {string} text - The full text content.
  * @param {number} cursorPos - The cursor position.
- * @param {Object} [options={}] - Additional options.
- * @param {boolean} [options.isForced=false] - Whether autocomplete was force-triggered (Ctrl+Space).
+ * @param {object} [options] - Additional options.
+ * @param {boolean} [options.isForced] - Whether autocomplete was force-triggered (Ctrl+Space).
  * @returns {Promise<AutoCompleteNameResult|null>}
  */
 export async function getMacroAutoCompleteAt(text, cursorPos, { isForced = false } = {}) {

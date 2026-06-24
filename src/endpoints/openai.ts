@@ -17,8 +17,8 @@ export const router = express.Router();
 router.post('/caption-image', async (request, response) => {
     try {
         let key = '';
-        let headers = {};
-        let bodyParams = {};
+        const headers = {};
+        const bodyParams = {};
 
         if (request.body.api === 'openai' && !request.body.reverse_proxy) {
             key = readSecret(request.user.directories, SECRET_KEYS.OPENAI);

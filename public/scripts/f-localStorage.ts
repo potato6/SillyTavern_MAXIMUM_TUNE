@@ -1,6 +1,8 @@
 ////////////////// LOCAL STORAGE HANDLING /////////////////////
 
 /**
+ * @param target
+ * @param val
  * @deprecated THIS FUNCTION IS OBSOLETE. DO NOT USE
  */
 export function SaveLocal(target, val) {
@@ -8,6 +10,7 @@ export function SaveLocal(target, val) {
     console.debug('SaveLocal -- ' + target + ' : ' + val);
 }
 /**
+ * @param target
  * @deprecated THIS FUNCTION IS OBSOLETE. DO NOT USE
  */
 export function LoadLocal(target) {
@@ -15,10 +18,11 @@ export function LoadLocal(target) {
     return localStorage.getItem(target);
 }
 /**
+ * @param target
  * @deprecated THIS FUNCTION IS OBSOLETE. DO NOT USE
  */
 export function LoadLocalBool(target) {
-    let result = localStorage.getItem(target) === 'true';
+    const result = localStorage.getItem(target) === 'true';
     return result;
 }
 /**
@@ -26,7 +30,7 @@ export function LoadLocalBool(target) {
  */
 export function CheckLocal() {
     console.log('----------local storage---------');
-    var i;
+    let i;
     for (i = 0; i < localStorage.length; i++) {
         console.log(localStorage.key(i) + ' : ' + localStorage.getItem(localStorage.key(i)));
     }
