@@ -1,20 +1,21 @@
+/* global Bun */
 import path from 'node:path';
 import crypto from 'node:crypto';
 import { getVersion } from '../util.js';
 
 async function getLibOutputPath(forceDist = false) {
     const appVersion = await getVersion();
-    const webpackRoot = forceDist 
-        ? path.resolve(process.cwd(), 'dist', '_webpack') 
+    const webpackRoot = forceDist
+        ? path.resolve(process.cwd(), 'dist', '_webpack')
         : path.resolve(globalThis.DATA_ROOT || process.cwd(), '_webpack');
-    
+
     const cacheVersion = crypto.createHash('shake256', { outputLength: 8 })
         .update(JSON.stringify([appVersion.pkgVersion, appVersion.gitRevision, 'bun']))
         .digest('hex');
 
     return {
         path: path.join(webpackRoot, cacheVersion, 'output'),
-        filename: 'lib.js'
+        filename: 'lib.js',
     };
 }
 
@@ -48,7 +49,7 @@ export default function getLibServeMiddleware() {
         console.log('Compiling frontend libraries with Bun...');
 
         const { path: outdir } = await getLibOutputPath(forceDist);
-        
+
         const result = await Bun.build({
             entrypoints: ['./public/lib.js'],
             outdir: outdir,
@@ -63,7 +64,7 @@ export default function getLibServeMiddleware() {
             }
             throw new Error('Frontend build failed');
         }
-        
+
         console.log(`Successfully built to ${outdir}`);
         console.log();
     };

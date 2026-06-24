@@ -48,6 +48,7 @@
     "dompurify": "^3.4.11",
     "droll": "^0.2.1",
     "env-paths": "^3.0.0",
+    "eslint-plugin-prettier": "^5.5.6",
     "express": "^4.22.2",
     "fflate": "^0.8.3",
     "form-data": "^4.0.6",
@@ -115,19 +116,19 @@
     "url": "https://github.com/SillyTavern/SillyTavern.git"
   },
   "version": "1.18.0",
-    "scripts": {
-        "init": "bun src/server-init.js",
-        "start": "bun server.js",
-        "debug": "bun --inspect server.js",
-        "start:global": "bun server.js --global",
-        "start:electron": "cd ./src/electron && npm run start",
-        "start:no-csrf": "bun server.js --disableCsrf",
-        "build:lib": "bun scripts/build-lib.js",
-        "lint": "eslint \"src/**/*.js\" \"public/**/*.js\" ./*.js",
-        "lint:fix": "eslint \"src/**/*.js\" \"public/**/*.js\" ./*.js --fix",
-        "plugins:update": "bun plugins update",
-        "plugins:install": "bun plugins install"
-    },
+  "scripts": {
+    "init": "bun src/server-init.js",
+    "start": "bun server.js",
+    "debug": "bun --inspect server.js",
+    "start:global": "bun server.js --global",
+    "start:electron": "cd ./src/electron && npm run start",
+    "start:no-csrf": "bun server.js --disableCsrf",
+    "build:lib": "bun scripts/build-lib.js",
+    "lint": "eslint \"src/**/*.js\" \"public/**/*.js\" ./*.js",
+    "lint:fix": "eslint \"src/**/*.js\" \"public/**/*.js\" ./*.js --fix",
+    "plugins:update": "bun plugins update",
+    "plugins:install": "bun plugins install"
+  },
   "bin": {
     "sillytavern": "./src/server-global.js"
   },
