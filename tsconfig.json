@@ -22,7 +22,8 @@
         "noFallthroughCasesInSwitch": true,
         "noUnusedLocals": true,
         "noUnusedParameters": true,
-        "allowUnreachableCode": false
+        "allowUnreachableCode": false,
+        "removeComments": true
     },
     "include": [
         "src/**/*",

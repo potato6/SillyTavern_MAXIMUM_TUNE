@@ -112,14 +112,15 @@
       "whatwg-url": "^14.0.0"
     }
   },
-  "name": "sillytavern",
+  "name": "sillytavern_maximum_tune",
   "type": "module",
   "license": "AGPL-3.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/SillyTavern/SillyTavern.git"
+    "url": "https://github.com/potato6/SillyTavern_Maximum_Tune"
   },
-  "version": "1.18.0",
+  "version": "2.00.0",
+  "sideEffects": false,
   "scripts": {
     "init": "bun src/server-init.js",
     "start": "bun server.js",
