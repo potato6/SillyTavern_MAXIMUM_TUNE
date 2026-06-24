@@ -4,7 +4,7 @@ import jsdoc from "eslint-plugin-jsdoc";
 import jest from "eslint-plugin-jest";
 import playwright from "eslint-plugin-playwright";
 import globals from "globals";
-import eslintConfigPrettier from "eslint-config-prettier"; // Import Prettier config
+import eslintConfigPrettier from "eslint-plugin-prettier";
 
 const logicalRules = {
     "no-cond-assign": "error",
