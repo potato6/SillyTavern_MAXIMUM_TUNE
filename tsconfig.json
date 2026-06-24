@@ -1,0 +1,41 @@
+{
+    "compilerOptions": {
+        "target": "ESNext",
+        "lib": ["ESNext", "DOM", "DOM.Iterable"],
+        "module": "ESNext",
+        "moduleResolution": "bundler",
+        "allowJs": true,
+        "noEmit": true,
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "resolveJsonModule": true,
+        "types": ["node"],
+        "isolatedModules": true,
+        "forceConsistentCasingInFileNames": true,
+        "checkJs": true,
+        "strict": false, //temporary disable
+        "noUncheckedIndexedAccess": true,
+        "exactOptionalPropertyTypes": false, //temporary disable
+        "noImplicitOverride": true,
+        "noPropertyAccessFromIndexSignature": true,
+        "noImplicitReturns": true,
+        "noFallthroughCasesInSwitch": true,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+        "allowUnreachableCode": false
+    },
+    "include": [
+        "src/**/*",
+        "public/**/*",
+        "*.ts"
+    ],
+    "exclude": [
+        "node_modules",
+        "public/dist",
+        "public/scripts/extensions",
+        "public/lib",
+        "src/vectors",
+        "**/*.js",
+        "**/*.mjs"
+    ]
+}
