@@ -1,4 +1,3 @@
-import eslint from "@eslint/js";
 import tseslint from "typescript-eslint";
 import jsdoc from "eslint-plugin-jsdoc";
 import jest from "eslint-plugin-jest";
@@ -33,7 +32,6 @@ const getRules = (config) => {
     return config?.rules || {};
 };
 
-const eslintRecommendedRules = getRules(eslint.configs.recommended);
 const jsdocRecommendedRules = getRules(jsdoc.configs?.["flat/recommended"]);
 const tseslintRecommendedRules = getRules(tseslint.configs.recommended);
 const jestRecommendedRules = getRules(jest.configs?.["flat/recommended"]);
@@ -75,7 +73,7 @@ export default [
 
     {
         rules: {
-            ...eslintRecommendedRules,
+            ...tseslintRecommendedRules,
             ...jsdocRecommendedRules,
         },
     },
@@ -142,9 +140,6 @@ export default [
         rules: {
             ...jestRecommendedRules,
             ...playwrightRecommendedRules,
-        },
-        settings: {
-            jest: { version: 29 },
         },
     },
 

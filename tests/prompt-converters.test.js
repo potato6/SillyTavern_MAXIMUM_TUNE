@@ -1,9 +1,17 @@
-import { describe, test, expect, jest, beforeAll } from '@jest/globals';
+import { describe, test, expect, jest, beforeAll, mock } from '@jest/globals';
 
-jest.unstable_mockModule('../src/util.js', () => ({
-    getConfigValue: jest.fn((_key, defaultValue) => defaultValue),
-    tryParse: (str) => { try { return JSON.parse(str); } catch { return undefined; } },
+mock.module("../src/util.js", () => ({
+    // Bun's mock() functions act exactly like jest.fn() and are spyable
+    getConfigValue: mock((_key, defaultValue) => defaultValue),
+    tryParse: (str) => {
+        try {
+            return JSON.parse(str);
+        } catch {
+            return;
+        }
+    },
 }));
+
 
 /** @type {import('../src/prompt-converters.js')} */
 let mod;

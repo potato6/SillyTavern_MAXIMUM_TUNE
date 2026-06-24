@@ -1,33 +1,36 @@
-import { describe, test, expect, jest, beforeAll, beforeEach, afterAll } from '@jest/globals';
+import { describe, test, expect, jest, beforeAll, beforeEach, afterAll, mock } from '@jest/globals';
 
 const mockNetConnect = jest.fn(() => ({ type: 'net-socket' }));
 const mockTlsConnect = jest.fn(() => ({ type: 'tls-socket' }));
 const mockLookup = jest.fn();
 
-jest.unstable_mockModule('node:net', () => ({
+// Use Bun's native module mocker for built-in Node modules
+mock.module("node:net", () => ({
     default: { connect: mockNetConnect },
 }));
 
-jest.unstable_mockModule('node:tls', () => ({
+mock.module("node:tls", () => ({
     default: { connect: mockTlsConnect },
 }));
 
-jest.unstable_mockModule('node:dns', () => ({
+mock.module("node:dns", () => ({
     default: { promises: { lookup: mockLookup } },
 }));
 
-jest.unstable_mockModule('../src/util.js', () => ({
+// Use mock.module to mock your local ESM utility modules
+mock.module("../src/util.js", () => ({
     color: {
-        red: text => text,
-        green: text => text,
-        blue: text => text,
-        yellow: text => text,
+        red: (text) => text,
+        green: (text) => text,
+        blue: (text) => text,
+        yellow: (text) => text,
     },
 }));
 
-jest.unstable_mockModule('../src/express-common.js', () => ({
-    filterValidIpPatterns: patterns => patterns,
+mock.module("../src/express-common.js", () => ({
+    filterValidIpPatterns: (patterns) => patterns,
 }));
+
 
 /** @type {import('../src/private-request-filter.js').default} */
 let initPrivateRequestFilter;
