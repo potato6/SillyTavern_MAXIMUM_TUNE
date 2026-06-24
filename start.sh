@@ -6,7 +6,8 @@ fi
 
 echo "Installing Dependencies..."
 export NODE_ENV=production
-bunx esbuild 'public/**/*.ts' --outdir=public/dist --outbase=public --format=esm --splitting --minify --target=esnext --external:node:* --external:http --external:https --external:url --external:fs --external:JSZip --bundle
+bun install &&
+    bunx esbuild 'public/**/*.ts' --outdir=public/dist --outbase=public --format=esm --splitting --minify --target=esnext --external:node:* --external:http --external:https --external:url --external:fs --external:JSZip --bundle
 
 echo "Entering SillyTavern..."
 bun server.js --smol --filter --bun
