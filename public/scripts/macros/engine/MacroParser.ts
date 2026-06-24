@@ -17,10 +17,15 @@ export { instance as MacroParser };
 
 class MacroParser extends CstParser {
     document: any;
-    errors: any;
-    input: any;
     macro: any;
-    performSelfAnalysis: any;
+    macroBody: any;
+    variableExpr: any;
+    variableOperator: any;
+    variableValue: any;
+    arguments: any;
+    argument: any;
+    argumentAllowingColons: any;
+
     /** @type {MacroParser} */ static #instance;
     /** @type {MacroParser} */ static get instance() { return MacroParser.#instance ?? (MacroParser.#instance = new MacroParser()); }
 
