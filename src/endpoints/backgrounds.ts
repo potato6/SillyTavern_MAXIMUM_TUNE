@@ -1,0 +1,172 @@
+import fs from 'node:fs';
+import path from 'node:path';
+
+import express from 'express';
+import sanitize from 'sanitize-filename';
+
+import { invalidateThumbnail } from './thumbnails.js';
+import { thumbnailDimensions, readMetadataIndex, renameMetadata, removeMetadata, getOrGenerateMetadataBatch } from './image-metadata.js';
+import { getImages } from '../util.js';
+import { getFileNameValidationFunction } from '../middleware/validateFileName.js';
+
+export const router = express.Router();
+
+router.post('/all', async function (request, response) {
+    try {
+        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
+        const images = getImages(request.user.directories.backgrounds);
+        const config = { width: thumbnailDimensions.bg[0], height: thumbnailDimensions.bg[1] };
+
+        // Get metadata for all images to provide isAnimated flag to client
+        const relativePaths = images.map(img => path.join('backgrounds', img));
+        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
+        const { results: metadataMap } = await getOrGenerateMetadataBatch(request.user.directories.root, relativePaths, 'bg');
+
+        // Build response with metadata for each image
+        const imagesWithMetadata = images.map(img => {
+            const relativePath = path.join('backgrounds', img);
+            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
+            const metadata = metadataMap[relativePath];
+            return {
+                filename: img,
+                isAnimated: metadata?.isAnimated ?? false,
+            };
+        });
+
+        response.json({ images: imagesWithMetadata, config });
+    } catch (error) {
+        console.error('[Backgrounds] Error fetching backgrounds:', error);
+        response.status(500).json({ error: 'Failed to fetch backgrounds' });
+    }
+});
+
+/**
+ * POST /api/backgrounds/folders
+ * Returns folders and per-image folderIds from the metadata index.
+ * Loaded separately from /all to avoid blocking image rendering.
+ */
+router.post('/folders', async function (request, response) {
+    try {
+        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
+        const index = await readMetadataIndex(request.user.directories.root);
+        const folders = index.folders || [];
+
+        // Build a slim map of image → folderIds for the frontend
+        /** @type {Object.<string, string[]>} */
+        const imageFolderMap = {};
+        for (const [relativePath, meta] of Object.entries(index.images)) {
+            // @ts-expect-error TS(2571): Object is of type 'unknown'.
+            if (Array.isArray(meta.folderIds) && meta.folderIds.length > 0) {
+                // Strip the directory prefix to get just the filename
+                const filename = relativePath.split('/').pop() || relativePath;
+                // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
+                imageFolderMap[filename] = meta.folderIds;
+            }
+        }
+
+        response.json({ folders, imageFolderMap });
+    } catch (error) {
+        console.error('[Backgrounds] Folders endpoint error:', error);
+        response.status(500).json({ error: 'Internal server error.' });
+    }
+});
+
+router.post('/delete', getFileNameValidationFunction('bg'), async function (request, response) {
+    try {
+        if (!request.body) return response.sendStatus(400);
+
+        if (request.body.bg !== sanitize(request.body.bg)) {
+            console.error('Malicious bg name prevented');
+            return response.sendStatus(403);
+        }
+
+        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
+        const fileName = path.join(request.user.directories.backgrounds, sanitize(request.body.bg));
+
+        if (!fs.existsSync(fileName)) {
+            console.error('BG file not found');
+            return response.sendStatus(400);
+        }
+
+        fs.unlinkSync(fileName);
+        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
+        invalidateThumbnail(request.user.directories, 'bg', request.body.bg);
+
+        // Remove metadata for deleted image
+        const relativePath = path.join('backgrounds', request.body.bg);
+        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
+        await removeMetadata(request.user.directories.root, relativePath).catch(err => {
+            console.warn('[Backgrounds] Failed to remove metadata:', err.message);
+        });
+
+        return response.send('ok');
+    } catch (err) {
+        console.error(err);
+        response.sendStatus(500);
+    }
+});
+
+router.post('/rename', async function (request, response) {
+    try {
+        if (!request.body) return response.sendStatus(400);
+
+        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
+        const oldFileName = path.join(request.user.directories.backgrounds, sanitize(request.body.old_bg));
+        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
+        const newFileName = path.join(request.user.directories.backgrounds, sanitize(request.body.new_bg));
+
+        if (!fs.existsSync(oldFileName)) {
+            console.error('BG file not found');
+            return response.sendStatus(400);
+        }
+
+        if (fs.existsSync(newFileName)) {
+            console.error('New BG file already exists');
+            return response.sendStatus(400);
+        }
+
+        fs.copyFileSync(oldFileName, newFileName);
+        fs.unlinkSync(oldFileName);
+        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
+        invalidateThumbnail(request.user.directories, 'bg', request.body.old_bg);
+
+        // Update metadata for renamed image
+        const oldRelativePath = path.join('backgrounds', request.body.old_bg);
+        const newRelativePath = path.join('backgrounds', request.body.new_bg);
+        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
+        await renameMetadata(request.user.directories.root, oldRelativePath, newRelativePath).catch(err => {
+            console.warn('[Backgrounds] Failed to rename metadata:', err.message);
+        });
+
+        return response.send('ok');
+    } catch (err) {
+        console.error(err);
+        response.sendStatus(500);
+    }
+});
+
+router.post('/upload', async function (request, response) {
+    try {
+        if (!request.body || !request.file) return response.sendStatus(400);
+
+        const img_path = path.join(request.file.destination, request.file.filename);
+        const filename = sanitize(request.file.originalname);
+        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
+        fs.copyFileSync(img_path, path.join(request.user.directories.backgrounds, filename));
+        fs.unlinkSync(img_path);
+        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
+        invalidateThumbnail(request.user.directories, 'bg', filename);
+
+        // Generate metadata for the new image
+        const relativePath = path.join('backgrounds', filename);
+        // @ts-expect-error TS(2339): Property 'user' does not exist on type 'Request<{}... Remove this comment to see the full error message
+        await getOrGenerateMetadataBatch(request.user.directories.root, [relativePath], 'bg').catch(err => {
+            console.warn('[Backgrounds] Failed to generate metadata for upload:', err.message);
+        });
+
+        response.send(filename);
+    } catch (err) {
+        console.error(err);
+        response.sendStatus(500);
+    }
+});
