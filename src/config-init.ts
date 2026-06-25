@@ -4,11 +4,21 @@ import path from 'node:path';
 import yaml from 'yaml';
 // @ts-expect-error TS(2792): Cannot find module 'chalk'. Did you mean to set th... Remove this comment to see the full error message
 import color from 'chalk';
-import _ from 'lodash';
 import { serverDirectory } from './server-directory.js';
 import { keyToEnv, setConfigFilePath } from './util.js';
 
-const keyMigrationMap = [
+// Import from es-toolkit
+import { difference } from 'es-toolkit/array';
+import { get, set, has, unset, defaultsDeep } from 'es-toolkit/compat';
+
+type MigrationMap = {
+    oldKey: string;
+    newKey: string;
+    migrate: (value: any) => any;
+    remove?: boolean;
+};
+
+const keyMigrationMap: MigrationMap[] = [
     {
         oldKey: 'disableThumbnails',
         newKey: 'thumbnails.enabled',
@@ -144,14 +154,15 @@ const keyMigrationMap = [
  * @param {string} prefix Prefix to prepend to all keys
  * @returns {string[]} Array of all keys in the object
  */
-function getAllKeys(obj: any, prefix = '') {
+function getAllKeys(obj: any, prefix = ''): string[] {
     if (typeof obj !== 'object' || Array.isArray(obj) || obj === null) {
         return [];
     }
 
-    return _.flatMap(Object.keys(obj), key => {
+    // Handled natively using ES6+ Object.keys() and Array.prototype.flatMap()
+    return Object.keys(obj).flatMap(key => {
         const newPrefix = prefix ? `${prefix}.${key}` : key;
-        if (typeof obj[key] === 'object' && !Array.isArray(obj[key])) {
+        if (typeof obj[key] === 'object' && obj[key] !== null && !Array.isArray(obj[key])) {
             return getAllKeys(obj[key], newPrefix);
         } else {
             return [newPrefix];
@@ -163,7 +174,7 @@ function getAllKeys(obj: any, prefix = '') {
  * Compares the current config.yaml with the default config.yaml and adds any missing values.
  * @param {string} configPath Path to config.yaml
  */
-export function addMissingConfigValues(configPath: any) {
+export function addMissingConfigValues(configPath: string) {
     try {
         const defaultConfig = yaml.parse(fs.readFileSync(path.join(serverDirectory, './default/config.yaml'), 'utf8'));
 
@@ -190,9 +201,9 @@ export function addMissingConfigValues(configPath: any) {
                 console.log(`Redirecting ${color.blue(oldEnvKey)}=${oldValue} -> ${color.blue(newEnvKey)}=${newValue}`);
             }
 
-            if (_.has(config, oldKey)) {
+            if (has(config, oldKey)) {
                 if (remove) {
-                    _.unset(config, oldKey);
+                    unset(config, oldKey);
                     migratedKeys.push({
                         oldKey,
                         newValue: void 0,
@@ -200,10 +211,10 @@ export function addMissingConfigValues(configPath: any) {
                     continue;
                 }
 
-                const oldValue = _.get(config, oldKey);
+                const oldValue = get(config, oldKey);
                 const newValue = migrate(oldValue);
-                _.set(config, newKey, newValue);
-                _.unset(config, oldKey);
+                set(config, newKey, newValue);
+                unset(config, oldKey);
 
                 migratedKeys.push({
                     oldKey,
@@ -217,14 +228,14 @@ export function addMissingConfigValues(configPath: any) {
         // Get all keys from the original config
         const originalKeys = getAllKeys(config);
 
-        // Use lodash's defaultsDeep function to recursively apply default properties
-        config = _.defaultsDeep(config, defaultConfig);
+        // Use es-toolkit's compat logic to recursively apply default properties
+        config = defaultsDeep(config, defaultConfig);
 
         // Get all keys from the updated config
         const updatedKeys = getAllKeys(config);
 
         // Find the keys that were added
-        const addedKeys = _.difference(updatedKeys, originalKeys);
+        const addedKeys = difference(updatedKeys, originalKeys);
 
         if (addedKeys.length === 0 && migratedKeys.length === 0) {
             return;
@@ -248,7 +259,7 @@ export function addMissingConfigValues(configPath: any) {
  * Performs early initialization tasks before the server starts.
  * @param {string} configPath Path to config.yaml
  */
-export function initConfig(configPath: any) {
+export function initConfig(configPath: string) {
     console.log('Using config path:', color.green(configPath));
     setConfigFilePath(configPath);
     addMissingConfigValues(configPath);
