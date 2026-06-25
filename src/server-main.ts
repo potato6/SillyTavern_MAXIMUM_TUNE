@@ -224,7 +224,7 @@ app.get('/', cacheBuster.middleware, (request, response) => {
         return response.redirect(redirectUrl);
     }
 
-    return response.sendFile('index.html', { root: path.join(serverDirectory, 'public') });
+    return response.sendFile('index.html', { root: path.join(serverDirectory, 'public/dist') });
 });
 
 // Callback endpoint for OAuth PKCE flows (e.g. OpenRouter)
@@ -246,10 +246,8 @@ const libMiddleware = getLibServeMiddleware();
 app.use(libMiddleware);
 app.use(userCssMiddleware);
 
-// Check the transpiled build folder first
+// Serve everything from the transpiled build folder
 app.use(express.static(path.join(serverDirectory, 'public/dist')));
-// Fall back to the public folder for HTML and non-transpiled assets (like extensions)
-app.use(express.static(path.join(serverDirectory, 'public')));
 
 
 // Public API

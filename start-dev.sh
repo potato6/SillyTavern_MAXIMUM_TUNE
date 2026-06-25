@@ -6,7 +6,7 @@ fi
 
 echo "Installing Dependencies..."
 bun install &&
-    bunx esbuild 'public/**/*.ts' --outdir=public/dist --outbase=public --external:http --external:https --external:url --external:fs --external:JSZip --sourcemap --bundle --splitting --format=esm
+    bun run build.ts
 
 echo "Entering SillyTavern..."
 bun server.js --watch --hot
