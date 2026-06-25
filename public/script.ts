@@ -779,7 +779,7 @@ async function firstLoadInit() {
         initSystemPrompts();
         await initExtensions();
         initExtensionSlashCommands();
-        ToolManager.initSlashCommands();
+        ToolManager.initToolSlashCommands();
         await initPresetManager();
         await initSystemMessages();
         await getSettings(initLoaderHandle);
