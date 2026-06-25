@@ -25,7 +25,6 @@ function copyRecursiveSync(src: string, dest: string) {
       copyRecursiveSync(srcPath, destPath);
     } else {
       // Exclude only .ts and .css files, as they will be built and minified by Bun.
-      // We DO NOT exclude .html files anymore, meaning they copy over unmodified.
       if (
         entry.name.endsWith(".ts") ||
         entry.name.endsWith(".css")
