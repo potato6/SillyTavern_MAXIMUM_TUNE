@@ -732,31 +732,31 @@ async function firstLoadInit() {
         throw new Error('Initialization failed');
     }
 
-    const initLoaderOverlay = loader.createOverlay();
-    initLoaderOverlay.classList.add('splash-screen');
-
-    const splashLogo = document.createElement('img');
-    splashLogo.src = '/img/logo.png';
-    splashLogo.alt = 'SillyTavern';
-    splashLogo.className = 'splash-logo';
-    splashLogo.ariaLabel = t`SillyTavern Logo`;
-
-    const splashMessage = document.createElement('h2');
-    splashMessage.className = 'splash-message';
-    splashMessage.textContent = t`Initializing…`;
-    // @ts-expect-error TS(4111): Property 'i18n' comes from an index signature, so ... Remove this comment to see the full error message
-    splashMessage.dataset.i18n = 'Initializing…';
-
-    initLoaderOverlay.prepend(splashLogo);
-    initLoaderOverlay.appendChild(splashMessage);
-
-    const initLoaderHandle = loader.show({
-        slug: 'app-init',
-        toastMode: loader.ToastMode.NONE,
-        overlayContent: initLoaderOverlay,
-    });
-
     try {
+        const initLoaderOverlay = loader.createOverlay();
+        initLoaderOverlay.classList.add('splash-screen');
+        
+        const splashLogo = document.createElement('img');
+        splashLogo.src = '/img/logo.png';
+        splashLogo.alt = 'SillyTavern';
+        splashLogo.className = 'splash-logo';
+        splashLogo.ariaLabel = t`SillyTavern Logo`;
+        
+        const splashMessage = document.createElement('h2');
+        splashMessage.className = 'splash-message';
+        splashMessage.textContent = t`Initializing…`;
+        // @ts-expect-error TS(4111): Property 'i18n' comes from an index signature, so ... Remove this comment to see the full error message
+        splashMessage.dataset.i18n = 'Initializing…';
+        
+        initLoaderOverlay.prepend(splashLogo);
+        initLoaderOverlay.appendChild(splashMessage);
+        
+        const initLoaderHandle = loader.show({
+            slug: 'app-init',
+            toastMode: loader.ToastMode.NONE,
+            overlayContent: initLoaderOverlay,
+        });
+        
         registerPromptManagerMigration();
         initDomHandlers();
         initStandaloneMode();
