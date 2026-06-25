@@ -245,7 +245,12 @@ app.get('/login', loginPageMiddleware);
 const libMiddleware = getLibServeMiddleware();
 app.use(libMiddleware);
 app.use(userCssMiddleware);
-app.use(express.static(path.join(serverDirectory, 'public'), {}));
+
+// Check the transpiled build folder first
+app.use(express.static(path.join(serverDirectory, 'public/dist')));
+// Fall back to the public folder for HTML and non-transpiled assets (like extensions)
+app.use(express.static(path.join(serverDirectory, 'public')));
+
 
 // Public API
 app.use('/api/users', usersPublicRouter);
