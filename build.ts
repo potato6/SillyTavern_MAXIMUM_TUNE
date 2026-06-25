@@ -1,10 +1,8 @@
-import { existsSync, mkdirSync, rmSync, readdirSync, copyFileSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, rmSync, readdirSync, copyFileSync } from "node:fs";
 import path from "node:path";
-import crypto from "node:crypto";
 
 const PUBLIC_DIR = "public";
 const DIST_DIR = "public/dist";
-const HASH_FILE = path.join(DIST_DIR, ".build_hash");
 
 /**
  *
@@ -32,40 +30,12 @@ function copyRecursiveSync(src: string, dest: string) {
   }
 }
 
-/**
- *
- */
-async function calculatePublicHash(): Promise<string> {
-  const files = [...new Bun.Glob("public/**/*").scanSync()].filter(f => !f.startsWith(`${DIST_DIR}/`));
-  files.sort();
-
-  const hash = crypto.createHash("sha256");
-  for (const file of files) {
-    const content = Bun.file(file);
-    if (await content.exists()) {
-      const text = await content.text();
-      hash.update(file);
-      hash.update(text);
-    }
-  }
-  return hash.digest("hex");
-}
-
-const currentHash = await calculatePublicHash();
-if (existsSync(HASH_FILE)) {
-  const storedHash = readFileSync(HASH_FILE, "utf8");
-  if (storedHash === currentHash) {
-    console.log("No changes detected in public folder. Skipping build.");
-    process.exit(0);
-  }
-}
-
 if (existsSync(DIST_DIR)) {
   rmSync(DIST_DIR, { recursive: true, force: true });
 }
 mkdirSync(DIST_DIR, { recursive: true });
 
-console.log("Changes detected. Cleaning and copying static assets...");
+console.log("Cleaning and copying static assets...");
 copyRecursiveSync(PUBLIC_DIR, DIST_DIR);
 
 const entrypoints = [...new Bun.Glob("public/**/*.ts").scanSync()];
@@ -80,8 +50,6 @@ const result = await Bun.build({
   splitting: true,
   format: "esm",
   minify: true,
-  target: "bun",
-  bytecode: true,
 });
 
 if (!result.success) {
@@ -91,6 +59,5 @@ if (!result.success) {
   }
   process.exit(1);
 } else {
-  writeFileSync(HASH_FILE, currentHash);
   console.log(`Build completed successfully! Generated ${result.outputs.length} files.`);
 }
