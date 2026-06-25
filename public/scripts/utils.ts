@@ -587,7 +587,13 @@ export function debounce(func, timeout = debounce_timeout.standard) {
     let timer;
     const fn = (...args) => {
         clearTimeout(timer);
-        timer = setTimeout(() => { func.apply(this, args); }, timeout);
+        timer = setTimeout(async () => {
+            try {
+                await func.apply(this, args);
+            } catch (e) {
+                console.error('Error in debounced function:', e);
+            }
+        }, timeout);
         debounceMap.set(func, timer);
         debounceMap.set(fn, timer);
     };
@@ -607,16 +613,26 @@ export function debounceAsync(func, timeout = debounce_timeout.standard) {
     let debouncePromise;
     /**@type {Function}*/
     let debounceResolver;
+    /**@type {Function}*/
+    let debounceReject;
     return (...args) => {
         clearTimeout(timer);
         if (!debouncePromise) {
-            debouncePromise = new Promise(resolve => {
+            debouncePromise = new Promise((resolve, reject) => {
                 debounceResolver = resolve;
+                debounceReject = reject;
             });
         }
-        timer = setTimeout(() => {
-            debounceResolver(func.apply(this, args));
-            debouncePromise = null;
+        timer = setTimeout(async () => {
+            try {
+                const result = await func.apply(this, args);
+                debounceResolver(result);
+            } catch (e) {
+                console.error('Error in debouncedAsync function:', e);
+                debounceReject(e);
+            } finally {
+                debouncePromise = null;
+            }
         }, timeout);
         return debouncePromise;
     };

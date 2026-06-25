@@ -698,12 +698,18 @@ export class Popup {
         // We need to fix the toastr to be present inside this dialog
         fixToastrForDialogs();
 
-        runAfterAnimation(this.dlg, () => {
+        runAfterAnimation(this.dlg, async () => {
             this.dlg.removeAttribute('opening');
-
+        
             // If we have an onOpen handler, we run it now
             if (this.onOpen) {
-                this.onOpen(this);
+                try {
+                    await this.onOpen(this);
+                } catch (error) {
+                    console.error('Error in Popup.onOpen handler:', error);
+                    // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+                    toastr.error(t`An error occurred during popup initialization. Check console for details.`, t`Popup Init Error`);
+                }
             }
         });
 
@@ -919,13 +925,20 @@ export class PopupUtils {
  * @returns {Promise<POPUP_RESULT|string|boolean?>} The value for this popup, which can either be the popup retult or the input value if chosen
  */
 export function callGenericPopup(content, type, inputValue = '', popupOptions = {}) {
-    const popup = new Popup(
-        content,
-        type,
-        inputValue,
-        popupOptions,
-    );
-    return popup.show();
+    try {
+        const popup = new Popup(
+            content,
+            type,
+            inputValue,
+            popupOptions,
+        );
+        return popup.show();
+    } catch (error) {
+        console.error('Error showing generic popup:', error);
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        toastr.error(t`An error occurred while opening the popup. Check console for details.`, t`Popup Error`);
+        return Promise.resolve(POPUP_RESULT.CANCELLED);
+    }
 }
 
 /**

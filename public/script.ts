@@ -9798,7 +9798,7 @@ export async function setCharacterSettingsOverrides() {
  * @returns {Promise<any>} A promise that resolves when the popup is closed.
  * @deprecated Use `callGenericPopup` instead.
  */
-export function callPopup(text, type, inputValue = '', {
+export async function callPopup(text, type, inputValue = '', {
     okButton,
     rows,
     wide,
@@ -9809,9 +9809,11 @@ export function callPopup(text, type, inputValue = '', {
     // @ts-expect-error TS(6133): 'cropAspect' is declared but its value is never re... Remove this comment to see the full error message
     cropAspect
 }: any = {}) {
-    /**
-     *
-     */
+    try {
+        /**
+         *
+         *
+         */
     function getOkButtonText() {
         if (['text', 'char_not_selected'].includes(popup_type)) {
             $dialoguePopupCancel.css('display', 'none');
@@ -9866,9 +9868,12 @@ export function callPopup(text, type, inputValue = '', {
         easing: animation_easing,
     });
 
-    return new Promise((resolve) => {
-        dialogueResolve = resolve;
-    });
+    } catch (error) {
+        console.error('Error in callPopup:', error);
+        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        toastr.error(t`An error occurred while opening the popup. Check console for details.`, t`Popup Error`);
+        return Promise.resolve(null);
+    }
 }
 
 /**
