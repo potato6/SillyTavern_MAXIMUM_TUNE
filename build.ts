@@ -5,7 +5,7 @@ const PUBLIC_DIR = "public";
 const DIST_DIR = "public/dist";
 
 /**
- *
+ * Recursively copy static assets.
  * @param src
  * @param dest
  */
@@ -24,7 +24,14 @@ function copyRecursiveSync(src: string, dest: string) {
       if (entry.name === "dist") continue;
       copyRecursiveSync(srcPath, destPath);
     } else {
-      if (entry.name.endsWith(".ts")) continue;
+      // Exclude only .ts and .css files, as they will be built and minified by Bun.
+      // We DO NOT exclude .html files anymore, meaning they copy over unmodified.
+      if (
+        entry.name.endsWith(".ts") ||
+        entry.name.endsWith(".css")
+      ) {
+        continue;
+      }
       copyFileSync(srcPath, destPath);
     }
   }
@@ -35,17 +42,36 @@ if (existsSync(DIST_DIR)) {
 }
 mkdirSync(DIST_DIR, { recursive: true });
 
-console.log("Cleaning and copying static assets...");
+console.log("Cleaning and copying static assets (including HTML templates)...");
 copyRecursiveSync(PUBLIC_DIR, DIST_DIR);
 
-const entrypoints = [...new Bun.Glob("public/**/*.ts").scanSync()];
+const entrypoints = [
+  ...new Bun.Glob("public/**/*.ts").scanSync(),
+  ...new Bun.Glob("public/**/*.css").scanSync(),
+];
 
-console.log("Building TypeScript files...");
+console.log("Building, bundling, and minifying scripts and styles...");
 const result = await Bun.build({
   entrypoints,
   outdir: DIST_DIR,
   root: PUBLIC_DIR,
-  external: ["http", "https", "url", "fs", "JSZip"],
+  external: [
+    "http",
+    "https",
+    "url",
+    "fs",
+    "JSZip",
+    "*.png",
+    "*.jpg",
+    "*.jpeg",
+    "*.gif",
+    "*.svg",
+    "*.webp",
+    "*.woff",
+    "*.woff2",
+    "*.ttf",
+    "*.eot"
+  ],
   sourcemap: "linked",
   splitting: true,
   format: "esm",
