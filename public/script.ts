@@ -8,7 +8,6 @@ import {
     Popper,
     initLibraryShims,
     default as libs,
-    lodash,
 } from './lib.js';
 
 import { humanizedDateTime, favsToHotswap, getMessageTimeStamp, dragElement, isMobile, initRossMods } from './scripts/RossAscends-mods.js';
@@ -287,6 +286,7 @@ import { addChatBackupsBrowser } from './scripts/chat-backups.js';
 import { onboardingExperimentalMacroEngine } from './scripts/macros/engine/MacroDiagnostics.js';
 import { compressRequest, setRequestCompressionConfig } from './scripts/request-compression.js';
 import { canJumpToSwipeForMessage, canOpenSwipePickerForMessage, initSwipePicker } from './scripts/swipe-picker.js';
+import { range } from 'es-toolkit';
 
 // API OBJECT FOR EXTERNAL WIRING
 globalThis.SillyTavern = {
@@ -735,28 +735,28 @@ async function firstLoadInit() {
     try {
         const initLoaderOverlay = loader.createOverlay();
         initLoaderOverlay.classList.add('splash-screen');
-        
+
         const splashLogo = document.createElement('img');
         splashLogo.src = '/img/logo.png';
         splashLogo.alt = 'SillyTavern';
         splashLogo.className = 'splash-logo';
         splashLogo.ariaLabel = t`SillyTavern Logo`;
-        
+
         const splashMessage = document.createElement('h2');
         splashMessage.className = 'splash-message';
         splashMessage.textContent = t`Initializing…`;
         // @ts-expect-error TS(4111): Property 'i18n' comes from an index signature, so ... Remove this comment to see the full error message
         splashMessage.dataset.i18n = 'Initializing…';
-        
+
         initLoaderOverlay.prepend(splashLogo);
         initLoaderOverlay.appendChild(splashMessage);
-        
+
         const initLoaderHandle = loader.show({
             slug: 'app-init',
             toastMode: loader.ToastMode.NONE,
             overlayContent: initLoaderOverlay,
         });
-        
+
         registerPromptManagerMigration();
         initDomHandlers();
         initStandaloneMode();
@@ -1651,7 +1651,8 @@ export async function redisplayChat({ targetChat = chat, startIndex = 0, fade = 
         //Append to chat in one DOM update.
         chatElement.append(newMessageElements);
 
-        applyCharacterTagsToMessageDivs({ mesIds: lodash.range(startIndex, targetChat.length, 1) });
+        applyCharacterTagsToMessageDivs({ mesIds: range(startIndex, targetChat.length) });
+
     }
 
     refreshSwipeButtons(false, fade);
