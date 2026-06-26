@@ -1,6 +1,5 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import _ from 'lodash';
 // @ts-expect-error TS(2792): Cannot find module 'sanitize-filename'. Did you me... Remove this comment to see the full error message
 import sanitize from 'sanitize-filename';
 import { sync as writeFileAtomicSync } from 'write-file-atomic';
@@ -172,7 +171,7 @@ export class CharXParser {
     }
 
     collectCharXAssets(card: any) {
-        const assets = _.get(card, 'data.assets');
+        const assets = card?.data?.assets;
         if (!Array.isArray(assets)) {
             return [];
         }
