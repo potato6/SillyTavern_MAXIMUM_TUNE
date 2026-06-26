@@ -4,7 +4,6 @@ import path from 'node:path';
 import express from 'express';
 // @ts-expect-error TS(2792): Cannot find module 'sanitize-filename'. Did you me... Remove this comment to see the full error message
 import sanitize from 'sanitize-filename';
-import _ from 'lodash';
 import { sync as writeFileAtomicSync } from 'write-file-atomic';
 import { tryParse } from '../util.js';
 
@@ -54,7 +53,7 @@ router.post('/list', async (request, response) => {
                 const fileData = {
                     file_id: fileNameWithoutExt,
                     name: fileContentsParsed?.name || fileNameWithoutExt,
-                    extensions: _.isObjectLike(fileExtensions) ? fileExtensions : {},
+                    extensions: (typeof fileExtensions === 'object' && fileExtensions !== null) ? fileExtensions : {},
                 };
                 data.push(fileData);
             } catch (err) {
