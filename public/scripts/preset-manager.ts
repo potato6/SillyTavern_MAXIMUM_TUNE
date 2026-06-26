@@ -1,4 +1,4 @@
-import { Fuse, lodash } from '../lib.js';
+import { Fuse } from '../lib.js';
 
 import {
     amount_gen,
@@ -40,6 +40,8 @@ import {
     textgenerationwebui_presets,
 } from './textgen-settings.js';
 import { download, ensurePlainObject, equalsIgnoreCaseAndAccents, getSanitizedFilename, parseJsonFile, waitUntilCondition } from './utils.js';
+
+import { get } from 'es-toolkit/compat'
 
 const presetManagers = {};
 
@@ -936,8 +938,9 @@ class PresetManager {
         }
 
         const presetExtensions = ensurePlainObject(preset.extensions || {});
-        const value = path ? lodash.get(presetExtensions, path, null) : presetExtensions;
+        const value = path ? get(presetExtensions, path, null) : presetExtensions;
         return value;
+
     }
 
     /**
