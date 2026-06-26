@@ -212,8 +212,8 @@ import {
     applyCharacterTagsToMessageDivs,
 } from './scripts/tags.js';
 import { checkOpenRouterAuth, initSecrets, readSecretState } from './scripts/secrets.js';
-import { processMarkdownExclusions } from './scripts/showdown-exclusion.js';
-import { processMarkdownUnderscores } from './scripts/showdown-underscore.js';
+import { processMarkdownExclusions } from './scripts/markdown-exclusion.js';
+import { processMarkdownUnderscores } from './scripts/markdown-underscore.js';
 import { NOTE_MODULE_NAME, initAuthorsNote, metadata_keys, setFloatingPrompt, shouldWIAddPrompt } from './scripts/authors-note.js';
 import { registerPromptManagerMigration } from './scripts/PromptManager.js';
 import { getRegexedString, regex_placement } from './scripts/extensions/regex/engine.js';
@@ -261,7 +261,6 @@ import { AbortReason } from './scripts/util/AbortReason.js';
 import { initSystemPrompts } from './scripts/sysprompt.js';
 import { registerExtensionSlashCommands as initExtensionSlashCommands } from './scripts/extensions-slashcommands.js';
 import { ToolManager } from './scripts/tool-calling.js';
-import { addShowdownPatch } from './scripts/util/showdown-patch.js';
 import { full as markdownitEmoji } from 'markdown-it-emoji';
 import markdownitIns from 'markdown-it-ins';
 import { applyBrowserFixes } from './scripts/browser-fixes.js';
@@ -401,7 +400,7 @@ toastr.subscribe(function (args) {
 export const characterGroupOverlay = new BulkEditOverlay();
 
 // Markdown converter
-export let mesForShowdownParse; //intended to be used as a context to compare markdown strings against
+export let mesForMarkdownParse; //intended to be used as a context to compare markdown strings against
 /** @type {import('markdown-it')} */
 export let converter;
 
@@ -750,7 +749,6 @@ async function firstLoadInit() {
         initDomHandlers();
         initStandaloneMode();
         initLibraryShims();
-        addShowdownPatch(MarkdownIt);
         addDOMPurifyHooks();
         reloadMarkdownProcessor();
         applyBrowserFixes();
@@ -1902,7 +1900,7 @@ export function messageFormatting(mes, ch_name, isSystem, isUser, messageId, san
         }
     }
 
-    mesForShowdownParse = mes;
+    mesForMarkdownParse = mes;
 
     // Force isSystem = false on comment messages so they get formatted properly
     if (ch_name === COMMENT_NAME_DEFAULT && isSystem && !isUser) {
