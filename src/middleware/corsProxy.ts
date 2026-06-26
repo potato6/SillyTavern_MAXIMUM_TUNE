@@ -7,7 +7,7 @@ import { forwardFetchResponse } from '../util.js';
  * @param {import('express').Response} res Express response object
  */
 export default async function corsProxyMiddleware(req: any, res: any) {
-    const url = req.params.url; // get the url from the request path
+    const url = req.url.slice(1); // get the url from the request path
 
     // Disallow circular requests
     const serverUrl = req.protocol + '://' + req.get('host');

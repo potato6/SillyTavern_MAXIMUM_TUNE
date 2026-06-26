@@ -10,7 +10,7 @@ import { Buffer } from 'node:buffer';
 import storage from 'node-persist';
 import express from 'express';
 import mime from 'mime-types';
-import archiver from 'archiver';
+import { Archiver } from 'archiver';
 import { sync as writeFileAtomicSync } from 'write-file-atomic';
 // @ts-expect-error TS(2792): Cannot find module 'sanitize-filename'. Did you me... Remove this comment to see the full error message
 import sanitize from 'sanitize-filename';
@@ -1082,7 +1082,7 @@ function createRouteHandler(directoryFn: any) {
     return async (req: any, res: any) => {
         try {
             const directory = directoryFn(req);
-            const filePath = decodeURIComponent(req.params[0]);
+            const filePath = path.join(...req.params.filePath);
             const fullPath = path.join(directory, filePath);
             if (!isPathUnderParent(directory, path.resolve(fullPath))) {
                 return res.sendStatus(403);
@@ -1109,7 +1109,7 @@ function createExtensionsRouteHandler(directoryFn: any) {
     return async (req: any, res: any) => {
         try {
             const directory = directoryFn(req);
-            const filePath = decodeURIComponent(req.params[0]);
+            const filePath = path.join(...req.params.filePath);
             const localPath = path.join(directory, filePath);
             if (!isPathUnderParent(directory, path.resolve(localPath))) {
                 return res.sendStatus(403);
@@ -1165,7 +1165,7 @@ export async function createBackupArchive(handle: any, response: any) {
     const directories = getUserDirectories(handle);
 
     console.info('Backup requested for', handle);
-    const archive = archiver('zip');
+    const archive = new Archiver('zip');
 
     archive.on('error', function (err) {
         response.status(500).send({ error: err.message });
@@ -1225,10 +1225,10 @@ export async function getAllEnabledUsers() {
  * Express router for serving files from the user's directories.
  */
 export const router = express.Router();
-router.use('/backgrounds/*', createRouteHandler((req: any) => req.user.directories.backgrounds));
-router.use('/characters/*', createRouteHandler((req: any) => req.user.directories.characters));
-router.use('/User%20Avatars/*', createRouteHandler((req: any) => req.user.directories.avatars));
-router.use('/assets/*', createRouteHandler((req: any) => req.user.directories.assets));
-router.use('/user/images/*', createRouteHandler((req: any) => req.user.directories.userImages));
-router.use('/user/files/*', createRouteHandler((req: any) => req.user.directories.files));
-router.use('/scripts/extensions/third-party/*', extensionsEnabledFeatureGuard, createExtensionsRouteHandler((req: any) => req.user.directories.extensions));
+router.use('/backgrounds/*filePath', createRouteHandler((req: any) => req.user.directories.backgrounds));
+router.use('/characters/*filePath', createRouteHandler((req: any) => req.user.directories.characters));
+router.use('/User%20Avatars/*filePath', createRouteHandler((req: any) => req.user.directories.avatars));
+router.use('/assets/*filePath', createRouteHandler((req: any) => req.user.directories.assets));
+router.use('/user/images/*filePath', createRouteHandler((req: any) => req.user.directories.userImages));
+router.use('/user/files/*filePath', createRouteHandler((req: any) => req.user.directories.files));
+router.use('/scripts/extensions/third-party/*filePath', extensionsEnabledFeatureGuard, createExtensionsRouteHandler((req: any) => req.user.directories.extensions));
