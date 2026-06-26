@@ -3,7 +3,6 @@ import {
     DOMPurify,
     Readability,
     isProbablyReaderable,
-    lodash,
 } from '../lib.js';
 
 import { getContext } from './extensions.js';
@@ -17,6 +16,7 @@ import { getTagsList } from './tags.js';
 import { groups, selected_group } from './group-chats.js';
 import { getCurrentLocale, t } from './i18n.js';
 import { importWorldInfo } from './world-info.js';
+import { throttle as esThrottle } from 'es-toolkit';
 
 export const shiftUpByOne = (e, i, a) => a[i] = e + 1;
 export const shiftDownByOne = (e, i, a) => a[i] = e - 1;
@@ -3025,7 +3025,7 @@ export function setupScrollToTop({ scrollContainerId, buttonId, drawerId, visibi
     }
 
     const updateButtonVisibility = () => btn.classList.toggle('visible', scrollContainer.scrollTop > visibilityThreshold);
-    const updateButtonVisibilityThrottled = lodash.throttle(updateButtonVisibility, debounce_timeout.standard, { leading: true, trailing: true });
+    const updateButtonVisibilityThrottled = esThrottle(updateButtonVisibility, 300, { leading: true, trailing: true });
     const onScroll = () => updateButtonVisibilityThrottled();
     scrollContainer.addEventListener('scroll', onScroll, { passive: true });
 
