@@ -134,6 +134,7 @@
     "build:lib": "bun scripts/build-lib.js",
     "lint": "eslint \"src/**/*.ts\" \"public/**/*.ts\" ./*.ts",
     "lint:fix": "eslint \"src/**/*.ts\" \"public/**/*.ts\" ./*.ts --fix",
+    "typecheck": "bun run tsc --noEmit **/*.ts",
     "plugins:update": "bun plugins update",
     "plugins:install": "bun plugins install"
   },
