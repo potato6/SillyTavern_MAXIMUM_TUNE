@@ -1,8 +1,10 @@
-import { existsSync, mkdirSync, rmSync, readdirSync, copyFileSync } from "node:fs";
+import { existsSync, mkdirSync, rmSync, readdirSync, copyFileSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
+import { simpleGit } from "simple-git";
 
 const PUBLIC_DIR = "public";
 const DIST_DIR = "public/dist";
+const COMMIT_HASH_FILE = path.join(DIST_DIR, ".commit-hash");
 
 /**
  * Recursively copy static assets.
@@ -34,6 +36,27 @@ function copyRecursiveSync(src: string, dest: string) {
       copyFileSync(srcPath, destPath);
     }
   }
+}
+
+const git = simpleGit();
+const status = await git.status();
+const isDirty = status.files.length > 0;
+
+if (!isDirty) {
+  const commitHash = await git.revparse(["HEAD"]);
+
+  if (existsSync(COMMIT_HASH_FILE)) {
+    const storedHash = readFileSync(COMMIT_HASH_FILE, "utf-8").trim();
+    if (storedHash === commitHash) {
+      console.log(`Commit ${commitHash} already built. Skipping.`);
+      process.exit(0);
+    }
+    console.log(`Commit changed from ${storedHash} to ${commitHash}. Rebuilding.`);
+  } else {
+    console.log("No previous build hash found. Building fresh.");
+  }
+} else {
+  console.log("Working tree is dirty. Cleaning and rebuilding.");
 }
 
 if (existsSync(DIST_DIR)) {
@@ -85,4 +108,10 @@ if (!result.success) {
   process.exit(1);
 } else {
   console.log(`Build completed successfully! Generated ${result.outputs.length} files.`);
+
+  if (!isDirty) {
+    const commitHash = await git.revparse(["HEAD"]);
+    writeFileSync(COMMIT_HASH_FILE, commitHash, "utf-8");
+    console.log(`Stored build commit hash: ${commitHash}`);
+  }
 }
