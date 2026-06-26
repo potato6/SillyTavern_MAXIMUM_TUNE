@@ -4,7 +4,6 @@ import fs from 'node:fs';
 import express from 'express';
 // @ts-expect-error TS(2792): Cannot find module 'sanitize-filename'. Did you me... Remove this comment to see the full error message
 import sanitize from 'sanitize-filename';
-import { Jimp } from '../jimp.js';
 import { sync as writeFileAtomicSync } from 'write-file-atomic';
 
 import { getImages, tryParse } from '../util.js';
@@ -46,7 +45,7 @@ router.post('/upload', getFileNameValidationFunction('overwrite_name'), async (r
         const pathToUpload = path.join(request.file.destination, request.file.filename);
         // @ts-expect-error TS(4111): Property 'crop' comes from an index signature, so ... Remove this comment to see the full error message
         const crop = tryParse(request.query.crop);
-        const rawImg = await Jimp.read(pathToUpload);
+        const rawImg = await Bun.file(pathToUpload).image();
         const image = await applyAvatarCropResize(rawImg, crop);
 
         // Remove previous thumbnail and bust cache if overwriting

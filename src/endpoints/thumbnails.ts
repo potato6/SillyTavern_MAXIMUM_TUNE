@@ -204,7 +204,7 @@ async function processSingleImage(file: any, originalFolder: any, thumbnailFolde
 
     try {
         const fileBuffer = fs.readFileSync(pathToOriginalFile);
-        const image = await Jimp.read(fileBuffer);
+        const image = await new Bun.Image(fileBuffer);
 
         // Calculate aspect ratio from original image dimensions
         const originalWidth = image.bitmap.width;

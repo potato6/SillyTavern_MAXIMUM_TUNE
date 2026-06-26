@@ -85,7 +85,7 @@ export function isAnimatedWebP(buffer: any) {
  */
 async function getAverageColorWithJimp(buffer: any) {
     try {
-        const image = await Jimp.read(buffer);
+        const image = await new Bun.Image(buffer);
         image.resize({ w: 1, h: 1 });
 
         const colorInt = image.getPixelColor(0, 0);

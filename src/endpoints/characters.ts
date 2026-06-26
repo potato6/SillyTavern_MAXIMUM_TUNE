@@ -326,7 +326,7 @@ async function parseImageBuffer(buffer: any, crop: any) {
  */
 async function tryReadImage(imgPath: any, crop: any) {
     try {
-        const rawImg = await Jimp.read(imgPath);
+        const rawImg = await Bun.file(imgPath).image();
         return await applyAvatarCropResize(rawImg, crop);
     } catch (error) {
         // If it's an unsupported type of image (APNG) - just read the file as buffer
