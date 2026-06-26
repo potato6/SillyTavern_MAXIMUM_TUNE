@@ -31,7 +31,6 @@ import { POPUP_TYPE, callGenericPopup } from '../../popup.js';
 import { GoogleTranslateTtsProvider } from './google-translate.js';
 import { GoogleNativeTtsProvider } from './google-native.js';
 import { ChatterboxTtsProvider } from './chatterbox.js';
-import { KokoroTtsProvider } from './kokoro.js';
 import { TtsWebuiProvider } from './tts-webui.js';
 import { PollinationsTtsProvider } from './pollinations.js';
 import { MiniMaxTtsProvider } from './minimax.js';
@@ -136,7 +135,6 @@ const ttsProviders = {
     GSVI: GSVITtsProvider,
     'GPT-SoVITS-Adapter': GptSoVITSAdapterProvider,
     'GPT-SoVITS-V2 (Unofficial)': GptSovitsV2Provider,
-    Kokoro: KokoroTtsProvider,
     MiniMax: MiniMaxTtsProvider,
     Novel: NovelTtsProvider,
     OpenAI: OpenAITtsProvider,
