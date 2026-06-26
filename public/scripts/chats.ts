@@ -1,6 +1,6 @@
 // Move chat functions here from script.js (eventually)
 
-import { Popper, css, DOMPurify } from '../lib.js';
+import { css, DOMPurify } from '../lib.js';
 import {
     addCopyToCodeBlocks,
     appendMediaToMessage,
@@ -1505,7 +1505,7 @@ async function openAttachmentManager() {
             [ATTACHMENT_SOURCE.CHAT]: '.chatAttachmentsTitle',
         };
 
-        const modal = template.find('.actionButtonsModal').hide();
+        const modal = template.find('.actionButtonsModal');
         const scrapers = ScraperManager.getDataBankScrapers();
 
         for (const scraper of scrapers) {
@@ -1540,36 +1540,16 @@ async function openAttachmentManager() {
                 return;
             }
 
-            const bodyListener = (e) => {
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                if (modal.is(':visible') && (!$(e.target).closest('.openActionModalButton').length)) {
-                    modal.hide();
-                }
-
-                // Replay a click if the modal was already open by another button
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                if ($(e.target).closest('.openActionModalButton').length && !modal.is(':visible')) {
-                    modal.show();
-                }
-            };
-            document.body.addEventListener('click', bodyListener);
-
-            const popper = Popper.createPopper(button, modal.get(0), { placement: 'bottom-end' });
             button.addEventListener('click', () => {
                 modal.attr('data-attachment-manager-target', source);
-                modal.toggle();
-                popper.update();
+                button.style.setProperty('anchor-name', '--action-btn');
+                modal[0].togglePopover();
             });
 
-            return { popper, bodyListener };
+            return;
         }).filter(Boolean);
 
         return () => {
-            modalButtonData.forEach(p => {
-                const { popper, bodyListener } = p;
-                popper.destroy();
-                document.body.removeEventListener('click', bodyListener);
-            });
             modal.remove();
         };
     }

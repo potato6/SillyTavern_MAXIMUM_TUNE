@@ -1062,11 +1062,71 @@ body .panelControlBar {
     font-weight: 400;
 }
 
+/* === Native Popover API — anchor names === */
+#options_button          { anchor-name: --opt-btn; }
+#export_button           { anchor-name: --export-btn; }
+#extensionsMenuButton    { anchor-name: --wand-btn; }
+#sd_gen                  { anchor-name: --sd-btn; }
+
+/* === Native Popover API — base reset + animations === */
+[popover] {
+    position: fixed;
+    margin: 0;
+    inset: unset;
+    border: none;
+    background: none;
+    overflow: visible;
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity var(--animation-duration, 125ms) ease,
+                transform var(--animation-duration, 125ms) ease,
+                overlay var(--animation-duration, 125ms) ease allow-discrete,
+                display var(--animation-duration, 125ms) ease allow-discrete;
+}
+[popover]:popover-open {
+    opacity: 1;
+    transform: translateY(0);
+}
+@starting-style {
+    [popover]:popover-open {
+        opacity: 0;
+        transform: translateY(4px);
+    }
+}
+
+/* === Per-component anchor positioning === */
+#options {
+    position-anchor: --opt-btn;
+    bottom: anchor(top);
+    left: anchor(left);
+}
+#export_format_popup {
+    position-anchor: --export-btn;
+    top: 50%;
+    right: anchor(left);
+    translate: 0 -50%;
+}
+#extensionsMenu {
+    position-anchor: --wand-btn;
+    bottom: anchor(top);
+    left: anchor(left);
+}
+#sd_dropdown {
+    position-anchor: --sd-btn;
+    bottom: anchor(top);
+    left: 50%;
+    translate: -50% 0;
+}
+.actionButtonsModal {
+    position-anchor: --action-btn;
+    top: anchor(bottom);
+    right: anchor(right);
+}
+
 #options,
 #extensionsMenu,
 .popup .popper-modal {
     display: flex;
-    z-index: 29999;
     background-color: var(--SmartThemeBlurTintColor);
     -webkit-backdrop-filter: blur(var(--SmartThemeBlurStrength));
     backdrop-filter: blur(var(--SmartThemeBlurStrength));

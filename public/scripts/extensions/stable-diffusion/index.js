@@ -1,4 +1,4 @@
-import { Popper } from '../../../lib.js';
+
 import {
     animation_duration,
     appendMediaToMessage,
@@ -5030,29 +5030,15 @@ async function addSDGenButtons() {
 
     const button = $('#sd_gen');
     const dropdown = $('#sd_dropdown');
-    dropdown.hide();
-
-    let popper = Popper.createPopper(button.get(0), dropdown.get(0), {
-        placement: 'top',
-    });
 
     $(document).on('click', '.sd_message_gen', (e) => sdMessageButton($(e.currentTarget), { animate: false }));
 
-    $(document).on('click touchend', function (e) {
-        const target = $(e.target);
-        if (target.is(dropdown) || target.closest(dropdown).length) return;
-        if ((target.is(button) || target.closest(button).length) && !dropdown.is(':visible')) {
-            e.preventDefault();
-
-            dropdown.fadeIn(animation_duration);
-            popper.update();
-        } else {
-            dropdown.fadeOut(animation_duration);
-        }
+    button.on('click', function (e) {
+        dropdown[0].togglePopover();
     });
 
     $('#sd_dropdown [id]').on('click', function () {
-        dropdown.fadeOut(animation_duration);
+        dropdown[0].hidePopover();
         const id = $(this).attr('id');
         const idParamMap = {
             'sd_you': 'you',

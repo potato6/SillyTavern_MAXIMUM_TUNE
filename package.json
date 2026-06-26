@@ -27,7 +27,6 @@
     "@jimp/wasm-png": "^1.6.1",
     "@jimp/wasm-webp": "^1.6.1",
     "@mozilla/readability": "^0.6.0",
-    "@popperjs/core": "^2.11.8",
     "@zeldafan0225/ai_horde": "^5.2.0",
     "agent-base": "^7.1.4",
     "archiver": "^7.0.1",

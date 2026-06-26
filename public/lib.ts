@@ -29,8 +29,6 @@ import showdown from 'showdown';
 import moment from 'moment';
 // @ts-expect-error TS(2792): Cannot find module 'seedrandom'. Did you mean to s... Remove this comment to see the full error message
 import seedrandom from 'seedrandom';
-// @ts-expect-error TS(2792): Cannot find module '@popperjs/core'. Did you mean ... Remove this comment to see the full error message
-import * as Popper from '@popperjs/core';
 // @ts-expect-error TS(2792): Cannot find module 'droll'. Did you mean to set th... Remove this comment to see the full error message
 import droll from 'droll';
 // @ts-expect-error TS(2792): Cannot find module 'morphdom'. Did you mean to set... Remove this comment to see the full error message
@@ -93,10 +91,6 @@ export function initLibraryShims() {
         // @ts-expect-error TS(2339): Property 'moment' does not exist on type 'Window &... Remove this comment to see the full error message
         window.moment = moment;
     }
-    if (!('Popper' in window)) {
-        // @ts-expect-error TS(2339): Property 'Popper' does not exist on type 'Window &... Remove this comment to see the full error message
-        window.Popper = Popper;
-    }
     if (!('droll' in window)) {
         // @ts-expect-error TS(2339): Property 'droll' does not exist on type 'Window & ... Remove this comment to see the full error message
         window.droll = droll;
@@ -119,7 +113,6 @@ export default {
     showdown,
     moment,
     seedrandom,
-    Popper,
     droll,
     morphdom,
     slideToggle,
@@ -147,7 +140,6 @@ export {
     showdown,
     moment,
     seedrandom,
-    Popper,
     droll,
     morphdom,
     slideToggle,

@@ -1,4 +1,4 @@
-import { Popper } from '../lib.js';
+
 
 import { eventSource, event_types, saveSettings, saveSettingsDebounced, getRequestHeaders, animation_duration, CLIENT_VERSION } from '../script.js';
 import { POPUP_RESULT, POPUP_TYPE, Popup } from './popup.js';
@@ -742,34 +742,8 @@ async function addExtensionsButtonAndMenu() {
     const button = $('#extensionsMenuButton');
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const dropdown = $('#extensionsMenu');
-    let isDropdownVisible = false;
-
-    const popper = Popper.createPopper(button.get(0), dropdown.get(0), {
-        placement: 'top-start',
-    });
-
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(button).on('click', function () {
-        if (isDropdownVisible) {
-            dropdown.fadeOut(animation_duration);
-            isDropdownVisible = false;
-        } else {
-            dropdown.fadeIn(animation_duration);
-            isDropdownVisible = true;
-        }
-        popper.update();
-    });
-
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('html').on('click', function (e) {
-        if (!isDropdownVisible) return;
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const clickTarget = $(e.target);
-        const noCloseTargets = ['#sd_gen', '#extensionsMenuButton', '#roll_dice'];
-        if (!noCloseTargets.some(id => clickTarget.closest(id).length > 0)) {
-            dropdown.fadeOut(animation_duration);
-            isDropdownVisible = false;
-        }
+        dropdown[0].togglePopover();
     });
 }
 

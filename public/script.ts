@@ -5,7 +5,6 @@ import {
     hljs,
     Handlebars,
     SVGInject,
-    Popper,
     initLibraryShims,
     default as libs,
 } from './lib.js';
@@ -440,13 +439,7 @@ export const system_avatar = 'img/five.png';
 export const comment_avatar = 'img/quill.png';
 export const default_user_avatar = 'img/user-default.png';
 export let CLIENT_VERSION = 'SillyTavern:UNKNOWN:Cohee#1207'; // For Horde header
-const optionsPopper = Popper.createPopper(document.getElementById('options_button'), document.getElementById('options'), {
-    placement: 'top-start',
-});
-const exportPopper = Popper.createPopper(document.getElementById('export_button'), document.getElementById('export_format_popup'), {
-    placement: 'left',
-});
-let isExportPopupOpen = false;
+
 
 // Saved here for performance reasons
 // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
@@ -12594,45 +12587,17 @@ jQuery(async function () {
     const button = $('#options_button');
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const menu = $('#options');
-    let isOptionsMenuVisible = false;
-
-    /**
-     *
-     */
     function showMenu() {
         showBookmarksButtons();
-        menu.fadeIn(animation_duration);
-        optionsPopper.update();
-        isOptionsMenuVisible = true;
+        menu[0].showPopover();
     }
 
-    /**
-     *
-     */
     function hideMenu() {
-        menu.fadeOut(animation_duration);
-        optionsPopper.update();
-        isOptionsMenuVisible = false;
-    }
-
-    /**
-     *
-     */
-    function isMouseOverButtonOrMenu() {
-        return menu.is(':hover, :focus-within') || button.is(':hover, :focus');
+        menu[0].hidePopover();
     }
 
     button.on('click', function () {
-        if (isOptionsMenuVisible) {
-            hideMenu();
-        } else {
-            showMenu();
-        }
-    });
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document).on('click', function () {
-        if (!isOptionsMenuVisible) return;
-        if (!isMouseOverButtonOrMenu()) { hideMenu(); }
+        menu[0].togglePopover();
     });
 
     /* $('#set_chat_character_settings').on('click', setScenarioOverride); */
@@ -12752,7 +12717,7 @@ jQuery(async function () {
             }
             //}
         }
-        hideMenu();
+        menu[0].hidePopover();
     });
 
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
@@ -13156,10 +13121,8 @@ jQuery(async function () {
 
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#export_button').on('click', function () {
-        isExportPopupOpen = !isExportPopupOpen;
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#export_format_popup').toggle(isExportPopupOpen);
-        exportPopper.update();
+        $('#export_format_popup')[0].togglePopover();
     });
 
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
@@ -13172,9 +13135,7 @@ jQuery(async function () {
         }
 
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#export_format_popup').hide();
-        isExportPopupOpen = false;
-        exportPopper.update();
+        $('#export_format_popup')[0].hidePopover();
 
         // Save before exporting
         // @ts-expect-error TS(2554): Expected 1 arguments, but got 0.
@@ -13299,15 +13260,6 @@ jQuery(async function () {
     $('html').on('touchstart mousedown', async function (e) {
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const clickTarget = $(e.target);
-
-        if (isExportPopupOpen
-            && clickTarget.closest('#export_button').length == 0
-            && clickTarget.closest('#export_format_popup').length == 0) {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#export_format_popup').hide();
-            isExportPopupOpen = false;
-            exportPopper.update();
-        }
 
         const forbiddenTargets = [
             '#character_cross',
