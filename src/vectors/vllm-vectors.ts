@@ -1,5 +1,4 @@
 import fetch from 'node-fetch';
-import urlJoin from 'url-join';
 import { setAdditionalHeadersByType } from '../additional-headers.js';
 import { TEXTGEN_TYPES } from '../constants.js';
 import { trimV1 } from '../util.js';
@@ -13,7 +12,7 @@ import { trimV1 } from '../util.js';
  * @returns {Promise<number[][]>} - The array of vectors for the texts
  */
 export async function getVllmBatchVector(texts: any, apiUrl: any, model: any, directories: any) {
-    const url = new URL(urlJoin(trimV1(apiUrl), '/v1/embeddings'));
+    const url = new URL(trimV1(apiUrl) + '/v1/embeddings');
 
     const headers = {};
     setAdditionalHeadersByType(headers, TEXTGEN_TYPES.VLLM, apiUrl, directories);

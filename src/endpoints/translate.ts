@@ -2,8 +2,6 @@ import fetch from 'node-fetch';
 import express from 'express';
 // @ts-expect-error TS(2792): Cannot find module 'bing-translate-api'. Did you m... Remove this comment to see the full error message
 import { translate as bingTranslate } from 'bing-translate-api';
-// @ts-expect-error TS(2792): Cannot find module 'url-join'. Did you mean to set... Remove this comment to see the full error message
-import urlJoin from 'url-join';
 // @ts-expect-error TS(2792): Cannot find module 'google-translate-api-x'. Did y... Remove this comment to see the full error message
 import { Translator } from 'google-translate-api-x';
 
@@ -185,7 +183,7 @@ router.post('/lingva', async (request, response) => {
 
         console.debug('Input text: ' + text);
 
-        const url = urlJoin(baseUrl, 'auto', lang, encodeURIComponent(text));
+        const url = new URL(['auto', lang, encodeURIComponent(text)].join('/'), baseUrl + '/');
         const result = await fetch(url);
 
         if (!result.ok) {

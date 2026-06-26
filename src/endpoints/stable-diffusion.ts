@@ -6,8 +6,6 @@ import fetch from 'node-fetch';
 // @ts-expect-error TS(2792): Cannot find module 'sanitize-filename'. Did you me... Remove this comment to see the full error message
 import sanitize from 'sanitize-filename';
 import { sync as writeFileAtomicSync } from 'write-file-atomic';
-// @ts-expect-error TS(2792): Cannot find module 'url-join'. Did you mean to set... Remove this comment to see the full error message
-import urlJoin from 'url-join';
 import { unset } from 'es-toolkit/compat';
 import mime from 'mime-types';
 
@@ -402,7 +400,7 @@ const comfy = express.Router();
 
 comfy.post('/ping', async (request, response) => {
     try {
-        const url = new URL(urlJoin(request.body.url, '/system_stats'));
+        const url = new URL(request.body.url.replace(/\/+$/, '') + '/system_stats');
 
         const result = await fetch(url);
         if (!result.ok) {
@@ -418,7 +416,7 @@ comfy.post('/ping', async (request, response) => {
 
 comfy.post('/samplers', async (request, response) => {
     try {
-        const url = new URL(urlJoin(request.body.url, '/object_info'));
+        const url = new URL(request.body.url.replace(/\/+$/, '') + '/object_info');
 
         const result = await fetch(url);
         if (!result.ok) {
@@ -436,7 +434,7 @@ comfy.post('/samplers', async (request, response) => {
 
 comfy.post('/models', async (request, response) => {
     try {
-        const url = new URL(urlJoin(request.body.url, '/object_info'));
+        const url = new URL(request.body.url.replace(/\/+$/, '') + '/object_info');
 
         const result = await fetch(url);
         if (!result.ok) {
@@ -473,7 +471,7 @@ comfy.post('/models', async (request, response) => {
 
 comfy.post('/schedulers', async (request, response) => {
     try {
-        const url = new URL(urlJoin(request.body.url, '/object_info'));
+        const url = new URL(request.body.url.replace(/\/+$/, '') + '/object_info');
 
         const result = await fetch(url);
         if (!result.ok) {
@@ -491,7 +489,7 @@ comfy.post('/schedulers', async (request, response) => {
 
 comfy.post('/vaes', async (request, response) => {
     try {
-        const url = new URL(urlJoin(request.body.url, '/object_info'));
+        const url = new URL(request.body.url.replace(/\/+$/, '') + '/object_info');
 
         const result = await fetch(url);
         if (!result.ok) {
@@ -587,13 +585,13 @@ comfy.post('/rename-workflow', getFileNameValidationFunction('old_name'), getFil
 comfy.post('/generate', async (request, response) => {
     try {
         let item: any;
-        const url = new URL(urlJoin(request.body.url, '/prompt'));
+        const url = new URL(request.body.url.replace(/\/+$/, '') + '/prompt');
 
         const controller = new AbortController();
         request.socket.removeAllListeners('close');
         request.socket.on('close', function () {
             if (!response.writableEnded && !item) {
-                const interruptUrl = new URL(urlJoin(request.body.url, '/interrupt'));
+                const interruptUrl = new URL(request.body.url.replace(/\/+$/, '') + '/interrupt');
                 fetch(interruptUrl, { method: 'POST', headers: { 'Authorization': getBasicAuthHeader(request.body.auth) } });
             }
             controller.abort();
@@ -611,7 +609,7 @@ comfy.post('/generate', async (request, response) => {
         /** @type {any} */
         const data = await promptResult.json();
         const id = data.prompt_id;
-        const historyUrl = new URL(urlJoin(request.body.url, '/history'));
+        const historyUrl = new URL(request.body.url.replace(/\/+$/, '') + '/history');
         while (true) {
             const result = await fetch(historyUrl);
             if (!result.ok) {
@@ -640,7 +638,7 @@ comfy.post('/generate', async (request, response) => {
         if (!imgInfo) {
             throw new Error('ComfyUI did not return any recognizable outputs.');
         }
-        const imgUrl = new URL(urlJoin(request.body.url, '/view'));
+        const imgUrl = new URL(request.body.url.replace(/\/+$/, '') + '/view');
         imgUrl.search = `?filename=${imgInfo.filename}&subfolder=${imgInfo.subfolder}&type=${imgInfo.type}`;
         const imgResponse = await fetch(imgUrl);
         if (!imgResponse.ok) {
@@ -667,7 +665,7 @@ comfyRunPod.post('/ping', async (request, response) => {
             return response.sendStatus(400);
         }
 
-        const url = new URL(urlJoin(request.body.url, '/health'));
+        const url = new URL(request.body.url.replace(/\/+$/, '') + '/health');
 
         const result = await fetch(url, {
             method: 'GET',
@@ -700,13 +698,13 @@ comfyRunPod.post('/generate', async (request, response) => {
 
         let jobId: any;
         let item: any;
-        const url = new URL(urlJoin(request.body.url, '/run'));
+        const url = new URL(request.body.url.replace(/\/+$/, '') + '/run');
 
         const controller = new AbortController();
         request.socket.removeAllListeners('close');
         request.socket.on('close', function () {
             if (!response.writableEnded && !item) {
-                const interruptUrl = new URL(urlJoin(request.body.url, `/cancel/${jobId}`));
+                const interruptUrl = new URL(request.body.url.replace(/\/+$/, '') + `/cancel/${jobId}`);
                 fetch(interruptUrl, { method: 'POST', headers: { 'Authorization': `Bearer ${key}` } });
             }
             controller.abort();
@@ -730,7 +728,7 @@ comfyRunPod.post('/generate', async (request, response) => {
         /** @type {any} */
         const data = await promptResult.json();
         jobId = data.id;
-        const statusUrl = new URL(urlJoin(request.body.url, `/status/${jobId}`));
+        const statusUrl = new URL(request.body.url.replace(/\/+$/, '') + `/status/${jobId}`);
         while (true) {
             const result = await fetch(statusUrl, {
                 method: 'GET',
@@ -857,7 +855,7 @@ const sdcpp = express.Router();
 
 sdcpp.post('/ping', async (request, response) => {
     try {
-        const url = new URL(urlJoin(request.body.url, '/v1/images/generations'));
+        const url = new URL(request.body.url.replace(/\/+$/, '') + '/v1/images/generations');
 
         const result = await fetch(url, { method: 'OPTIONS' });
         if (!result.ok) {
@@ -873,7 +871,7 @@ sdcpp.post('/ping', async (request, response) => {
 
 sdcpp.post('/models', async (request, response) => {
     try {
-        const url = new URL(urlJoin(request.body.url, '/v1/models'));
+        const url = new URL(request.body.url.replace(/\/+$/, '') + '/v1/models');
 
         const result = await fetch(url);
         if (!result.ok) {
@@ -890,7 +888,7 @@ sdcpp.post('/models', async (request, response) => {
 
 sdcpp.post('/generate', async (request, response) => {
     try {
-        const url = new URL(urlJoin(request.body.url, '/sdapi/v1/txt2img'));
+        const url = new URL(request.body.url.replace(/\/+$/, '') + '/sdapi/v1/txt2img');
 
         const payload = {
             model: request.body.model,

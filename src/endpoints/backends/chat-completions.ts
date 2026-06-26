@@ -3,8 +3,7 @@ import process from 'node:process';
 import util from 'node:util';
 import express from 'express';
 import fetch from 'node-fetch';
-// @ts-expect-error TS(2792): Cannot find module 'url-join'. Did you mean to set... Remove this comment to see the full error message
-import urlJoin from 'url-join';
+
 
 import {
     AIMLAPI_HEADERS,
@@ -2032,7 +2031,7 @@ router.post('/status', async function (request, statusResponse) {
             return statusResponse.status(400).send({ error: true });
         }
 
-        const modelsUrl = new URL(urlJoin(apiUrl, '/models'));
+        const modelsUrl = new URL(apiUrl.replace(/\/+$/, '') + '/models');
         Object.keys(queryParams).forEach(key => {
             modelsUrl.searchParams.append(key, queryParams[key]);
         });

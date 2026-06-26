@@ -1,7 +1,5 @@
 import { promises as fsPromises } from 'node:fs';
 import path from 'node:path';
-// @ts-expect-error TS(2792): Cannot find module 'url-join'. Did you mean to set... Remove this comment to see the full error message
-import urlJoin from 'url-join';
 import { DEFAULT_AVATAR_PATH } from './constants.js';
 import { extractFileFromZipBuffer } from './util.js';
 
@@ -222,7 +220,7 @@ export class ByafParser {
                 continue;
             }
 
-            const fullImagePath = urlJoin(path.dirname(characterPath), imagePath);
+            const fullImagePath = path.posix.join(path.dirname(characterPath), imagePath);
             const imageBuffer = await extractFileFromZipBuffer(this.#data, fullImagePath);
             if (!imageBuffer) {
                 console.warn('Warning: failed to extract BYAF character image');

@@ -5,8 +5,6 @@ import express from 'express';
 import { speak, languages } from 'google-translate-api-x';
 import crypto from 'node:crypto';
 import util from 'node:util';
-// @ts-expect-error TS(2792): Cannot find module 'url-join'. Did you mean to set... Remove this comment to see the full error message
-import urlJoin from 'url-join';
 import { clamp } from 'es-toolkit/compat';
 
 import { readSecret, SECRET_KEYS } from './secrets.js';
@@ -613,7 +611,7 @@ router.post('/generate-video', async (request, response) => {
                     return response.send({ video: videoData });
                 }
             } else {
-                const pollUrl = urlJoin(baseUrl, videoJobName);
+                const pollUrl = baseUrl.replace(/\/+$/, '') + '/' + videoJobName.replace(/^\/+/, '');
                 const pollResponse = await fetch(pollUrl, {
                     method: 'GET',
                     headers: headers,
