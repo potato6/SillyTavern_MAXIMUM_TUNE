@@ -25,6 +25,7 @@ import { getContentOfType } from './endpoints/content-manager.js';
 import { serverDirectory } from './server-directory.js';
 import { filterValidIpPatterns, getIpFromRequest } from './express-common.js';
 import { extensionsEnabledFeatureGuard } from './endpoints/extensions.js';
+import { uniqBy } from 'es-toolkit';
 
 export const KEY_PREFIX = 'user:';
 const AVATAR_PREFIX = 'avatar:';
@@ -482,7 +483,7 @@ export async function migrateSystemPrompts() {
                 }
             }
             // Only leave unique contents
-            migratedPrompts = _.uniqBy(migratedPrompts, 'content');
+            migratedPrompts = uniqBy(migratedPrompts, item => item.content);
             // Only leave contents that are not in the default prompts
             migratedPrompts = migratedPrompts.filter(x => !defaultPrompts.some(y => y.content === x.content));
             for (const sysPromptData of migratedPrompts) {
