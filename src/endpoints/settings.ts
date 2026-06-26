@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 import express from 'express';
-import _ from 'lodash';
+import { throttle } from 'es-toolkit/compat';
 import { sync as writeFileAtomicSync } from 'write-file-atomic';
 import bytes from 'bytes';
 
@@ -35,7 +35,7 @@ const AUTOSAVE_FUNCTIONS = new Map();
  */
 function triggerAutoSave(handle: any) {
     if (!AUTOSAVE_FUNCTIONS.has(handle)) {
-        const throttledAutoSave = _.throttle(() => backupUserSettings(handle, true), AUTOSAVE_INTERVAL);
+        const throttledAutoSave = throttle(() => backupUserSettings(handle, true), AUTOSAVE_INTERVAL);
         AUTOSAVE_FUNCTIONS.set(handle, throttledAutoSave);
     }
 

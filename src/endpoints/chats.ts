@@ -7,7 +7,7 @@ import express from 'express';
 // @ts-expect-error TS(2792): Cannot find module 'sanitize-filename'. Did you me... Remove this comment to see the full error message
 import sanitize from 'sanitize-filename';
 import { sync as writeFileAtomicSync } from 'write-file-atomic';
-import _ from 'lodash';
+import { throttle, isObjectLike } from 'es-toolkit/compat';
 
 import validateAvatarUrlMiddleware from '../middleware/validateFileName.js';
 import {
@@ -62,7 +62,7 @@ function backupChat(directory: any, name: any, data: any, backupPrefix = CHAT_BA
 }
 
 /**
- * @type {Map<string, import('lodash').DebouncedFunc<typeof backupChat>>}
+ * @type {Map<string, import('es-toolkit/compat').DebouncedFunc<typeof backupChat>>}
  */
 const backupFunctions = new Map();
 
@@ -73,7 +73,7 @@ const backupFunctions = new Map();
  */
 function getBackupFunction(handle: any) {
     if (!backupFunctions.has(handle)) {
-        backupFunctions.set(handle, _.throttle(backupChat, throttleInterval, { leading: true, trailing: true }));
+        backupFunctions.set(handle, throttle(backupChat, throttleInterval, { leading: true, trailing: true }));
     }
     return backupFunctions.get(handle) || (() => { });
 }
@@ -404,7 +404,7 @@ export async function getChatInfo(pathToFile: any, additionalData = {}, withMeta
         rl.on('line', (line) => {
             if (withMetadata && itemCounter === 0) {
                 const jsonData = tryParse(line);
-                if (jsonData && _.isObjectLike(jsonData.chat_metadata)) {
+                if (jsonData && isObjectLike(jsonData.chat_metadata)) {
                     // @ts-expect-error TS(2339): Property 'chat_metadata' does not exist on type '{... Remove this comment to see the full error message
                     chatData.chat_metadata = jsonData.chat_metadata;
                 }

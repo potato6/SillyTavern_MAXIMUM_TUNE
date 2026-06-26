@@ -11,7 +11,6 @@ import storage from 'node-persist';
 import express from 'express';
 import mime from 'mime-types';
 import archiver from 'archiver';
-import _ from 'lodash';
 import { sync as writeFileAtomicSync } from 'write-file-atomic';
 // @ts-expect-error TS(2792): Cannot find module 'sanitize-filename'. Did you me... Remove this comment to see the full error message
 import sanitize from 'sanitize-filename';

@@ -2,7 +2,7 @@
  * Add all the libraries that you want to expose to the client here.
  * They are bundled and exposed by Webpack in the /lib.js file.
  */
-import lodash from 'lodash';
+import * as lodash from 'es-toolkit/compat';
 // @ts-expect-error TS(2792): Cannot find module 'fuse.js'. Did you mean to set ... Remove this comment to see the full error message
 import Fuse from 'fuse.js';
 // @ts-expect-error TS(2792): Cannot find module 'dompurify'. Did you mean to se... Remove this comment to see the full error message

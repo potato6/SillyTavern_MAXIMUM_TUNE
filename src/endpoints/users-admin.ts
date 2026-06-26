@@ -2,7 +2,7 @@ import { promises as fsPromises } from 'node:fs';
 
 import storage from 'node-persist';
 import express from 'express';
-import lodash from 'lodash';
+import { deburr } from 'es-toolkit/compat';
 import { checkForNewContent, CONTENT_TYPES } from './content-manager.js';
 import {
     KEY_PREFIX,
@@ -25,12 +25,12 @@ export const router = express.Router();
  * - Trims whitespace
  * - Replaces spaces and special characters with hyphens
  * - Removes leading and trailing hyphens
- * - Uses lodash.deburr to remove diacritical marks
+ * - Uses es-toolkit deburr to remove diacritical marks
  * @param {string} text Text to slugify
  * @returns {string} Slugified text
  */
 function slugify(text: any) {
-    return lodash.deburr(String(text ?? '').toLowerCase().trim()).replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+    return deburr(String(text ?? '').toLowerCase().trim()).replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
 }
 
 router.post('/get', requireAdminMiddleware, async (_request, response) => {

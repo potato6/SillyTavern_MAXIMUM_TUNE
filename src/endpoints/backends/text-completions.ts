@@ -1,7 +1,7 @@
 import { Readable } from 'node:stream';
 import fetch from 'node-fetch';
 import express from 'express';
-import _ from 'lodash';
+import { pickBy } from 'es-toolkit/compat';
 
 import {
     TEXTGEN_TYPES,
@@ -341,17 +341,17 @@ router.post('/generate', async function (request, response) {
         setAdditionalHeaders(request, args, baseUrl);
 
         if (request.body.api_type === TEXTGEN_TYPES.TOGETHERAI) {
-            request.body = _.pickBy(request.body, (_, key) => TOGETHERAI_KEYS.includes(key));
+            request.body = pickBy(request.body, (_, key) => TOGETHERAI_KEYS.includes(key));
             args.body = JSON.stringify(request.body);
         }
 
         if (request.body.api_type === TEXTGEN_TYPES.INFERMATICAI) {
-            request.body = _.pickBy(request.body, (_, key) => INFERMATICAI_KEYS.includes(key));
+            request.body = pickBy(request.body, (_, key) => INFERMATICAI_KEYS.includes(key));
             args.body = JSON.stringify(request.body);
         }
 
         if (request.body.api_type === TEXTGEN_TYPES.FEATHERLESS) {
-            request.body = _.pickBy(request.body, (_, key) => FEATHERLESS_KEYS.includes(key));
+            request.body = pickBy(request.body, (_, key) => FEATHERLESS_KEYS.includes(key));
             args.body = JSON.stringify(request.body);
         }
 
@@ -360,7 +360,7 @@ router.post('/generate', async function (request, response) {
         }
 
         if (request.body.api_type === TEXTGEN_TYPES.GENERIC) {
-            request.body = _.pickBy(request.body, (_, key) => OPENAI_KEYS.includes(key));
+            request.body = pickBy(request.body, (_, key) => OPENAI_KEYS.includes(key));
             if (Array.isArray(request.body.stop)) { request.body.stop = request.body.stop.slice(0, 4); }
             args.body = JSON.stringify(request.body);
         }
@@ -380,12 +380,12 @@ router.post('/generate', async function (request, response) {
                 request.body.provider.quantizations = request.body.quantizations;
             }
 
-            request.body = _.pickBy(request.body, (_, key) => OPENROUTER_KEYS.includes(key));
+            request.body = pickBy(request.body, (_, key) => OPENROUTER_KEYS.includes(key));
             args.body = JSON.stringify(request.body);
         }
 
         if (request.body.api_type === TEXTGEN_TYPES.VLLM) {
-            request.body = _.pickBy(request.body, (_, key) => VLLM_KEYS.includes(key));
+            request.body = pickBy(request.body, (_, key) => VLLM_KEYS.includes(key));
             args.body = JSON.stringify(request.body);
         }
 
@@ -401,7 +401,7 @@ router.post('/generate', async function (request, response) {
                 stream: request.body.stream ?? false,
                 keep_alive: keepAlive,
                 raw: true,
-                options: _.pickBy(request.body, (_, key) => OLLAMA_KEYS.includes(key)),
+                options: pickBy(request.body, (_, key) => OLLAMA_KEYS.includes(key)),
             });
         }
 

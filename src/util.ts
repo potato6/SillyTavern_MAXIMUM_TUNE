@@ -13,7 +13,7 @@ import readline from 'node:readline';
 // @ts-expect-error TS(2792): Cannot find module 'yaml'. Did you mean to set the... Remove this comment to see the full error message
 import yaml from 'yaml';
 import { sync as commandExistsSync } from 'command-exists';
-import _ from 'lodash';
+import { get } from 'es-toolkit/compat';
 import yauzl from 'yauzl';
 import mime from 'mime-types';
 // @ts-expect-error TS(2792): Cannot find module 'simple-git'. Did you mean to s... Remove this comment to see the full error message
@@ -100,7 +100,7 @@ export function getConfigValue(key: any, defaultValue = null, typeConverter = nu
             return needsJsonParse ? (tryParse(envValue) ?? defaultValue) : envValue;
         }
         const config = getConfig();
-        return _.get(config, key, defaultValue);
+        return get(config, key, defaultValue);
     }
 
     const value = _getValue();

@@ -41,7 +41,7 @@ import {
 } from './textgen-settings.js';
 import { download, ensurePlainObject, equalsIgnoreCaseAndAccents, getSanitizedFilename, parseJsonFile, waitUntilCondition } from './utils.js';
 
-import { get } from 'es-toolkit/compat'
+import { get, set } from 'es-toolkit/compat'
 
 const presetManagers = {};
 
@@ -928,7 +928,7 @@ class PresetManager {
         if (settings && selectedName === presetName) {
             // @ts-expect-error TS(2339): Property 'extensions' does not exist on type '{}'.
             const settingsExtensions = ensurePlainObject(settings.extensions || {});
-            return path ? lodash.get(settingsExtensions, path, null) : settingsExtensions;
+            return path ? get(settingsExtensions, path, null) : settingsExtensions;
         }
 
         // Otherwise, read from the preset by name
@@ -963,7 +963,7 @@ class PresetManager {
             // @ts-expect-error TS(2339): Property 'extensions' does not exist on type '{}'.
             settings.extensions = ensurePlainObject(settings.extensions || {});
             // @ts-expect-error TS(2339): Property 'extensions' does not exist on type '{}'.
-            path ? lodash.set(settings.extensions, path, value) : (settings.extensions = value);
+            path ? set(settings.extensions, path, value) : (settings.extensions = value);
             await saveSettings();
         }
 
@@ -975,7 +975,7 @@ class PresetManager {
 
         // Set the value at the specified path
         preset.extensions = ensurePlainObject(preset.extensions || {});
-        path ? lodash.set(preset.extensions, path, value) : (preset.extensions = value);
+        path ? set(preset.extensions, path, value) : (preset.extensions = value);
 
         // Save the updated preset
         await this.savePreset(presetName, preset, { skipUpdate: true });

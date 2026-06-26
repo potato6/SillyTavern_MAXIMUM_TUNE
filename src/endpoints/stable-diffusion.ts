@@ -8,7 +8,7 @@ import sanitize from 'sanitize-filename';
 import { sync as writeFileAtomicSync } from 'write-file-atomic';
 // @ts-expect-error TS(2792): Cannot find module 'url-join'. Did you mean to set... Remove this comment to see the full error message
 import urlJoin from 'url-join';
-import _ from 'lodash';
+import { unset } from 'es-toolkit/compat';
 import mime from 'mime-types';
 
 import { delay, getBasicAuthHeader, isValidUrl, tryParse } from '../util.js';
@@ -320,7 +320,7 @@ router.post('/generate', async (request, response) => {
                 const isForge = 'forge_preset' in optionsData;
 
                 if (!isForge) {
-                    _.unset(request.body, 'override_settings.forge_additional_modules');
+                    unset(request.body, 'override_settings.forge_additional_modules');
                 }
             }
         } catch (error) {

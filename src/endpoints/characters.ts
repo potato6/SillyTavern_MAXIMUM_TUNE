@@ -9,7 +9,7 @@ import sanitize from 'sanitize-filename';
 import { sync as writeFileAtomicSync } from 'write-file-atomic';
 // @ts-expect-error TS(2792): Cannot find module 'yaml'. Did you mean to set the... Remove this comment to see the full error message
 import yaml from 'yaml';
-import _ from 'lodash';
+import { get, set, unset, isUndefined, forEach, isPlainObject, cloneDeep } from 'es-toolkit/compat';
 import mime from 'mime-types';
 import { Jimp, JimpMime } from '../jimp.js';
 import storage from 'node-persist';
@@ -383,14 +383,14 @@ const toShallow = (character: any) => {
         data_size: character.data_size,
         tags: character.tags,
         data: {
-            name: _.get(character, 'data.name', ''),
-            character_version: _.get(character, 'data.character_version', ''),
-            creator: _.get(character, 'data.creator', ''),
-            creator_notes: _.get(character, 'data.creator_notes', ''),
-            tags: _.get(character, 'data.tags', []),
+            name: get(character, 'data.name', ''),
+            character_version: get(character, 'data.character_version', ''),
+            creator: get(character, 'data.creator', ''),
+            creator_notes: get(character, 'data.creator_notes', ''),
+            tags: get(character, 'data.tags', []),
             extensions: {
-                fav: _.get(character, 'data.extensions.fav', false),
-                world: _.get(character, 'data.extensions.world', ''),
+                fav: get(character, 'data.extensions.fav', false),
+                world: get(character, 'data.extensions.world', ''),
             },
         },
     };
@@ -500,9 +500,9 @@ function convertToV2(char: any, directories: any) {
  * @param char
  */
 function unsetPrivateFields(char: any) {
-    _.set(char, 'fav', false);
-    _.set(char, 'data.extensions.fav', false);
-    _.unset(char, 'chat');
+    set(char, 'fav', false);
+    set(char, 'data.extensions.fav', false);
+    unset(char, 'chat');
 }
 
 /**
@@ -510,13 +510,13 @@ function unsetPrivateFields(char: any) {
  * @param char
  */
 function readFromV2(char: any) {
-    if (_.isUndefined(char.data)) {
+    if (isUndefined(char.data)) {
         console.warn(`Char ${char.name} has Spec v2 data missing`);
         return char;
     }
 
     // If 'json_data' was already saved, don't let it propagate
-    _.unset(char, 'json_data');
+    unset(char, 'json_data');
 
     const fieldMappings = {
         name: 'name',
@@ -530,10 +530,10 @@ function readFromV2(char: any) {
         tags: 'tags',
     };
 
-    _.forEach(fieldMappings, (v2Path, charField) => {
+    forEach(fieldMappings, (v2Path, charField) => {
         //console.info(`Migrating field: ${charField} from ${v2Path}`);
-        const v2Value = _.get(char.data, v2Path);
-        if (_.isUndefined(v2Value)) {
+        const v2Value = get(char.data, v2Path);
+        if (isUndefined(v2Value)) {
             let defaultValue = undefined;
 
             // Backfill default values for missing ST extension fields
@@ -545,7 +545,7 @@ function readFromV2(char: any) {
                 defaultValue = false;
             }
 
-            if (!_.isUndefined(defaultValue)) {
+            if (!isUndefined(defaultValue)) {
                 //console.warn(`Spec v2 extension data missing for field: ${charField}, using default value: ${defaultValue}`);
                 char[charField] = defaultValue;
             } else {
@@ -553,7 +553,7 @@ function readFromV2(char: any) {
                 return;
             }
         }
-        if (!_.isUndefined(char[charField]) && !_.isUndefined(v2Value) && String(char[charField]) !== String(v2Value)) {
+        if (!isUndefined(char[charField]) && !isUndefined(v2Value) && String(char[charField]) !== String(v2Value)) {
             console.warn(`Char ${char.name} has Spec v2 data mismatch with Spec v1 for field: ${charField}`, char[charField], v2Value);
         }
         char[charField] = v2Value;
@@ -575,7 +575,7 @@ function charaFormatData(data: any, directories: any) {
     const char = tryParse(data.json_data) || {};
 
     // Prevent erroneous 'json_data' recursive saving
-    _.unset(char, 'json_data');
+    unset(char, 'json_data');
 
     // Checks if data.alternate_greetings is an array, a string, or neither, and acts accordingly. (expected to be an array of strings)
     const getAlternateGreetings = (data: any) => {
@@ -585,53 +585,53 @@ function charaFormatData(data: any, directories: any) {
     };
 
     // Spec V1 fields
-    _.set(char, 'name', data.ch_name);
-    _.set(char, 'description', data.description || '');
-    _.set(char, 'personality', data.personality || '');
-    _.set(char, 'scenario', data.scenario || '');
-    _.set(char, 'first_mes', data.first_mes || '');
-    _.set(char, 'mes_example', data.mes_example || '');
+    set(char, 'name', data.ch_name);
+    set(char, 'description', data.description || '');
+    set(char, 'personality', data.personality || '');
+    set(char, 'scenario', data.scenario || '');
+    set(char, 'first_mes', data.first_mes || '');
+    set(char, 'mes_example', data.mes_example || '');
 
     // Old ST extension fields (for backward compatibility, will be deprecated)
-    _.set(char, 'creatorcomment', data.creator_notes || '');
-    _.set(char, 'avatar', 'none');
-    _.set(char, 'chat', data.ch_name + ' - ' + humanizedDateTime());
-    _.set(char, 'talkativeness', data.talkativeness || 0.5);
-    _.set(char, 'fav', data.fav == 'true');
-    _.set(char, 'tags', typeof data.tags == 'string' ? (data.tags.split(',').map((x: any) => x.trim()).filter((x: any) => x)) : data.tags || []);
+    set(char, 'creatorcomment', data.creator_notes || '');
+    set(char, 'avatar', 'none');
+    set(char, 'chat', data.ch_name + ' - ' + humanizedDateTime());
+    set(char, 'talkativeness', data.talkativeness || 0.5);
+    set(char, 'fav', data.fav == 'true');
+    set(char, 'tags', typeof data.tags == 'string' ? (data.tags.split(',').map((x: any) => x.trim()).filter((x: any) => x)) : data.tags || []);
 
     // Spec V2 fields
-    _.set(char, 'spec', 'chara_card_v2');
-    _.set(char, 'spec_version', '2.0');
-    _.set(char, 'data.name', data.ch_name);
-    _.set(char, 'data.description', data.description || '');
-    _.set(char, 'data.personality', data.personality || '');
-    _.set(char, 'data.scenario', data.scenario || '');
-    _.set(char, 'data.first_mes', data.first_mes || '');
-    _.set(char, 'data.mes_example', data.mes_example || '');
+    set(char, 'spec', 'chara_card_v2');
+    set(char, 'spec_version', '2.0');
+    set(char, 'data.name', data.ch_name);
+    set(char, 'data.description', data.description || '');
+    set(char, 'data.personality', data.personality || '');
+    set(char, 'data.scenario', data.scenario || '');
+    set(char, 'data.first_mes', data.first_mes || '');
+    set(char, 'data.mes_example', data.mes_example || '');
 
     // New V2 fields
-    _.set(char, 'data.creator_notes', data.creator_notes || '');
-    _.set(char, 'data.system_prompt', data.system_prompt || '');
-    _.set(char, 'data.post_history_instructions', data.post_history_instructions || '');
-    _.set(char, 'data.tags', typeof data.tags == 'string' ? (data.tags.split(',').map((x: any) => x.trim()).filter((x: any) => x)) : data.tags || []);
-    _.set(char, 'data.creator', data.creator || '');
-    _.set(char, 'data.character_version', data.character_version || '');
-    _.set(char, 'data.alternate_greetings', getAlternateGreetings(data));
+    set(char, 'data.creator_notes', data.creator_notes || '');
+    set(char, 'data.system_prompt', data.system_prompt || '');
+    set(char, 'data.post_history_instructions', data.post_history_instructions || '');
+    set(char, 'data.tags', typeof data.tags == 'string' ? (data.tags.split(',').map((x: any) => x.trim()).filter((x: any) => x)) : data.tags || []);
+    set(char, 'data.creator', data.creator || '');
+    set(char, 'data.character_version', data.character_version || '');
+    set(char, 'data.alternate_greetings', getAlternateGreetings(data));
 
     // ST extension fields to V2 object
-    _.set(char, 'data.extensions.talkativeness', data.talkativeness || 0.5);
-    _.set(char, 'data.extensions.fav', data.fav == 'true');
-    _.set(char, 'data.extensions.world', data.world || '');
+    set(char, 'data.extensions.talkativeness', data.talkativeness || 0.5);
+    set(char, 'data.extensions.fav', data.fav == 'true');
+    set(char, 'data.extensions.world', data.world || '');
 
     // Spec extension: depth prompt
     const depth_default = 4;
     const role_default = 'system';
     const depth_value = !isNaN(Number(data.depth_prompt_depth)) ? Number(data.depth_prompt_depth) : depth_default;
     const role_value = data.depth_prompt_role ?? role_default;
-    _.set(char, 'data.extensions.depth_prompt.prompt', data.depth_prompt_prompt ?? '');
-    _.set(char, 'data.extensions.depth_prompt.depth', depth_value);
-    _.set(char, 'data.extensions.depth_prompt.role', role_value);
+    set(char, 'data.extensions.depth_prompt.prompt', data.depth_prompt_prompt ?? '');
+    set(char, 'data.extensions.depth_prompt.depth', depth_value);
+    set(char, 'data.extensions.depth_prompt.role', role_value);
 
     if (data.world) {
         try {
@@ -639,12 +639,12 @@ function charaFormatData(data: any, directories: any) {
 
             // File was imported - save it to the character book
             if (file && file.originalData) {
-                _.set(char, 'data.character_book', file.originalData);
+                set(char, 'data.character_book', file.originalData);
             }
 
             // File was not imported - convert the world info to the character book
             if (file && file.entries) {
-                _.set(char, 'data.character_book', convertWorldInfoToCharacterBook(data.world, file.entries));
+                set(char, 'data.character_book', convertWorldInfoToCharacterBook(data.world, file.entries));
             }
         } catch {
             console.warn(`Failed to read world info file: ${data.world}. Character book will not be available.`);
@@ -655,7 +655,7 @@ function charaFormatData(data: any, directories: any) {
         try {
             const extensions = JSON.parse(data.extensions);
             // Deep merge the extensions object
-            _.set(char, 'data.extensions', deepMerge(char.data.extensions, extensions));
+            set(char, 'data.extensions', deepMerge(char.data.extensions, extensions));
         } catch {
             console.warn(`Failed to parse extensions JSON: ${data.extensions}`);
         }
@@ -1097,8 +1097,8 @@ router.post('/rename', validateAvatarUrlMiddleware, async function (request, res
         if (rawOldData === undefined) throw new Error('Failed to read character file');
 
         const oldData = getCharaCardV2(JSON.parse(rawOldData), request.user.directories);
-        _.set(oldData, 'data.name', newName);
-        _.set(oldData, 'name', newName);
+        set(oldData, 'data.name', newName);
+        set(oldData, 'name', newName);
         const newData = JSON.stringify(oldData);
 
         // Write data to new location
@@ -1283,8 +1283,8 @@ const BULK_MERGE_CONCURRENCY = 10;
 function processUnsetSentinels(target: any, source: any) {
     for (const key of Object.keys(source)) {
         if (source[key] === UNSET_SENTINEL) {
-            _.unset(target, key);
-        } else if (_.isPlainObject(source[key]) && _.isPlainObject(target[key])) {
+            unset(target, key);
+        } else if (isPlainObject(source[key]) && isPlainObject(target[key])) {
             processUnsetSentinels(target[key], source[key]);
         }
     }
@@ -1312,9 +1312,9 @@ async function mergeCharacterUpdate(avatarPath: any, avatar: any, updateData: an
         return { ok: false, skipped: true };
     }
 
-    const update = _.cloneDeep(updateData);
-    _.unset(update, 'json_data');
-    _.unset(character, 'json_data');
+    const update = cloneDeep(updateData);
+    unset(update, 'json_data');
+    unset(character, 'json_data');
 
     character = deepMerge(character, update);
     processUnsetSentinels(character, update);
@@ -1358,7 +1358,7 @@ router.post('/merge-attributes', getFileNameValidationFunction('avatar'), async 
         if (Array.isArray(request.body.avatars)) {
             const { avatars, data, filter } = request.body;
 
-            if (!_.isPlainObject(data)) {
+            if (!isPlainObject(data)) {
                 return response.status(400).send({ message: 'No valid update data provided.' });
             }
 
@@ -1396,7 +1396,7 @@ router.post('/merge-attributes', getFileNameValidationFunction('avatar'), async 
                     if (filter && typeof filter.path === 'string') {
                         // @ts-expect-error TS(2322): Type '(character: any) => boolean' is not assignab... Remove this comment to see the full error message
                         shouldSkip = (character: any) => {
-                            const value = _.get(character, filter.path);
+                            const value = get(character, filter.path);
                             return value === undefined;
                         };
                     }

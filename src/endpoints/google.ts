@@ -7,7 +7,7 @@ import crypto from 'node:crypto';
 import util from 'node:util';
 // @ts-expect-error TS(2792): Cannot find module 'url-join'. Did you mean to set... Remove this comment to see the full error message
 import urlJoin from 'url-join';
-import lodash from 'lodash';
+import { clamp } from 'es-toolkit/compat';
 
 import { readSecret, SECRET_KEYS } from './secrets.js';
 import { GEMINI_SAFETY, VERTEX_SAFETY } from '../constants.js';
@@ -543,7 +543,7 @@ router.post('/generate-video', async (request, response) => {
             }],
             parameters: {
                 negativePrompt: String(request.body.negative_prompt || ''),
-                durationSeconds: lodash.clamp(Number(request.body.seconds || 6), lowerBound, upperBound),
+                durationSeconds: clamp(Number(request.body.seconds || 6), lowerBound, upperBound),
                 aspectRatio: String(request.body.aspect_ratio || '16:9'),
                 personGeneration: 'allow_all',
                 seed: isVeo3 ? Number(request.body.seed ?? Math.floor(Math.random() * 1000000)) : undefined,
