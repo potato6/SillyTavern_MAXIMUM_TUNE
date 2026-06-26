@@ -1,4 +1,4 @@
-import { Fuse, localforage } from '../lib.js';
+import { Fuse, localspace } from '../lib.js';
 import { characters, chat_metadata, eventSource, event_types, generateQuietPrompt, getCurrentChatId, getRequestHeaders, getThumbnailUrl, saveMetadata, saveSettingsDebounced, this_chid } from '../script.js';
 import { openThirdPartyExtensionMenu, saveMetadataDebounced } from './extensions.js';
 import { SlashCommand } from './slash-commands/SlashCommand.js';
@@ -39,7 +39,7 @@ const THUMBNAIL_COLUMNS_DEFAULT_MOBILE = 3;
  * Storage for frontend-generated background thumbnails.
  * This is used to store thumbnails for backgrounds that cannot be generated on the server.
  */
-const THUMBNAIL_STORAGE = localforage.createInstance({ name: 'SillyTavern_Thumbnails' });
+const THUMBNAIL_STORAGE = localspace.createInstance({ name: 'SillyTavern_Thumbnails' });
 
 /**
  * Cache for thumbnail blob URLs.

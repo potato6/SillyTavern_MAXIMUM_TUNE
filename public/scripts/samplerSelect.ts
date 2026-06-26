@@ -9,7 +9,7 @@ import {
 import { setting_names as TGsamplerNames, showTGSamplerControls, textgenerationwebui_settings } from './textgen-settings.js';
 import { renderTemplateAsync } from './templates.js';
 import { Popup, POPUP_TYPE } from './popup.js';
-import { localforage } from '../lib.js';
+import { localspace } from '../lib.js';
 
 const forcedOnColoring = 'color: #89db35;';
 const forcedOffColoring = 'color: #e84f62;';
@@ -19,7 +19,7 @@ const SELECT_SAMPLER = {
     HIDDEN: 'hidden',
 };
 
-const textGenObjectStore = localforage.createInstance({ name: 'SillyTavern_TextCompletions' });
+const textGenObjectStore = localspace.createInstance({ name: 'SillyTavern_TextCompletions' });
 let selectedSamplers = {};
 
 // Goal 1: show popup with all samplers for active API
@@ -431,7 +431,7 @@ export function setApiSamplersState(samplerName, state, tcApiType = '') {
 /**
  * Returns the local forage object belonging to the active/selected TC API Type
  * @param {string?} tcApiType Name of the target API Type - It picks the currently active TC API type name by default
- * @returns {object} Full localforage object with manual selections
+ * @returns {object} Full localspace object with manual selections
  */
 export function getAllManualApiSamplers(tcApiType = '') {
     if (!textgenerationwebui_settings?.type && !tcApiType) return {};

@@ -1,4 +1,4 @@
-import { DiffMatchPatch, DOMPurify, localforage } from '../lib.js';
+import { DiffMatchPatch, DOMPurify, localspace } from '../lib.js';
 import { chat, event_types, eventSource, getCurrentChatId, reloadCurrentChat } from '../script.js';
 import { t } from './i18n.js';
 import { oai_settings } from './openai.js';
@@ -12,7 +12,7 @@ import { copyText } from './utils.js';
 let PromptArrayItemForRawPromptDisplay;
 let priorPromptArrayItemForRawPromptDisplay;
 
-const promptStorage = localforage.createInstance({ name: 'SillyTavern_Prompts' });
+const promptStorage = localspace.createInstance({ name: 'SillyTavern_Prompts' });
 export let itemizedPrompts = [];
 
 /**

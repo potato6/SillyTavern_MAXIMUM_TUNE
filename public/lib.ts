@@ -9,8 +9,7 @@ import Fuse from 'fuse.js';
 import DOMPurify from 'dompurify';
 // @ts-expect-error TS(2792): Cannot find module 'highlight.js'. Did you mean to... Remove this comment to see the full error message
 import hljs from 'highlight.js';
-// @ts-expect-error TS(2792): Cannot find module 'localforage'. Did you mean to ... Remove this comment to see the full error message
-import localforage from 'localforage';
+import localspace from 'localspace';
 // @ts-expect-error TS(2792): Cannot find module 'handlebars'. Did you mean to s... Remove this comment to see the full error message
 import Handlebars from 'handlebars';
 // @ts-expect-error TS(2792): Cannot find module '@adobe/css-tools'. Did you mea... Remove this comment to see the full error message
@@ -67,9 +66,9 @@ export function initLibraryShims() {
         // @ts-expect-error TS(2339): Property 'hljs' does not exist on type 'Window & t... Remove this comment to see the full error message
         window.hljs = hljs;
     }
-    if (!('localforage' in window)) {
-        // @ts-expect-error TS(2551): Property 'localforage' does not exist on type 'Win... Remove this comment to see the full error message
-        window.localforage = localforage;
+    if (!('localspace' in window)) {
+        // @ts-expect-error TS(2551): Property 'localspace' does not exist on type 'Wind...
+        window.localspace = localspace;
     }
     if (!('Handlebars' in window)) {
         // @ts-expect-error TS(2339): Property 'Handlebars' does not exist on type 'Wind... Remove this comment to see the full error message
@@ -99,7 +98,7 @@ export default {
     Fuse,
     DOMPurify,
     hljs,
-    localforage,
+    localspace,
     Handlebars,
     css,
     Bowser,
@@ -126,7 +125,7 @@ export {
     Fuse,
     DOMPurify,
     hljs,
-    localforage,
+    localspace,
     Handlebars,
     css,
     Bowser,
