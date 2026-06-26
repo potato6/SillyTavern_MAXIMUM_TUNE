@@ -1,146 +1,147 @@
-import fs from 'node:fs';
-
 import { sync as commandExistsSync } from 'command-exists';
-// @ts-expect-error TS(2792): Cannot find module 'isomorphic-git'. Did you mean ... Remove this comment to see the full error message
-import git from 'isomorphic-git';
-// @ts-expect-error TS(2792): Cannot find module 'isomorphic-git/http/node'. Did... Remove this comment to see the full error message
-import http from 'isomorphic-git/http/node';
-// @ts-expect-error TS(2792): Cannot find module 'simple-git'. Did you mean to s... Remove this comment to see the full error message
-import simpleGit from 'simple-git';
+import simpleGit, { SimpleGit } from 'simple-git';
 
-/** @type {{ AUTO: 'auto', SYSTEM: 'system', BUILTIN: 'builtin' }} */
+/**
+ * Supported git backends.
+ */
 export const GIT_BACKENDS = {
     AUTO: 'auto',
     SYSTEM: 'system',
-    BUILTIN: 'builtin',
-};
+} as const;
 
-/**
- * @param {string | undefined | null} preferredBackend
- * @returns {'system' | 'builtin'}
- */
-function resolveBackend(preferredBackend: any) {
-    const normalized = typeof preferredBackend === 'string' ? preferredBackend.trim().toLowerCase() : GIT_BACKENDS.AUTO;
-    const backend = normalized === GIT_BACKENDS.SYSTEM
-        ? GIT_BACKENDS.SYSTEM
-        : normalized === GIT_BACKENDS.BUILTIN
-            ? GIT_BACKENDS.BUILTIN
-            : GIT_BACKENDS.AUTO;
-    const systemGitAvailable = commandExistsSync('git');
+export type GitBackend = typeof GIT_BACKENDS[keyof typeof GIT_BACKENDS];
 
-    if (backend === GIT_BACKENDS.SYSTEM && !systemGitAvailable) {
-        throw new Error('System git backend is configured, but no git binary was found in PATH.');
-    }
-
-    if (backend === GIT_BACKENDS.SYSTEM || (backend === GIT_BACKENDS.AUTO && systemGitAvailable)) {
-        return GIT_BACKENDS.SYSTEM;
-    }
-
-    return GIT_BACKENDS.BUILTIN;
+export interface GitCloneOptions {
+    /** Limit the number of commits to be fetched. */
+    depth?: number;
+    /** Point the newly created HEAD to a specific branch instead of the default. */
+    branch?: string;
 }
 
-/**
- * @typedef {object} GitCloneOptions
- * @property {number} [depth]
- * @property {string} [branch]
- */
+export interface GitClientOptions {
+    /** Requested backend string (e.g., 'auto', 'system'). */
+    backend?: string | null;
+}
+
+export interface GitClient {
+    backend: 'system';
+    clone(url: string, localPath: string, options?: GitCloneOptions): Promise<void>;
+}
 
 const SUPPORTED_CLONE_OPTIONS = new Set(['depth', 'branch']);
 
 /**
- * @param {GitCloneOptions} [options]
- * @returns {{ depth?: number, branch?: string }}
+ * Resolves and verifies the Git backend configuration.
+ * Validates that the system 'git' binary is securely accessible in the PATH environment variable.
+ * @param preferredBackend - The preferred backend option ('auto' or 'system')
+ * @returns The resolved backend (always 'system')
+ * @throws {Error} If the system Git binary is not found in PATH
  */
-function normalizeCloneOptions(options = {}) {
-    for (const key of Object.keys(options)) {
-        if (!SUPPORTED_CLONE_OPTIONS.has(key)) {
-            throw new Error(`Unsupported clone option: ${key}`);
-        }
+function resolveBackend(preferredBackend?: string | null): 'system' {
+    const systemGitAvailable = commandExistsSync('git');
+
+    if (!systemGitAvailable) {
+        throw new Error(
+            'System git is required by simple-git, but no git binary was found in PATH.'
+        );
     }
-    // @ts-expect-error TS(2339): Property 'depth' does not exist on type '{}'.
-    return { depth: options.depth, branch: options.branch };
+
+    return GIT_BACKENDS.SYSTEM;
 }
 
 /**
- * @typedef {object} GitClient
- * @property {'system' | 'builtin'} backend
- * @property {(url: string, localPath: string, options?: GitCloneOptions) => Promise<void>} clone
+ * Validates and normalizes git clone options, stripping any unsupported flags.
+ * @param options - The clone options object provided by the consumer
+ * @returns Normalized clone options containing only supported fields
+ * @throws {Error} If an unsupported option is provided
  */
+function normalizeCloneOptions(options: GitCloneOptions | null | undefined = {}): GitCloneOptions {
+    const safeOptions = options || {};
 
-/**
- * @param {{ backend?: string }} [options]
- * @returns {GitClient}
- */
-export function createGitClient(options = {}) {
-    // @ts-expect-error TS(2339): Property 'backend' does not exist on type '{}'.
-    const backend = resolveBackend(options.backend);
-    if (backend === GIT_BACKENDS.SYSTEM) {
-        return new SimpleGitClient();
+    for (const key of Object.keys(safeOptions)) {
+        if (!SUPPORTED_CLONE_OPTIONS.has(key)) {
+            throw new Error(`Unsupported clone option provided: ${key}`);
+        }
     }
 
-    return new IsomorphicGitClient();
+    return {
+        depth: safeOptions.depth,
+        branch: safeOptions.branch
+    };
+}
+
+/**
+ * @param options - Initialization options for the Git client
+ * @returns A fully initialized SimpleGitClient instance
+ */
+export function createGitClient(options: GitClientOptions | null | undefined = {}): GitClient {
+    const safeOptions = options || {};
+
+    // Validate system environment prior to instantiation
+    resolveBackend(safeOptions.backend);
+
+    return new SimpleGitClient();
 }
 
 /**
  * @implements {GitClient}
  */
-class SimpleGitClient {
-    backend: any;
-    git: any;
+class SimpleGitClient implements GitClient {
+    public readonly backend = GIT_BACKENDS.SYSTEM;
+    private readonly git: SimpleGit;
+
     constructor() {
-        this.backend = GIT_BACKENDS.SYSTEM;
+        // Initialise the simple-git instance
         this.git = simpleGit();
     }
 
     /**
-     * @param {string} url
-     * @param {string} localPath
-     * @param {GitCloneOptions} [options]
-     * @returns {Promise<void>}
+     * Clones a remote git repository into a designated local path.
+     * @param url - The remote repository URL to clone from
+     * @param localPath - The local directory path to clone into
+     * @param options - Additional options to pass during cloning (e.g. depth, branch)
+     * @returns A Promise that resolves when the clone operation is fully complete
+     * @throws {Error} If the URL/local path are invalid or if the underlying clone operation fails
      */
-    async clone(url: any, localPath: any, options = {}) {
-        const { depth, branch } = normalizeCloneOptions(options);
-        /** @type {Record<string, any>} */
-        const cloneOptions = {};
+    public async clone(
+        url: string | null | undefined,
+        localPath: string | null | undefined,
+        options: GitCloneOptions | null | undefined = {}
+    ): Promise<void> {
+        // Validation for critical inputs
+        if (!url || typeof url !== 'string' || url.trim() === '') {
+            throw new Error('A valid repository URL is required for cloning.');
+        }
 
-        if (depth !== undefined) {
+        if (!localPath || typeof localPath !== 'string' || localPath.trim() === '') {
+            throw new Error('A valid local directory path is required for cloning.');
+        }
+
+        const { depth, branch } = normalizeCloneOptions(options);
+
+        // Assemble command-line arguments for simple-git
+        const cloneOptions: Record<string, string | number> = {};
+
+        if (depth !== undefined && depth !== null) {
+            if (typeof depth !== 'number' || depth <= 0) {
+                throw new Error('The "depth" option must be a positive integer.');
+            }
             cloneOptions['--depth'] = depth;
         }
 
         if (branch) {
-            cloneOptions['--branch'] = branch;
+            if (typeof branch !== 'string' || branch.trim() === '') {
+                throw new Error('The "branch" option must be a valid, non-empty string.');
+            }
+            cloneOptions['--branch'] = branch.trim();
         }
 
-        await this.git.clone(url, localPath, cloneOptions);
-    }
-}
-
-/**
- * @implements {GitClient}
- */
-class IsomorphicGitClient {
-    backend: any;
-    constructor() {
-        this.backend = GIT_BACKENDS.BUILTIN;
-    }
-
-    /**
-     * @param {string} url
-     * @param {string} localPath
-     * @param {GitCloneOptions} [options]
-     * @returns {Promise<void>}
-     */
-    async clone(url: any, localPath: any, options = {}) {
-        const { depth, branch } = normalizeCloneOptions(options);
-
-        await git.clone({
-            fs,
-            http,
-            dir: localPath,
-            url,
-            depth,
-            ref: branch,
-            singleBranch: depth !== undefined || Boolean(branch),
-        });
+        try {
+            await this.git.clone(url.trim(), localPath.trim(), cloneOptions);
+        } catch (error: unknown) {
+            // Provide a graceful wrapper over core execution failures
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            throw new Error(`Failed to clone repository: ${errorMessage}`);
+        }
     }
 }
