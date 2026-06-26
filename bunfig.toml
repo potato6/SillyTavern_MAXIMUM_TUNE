@@ -3,4 +3,4 @@ logLevel = "debug" # "debug" | "warn" | "error"
 telemetry = false
 [test]
 root = "./tests"
-randomize = true
+randomize = false
