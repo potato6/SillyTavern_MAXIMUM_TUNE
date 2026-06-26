@@ -11,7 +11,6 @@ import { getConfigValue } from '../util.js';
 
 import { getNomicAIBatchVector, getNomicAIVector } from '../vectors/nomicai-vectors.js';
 import { getOpenAIVector, getOpenAIBatchVector } from '../vectors/openai-vectors.js';
-import { getTransformersVector, getTransformersBatchVector } from '../vectors/embedding.js';
 import { getExtrasVector, getExtrasBatchVector } from '../vectors/extras-vectors.js';
 import { getMakerSuiteVector, getMakerSuiteBatchVector } from '../vectors/google-vectors.js';
 import { getVertexVector, getVertexBatchVector } from '../vectors/google-vectors.js';
@@ -22,7 +21,6 @@ import { getOllamaVector, getOllamaBatchVector } from '../vectors/ollama-vectors
 
 // Don't forget to add new sources to the SOURCES array
 const SOURCES = [
-    'transformers',
     'mistral',
     'openai',
     'extras',
@@ -65,8 +63,6 @@ async function getVector(source: any, sourceSettings: any, text: any, isQuery: a
             return getOpenAIVector(text, source, directories, sourceSettings.model);
         case 'openrouter':
             return getOpenAIVector(text, source, directories, sourceSettings.model);
-        case 'transformers':
-            return getTransformersVector(text);
         case 'extras':
             return getExtrasVector(text, sourceSettings.extrasUrl, sourceSettings.extrasKey);
         case 'palm':
@@ -125,15 +121,12 @@ async function getBatchVector(source: any, sourceSettings: any, texts: any, isQu
             case 'electronhub':
                 results.push(...(await getOpenAIBatchVector(batch, source, directories, sourceSettings.model)));
                 break;
-            case 'openrouter':
-                results.push(...(await getOpenAIBatchVector(batch, source, directories, sourceSettings.model)));
-                break;
-            case 'transformers':
-                results.push(...(await getTransformersBatchVector(batch)));
-                break;
-            case 'extras':
-                results.push(...(await getExtrasBatchVector(batch, sourceSettings.extrasUrl, sourceSettings.extrasKey)));
-                break;
+                case 'openrouter':
+                    results.push(...(await getOpenAIBatchVector(batch, source, directories, sourceSettings.model)));
+                    break;
+                case 'extras':
+                    results.push(...(await getExtrasBatchVector(batch, sourceSettings.extrasUrl, sourceSettings.extrasKey)));
+                    break;
             case 'palm':
                 results.push(...(await getMakerSuiteBatchVector(batch, sourceSettings.model, sourceSettings.request)));
                 break;
@@ -225,10 +218,6 @@ function getSourceSettings(source: any, request: any) {
             return {
                 extrasUrl: String(request.body.extrasUrl),
                 extrasKey: String(request.body.extrasKey),
-            };
-        case 'transformers':
-            return {
-                model: getConfigValue('extensions.models.embedding', ''),
             };
         case 'palm':
         case 'vertexai':
@@ -448,7 +437,7 @@ async function multiQueryCollection(directories: any, collectionIds: any, source
 async function regenerateCorruptedIndexErrorHandler(req: any, res: any, error: any) {
     if (error instanceof SyntaxError && !req.query.regenerated) {
         const collectionId = String(req.body.collectionId);
-        const source = String(req.body.source) || 'transformers';
+        const source = String(req.body.source) || 'openai';
         const sourceSettings = getSourceSettings(source, req);
 
         if (collectionId && source) {
@@ -480,7 +469,7 @@ router.post('/query', async (req, res) => {
         const searchText = String(req.body.searchText);
         const topK = Number(req.body.topK) || 10;
         const threshold = Number(req.body.threshold) || 0.0;
-        const source = String(req.body.source) || 'transformers';
+        const source = String(req.body.source) || 'openai';
         const sourceSettings = getSourceSettings(source, req);
 
         const results = await queryCollection(req.user.directories, collectionId, source, sourceSettings, searchText, topK, threshold);
@@ -500,7 +489,7 @@ router.post('/query-multi', async (req, res) => {
         const searchText = String(req.body.searchText);
         const topK = Number(req.body.topK) || 10;
         const threshold = Number(req.body.threshold) || 0.0;
-        const source = String(req.body.source) || 'transformers';
+        const source = String(req.body.source) || 'openai';
         const sourceSettings = getSourceSettings(source, req);
 
         const results = await multiQueryCollection(req.user.directories, collectionIds, source, sourceSettings, searchText, topK, threshold);
@@ -522,7 +511,7 @@ router.post('/insert', async (req, res) => {
             text: x.text,
             index: x.index
         }));
-        const source = String(req.body.source) || 'transformers';
+        const source = String(req.body.source) || 'openai';
         const sourceSettings = getSourceSettings(source, req);
 
         await insertVectorItems(req.user.directories, collectionId, source, sourceSettings, items);
@@ -539,7 +528,7 @@ router.post('/list', async (req, res) => {
         }
 
         const collectionId = String(req.body.collectionId);
-        const source = String(req.body.source) || 'transformers';
+        const source = String(req.body.source) || 'openai';
         const sourceSettings = getSourceSettings(source, req);
 
         const hashes = await getSavedHashes(req.user.directories, collectionId, source, sourceSettings);
@@ -557,7 +546,7 @@ router.post('/delete', async (req, res) => {
 
         const collectionId = String(req.body.collectionId);
         const hashes = req.body.hashes.map((x: any) => Number(x));
-        const source = String(req.body.source) || 'transformers';
+        const source = String(req.body.source) || 'openai';
         const sourceSettings = getSourceSettings(source, req);
 
         await deleteVectorItems(req.user.directories, collectionId, source, sourceSettings, hashes);

@@ -7,7 +7,6 @@ import fetch from 'node-fetch';
 // @ts-expect-error TS(2792): Cannot find module 'form-data'. Did you mean to se... Remove this comment to see the full error message
 import FormData from 'form-data';
 import mime from 'mime-types';
-import { getPipeline } from '../transformers.js';
 import { forwardFetchResponse } from '../util.js';
 import { readSecret, SECRET_KEYS } from './secrets.js';
 
@@ -40,50 +39,6 @@ function getWaveFile(audio: any) {
 
     return audioData;
 }
-
-router.post('/recognize', async (req, res) => {
-    try {
-        const TASK = 'automatic-speech-recognition';
-        const { model, audio, lang } = req.body;
-        const pipe = await getPipeline(TASK, model);
-        const wav = getWaveFile(audio);
-        const start = performance.now();
-        const result = await pipe(wav, { language: lang || null, task: 'transcribe' });
-        const end = performance.now();
-        console.info(`Execution duration: ${(end - start) / 1000} seconds`);
-        console.info('Transcribed audio:', result.text);
-
-        return res.json({ text: result.text });
-    } catch (error) {
-        console.error(error);
-        return res.sendStatus(500);
-    }
-});
-
-router.post('/synthesize', async (req, res) => {
-    try {
-        const TASK = 'text-to-speech';
-        const { text, model, speaker } = req.body;
-        const pipe = await getPipeline(TASK, model);
-        const speaker_embeddings = speaker
-            ? new Float32Array(new Uint8Array(Buffer.from(speaker.startsWith('data:') ? speaker.split(',')[1] : speaker, 'base64')).buffer)
-            : null;
-        const start = performance.now();
-        const result = await pipe(text, { speaker_embeddings: speaker_embeddings });
-        const end = performance.now();
-        console.debug(`Execution duration: ${(end - start) / 1000} seconds`);
-
-        const wav = new wavefile.WaveFile();
-        wav.fromScratch(1, result.sampling_rate, '32f', result.audio);
-        const buffer = wav.toBuffer();
-
-        res.set('Content-Type', 'audio/wav');
-        return res.send(Buffer.from(buffer));
-    } catch (error) {
-        console.error(error);
-        return res.sendStatus(500);
-    }
-});
 
 const pollinations = express.Router();
 

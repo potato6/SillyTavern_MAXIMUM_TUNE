@@ -36,8 +36,6 @@ import { router as stableDiffusionRouter } from './endpoints/stable-diffusion.js
 import { router as hordeRouter } from './endpoints/horde.js';
 import { router as vectorsRouter } from './endpoints/vectors.js';
 import { router as translateRouter } from './endpoints/translate.js';
-import { router as classifyRouter } from './endpoints/classify.js';
-import { router as captionRouter } from './endpoints/caption.js';
 import { router as searchRouter } from './endpoints/search.js';
 import { router as openRouterRouter } from './endpoints/openrouter.js';
 import { router as nanogptRouter } from './endpoints/nanogpt.js';
@@ -171,8 +169,6 @@ export function setupPrivateEndpoints(app: any) {
     app.use('/api/horde', hordeRouter);
     app.use('/api/vector', vectorsRouter);
     app.use('/api/translate', translateRouter);
-    app.use('/api/extra/classify', classifyRouter);
-    app.use('/api/extra/caption', captionRouter);
     app.use('/api/search', searchRouter);
     app.use('/api/backends/text-completions', textCompletionsRouter);
     app.use('/api/openrouter', openRouterRouter);
