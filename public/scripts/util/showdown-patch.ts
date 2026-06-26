@@ -1,30 +1,7 @@
 /**
- * Patches showdown to unrestrictedly unhash HTML spans.
- * @param {import('showdown')} showdown The showdown object to patch
+ *
+ * @param _markdownit
  */
-export function addShowdownPatch(showdown) {
-    showdown.subParser('unhashHTMLSpans', function (text, options, globals) {
-        'use strict';
-        text = globals.converter._dispatch('unhashHTMLSpans.before', text, options, globals);
-
-        for (let i = 0; i < globals.gHtmlSpans.length; ++i) {
-            let repText = globals.gHtmlSpans[i],
-                // limiter to prevent infinite loop (assume 10 as limit for recurse)
-                limit = 0;
-
-            while (/¨C(\d+)C/.test(repText)) {
-                const num = RegExp.$1;
-                repText = repText.replace('¨C' + num + 'C', globals.gHtmlSpans[num]);
-                if (limit === 10000) {
-                    console.error('maximum nesting of 10000 spans reached!!!');
-                    break;
-                }
-                ++limit;
-            }
-            text = text.replace('¨C' + i + 'C', repText);
-        }
-
-        text = globals.converter._dispatch('unhashHTMLSpans.after', text, options, globals);
-        return text;
-    });
+export function addShowdownPatch(_markdownit) {
+    // No patch needed for markdown-it
 }

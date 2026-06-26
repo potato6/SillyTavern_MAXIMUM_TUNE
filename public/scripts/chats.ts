@@ -739,7 +739,7 @@ export function formatCreatorNotes(text, avatarId) {
         ADD_TAGS: ['custom-style'],
     };
 
-    let html = converter.makeHtml(substituteParams(text));
+    let html = converter.render(substituteParams(text));
     html = encodeStyleTags(html);
     html = DOMPurify.sanitize(html, config);
     html = decodeStyleTags(html, decodeStyleParam);
@@ -866,7 +866,7 @@ function getStyleContentsFromMarkdown(text) {
         return '';
     }
 
-    const html = converter.makeHtml(substituteParams(text));
+    const html = converter.render(substituteParams(text));
     const parsedDocument = new DOMParser().parseFromString(html, 'text/html');
     const styleElements = Array.from(parsedDocument.querySelectorAll('style'));
     return styleElements

@@ -1,5 +1,5 @@
 import {
-    showdown,
+    MarkdownIt,
     moment,
     DOMPurify,
     hljs,
@@ -212,8 +212,8 @@ import {
     applyCharacterTagsToMessageDivs,
 } from './scripts/tags.js';
 import { checkOpenRouterAuth, initSecrets, readSecretState } from './scripts/secrets.js';
-import { markdownExclusionExt } from './scripts/showdown-exclusion.js';
-import { markdownUnderscoreExt } from './scripts/showdown-underscore.js';
+import { processMarkdownExclusions } from './scripts/showdown-exclusion.js';
+import { processMarkdownUnderscores } from './scripts/showdown-underscore.js';
 import { NOTE_MODULE_NAME, initAuthorsNote, metadata_keys, setFloatingPrompt, shouldWIAddPrompt } from './scripts/authors-note.js';
 import { registerPromptManagerMigration } from './scripts/PromptManager.js';
 import { getRegexedString, regex_placement } from './scripts/extensions/regex/engine.js';
@@ -262,6 +262,8 @@ import { initSystemPrompts } from './scripts/sysprompt.js';
 import { registerExtensionSlashCommands as initExtensionSlashCommands } from './scripts/extensions-slashcommands.js';
 import { ToolManager } from './scripts/tool-calling.js';
 import { addShowdownPatch } from './scripts/util/showdown-patch.js';
+import { full as markdownitEmoji } from 'markdown-it-emoji';
+import markdownitIns from 'markdown-it-ins';
 import { applyBrowserFixes } from './scripts/browser-fixes.js';
 import { initServerHistory } from './scripts/server-history.js';
 import { initSettingsSearch } from './scripts/setting-search.js';
@@ -399,8 +401,8 @@ toastr.subscribe(function (args) {
 export const characterGroupOverlay = new BulkEditOverlay();
 
 // Markdown converter
-export let mesForShowdownParse; //intended to be used as a context to compare showdown strings against
-/** @type {import('showdown').Converter} */
+export let mesForShowdownParse; //intended to be used as a context to compare markdown strings against
+/** @type {import('markdown-it')} */
 export let converter;
 
 // array for prompt token calculations
@@ -527,21 +529,15 @@ async function getClientVersion() {
  *
  */
 export function reloadMarkdownProcessor() {
-    converter = new showdown.Converter({
-        emoji: true,
-        literalMidWordUnderscores: true,
-        parseImgDimensions: true,
-        tables: true,
-        underline: true,
-        simpleLineBreaks: true,
-        strikethrough: true,
-        disableForced4SpacesIndentedSublists: true,
-        extensions: [markdownUnderscoreExt()],
+    converter = new MarkdownIt({
+        html: true,
+        breaks: true,
+        linkify: false,
+        typographer: false,
     });
 
-    // Inject the dinkus extension after creating the converter
-    // Maybe move this into power_user init?
-    converter.addExtension(markdownExclusionExt(), 'exclusion');
+    converter.use(markdownitEmoji);
+    converter.use(markdownitIns);
 
     return converter;
 }
@@ -754,7 +750,7 @@ async function firstLoadInit() {
         initDomHandlers();
         initStandaloneMode();
         initLibraryShims();
-        addShowdownPatch(showdown);
+        addShowdownPatch(MarkdownIt);
         addDOMPurifyHooks();
         reloadMarkdownProcessor();
         applyBrowserFixes();
@@ -2022,7 +2018,9 @@ export function messageFormatting(mes, ch_name, isSystem, isUser, messageId, san
 
         mes = mes.replaceAll('\\begin{align*}', '$$');
         mes = mes.replaceAll('\\end{align*}', '$$');
-        mes = converter.makeHtml(mes);
+        mes = processMarkdownExclusions(mes);
+        mes = converter.render(mes);
+        mes = processMarkdownUnderscores(mes);
 
         mes = mes.replace(/<code(.*)>[\s\S]*?<\/code>/g, function (match) {
             // Firefox creates extra newlines from <br>s in code blocks, so we replace them before converting newlines to <br>s.
@@ -12587,11 +12585,17 @@ jQuery(async function () {
     const button = $('#options_button');
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const menu = $('#options');
+    /**
+     *
+     */
     function showMenu() {
         showBookmarksButtons();
         menu[0].showPopover();
     }
 
+    /**
+     *
+     */
     function hideMenu() {
         menu[0].hidePopover();
     }

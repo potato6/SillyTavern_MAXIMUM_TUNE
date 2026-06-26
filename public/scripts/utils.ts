@@ -2129,7 +2129,7 @@ export async function extractTextFromHTML(blob, textSelector = 'body') {
 }
 
 /**
- * Use showdown to load and parse text from Markdown
+ * Parse text from Markdown
  * @param {Blob} blob Markdown content blob
  * @returns {Promise<string>} A promise that resolves to the parsed text.
  */

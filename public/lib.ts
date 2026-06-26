@@ -23,8 +23,8 @@ import DiffMatchPatch from 'diff-match-patch';
 import { isProbablyReaderable, Readability } from '@mozilla/readability';
 // @ts-expect-error TS(2792): Cannot find module '@iconfu/svg-inject'. Did you m... Remove this comment to see the full error message
 import SVGInject from '@iconfu/svg-inject';
-// @ts-expect-error TS(2792): Cannot find module 'showdown'. Did you mean to set... Remove this comment to see the full error message
-import showdown from 'showdown';
+// @ts-expect-error TS(2792): Cannot find module 'markdown-it'. Did you mean to ... Remove this comment to see the full error message
+import MarkdownIt from 'markdown-it';
 // @ts-expect-error TS(2792): Cannot find module 'moment'. Did you mean to set t... Remove this comment to see the full error message
 import moment from 'moment';
 // @ts-expect-error TS(2792): Cannot find module 'seedrandom'. Did you mean to s... Remove this comment to see the full error message
@@ -83,10 +83,7 @@ export function initLibraryShims() {
         // @ts-expect-error TS(2339): Property 'SVGInject' does not exist on type 'Windo... Remove this comment to see the full error message
         window.SVGInject = SVGInject;
     }
-    if (!('showdown' in window)) {
-        // @ts-expect-error TS(2339): Property 'showdown' does not exist on type 'Window... Remove this comment to see the full error message
-        window.showdown = showdown;
-    }
+
     if (!('moment' in window)) {
         // @ts-expect-error TS(2339): Property 'moment' does not exist on type 'Window &... Remove this comment to see the full error message
         window.moment = moment;
@@ -110,7 +107,7 @@ export default {
     Readability,
     isProbablyReaderable,
     SVGInject,
-    showdown,
+    MarkdownIt,
     moment,
     seedrandom,
     droll,
@@ -137,7 +134,7 @@ export {
     Readability,
     isProbablyReaderable,
     SVGInject,
-    showdown,
+    MarkdownIt,
     moment,
     seedrandom,
     droll,
