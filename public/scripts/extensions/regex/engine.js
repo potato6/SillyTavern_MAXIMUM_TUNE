@@ -2,7 +2,6 @@ import { characters, saveSettingsDebounced, substituteParams, substituteParamsEx
 import { extension_settings, writeExtensionField } from '../../extensions.js';
 import { getPresetManager } from '../../preset-manager.js';
 import { regexFromString } from '../../utils.js';
-import { lodash } from '../../../lib.js';
 
 /**
  * @readonly
@@ -229,9 +228,14 @@ export function allowPresetScripts(apiId, presetName) {
     if (!apiId || !presetName) {
         return;
     }
+
+    // Check if the property is not an array
     if (!Array.isArray(extension_settings?.preset_allowed_regex?.[apiId])) {
-        lodash.set(extension_settings, ['preset_allowed_regex', apiId], []);
+        // Ensure the parent object exists, then assign the empty array
+        extension_settings.preset_allowed_regex ??= {};
+        extension_settings.preset_allowed_regex[apiId] = [];
     }
+
     if (!extension_settings.preset_allowed_regex[apiId].includes(presetName)) {
         extension_settings.preset_allowed_regex[apiId].push(presetName);
         saveSettingsDebounced();
