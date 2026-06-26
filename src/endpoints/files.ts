@@ -42,7 +42,8 @@ router.post('/upload', async (request, response) => {
             return response.status(400).send(validation.message);
 
         const pathToUpload = path.join(request.user.directories.files, request.body.name);
-        writeFileSyncAtomic(pathToUpload, request.body.data, 'base64');
+        const fileBuffer = Buffer.from(request.body.data, 'base64');
+        writeFileSyncAtomic(pathToUpload, fileBuffer);
         const url = clientRelativePath(request.user.directories.root, pathToUpload);
         console.info(`Uploaded file: ${url} from ${request.user.profile.handle}`);
         return response.send({ path: url });

@@ -2145,8 +2145,8 @@ export async function extractTextFromMarkdown(blob) {
  */
 export async function extractTextFromEpub(blob) {
     if (!('ePub' in window)) {
-        await import('../lib/jszip.min.js');
-        await import('../lib/epub.min.js');
+        await loadFileToDocument(new URL('../lib/jszip.min.js', import.meta.url).href, 'js');
+        await loadFileToDocument(new URL('../lib/epub.min.js', import.meta.url).href, 'js');
     }
 
     const book = ePub(blob);
