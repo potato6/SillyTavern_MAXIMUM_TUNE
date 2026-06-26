@@ -4,15 +4,13 @@ import path from 'node:path';
 import express from 'express';
 // @ts-expect-error TS(2792): Cannot find module 'sanitize-filename'. Did you me... Remove this comment to see the full error message
 import sanitize from 'sanitize-filename';
-import { Jimp, JimpMime } from '../jimp.js';
 import { sync as writeFileAtomicSync } from 'write-file-atomic';
 // @ts-expect-error TS(2792): Cannot find module 'image-size'. Did you mean to s... Remove this comment to see the full error message
 import { imageSize as sizeOf } from 'image-size';
+import sharp from 'sharp';
 
 import { getConfigValue, invalidateFirefoxCache } from '../util.js';
 import { getThumbnailResolution, isAnimatedWebP, isAnimatedApng, thumbnailDimensions as dimensions } from './image-metadata.js';
-// @ts-expect-error TS(2792): Cannot find module '@jimp/plugin-resize'. Did you ... Remove this comment to see the full error message
-import { ResizeStrategy } from '@jimp/plugin-resize';
 
 export const publicRouter = express.Router();
 export const apiRouter = express.Router();
@@ -151,7 +149,7 @@ export async function generateThumbnail(directories: any, type: any, file: any, 
 
         const fileExtension = path.extname(file).toLowerCase();
 
-        // For WebP files, we must check if they are animated, as Jimp cannot process them.
+        // For WebP files, we must check if they are animated, as sharp cannot process them.
         // If isKnownAnimated is false, we assume the caller knows it is static and skip this check.
         if (fileExtension === '.webp' && isKnownAnimated !== false) {
             const buffer = fs.readFileSync(pathToOriginalFile);
@@ -204,15 +202,14 @@ async function processSingleImage(file: any, originalFolder: any, thumbnailFolde
 
     try {
         const fileBuffer = fs.readFileSync(pathToOriginalFile);
-        const image = await new Bun.Image(fileBuffer);
-
-        // Calculate aspect ratio from original image dimensions
-        const originalWidth = image.bitmap.width;
-        const originalHeight = image.bitmap.height;
+        const metadata = await sharp(fileBuffer).metadata();
+        const originalWidth = metadata.width ?? 0;
+        const originalHeight = metadata.height ?? 0;
         const aspectRatio = (originalHeight > 0) ? (originalWidth / originalHeight) : 1.0;
 
-        const thumbImage = image.clone();
         const thumbnailResolution = getThumbnailResolution(type);
+
+        let pipeline = sharp(fileBuffer);
 
         if (type === 'bg') {
             const [configWidth, configHeight] = dimensions[type];
@@ -224,16 +221,16 @@ async function processSingleImage(file: any, originalFolder: any, thumbnailFolde
             const thumbWidth = Math.round(Math.sqrt(targetPixelArea * aspectRatio));
             const thumbHeight = Math.round(Math.sqrt(targetPixelArea / aspectRatio));
 
-            thumbImage.resize({ w: thumbWidth, h: thumbHeight, mode: ResizeStrategy.BILINEAR });
+            pipeline = pipeline.resize(thumbWidth, thumbHeight, { fit: 'fill' });
         } else if (type === 'avatar' || type === 'persona') {
             // Crop and resize to fixed dimensions
             const [configWidth, configHeight] = dimensions[type];
-            thumbImage.cover({ w: configWidth, h: configHeight });
+            pipeline = pipeline.resize(configWidth, configHeight, { fit: 'cover' });
         }
 
         const buffer = pngFormat
-            ? await thumbImage.getBuffer(JimpMime.png)
-            : await thumbImage.getBuffer(JimpMime.jpeg, { quality: quality, jpegColorSpace: 'ycbcr' });
+            ? await pipeline.png().toBuffer()
+            : await pipeline.jpeg({ quality }).toBuffer();
 
         writeFileAtomicSync(pathToCachedFile, buffer);
 

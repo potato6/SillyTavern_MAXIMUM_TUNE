@@ -11,7 +11,7 @@ import { sync as writeFileAtomicSync } from 'write-file-atomic';
 import yaml from 'yaml';
 import { get, set, unset, isUndefined, forEach, isPlainObject, cloneDeep } from 'es-toolkit/compat';
 import mime from 'mime-types';
-import { Jimp, JimpMime } from '../jimp.js';
+import sharp from 'sharp';
 import storage from 'node-persist';
 
 import { AVATAR_WIDTH, AVATAR_HEIGHT, DEFAULT_AVATAR_PATH } from '../constants.js';
@@ -276,35 +276,37 @@ async function writeCharacterData(inputFile: any, data: any, outputFile: any, re
  */
 
 /**
- * Applies avatar crop and resize operations to an image.
- * I couldn't fix the type issue, so the first argument has {any} type.
- * @param {object} jimp Jimp image instance
+ * Applies avatar crop and resize operations to an image using sharp.
+ * @param {Buffer} buffer Image buffer
  * @param {Crop|undefined} [crop] Crop parameters
  * @returns {Promise<Buffer>} Processed image buffer
  */
-export async function applyAvatarCropResize(jimp: any, crop: any) {
-    if (!(jimp instanceof Jimp)) {
-        throw new TypeError('Expected a Jimp instance');
-    }
+export async function applyAvatarCropResize(buffer: Buffer, crop: any) {
+    const metadata = await sharp(buffer).metadata();
+    let finalWidth = metadata.width ?? 0;
+    let finalHeight = metadata.height ?? 0;
 
-    const image = /** @type {InstanceType<typeof Jimp>} */ (jimp);
-    let finalWidth = image.bitmap.width, finalHeight = image.bitmap.height;
+    let pipeline = sharp(buffer);
 
     // Apply crop if defined
     if (typeof crop == 'object' && [crop.x, crop.y, crop.width, crop.height].every(x => typeof x === 'number')) {
-        image.crop({ x: crop.x, y: crop.y, w: crop.width, h: crop.height });
+        const left = Math.round(crop.x);
+        const top = Math.round(crop.y);
+        const width = Math.round(crop.width);
+        const height = Math.round(crop.height);
+        pipeline = sharp(buffer).extract({ left, top, width, height });
         // Apply standard resize if requested
         if (crop.want_resize) {
             finalWidth = AVATAR_WIDTH;
             finalHeight = AVATAR_HEIGHT;
         } else {
-            finalWidth = crop.width;
-            finalHeight = crop.height;
+            finalWidth = width;
+            finalHeight = height;
         }
     }
 
-    image.cover({ w: finalWidth, h: finalHeight });
-    return await image.getBuffer(JimpMime.png);
+    pipeline = pipeline.resize(finalWidth, finalHeight, { fit: 'cover' });
+    return await pipeline.png().toBuffer();
 }
 
 /**
@@ -314,8 +316,7 @@ export async function applyAvatarCropResize(jimp: any, crop: any) {
  * @returns {Promise<Buffer>} Image buffer
  */
 async function parseImageBuffer(buffer: any, crop: any) {
-    const image = await Jimp.fromBuffer(buffer);
-    return await applyAvatarCropResize(image, crop);
+    return await applyAvatarCropResize(buffer, crop);
 }
 
 /**
@@ -326,8 +327,8 @@ async function parseImageBuffer(buffer: any, crop: any) {
  */
 async function tryReadImage(imgPath: any, crop: any) {
     try {
-        const rawImg = await Bun.file(imgPath).image();
-        return await applyAvatarCropResize(rawImg, crop);
+        const buffer = fs.readFileSync(imgPath);
+        return await applyAvatarCropResize(buffer, crop);
     } catch (error) {
         // If it's an unsupported type of image (APNG) - just read the file as buffer
         console.error(`Failed to read image: ${imgPath}`, error);

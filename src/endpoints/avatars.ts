@@ -45,8 +45,8 @@ router.post('/upload', getFileNameValidationFunction('overwrite_name'), async (r
         const pathToUpload = path.join(request.file.destination, request.file.filename);
         // @ts-expect-error TS(4111): Property 'crop' comes from an index signature, so ... Remove this comment to see the full error message
         const crop = tryParse(request.query.crop);
-        const rawImg = await Bun.file(pathToUpload).image();
-        const image = await applyAvatarCropResize(rawImg, crop);
+        const fileBuffer = fs.readFileSync(pathToUpload);
+        const image = await applyAvatarCropResize(fileBuffer, crop);
 
         // Remove previous thumbnail and bust cache if overwriting
         if (request.body.overwrite_name) {

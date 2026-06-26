@@ -10,7 +10,7 @@ import crypto from 'node:crypto';
 import { imageSize } from 'image-size';
 import writeFileAtomic from 'write-file-atomic';
 import express from 'express';
-import { Jimp } from '../jimp.js';
+import sharp from 'sharp';
 import { getConfigValue, isPathUnderParent, uuidv4 } from '../util.js';
 
 export const METADATA_FILE = 'image-metadata.json';
@@ -78,25 +78,19 @@ export function isAnimatedWebP(buffer: any) {
 }
 
 /**
- * Calculate average color using Jimp.
+ * Calculate average color using sharp.
  * Resizes the image to 1x1 to efficiently get the average color.
  * @param {Buffer} buffer The image buffer.
  * @returns {Promise<string>} The average color as a hex string (e.g., '#RRGGBB').
  */
-async function getAverageColorWithJimp(buffer: any) {
+async function getAverageColor(buffer: any) {
     try {
-        const image = await new Bun.Image(buffer);
-        image.resize({ w: 1, h: 1 });
-
-        const colorInt = image.getPixelColor(0, 0);
-        const r = (colorInt >> 24) & 255;
-        const g = (colorInt >> 16) & 255;
-        const b = (colorInt >> 8) & 255;
+        const { data } = await sharp(buffer).resize(1, 1, { fit: 'fill' }).raw().toBuffer({ resolveWithObject: true });
 
         const toHex = (c: any) => c.toString(16).padStart(2, '0');
-        return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+        return `#${toHex(data[0])}${toHex(data[1])}${toHex(data[2])}`;
     } catch (error) {
-        console.warn('[Jimp] Failed to calculate average color:', error.message);
+        console.warn('[Sharp] Failed to calculate average color:', error.message);
         return '#808080';
     }
 }
@@ -135,7 +129,7 @@ export async function generateImageMetadata(filePath: any, type: any) {
     if (isAnimated) {
         dominantColor = '#808080';
     } else {
-        dominantColor = await getAverageColorWithJimp(buffer);
+        dominantColor = await getAverageColor(buffer);
     }
 
     let addedTimestamp;
