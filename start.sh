@@ -10,4 +10,4 @@ bun install &&
     bun run build.ts
 
 echo "Entering SillyTavern..."
-bun server.js --smol --filter --bun
+bun server.js --filter --bun

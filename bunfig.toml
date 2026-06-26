@@ -1,4 +1,4 @@
-smol = true
+smol = false
 logLevel = "debug" # "debug" | "warn" | "error"
 telemetry = false
 [test]
