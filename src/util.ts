@@ -14,7 +14,7 @@ import readline from 'node:readline';
 import yaml from 'yaml';
 import { sync as commandExistsSync } from 'command-exists';
 import { get } from 'es-toolkit/compat';
-import yauzl from 'yauzl';
+import * as fflate from 'fflate';
 import mime from 'mime-types';
 // @ts-expect-error TS(2792): Cannot find module 'simple-git'. Did you mean to s... Remove this comment to see the full error message
 import { default as simpleGit } from 'simple-git';
@@ -211,57 +211,17 @@ export function formatBytes(numBytes: any) {
  * @returns {Promise<Buffer|null>} Buffer containing the extracted file. Null if the file was not found.
  */
 export async function extractFileFromZipBuffer(archiveBuffer: any, fileExtension: any) {
-    return await new Promise((resolve) => {
-        try {
-            yauzl.fromBuffer(Buffer.from(archiveBuffer), { lazyEntries: true }, (err, zipfile) => {
-                if (err) {
-                    console.warn(`Error opening ZIP file: ${err.message}`);
-                    return resolve(null);
-                }
-
-                zipfile.readEntry();
-
-                zipfile.on('entry', (entry) => {
-                    if (entry.fileName.endsWith(fileExtension) && !entry.fileName.startsWith('__MACOSX')) {
-                        zipfile.openReadStream(entry, (err, readStream) => {
-                            if (err) {
-                                console.warn(`Error opening read stream: ${err.message}`);
-                                return zipfile.readEntry();
-                            } else {
-                                const chunks: any = [];
-                                readStream.on('data', (chunk) => {
-                                    chunks.push(chunk);
-                                });
-
-                                readStream.on('end', () => {
-                                    const buffer = Buffer.concat(chunks);
-                                    resolve(buffer);
-                                    zipfile.readEntry(); // Continue to the next entry
-                                });
-
-                                readStream.on('error', (err) => {
-                                    console.warn(`Error reading stream: ${err.message}`);
-                                    zipfile.readEntry();
-                                });
-                            }
-                        });
-                    } else {
-                        zipfile.readEntry();
-                    }
-                });
-
-                zipfile.on('error', (err) => {
-                    console.warn('ZIP processing error', err);
-                    resolve(null);
-                });
-
-                zipfile.on('end', () => resolve(null));
-            });
-        } catch (error) {
-            console.warn('Failed to process ZIP buffer', error);
-            resolve(null);
+    try {
+        const zip = fflate.unzipSync(new Uint8Array(archiveBuffer));
+        for (const [fileName, data] of Object.entries(zip)) {
+            if (fileName.endsWith(fileExtension) && !fileName.startsWith('__MACOSX')) {
+                return Buffer.from(data);
+            }
         }
-    });
+    } catch (error) {
+        console.warn('Failed to process ZIP buffer', error);
+    }
+    return null;
 }
 
 /**
@@ -316,80 +276,23 @@ export async function extractFilesFromZipBuffer(archiveBuffer: any, fileNames: a
         return new Map();
     }
 
-    return await new Promise((resolve) => {
-        const results = new Map();
+    const results = new Map();
 
-        try {
-            yauzl.fromBuffer(Buffer.from(archiveBuffer), { lazyEntries: true }, (err, zipfile) => {
-                if (err) {
-                    console.warn(`Error opening ZIP file: ${err.message}`);
-                    return resolve(results);
-                }
-
-                let finished = false;
-                const finalize = () => {
-                    if (finished) {
-                        return;
-                    }
-                    finished = true;
-                    resolve(results);
-                };
-
-                zipfile.readEntry();
-
-                zipfile.on('entry', (entry) => {
-                    const normalizedEntry = normalizeZipEntryPath(entry.fileName);
-                    if (!normalizedEntry || !targets.has(normalizedEntry)) {
-                        return zipfile.readEntry();
-                    }
-
-                    zipfile.openReadStream(entry, (streamErr, readStream) => {
-                        if (streamErr) {
-                            console.warn(`Error opening read stream: ${streamErr.message}`);
-                            return zipfile.readEntry();
-                        }
-
-                        const chunks: any = [];
-                        readStream.on('data', (chunk) => {
-                            chunks.push(chunk);
-                        });
-
-                        readStream.on('end', () => {
-                            results.set(normalizedEntry, Buffer.concat(chunks));
-                            targets.delete(normalizedEntry);
-
-                            if (targets.size === 0) {
-                                finalize();
-                            } else {
-                                zipfile.readEntry();
-                            }
-                        });
-
-                        readStream.on('error', (streamError) => {
-                            console.warn(`Error reading stream: ${streamError.message}`);
-                            zipfile.readEntry();
-                        });
-                    });
-                });
-
-                zipfile.on('error', (zipError) => {
-                    console.warn('ZIP processing error', zipError);
-                    finalize();
-                });
-
-                zipfile.on('close', () => {
-                    finalize();
-                });
-
-                zipfile.on('end', () => {
-                    finalize();
-                });
-            });
-        } catch (error) {
-            console.warn('Failed to process ZIP buffer', error);
-            resolve(results);
+    try {
+        const zip = fflate.unzipSync(new Uint8Array(archiveBuffer));
+        for (const [fileName, data] of Object.entries(zip)) {
+            const normalizedEntry = normalizeZipEntryPath(fileName);
+            if (normalizedEntry && targets.has(normalizedEntry)) {
+                results.set(normalizedEntry, Buffer.from(data));
+                targets.delete(normalizedEntry);
+                if (targets.size === 0) break;
+            }
         }
-    });
+    } catch (error) {
+        console.warn('Failed to process ZIP buffer', error);
+    }
+
+    return results;
 }
 
 /**
@@ -418,53 +321,22 @@ export function ensureDirectory(dirPath: any) {
  * @returns {Promise<[string, Buffer][]>} Array of image buffers
  */
 export async function getImageBuffers(zipFilePath: any) {
-    return new Promise((resolve, reject) => {
-        // Check if the zip file exists
-        if (!fs.existsSync(zipFilePath)) {
-            reject(new Error('File not found'));
-            return;
+    if (!fs.existsSync(zipFilePath)) {
+        throw new Error('File not found');
+    }
+
+    const imageBuffers: any = [];
+    const fileBuffer = fs.readFileSync(zipFilePath);
+    const zip = fflate.unzipSync(new Uint8Array(fileBuffer));
+
+    for (const [fileName, data] of Object.entries(zip)) {
+        const mimeType = mime.lookup(fileName);
+        if (mimeType && mimeType.startsWith('image/') && !fileName.startsWith('__MACOSX')) {
+            imageBuffers.push([path.parse(fileName).base, Buffer.from(data)]);
         }
+    }
 
-        const imageBuffers: any = [];
-
-        yauzl.open(zipFilePath, { lazyEntries: true }, (err, zipfile) => {
-            if (err) {
-                reject(err);
-            } else {
-                zipfile.readEntry();
-                zipfile.on('entry', (entry) => {
-                    const mimeType = mime.lookup(entry.fileName);
-                    if (mimeType && mimeType.startsWith('image/') && !entry.fileName.startsWith('__MACOSX')) {
-                        zipfile.openReadStream(entry, (err, readStream) => {
-                            if (err) {
-                                reject(err);
-                            } else {
-                                const chunks: any = [];
-                                readStream.on('data', (chunk) => {
-                                    chunks.push(chunk);
-                                });
-
-                                readStream.on('end', () => {
-                                    imageBuffers.push([path.parse(entry.fileName).base, Buffer.concat(chunks)]);
-                                    zipfile.readEntry(); // Continue to the next entry
-                                });
-                            }
-                        });
-                    } else {
-                        zipfile.readEntry(); // Continue to the next entry
-                    }
-                });
-
-                zipfile.on('end', () => {
-                    resolve(imageBuffers);
-                });
-
-                zipfile.on('error', (err) => {
-                    reject(err);
-                });
-            }
-        });
-    });
+    return imageBuffers;
 }
 
 /**
