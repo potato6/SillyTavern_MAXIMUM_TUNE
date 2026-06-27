@@ -745,7 +745,20 @@ async function addExtensionsButtonAndMenu() {
     $(button).on('pointerdown mousedown', function (e) {
         e.stopPropagation();
     }).on('click', function () {
-        dropdown[0].togglePopover();
+        if (dropdown[0].matches(':popover-open')) {
+            dropdown[0].hidePopover();
+        } else {
+            // Close the other popover before opening this one
+            const options = document.getElementById('options');
+            if (options?.matches(':popover-open')) {
+                options.hidePopover();
+            }
+            dropdown[0].showPopover();
+        }
+    });
+    // Close extensions menu when clicking interactive items inside it
+    dropdown.on('click', '.interactable, .menu_button, button, a, [data-i18n]', function () {
+        dropdown[0].hidePopover();
     });
 }
 

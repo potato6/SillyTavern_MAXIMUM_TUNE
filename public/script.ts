@@ -12601,7 +12601,29 @@ jQuery(async function () {
     button.on('pointerdown mousedown', function (e) {
         e.stopPropagation();
     }).on('click', function () {
-        menu[0].togglePopover();
+        if (menu[0].matches(':popover-open')) {
+            hideMenu();
+        } else {
+            // Close the other popover before opening this one
+            const extensionsMenu = document.getElementById('extensionsMenu');
+            if (extensionsMenu?.matches(':popover-open')) {
+                extensionsMenu.hidePopover();
+            }
+            showMenu();
+        }
+    });
+
+    // Close #options or #extensionsMenu when clicking outside (manual popovers don't have light dismiss)
+    $(document).on('mousedown', function (e) {
+        const target = e.target;
+        const options = document.getElementById('options');
+        if (options?.matches(':popover-open') && !$(target).closest('#options, #options_button').length) {
+            options.hidePopover();
+        }
+        const extensionsMenu = document.getElementById('extensionsMenu');
+        if (extensionsMenu?.matches(':popover-open') && !$(target).closest('#extensionsMenu, #extensionsMenuButton').length) {
+            extensionsMenu.hidePopover();
+        }
     });
 
     /* $('#set_chat_character_settings').on('click', setScenarioOverride); */
@@ -13466,6 +13488,17 @@ jQuery(async function () {
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('keydown', function (e) {
         if (e.key === 'Escape' && !e.originalEvent.isComposing) {
+            // Close manual popovers first
+            const optionsEl = document.getElementById('options');
+            if (optionsEl?.matches(':popover-open')) {
+                optionsEl.hidePopover();
+                return;
+            }
+            const extensionsMenuEl = document.getElementById('extensionsMenu');
+            if (extensionsMenuEl?.matches(':popover-open')) {
+                extensionsMenuEl.hidePopover();
+                return;
+            }
             // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const isEditVisible = $('#curEditTextarea').is(':visible') || $('.reasoning_edit_textarea').length > 0;
             if (isEditVisible && power_user.auto_save_msg_edits === false) {
