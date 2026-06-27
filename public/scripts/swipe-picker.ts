@@ -151,11 +151,11 @@ async function openSwipePicker(messageId) {
             const swipeText = String(swipe ?? '');
             // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const template = $('#past_chat_template .select_chat_block_wrapper').clone();
-            const block = template.find('.select_chat_block');
+            const block = $(template[0].querySelector('.select_chat_block'));
             block.removeClass('select_chat_block').addClass('swipe_picker_block');
-            block.find('.select_chat_actions').removeClass('gap10px');
-            const branchButton = template.find('.exportRawChatButton');
-            const deleteButton = template.find('.PastChat_cross');
+            $(block[0].querySelector('.select_chat_actions')).removeClass('gap10px');
+            const branchButton = $(template[0].querySelector('.exportRawChatButton'));
+            const deleteButton = $(template[0].querySelector('.PastChat_cross'));
             const swipeInfo = Array.isArray(message.swipe_info) ? message.swipe_info[index] : null;
             const sendDate = swipeInfo?.send_date ? timestampToMoment(swipeInfo.send_date).format('lll') : '';
             const previewText = swipeText.replace(/\s+/g, ' ').trim();
@@ -176,7 +176,7 @@ async function openSwipePicker(messageId) {
                 'data-swipe-id': index,
             });
 
-            template.find('.renameChatButton, .exportChatButton').remove();
+            template[0].querySelectorAll('.renameChatButton, .exportChatButton').forEach(el => el.remove());
             branchButton
                 .removeAttr('data-format')
                 .attr({
@@ -198,22 +198,20 @@ async function openSwipePicker(messageId) {
                 .removeClass('fa-skull')
                 .addClass('swipe_picker_delete fa-fw fa-trash-can')
                 .toggleClass('hoverglow', canDeleteSwipe)
-                .toggleClass('disabled', !canDeleteSwipe)
-                .each(function () {
-                    if (canDeleteSwipe) {
-                        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                        $(this)
-                            .attr({
-                                title: t`Delete Swipe`,
-                                'data-i18n': '[title]Delete Swipe',
-                            });
-                    } else {
-                        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                        $(this)
-                            .removeAttr('title')
-                            .removeAttr('data-i18n');
-                    }
-                })
+                .toggleClass('disabled', !canDeleteSwipe);
+
+            for (const el of deleteButton) {
+                if (canDeleteSwipe) {
+                    $(el).attr({
+                        title: t`Delete Swipe`,
+                        'data-i18n': '[title]Delete Swipe',
+                    });
+                } else {
+                    $(el).removeAttr('title').removeAttr('data-i18n');
+                }
+            }
+
+            deleteButton
                 .off('click')
                 .on('click', async (event) => {
                     event.preventDefault();
@@ -285,11 +283,11 @@ async function openSwipePicker(messageId) {
             // Insert new buttons before the branch button
             branchButton.before(expandLabel, copyButton);
 
-            template.find('.select_chat_block_filename').text(`#${index + 1}${index === Number(message.swipe_id ?? 0) ? ` ${t`[Current]`}` : ''}`);
-            template.find('.chat_messages_date').text(sendDate);
-            template.find('.chat_file_size').text(swipeDetails.length ? `(${swipeDetails[0]}${swipeDetails.length > 1 ? ',' : ')'}` : '');
-            template.find('.chat_messages_num').text(swipeDetails.length > 1 ? `${swipeDetails.slice(1).join(', ')})` : '');
-            template.find('.select_chat_block_mes').text(previewText ? swipeText : t`(empty swipe)`);
+            $(template[0].querySelector('.select_chat_block_filename')).text(`#${index + 1}${index === Number(message.swipe_id ?? 0) ? ` ${t`[Current]`}` : ''}`);
+            $(template[0].querySelector('.chat_messages_date')).text(sendDate);
+            $(template[0].querySelector('.chat_file_size')).text(swipeDetails.length ? `(${swipeDetails[0]}${swipeDetails.length > 1 ? ',' : ')'}` : '');
+            $(template[0].querySelector('.chat_messages_num')).text(swipeDetails.length > 1 ? `${swipeDetails.slice(1).join(', ')})` : '');
+            $(template[0].querySelector('.select_chat_block_mes')).text(previewText ? swipeText : t`(empty swipe)`);
 
             block.on('click', () => setSelectedSwipe(index));
             block.on('dblclick', async () => {
@@ -446,18 +444,15 @@ export function initSwipePicker() {
         e.preventDefault();
         e.stopPropagation();
 
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const mesId = Number($(this).closest('.mes').attr('mesid'));
+        const mesId = Number(this.closest('.mes')?.getAttribute('mesid'));
         await openSwipePicker(mesId);
     }
 
     if (isMobile()) {
         addLongPressEvent('.swipes-counter.swipe-picker-enabled', onSwipeCounterClick);
     } else {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(document).on('click', '.swipes-counter.swipe-picker-enabled', onSwipeCounterClick);
     }
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('keydown', '.swipes-counter.swipe-picker-enabled', async function (e) {
         if (e.key !== ' ') {
             return;
@@ -465,13 +460,11 @@ export function initSwipePicker() {
 
         onSwipeCounterClick.call(this, e);
     });
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.mes_swipe_picker', async function (e) {
         e.preventDefault();
         e.stopPropagation();
 
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const mesId = Number($(this).closest('.mes').attr('mesid'));
+        const mesId = Number(this.closest('.mes')?.getAttribute('mesid'));
         await openSwipePicker(mesId);
     });
 }

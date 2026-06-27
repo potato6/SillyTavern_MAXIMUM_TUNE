@@ -240,7 +240,7 @@ export const extension_settings = {
 function showHideExtensionsMenu() {
     // Get the number of menu items that are not hidden
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const hasMenuItems = $('#extensionsMenu').children().filter((_, child) => $(child).css('display') !== 'none').length > 0;
+    const hasMenuItems = Array.from(document.getElementById('extensionsMenu').children).some(child => getComputedStyle(child).display !== 'none');
 
     // We have menu items, so we can stop checking
     if (hasMenuItems) {
@@ -393,8 +393,7 @@ function onToggleAllExtensions(extensionsToToggle, toggleContainer) {
                 extensionsToToggle.push({ name, toggleHandler, enable });
             }
 
-            toggleContainer
-                .find(`.extension_block[data-name="${getNameSelector(name)}"] .extension_toggle input`)
+            $(toggleContainer[0]?.querySelector(`.extension_block[data-name="${getNameSelector(name)}"] .extension_toggle input`))
                 .prop('checked', enable)
                 .toggleClass('toggle_enable', !enable)
                 .toggleClass('toggle_disable', enable)
@@ -1277,9 +1276,8 @@ async function showExtensionsDetails() {
                 for (const extension of extensionsToToggle) {
                     const { name } = extension;
 
-                    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                    $(externalContainer)
-                        .find(`.extension_block[data-name="${getNameSelector(name)}"] .extension_toggle input`)
+                    const toggleInput = externalContainer.querySelector(`.extension_block[data-name="${getNameSelector(name)}"] .extension_toggle input`);
+                    $(toggleInput)
                         .off('click')
                         .one('click', () => {
                             extensionsToToggle = extensionsToToggle.filter(ext => ext.name !== name);
@@ -1296,9 +1294,8 @@ async function showExtensionsDetails() {
                     const { name } = extension;
                     const isDisabled = extension_settings.disabledExtensions.includes(name);
 
-                    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                    $(externalContainer)
-                        .find(`.extension_block[data-name="${getNameSelector(name)}"] .extension_toggle input`)
+                    const toggleInput = externalContainer.querySelector(`.extension_block[data-name="${getNameSelector(name)}"] .extension_toggle input`);
+                    $(toggleInput)
                         .prop('checked', !isDisabled)
                         .toggleClass('toggle_enable', isDisabled)
                         .toggleClass('toggle_disable', !isDisabled)
@@ -1405,8 +1402,7 @@ async function onUpdateClick() {
         return;
     }
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const icon = $(this).find('i');
+    const icon = $(this.querySelector('i'));
     icon.addClass('fa-spin');
     await updateExtension(extensionName, false);
     // updateExtension eats the error, but we can at least stop the spinner
@@ -1598,8 +1594,7 @@ async function onMoveClick() {
         return;
     }
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(this).find('i').addClass('fa-spin');
+    $(this.querySelector('i')).addClass('fa-spin');
     await moveExtension(extensionName, source, destination);
 }
 

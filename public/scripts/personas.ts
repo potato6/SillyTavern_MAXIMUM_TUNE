@@ -129,8 +129,7 @@ export function isPersonaPanelOpen() {
  */
 function switchPersonaGridView() {
     const state = accountStorage.getItem(GRID_STORAGE_KEY) === 'true';
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#user_avatar_block').toggleClass('gridView', state);
+    document.getElementById('user_avatar_block').classList.toggle('gridView', state);
 }
 
 /**
@@ -181,16 +180,13 @@ export async function setUserAvatar(imgfile, { toastPersonaNameChange = true, na
  * @param force
  */
 function reloadUserAvatar(force = false) {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('.mes').each(function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const avatarImg = $(this).find('.avatar img');
+    document.querySelectorAll('.mes').forEach(el => {
+        const avatarImg = $(el.querySelector('.avatar img'));
         if (force) {
             avatarImg.attr('src', avatarImg.attr('src'));
         }
 
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        if ($(this).attr('is_user') == 'true' && $(this).attr('force_avatar') == 'false') {
+        if (el.getAttribute('is_user') == 'true' && el.getAttribute('force_avatar') == 'false') {
             avatarImg.attr('src', getThumbnailUrl('persona', user_avatar));
         }
     });
@@ -203,7 +199,7 @@ function reloadUserAvatar(force = false) {
  */
 function sortPersonas(personas) {
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const option = $('#persona_sort_order').find(':selected');
+    const option = $(document.querySelector('#persona_sort_order').querySelector('option:checked'));
     if (option.attr('value') === 'search') {
         personas.sort((a, b) => {
             const aScore = personasFilter.getScore(FILTER_TYPES.PERSONA_SEARCH, a);
@@ -251,24 +247,25 @@ function verifyPersonaSearchSortRule() {
 function getUserAvatarBlock(avatarId) {
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const template = $('#user_avatar_template .avatar-container').clone();
+    const templateEl = template[0];
     const personaName = power_user.personas[avatarId];
     const personaDescription = power_user.persona_descriptions[avatarId]?.description;
     const personaTitle = power_user.persona_descriptions[avatarId]?.title;
 
-    template.find('.ch_name').text(personaName || '[Unnamed Persona]');
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    template.find('.ch_description').text(personaDescription || $('#user_avatar_block').attr('no_desc_text')).toggleClass('text_muted', !personaDescription);
-    template.find('.ch_additional_info').text(personaTitle || '');
+    $(templateEl.querySelector('.ch_name')).text(personaName || '[Unnamed Persona]');
+    $(templateEl.querySelector('.ch_description')).text(personaDescription || $('#user_avatar_block').attr('no_desc_text'));
+    templateEl.querySelector('.ch_description').classList.toggle('text_muted', !personaDescription);
+    $(templateEl.querySelector('.ch_additional_info')).text(personaTitle || '');
     template.attr('data-avatar-id', avatarId);
-    template.find('.avatar').attr('data-avatar-id', avatarId).attr('title', avatarId);
-    template.toggleClass('default_persona', avatarId === power_user.default_persona);
+    $(templateEl.querySelector('.avatar')).attr('data-avatar-id', avatarId).attr('title', avatarId);
+    template[0].classList.toggle('default_persona', avatarId === power_user.default_persona);
     const avatarUrl = getThumbnailUrl('persona', avatarId, isFirefox());
-    template.find('img').attr('src', avatarUrl);
+    $(templateEl.querySelector('img')).attr('src', avatarUrl);
 
     // Make sure description block has at least three rows. Otherwise height looks inconsistent. I don't have a better idea for this.
-    const currentText = template.find('.ch_description').text();
+    const currentText = $(templateEl.querySelector('.ch_description')).text();
     if (currentText.split('\n').length < 3) {
-        template.find('.ch_description').text(currentText + '\n\xa0\n\xa0');
+        $(templateEl.querySelector('.ch_description')).text(currentText + '\n\xa0\n\xa0');
     }
 
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
@@ -677,17 +674,14 @@ export function setPersonaDescription() {
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#persona_depth_value').val(power_user.persona_description_depth ?? DEFAULT_DEPTH);
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#persona_description_position')
-        .val(power_user.persona_description_position)
-        .find(`option[value="${power_user.persona_description_position}"]`)
-        .attr('selected', String(true));
+    const personaDescPosEl = document.querySelector('#persona_description_position');
+    personaDescPosEl.value = power_user.persona_description_position;
+    $(personaDescPosEl.querySelector(`option[value="${power_user.persona_description_position}"]`)).attr('selected', String(true));
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#persona_depth_role')
-        .val(power_user.persona_description_role)
-        .find(`option[value="${power_user.persona_description_role}"]`)
-        .prop('selected', String(true));
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#persona_lore_button').toggleClass('world_set', !!power_user.persona_description_lorebook);
+    const personaDepthRoleEl = document.querySelector('#persona_depth_role');
+    personaDepthRoleEl.value = power_user.persona_description_role;
+    $(personaDepthRoleEl.querySelector(`option[value="${power_user.persona_description_role}"]`)).prop('selected', String(true));
+    document.getElementById('persona_lore_button').classList.toggle('world_set', !!power_user.persona_description_lorebook);
     countPersonaDescriptionTokens();
 
     updatePersonaUIStates();
@@ -1294,11 +1288,11 @@ async function onPersonaDescriptionInput() {
             object = {
                 description: power_user.persona_description,
                 // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                position: Number($('#persona_description_position').find(':selected').val()),
+                position: Number($(document.querySelector('#persona_description_position').querySelector('option:checked')).val()),
                 // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 depth: Number($('#persona_depth_value').val()),
                 // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                role: Number($('#persona_depth_role').find(':selected').val()),
+                role: Number($(document.querySelector('#persona_depth_role').querySelector('option:checked')).val()),
                 lorebook: '',
                 title: '',
             };
@@ -1309,10 +1303,9 @@ async function onPersonaDescriptionInput() {
     }
 
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(`.avatar-container[data-avatar-id="${user_avatar}"] .ch_description`)
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        .text(power_user.persona_description || $('#user_avatar_block').attr('no_desc_text'))
-        .toggleClass('text_muted', !power_user.persona_description);
+    const chDescEl = document.querySelector(`.avatar-container[data-avatar-id="${user_avatar}"] .ch_description`);
+    $(chDescEl).text(power_user.persona_description || $('#user_avatar_block').attr('no_desc_text'));
+    chDescEl.classList.toggle('text_muted', !power_user.persona_description);
     saveSettingsDebounced();
 
     if (power_user.personas[user_avatar]) {
@@ -1343,7 +1336,7 @@ async function onPersonaDescriptionDepthValueInput() {
  */
 async function onPersonaDescriptionDepthRoleInput() {
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    power_user.persona_description_role = Number($('#persona_depth_role').find(':selected').val());
+    power_user.persona_description_role = Number($(document.querySelector('#persona_depth_role').querySelector('option:checked')).val());
 
     if (power_user.personas[user_avatar]) {
         const object = getOrCreatePersonaDescriptor();
@@ -1376,10 +1369,11 @@ async function onPersonaLoreButtonClick({ shiftKey, altKey }) {
     }
 
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const template = $(await renderTemplateAsync('personaLorebook'));
+    const templateEl = await renderTemplateAsync('personaLorebook');
+    const template = $(templateEl);
 
-    const worldSelect = template.find('select');
-    template.find('.persona_name').text(personaName);
+    const worldSelect = $(templateEl.querySelector('select'));
+    templateEl.querySelector('.persona_name').textContent = personaName;
 
     for (const worldName of world_names) {
         const option = document.createElement('option');
@@ -1398,8 +1392,7 @@ async function onPersonaLoreButtonClick({ shiftKey, altKey }) {
             object.lorebook = power_user.persona_description_lorebook;
         }
 
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#persona_lore_button').toggleClass('world_set', !!power_user.persona_description_lorebook);
+        document.getElementById('persona_lore_button').classList.toggle('world_set', !!power_user.persona_description_lorebook);
         saveSettingsDebounced();
 
         if (power_user.personas[user_avatar]) {
@@ -1416,7 +1409,7 @@ async function onPersonaLoreButtonClick({ shiftKey, altKey }) {
 async function onPersonaDescriptionPositionInput() {
     power_user.persona_description_position = Number(
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#persona_description_position').find(':selected').val(),
+        $(document.querySelector('#persona_description_position').querySelector('option:checked')).val(),
     );
 
     if (power_user.personas[user_avatar]) {
@@ -1570,40 +1563,27 @@ function updatePersonaUIStates({ navigateToCurrent = false } = {}) {
     }
 
     // Update the persona list
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#user_avatar_block .avatar-container').each(function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const avatarId = $(this).attr('data-avatar-id');
+    document.querySelectorAll('#user_avatar_block .avatar-container').forEach(el => {
+        const avatarId = el.getAttribute('data-avatar-id');
         const states = getPersonaStates(avatarId);
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(this).toggleClass('default_persona', states.default);
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(this).toggleClass('locked_to_chat', states.locked.chat);
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(this).toggleClass('locked_to_character', states.locked.character);
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(this).toggleClass('selected', avatarId === user_avatar);
+        el.classList.toggle('default_persona', states.default);
+        el.classList.toggle('locked_to_chat', states.locked.chat);
+        el.classList.toggle('locked_to_character', states.locked.character);
+        el.classList.toggle('selected', avatarId === user_avatar);
     });
 
     // Buttons for the persona panel on the right
     const personaStates = getPersonaStates(user_avatar);
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#lock_persona_default').toggleClass('locked', personaStates.default);
+    document.getElementById('lock_persona_default').classList.toggle('locked', personaStates.default);
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#lock_user_name').toggleClass('locked', personaStates.locked.chat);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#lock_user_name i.icon').toggleClass('fa-lock', personaStates.locked.chat);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#lock_user_name i.icon').toggleClass('fa-unlock', !personaStates.locked.chat);
+    document.getElementById('lock_user_name').classList.toggle('locked', personaStates.locked.chat);
+    document.querySelector('#lock_user_name i.icon').classList.toggle('fa-lock', personaStates.locked.chat);
+    document.querySelector('#lock_user_name i.icon').classList.toggle('fa-unlock', !personaStates.locked.chat);
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#lock_persona_to_char').toggleClass('locked', personaStates.locked.character);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#lock_persona_to_char i.icon').toggleClass('fa-lock', personaStates.locked.character);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#lock_persona_to_char i.icon').toggleClass('fa-unlock', !personaStates.locked.character);
+    document.getElementById('lock_persona_to_char').classList.toggle('locked', personaStates.locked.character);
+    document.querySelector('#lock_persona_to_char i.icon').classList.toggle('fa-lock', personaStates.locked.character);
+    document.querySelector('#lock_persona_to_char i.icon').classList.toggle('fa-unlock', !personaStates.locked.character);
 
     // Persona panel info block
     const { isTemporary, info } = getPersonaTemporaryLockInfo();
@@ -3137,7 +3117,7 @@ export async function initPersonas() {
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#persona-management-dropdown').on('change', async function () {
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const target = $(this).find(':selected').attr('id');
+        const target = $(this.querySelector('option:checked')).attr('id');
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(this).prop('selectedIndex', 0);
         switch (target) {

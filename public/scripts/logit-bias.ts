@@ -16,8 +16,7 @@ export function displayLogitBias(logitBias, containerSelector) {
         return;
     }
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const list = $(containerSelector).find('.logit_bias_list');
+    const list = $(document.querySelector(containerSelector).querySelector('.logit_bias_list'));
     list.empty();
 
     for (const entry of logitBias) {

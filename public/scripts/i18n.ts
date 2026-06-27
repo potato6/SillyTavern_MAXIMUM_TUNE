@@ -193,23 +193,19 @@ async function getMissingTranslations() {
 
     for (const language of langsToProcess) {
         const localeData = await getLocaleData(language.lang);
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(document).find('[data-i18n]').each(function () {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const keys = $(this).data('i18n').split(';'); // Multi-key entries are ; delimited
+        document.querySelectorAll('[data-i18n]').forEach(function (el) {
+            const keys = $(el).data('i18n').split(';'); // Multi-key entries are ; delimited
             for (const key of keys) {
                 const attributeMatch = key.match(/\[(\S+)\](.+)/); // [attribute]key
                 if (attributeMatch) { // attribute-tagged key
                     const localizedValue = localeData?.[attributeMatch[2]];
                     if (!localizedValue) {
-                        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                        missingData.push({ key, language: language.lang, value: String($(this).attr(attributeMatch[1])) });
+                        missingData.push({ key, language: language.lang, value: String($(el).attr(attributeMatch[1])) });
                     }
                 } else { // No attribute tag, treat as 'text'
                     const localizedValue = localeData?.[key];
                     if (!localizedValue) {
-                        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                        missingData.push({ key, language: language.lang, value: $(this).text().trim() });
+                        missingData.push({ key, language: language.lang, value: $(el).text().trim() });
                     }
                 }
             }
@@ -255,16 +251,14 @@ export function applyLocale(root = document) {
         return root;
     }
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const $root = root instanceof Document ? $(root) : $(new DOMParser().parseFromString(root, 'text/html'));
+    const rootElement = root instanceof Document ? document : new DOMParser().parseFromString(root, 'text/html');
 
-    //find all the elements with `data-i18n` attribute
-    $root.find('[data-i18n]').each(function () {
-        translateElement(this);
+    rootElement.querySelectorAll('[data-i18n]').forEach(function (el) {
+        translateElement(el);
     });
 
     if (root !== document) {
-        return $root.get(0).body.innerHTML;
+        return rootElement.body.innerHTML;
     }
 }
 

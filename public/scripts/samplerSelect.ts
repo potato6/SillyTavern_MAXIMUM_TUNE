@@ -87,8 +87,7 @@ async function showSamplerSelectPopup() {
  * @param samplerName
  */
 function getRelatedDOMElement(samplerName) {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    let relatedDOMElement = $(`#${samplerName}_${main_api}`).parent();
+    let relatedDOMElement = $(document.getElementById(`${samplerName}_${main_api}`).parentElement);
     let targetDisplayType = 'flex';
     let displayname;
 
@@ -199,9 +198,8 @@ function getRelatedDOMElement(samplerName) {
  */
 function setSamplerListListeners() {
     // Goal 2: hide unchecked samplers from DOM
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const listContainer = $('#apiSamplersList');
-    listContainer.find('input').off('change').on('change', async function () {
+    const listContainer = document.getElementById('apiSamplersList');
+    listContainer.querySelectorAll('input').forEach(el => $(el).off('change').on('change', async function () {
         const samplerName = this.name.replace('_checkbox', '');
         const { relatedDOMElement, targetDisplayType } = getRelatedDOMElement(samplerName);
 
@@ -209,8 +207,7 @@ function setSamplerListListeners() {
         const previousState = relatedDOMElement.data(SELECT_SAMPLER.DATA);
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const isChecked = $(this).prop('checked');
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const popupInputLabel = $(this).parent().find('.sampler_name');
+        const popupInputLabel = $(this.parentElement.querySelector('.sampler_name'));
 
         if (isChecked === false) {
             if (previousState === SELECT_SAMPLER.SHOWN) {
@@ -242,7 +239,7 @@ function setSamplerListListeners() {
         if (main_api === 'textgenerationwebui') setApiSamplersState(samplerName, shouldDisplay !== 'none');
 
         console.log(samplerName, relatedDOMElement.data(SELECT_SAMPLER.DATA), shouldDisplay);
-    });
+    }));
 }
 
 /**

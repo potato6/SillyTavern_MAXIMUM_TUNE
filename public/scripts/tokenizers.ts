@@ -220,8 +220,7 @@ async function resetTokenCache() {
  * @returns {Tokenizer[]} Tokenizer info.
  */
 export function getAvailableTokenizers() {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const tokenizerOptions = $('#tokenizer').find('option').toArray();
+    const tokenizerOptions = Array.from(document.querySelectorAll('#tokenizer option'));
     return tokenizerOptions.map(tokenizerOption => ({
         tokenizerId: Number(tokenizerOption.value),
         tokenizerKey: Object.entries(tokenizers).find(([_, value]) => value === Number(tokenizerOption.value))[0].toLocaleLowerCase(),
@@ -257,10 +256,9 @@ export function getFriendlyTokenizerName(forApi) {
         forApi = main_api;
     }
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const tokenizerOption = $('#tokenizer').find(':selected');
-    let tokenizerId = Number(tokenizerOption.val());
-    let tokenizerName = tokenizerOption.text();
+    const tokenizerOption = document.querySelector('#tokenizer option:checked');
+    let tokenizerId = Number(tokenizerOption?.value);
+    let tokenizerName = tokenizerOption?.textContent;
 
     if (forApi !== 'openai' && tokenizerId === tokenizers.BEST_MATCH) {
         tokenizerId = getTokenizerBestMatch(forApi);

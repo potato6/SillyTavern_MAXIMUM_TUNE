@@ -1069,8 +1069,7 @@ export function setWorldInfoSettings(settings, data) {
 
     eventSource.on(event_types.CHAT_CHANGED, async () => {
         const hasWorldInfo = !!chat_metadata[METADATA_KEY] && world_names.includes(chat_metadata[METADATA_KEY]);
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('.chat_lorebook_button').toggleClass('world_set', hasWorldInfo);
+        document.querySelector('.chat_lorebook_button').classList.toggle('world_set', hasWorldInfo);
         // Pre-cache the world info data for the chat for quicker first prompt generation
         await getSortedEntries();
     });
@@ -1254,8 +1253,7 @@ function registerWorldInfoSlashCommands() {
 
         chat_metadata[METADATA_KEY] = name;
         await saveMetadata();
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('.chat_lorebook_button').addClass('world_set');
+        document.querySelector('.chat_lorebook_button').classList.add('world_set');
         return name;
     }
 
@@ -2223,12 +2221,11 @@ export async function updateWorldInfoList() {
     if (result.ok) {
         const data = await result.json();
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const editorSelected = String($('#world_editor_select').find(':selected').text());
+        const editorSelected = String(document.getElementById('world_editor_select').options[document.getElementById('world_editor_select').selectedIndex].text);
         world_names = data.world_names?.length ? data.world_names : [];
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#world_info').find('option[value!=""]').remove();
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#world_editor_select').find('option[value!=""]').remove();
+        document.getElementById('world_info').querySelectorAll('option[value!=""]').forEach(el => el.remove());
+        document.getElementById('world_editor_select').querySelectorAll('option[value!=""]').forEach(el => el.remove());
 
         world_names.forEach((item, i) => {
             const globalListOption = new Option(item, i.toString());
@@ -2255,11 +2252,9 @@ async function hideWorldEditor() {
  * @param name
  */
 function getWIElement(name) {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const wiElement = $('#world_info').children().filter(function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        return $(this).text().toLowerCase() === name.toLowerCase();
-    });
+    const wiElement = $(Array.from(document.getElementById('world_info').children).filter(function (child) {
+        return child.textContent.toLowerCase() === name.toLowerCase();
+    }));
 
     return wiElement;
 }
@@ -2312,8 +2307,7 @@ function addMissingWorldInfoFields(data) {
  * @returns {any[]} Sorted data
  */
 export function sortWorldInfoEntries(data, { customSort = null } = {}) {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const option = $('#world_info_sort_order').find(':selected');
+    const option = $(document.getElementById('world_info_sort_order').options[document.getElementById('world_info_sort_order').selectedIndex]);
     const sortField = customSort?.sortField ?? option.data('field');
     const sortOrder = customSort?.sortOrder ?? option.data('order');
     const sortRule = customSort?.sortRule ?? option.data('rule');
@@ -2424,30 +2418,24 @@ function updateWorldEntryKeyOptionsCache(keyOptions, { remove = false, reset = f
 function clearEntryList($list) {
     console.time('clearEntryList');
 
-    // List already empty, skipping cleanup
-    if (!$list.children().length) {
+    const listElement = $list[0];
+
+    if (!listElement.children.length) {
         console.timeEnd('clearEntryList');
         return;
     }
 
-    // Unsubscribe from toggle events, so that mass open won't create new drawers
-    $list.find('.inline-drawer').off('inline-drawer-toggle');
+    $(listElement.querySelectorAll('.inline-drawer')).off('inline-drawer-toggle');
 
-    // Step 1: Clean all <option> elements within <select>
-    $list.find('option').each(function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const $option = $(this);
+    listElement.querySelectorAll('option').forEach(function (option) {
+        const $option = $(option);
         $option.off();
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $.cleanData([$option[0]]);
         $option.remove();
     });
 
-    // Step 2: Clean all <select> elements
-    $list.find('select').each(function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const $select = $(this);
-        // Remove Select2-related data and container if present
+    listElement.querySelectorAll('select').forEach(function (select) {
+        const $select = $(select);
         if ($select.data('select2')) {
             try {
                 $select.select2('destroy');
@@ -2455,30 +2443,25 @@ function clearEntryList($list) {
                 console.debug('Select2 destroy failed:', e);
             }
         }
-        const $container = $select.parent();
+        const $container = $($select[0].parentElement);
         if ($container.length) {
-            $container.find('*').off();
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $.cleanData($container.find('*').get());
+            $($container[0].querySelectorAll('*')).off();
+            $.cleanData(Array.from($container[0].querySelectorAll('*')));
             $container.remove();
         }
 
         $select.off();
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $.cleanData([$select[0]]);
     });
 
-    // Step 3: Clean <div>, <span>, <input>
-    $list.find('div, span, input').each(function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const $elem = $(this);
+    listElement.querySelectorAll('div, span, input').forEach(function (elem) {
+        const $elem = $(elem);
         $elem.off();
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $.cleanData([$elem[0]]);
         $elem.remove();
     });
 
-    const totalElementsOfAnyKindLeftInList = $list.children().length;
+    const totalElementsOfAnyKindLeftInList = listElement.children.length;
 
     // Final cleanup
     if (totalElementsOfAnyKindLeftInList) {
@@ -2636,7 +2619,7 @@ async function displayWorldEntries(name, data, navigation = navigation_option.no
                 }
 
                 // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                const isCustomOrder = $('#world_info_sort_order').find(':selected').data('rule') === 'custom';
+                const isCustomOrder = document.getElementById('world_info_sort_order').options[document.getElementById('world_info_sort_order').selectedIndex]?.getAttribute('data-rule') === 'custom';
                 if (!isCustomOrder) {
                     blocks.forEach(block => {
                         block.find('.drag-handle').remove();
@@ -2654,9 +2637,8 @@ async function displayWorldEntries(name, data, navigation = navigation_option.no
         },
         afterPaging: function () {
             // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#world_popup_entries_list textarea[name="comment"]').each(function () {
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                initScrollHeight($(this));
+            document.querySelectorAll('#world_popup_entries_list textarea[name="comment"]').forEach(function (el) {
+                initScrollHeight($(el));
             });
         },
     });
@@ -2673,7 +2655,7 @@ async function displayWorldEntries(name, data, navigation = navigation_option.no
             }
 
             const elementOffset = element.offset();
-            const parentOffset = element.parent().offset();
+            const parentOffset = $(element[0].parentElement).offset();
             const scrollOffset = elementOffset.top - parentOffset.top;
             // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#WorldInfo').scrollTop(scrollOffset);
@@ -2779,7 +2761,7 @@ async function displayWorldEntries(name, data, navigation = navigation_option.no
     $('#world_duplicate').off('click').on('click', async () => {
         // Find current name for the world selected
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const selectedIndex = String($('#world_editor_select').find(':selected').val());
+        const selectedIndex = String(document.getElementById('world_editor_select').options[document.getElementById('world_editor_select').selectedIndex].value);
         const worldName = world_names[selectedIndex] || null;
 
         // Use the current name as default input, then ask user for the name
@@ -2811,13 +2793,10 @@ async function displayWorldEntries(name, data, navigation = navigation_option.no
         delay: getSortableDelay(),
         handle: '.drag-handle',
         stop: async function (_event, _ui) {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const firstEntryUid = $('#world_popup_entries_list .world_entry').first().data('uid');
+                const firstEntryUid = document.querySelector('#world_popup_entries_list .world_entry')?.dataset.uid;
             const minDisplayIndex = data?.entries[firstEntryUid]?.displayIndex ?? 0;
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#world_popup_entries_list .world_entry').each(function (index) {
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                const uid = $(this).data('uid');
+            document.querySelectorAll('#world_popup_entries_list .world_entry').forEach(function (el, index) {
+                const uid = $(el).data('uid');
 
                 // Update the display index in the data array
                 const item = data.entries[uid];
@@ -3104,19 +3083,29 @@ function enableKeysInputHelper({ template, entry, entryPropName, originalDataVal
      * @param root0.searchStyle
      */
     function templateStyling(item, { searchStyle = false } = {}) {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const content = $('<span>').addClass('item').text(item.text).attr('title', `${item.text}\n\nClick to edit`);
+        const content = document.createElement('span');
+        content.classList.add('item');
+        content.textContent = item.text;
+        content.title = `${item.text}\n\nClick to edit`;
         const isRegex = isValidRegex(item.text);
         if (isRegex) {
-            content.html(highlightRegex(item.text));
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            content.addClass('regex_item').prepend($('<span>').addClass('regex_icon').text('•*').attr('title', 'Regex'));
+            content.innerHTML = highlightRegex(item.text);
+            content.classList.add('regex_item');
+            const regexIcon = document.createElement('span');
+            regexIcon.classList.add('regex_icon');
+            regexIcon.textContent = '•*';
+            regexIcon.title = 'Regex';
+            content.prepend(regexIcon);
         }
         if (searchStyle && item.count) {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const wrapper = $('<span>').addClass('result_block').append(content);
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            wrapper.append($('<span>').addClass('item_count').text(item.count).attr('title', `Used as a key ${item.count} ${item.count != 1 ? 'times' : 'time'} in this lorebook`));
+            const wrapper = document.createElement('span');
+            wrapper.classList.add('result_block');
+            wrapper.append(content);
+            const itemCount = document.createElement('span');
+            itemCount.classList.add('item_count');
+            itemCount.textContent = item.count;
+            itemCount.title = `Used as a key ${item.count} ${item.count != 1 ? 'times' : 'time'} in this lorebook`;
+            wrapper.append(itemCount);
             return wrapper;
         }
         return content;
@@ -3152,17 +3141,16 @@ function enableKeysInputHelper({ template, entry, entryPropName, originalDataVal
                 setWIOriginalDataValue(data, uid, originalDataValueName, data.entries[uid][entryPropName]);
                 await saveWorldInfo(name, data);
             }
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(this).toggleClass('empty', !data.entries[uid][entryPropName].length);
+            this.classList.toggle('empty', !data.entries[uid][entryPropName].length);
             // Update the commentInput's placeholder for primary keys
             if (entryPropName === 'key') {
                 // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                const commentInput = $(_event.currentTarget).closest('.world_entry_form').find('textarea[name="comment"]');
+                const commentInput = $(_event.currentTarget.closest('.world_entry_form').querySelector('textarea[name="comment"]'));
                 setCommentPlaceholder(data.entries[uid][entryPropName].join(', '), commentInput);
             }
         });
 
-        input.toggleClass('empty', !entry[entryPropName].length);
+        input[0].classList.toggle('empty', !entry[entryPropName].length);
         input.on('select2:select', event => updateWorldEntryKeyOptionsCache([event.params.data]));
         input.on('select2:unselect', event => updateWorldEntryKeyOptionsCache([event.params.data], { remove: true }));
 
@@ -3196,13 +3184,12 @@ function enableKeysInputHelper({ template, entry, entryPropName, originalDataVal
                 data.entries[uid][entryPropName] = splitKeywordsAndRegexes(value);
                 setWIOriginalDataValue(data, uid, originalDataValueName, data.entries[uid][entryPropName]);
                 await saveWorldInfo(name, data);
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                $(this).toggleClass('empty', !data.entries[uid][entryPropName].length);
+                this.classList.toggle('empty', !data.entries[uid][entryPropName].length);
             }
             // Update the commentInput's placeholder for primary keys
             if (entryPropName === 'key') {
                 // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                const commentInput = $(_event.currentTarget).closest('.world_entry_form').find('textarea[name="comment"]');
+                const commentInput = $(_event.currentTarget.closest('.world_entry_form').querySelector('textarea[name="comment"]'));
                 setCommentPlaceholder(value, commentInput);
             }
         });
@@ -3316,13 +3303,12 @@ function handleCharacterFilterChangeHelper({ characterFilter, data, entry, name 
         }
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const uid = $(this).data('uid');
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const selected = $(this).find(':selected');
-        if ((!selected || selected?.length === 0) && !data.entries[uid].characterFilter?.isExclude) {
+        const selectedOptions = this.selectedOptions;
+        if ((!selectedOptions || selectedOptions?.length === 0) && !data.entries[uid].characterFilter?.isExclude) {
             delete data.entries[uid].characterFilter;
         } else {
-            const names = selected.filter('[data-type="character"]').map((_, e) => e instanceof HTMLOptionElement && e.innerText).toArray();
-            const tags = selected.filter('[data-type="tag"]').map((_, e) => e instanceof HTMLOptionElement && e.value).toArray();
+            const names = Array.from(selectedOptions).filter(o => o.matches('[data-type="character"]')).map(o => o instanceof HTMLOptionElement && o.innerText);
+            const tags = Array.from(selectedOptions).filter(o => o.matches('[data-type="tag"]')).map(o => o instanceof HTMLOptionElement && o.value);
             Object.assign(
                 data.entries[uid],
                 {
@@ -3386,8 +3372,7 @@ function handleProbabilityToggleHelper({ probabilityToggle, data, entry, name, p
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const value = $(this).prop('checked');
         data.entries[uid].useProbability = value;
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const probabilityContainer = $(this).closest('.world_entry').find('.probabilityContainer');
+        const probabilityContainer = $(this.closest('.world_entry').querySelector('.probabilityContainer'));
         !noSave && (await saveWorldInfo(name, data));
         value ? probabilityContainer.show() : probabilityContainer.hide();
         if (value && data.entries[uid].probability === null) {
@@ -3399,7 +3384,7 @@ function handleProbabilityToggleHelper({ probabilityToggle, data, entry, name, p
         probabilityInput.val(data.entries[uid].probability).trigger('input', { noSave });
     });
     probabilityToggle.prop('checked', true).trigger('input', { noSave: true });
-    probabilityToggle.parent().hide();
+    $(probabilityToggle[0].parentElement).hide();
 }
 
 /**
@@ -3521,15 +3506,15 @@ function handleEntryKillSwitchHelper({ entryKillSwitch, entry, data, name, templ
         data.entries[uid].disable = !data.entries[uid].disable;
         const isActive = !data.entries[uid].disable;
         setWIOriginalDataValue(data, uid, 'enabled', isActive);
-        template.toggleClass('disabledWIEntry', !isActive);
-        entryKillSwitch.toggleClass('fa-toggle-off', !isActive);
-        entryKillSwitch.toggleClass('fa-toggle-on', isActive);
+        template[0].classList.toggle('disabledWIEntry', !isActive);
+        entryKillSwitch[0].classList.toggle('fa-toggle-off', !isActive);
+        entryKillSwitch[0].classList.toggle('fa-toggle-on', isActive);
         await saveWorldInfo(name, data);
     });
     const isActive = !entry.disable;
-    template.toggleClass('disabledWIEntry', !isActive);
-    entryKillSwitch.toggleClass('fa-toggle-off', !isActive);
-    entryKillSwitch.toggleClass('fa-toggle-on', isActive);
+    template[0].classList.toggle('disabledWIEntry', !isActive);
+    entryKillSwitch[0].classList.toggle('fa-toggle-off', !isActive);
+    entryKillSwitch[0].classList.toggle('fa-toggle-on', isActive);
 }
 
 /**
@@ -3621,7 +3606,7 @@ export async function getWorldEntry(name, data, entry) {
             depthInput.prop('disabled', false);
             depthInput.css('visibility', 'visible');
             // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const role = Number($(this).find(':selected').data('role'));
+            const role = Number(this.options[this.selectedIndex]?.getAttribute('data-role'));
             data.entries[uid].role = role;
         } else {
             depthInput.prop('disabled', true);
@@ -3777,7 +3762,7 @@ export async function getWorldEntry(name, data, entry) {
             power_user.wi_key_input_plaintext = !power_user.wi_key_input_plaintext;
             saveSettingsDebounced();
             // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const uid = ($(this).parents('.world_entry')).data('uid');
+            const uid = $(this.closest('.world_entry')).data('uid');
             updateEditor(uid, false);
             // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(`.world_entry[uid="${uid}"] .inline-drawer-icon`).trigger('click');
@@ -3804,13 +3789,13 @@ export async function getWorldEntry(name, data, entry) {
             // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const value = $(this).prop('checked');
             // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const commentContainer = $(this).closest('.world_entry').find('.commentContainer');
+            const commentContainer = $(this.closest('.world_entry').querySelector('.commentContainer'));
             data.entries[uid].addMemo = value;
             !noSave && (await saveWorldInfo(name, data));
             value ? commentContainer.show() : commentContainer.hide();
         });
         commentToggle.prop('checked', true).trigger('input', { noSave: true });
-        commentToggle.parent().hide();
+        $(commentToggle[0].parentElement).hide();
 
         // Logic AND/NOT
         const selectiveLogicDropdown = editTemplate.find('select[name="entryLogicType"]');
@@ -3839,17 +3824,15 @@ export async function getWorldEntry(name, data, entry) {
             setWIOriginalDataValue(data, uid, 'selective', data.entries[uid].selective);
             !noSave && (await saveWorldInfo(name, data));
             // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const keysecondary = $(this).closest('.world_entry').find('.keysecondary');
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const keysecondarytextpole = $(this).closest('.world_entry').find('.keysecondarytextpole');
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const keyprimaryselect = $(this).closest('.world_entry').find('.keyprimaryselect');
+            const keysecondary = $(this.closest('.world_entry').querySelector('.keysecondary'));
+            const keysecondarytextpole = $(this.closest('.world_entry').querySelector('.keysecondarytextpole'));
+            const keyprimaryselect = $(this.closest('.world_entry').querySelector('.keyprimaryselect'));
             const keyprimaryHeight = keyprimaryselect.outerHeight();
             keysecondarytextpole.css('height', keyprimaryHeight + 'px');
             value ? keysecondary.show() : keysecondary.hide();
         });
         selectiveInput.prop('checked', true).trigger('input', { noSave: true });
-        selectiveInput.parent().hide();
+        $(selectiveInput[0].parentElement).hide();
 
         // Character filter
         const characterFilterLabel = editTemplate.find('label[for="characterFilter"] > small');
@@ -4651,8 +4634,7 @@ export async function deleteWorldInfo(worldInfoName) {
             const object = getOrCreatePersonaDescriptor();
             object.lorebook = '';
         }
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#persona_lore_button').toggleClass('world_set', false);
+        document.getElementById('persona_lore_button').classList.toggle('world_set', false);
         saveSettingsDebounced();
     }
 
@@ -6021,8 +6003,7 @@ export function convertCharacterBook(characterBook) {
  */
 export function setWorldInfoButtonClass(chid, forceValue = undefined) {
     if (forceValue !== undefined) {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#set_character_world, #world_button').toggleClass('world_set', forceValue);
+        document.querySelectorAll('#set_character_world, #world_button').forEach(el => el.classList.toggle('world_set', forceValue));
         return;
     }
 
@@ -6032,8 +6013,7 @@ export function setWorldInfoButtonClass(chid, forceValue = undefined) {
 
     const world = characters[chid]?.data?.extensions?.world;
     const worldSet = Boolean(world && world_names.includes(world));
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#set_character_world, #world_button').toggleClass('world_set', worldSet);
+    document.querySelectorAll('#set_character_world, #world_button').forEach(el => el.classList.toggle('world_set', worldSet));
 }
 
 /**
@@ -6370,12 +6350,10 @@ export async function assignLorebookToChat({ shiftKey, altKey }) {
 
         if (worldName) {
             chat_metadata[METADATA_KEY] = worldName;
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('.chat_lorebook_button').addClass('world_set');
+            document.querySelector('.chat_lorebook_button').classList.add('world_set');
         } else {
             delete chat_metadata[METADATA_KEY];
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('.chat_lorebook_button').removeClass('world_set');
+            document.querySelector('.chat_lorebook_button').classList.remove('world_set');
         }
 
         saveMetadata();
@@ -6643,7 +6621,7 @@ export function initWorldInfo() {
         $('#world_info_search').val('');
         worldInfoFilter.setFilterData(FILTER_TYPES.WORLD_INFO_SEARCH, '', true);
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const selectedIndex = String($('#world_editor_select').find(':selected').val());
+        const selectedIndex = String(document.getElementById('world_editor_select').options[document.getElementById('world_editor_select').selectedIndex].value);
 
         if (selectedIndex === '') {
             await hideWorldEditor();
@@ -6678,7 +6656,7 @@ export function initWorldInfo() {
             // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#world_info_max_recursion_steps').val(0).trigger('input');
             // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            flashHighlight($('#world_info_max_recursion_steps').parent()); // flash the other control to show it has changed
+            flashHighlight($(document.getElementById('world_info_max_recursion_steps').parentElement)); // flash the other control to show it has changed
             console.info('[WI] Max recursion steps set to 0, as min activations is set to', world_info_min_activations);
         } else {
             saveSettings();
@@ -6771,7 +6749,7 @@ export function initWorldInfo() {
             // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#world_info_min_activations').val(0).trigger('input');
             // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            flashHighlight($('#world_info_min_activations').parent()); // flash the other control to show it has changed
+            flashHighlight($(document.getElementById('world_info_min_activations').parentElement)); // flash the other control to show it has changed
             console.info('[WI] Min activations set to 0, as max recursion steps is set to', world_info_max_recursion_steps);
         } else {
             saveSettings();
@@ -6824,7 +6802,7 @@ export function initWorldInfo() {
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_info_sort_order').on('change', function () {
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const value = String($(this).find(':selected').val());
+        const value = String(this.options[this.selectedIndex].value);
         // Save sort order, but do not save search sorting, as this is a temporary sorting option
         if (value !== 'search') accountStorage.setItem(SORT_ORDER_KEY, value);
         updateEditor(navigation_option.none);
@@ -6882,8 +6860,7 @@ export function initWorldInfo() {
 
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#WorldInfo').on('scroll', () => {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('.world_entry input[name="group"], .world_entry input[name="automationId"]').each((_, el) => {
+        document.querySelectorAll('.world_entry input[name="group"], .world_entry input[name="automationId"]').forEach(el => {
             // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const instance = $(el).autocomplete('instance');
 

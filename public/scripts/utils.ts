@@ -28,10 +28,13 @@ export const shiftDownByOne = (e, i, a) => a[i] = e - 1;
 export const PAGINATION_TEMPLATE = '<%= rangeStart %>-<%= rangeEnd %> .. <%= totalNumber %>';
 
 export const localizePagination = function (container) {
-    container.find('[title="Next page"]').attr('title', t`Next page`);
-    container.find('[title="Previous page"]').attr('title', t`Previous page`);
-    container.find('[title="First page"]').attr('title', t`First page`);
-    container.find('[title="Last page"]').attr('title', t`Last page`);
+    const el = container[0];
+    if (el) {
+        el.querySelectorAll('[title="Next page"]').forEach(e => e.setAttribute('title', t`Next page`));
+        el.querySelectorAll('[title="Previous page"]').forEach(e => e.setAttribute('title', t`Previous page`));
+        el.querySelectorAll('[title="First page"]').forEach(e => e.setAttribute('title', t`First page`));
+        el.querySelectorAll('[title="Last page"]').forEach(e => e.setAttribute('title', t`Last page`));
+    }
 };
 
 /**
@@ -89,10 +92,11 @@ export const renderPaginationDropdown = function (pageSize, sizeChangerOptions) 
 };
 
 export const paginationDropdownChangeHandler = function (event, size) {
+    const container = event?.originalEvent?.currentTarget || event.delegateTarget;
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const dropdown = $(event?.originalEvent?.currentTarget || event.delegateTarget).find('select');
-    dropdown.find('[selected]').removeAttr('selected');
-    dropdown.find(`[value=${size}]`).attr('selected', '');
+    const dropdown = $(container.querySelector('select'));
+    dropdown[0]?.querySelectorAll('[selected]').forEach(el => el.removeAttribute('selected'));
+    dropdown[0]?.querySelectorAll(`[value="${size}"]`).forEach(el => el.setAttribute('selected', ''));
 };
 
 /**
@@ -2394,7 +2398,7 @@ export function select2ModifyOptions(element, items, { select = false, changeEve
 
     dataItems.forEach(item => {
         // Set the value, creating a new option if necessary
-        if (element.find('option[value=\'' + item.id + '\']').length) {
+        if (element[0].querySelector('option[value=\'' + item.id + '\']')) {
             if (select) optionsToSelect.push(item.id);
         } else {
             // Create a DOM Option and optionally pre-select by default
@@ -2451,7 +2455,7 @@ export function dynamicSelect2DataViaAjax(dataProvider) {
 export function isSelect2ChoiceElement(element) {
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const $element = $(element);
-    return ($element.hasClass('select2-selection__choice__display') || $element.parents('.select2-selection__choice__display').length > 0);
+    return ($element.hasClass('select2-selection__choice__display') || $element[0]?.closest('.select2-selection__choice__display') !== null);
 }
 
 /**
@@ -2469,7 +2473,8 @@ export function select2ChoiceClickSubscribe(control, action, { buttonStyle = fal
     if (buttonStyle) control.addClass('select2_choice_clickable_buttonstyle');
 
     // Get the real container below and create a click handler on that one
-    const select2Container = control.next('span.select2-container');
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    const select2Container = $(control[0].nextElementSibling?.matches('span.select2-container') ? control[0].nextElementSibling : null);
     select2Container.on('click', function (event) {
         const isChoice = isSelect2ChoiceElement(event.target);
         if (isChoice) {
@@ -2478,7 +2483,7 @@ export function select2ChoiceClickSubscribe(control, action, { buttonStyle = fal
             // select2 still bubbles the event to open the dropdown. So we close it here and remove focus if we want that
             if (closeDrawer) {
                 control.select2('close');
-                setTimeout(() => select2Container.find('textarea').trigger('blur'), debounce_timeout.quick);
+                setTimeout(() => $(select2Container[0].querySelector('textarea')).trigger('blur'), debounce_timeout.quick);
             }
             if (openDrawer) {
                 control.select2('open');

@@ -347,8 +347,9 @@ export function updateOpenRouterProvidersWarning(providersSelector) {
     const $warning = $(warningSelectors.warningSelector);
 
     const allowFallback = !!$fallback.prop('checked');
-    const selectedCount = $providers.find('option:selected').length;
-    const applicableSelectedCount = $providers.find('option:selected:not(:disabled)').length;
+    const providersEl = $providers[0];
+    const selectedCount = providersEl?.querySelectorAll('option:checked').length ?? 0;
+    const applicableSelectedCount = providersEl?.querySelectorAll('option:checked:not([disabled])').length ?? 0;
     const showWarning = !allowFallback && selectedCount > 0 && applicableSelectedCount === 0;
 
     $warning.toggleClass('displayNone', !showWarning);
@@ -367,8 +368,10 @@ export async function syncOpenRouterProvidersForModel(modelId, providersSelector
         updateOpenRouterProvidersWarning(providersSelector);
     };
 
+    const providersEl = $providers[0];
+
     if (!modelId || !modelId.includes('/')) {
-        $providers.find('option').prop('disabled', false);
+        providersEl?.querySelectorAll('option').forEach(el => el.disabled = false);
         $providers.trigger('change.select2');
         refreshWarningState();
         return;
@@ -389,17 +392,15 @@ export async function syncOpenRouterProvidersForModel(modelId, providersSelector
         const providerNames = await response.json();
 
         if (!Array.isArray(providerNames) || providerNames.length === 0) {
-            $providers.find('option').prop('disabled', false);
+            providersEl?.querySelectorAll('option').forEach(el => el.disabled = false);
             $providers.trigger('change.select2');
             refreshWarningState();
             return;
         }
 
-        $providers.find('option').each(function () {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const isAvailable = providerNames.includes($(this).val());
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(this).prop('disabled', !isAvailable);
+        providersEl?.querySelectorAll('option').forEach(el => {
+            const isAvailable = providerNames.includes(el.value);
+            el.disabled = !isAvailable;
         });
 
         $providers.trigger('change.select2');
@@ -423,8 +424,10 @@ export async function syncNanoGptProvidersForModel(modelId, providersSelector) {
         updateNanoGptProvidersWarning(providersSelector);
     };
 
+    const providersEl = $providers[0];
+
     if (!modelId) {
-        $providers.find('option').prop('disabled', false);
+        providersEl?.querySelectorAll('option').forEach(el => el.disabled = false);
         $providers.trigger('change.select2');
         refreshWarningState();
         return;
@@ -446,21 +449,18 @@ export async function syncNanoGptProvidersForModel(modelId, providersSelector) {
         const providerIds = Array.isArray(data?.providers) ? data.providers : [];
 
         if (!data?.supportsProviderSelection || providerIds.length === 0) {
-            $providers.find('option').each(function () {
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                $(this).prop('disabled', Boolean($(this).val()));
+            providersEl?.querySelectorAll('option').forEach(el => {
+                el.disabled = Boolean(el.value);
             });
             $providers.trigger('change').trigger('change.select2');
             refreshWarningState();
             return;
         }
 
-        $providers.find('option').each(function () {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const value = $(this).val();
+        providersEl?.querySelectorAll('option').forEach(el => {
+            const value = el.value;
             const isAvailable = !value || providerIds.includes(value);
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(this).prop('disabled', !isAvailable);
+            el.disabled = !isAvailable;
         });
 
         $providers.trigger('change.select2');
@@ -483,8 +483,9 @@ export function updateNanoGptProvidersWarning(providersSelector) {
         return;
     }
 
-    const selectedCount = $providers.find('option:selected').length;
-    const applicableSelectedCount = $providers.find('option:selected:not(:disabled)').length;
+    const providersEl = $providers[0];
+    const selectedCount = providersEl?.querySelectorAll('option:checked').length ?? 0;
+    const applicableSelectedCount = providersEl?.querySelectorAll('option:checked:not([disabled])').length ?? 0;
     const showWarning = selectedCount > 0 && applicableSelectedCount === 0;
 
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
@@ -1450,7 +1451,7 @@ async function downloadTabbyModel() {
             return;
         }
 
-        const repoId = downloadHtml.find('input[name="hf_repo_id"]').val().toString();
+        const repoId = String(downloadHtml[0].querySelector('input[name="hf_repo_id"]')?.value ?? '');
         if (!repoId) {
             // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.error('A HuggingFace repo ID must be provided. Skipping Download.');
@@ -1465,13 +1466,13 @@ async function downloadTabbyModel() {
 
         const params = {
             repo_id: repoId,
-            folder_name: downloadHtml.find('input[name="folder_name"]').val() || undefined,
-            revision: downloadHtml.find('input[name="revision"]').val() || undefined,
-            token: downloadHtml.find('input[name="hf_token"]').val() || undefined,
+            folder_name: downloadHtml[0].querySelector('input[name="folder_name"]')?.value || undefined,
+            revision: downloadHtml[0].querySelector('input[name="revision"]')?.value || undefined,
+            token: downloadHtml[0].querySelector('input[name="hf_token"]')?.value || undefined,
         };
 
         for (const suffix of ['include', 'exclude']) {
-            const patterns = downloadHtml.find(`textarea[name="tabby_download_${suffix}"]`).val().toString();
+            const patterns = String(downloadHtml[0].querySelector(`textarea[name="tabby_download_${suffix}"]`)?.value ?? '');
             if (patterns) {
                 params[suffix] = patterns.split('\n');
             }

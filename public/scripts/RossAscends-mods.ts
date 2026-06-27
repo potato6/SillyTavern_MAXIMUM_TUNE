@@ -205,7 +205,8 @@ export function getMessageTimeStamp(timestamp = Date.now()) {
 // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
 $('#rm_button_create').on('click', function () {                 //when "+New Character" is clicked
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(SelectedCharacterTab).children('h2').html('');        // empty nav's 3rd panel tab
+    const selectedCharH2 = SelectedCharacterTab.querySelector(':scope > h2');
+    if (selectedCharH2) selectedCharH2.innerHTML = '';
 });
 //when any input is made to the create/edit character form textareas
 // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
@@ -275,8 +276,7 @@ export async function RA_CountCharTokens() {
     $('#result_info_total_tokens').text(total_tokens);
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#result_info_permanent_tokens').text(permanent_tokens);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#result_info_text').toggleClass('neutral_warning', showWarning);
+    document.getElementById('result_info_text').classList.toggle('neutral_warning', showWarning);
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#chartokenwarning').toggle(showWarning);
 }
@@ -353,40 +353,28 @@ function RA_checkOnlineStatus() {
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const send_textarea = $('#send_textarea');
         send_textarea.attr('placeholder', send_textarea.attr('no_connection_text')); //Input bar placeholder tells users they are not connected
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#send_form').addClass('no-connection');
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#send_but').addClass('displayNone'); //send button is hidden when not connected;
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#mes_continue').addClass('displayNone'); //continue button is hidden when not connected;
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#mes_impersonate').addClass('displayNone'); //continue button is hidden when not connected;
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#API-status-top').removeClass('fa-plug');
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#API-status-top').addClass('fa-plug-circle-exclamation redOverlayGlow');
+        document.getElementById('send_form').classList.add('no-connection');
+        document.getElementById('send_but').classList.add('displayNone'); //send button is hidden when not connected;
+        document.getElementById('mes_continue').classList.add('displayNone'); //continue button is hidden when not connected;
+        document.getElementById('mes_impersonate').classList.add('displayNone'); //continue button is hidden when not connected;
+        document.getElementById('API-status-top').classList.remove('fa-plug');
+        document.getElementById('API-status-top').classList.add('fa-plug-circle-exclamation', 'redOverlayGlow');
         connection_made = false;
     } else {
         if (online_status !== undefined && online_status !== 'no_connection') {
             // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const send_textarea = $('#send_textarea');
             send_textarea.attr('placeholder', send_textarea.attr('connected_text')); //on connect, placeholder tells user to type message
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#send_form').removeClass('no-connection');
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#API-status-top').removeClass('fa-plug-circle-exclamation redOverlayGlow');
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#API-status-top').addClass('fa-plug');
+            document.getElementById('send_form').classList.remove('no-connection');
+            document.getElementById('API-status-top').classList.remove('fa-plug-circle-exclamation', 'redOverlayGlow');
+            document.getElementById('API-status-top').classList.add('fa-plug');
             connection_made = true;
             retry_delay = 100;
 
             if (!is_send_press && !(selected_group && is_group_generating)) {
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                $('#send_but').removeClass('displayNone'); //on connect, send button shows
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                $('#mes_continue').removeClass('displayNone'); //continue button is shown when connected
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                $('#mes_impersonate').removeClass('displayNone'); //continue button is shown when connected
+                document.getElementById('send_but').classList.remove('displayNone'); //on connect, send button shows
+                document.getElementById('mes_continue').classList.remove('displayNone'); //continue button is shown when connected
+                document.getElementById('mes_impersonate').classList.remove('displayNone'); //continue button is shown when connected
             }
         }
     }
@@ -589,7 +577,7 @@ export function dragElement($elmnt) {
         const $target = $(mutations[0].target);
         if (
             !$target.is(':visible') ||
-            $target.hasClass('resizing') ||
+            mutations[0].target.classList.contains('resizing') ||
             $target.height() < 50 ||
             $target.width() < 50 ||
             power_user.movingUI === false ||
@@ -715,8 +703,7 @@ export function dragElement($elmnt) {
     // Setup event listeners
     if ($elmntHeader.length) {
         $elmntHeader.off('mousedown').on('mousedown', (e) => {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            if ($(e.target).hasClass('drag-grabber')) {
+            if (e.target.classList.contains('drag-grabber')) {
                 actionType = 'drag';
                 isMouseDown = true;
                 observer.observe($elmnt[0], { attributes: true, attributeFilter: ['style'] });
@@ -821,23 +808,17 @@ export function initRossMods() {
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(RPanelPin).on('click', function () {
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        accountStorage.setItem('NavLockOn', $(RPanelPin).prop('checked'));
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        if ($(RPanelPin).prop('checked') == true) {
+        accountStorage.setItem('NavLockOn', RPanelPin.checked);
+        if (RPanelPin.checked) {
             //console.log('adding pin class to right nav');
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(RightNavPanel).addClass('pinnedOpen');
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(RightNavDrawerIcon).addClass('drawerPinnedOpen');
+            RightNavPanel.classList.add('pinnedOpen');
+            RightNavDrawerIcon.classList.add('drawerPinnedOpen');
         } else {
             //console.log('removing pin class from right nav');
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(RightNavPanel).removeClass('pinnedOpen');
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(RightNavDrawerIcon).removeClass('drawerPinnedOpen');
+            RightNavPanel.classList.remove('pinnedOpen');
+            RightNavDrawerIcon.classList.remove('drawerPinnedOpen');
 
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            if ($(RightNavPanel).hasClass('openDrawer') && $('.openDrawer').length > 1) {
+            if (RightNavPanel.classList.contains('openDrawer') && $('.openDrawer').length > 1) {
                 // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 const toggle = $('#unimportantYes');
                 doNavbarIconClick.call(toggle);
@@ -847,23 +828,17 @@ export function initRossMods() {
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(LPanelPin).on('click', function () {
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        accountStorage.setItem('LNavLockOn', $(LPanelPin).prop('checked'));
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        if ($(LPanelPin).prop('checked') == true) {
+        accountStorage.setItem('LNavLockOn', LPanelPin.checked);
+        if (LPanelPin.checked) {
             //console.log('adding pin class to Left nav');
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(LeftNavPanel).addClass('pinnedOpen');
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(LeftNavDrawerIcon).addClass('drawerPinnedOpen');
+            LeftNavPanel.classList.add('pinnedOpen');
+            LeftNavDrawerIcon.classList.add('drawerPinnedOpen');
         } else {
             //console.log('removing pin class from Left nav');
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(LeftNavPanel).removeClass('pinnedOpen');
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(LeftNavDrawerIcon).removeClass('drawerPinnedOpen');
+            LeftNavPanel.classList.remove('pinnedOpen');
+            LeftNavDrawerIcon.classList.remove('drawerPinnedOpen');
 
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            if ($(LeftNavPanel).hasClass('openDrawer') && $('.openDrawer').length > 1) {
+            if (LeftNavPanel.classList.contains('openDrawer') && $('.openDrawer').length > 1) {
                 // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 const toggle = $('#ai-config-button>.drawer-toggle');
                 doNavbarIconClick.call(toggle);
@@ -874,23 +849,17 @@ export function initRossMods() {
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(WIPanelPin).on('click', async function () {
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        accountStorage.setItem('WINavLockOn', $(WIPanelPin).prop('checked'));
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        if ($(WIPanelPin).prop('checked') == true) {
+        accountStorage.setItem('WINavLockOn', WIPanelPin.checked);
+        if (WIPanelPin.checked) {
             console.debug('adding pin class to WI');
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(WorldInfo).addClass('pinnedOpen');
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(WIDrawerIcon).addClass('drawerPinnedOpen');
+            WorldInfo.classList.add('pinnedOpen');
+            WIDrawerIcon.classList.add('drawerPinnedOpen');
         } else {
             console.debug('removing pin class from WI');
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(WorldInfo).removeClass('pinnedOpen');
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(WIDrawerIcon).removeClass('drawerPinnedOpen');
+            WorldInfo.classList.remove('pinnedOpen');
+            WIDrawerIcon.classList.remove('drawerPinnedOpen');
 
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            if ($(WorldInfo).hasClass('openDrawer') && $('.openDrawer').length > 1) {
+            if (WorldInfo.classList.contains('openDrawer') && $('.openDrawer').length > 1) {
                 console.debug('closing WI after lock removal');
                 // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 const toggle = $('#WI-SP-button>.drawer-toggle');
@@ -901,60 +870,42 @@ export function initRossMods() {
 
     if (!isMobile()) { //only read/set pin states on non-mobile devices
         // read the state of right Nav Lock and apply to rightnav classlist
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(RPanelPin).prop('checked', accountStorage.getItem('NavLockOn') == 'true');
+        RPanelPin.checked = accountStorage.getItem('NavLockOn') == 'true';
         if (accountStorage.getItem('NavLockOn') == 'true') {
             //console.log('setting pin class via local var');
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(RightNavPanel).addClass('pinnedOpen');
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(RightNavDrawerIcon).addClass('drawerPinnedOpen');
+            RightNavPanel.classList.add('pinnedOpen');
+            RightNavDrawerIcon.classList.add('drawerPinnedOpen');
         }
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        if ($(RPanelPin).prop('checked')) {
+        if (RPanelPin.checked) {
             console.debug('setting pin class via checkbox state');
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(RightNavPanel).addClass('pinnedOpen');
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(RightNavDrawerIcon).addClass('drawerPinnedOpen');
+            RightNavPanel.classList.add('pinnedOpen');
+            RightNavDrawerIcon.classList.add('drawerPinnedOpen');
         }
         // read the state of left Nav Lock and apply to leftnav classlist
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(LPanelPin).prop('checked', accountStorage.getItem('LNavLockOn') === 'true');
+        LPanelPin.checked = accountStorage.getItem('LNavLockOn') === 'true';
         if (accountStorage.getItem('LNavLockOn') == 'true') {
             //console.log('setting pin class via local var');
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(LeftNavPanel).addClass('pinnedOpen');
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(LeftNavDrawerIcon).addClass('drawerPinnedOpen');
+            LeftNavPanel.classList.add('pinnedOpen');
+            LeftNavDrawerIcon.classList.add('drawerPinnedOpen');
         }
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        if ($(LPanelPin).prop('checked')) {
+        if (LPanelPin.checked) {
             console.debug('setting pin class via checkbox state');
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(LeftNavPanel).addClass('pinnedOpen');
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(LeftNavDrawerIcon).addClass('drawerPinnedOpen');
+            LeftNavPanel.classList.add('pinnedOpen');
+            LeftNavDrawerIcon.classList.add('drawerPinnedOpen');
         }
 
         // read the state of left Nav Lock and apply to leftnav classlist
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(WIPanelPin).prop('checked', accountStorage.getItem('WINavLockOn') === 'true');
+        WIPanelPin.checked = accountStorage.getItem('WINavLockOn') === 'true';
         if (accountStorage.getItem('WINavLockOn') == 'true') {
             //console.log('setting pin class via local var');
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(WorldInfo).addClass('pinnedOpen');
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(WIDrawerIcon).addClass('drawerPinnedOpen');
+            WorldInfo.classList.add('pinnedOpen');
+            WIDrawerIcon.classList.add('drawerPinnedOpen');
         }
 
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        if ($(WIPanelPin).prop('checked')) {
+        if (WIPanelPin.checked) {
             console.debug('setting pin class via checkbox state');
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(WorldInfo).addClass('pinnedOpen');
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(WIDrawerIcon).addClass('drawerPinnedOpen');
+            WorldInfo.classList.add('pinnedOpen');
+            WIDrawerIcon.classList.add('drawerPinnedOpen');
         }
     }
 
@@ -962,8 +913,7 @@ export function initRossMods() {
     //save state of Right nav being open or closed
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#rightNavDrawerIcon').on('click', function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        if (!$('#rightNavDrawerIcon').hasClass('openIcon')) {
+        if (!document.getElementById('rightNavDrawerIcon').classList.contains('openIcon')) {
             accountStorage.setItem('NavOpened', 'true');
         } else { accountStorage.setItem('NavOpened', 'false'); }
     });
@@ -971,8 +921,7 @@ export function initRossMods() {
     //save state of Left nav being open or closed
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#leftNavDrawerIcon').on('click', function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        if (!$('#leftNavDrawerIcon').hasClass('openIcon')) {
+        if (!document.getElementById('leftNavDrawerIcon').classList.contains('openIcon')) {
             accountStorage.setItem('LNavOpened', 'true');
         } else { accountStorage.setItem('LNavOpened', 'false'); }
     });
@@ -980,8 +929,7 @@ export function initRossMods() {
     //save state of Left nav being open or closed
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#WorldInfo').on('click', function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        if (!$('#WorldInfo').hasClass('openIcon')) {
+        if (!document.getElementById('WorldInfo').classList.contains('openIcon')) {
             accountStorage.setItem('WINavOpened', 'true');
         } else { accountStorage.setItem('WINavOpened', 'false'); }
     });
@@ -1085,21 +1033,15 @@ export function initRossMods() {
         if (Popup.util.isPopupOpen()) {
             return;
         }
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        if (!$(e.target).closest('#sheld').length) {
+        if (!e.target.closest('#sheld')) {
             return;
         }
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        if ($('#curEditTextarea').length) {
-            // Don't swipe while in text edit mode
-            // the ios selection gestures get picked up
-            // as swipe gestures
+        if (document.getElementById('curEditTextarea')) {
             return;
         }
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const SwipeButR = $('.swipe_right:last');
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const SwipeTargetMesClassParent = $(e.target).closest('.last_mes');
+        const SwipeTargetMesClassParent = e.target.closest('.last_mes');
         if (SwipeTargetMesClassParent !== null) {
             if (SwipeButR.is(':visible')) {
                 SwipeButR.trigger('click');
@@ -1113,21 +1055,15 @@ export function initRossMods() {
         if (Popup.util.isPopupOpen()) {
             return;
         }
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        if (!$(e.target).closest('#sheld').length) {
+        if (!e.target.closest('#sheld')) {
             return;
         }
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        if ($('#curEditTextarea').length) {
-            // Don't swipe while in text edit mode
-            // the ios selection gestures get picked up
-            // as swipe gestures
+        if (document.getElementById('curEditTextarea')) {
             return;
         }
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const SwipeButL = $('.swipe_left:last');
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const SwipeTargetMesClassParent = $(e.target).closest('.last_mes');
+        const SwipeTargetMesClassParent = e.target.closest('.last_mes');
         if (SwipeTargetMesClassParent !== null) {
             if (SwipeButL.is(':visible')) {
                 SwipeButL.trigger('click');
@@ -1464,8 +1400,7 @@ export function initRossMods() {
                     .not('#cfgConfig')
                     .not('#logprobsViewer')
                     .not('#movingDivs > div');
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                $(visibleDrawerContent).parent().find('.drawer-icon').trigger('click');
+                $(visibleDrawerContent[0].parentElement.querySelector('.drawer-icon')).trigger('click');
                 return;
             }
 
@@ -1503,7 +1438,7 @@ export function initRossMods() {
                 // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 if ($(div).is(':visible')) {
                     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                    $(div).find('.floating_panel_close, .dragClose').trigger('click');
+                    $(div.querySelector('.floating_panel_close, .dragClose')).trigger('click');
                     return;
                 }
             }

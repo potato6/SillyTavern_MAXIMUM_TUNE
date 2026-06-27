@@ -101,13 +101,10 @@ export function getPresetManager(apiId = '') {
  * Registers preset managers for all select elements with data-preset-manager-for attribute.
  */
 function registerPresetManagers() {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('select[data-preset-manager-for]').each((_, e) => {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const forData = $(e).data('preset-manager-for');
+    document.querySelectorAll('select[data-preset-manager-for]').forEach(e => {
+        const forData = e.getAttribute('data-preset-manager-for');
         for (const apiId of forData.split(',')) {
             console.debug(`Registering preset manager for API: ${apiId}`);
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             presetManagers[apiId] = new PresetManager($(e), apiId);
         }
     });
@@ -327,7 +324,7 @@ class PresetManager {
         }
 
         const importedSections = [];
-        const confirmedSections = html.find('input:checked').map((_, el) => el instanceof HTMLInputElement && el.value).get();
+        const confirmedSections = Array.from(html[0].querySelectorAll('input:checked')).map(el => el instanceof HTMLInputElement && el.value);
 
         if (confirmedSections.length === 0) {
             // @ts-expect-error TS(2304): Cannot find name 'toastr'.
@@ -373,7 +370,7 @@ class PresetManager {
             return;
         }
 
-        const confirmedSections = html.find('input:checked').map((_, el) => el instanceof HTMLInputElement && el.value).get();
+        const confirmedSections = Array.from(html[0].querySelectorAll('input:checked')).map(el => el instanceof HTMLInputElement && el.value);
         const data = {};
 
         if (confirmedSections.length === 0) {
@@ -398,8 +395,7 @@ class PresetManager {
      * @returns {string[]} List of preset names
      */
     getAllPresets() {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        return $(this.select).find('option').map((_, el) => el.text).toArray();
+        return Array.from(this.select[0].options).map(el => el.text);
     }
 
     /**
@@ -408,11 +404,7 @@ class PresetManager {
      * @returns {any} Preset value
      */
     findPreset(name) {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        return $(this.select).find('option').filter(function () {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            return $(this).text() === name;
-        }).val();
+        return Array.from(this.select[0].options).find(el => el.text === name)?.value;
     }
 
     /**
@@ -420,8 +412,7 @@ class PresetManager {
      * @returns {any} Selected preset value
      */
     getSelectedPreset() {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        return $(this.select).find('option:selected').val();
+        return this.select[0].options[this.select[0].selectedIndex]?.value;
     }
 
     /**
@@ -429,8 +420,7 @@ class PresetManager {
      * @returns {string} Selected preset name
      */
     getSelectedPresetName() {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        return $(this.select).find('option:selected').text();
+        return this.select[0].options[this.select[0].selectedIndex]?.text;
     }
 
     /**
@@ -438,13 +428,9 @@ class PresetManager {
      * @param {string} value Preset option value
      */
     selectPreset(value) {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const option = $(this.select).filter(function () {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            return $(this).val() === value;
-        });
-        option.prop('selected', true);
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        if (this.select[0].value === value) {
+            this.select.prop('selected', true);
+        }
         $(this.select).val(value).trigger('change');
     }
 
@@ -455,8 +441,7 @@ class PresetManager {
      * @param option
      */
     async updatePreset(option = { skipUpdate: false }) {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const selected = $(this.select).find('option:selected');
+        const selected = $(this.select[0].options[this.select[0].selectedIndex]);
         console.log(selected);
 
         if (selected.val() == 'gui') {
@@ -651,14 +636,13 @@ class PresetManager {
                 // @ts-expect-error TS(2339): Property 'indexOf' does not exist on type '{}'.
                 presets[preset_names.indexOf(name)] = preset;
                 // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                $(this.select).find(`option[value="${name}"]`).prop('selected', true);
+                $(this.select[0].querySelector(`option[value="${CSS.escape(name)}"]`)).prop('selected', true);
                 // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $(this.select).val(name).trigger('change');
             } else {
                 const value = preset_names[name];
                 presets[value] = preset;
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                $(this.select).find(`option[value="${value}"]`).prop('selected', true);
+                $(this.select[0].querySelector(`option[value="${CSS.escape(String(value))}"]`)).prop('selected', true);
                 // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $(this.select).val(value).trigger('change');
             }
@@ -854,8 +838,7 @@ class PresetManager {
         }
 
         if (this.isKeyedApi()) {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(this.select).find(`option[value="${value}"]`).remove();
+            this.select[0].querySelector(`option[value="${CSS.escape(value)}"]`)?.remove();
             // @ts-expect-error TS(2339): Property 'indexOf' does not exist on type '{}'.
             const index = preset_names.indexOf(nameToDelete);
             // @ts-expect-error TS(2339): Property 'splice' does not exist on type '{}'.
@@ -863,8 +846,7 @@ class PresetManager {
             presets.splice(index, 1);
         } else {
             const index = preset_names[nameToDelete];
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(this.select).find(`option[value="${index}"]`).remove();
+            this.select[0].querySelector(`option[value="${CSS.escape(String(index))}"]`)?.remove();
             delete preset_names[nameToDelete];
         }
 
@@ -874,8 +856,7 @@ class PresetManager {
         if (Object.keys(preset_names).length && switchPresets) {
             const nextPresetName = Object.keys(preset_names)[0];
             const newValue = preset_names[nextPresetName];
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(this.select).find(`option[value="${newValue}"]`).attr('selected', 'true');
+            $(this.select[0].querySelector(`option[value="${CSS.escape(String(newValue))}"]`)).attr('selected', 'true');
             // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(this.select).trigger('change');
         }
@@ -1179,8 +1160,7 @@ export async function initPresetManager() {
             return;
         }
 
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const selected = $(presetManager.select).find('option:selected');
+        const selected = $(presetManager.select[0].options[presetManager.select[0].selectedIndex]);
         const name = selected.text();
         const preset = presetManager.getPresetSettings(name);
         const data = JSON.stringify(preset, null, 4);

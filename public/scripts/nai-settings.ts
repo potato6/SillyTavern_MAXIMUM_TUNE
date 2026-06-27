@@ -773,28 +773,20 @@ function getTokenizerTypeForModel(model) {
  */
 function sortItemsByOrder(orderArray) {
     console.debug('Preset samplers order: ' + orderArray);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const $draggableItems = $('#novel_order');
+    const draggableItems = document.getElementById('novel_order');
 
-    // Sort the items by the order array
     for (let i = 0; i < orderArray.length; i++) {
         const index = orderArray[i];
-        const $item = $draggableItems.find(`[data-id="${index}"]`).detach();
-        $draggableItems.append($item);
+        const item = draggableItems.querySelector(`[data-id="${index}"]`);
+        draggableItems.appendChild(item);
     }
 
-    // Update the disabled class for each sampler
-    $draggableItems.children().each(function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const isEnabled = orderArray.includes(parseInt($(this).data('id')));
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(this).toggleClass('disabled', !isEnabled);
+    Array.from(draggableItems.children).forEach(function (child) {
+        const isEnabled = orderArray.includes(parseInt($(child).data('id')));
+        $(child).toggleClass('disabled', !isEnabled);
 
-        // If the sampler is disabled, move it to the bottom of the list
         if (!isEnabled) {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const item = $(this).detach();
-            $draggableItems.append(item);
+            draggableItems.appendChild(child);
         }
     });
 }
@@ -804,13 +796,10 @@ function sortItemsByOrder(orderArray) {
  */
 function saveSamplingOrder() {
     const order = [];
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#novel_order').children().each(function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const isEnabled = !$(this).hasClass('disabled');
+    Array.from(document.getElementById('novel_order').children).forEach(function (child) {
+        const isEnabled = !$(child).hasClass('disabled');
         if (isEnabled) {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            order.push($(this).data('id'));
+            order.push($(child).data('id'));
         }
     });
     nai_settings.order = order;
@@ -1057,8 +1046,7 @@ export function initNovelAISettings() {
 
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#settings_preset_novel').on('change', async function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        nai_settings.preset_settings_novel = $('#settings_preset_novel').find(':selected').text();
+        nai_settings.preset_settings_novel = document.getElementById('settings_preset_novel').options[document.getElementById('settings_preset_novel').selectedIndex].text;
         const preset = novelai_settings[novelai_setting_names[nai_settings.preset_settings_novel]];
         loadNovelPreset(preset);
         saveSettingsDebounced();
@@ -1075,8 +1063,7 @@ export function initNovelAISettings() {
 
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#model_novel_select').on('change', function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        nai_settings.model_novel = String($('#model_novel_select').find(':selected').val());
+        nai_settings.model_novel = String(document.getElementById('model_novel_select').options[document.getElementById('model_novel_select').selectedIndex].value);
         saveSettingsDebounced();
 
         // Update the selected preset to something appropriate
@@ -1091,15 +1078,14 @@ export function initNovelAISettings() {
 
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#nai_prefix').on('change', function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        nai_settings.prefix = String($('#nai_prefix').find(':selected').val());
+        nai_settings.prefix = String(document.getElementById('nai_prefix').options[document.getElementById('nai_prefix').selectedIndex].value);
         saveSettingsDebounced();
     });
 
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#phrase_rep_pen_novel').on('change', function () {
         // @ts-expect-error TS(2339): Property 'phrase_rep_pen' does not exist on type '... Remove this comment to see the full error message
-        nai_settings.phrase_rep_pen = String($('#phrase_rep_pen_novel').find(':selected').val());
+        nai_settings.phrase_rep_pen = String(document.getElementById('phrase_rep_pen_novel').options[document.getElementById('phrase_rep_pen_novel').selectedIndex].value);
         saveSettingsDebounced();
     });
 
@@ -1111,8 +1097,7 @@ export function initNovelAISettings() {
 
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#novel_order .toggle_button').on('click', function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const $item = $(this).closest('[data-id]');
+        const $item = $(this.closest('[data-id]'));
         const isEnabled = !$item.hasClass('disabled');
         $item.toggleClass('disabled', isEnabled);
         console.log('Sampler toggled:', $item.data('id'), !isEnabled);

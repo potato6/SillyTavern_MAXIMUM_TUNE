@@ -464,8 +464,7 @@ export function initDefaultSlashCommands() {
                     eventSource.on(eventType, setResolved);
                 });
 
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                const currentChatDeleteButton = $('.select_chat_block[highlight=\'true\']').parent().find('.PastChat_cross');
+                const currentChatDeleteButton = document.querySelector('.select_chat_block[highlight=\'true\']')?.parentElement?.querySelector('.PastChat_cross');
                 // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $(currentChatDeleteButton).trigger('click', { fromSlashCommand: true });
             }));
@@ -5030,11 +5029,11 @@ function performGroupMemberAction(chid, action) {
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         pageValue = $(paginationSelector).pagination('getCurrentPageNum');
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(pageSizeSelector).val($(pageSizeSelector).find('option').last().val()).trigger('change');
+        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        $(pageSizeSelector).val($(document.querySelector(pageSizeSelector)?.querySelector('option:last-of-type')).val()).trigger('change');
     }
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(memberSelector).find(`[data-action="${action}"]`).trigger('click');
+    document.querySelector(memberSelector)?.querySelector(`[data-action="${action}"]`)?.click();
 
     if (wasOffscreen) {
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
@@ -6229,7 +6228,8 @@ async function messageRoleCallback(args, role) {
     message.is_user = role === 'user';
 
     await eventSource.emit(event_types.MESSAGE_EDITED, modifyAt);
-    const existingMessage = chatElement.find(`.mes[mesid="${modifyAt}"]`);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    const existingMessage = $(chatElement[0].querySelector(`.mes[mesid="${modifyAt}"]`));
     if (existingMessage.length) {
         const newMessageElement = updateMessageElement(message, { messageId: modifyAt });
         existingMessage.after(newMessageElement);
@@ -6296,7 +6296,8 @@ async function messageNameCallback(args, name) {
     }
 
     await eventSource.emit(event_types.MESSAGE_EDITED, modifyAt);
-    const existingMessage = chatElement.find(`.mes[mesid="${modifyAt}"]`);
+    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    const existingMessage = $(chatElement[0].querySelector(`.mes[mesid="${modifyAt}"]`));
     if (existingMessage.length) {
         const newMessageElement = updateMessageElement(message, { messageId: modifyAt });
         existingMessage.after(newMessageElement);

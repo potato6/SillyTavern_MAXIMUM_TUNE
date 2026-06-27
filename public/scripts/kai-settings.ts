@@ -435,13 +435,12 @@ export function setKoboldFlags(koboldUnitedVersion, koboldCppVersion) {
  */
 function sortItemsByOrder(orderArray) {
     console.debug('Preset samplers order: ' + orderArray);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const $draggableItems = $('#kobold_order');
+    const draggableItems = document.getElementById('kobold_order');
 
     for (let i = 0; i < orderArray.length; i++) {
         const index = orderArray[i];
-        const $item = $draggableItems.find(`[data-id="${index}"]`).detach();
-        $draggableItems.append($item);
+        const item = draggableItems.querySelector(`[data-id="${index}"]`);
+        draggableItems.appendChild(item);
     }
 }
 
@@ -555,10 +554,8 @@ export function initKoboldSettings() {
         delay: getSortableDelay(),
         stop: function () {
             const order = [];
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#kobold_order').children().each(function () {
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                order.push($(this).data('id'));
+            Array.from(document.getElementById('kobold_order').children).forEach(function (child) {
+                order.push($(child).data('id'));
             });
             kai_settings.sampler_order = order;
             console.log('Samplers reordered:', kai_settings.sampler_order);
@@ -576,14 +573,13 @@ export function initKoboldSettings() {
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#settings_preset').on('change', async function () {
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        if ($('#settings_preset').find(':selected').val() != 'gui') {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            kai_settings.preset_settings = $('#settings_preset').find(':selected').text();
+        const settingsPresetEl = document.getElementById('settings_preset');
+        if (settingsPresetEl.options[settingsPresetEl.selectedIndex].value != 'gui') {
+            kai_settings.preset_settings = settingsPresetEl.options[settingsPresetEl.selectedIndex].text;
             const preset = koboldai_settings[koboldai_setting_names[kai_settings.preset_settings]];
             loadKoboldSettingsFromPreset(preset);
             setGenerationParamsFromPreset(preset);
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#kobold_api-settings').find('input').prop('disabled', false);
+            $(document.getElementById('kobold_api-settings').querySelectorAll('input')).prop('disabled', false);
             // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#kobold_api-settings').css('opacity', 1.0);
             // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
@@ -593,8 +589,7 @@ export function initKoboldSettings() {
         } else {
             kai_settings.preset_settings = 'gui';
 
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#kobold_api-settings').find('input').prop('disabled', true);
+            $(document.getElementById('kobold_api-settings').querySelectorAll('input')).prop('disabled', true);
             // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#kobold_api-settings').css('opacity', 0.5);
 

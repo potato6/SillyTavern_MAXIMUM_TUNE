@@ -527,7 +527,7 @@ function toggleBannedStringsKillSwitch(isEnabled, title) {
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#send_banned_tokens_textgenerationwebui').prop('checked', isEnabled);
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#send_banned_tokens_label').find('.menu_button').toggleClass('toggleEnabled', isEnabled).prop('title', title);
+    $(document.querySelector('#send_banned_tokens_label .menu_button')).toggleClass('toggleEnabled', isEnabled).prop('title', title);
     textgenerationwebui_settings.send_banned_tokens = isEnabled;
     saveSettingsDebounced();
 }
@@ -654,7 +654,7 @@ function sortKoboldItemsByOrder(orderArray) {
 
     for (let i = 0; i < orderArray.length; i++) {
         const index = orderArray[i];
-        const $item = $draggableItems.find(`[data-id="${index}"]`).detach();
+        const $item = $($draggableItems[0].querySelector(`[data-id="${index}"]`)).detach();
         $draggableItems.append($item);
     }
 }
@@ -669,7 +669,7 @@ function sortLlamacppItemsByOrder(orderArray) {
     const $container = $('#llamacpp_samplers_sortable');
 
     orderArray.forEach((name) => {
-        const $item = $container.find(`[data-name="${name}"]`).detach();
+        const $item = $($container[0].querySelector(`[data-name="${name}"]`)).detach();
         $container.append($item);
     });
 }
@@ -684,7 +684,7 @@ function sortOobaItemsByOrder(orderArray) {
     const $container = $('#sampler_priority_container');
 
     orderArray.forEach((name) => {
-        const $item = $container.find(`[data-name="${name}"]`).detach();
+        const $item = $($container[0].querySelector(`[data-name="${name}"]`)).detach();
         $container.append($item);
     });
 }
@@ -699,7 +699,7 @@ function sortAphroditeItemsByOrder(orderArray) {
     const $container = $('#sampler_priority_container_aphrodite');
 
     orderArray.forEach((name) => {
-        const $item = $container.find(`[data-name="${name}"]`).detach();
+        const $item = $($container[0].querySelector(`[data-name="${name}"]`)).detach();
         $container.append($item);
     });
 }
@@ -887,11 +887,7 @@ export function initTextGenSettings() {
         delay: getSortableDelay(),
         stop: function () {
             const order = [];
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#koboldcpp_order').children().each(function () {
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                order.push($(this).data('id'));
-            });
+            document.querySelectorAll('#koboldcpp_order > *').forEach(el => order.push($(el).data('id')));
             textgenerationwebui_settings.sampler_order = order;
             console.log('Samplers reordered:', textgenerationwebui_settings.sampler_order);
             saveSettingsDebounced();
@@ -910,11 +906,7 @@ export function initTextGenSettings() {
         delay: getSortableDelay(),
         stop: function () {
             const order = [];
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#llamacpp_samplers_sortable').children().each(function () {
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                order.push($(this).data('name'));
-            });
+            document.querySelectorAll('#llamacpp_samplers_sortable > *').forEach(el => order.push($(el).data('name')));
             textgenerationwebui_settings.samplers = order;
             console.log('Samplers reordered:', textgenerationwebui_settings.samplers);
             saveSettingsDebounced();
@@ -934,11 +926,7 @@ export function initTextGenSettings() {
         delay: getSortableDelay(),
         stop: function () {
             const order = [];
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#sampler_priority_container').children().each(function () {
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                order.push($(this).data('name'));
-            });
+            document.querySelectorAll('#sampler_priority_container > *').forEach(el => order.push($(el).data('name')));
             textgenerationwebui_settings.sampler_priority = order;
             console.log('Samplers reordered:', textgenerationwebui_settings.sampler_priority);
             saveSettingsDebounced();
@@ -950,11 +938,7 @@ export function initTextGenSettings() {
         delay: getSortableDelay(),
         stop: function () {
             const order = [];
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#sampler_priority_container_aphrodite').children().each(function () {
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                order.push($(this).data('name'));
-            });
+            document.querySelectorAll('#sampler_priority_container_aphrodite > *').forEach(el => order.push($(el).data('name')));
             textgenerationwebui_settings.samplers_priorities = order;
             console.log('Samplers reordered:', textgenerationwebui_settings.samplers_priorities);
             saveSettingsDebounced();
@@ -1251,12 +1235,11 @@ export function initTextGenSettings() {
  */
 function showSamplerControls(apiType = null) {
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#textgenerationwebui_api-settings [data-tg-samplers], #textgenerationwebui_api [data-tg-samplers]').each(function (idx, elem) {
+    document.querySelectorAll('#textgenerationwebui_api-settings [data-tg-samplers], #textgenerationwebui_api [data-tg-samplers]').forEach(el => {
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const typeSpecificControlled = $(elem).data('tg-type') !== undefined;
-
+        const typeSpecificControlled = $(el).data('tg-type') !== undefined;
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        if (!typeSpecificControlled) $(this).show();
+        if (!typeSpecificControlled) $(el).show();
     });
 
     showTypeSpecificControls(apiType ?? textgenerationwebui_settings.type);
@@ -1267,18 +1250,17 @@ function showSamplerControls(apiType = null) {
     if (!samplersActivatedManually?.length || !prioritizeManualSamplerSelect) return;
 
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#textgenerationwebui_api-settings [data-tg-samplers], #textgenerationwebui_api [data-tg-samplers]').each(function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const tgSamplers = $(this).attr('data-tg-samplers').split(',').map(x => x.trim()).filter(str => str !== '');
+    document.querySelectorAll('#textgenerationwebui_api-settings [data-tg-samplers], #textgenerationwebui_api [data-tg-samplers]').forEach(el => {
+        const tgSamplers = el.getAttribute('data-tg-samplers').split(',').map(x => x.trim()).filter(str => str !== '');
 
         for (const tgSampler of tgSamplers) {
             if (samplersActivatedManually.includes(tgSampler)) {
                 // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                $(this).show();
+                $(el).show();
                 return;
             } else {
                 // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                $(this).hide();
+                $(el).hide();
             }
         }
     });
@@ -1290,26 +1272,24 @@ function showSamplerControls(apiType = null) {
  */
 function showTypeSpecificControls(apiType) {
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('[data-tg-type]').each(function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const mode = String($(this).attr('data-tg-type-mode') ?? '').toLowerCase().trim();
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const tgTypes = $(this).attr('data-tg-type').split(',').map(x => x.trim());
+    document.querySelectorAll('[data-tg-type]').forEach(el => {
+        const mode = String(el.getAttribute('data-tg-type-mode') ?? '').toLowerCase().trim();
+        const tgTypes = el.getAttribute('data-tg-type').split(',').map(x => x.trim());
 
         if (mode === 'except') {
             // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(this)[tgTypes.includes(apiType) ? 'hide' : 'show']();
+            $(el)[tgTypes.includes(apiType) ? 'hide' : 'show']();
             return;
         }
 
         for (const tgType of tgTypes) {
             if (tgType === apiType || tgType == 'all') {
                 // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                $(this).show();
+                $(el).show();
                 return;
             } else {
                 // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                $(this).hide();
+                $(el).hide();
             }
         }
     });

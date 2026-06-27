@@ -324,7 +324,7 @@ function getBackgroundRelativePath(file) {
  *
  */
 function highlightLockedBackground() {
-    $('.bg_example.locked-background').removeClass('locked-background');
+    document.querySelectorAll('.bg_example.locked-background').forEach(el => el.classList.remove('locked-background'));
 
     const lockedBackgroundUrl = chat_metadata[BG_METADATA_KEY];
 
@@ -960,8 +960,7 @@ function onFolderDrillIn(folderId) {
 
     clearBackgroundGroupSelection();
     activeFolderId = folderId;
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#Backgrounds').addClass('in-folder-view');
+    document.getElementById('Backgrounds').classList.add('in-folder-view');
 
     // Hide folder grid, show breadcrumb
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
@@ -982,8 +981,7 @@ function onFolderDrillIn(folderId) {
 function onBackToFolders() {
     clearBackgroundGroupSelection();
     activeFolderId = null;
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#Backgrounds').removeClass('in-folder-view');
+    document.getElementById('Backgrounds').classList.remove('in-folder-view');
 
     // Show folder grid, hide breadcrumb
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
@@ -1007,10 +1005,8 @@ function syncGroupSelectionUi() {
     const showAddButton = isGlobalTab && isBackgroundSelectionMode && selectedCount > 0;
     const showRemoveFromCurrentFolderButton = isGlobalTab && Boolean(activeFolderId) && isBackgroundSelectionMode && selectedCount > 0;
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#Backgrounds').toggleClass('bg-selection-mode', isBackgroundSelectionMode);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#bg_selection_mode_button').toggleClass('active', isBackgroundSelectionMode);
+    document.getElementById('Backgrounds').classList.toggle('bg-selection-mode', isBackgroundSelectionMode);
+    document.getElementById('bg_selection_mode_button').classList.toggle('active', isBackgroundSelectionMode);
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#bg_group_select_count').text(selectedCount > 0 ? ` (${selectedCount})` : '').toggle(selectedCount > 0);
 
@@ -1035,8 +1031,7 @@ function setBackgroundSelectionMode(enabled) {
         selectedSystemBackgroundFiles.clear();
     }
     // Clear any open mobile menus
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#bg_menu_content .bg_example.mobile-menu-open').removeClass('mobile-menu-open');
+    document.querySelectorAll('#bg_menu_content .bg_example.mobile-menu-open').forEach(el => el.classList.remove('mobile-menu-open'));
     syncGroupSelectionUi();
 }
 
@@ -1786,10 +1781,9 @@ function highlightNewBackground(bg) {
  * @param {string} fitting Fitting type
  */
 function setFittingClass(fitting) {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const backgrounds = $('#bg1');
+    const backgrounds = document.getElementById('bg1');
     for (const option of ['cover', 'contain', 'stretch', 'center']) {
-        backgrounds.toggleClass(option, option === fitting);
+        backgrounds.classList.toggle(option, option === fitting);
     }
     background_settings.fitting = fitting;
 }
@@ -1798,8 +1792,7 @@ function setFittingClass(fitting) {
  *
  */
 function highlightSelectedBackground() {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('.bg_example.selected-background').removeClass('selected-background');
+    document.querySelectorAll('.bg_example.selected-background').forEach(el => el.classList.remove('selected-background'));
 
     // The "selected" highlight should always reflect the global background setting.
     const activeUrl = background_settings.url;
@@ -1890,15 +1883,13 @@ export function initBackgrounds() {
         })
         .on('click', '.bg_folder_tile .mobile-only-menu-toggle', function (e) {
             e.stopPropagation();
-            const $context = $(this.closest('.bg_folder_tile'));
-            const wasOpen = $context.hasClass('mobile-menu-open');
+            const context = this.closest('.bg_folder_tile');
+            const wasOpen = context?.classList.contains('mobile-menu-open');
             // Close all other open menus before opening a new one.
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('.bg_folder_tile.mobile-menu-open').removeClass('mobile-menu-open');
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('.bg_example.mobile-menu-open').removeClass('mobile-menu-open');
+            document.querySelectorAll('.bg_folder_tile.mobile-menu-open').forEach(el => el.classList.remove('mobile-menu-open'));
+            document.querySelectorAll('.bg_example.mobile-menu-open').forEach(el => el.classList.remove('mobile-menu-open'));
             if (!wasOpen) {
-                $context.addClass('mobile-menu-open');
+                context?.classList.add('mobile-menu-open');
             }
         });
 
@@ -1907,22 +1898,18 @@ export function initBackgrounds() {
         .off('click', '.bg_example').on('click', '.bg_example', onSelectBackgroundClick)
         .off('click', '.bg_example .mobile-only-menu-toggle').on('click', '.bg_example .mobile-only-menu-toggle', function (e) {
             e.stopPropagation();
-            const $context = $(this.closest('.bg_example'));
-            const wasOpen = $context.hasClass('mobile-menu-open');
+            const context = this.closest('.bg_example');
+            const wasOpen = context?.classList.contains('mobile-menu-open');
             // Close all other open menus before opening a new one.
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('.bg_example.mobile-menu-open').removeClass('mobile-menu-open');
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('.bg_folder_tile.mobile-menu-open').removeClass('mobile-menu-open');
+            document.querySelectorAll('.bg_example.mobile-menu-open').forEach(el => el.classList.remove('mobile-menu-open'));
+            document.querySelectorAll('.bg_folder_tile.mobile-menu-open').forEach(el => el.classList.remove('mobile-menu-open'));
             if (!wasOpen) {
-                $context.addClass('mobile-menu-open');
+                context?.classList.add('mobile-menu-open');
             }
         })
         .off('blur', '.bg_example.mobile-menu-open').on('blur', '.bg_example.mobile-menu-open', function () {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            if (!$(this).is(':focus-within')) {
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                $(this).removeClass('mobile-menu-open');
+            if (!this.matches(':focus-within')) {
+                this.classList.remove('mobile-menu-open');
             }
         })
         .off('click', '.jg-button').on('click', '.jg-button', function (e) {

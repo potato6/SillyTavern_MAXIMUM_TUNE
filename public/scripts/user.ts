@@ -316,19 +316,19 @@ async function changePassword(handle, callback) {
     try {
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const template = $(await renderTemplateAsync('changePassword'));
-        template.find('.currentPasswordBlock').toggle(!isAdmin());
+        $(template[0].querySelector('.currentPasswordBlock')).toggle(!isAdmin());
         let newPassword = '';
         let confirmPassword = '';
         let oldPassword = '';
-        template.find('input[name="current"]').on('input', function () {
+        $(template[0].querySelector('input[name="current"]')).on('input', function () {
             // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             oldPassword = String($(this).val());
         });
-        template.find('input[name="password"]').on('input', function () {
+        $(template[0].querySelector('input[name="password"]')).on('input', function () {
             // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             newPassword = String($(this).val());
         });
-        template.find('input[name="confirm"]').on('input', function () {
+        $(template[0].querySelector('input[name="confirm"]')).on('input', function () {
             // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             confirmPassword = String($(this).val());
         });
@@ -382,12 +382,12 @@ async function deleteUser(handle, callback) {
 
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const template = $(await renderTemplateAsync('deleteUser'));
-        template.find('#deleteUserName').text(handle);
-        template.find('input[name="deleteUserData"]').on('input', function () {
+        $(template[0].querySelector('#deleteUserName')).text(handle);
+        $(template[0].querySelector('input[name="deleteUserData"]')).on('input', function () {
             // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             purge = $(this).is(':checked');
         });
-        template.find('input[name="deleteUserHandle"]').on('input', function () {
+        $(template[0].querySelector('input[name="deleteUserHandle"]')).on('input', function () {
             // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             confirmHandle = String($(this).val());
         });
@@ -435,7 +435,7 @@ async function resetSettings(handle, callback) {
         let password = '';
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const template = $(await renderTemplateAsync('resetSettings'));
-        template.find('input[name="password"]').on('input', function () {
+        $(template[0].querySelector('input[name="password"]')).on('input', function () {
             // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             password = String($(this).val());
         });
@@ -637,30 +637,30 @@ async function viewSettingsSnapshots() {
      */
     async function renderSnapshots() {
         const snapshots = await getSnapshots();
-        template.find('.snapshotList').empty();
+        $(template[0].querySelector('.snapshotList')).empty();
 
         for (const snapshot of snapshots.sort((a, b) => b.date - a.date)) {
-            const snapshotBlock = template.find('.snapshotTemplate .snapshot').clone();
-            snapshotBlock.find('.snapshotName').text(snapshot.name);
-            snapshotBlock.find('.snapshotDate').text(new Date(snapshot.date).toLocaleString());
-            snapshotBlock.find('.snapshotSize').text(humanFileSize(snapshot.size));
-            snapshotBlock.find('.snapshotRestoreButton').on('click', async (e) => {
+            const snapshotBlock = $(template[0].querySelector('.snapshotTemplate .snapshot')).clone();
+            $(snapshotBlock[0].querySelector('.snapshotName')).text(snapshot.name);
+            $(snapshotBlock[0].querySelector('.snapshotDate')).text(new Date(snapshot.date).toLocaleString());
+            $(snapshotBlock[0].querySelector('.snapshotSize')).text(humanFileSize(snapshot.size));
+            $(snapshotBlock[0].querySelector('.snapshotRestoreButton')).on('click', async (e) => {
                 e.stopPropagation();
                 restoreSnapshot(snapshot.name, () => location.reload());
             });
-            snapshotBlock.find('.inline-drawer-toggle').on('click', async () => {
-                const contentBlock = snapshotBlock.find('.snapshotContent');
+            $(snapshotBlock[0].querySelector('.inline-drawer-toggle')).on('click', async () => {
+                const contentBlock = $(snapshotBlock[0].querySelector('.snapshotContent'));
                 if (!contentBlock.val()) {
                     const content = await loadSnapshotContent(snapshot.name);
                     contentBlock.val(content);
                 }
             });
-            template.find('.snapshotList').append(snapshotBlock);
+            $(template[0].querySelector('.snapshotList')).append(snapshotBlock);
         }
     }
 
     callGenericPopup(template, POPUP_TYPE.TEXT, '', { okButton: 'Close', wide: false, large: false, allowVerticalScrolling: true });
-    template.find('.makeSnapshotButton').on('click', () => makeSnapshot(renderSnapshots));
+    $(template[0].querySelector('.makeSnapshotButton')).on('click', () => makeSnapshot(renderSnapshots));
     renderSnapshots();
 }
 
@@ -687,11 +687,11 @@ async function resetEverything(callback) {
 
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const template = $(await renderTemplateAsync('userReset'));
-        template.find('input[name="password"]').on('input', function () {
+        $(template[0].querySelector('input[name="password"]')).on('input', function () {
             // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             password = String($(this).val());
         });
-        template.find('input[name="code"]').on('input', function () {
+        $(template[0].querySelector('input[name="code"]')).on('input', function () {
             // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             code = String($(this).val());
         });
@@ -734,24 +734,24 @@ async function openUserProfile() {
     await getCurrentUser();
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const template = $(await renderTemplateAsync('userProfile'));
-    template.find('.userName').text(currentUser.name);
-    template.find('.userHandle').text(currentUser.handle);
-    template.find('.avatar img').attr('src', currentUser.avatar);
-    template.find('.userRole').text(currentUser.admin ? 'Admin' : 'User');
-    template.find('.userCreated').text(new Date(currentUser.created).toLocaleString());
-    template.find('.hasPassword').toggle(currentUser.password);
-    template.find('.noPassword').toggle(!currentUser.password);
-    template.find('.userSettingsSnapshotsButton').on('click', () => viewSettingsSnapshots());
-    template.find('.userChangeNameButton').on('click', async () => changeName(currentUser.handle, currentUser.name, async () => {
+    $(template[0].querySelector('.userName')).text(currentUser.name);
+    $(template[0].querySelector('.userHandle')).text(currentUser.handle);
+    $(template[0].querySelector('.avatar img')).attr('src', currentUser.avatar);
+    $(template[0].querySelector('.userRole')).text(currentUser.admin ? 'Admin' : 'User');
+    $(template[0].querySelector('.userCreated')).text(new Date(currentUser.created).toLocaleString());
+    $(template[0].querySelector('.hasPassword')).toggle(currentUser.password);
+    $(template[0].querySelector('.noPassword')).toggle(!currentUser.password);
+    $(template[0].querySelector('.userSettingsSnapshotsButton')).on('click', () => viewSettingsSnapshots());
+    $(template[0].querySelector('.userChangeNameButton')).on('click', async () => changeName(currentUser.handle, currentUser.name, async () => {
         await getCurrentUser();
-        template.find('.userName').text(currentUser.name);
+        $(template[0].querySelector('.userName')).text(currentUser.name);
     }));
-    template.find('.userChangePasswordButton').on('click', () => changePassword(currentUser.handle, async () => {
+    $(template[0].querySelector('.userChangePasswordButton')).on('click', () => changePassword(currentUser.handle, async () => {
         await getCurrentUser();
-        template.find('.hasPassword').toggle(currentUser.password);
-        template.find('.noPassword').toggle(!currentUser.password);
+        $(template[0].querySelector('.hasPassword')).toggle(currentUser.password);
+        $(template[0].querySelector('.noPassword')).toggle(!currentUser.password);
     }));
-    template.find('.userBackupButton').on('click', function () {
+    $(template[0].querySelector('.userBackupButton')).on('click', function () {
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(this).addClass('disabled');
         backupUserData(currentUser.handle, () => {
@@ -759,10 +759,10 @@ async function openUserProfile() {
             $(this).removeClass('disabled');
         });
     });
-    template.find('.userResetSettingsButton').on('click', () => resetSettings(currentUser.handle, () => location.reload()));
-    template.find('.userResetAllButton').on('click', () => resetEverything(() => location.reload()));
-    template.find('.userAvatarChange').on('click', () => template.find('.avatarUpload').trigger('click'));
-    template.find('.avatarUpload').on('change', async function () {
+    $(template[0].querySelector('.userResetSettingsButton')).on('click', () => resetSettings(currentUser.handle, () => location.reload()));
+    $(template[0].querySelector('.userResetAllButton')).on('click', () => resetEverything(() => location.reload()));
+    $(template[0].querySelector('.userAvatarChange')).on('click', () => $(template[0].querySelector('.avatarUpload')).trigger('click'));
+    $(template[0].querySelector('.avatarUpload')).on('change', async function () {
         if (!(this instanceof HTMLInputElement)) {
             return;
         }
@@ -774,17 +774,17 @@ async function openUserProfile() {
 
         await cropAndUploadAvatar(currentUser.handle, file);
         await getCurrentUser();
-        template.find('.avatar img').attr('src', currentUser.avatar);
+        $(template[0].querySelector('.avatar img')).attr('src', currentUser.avatar);
     });
-    template.find('.userAvatarRemove').on('click', async function () {
+    $(template[0].querySelector('.userAvatarRemove')).on('click', async function () {
         await changeAvatar(currentUser.handle, '');
         await getCurrentUser();
-        template.find('.avatar img').attr('src', currentUser.avatar);
+        $(template[0].querySelector('.avatar img')).attr('src', currentUser.avatar);
     });
 
     if (!accountsEnabled) {
-        template.find('[data-require-accounts]').hide();
-        template.find('.accountsDisabledHint').show();
+        $(template[0].querySelectorAll('[data-require-accounts]')).hide();
+        $(template[0].querySelector('.accountsDisabledHint')).show();
     }
 
     const popupOptions = {
@@ -850,31 +850,31 @@ async function openAdminPanel() {
      */
     async function renderUsers() {
         const users = await getUsers();
-        template.find('.usersList').empty();
+        $(template[0].querySelector('.usersList')).empty();
         for (const user of users) {
-            const userBlock = template.find('.userAccountTemplate .userAccount').clone();
-            userBlock.find('.userName').text(user.name);
-            userBlock.find('.userHandle').text(user.handle);
-            userBlock.find('.userStatus').text(user.enabled ? 'Enabled' : 'Disabled');
-            userBlock.find('.userRole').text(user.admin ? 'Admin' : 'User');
-            userBlock.find('.avatar img').attr('src', user.avatar);
-            userBlock.find('.hasPassword').toggle(user.password);
-            userBlock.find('.noPassword').toggle(!user.password);
-            userBlock.find('.userCreated').text(new Date(user.created).toLocaleString());
-            userBlock.find('.userEnableButton').toggle(!user.enabled).on('click', () => enableUser(user.handle, renderUsers));
-            userBlock.find('.userDisableButton').toggle(user.enabled).on('click', () => disableUser(user.handle, renderUsers));
-            userBlock.find('.userPromoteButton').toggle(!user.admin).on('click', () => promoteUser(user.handle, renderUsers));
-            userBlock.find('.userDemoteButton').toggle(user.admin).on('click', () => demoteUser(user.handle, renderUsers));
-            userBlock.find('.userChangePasswordButton').on('click', () => changePassword(user.handle, renderUsers));
-            userBlock.find('.userDelete').on('click', () => deleteUser(user.handle, renderUsers));
-            userBlock.find('.userChangeNameButton').on('click', async () => changeName(user.handle, user.name, renderUsers));
-            userBlock.find('.userBackupButton').on('click', function () {
+            const userBlock = $(template[0].querySelector('.userAccountTemplate .userAccount')).clone();
+            $(userBlock[0].querySelector('.userName')).text(user.name);
+            $(userBlock[0].querySelector('.userHandle')).text(user.handle);
+            $(userBlock[0].querySelector('.userStatus')).text(user.enabled ? 'Enabled' : 'Disabled');
+            $(userBlock[0].querySelector('.userRole')).text(user.admin ? 'Admin' : 'User');
+            $(userBlock[0].querySelector('.avatar img')).attr('src', user.avatar);
+            $(userBlock[0].querySelector('.hasPassword')).toggle(user.password);
+            $(userBlock[0].querySelector('.noPassword')).toggle(!user.password);
+            $(userBlock[0].querySelector('.userCreated')).text(new Date(user.created).toLocaleString());
+            $(userBlock[0].querySelector('.userEnableButton')).toggle(!user.enabled).on('click', () => enableUser(user.handle, renderUsers));
+            $(userBlock[0].querySelector('.userDisableButton')).toggle(user.enabled).on('click', () => disableUser(user.handle, renderUsers));
+            $(userBlock[0].querySelector('.userPromoteButton')).toggle(!user.admin).on('click', () => promoteUser(user.handle, renderUsers));
+            $(userBlock[0].querySelector('.userDemoteButton')).toggle(user.admin).on('click', () => demoteUser(user.handle, renderUsers));
+            $(userBlock[0].querySelector('.userChangePasswordButton')).on('click', () => changePassword(user.handle, renderUsers));
+            $(userBlock[0].querySelector('.userDelete')).on('click', () => deleteUser(user.handle, renderUsers));
+            $(userBlock[0].querySelector('.userChangeNameButton')).on('click', async () => changeName(user.handle, user.name, renderUsers));
+            $(userBlock[0].querySelector('.userBackupButton')).on('click', function () {
                 // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $(this).addClass('disabled').off('click');
                 backupUserData(user.handle, renderUsers);
             });
-            userBlock.find('.userAvatarChange').on('click', () => userBlock.find('.avatarUpload').trigger('click'));
-            userBlock.find('.avatarUpload').on('change', async function () {
+            $(userBlock[0].querySelector('.userAvatarChange')).on('click', () => $(userBlock[0].querySelector('.avatarUpload')).trigger('click'));
+            $(userBlock[0].querySelector('.avatarUpload')).on('change', async function () {
                 if (!(this instanceof HTMLInputElement)) {
                     return;
                 }
@@ -887,40 +887,39 @@ async function openAdminPanel() {
                 await cropAndUploadAvatar(user.handle, file);
                 renderUsers();
             });
-            userBlock.find('.userAvatarRemove').on('click', async function () {
+            $(userBlock[0].querySelector('.userAvatarRemove')).on('click', async function () {
                 await changeAvatar(user.handle, '');
                 renderUsers();
             });
-            template.find('.usersList').append(userBlock);
+            $(template[0].querySelector('.usersList')).append(userBlock);
         }
     }
 
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const template = $(await renderTemplateAsync('admin'));
 
-    template.find('.adminNav > button').on('click', function () {
+    $(template[0].querySelectorAll('.adminNav > button')).on('click', function () {
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const target = String($(this).data('target-tab'));
-        template.find('.navTab').each(function () {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(this).toggle(this.classList.contains(target));
+        template[0].querySelectorAll('.navTab').forEach(el => {
+            $(el).toggle(el.classList.contains(target));
         });
     });
 
-    template.find('.createUserDisplayName').on('input', async function () {
+    $(template[0].querySelector('.createUserDisplayName')).on('input', async function () {
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const slug = await slugify(String($(this).val()));
-        template.find('.createUserHandle').val(slug);
+        $(template[0].querySelector('.createUserHandle')).val(slug);
     });
 
-    template.find('.userCreateForm').on('submit', function (event) {
+    $(template[0].querySelector('.userCreateForm')).on('submit', function (event) {
         if (!(event.target instanceof HTMLFormElement)) {
             return;
         }
 
         event.preventDefault();
         createUser(event.target, () => {
-            template.find('.manageUsersButton').trigger('click');
+            $(template[0].querySelector('.manageUsersButton')).trigger('click');
             renderUsers();
         });
     });

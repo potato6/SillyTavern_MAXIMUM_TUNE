@@ -473,8 +473,7 @@ export function fixMarkdown(text, forDisplay) {
  *
  */
 function switchHotswap() {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('body').toggleClass('no-hotswap', !power_user.hotswap_enabled);
+    document.body.classList.toggle('no-hotswap', !power_user.hotswap_enabled);
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#hotswapEnabled').prop('checked', power_user.hotswap_enabled);
 }
@@ -483,8 +482,7 @@ function switchHotswap() {
  *
  */
 function switchTimer() {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('body').toggleClass('no-timer', !power_user.timer_enabled);
+    document.body.classList.toggle('no-timer', !power_user.timer_enabled);
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#messageTimerEnabled').prop('checked', power_user.timer_enabled);
 }
@@ -493,8 +491,7 @@ function switchTimer() {
  *
  */
 function switchTimestamps() {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('body').toggleClass('no-timestamps', !power_user.timestamps_enabled);
+    document.body.classList.toggle('no-timestamps', !power_user.timestamps_enabled);
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#messageTimestampsEnabled').prop('checked', power_user.timestamps_enabled);
 }
@@ -503,8 +500,7 @@ function switchTimestamps() {
  *
  */
 function switchIcons() {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('body').toggleClass('no-modelIcons', !power_user.timestamp_model_icon);
+    document.body.classList.toggle('no-modelIcons', !power_user.timestamp_model_icon);
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#messageModelIconEnabled').prop('checked', power_user.timestamp_model_icon);
 }
@@ -513,8 +509,7 @@ function switchIcons() {
  *
  */
 function switchTokenCount() {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('body').toggleClass('no-tokenCount', !power_user.message_token_count_enabled);
+    document.body.classList.toggle('no-tokenCount', !power_user.message_token_count_enabled);
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#messageTokensEnabled').prop('checked', power_user.message_token_count_enabled);
 }
@@ -523,8 +518,7 @@ function switchTokenCount() {
  *
  */
 function switchMesIDDisplay() {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('body').toggleClass('no-mesIDDisplay', !power_user.mesIDDisplay_enabled);
+    document.body.classList.toggle('no-mesIDDisplay', !power_user.mesIDDisplay_enabled);
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#mesIDDisplayEnabled').prop('checked', power_user.mesIDDisplay_enabled);
 }
@@ -533,8 +527,7 @@ function switchMesIDDisplay() {
  *
  */
 function switchHideChatAvatars() {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('body').toggleClass('hideChatAvatars', power_user.hideChatAvatars_enabled);
+    document.body.classList.toggle('hideChatAvatars', power_user.hideChatAvatars_enabled);
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#hideChatAvatarsEnabled').prop('checked', power_user.hideChatAvatars_enabled);
 }
@@ -543,8 +536,7 @@ function switchHideChatAvatars() {
  *
  */
 function switchMessageActions() {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('body').toggleClass('expandMessageActions', power_user.expand_message_actions);
+    document.body.classList.toggle('expandMessageActions', power_user.expand_message_actions);
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#expandMessageActions').prop('checked', power_user.expand_message_actions);
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
@@ -572,16 +564,14 @@ function switchReducedMotion() {
                 ? t`Controlled by your operating system's reduced motion setting`
                 : t`Disable animations and transitions`,
         );
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('body').toggleClass('reduced-motion', power_user.reduced_motion);
+    document.body.classList.toggle('reduced-motion', power_user.reduced_motion);
 }
 
 /**
  *
  */
 function switchCompactInputArea() {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#send_form').toggleClass('compact', power_user.compact_input_area);
+    document.getElementById('send_form').classList.toggle('compact', power_user.compact_input_area);
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#compact_input_area').prop('checked', power_user.compact_input_area);
 }
@@ -592,8 +582,7 @@ function switchCompactInputArea() {
 function switchSwipeNumAllMessages() {
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#show_swipe_num_all_messages').prop('checked', power_user.show_swipe_num_all_messages);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('body').toggleClass('swipeAllMessages', !!power_user.show_swipe_num_all_messages);
+    document.body.classList.toggle('swipeAllMessages', !!power_user.show_swipe_num_all_messages);
 }
 
 const originalSliderValues = [];
@@ -611,8 +600,7 @@ async function switchLabMode({ noReset = false } = {}) {
         }
      */
     await delay(100);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('body').toggleClass('enableLabMode', power_user.enableLabMode);
+    document.body.classList.toggle('enableLabMode', power_user.enableLabMode);
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#enableLabMode').prop('checked', power_user.enableLabMode);
 
@@ -632,8 +620,7 @@ async function switchLabMode({ noReset = false } = {}) {
             .attr('min', '-99999')
             .attr('max', '99999')
             .attr('step', '0.001');
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#labModeWarning').removeClass('displayNone');
+        document.getElementById('labModeWarning').classList.remove('displayNone');
         //$("#advanced-ai-config-block input[type='range']").hide()
 
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
@@ -656,8 +643,7 @@ async function switchLabMode({ noReset = false } = {}) {
         });
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#advanced-ai-config-block input[type=\'range\']').show();
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#labModeWarning').addClass('displayNone');
+        document.getElementById('labModeWarning').classList.add('displayNone');
 
         // To set the correct amount_gen back, we just call the function calculating it correctly
         switchMaxContextSize();
@@ -669,8 +655,7 @@ async function switchLabMode({ noReset = false } = {}) {
  */
 async function switchZenSliders() {
     await delay(100);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('body').toggleClass('enableZenSliders', power_user.enableZenSliders);
+    document.body.classList.toggle('enableZenSliders', power_user.enableZenSliders);
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#enableZenSliders').prop('checked', power_user.enableZenSliders);
 
@@ -1062,8 +1047,7 @@ async function CreateZenSliders(elmnt) {
  *
  */
 function switchUiMode() {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('body').toggleClass('no-blur', power_user.fast_ui_mode);
+    document.body.classList.toggle('no-blur', power_user.fast_ui_mode);
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#fast_ui_mode').prop('checked', power_user.fast_ui_mode);
     if (power_user.fast_ui_mode) {
@@ -1092,8 +1076,7 @@ function toggleWaifu() {
  *
  */
 function switchWaifuMode() {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('body').toggleClass('waifuMode', power_user.waifuMode);
+    document.body.classList.toggle('waifuMode', power_user.waifuMode);
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#waifuMode').prop('checked', power_user.waifuMode);
     scrollChatToBottom();
@@ -1109,8 +1092,7 @@ function switchSpoilerMode() {
         $('#descriptionWrapper').hide();
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#firstMessageWrapper').hide();
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#spoiler_free_desc').addClass('flex1');
+        document.getElementById('spoiler_free_desc').classList.add('flex1');
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#creators_note_desc_hidden').show();
     } else {
@@ -1118,8 +1100,7 @@ function switchSpoilerMode() {
         $('#descriptionWrapper').show();
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#firstMessageWrapper').show();
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#spoiler_free_desc').removeClass('flex1');
+        document.getElementById('spoiler_free_desc').classList.remove('flex1');
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#creators_note_desc_hidden').hide();
     }
@@ -1133,8 +1114,7 @@ function peekSpoilerMode() {
     $('#descriptionWrapper').toggle();
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#firstMessageWrapper').toggle();
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#spoiler_free_desc').toggleClass('flex1');
+    document.getElementById('spoiler_free_desc').classList.toggle('flex1');
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#creators_note_desc_hidden').toggle();
 }
@@ -1146,8 +1126,7 @@ function switchMovingUI() {
     document.querySelectorAll('.drawer-content.maximized').forEach(function (el) {
         el.querySelector('.inline-drawer-maximize')?.click();
     });
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('body').toggleClass('movingUI', power_user.movingUI);
+    document.body.classList.toggle('movingUI', power_user.movingUI);
     if (power_user.movingUI === true) {
         initMovingUI();
         if (power_user.movingUIState) {
@@ -1167,8 +1146,7 @@ function switchMovingUI() {
  *
  */
 function applyNoShadows() {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('body').toggleClass('noShadows', power_user.noShadows);
+    document.body.classList.toggle('noShadows', power_user.noShadows);
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#noShadowsmode').prop('checked', power_user.noShadows);
     if (power_user.noShadows) {
@@ -1189,12 +1167,9 @@ function applyNoShadows() {
  *
  */
 function applyAvatarStyle() {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('body').toggleClass('big-avatars', power_user.avatar_style === avatar_styles.RECTANGULAR);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('body').toggleClass('square-avatars', power_user.avatar_style === avatar_styles.SQUARE);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('body').toggleClass('rounded-avatars', power_user.avatar_style === avatar_styles.ROUNDED);
+    document.body.classList.toggle('big-avatars', power_user.avatar_style === avatar_styles.RECTANGULAR);
+    document.body.classList.toggle('square-avatars', power_user.avatar_style === avatar_styles.SQUARE);
+    document.body.classList.toggle('rounded-avatars', power_user.avatar_style === avatar_styles.ROUNDED);
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#avatar_style').val(power_user.avatar_style).prop('selected', true);
 }
@@ -1214,26 +1189,20 @@ function applyChatDisplay() {
     switch (power_user.chat_display) {
         case 0: {
             console.debug('applying default chat');
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('body').removeClass('bubblechat');
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('body').removeClass('documentstyle');
+            document.body.classList.remove('bubblechat');
+            document.body.classList.remove('documentstyle');
             break;
         }
         case 1: {
             console.debug('applying bubblechat');
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('body').addClass('bubblechat');
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('body').removeClass('documentstyle');
+            document.body.classList.add('bubblechat');
+            document.body.classList.remove('documentstyle');
             break;
         }
         case 2: {
             console.debug('applying document style');
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('body').removeClass('bubblechat');
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('body').addClass('documentstyle');
+            document.body.classList.remove('bubblechat');
+            document.body.classList.add('documentstyle');
             break;
         }
     }
@@ -1947,8 +1916,8 @@ export async function loadPowerUserSettings(settings, data) {
     $('#example_messages_behavior').val(getExampleMessagesBehavior());
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(`#example_messages_behavior option[value="${getExampleMessagesBehavior()}"]`).prop('selected', true);
-    $(document.getElementById('instruct_derived')?.parentElement?.querySelector('i'))?.toggleClass('toggleEnabled', !!power_user.instruct_derived);
-    $(document.getElementById('context_derived')?.parentElement?.querySelector('i'))?.toggleClass('toggleEnabled', !!power_user.context_derived);
+    document.getElementById('instruct_derived')?.parentElement?.querySelector('i')?.classList.toggle('toggleEnabled', !!power_user.instruct_derived);
+    document.getElementById('context_derived')?.parentElement?.querySelector('i')?.classList.toggle('toggleEnabled', !!power_user.context_derived);
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#context_size_derived').prop('checked', !!power_user.context_size_derived);
 
@@ -3143,8 +3112,7 @@ async function resetMovablePanels(type) {
     const panelStyles = ['top', 'left', 'right', 'bottom', 'height', 'width', 'margin'];
     allDraggable.forEach((panel) => {
         if (panel) {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(panel).addClass('resizing');
+            panel.classList.add('resizing');
             panelStyles.forEach((style) => {
                 panel.style[style] = '';
             });
@@ -3182,8 +3150,7 @@ async function resetMovablePanels(type) {
     await eventSource.emit(event_types.MOVABLE_PANELS_RESET);
 
     eventSource.once(event_types.SETTINGS_UPDATED, () => {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('.resizing').removeClass('resizing');
+        document.querySelectorAll('.resizing').forEach(el => el.classList.remove('resizing'));
         //if happening as part of preset application, do it quietly.
         if (type === 'quiet') {
             return;
@@ -3779,7 +3746,7 @@ jQuery(() => {
     });
 
     $('#context_derived').on('change', function () {
-        $(this.parentElement.querySelector('i')).toggleClass('toggleEnabled', !!power_user.context_derived);
+        this.parentElement.querySelector('i').classList.toggle('toggleEnabled', !!power_user.context_derived);
     });
 
     $('#instruct_derived').on('input', function () {
@@ -3789,7 +3756,7 @@ jQuery(() => {
     });
 
     $('#instruct_derived').on('change', function () {
-        $(this.parentElement.querySelector('i')).toggleClass('toggleEnabled', !!power_user.instruct_derived);
+        this.parentElement.querySelector('i').classList.toggle('toggleEnabled', !!power_user.instruct_derived);
     });
 
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
@@ -4536,8 +4503,8 @@ jQuery(() => {
     $('#spoiler_free_desc_button').on('click', function (e) {
         e.stopPropagation();
         peekSpoilerMode();
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(this).toggleClass('fa-eye fa-eye-slash');
+        this.classList.toggle('fa-eye');
+        this.classList.toggle('fa-eye-slash');
     });
 
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message

@@ -2030,7 +2030,7 @@ class PromptManager {
         areaElement.style.display = 'flex';
 
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#' + this.configuration.prefix + 'prompt_manager_popup').first()
+        $('#' + this.configuration.prefix + 'prompt_manager_popup')
             .slideDown(200, 'swing')
             .addClass('openDrawer');
     }
@@ -2041,7 +2041,7 @@ class PromptManager {
      */
     hidePopup() {
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#' + this.configuration.prefix + 'prompt_manager_popup').first()
+        $('#' + this.configuration.prefix + 'prompt_manager_popup')
             .slideUp(200, 'swing')
             .removeClass('openDrawer');
     }

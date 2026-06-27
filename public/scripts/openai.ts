@@ -2334,11 +2334,9 @@ function saveModelList(data) {
 
         // Get static model options that are already in the HTML
         const staticModels = [];
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#model_google_select option').each(function () {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            staticModels.push($(this).val());
-        });
+        for (const el of $('#model_google_select option')) {
+            staticModels.push(el.value);
+        }
 
         // Add dynamic models to the "Other" group
         model_list.forEach((model) => {
@@ -4474,7 +4472,7 @@ function loadOpenAISettings(data, settings) {
                 $element.prop('checked', oai_settings[key]);
             } else if ($element.is('select')) {
                 $element.val(oai_settings[key]);
-                $element.find(`option[value="${CSS.escape(oai_settings[key])}"]`).prop('selected', true);
+                $($element[0].querySelector(`option[value="${CSS.escape(oai_settings[key])}"]`)).prop('selected', true);
             } else {
                 $element.val(oai_settings[key]);
                 if ($element.is('input[type="range"]')) {
@@ -4807,8 +4805,7 @@ async function saveOpenAIPreset(name, settings, triggerUi = true) {
  *
  */
 function onLogitBiasPresetChange() {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const value = String($('#openai_logit_bias_preset').find(':selected').val());
+    const value = String($($('#openai_logit_bias_preset')[0].selectedOptions[0]).val());
     const preset = oai_settings.bias_presets[value];
 
     if (!Array.isArray(preset)) {
@@ -4839,10 +4836,9 @@ function onLogitBiasPresetChange() {
         handle: '.drag-handle',
         stop: function () {
             const order = [];
-            list.children().each(function () {
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                order.unshift($(this).data('id'));
-            });
+            for (const child of list[0].children) {
+                order.unshift(child.dataset.id);
+            }
             preset.sort((a, b) => order.indexOf(a.id) - order.indexOf(b.id));
             console.log('Logit bias reordered:', preset);
             saveSettingsDebounced();
@@ -4876,13 +4872,13 @@ function createLogitBiasListItem(entry) {
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const template = $('#openai_logit_bias_template .openai_logit_bias_form').clone();
     template.data('id', id);
-    template.find('.openai_logit_bias_text').val(entry.text).on('input', function () {
+    $(template[0].querySelector('.openai_logit_bias_text')).val(entry.text).on('input', function () {
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         entry.text = String($(this).val());
         biasCache = undefined;
         saveSettingsDebounced();
     });
-    template.find('.openai_logit_bias_value').val(entry.value).on('input', function () {
+    $(template[0].querySelector('.openai_logit_bias_value')).val(entry.value).on('input', function () {
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const min = Number($(this).attr('min'));
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
@@ -4906,9 +4902,8 @@ function createLogitBiasListItem(entry) {
         biasCache = undefined;
         saveSettingsDebounced();
     });
-    template.find('.openai_logit_bias_remove').on('click', function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(this).closest('.openai_logit_bias_form').remove();
+    $(template[0].querySelector('.openai_logit_bias_remove')).on('click', function () {
+        $(this.closest('.openai_logit_bias_form')).remove();
         const preset = oai_settings.bias_presets[oai_settings.bias_preset_selected];
         const index = preset.findIndex(item => item.id === id);
         if (index >= 0) {
@@ -5102,7 +5097,7 @@ async function onExportPresetClick() {
     const exportConnectionTemplate = $(await renderTemplateAsync('exportPreset'));
     await new Popup(exportConnectionTemplate, POPUP_TYPE.TEXT).show();
 
-    const removeConnectionData = exportConnectionTemplate.find('input[name="export_connection_data"]:checked').val() === 'false';
+    const removeConnectionData = $(exportConnectionTemplate[0].querySelector('input[name="export_connection_data"]:checked')).val() === 'false';
     if (removeConnectionData) {
         for (const [, [, settingName, , isConnection]] of Object.entries(settingsToUpdate)) {
             if (isConnection) {
@@ -5257,8 +5252,7 @@ async function onLogitBiasPresetDeleteClick() {
 function onSettingsPresetChange() {
     const presetNameBefore = oai_settings.preset_settings_openai;
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const presetName = $('#settings_preset_openai').find(':selected').text();
+    const presetName = $($('#settings_preset_openai')[0].selectedOptions[0]).text();
     oai_settings.preset_settings_openai = presetName;
 
     const preset = structuredClone(openai_settings[openai_setting_names[oai_settings.preset_settings_openai]]);
@@ -6609,16 +6603,12 @@ function toggleChatCompletionForms() {
         $('#model_workers_ai_select').trigger('change');
     }
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('[data-source]').each(function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const mode = $(this).data('source-mode');
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const validSources = $(this).data('source').split(',');
+    for (const el of $('[data-source]')) {
+        const mode = el.dataset.sourceMode;
+        const validSources = el.dataset.source.split(',');
         const matchesSource = validSources.includes(oai_settings.chat_completion_source);
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(this).toggle(mode !== 'except' ? matchesSource : !matchesSource);
-    });
+        $(el).toggle(mode !== 'except' ? matchesSource : !matchesSource);
+    }
 
     setToolReasoningControls();
 }
@@ -6676,19 +6666,19 @@ async function onCustomizeParametersClick() {
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const template = $(await renderTemplateAsync('customEndpointAdditionalParameters'));
 
-    template.find('#custom_include_body').val(oai_settings.custom_include_body).on('input', function () {
+    $(template[0].querySelector('#custom_include_body')).val(oai_settings.custom_include_body).on('input', function () {
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         oai_settings.custom_include_body = String($(this).val());
         saveSettingsDebounced();
     });
 
-    template.find('#custom_exclude_body').val(oai_settings.custom_exclude_body).on('input', function () {
+    $(template[0].querySelector('#custom_exclude_body')).val(oai_settings.custom_exclude_body).on('input', function () {
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         oai_settings.custom_exclude_body = String($(this).val());
         saveSettingsDebounced();
     });
 
-    template.find('#custom_include_headers').val(oai_settings.custom_include_headers).on('input', function () {
+    $(template[0].querySelector('#custom_include_headers')).val(oai_settings.custom_include_headers).on('input', function () {
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         oai_settings.custom_include_headers = String($(this).val());
         saveSettingsDebounced();
@@ -7011,8 +7001,7 @@ function setProxyPreset(name, url, password) {
  *
  */
 function onProxyPresetChange() {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const value = String($('#openai_proxy_preset').find(':selected').val());
+    const value = String($($('#openai_proxy_preset')[0].selectedOptions[0]).val());
     const selectedPreset = proxies.find(preset => preset.name === value);
 
     if (selectedPreset) {
@@ -7121,15 +7110,11 @@ function onVertexAIAuthModeChange() {
     const authMode = String($(this).val());
     oai_settings.vertexai_auth_mode = authMode;
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#vertexai_form [data-mode]').each(function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const mode = $(this).data('mode');
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(this).toggle(mode === authMode);
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(this).find('option').toggle(mode === authMode);
-    });
+    for (const el of $('#vertexai_form [data-mode]')) {
+        const mode = el.dataset.mode;
+        $(el).toggle(mode === authMode);
+        $(el.querySelectorAll('option')).toggle(mode === authMode);
+    }
 
     saveSettingsDebounced();
 }
@@ -7577,8 +7562,7 @@ export function initOpenAI() {
     $('#chat_completion_source').on('change', function () {
         cancelStatusCheck('Chat Completion source changed');
         model_list = [];
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        oai_settings.chat_completion_source = String($(this).find(':selected').val());
+        oai_settings.chat_completion_source = String($(this.selectedOptions[0]).val());
         toggleChatCompletionForms();
         saveSettingsDebounced();
         reconnectOpenAi();

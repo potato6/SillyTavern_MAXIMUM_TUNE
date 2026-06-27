@@ -48,8 +48,7 @@ function onSelectAllButtonClick() {
     const characters = Array.from(document.querySelectorAll('#' + BulkEditOverlay.containerId + ' .' + BulkEditOverlay.characterClass));
     let atLeastOneSelected = false;
     for (const character of characters) {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const checked = $(character).find('.bulk_select_checkbox:checked').length > 0;
+        const checked = character.querySelector('.bulk_select_checkbox:checked') !== null;
         if (!checked && character instanceof HTMLElement) {
             characterGroupOverlay.toggleSingleCharacter(character);
             atLeastOneSelected = true;
@@ -59,8 +58,7 @@ function onSelectAllButtonClick() {
     if (!atLeastOneSelected) {
         // If none was selected, trigger click on all to deselect all of them
         for (const character of characters) {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const checked = $(character).find('.bulk_select_checkbox:checked') ?? false;
+            const checked = character.querySelector('.bulk_select_checkbox:checked') !== null;
             if (checked && character instanceof HTMLElement) {
                 characterGroupOverlay.toggleSingleCharacter(character);
             }
@@ -82,20 +80,18 @@ async function onDeleteButtonClick() {
  * Enables bulk selection by adding a checkbox next to each character.
  */
 function enableBulkSelect() {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#rm_print_characters_block .character_select').each((i, el) => {
+    document.querySelectorAll('#rm_print_characters_block .character_select').forEach(el => {
         // Prevent checkbox from adding multiple times (because of stage change callback)
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        if ($(el).find('.bulk_select_checkbox').length > 0) {
+        if (el.querySelector('.bulk_select_checkbox')) {
             return;
         }
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const checkbox = $('<input type=\'checkbox\' class=\'bulk_select_checkbox\'>');
-        checkbox.on('change', () => {
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.className = 'bulk_select_checkbox';
+        checkbox.addEventListener('change', () => {
             // Do something when the checkbox is changed
         });
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(el).prepend(checkbox);
+        el.prepend(checkbox);
     });
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#rm_print_characters_block.group_overlay_mode_select .bogus_folder_select, #rm_print_characters_block.group_overlay_mode_select .group_select')
