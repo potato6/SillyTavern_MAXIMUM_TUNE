@@ -138,8 +138,7 @@ export async function itemizedParams(itemizedPrompts, thisPromptSet, incomingMes
         examplesCount: String(itemizedPrompts[thisPromptSet].examplesCount ?? ''),
     };
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const getFriendlyName = (value) => $(`#rm_api_block select option[value="${value}"]`).first().text() || value;
+    const getFriendlyName = (value) => (document.querySelector(`#rm_api_block select option[value="${value}"]`)?.textContent || value);
 
     if (params.apiUsed) {
         params.apiUsed = getFriendlyName(params.apiUsed);
@@ -419,8 +418,7 @@ export function initItemizedPrompts() {
 
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('pointerup', '.mes_prompt', async function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const mesIdForItemization = $(this).closest('.mes').attr('mesId');
+        const mesIdForItemization = this.closest('.mes').getAttribute('mesId');
         console.log(`looking for mesID: ${mesIdForItemization}`);
         if (itemizedPrompts.length !== undefined && itemizedPrompts.length !== 0) {
             await promptItemize(itemizedPrompts, mesIdForItemization);

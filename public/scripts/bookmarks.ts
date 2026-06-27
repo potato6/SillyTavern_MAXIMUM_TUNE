@@ -768,20 +768,16 @@ export function initBookmarks() {
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.select_chat_block, .mes_bookmark', async function (e) {
         // If shift is held down, we are not following the bookmark, but creating a new one
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const mes = $(this).closest('.mes');
-        if (e.shiftKey && mes.length) {
-            const selectedMesId = mes.attr('mesid');
+        const mes = this.closest('.mes');
+        if (e.shiftKey && mes) {
+            const selectedMesId = mes.getAttribute('mesid');
             await createNewBookmark(Number(selectedMesId));
             return;
         }
 
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const fileName = $(this).hasClass('mes_bookmark')
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            ? $(this).closest('.mes').attr('bookmark_link')
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            : $(this).attr('file_name');
+        const fileName = this.classList.contains('mes_bookmark')
+            ? this.closest('.mes').getAttribute('bookmark_link')
+            : this.getAttribute('file_name');
 
         if (!fileName) {
             return;
@@ -810,8 +806,7 @@ export function initBookmarks() {
 
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.mes_create_bookmark', async function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const mesId = $(this).closest('.mes').attr('mesid');
+        const mesId = this.closest('.mes').getAttribute('mesid');
         if (mesId !== undefined) {
             await createNewBookmark(Number(mesId));
         }
@@ -819,8 +814,7 @@ export function initBookmarks() {
 
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.mes_create_branch', async function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const mesId = $(this).closest('.mes').attr('mesid');
+        const mesId = this.closest('.mes').getAttribute('mesid');
         if (mesId !== undefined) {
             await branchChat(Number(mesId));
         }

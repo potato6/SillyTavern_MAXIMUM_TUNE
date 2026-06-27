@@ -76,9 +76,8 @@ export const ReasoningType = {
  * @returns {{messageId: number, message: object, messageBlock: JQuery<HTMLElement>}}
  */
 function getMessageFromJquery(element) {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const messageBlock = $(element).closest('.mes');
-    const messageId = Number(messageBlock.attr('mesid'));
+    const messageBlock = element.closest('.mes');
+    const messageId = Number(messageBlock.getAttribute('mesid'));
     const message = chat[messageId];
     return { messageId: messageId, message, messageBlock };
 }
@@ -1157,8 +1156,7 @@ function registerReasoningSlashCommands() {
         const selector = Array.from({ length: range.end - range.start + 1 }, (_, i) =>
             `#chat [mesid="${range.start + i}"] .mes_reasoning_details`,
         ).join(',');
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const details = $(selector);
+        const details = document.querySelectorAll(selector);
         if (details.length === 0) {
             // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.warning(t`No reasoning blocks found for the specified messages.`);
@@ -1207,13 +1205,11 @@ function registerReasoningSlashCommands() {
         callback: (_args, value) => {
             const details = getReasoningDetailsElements(value.toString());
             if (!details) return '';
-            details.each(function () {
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                const $el = $(this);
-                if ($el.attr('open') !== undefined) {
-                    $el.removeAttr('open');
+            details.forEach(function (el) {
+                if (el.hasAttribute('open')) {
+                    el.removeAttribute('open');
                 } else {
-                    $el.attr('open', '');
+                    el.setAttribute('open', '');
                 }
             });
             return '';
@@ -1266,23 +1262,20 @@ function setReasoningEventHandlers() {
 
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.mes_reasoning_header', function (e) {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const details = $(this).closest('.mes_reasoning_details');
-        // Along with the CSS rules to mark blocks not toggle-able when they are empty, prevent them from actually being toggled, or being edited
-        if (details.find('.mes_reasoning').is(':empty')) {
+        const details = this.closest('.mes_reasoning_details');
+        const reasoningEl = details?.querySelector('.mes_reasoning');
+        if (reasoningEl && !reasoningEl.hasChildNodes()) {
             e.preventDefault();
             return;
         }
 
-        // If we are in message edit mode and reasoning area is closed, a click opens and edits it
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const mes = $(this).closest('.mes');
-        const mesEditArea = mes.find('#curEditTextarea');
-        if (mesEditArea.length) {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const summary = $(mes).find('.mes_reasoning_summary');
-            if (!summary.attr('open')) {
-                summary.find('.mes_reasoning_edit').trigger('click');
+        const mes = this.closest('.mes');
+        const mesEditArea = mes.querySelector('#curEditTextarea');
+        if (mesEditArea) {
+            const summary = mes.querySelector('.mes_reasoning_summary');
+            if (summary && !summary.hasAttribute('open')) {
+                const editBtn = summary.querySelector('.mes_reasoning_edit');
+                if (editBtn) editBtn.click();
             }
         }
     });

@@ -456,12 +456,8 @@ export function initCfg() {
 
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('input[name="cfg_prompt_combine"]').on('input', function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const values = $('#cfgConfig').find('input[name="cfg_prompt_combine"]')
-            .filter(':checked')
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            .map(function () { return Number($(this).val()); })
-            .get()
+        const values = Array.from(document.querySelectorAll('#cfgConfig input[name="cfg_prompt_combine"]:checked'))
+            .map(function (el) { return Number(el.value); })
             .filter((e) => !Number.isNaN(e)) || [];
 
         chat_metadata[metadataKeys.prompt_combine] = values;

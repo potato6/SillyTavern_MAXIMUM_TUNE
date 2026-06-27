@@ -150,9 +150,11 @@ function renderAlternativeTokensView() {
 
     // scroll past long prior context
     if (prefix) {
-        const element = view.find('.logprobs_output_token').first();
-        const scrollOffset = element.offset().top - element.parent().offset().top;
-        element.parent().scrollTop(scrollOffset);
+        const element = view[0].querySelector('.logprobs_output_token');
+        if (element) {
+            const scrollOffset = element.getBoundingClientRect().top - element.parentElement.getBoundingClientRect().top;
+            element.parentElement.scrollTop = scrollOffset;
+        }
     }
 }
 

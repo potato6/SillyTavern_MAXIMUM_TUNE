@@ -1458,12 +1458,9 @@ async function openAttachmentManager() {
             [ATTACHMENT_SOURCE.CHAT]: '.chatAttachmentsList',
         };
 
-        const selected = template
-            .find(sources[source])
-            .find('.attachmentListItemCheckbox:checked')
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            .map((_, el) => $(el).closest('.attachmentListItem').attr('data-attachment-url'))
-            .get();
+        const containerEl = template[0].querySelector(sources[source]);
+        const selected = Array.from(containerEl?.querySelectorAll('.attachmentListItemCheckbox:checked') ?? [])
+            .map(el => el.closest('.attachmentListItem')?.getAttribute('data-attachment-url'));
 
         template.find(sources[source]).empty();
 
@@ -1533,7 +1530,7 @@ async function openAttachmentManager() {
 
         const modalButtonData = Object.entries(sources).map(entry => {
             const [source, selector] = entry;
-            const button = template.find(selector).find('.openActionModalButton').get(0);
+            const button = template[0]?.querySelector(`${selector} .openActionModalButton`);
 
             if (!button) {
                 // @ts-expect-error TS(7030): Not all code paths return a value.
@@ -1692,16 +1689,14 @@ async function openAttachmentManager() {
     }));
 
     template.find('.bulkActionSelectAll').on('click', () => {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('.attachmentListItemCheckbox:visible').each((_, checkbox) => {
+        document.querySelectorAll('.attachmentListItemCheckbox:visible').forEach(checkbox => {
             if (checkbox instanceof HTMLInputElement) {
                 checkbox.checked = true;
             }
         });
     });
     template.find('.bulkActionSelectNone').on('click', () => {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('.attachmentListItemCheckbox:visible').each((_, checkbox) => {
+        document.querySelectorAll('.attachmentListItemCheckbox:visible').forEach(checkbox => {
             if (checkbox instanceof HTMLInputElement) {
                 checkbox.checked = false;
             }
@@ -2231,39 +2226,33 @@ async function onImageSwiped(messageId, element, direction) {
 export function initChatUtilities() {
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.mes_hide', async function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const messageBlock = $(this).closest('.mes');
-        const messageId = Number(messageBlock.attr('mesid'));
+        const messageBlock = this.closest('.mes');
+        const messageId = Number(messageBlock?.getAttribute('mesid'));
         await hideChatMessageRange(messageId, messageId, false);
     });
 
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.mes_unhide', async function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const messageBlock = $(this).closest('.mes');
-        const messageId = Number(messageBlock.attr('mesid'));
+        const messageBlock = this.closest('.mes');
+        const messageId = Number(messageBlock?.getAttribute('mesid'));
         await hideChatMessageRange(messageId, messageId, true);
     });
 
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.mes_file_delete', async function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const messageBlock = $(this).closest('.mes');
-        const messageId = Number(messageBlock.attr('mesid'));
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const fileBlock = $(this).closest('.mes_file_container');
-        const fileIndex = Number(fileBlock.attr('data-index'));
+        const messageBlock = this.closest('.mes');
+        const messageId = Number(messageBlock?.getAttribute('mesid'));
+        const fileBlock = this.closest('.mes_file_container');
+        const fileIndex = Number(fileBlock?.getAttribute('data-index'));
         await deleteMessageFile(messageBlock, messageId, fileIndex);
     });
 
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.mes_file_open', async function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const messageBlock = $(this).closest('.mes');
-        const messageId = Number(messageBlock.attr('mesid'));
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const fileBlock = $(this).closest('.mes_file_container');
-        const fileIndex = Number(fileBlock.attr('data-index'));
+        const messageBlock = this.closest('.mes');
+        const messageId = Number(messageBlock?.getAttribute('mesid'));
+        const fileBlock = this.closest('.mes_file_container');
+        const fileIndex = Number(fileBlock?.getAttribute('data-index'));
         await viewMessageFile(messageId, fileIndex);
     });
 
@@ -2353,9 +2342,8 @@ export function initChatUtilities() {
 
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.mes_embed', function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const messageBlock = $(this).closest('.mes');
-        const messageId = Number(messageBlock.attr('mesid'));
+        const messageBlock = this.closest('.mes');
+        const messageId = Number(messageBlock?.getAttribute('mesid'));
         embedMessageFile(messageId, messageBlock);
     });
 
@@ -2444,10 +2432,8 @@ export function initChatUtilities() {
         if (window.getSelection().toString()) return;
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         if ($('.edit_textarea').length) return;
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(this).closest('.mes').find('.mes_edit').trigger('click');
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        if ($(event.target).closest('.mes_reasoning').length) {
+        $(this.closest('.mes')?.querySelector('.mes_edit')).trigger('click');
+        if (event.target.closest('.mes_reasoning')) {
             // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('.reasoning_edit_textarea').trigger('focus');
         }
@@ -2501,10 +2487,10 @@ export function initChatUtilities() {
      */
     function getMediaContainerInfo(containerClass = '.mes_media_container') {
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const messageBlock = $(this).closest('.mes');
+        const messageBlock = $(this.closest('.mes'));
         const messageId = Number(messageBlock.attr('mesid'));
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const mediaBlock = $(this).closest(containerClass);
+        const mediaBlock = $(this.closest(containerClass));
         const mediaIndex = Number(mediaBlock.attr('data-index'));
         return { messageBlock, messageId, mediaBlock, mediaIndex };
     }

@@ -101,12 +101,12 @@ function getFilterHelper(listSelector) {
     const $element = typeof listSelector === 'string' ? $(listSelector) : listSelector;
 
     // Check if this filter is in the group members section
-    if ($element.closest('#currentGroupMembers').length > 0) {
+    if ($element[0]?.closest('#currentGroupMembers')) {
         return groupMembersFilter;
     }
 
     // Check if this filter is in the group candidates (add members) section
-    if ($element.closest('#unaddedCharList').length > 0) {
+    if ($element[0]?.closest('#unaddedCharList')) {
         return groupCandidatesFilter;
     }
 
@@ -482,19 +482,17 @@ function chooseBogusFolder(source, tagId, remove = false) {
     // If we are here via the 'back' action, we implicitly take the last filtered folder as one to remove
     const isBack = tagId === 'back';
     if (isBack) {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const drilldown = $(source).closest('#rm_characters_block').find('.rm_tag_bogus_drilldown');
-        const lastTag = drilldown.find('.tag:last').last();
-        tagId = lastTag.attr('id');
+        const drilldown = source.closest('#rm_characters_block')?.querySelector('.rm_tag_bogus_drilldown');
+        const drilldownTags = drilldown?.querySelectorAll('.tag');
+        const lastTag = drilldownTags?.[drilldownTags.length - 1];
+        tagId = lastTag?.getAttribute('id');
         remove = true;
     }
 
     // Instead of manually updating the filter conditions, we just "click" on the filter tag
     // We search inside which filter block we are located in and use that one
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const FILTER_SELECTOR = ($(source).closest('#rm_characters_block') ?? $(source).closest('#rm_group_chats_block')).find('.rm_tag_filter');
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const tagElement = $(FILTER_SELECTOR).find(`.tag[id=${tagId}]`);
+    const FILTER_SELECTOR = (source.closest('#rm_characters_block') ?? source.closest('#rm_group_chats_block'))?.querySelector('.rm_tag_filter');
+    const tagElement = $(FILTER_SELECTOR?.querySelector(`.tag[id=${tagId}]`));
 
     toggleTagThreeState(tagElement, { stateOverride: !remove ? FILTER_STATES.SELECTED : DEFAULT_FILTER_STATE, simulateClick: true });
 }
@@ -515,15 +513,15 @@ function getTagBlock(tag, entities, hidden = 0, isUseless = false) {
     const template = FOLDER_TEMPLATE.clone();
     template.addClass(tagFolder.class);
     template.attr({ 'tagid': tag.id, 'id': `BogusFolder${tag.id}` });
-    template.find('.avatar').css({ 'background-color': tag.color, 'color': tag.color2 }).attr('title', `[Folder] ${tag.name}`);
-    template.find('.ch_name').text(tag.name).attr('title', `[Folder] ${tag.name}`);
-    template.find('.bogus_folder_hidden_counter').text(hidden > 0 ? `${hidden} hidden` : '');
-    template.find('.bogus_folder_counter').text(`${count} ` + (count != 1 ? t`characters` : t`character`));
-    template.find('.bogus_folder_icon').addClass(tagFolder.fa_icon);
+    $(template[0]?.querySelector('.avatar')).css({ 'background-color': tag.color, 'color': tag.color2 }).attr('title', `[Folder] ${tag.name}`);
+    $(template[0]?.querySelector('.ch_name')).text(tag.name).attr('title', `[Folder] ${tag.name}`);
+    $(template[0]?.querySelector('.bogus_folder_hidden_counter')).text(hidden > 0 ? `${hidden} hidden` : '');
+    $(template[0]?.querySelector('.bogus_folder_counter')).text(`${count} ` + (count != 1 ? t`characters` : t`character`));
+    $(template[0]?.querySelector('.bogus_folder_icon')).addClass(tagFolder.fa_icon);
     if (isUseless) template.addClass('useless');
 
     // Fill inline character images
-    buildAvatarList(template.find('.bogus_folder_avatars_block'), entities);
+    buildAvatarList($(template[0]?.querySelector('.bogus_folder_avatars_block')), entities);
 
     return template;
 }
@@ -646,8 +644,8 @@ function renameTagKey(oldKey, newKey) {
  * @param key
  */
 function createTagMapFromList(listElement, key) {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const tagIds = [...($(listElement).find('.tag').map((_, el) => $(el).attr('id')))];
+    const $listEl = $(listElement);
+    const tagIds = Array.from($listEl[0]?.querySelectorAll('.tag') ?? [], el => el.getAttribute('id'));
     tag_map[key] = tagIds;
     saveSettingsDebounced();
 }
@@ -752,21 +750,20 @@ export function getTagKeyForEntity(entityOrKey) {
  * @returns {string|undefined} The tag key that can be found.
  */
 export function getTagKeyForEntityElement(element) {
-    if (typeof element === 'string') {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        element = $(element);
-    }
+    let el = typeof element === 'string'
+        ? document.querySelector(element)
+        : (element?.[0] instanceof Node ? element[0] : element);
     // Start with the given element and traverse up the DOM tree
-    while (element.length && element.parent().length) {
-        const grid = element.attr('data-grid');
-        const chid = element.attr('data-chid');
+    while (el?.getAttribute) {
+        const grid = el.getAttribute('data-grid');
+        const chid = el.getAttribute('data-chid');
         if (grid || chid) {
             const id = grid || chid;
             return getTagKeyForEntity(id);
         }
 
         // Move up to the parent element
-        element = element.parent();
+        el = el.parentElement;
     }
 
     return undefined;
@@ -860,7 +857,7 @@ export function removeTagFromEntity(tag, entityId, { tagListSelector = null, tag
     if (tagListSelector) {
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const $selector = (typeof tagListSelector === 'string') ? $(tagListSelector) : tagListSelector;
-        $selector.find(`.tag[id="${tag.id}"]`).remove();
+        $selector[0]?.querySelector(`.tag[id="${tag.id}"]`)?.remove();
     }
     if (tagElement) tagElement.remove();
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
@@ -925,8 +922,8 @@ function removeTagFromMap(tagId, characterId = null) {
  * @param listSelector
  */
 function findTag(request, resolve, listSelector) {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const skipIds = [...($(listSelector).find('.tag').map((_, el) => $(el).attr('id')))];
+    const $listEl = $(listSelector);
+    const skipIds = Array.from($listEl[0]?.querySelectorAll('.tag') ?? [], el => el.getAttribute('id'));
     const haystack = tags.filter(t => !skipIds.includes(t.id)).sort(compareTagsForSort).map(t => t.name);
     const needle = request.term;
     const hasExactMatch = haystack.findIndex(x => equalsIgnoreCaseAndAccents(x, needle)) !== -1;
@@ -1090,13 +1087,14 @@ async function showTagImportPopup(character, existingTags, newTags, folderTags) 
 
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const popupContent = $(await renderTemplateAsync('charTagImport', { charName: character.name }));
+    const popupEl = popupContent[0];
 
     // Print tags after popup is shown, so that events can be added
-    printTagList(popupContent.find('#import_existing_tags_list'), { tags: existingTags, tagOptions: { removable: true, removeAction: tag => removeFromArray(existingTags, tag) } });
-    printTagList(popupContent.find('#import_new_tags_list'), { tags: newTags, tagOptions: { removable: true, removeAction: tag => removeFromArray(newTags, tag) } });
-    printTagList(popupContent.find('#import_folder_tags_list'), { tags: folderTags, tagOptions: { removable: true, removeAction: tag => removeFromArray(folderTags, tag) } });
+    printTagList($(popupEl?.querySelector('#import_existing_tags_list')), { tags: existingTags, tagOptions: { removable: true, removeAction: tag => removeFromArray(existingTags, tag) } });
+    printTagList($(popupEl?.querySelector('#import_new_tags_list')), { tags: newTags, tagOptions: { removable: true, removeAction: tag => removeFromArray(newTags, tag) } });
+    printTagList($(popupEl?.querySelector('#import_folder_tags_list')), { tags: folderTags, tagOptions: { removable: true, removeAction: tag => removeFromArray(folderTags, tag) } });
 
-    if (folderTags.length === 0) popupContent.find('#folder_tags_block').hide();
+    if (folderTags.length === 0) $(popupEl?.querySelector('#folder_tags_block')).hide();
 
     /**
      *
@@ -1334,20 +1332,20 @@ function appendTagToList(listElement, tag, { removable = false, isFilter = false
     if (!listElement) {
         return;
     }
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    if (!skipExistsCheck && $(listElement).find(`.tag[id="${tag.id}"]`).length > 0) {
+    if (!skipExistsCheck && $(listElement)[0]?.querySelector(`.tag[id="${tag.id}"]`)) {
         return;
     }
 
     const tagElement = TAG_TEMPLATE.clone();
+    const tagEl = tagElement[0];
     tagElement.attr('id', tag.id);
 
     //tagElement.css('color', 'var(--SmartThemeBodyColor)');
     tagElement.css('background-color', tag.color);
     tagElement.css('color', tag.color2);
 
-    tagElement.find('.tag_name').text(tag.name);
-    const removeButton = tagElement.find('.tag_remove');
+    $(tagEl?.querySelector('.tag_name')).text(tag.name);
+    const removeButton = $(tagEl?.querySelector('.tag_remove'));
     removable ? removeButton.show() : removeButton.hide();
     if (removable && removeAction) {
         tagElement.attr('custom-remove-action', String(true));
@@ -1364,7 +1362,7 @@ function appendTagToList(listElement, tag, { removable = false, isFilter = false
         tagElement.attr('title', tag.title);
     }
     if (tag.icon) {
-        tagElement.find('.tag_name').text('').attr('title', `${translate(tag.name)} ${tag.title || ''}`.trim()).addClass(tag.icon);
+        $(tagEl?.querySelector('.tag_name')).text('').attr('title', `${translate(tag.name)} ${tag.title || ''}`.trim()).addClass(tag.icon);
         tagElement.addClass('actionable');
     }
     if (isInactive) {
@@ -1410,8 +1408,7 @@ function onTagFilterClick(listElement) {
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const tagId = $(this).attr('id');
     const existingTag = tags.find((tag) => tag.id === tagId);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const parent = $(this).parents('.tags');
+    const parent = this.closest('.tags');
 
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const state = toggleTagThreeState($(this));
@@ -1436,7 +1433,7 @@ function onTagFilterClick(listElement) {
     runTagFilters(listElement);
 
     // Focus the tag again we were at, if possible. To improve keyboard navigation
-    setTimeout(() => parent.find(`.tag[id="${tagId}"]`).trigger('focus'), DEFAULT_PRINT_TIMEOUT + 1);
+    setTimeout(() => parent?.querySelector(`.tag[id="${tagId}"]`)?.focus(), DEFAULT_PRINT_TIMEOUT + 1);
 
     updateTagFilterIndicator(listElement);
 }
@@ -1554,11 +1551,9 @@ function toggleTagThreeState(element, { stateOverride = undefined, simulateClick
  * @param listElement
  */
 function runTagFilters(listElement) {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const tagIds = [...($(listElement).find('.tag.selected:not(.actionable)').map((_, el) => $(el).attr('id')))];
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const excludedTagIds = [...($(listElement).find('.tag.excluded:not(.actionable)').map((_, el) => $(el).attr('id')))];
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    const $listEl = $(listElement);
+    const tagIds = Array.from($listEl[0]?.querySelectorAll('.tag.selected:not(.actionable)') ?? [], el => el.getAttribute('id'));
+    const excludedTagIds = Array.from($listEl[0]?.querySelectorAll('.tag.excluded:not(.actionable)') ?? [], el => el.getAttribute('id'));
     const filterHelper = getFilterHelper($(listElement));
     filterHelper.setFilterData(FILTER_TYPES.TAG, { excluded: excludedTagIds, selected: tagIds });
 }
@@ -1645,10 +1640,12 @@ function printTagFilters(type = tag_filter_type.character) {
 
 
     // Print bogus folder navigation
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const bogusDrilldown = $(FILTER_SELECTOR).siblings('.rm_tag_bogus_drilldown');
+    const filterSelectorEl = $(FILTER_SELECTOR);
+    const parentEl = filterSelectorEl[0]?.parentElement;
+    const bogusDrilldownEl = parentEl?.querySelector(':scope > .rm_tag_bogus_drilldown');
+    const bogusDrilldown = $(bogusDrilldownEl);
     bogusDrilldown.empty();
-    if (power_user.bogus_folders && bogusDrilldown.length > 0) {
+    if (power_user.bogus_folders && bogusDrilldownEl) {
         const navigatedTags = getOpenBogusFolders();
         printTagList(bogusDrilldown, { tags: navigatedTags, tagOptions: { removable: true } });
     }
@@ -1659,18 +1656,15 @@ function printTagFilters(type = tag_filter_type.character) {
 
     // Initialize the tag list visibility based on saved settings for this context
     const shouldShowTags = getTagFilterVisibility(type);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const showTagListButton = $(FILTER_SELECTOR).closest('.rm_tag_controls').find('.showTagList');
+    const showTagListButton = $(document.querySelector(FILTER_SELECTOR)?.closest('.rm_tag_controls')?.querySelector('.showTagList'));
 
     // Update button state to match the saved setting
     showTagListButton.toggleClass('selected', shouldShowTags);
 
     if (shouldShowTags) {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(FILTER_SELECTOR).find('.tag:not(.actionable)').show();
+        $(`${FILTER_SELECTOR} .tag:not(.actionable)`).show();
     } else {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(FILTER_SELECTOR).find('.tag:not(.actionable)').hide();
+        $(`${FILTER_SELECTOR} .tag:not(.actionable)`).hide();
     }
 
     updateTagFilterIndicator(FILTER_SELECTOR);
@@ -1684,8 +1678,10 @@ function updateTagFilterIndicator(filterSelector) {
     const selector = filterSelector || CHARACTER_FILTER_SELECTOR;
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const tagFilter = typeof selector === 'string' ? $(selector) : selector;
-    const showTagListButton = tagFilter.closest('.rm_tag_controls').find('.showTagList');
-    const hasActiveTags = tagFilter.find('.tag:not(.actionable)').is('.selected, .excluded');
+    const tagFilterEl = tagFilter[0];
+    const showTagListButton = $(tagFilterEl?.closest('.rm_tag_controls')?.querySelector('.showTagList'));
+    const filterTags = tagFilterEl?.querySelectorAll('.tag:not(.actionable)');
+    const hasActiveTags = filterTags ? [...filterTags].some(el => el.matches('.selected, .excluded')) : false;
     showTagListButton.toggleClass('indicator', hasActiveTags);
 }
 
@@ -1695,22 +1691,19 @@ function updateTagFilterIndicator(filterSelector) {
  */
 function onTagRemoveClick(event) {
     event.stopPropagation();
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const tagElement = $(this).closest('.tag');
-    const tagId = tagElement.attr('id');
+    const tagElement = this.closest('.tag');
+    const tagId = tagElement?.getAttribute('id');
 
     // If we have a custom remove action, we are not executing anything here in the default handler
-    if (tagElement.attr('custom-remove-action')) {
+    if (tagElement?.getAttribute('custom-remove-action')) {
         console.debug('Custom remove action', tagId);
         return;
     }
 
     // Check if we are inside the drilldown. If so, we call remove on the bogus folder
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    if ($(this).closest('.rm_tag_bogus_drilldown').length > 0) {
+    if (this.closest('.rm_tag_bogus_drilldown')) {
         console.debug('Bogus drilldown remove', tagId);
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        chooseBogusFolder($(this), tagId, true);
+        chooseBogusFolder(this, tagId, true);
         return;
     }
 
@@ -1769,8 +1762,9 @@ function onGroupCreateClick() {
 export function applyTagsOnCharacterSelect(chid = null) {
     // If we are in create window, we cannot simply redraw, as there are no real persisted tags. Grab them, and pass them in
     if (menu_type === 'create') {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const currentTagIds = $('#tagList').find('.tag').map((_, el) => $(el).attr('id')).get();
+        const tagListEl = document.querySelector('#tagList');
+        const tagEls = tagListEl?.querySelectorAll('.tag') ?? [];
+        const currentTagIds = Array.from(tagEls, el => el.getAttribute('id'));
         const currentTags = tags.filter(x => currentTagIds.includes(x.id));
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         printTagList($('#tagList'), { forEntityOrKey: undefined, tags: currentTags, tagOptions: { removable: true } });
@@ -1789,8 +1783,9 @@ export function applyTagsOnCharacterSelect(chid = null) {
 export function applyTagsOnGroupSelect(groupId = null) {
     // If we are in create window, we explicitly have to tell the system to print for the new group, not the one selected in the background
     if (menu_type === 'group_create') {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const currentTagIds = $('#groupTagList').find('.tag').map((_, el) => $(el).attr('id')).get();
+        const tagListEl = document.querySelector('#groupTagList');
+        const tagEls = tagListEl?.querySelectorAll('.tag') ?? [];
+        const currentTagIds = Array.from(tagEls, el => el.getAttribute('id'));
         const currentTags = tags.filter(x => currentTagIds.includes(x.id));
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         printTagList($('#groupTagList'), { forEntityOrKey: undefined, tags: currentTags, tagOptions: { removable: true } });
@@ -1834,7 +1829,7 @@ async function onViewTagsListClick() {
     const tagContainer = $('<div class="tag_view_list_tags ui-sortable"></div>');
     html.append(tagContainer);
 
-    const $sortModeSelect = html.find('#tag_sort_mode_select');
+    const $sortModeSelect = $(html[0]?.querySelector('#tag_sort_mode_select'));
     $sortModeSelect.val(power_user.tag_sort_mode);
     $sortModeSelect.on('change', function () {
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
@@ -1856,9 +1851,8 @@ async function onViewTagsListClick() {
  */
 function makeTagListDraggable(tagContainer) {
     const onTagsSort = () => {
-        tagContainer.find('.tag_view_item').each(function (i, tagElement) {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const id = $(tagElement).attr('id');
+        tagContainer[0]?.querySelectorAll('.tag_view_item').forEach(function (tagElement, i) {
+            const id = tagElement.getAttribute('id');
             const tag = tags.find(x => x.id === id);
 
             // Update the sort order
@@ -2141,8 +2135,8 @@ function onTagCreateClick() {
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     printViewTagList($('#tag_view_list .tag_view_list_tags'));
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const tagElement = ($('#tag_view_list .tag_view_list_tags')).find(`.tag_view_item[id="${tag.id}"]`);
+    const tagContainer = document.querySelector('#tag_view_list .tag_view_list_tags');
+    const tagElement = $(tagContainer?.querySelector(`.tag_view_item[id="${tag.id}"]`));
     tagElement[0]?.scrollIntoView();
     flashHighlight(tagElement);
 
@@ -2161,20 +2155,21 @@ function onTagCreateClick() {
  */
 function appendViewTagToList(list, tag, count) {
     const template = VIEW_TAG_TEMPLATE.clone();
+    const templateEl = template[0];
     template.attr('id', tag.id);
-    template.find('.tag_view_counter_value').text(count);
-    template.find('.tag_view_name').text(tag.name);
-    template.find('.tag_view_name').addClass('tag');
+    $(templateEl?.querySelector('.tag_view_counter_value')).text(count);
+    $(templateEl?.querySelector('.tag_view_name')).text(tag.name);
+    $(templateEl?.querySelector('.tag_view_name')).addClass('tag');
 
-    template.find('.tag_view_name').css('background-color', tag.color);
-    template.find('.tag_view_name').css('color', tag.color2);
+    $(templateEl?.querySelector('.tag_view_name')).css('background-color', tag.color);
+    $(templateEl?.querySelector('.tag_view_name')).css('color', tag.color2);
 
     const tagAsFolderId = tag.id + '-tag-folder';
     const colorPickerId = tag.id + '-tag-color';
     const colorPicker2Id = tag.id + '-tag-color2';
 
     if (!power_user.bogus_folders) {
-        template.find('.tag_as_folder').hide();
+        $(templateEl?.querySelector('.tag_as_folder')).hide();
     }
 
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
@@ -2187,26 +2182,25 @@ function appendViewTagToList(list, tag, count) {
         .addClass('tag-color2')
         .attr({ id: colorPicker2Id, color: tag.color2 || power_user.main_text_color, 'data-default-color': power_user.main_text_color });
 
-    template.find('.tag_view_color_picker[data-value="color"]').append(primaryColorPicker)
+    $(templateEl?.querySelector('.tag_view_color_picker[data-value="color"]')).append(primaryColorPicker)
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         .append($('<div class="fas fa-link fa-xs link_icon right_menu_button" title="Link to theme color"></div>'));
-    template.find('.tag_view_color_picker[data-value="color2"]').append(secondaryColorPicker)
+    $(templateEl?.querySelector('.tag_view_color_picker[data-value="color2"]')).append(secondaryColorPicker)
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         .append($('<div class="fas fa-link fa-xs link_icon right_menu_button" title="Link to theme color"></div>'));
 
-    template.find('.tag_as_folder').attr('id', tagAsFolderId);
+    $(templateEl?.querySelector('.tag_as_folder')).attr('id', tagAsFolderId);
 
     primaryColorPicker.on('change', (evt) => onTagColorize(evt, (tag, color) => tag.color = color, 'background-color'));
     secondaryColorPicker.on('change', (evt) => onTagColorize(evt, (tag, color) => tag.color2 = color, 'color'));
-    template.find('.tag_view_color_picker .link_icon').on('click', (evt) => {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const colorPicker = $(evt.target).closest('.tag_view_color_picker').find('toolcool-color-picker');
-        const defaultColor = colorPicker.attr('data-default-color');
-        colorPicker[0].color = defaultColor;
+    $(templateEl?.querySelector('.tag_view_color_picker .link_icon')).on('click', (evt) => {
+        const colorPickerEl = evt.target.closest('.tag_view_color_picker')?.querySelector('toolcool-color-picker');
+        const defaultColor = colorPickerEl?.getAttribute('data-default-color');
+        if (colorPickerEl) colorPickerEl.color = defaultColor;
     });
 
     const getHideTooltip = () => tag.is_hidden_on_character_card ? t`Hide on character card` : t`Show on character card`;
-    const hideToggle = template.find('.eye-toggle');
+    const hideToggle = $(templateEl?.querySelector('.eye-toggle'));
     hideToggle.toggleClass('fa-eye-slash', tag.is_hidden_on_character_card);
     hideToggle.toggleClass('fa-eye', !tag.is_hidden_on_character_card);
     hideToggle.attr('title', getHideTooltip());
@@ -2245,8 +2239,7 @@ function appendViewTagToList(list, tag, count) {
  *
  */
 function onTagAsFolderClick() {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const element = $(this).closest('.tag_view_item');
+    const element = $(this.closest('.tag_view_item'));
     const id = element.attr('id');
     const tag = tags.find(x => x.id === id);
 
@@ -2269,7 +2262,7 @@ function onTagAsFolderClick() {
  */
 function updateDrawTagFolder(element, tag) {
     const tagFolder = TAG_FOLDER_TYPES[tag.folder_type] || TAG_FOLDER_TYPES[TAG_FOLDER_DEFAULT_TYPE];
-    const folderElement = element.find('.tag_as_folder');
+    const folderElement = $(element[0]?.querySelector('.tag_as_folder'));
 
     // Update css class and remove all others
     Object.keys(TAG_FOLDER_TYPES).forEach(x => {
@@ -2279,7 +2272,7 @@ function updateDrawTagFolder(element, tag) {
     // Draw/update css attributes for this class
     folderElement.attr('title', tagFolder.tooltip);
     folderElement.attr('data-i18n', '[title]' + tagFolder.tooltip);
-    const indicator = folderElement.find('.tag_folder_indicator');
+    const indicator = $(folderElement[0]?.querySelector('.tag_folder_indicator'));
     indicator.text(tagFolder.icon);
     indicator.css('color', tagFolder.color);
     indicator.css('font-size', `calc(var(--mainFontSize) * ${tagFolder.size})`);
@@ -2289,21 +2282,20 @@ function updateDrawTagFolder(element, tag) {
  *
  */
 async function onTagDeleteClick() {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const id = $(this).closest('.tag_view_item').attr('id');
+    const id = this.closest('.tag_view_item')?.getAttribute('id');
     const tag = tags.find(x => x.id === id);
     const otherTags = sortTags(tags.filter(x => x.id !== id).map(x => ({ id: x.id, name: x.name })));
 
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const popupContent = $(await renderTemplateAsync('deleteTag', { otherTags }));
 
-    appendTagToList(popupContent.find('#tag_to_delete'), tag);
+    appendTagToList($(popupContent[0]?.querySelector('#tag_to_delete')), tag);
 
     // Make the select control more fancy on not mobile
     if (!isMobile()) {
         // Delete the empty option in the dropdown, and make the select2 be empty by default
-        popupContent.find('#merge_tag_select option[value=""]').remove();
-        popupContent.find('#merge_tag_select').select2({
+        popupContent[0]?.querySelector('#merge_tag_select option[value=""]')?.remove();
+        $(popupContent[0]?.querySelector('#merge_tag_select')).select2({
             width: '50%',
             placeholder: 'Select tag to merge into',
             allowClear: true,
@@ -2347,8 +2339,7 @@ async function onTagDeleteClick() {
  *
  */
 function onTagRenameInput() {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const id = $(this).closest('.tag_view_item').attr('id');
+    const id = this.closest('.tag_view_item')?.getAttribute('id');
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const newName = $(this).text();
     const tag = tags.find(x => x.id === id);
@@ -2371,16 +2362,15 @@ function onTagRenameInput() {
 function onTagColorize(evt, setColor, cssProperty) {
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const isDefaultColor = $(evt.target).data('default-color') === evt.detail.rgba;
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(evt.target).closest('.tag_view_color_picker').find('.link_icon').toggle(!isDefaultColor);
+    const colorPickerEl = evt.target.closest('.tag_view_color_picker');
+    $(colorPickerEl?.querySelector('.link_icon')).toggle(!isDefaultColor);
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const id = $(evt.target).closest('.tag_view_item').attr('id');
+    const tagViewItem = evt.target.closest('.tag_view_item');
+    const id = tagViewItem?.getAttribute('id');
     let newColor = evt.detail.rgba;
     if (isDefaultColor) newColor = '';
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(evt.target).closest('.tag_view_item').find('.tag_view_name').css(cssProperty, newColor);
+    $(tagViewItem?.querySelector('.tag_view_name')).css(cssProperty, newColor);
     const tag = tags.find(x => x.id === id);
     setColor(tag, newColor);
     saveSettingsDebounced();
@@ -2403,8 +2393,8 @@ function onTagListHintClick() {
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(this).toggleClass('selected');
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const $tagSiblings = $(this).siblings('.tag:not(.actionable)');
+    const siblingTags = [...this.parentElement.querySelectorAll(':scope > .tag:not(.actionable)')];
+    const $tagSiblings = $(siblingTags);
 
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     if ($(this).hasClass('selected')) {
@@ -2413,18 +2403,18 @@ function onTagListHintClick() {
         $tagSiblings.hide();
     }
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(this).siblings('.innerActionable').toggleClass('hidden');
+    const innerSiblings = [...this.parentElement.querySelectorAll(':scope > .innerActionable')];
+    $(innerSiblings).toggleClass('hidden');
 
     // Determine which context this button belongs to and save the setting
     let filterType = tag_filter_type.character;
 
     // Check which section we're in by looking at the sibling header
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const $tagControls = $(this).closest('.rm_tag_controls');
-    if ($tagControls.prev().is('#rm_group_add_members_header')) {
+    const tagControls = this.closest('.rm_tag_controls');
+    const prevSibling = tagControls?.previousElementSibling;
+    if (prevSibling?.id === 'rm_group_add_members_header') {
         filterType = tag_filter_type.group_candidates_list;
-    } else if ($tagControls.prev().is('#rm_group_members_header')) {
+    } else if (prevSibling?.id === 'rm_group_members_header') {
         filterType = tag_filter_type.group_members_list;
     }
 
@@ -2449,11 +2439,9 @@ function onClearAllFiltersClick(filterHelper) {
 
     // We have to manually go through the elements and unfilter by clicking...
     // Thankfully nearly all filter controls are three-state-toggles
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const filterTags = $(context.selector).find('.tag');
+    const filterTags = document.querySelectorAll(`${context.selector} .tag`);
     for (const tag of filterTags) {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const toggleState = $(tag).attr('data-toggle-state');
+        const toggleState = tag.getAttribute('data-toggle-state');
         if (toggleState !== undefined && !isFilterState(toggleState ?? FILTER_STATES.UNDEFINED, FILTER_STATES.UNDEFINED)) {
             // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             toggleTagThreeState($(tag), { stateOverride: FILTER_STATES.UNDEFINED, simulateClick: true });
@@ -2831,13 +2819,11 @@ function registerTagsSlashCommands() {
 export function applyCharacterTagsToMessageDivs({ mesIds = [] } = {}) {
     try {
         const messagesFilter = buildMessagesFilter(mesIds);
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const messages = $('#chat').children(messagesFilter);
+        const chatEl = document.querySelector('#chat');
+        const messages = chatEl ? [...chatEl.children].filter(el => el.matches(messagesFilter)) : [];
 
         // Clear existing tags
-        messages.each(function () {
-            const element = this; // Get the raw DOM element
-
+        messages.forEach(element => {
             for (const attr of [...element.attributes]) {
                 if (attr.name.startsWith('data-char-tag-') || attr.name === 'data-char-tags') {
                     element.removeAttribute(attr.name);
@@ -2859,10 +2845,9 @@ export function applyCharacterTagsToMessageDivs({ mesIds = [] } = {}) {
         const characterTagsCache = new Map();
 
         // Iterate each message div
-        messages.each(function () {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const $this = $(this); // Store the jQuery object
-            const avatarFileName = extractCharacterAvatar($this.find('.avatar img').attr('src'));
+        messages.forEach(element => {
+            const $this = $(element);
+            const avatarFileName = extractCharacterAvatar(element.querySelector('.avatar img')?.getAttribute('src'));
 
             if (!avatarFileName) {
                 return;
@@ -3048,24 +3033,22 @@ export function initTags() {
         if (!$(evt.target).is('[dirty]')) return;
 
         // Remember the order, so we can flash highlight if it changed after reprinting
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const tagId = ($(evt.target).closest('.tag_view_item')).attr('id');
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const oldOrder = $('#tag_view_list .tag_view_item').map((_, el) => el.id).get();
+        const tagId = evt.target.closest('.tag_view_item')?.getAttribute('id');
+        const tagViewItems = document.querySelectorAll('#tag_view_list .tag_view_item');
+        const oldOrder = Array.from(tagViewItems, el => el.id);
 
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         printViewTagList($('#tag_view_list .tag_view_list_tags'));
 
         // If the new focus would've been inside the now redrawn tag list, we should at least move back the focus to the current name
         // Otherwise tab-navigation gets a bit weird
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        if (evt.relatedTarget instanceof HTMLElement && $(evt.relatedTarget).closest('#tag_view_list')) {
+        if (evt.relatedTarget instanceof HTMLElement && evt.relatedTarget.closest('#tag_view_list')) {
             // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(`#tag_view_list .tag_view_item[id="${tagId}"] .tag_view_name`)[0]?.focus();
         }
 
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const newOrder = $('#tag_view_list .tag_view_item').map((_, el) => el.id).get();
+        const newTagViewItems = document.querySelectorAll('#tag_view_list .tag_view_item');
+        const newOrder = Array.from(newTagViewItems, el => el.id);
         const orderChanged = !oldOrder.every((id, index) => id === newOrder[index]);
         if (orderChanged) {
             // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message

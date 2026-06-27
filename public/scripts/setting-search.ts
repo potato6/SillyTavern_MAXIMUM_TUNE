@@ -18,8 +18,7 @@ async function searchSettings() {
  * @returns {boolean} True if the element is a child of a header element, false otherwise
  */
 function isParentHeader(element) {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    return $(element).closest('h4, h3').length > 0;
+    return element instanceof HTMLElement && element.closest('h4, h3') !== null;
 }
 
 /**
@@ -28,24 +27,21 @@ function isParentHeader(element) {
  * @param {string} searchString Search string
  */
 function highlightMatchingElements(element, searchString) {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(element).contents().each(function () {
-        const isTextNode = this.nodeType === Node.TEXT_NODE;
-        const isElementNode = this.nodeType === Node.ELEMENT_NODE;
+    for (const node of element.childNodes) {
+        const isTextNode = node.nodeType === Node.TEXT_NODE;
+        const isElementNode = node.nodeType === Node.ELEMENT_NODE;
 
-        if (isTextNode && this.nodeValue.trim() !== '' && !isParentHeader(this)) {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const parentElement = $(this).parent();
-            const elementText = this.nodeValue;
+        if (isTextNode && node.nodeValue.trim() !== '' && !isParentHeader(node)) {
+            const parentElement = node.parentElement;
+            const elementText = node.nodeValue;
 
             if (elementText.toLowerCase().includes(searchString.toLowerCase())) {
-                parentElement.addClass('highlighted'); // Add CSS class to highlight matched elements
+                parentElement.classList.add('highlighted');
             }
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        } else if (isElementNode && !$(this).is('h4')) {
-            highlightMatchingElements(this, searchString);
+        } else if (isElementNode && node.tagName !== 'H4') {
+            highlightMatchingElements(node, searchString);
         }
-    });
+    }
 }
 
 /**

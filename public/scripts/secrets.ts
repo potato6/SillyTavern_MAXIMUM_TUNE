@@ -1241,9 +1241,8 @@ export async function initSecrets() {
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.openrouter_view_credits', async function (event) {
         event.preventDefault();
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const display = $(this).siblings('.openrouter_credits_display').first();
-        display.text(t`Loading…`);
+        const display = this.parentElement.querySelector('.openrouter_credits_display');
+        display.textContent = t`Loading…`;
         try {
             const response = await fetch('/api/openrouter/credits', {
                 method: 'POST',
@@ -1256,7 +1255,7 @@ export async function initSecrets() {
             if (typeof data.remaining !== 'number') {
                 throw new Error('Invalid response');
             }
-            display.text(`$${data.remaining.toFixed(2)}`);
+            display.textContent = `$${data.remaining.toFixed(2)}`;
         } catch (error) {
             console.error('Failed to fetch OpenRouter credits:', error);
             display.text('');
@@ -1313,9 +1312,8 @@ export async function initSecrets() {
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.nanogpt_view_credits', async function (event) {
         event.preventDefault();
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const display = $(this).siblings('.nanogpt_credits_display').first();
-        display.empty().text(t`Loading…`);
+        const display = this.parentElement.querySelector('.nanogpt_credits_display');
+        display.textContent = t`Loading…`;
 
         try {
             const response = await fetch('/api/nanogpt/credits', {
@@ -1345,7 +1343,7 @@ export async function initSecrets() {
                 shortInlineText += ` | ${t`Sub Active`}`;
             }
 
-            display.empty().text(shortInlineText + ' ');
+            display.textContent = shortInlineText + ' ';
 
             // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const infoBtn = $('<i class="fa-solid fa-circle-info cursor-pointer nanogpt_info_btn"></i>');

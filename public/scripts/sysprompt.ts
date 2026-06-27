@@ -68,7 +68,10 @@ export async function loadSystemPrompts(data) {
 
     for (const prompt of system_prompts) {
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('<option>').val(prompt.name).text(prompt.name).appendTo($select);
+        const option = document.createElement('option');
+        option.value = prompt.name;
+        option.textContent = prompt.name;
+        $select.append(option);
     }
 
     $enabled.prop('checked', power_user.sysprompt.enabled);
@@ -113,7 +116,7 @@ export async function checkForSystemPromptInInstructTemplate(name, template) {
  *
  */
 function toggleSystemPromptDisabledControls() {
-    $enabled.parent().find('i').toggleClass('toggleEnabled', !!power_user.sysprompt.enabled);
+    document.getElementById('sysprompt_enabled').parentElement.querySelector('i').classList.toggle('toggleEnabled', !!power_user.sysprompt.enabled);
     $contentBlock.toggleClass('disabled', !power_user.sysprompt.enabled);
 }
 

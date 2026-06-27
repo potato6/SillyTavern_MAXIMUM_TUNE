@@ -176,8 +176,8 @@ function createThumbnailElement(imageData) {
         }
     }
 
-    const titleElement = thumbnail.find('.BGSampleTitle');
-    clipper.appendChild(titleElement.get(0));
+    const titleElement = thumbnail[0].querySelector('.BGSampleTitle');
+    clipper.appendChild(titleElement);
     thumbnail.append(clipper);
 
     const url = generateUrlParameter(bg, isCustom);
@@ -189,9 +189,9 @@ function createThumbnailElement(imageData) {
     thumbnail.attr('custom', String(isCustom));
     thumbnail.attr('animated', String(isAnimated));
     thumbnail.data('url', url);
-    titleElement.text(friendlyTitle);
+    titleElement.textContent = friendlyTitle;
 
-    return thumbnail.get(0);
+    return thumbnail[0];
 }
 
 /**
@@ -324,17 +324,16 @@ function getBackgroundRelativePath(file) {
  *
  */
 function highlightLockedBackground() {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('.bg_example.locked-background').removeClass('locked-background');
 
     const lockedBackgroundUrl = chat_metadata[BG_METADATA_KEY];
 
     if (lockedBackgroundUrl) {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('.bg_example').filter(function () {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            return $(this).data('url') === lockedBackgroundUrl;
-        }).addClass('locked-background');
+        document.querySelectorAll('.bg_example').forEach(el => {
+            if (el.dataset.url === lockedBackgroundUrl) {
+                el.classList.add('locked-background');
+            }
+        });
     }
 }
 
@@ -350,8 +349,7 @@ function onLockBackgroundClick(event = null) {
     }
 
     // Take the global background's URL and save it to the chat's metadata.
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const urlToLock = event ? $(event.target).closest('.bg_example').data('url') : background_settings.url;
+    const urlToLock = event ? event.target.closest('.bg_example')?.dataset.url : background_settings.url;
     saveBackgroundMetadata(urlToLock);
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#bg1').css('background-image', urlToLock);
@@ -520,10 +518,9 @@ async function getThumbnailFromStorage(bg, isCustom) {
  * @returns {Promise<{oldBg: string, newBg: string}>}
  */
 async function getNewBackgroundName(referenceElement) {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const exampleBlock = $(referenceElement).closest('.bg_example');
-    const isCustom = exampleBlock.attr('custom') === 'true';
-    const oldBg = exampleBlock.attr('bgfile');
+    const exampleBlock = referenceElement.closest('.bg_example');
+    const isCustom = exampleBlock?.getAttribute('custom') === 'true';
+    const oldBg = exampleBlock?.getAttribute('bgfile');
 
     if (!oldBg) {
         console.debug('no bgfile');
@@ -589,10 +586,9 @@ async function onRenameBackgroundClick(e) {
  */
 async function onDeleteBackgroundClick(e) {
     e.stopPropagation();
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const bgToDelete = $(this).closest('.bg_example');
-    const url = bgToDelete.data('url');
-    const isCustom = bgToDelete.attr('custom') === 'true';
+    const bgToDelete = this.closest('.bg_example');
+    const url = bgToDelete?.dataset.url;
+    const isCustom = bgToDelete?.getAttribute('custom') === 'true';
     const deleteFromServerId = 'delete_bg_from_server';
     /** @type {import('./popup.js').CustomPopupInput[]} */
     const customInputs = [{
@@ -610,7 +606,7 @@ async function onDeleteBackgroundClick(e) {
             }
         },
     });
-    const bg = bgToDelete.attr('bgfile');
+    const bg = bgToDelete?.getAttribute('bgfile');
 
     if (confirm) {
         // If it's not custom, it's a built-in background. Delete it from the server
@@ -629,24 +625,23 @@ async function onDeleteBackgroundClick(e) {
 
         if (bg === background_settings.name || url === chat_metadata[BG_METADATA_KEY]) {
             const siblingSelector = '.bg_example';
-            const nextBg = bgToDelete.next(siblingSelector);
-            const prevBg = bgToDelete.prev(siblingSelector);
+            const nextBg = bgToDelete?.nextElementSibling?.matches(siblingSelector) ? bgToDelete.nextElementSibling : null;
+            const prevBg = bgToDelete?.previousElementSibling?.matches(siblingSelector) ? bgToDelete.previousElementSibling : null;
 
-            if (nextBg.length > 0) {
-                nextBg.trigger('click');
-            } else if (prevBg.length > 0) {
-                prevBg.trigger('click');
+            if (nextBg) {
+                nextBg.click();
+            } else if (prevBg) {
+                prevBg.click();
             } else {
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                const anyOtherBg = $('.bg_example').not(bgToDelete).first();
-                if (anyOtherBg.length > 0) {
-                    anyOtherBg.trigger('click');
+                const anyOtherBg = Array.from(document.querySelectorAll('.bg_example')).find(el => el !== bgToDelete);
+                if (anyOtherBg) {
+                    anyOtherBg.click();
                 }
             }
         }
 
         // Remove from local image list so it doesn't reappear on re-render
-        const deletedBg = bgToDelete.attr('bgfile');
+        const deletedBg = bgToDelete?.getAttribute('bgfile');
         if (deletedBg) {
             const cachedIdx = cachedSystemBackgrounds.findIndex(img => img.filename === deletedBg);
             if (cachedIdx !== -1) cachedSystemBackgrounds.splice(cachedIdx, 1);
@@ -664,7 +659,7 @@ async function onDeleteBackgroundClick(e) {
             renderFolderGrid();
         }
 
-        bgToDelete.remove();
+        bgToDelete?.remove();
 
         if (url === chat_metadata[BG_METADATA_KEY]) {
             removeBackgroundMetadata();
@@ -912,16 +907,16 @@ function createFolderTileElement(folder) {
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const tile = $('#bg_folder_tile_template .bg_folder_tile').clone();
     tile.attr('data-folder-id', folder.id);
-    tile.find('.bg_folder_tile_name').text(folder.name);
+    tile[0].querySelector('.bg_folder_tile_name').textContent = folder.name;
 
     // Set cover image (async, update when resolved)
     getFolderCoverUrl(folder).then(coverUrl => {
         if (coverUrl) {
-            tile.find('.bg_folder_tile_cover').css('background-image', `url("${coverUrl}")`);
+            tile[0].querySelector('.bg_folder_tile_cover').style.backgroundImage = `url("${coverUrl}")`;
         }
     });
 
-    return tile.get(0);
+    return tile[0];
 }
 
 /**
@@ -1024,12 +1019,9 @@ function syncGroupSelectionUi() {
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#bg_folder_remove_selected_button').toggle(showRemoveFromCurrentFolderButton);
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#bg_menu_content .bg_example').each(function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const bgFile = String($(this).attr('bgfile') || '');
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(this).toggleClass('folder-group-selected', selectedSystemBackgroundFiles.has(bgFile));
+    document.querySelectorAll('#bg_menu_content .bg_example').forEach(el => {
+        const bgFile = String(el.getAttribute('bgfile') || '');
+        el.classList.toggle('folder-group-selected', selectedSystemBackgroundFiles.has(bgFile));
     });
 }
 
@@ -1131,9 +1123,8 @@ async function selectFoldersForGroupAction(headingText) {
     if (!result) return null;
 
     const selectedIds = [];
-    content.find('input[type="checkbox"]:checked').each(function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        selectedIds.push($(this).data('folderId'));
+    content[0].querySelectorAll('input[type="checkbox"]:checked').forEach(function (checkbox) {
+        selectedIds.push(checkbox.dataset.folderId);
     });
     return selectedIds.length > 0 ? selectedIds : null;
 }
@@ -1420,11 +1411,9 @@ async function onAssignToFolder(bgFile) {
     // Determine which folders were toggled on/off
     const toAssign = [];
     const toUnassign = [];
-    content.find('input[type="checkbox"]').each(function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const fid = $(this).data('folder-id');
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const isChecked = $(this).prop('checked');
+    content[0].querySelectorAll('input[type="checkbox"]').forEach(function (checkbox) {
+        const fid = checkbox.dataset.folderId;
+        const isChecked = checkbox.checked;
         const wasChecked = currentFolderIds.includes(fid);
         if (isChecked && !wasChecked) toAssign.push(fid);
         if (!isChecked && wasChecked) toUnassign.push(fid);
@@ -1540,8 +1529,7 @@ function activateLazyLoader() {
  * @returns {string} URL of the background
  */
 function getUrlParameter(block) {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    return $(block).closest('.bg_example').data('url');
+    return block.closest('.bg_example')?.dataset.url;
 }
 
 /**
@@ -1787,7 +1775,7 @@ async function uploadChatBackground(formData) {
 function highlightNewBackground(bg) {
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const newBg = $(`.bg_example[bgfile="${bg}"]`);
-    const scrollOffset = newBg.offset().top - newBg.parent().offset().top;
+    const scrollOffset = newBg.offset().top - $(newBg[0].parentElement).offset().top;
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#Backgrounds').scrollTop(scrollOffset);
     flashHighlight(newBg);
@@ -1818,11 +1806,11 @@ function highlightSelectedBackground() {
 
     if (activeUrl) {
         // Find the thumbnail whose data-url attribute matches the active URL
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('.bg_example').filter(function () {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            return $(this).data('url') === activeUrl;
-        }).addClass('selected-background');
+        document.querySelectorAll('.bg_example').forEach(el => {
+            if (el.dataset.url === activeUrl) {
+                el.classList.add('selected-background');
+            }
+        });
     }
 }
 
@@ -1832,29 +1820,23 @@ function highlightSelectedBackground() {
 function onBackgroundFilterInput() {
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const filterValue = String($('#bg-filter').val()).toLowerCase();
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#bg_menu_content > .bg_example, #bg_custom_content > .bg_example').each(function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const $bg = $(this);
-        const title = $bg.attr('title') || '';
+    document.querySelectorAll('#bg_menu_content > .bg_example, #bg_custom_content > .bg_example').forEach(function (el) {
+        const title = el.getAttribute('title') || '';
         const hasMatch = title.toLowerCase().includes(filterValue);
-        $bg.toggle(hasMatch);
+        el.style.display = hasMatch ? '' : 'none';
     });
 
     // Show/hide folder tiles based on whether folder name matches the filter
     if (!activeFolderId) {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#bg_folder_grid .bg_folder_tile').each(function () {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const $tile = $(this);
-            const folderId = $tile.attr('data-folder-id');
+        document.querySelectorAll('#bg_folder_grid .bg_folder_tile').forEach(function (el) {
+            const folderId = el.getAttribute('data-folder-id');
             if (!folderId || !filterValue) {
-                $tile.show();
+                el.style.display = '';
                 return;
             }
             const folder = folderList.find(f => f.id === folderId);
             const folderName = folder ? folder.name.toLowerCase() : '';
-            $tile.toggle(folderName.includes(filterValue));
+            el.style.display = folderName.includes(filterValue) ? '' : 'none';
         });
     }
 }
@@ -1885,8 +1867,7 @@ export function initBackgrounds() {
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document)
         .on('click', '.bg_folder_tile:not(.bg_new_folder_tile)', function (e) {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            if ($(e.target).closest('.jg-button').length) return; // let button handler run
+            if (e.target.closest('.jg-button')) return; // let button handler run
             // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const folderId = $(this).attr('data-folder-id');
             if (folderId) onFolderDrillIn(folderId);
@@ -1899,20 +1880,17 @@ export function initBackgrounds() {
         })
         .on('click', '.bg_folder_tile [data-action="rename-folder"]', function (e) {
             e.stopPropagation();
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const folderId = $(this).closest('.bg_folder_tile').attr('data-folder-id');
+            const folderId = this.closest('.bg_folder_tile')?.getAttribute('data-folder-id');
             if (folderId) onRenameFolder(folderId);
         })
         .on('click', '.bg_folder_tile [data-action="delete-folder"]', function (e) {
             e.stopPropagation();
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const folderId = $(this).closest('.bg_folder_tile').attr('data-folder-id');
+            const folderId = this.closest('.bg_folder_tile')?.getAttribute('data-folder-id');
             if (folderId) onDeleteFolder(folderId);
         })
         .on('click', '.bg_folder_tile .mobile-only-menu-toggle', function (e) {
             e.stopPropagation();
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const $context = $(this).closest('.bg_folder_tile');
+            const $context = $(this.closest('.bg_folder_tile'));
             const wasOpen = $context.hasClass('mobile-menu-open');
             // Close all other open menus before opening a new one.
             // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
@@ -1929,8 +1907,7 @@ export function initBackgrounds() {
         .off('click', '.bg_example').on('click', '.bg_example', onSelectBackgroundClick)
         .off('click', '.bg_example .mobile-only-menu-toggle').on('click', '.bg_example .mobile-only-menu-toggle', function (e) {
             e.stopPropagation();
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const $context = $(this).closest('.bg_example');
+            const $context = $(this.closest('.bg_example'));
             const wasOpen = $context.hasClass('mobile-menu-open');
             // Close all other open menus before opening a new one.
             // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
@@ -1950,8 +1927,7 @@ export function initBackgrounds() {
         })
         .off('click', '.jg-button').on('click', '.jg-button', function (e) {
             e.stopPropagation();
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            if (isBackgroundSelectionMode && $(this).closest('#bg_menu_content').length) {
+            if (isBackgroundSelectionMode && this.closest('#bg_menu_content')) {
                 return;
             }
             // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
@@ -1974,18 +1950,16 @@ export function initBackgrounds() {
                     onCopyToSystemBackgroundClick.call(this, e.originalEvent);
                     break;
                 case 'folder': {
-                    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                    const bgEl = $(this).closest('.bg_example');
-                    if (bgEl.attr('custom') === 'true') break; // Only system backgrounds
-                    const bgFile = bgEl.attr('bgfile');
+                    const bgEl = this.closest('.bg_example');
+                    if (bgEl?.getAttribute('custom') === 'true') break; // Only system backgrounds
+                    const bgFile = bgEl?.getAttribute('bgfile');
                     if (bgFile) onAssignToFolder(bgFile);
                     break;
                 }
                 case 'set-cover': {
-                    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                    const bgEl = $(this).closest('.bg_example');
-                    if (bgEl.attr('custom') === 'true') break; // Only system backgrounds
-                    const bgFile = bgEl.attr('bgfile');
+                    const bgEl = this.closest('.bg_example');
+                    if (bgEl?.getAttribute('custom') === 'true') break; // Only system backgrounds
+                    const bgFile = bgEl?.getAttribute('bgfile');
                     if (bgFile) onSetFolderCover(bgFile);
                     break;
                 }
