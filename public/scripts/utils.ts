@@ -2923,8 +2923,7 @@ export function textValueMatcher(params, data) {
     if (data.children && data.children.length > 0) {
         // Clone the data object if there are children
         // This is required as we modify the object to remove any non-matches
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const match = $.extend(true, {}, data);
+        const match = structuredClone(data);
 
         // Check each child of the option
         for (let c = data.children.length - 1; c >= 0; c--) {
