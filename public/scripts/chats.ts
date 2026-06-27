@@ -1540,6 +1540,8 @@ async function openAttachmentManager() {
                 return;
             }
 
+            button.addEventListener('pointerdown', (e) => { e.stopPropagation(); });
+            button.addEventListener('mousedown', (e) => { e.stopPropagation(); });
             button.addEventListener('click', () => {
                 modal.attr('data-attachment-manager-target', source);
                 button.style.setProperty('anchor-name', '--action-btn');

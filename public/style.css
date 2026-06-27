@@ -1076,6 +1076,7 @@ body .panelControlBar {
     border: none;
     background: none;
     overflow: visible;
+    pointer-events: none;
     opacity: 0;
     transform: translateY(4px);
     transition: opacity var(--animation-duration, 125ms) ease,
@@ -1084,6 +1085,7 @@ body .panelControlBar {
                 display var(--animation-duration, 125ms) ease allow-discrete;
 }
 [popover]:popover-open {
+    pointer-events: auto;
     opacity: 1;
     transform: translateY(0);
 }

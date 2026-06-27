@@ -742,7 +742,9 @@ async function addExtensionsButtonAndMenu() {
     const button = $('#extensionsMenuButton');
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const dropdown = $('#extensionsMenu');
-    $(button).on('click', function () {
+    $(button).on('pointerdown mousedown', function (e) {
+        e.stopPropagation();
+    }).on('click', function () {
         dropdown[0].togglePopover();
     });
 }

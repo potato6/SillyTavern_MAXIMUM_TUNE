@@ -12598,7 +12598,9 @@ jQuery(async function () {
         menu[0].hidePopover();
     }
 
-    button.on('click', function () {
+    button.on('pointerdown mousedown', function (e) {
+        e.stopPropagation();
+    }).on('click', function () {
         menu[0].togglePopover();
     });
 
@@ -13122,7 +13124,9 @@ jQuery(async function () {
     });
 
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#export_button').on('click', function () {
+    $('#export_button').on('pointerdown mousedown', function (e) {
+        e.stopPropagation();
+    }).on('click', function () {
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#export_format_popup')[0].togglePopover();
     });

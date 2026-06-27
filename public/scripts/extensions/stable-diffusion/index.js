@@ -5033,7 +5033,9 @@ async function addSDGenButtons() {
 
     $(document).on('click', '.sd_message_gen', (e) => sdMessageButton($(e.currentTarget), { animate: false }));
 
-    button.on('click', function (e) {
+    button.on('pointerdown mousedown', function (e) {
+        e.stopPropagation();
+    }).on('click', function () {
         dropdown[0].togglePopover();
     });
 
