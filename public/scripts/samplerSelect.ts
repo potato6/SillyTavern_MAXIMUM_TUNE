@@ -87,7 +87,8 @@ async function showSamplerSelectPopup() {
  * @param samplerName
  */
 function getRelatedDOMElement(samplerName) {
-    let relatedDOMElement = $(document.getElementById(`${samplerName}_${main_api}`).parentElement);
+    const element = document.getElementById(`${samplerName}_${main_api}`);
+    let relatedDOMElement = element ? $(element.parentElement) : $();
     let targetDisplayType = 'flex';
     let displayname;
 
@@ -207,7 +208,7 @@ function setSamplerListListeners() {
         const previousState = relatedDOMElement.data(SELECT_SAMPLER.DATA);
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const isChecked = $(this).prop('checked');
-        const popupInputLabel = $(this.parentElement.querySelector('.sampler_name'));
+        const popupInputLabel = $(this.parentElement ? this.parentElement.querySelector('.sampler_name') : null);
 
         if (isChecked === false) {
             if (previousState === SELECT_SAMPLER.SHOWN) {
