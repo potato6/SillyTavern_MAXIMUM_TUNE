@@ -969,8 +969,7 @@ export async function selectCharacterById(id, { switchMenu = true } = {}) {
  *
  */
 function getBackBlock() {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const template = $('#bogus_folder_back_template .bogus_folder_select').clone();
+    const template = document.querySelector('#bogus_folder_back_template .bogus_folder_select').cloneNode(true);
     return template;
 }
 
@@ -985,9 +984,10 @@ async function getEmptyBlock() {
         text: texts[roll],
         icon: icons[roll],
     };
-    const emptyBlock = await renderTemplateAsync('emptyBlock', params);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    return $(emptyBlock);
+    const html = await renderTemplateAsync('emptyBlock', params);
+    const wrapper = document.createElement('div');
+    wrapper.innerHTML = html;
+    return wrapper.firstElementChild;
 }
 
 /**
@@ -997,9 +997,10 @@ async function getHiddenBlock(hidden) {
     const params = {
         text: (hidden > 1 ? t`${hidden} characters hidden.` : t`${hidden} character hidden.`),
     };
-    const hiddenBlock = await renderTemplateAsync('hiddenBlock', params);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    return $(hiddenBlock);
+    const html = await renderTemplateAsync('hiddenBlock', params);
+    const wrapper = document.createElement('div');
+    wrapper.innerHTML = html;
+    return wrapper.firstElementChild;
 }
 
 /**
@@ -1013,45 +1014,44 @@ function getCharacterBlock(item, id) {
         this_avatar = getThumbnailUrl('avatar', item.avatar);
     }
     // Populate the template
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const template = $('#character_template .character_select').clone();
-    template.attr({ 'data-chid': id, 'id': `CharID${id}` });
-    template.find('img').attr('src', this_avatar).attr('alt', item.name);
-    template.find('.avatar').attr('title', `[Character] ${item.name}\nFile: ${item.avatar}`);
-    template.find('.ch_name').text(item.name).attr('title', `[Character] ${item.name}`);
+    const $templateClone = $(document.querySelector('#character_template .character_select').cloneNode(true));
+    $templateClone.attr({ 'data-chid': id, 'id': `CharID${id}` });
+    $templateClone.find('img').attr('src', this_avatar).attr('alt', item.name);
+    $templateClone.find('.avatar').attr('title', `[Character] ${item.name}\nFile: ${item.avatar}`);
+    $templateClone.find('.ch_name').text(item.name).attr('title', `[Character] ${item.name}`);
     if (power_user.show_card_avatar_urls) {
-        template.find('.ch_avatar_url').text(item.avatar);
+        $templateClone.find('.ch_avatar_url').text(item.avatar);
     }
-    template.find('.ch_fav_icon').css('display', 'none');
-    template.toggleClass('is_fav', item.fav || item.fav == 'true');
-    template.find('.ch_fav').val(item.fav);
+    $templateClone.find('.ch_fav_icon').css('display', 'none');
+    $templateClone.toggleClass('is_fav', item.fav || item.fav == 'true');
+    $templateClone.find('.ch_fav').val(item.fav);
 
     const isAssistant = item.avatar === getPermanentAssistantAvatar();
     if (!isAssistant) {
-        template.find('.ch_assistant').remove();
+        $templateClone.find('.ch_assistant')[0]?.remove();
     }
 
     const description = item.data?.creator_notes || '';
     if (description) {
-        template.find('.ch_description').text(description);
+        $templateClone.find('.ch_description').text(description);
     } else {
-        template.find('.ch_description').hide();
+        $templateClone.find('.ch_description').hide();
     }
 
     const auxFieldName = power_user.aux_field || 'character_version';
     const auxFieldValue = (item.data && item.data[auxFieldName]) || '';
     if (auxFieldValue) {
-        template.find('.character_version').text(auxFieldValue);
+        $templateClone.find('.character_version').text(auxFieldValue);
     } else {
-        template.find('.character_version').hide();
+        $templateClone.find('.character_version').hide();
     }
 
     // Display inline tags
-    const tagsElement = template.find('.tags');
+    const tagsElement = $templateClone.find('.tags');
     printTagList(tagsElement, { forEntityOrKey: id, tagOptions: { isCharacterList: true } });
 
     // Add to the list
-    return template;
+    return $templateClone;
 }
 
 /**
@@ -1105,33 +1105,28 @@ export async function printCharacters(fullRefresh = false) {
         formatSizeChanger: renderPaginationDropdown(pageSize, sizeChangerOptions),
         showNavigator: true,
         callback: async function (/** @type {Entity[]} */ data) {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(listId).empty();
+            const listEl = document.querySelector(listId);
+            listEl.innerHTML = '';
             if (power_user.bogus_folders && isBogusFolderOpen()) {
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                $(listId).append(getBackBlock());
+                listEl.append(getBackBlock());
             }
             if (!data.length) {
                 const emptyBlock = await getEmptyBlock();
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                $(listId).append(emptyBlock);
+                listEl.append(emptyBlock);
             }
             let displayCount = 0;
             for (const i of data) {
                 switch (i.type) {
                     case 'character':
-                        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                        $(listId).append(getCharacterBlock(i.item, i.id));
+                        listEl.append(getCharacterBlock(i.item, i.id));
                         displayCount++;
                         break;
                     case 'group':
-                        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                        $(listId).append(getGroupBlock(i.item));
+                        listEl.append(getGroupBlock(i.item));
                         displayCount++;
                         break;
                     case 'tag':
-                        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                        $(listId).append(getTagBlock(i.item, i.entities, i.hidden, i.isUseless));
+                        listEl.append(getTagBlock(i.item, i.entities, i.hidden, i.isUseless));
                         break;
                 }
             }
@@ -1139,8 +1134,7 @@ export async function printCharacters(fullRefresh = false) {
             const hidden = (characters.length + groups.length) - displayCount;
             if (hidden > 0 && entitiesFilter.hasAnyFilter()) {
                 const hiddenBlock = await getHiddenBlock(hidden);
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                $(listId).append(hiddenBlock);
+                listEl.append(hiddenBlock);
             }
             // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             localizePagination($('#rm_print_characters_pagination'));
@@ -1568,15 +1562,15 @@ export async function showMoreMessages(messagesToLoad = null) {
     // This could be faster: https://developer.mozilla.org/en-US/docs/Web/API/Element/insertAdjacentElement
     // Fallback to chatElement if the button isn't where it's expected to be.
     if (showMoreButton[0]) {
-        showMoreButton.after(messageElements);
+        showMoreButton[0].after(...messageElements.map(el => el[0]));
     } else {
-        chatElement.prepend(messageElements);
+        chatElement[0].prepend(...messageElements.map(el => el[0]));
     }
 
     refreshSwipeButtons();
 
     if (firstId === 0) {
-        showMoreButton.remove();
+        showMoreButton[0].remove();
     }
 
     if (isButtonInView) {
@@ -1597,7 +1591,7 @@ export async function printMessages() {
 
     if (chat.length > count) {
         startIndex = chat.length - count;
-        chatElement.append('<div id="show_more_messages">Show more messages</div>');
+        chatElement[0].insertAdjacentHTML('beforeend', '<div id="show_more_messages">Show more messages</div>');
     }
 
     await redisplayChat({ startIndex, fade: false });
@@ -1618,7 +1612,7 @@ export async function redisplayChat({ targetChat = chat, startIndex = 0, fade = 
     messageElements.removeClass('last_mes');
 
     //Remove messages after index.
-    messageElements.filter(`.mes[mesid="${startIndex}"]`).nextAll('.mes').addBack().remove();
+    [...messageElements.filter(`.mes[mesid="${startIndex}"]`).nextAll('.mes').addBack()].forEach(el => el.remove());
 
     const t1 = performance.now();
 
@@ -1636,7 +1630,7 @@ export async function redisplayChat({ targetChat = chat, startIndex = 0, fade = 
         newMessageElements.at(-1).classList.add('last_mes');
 
         //Append to chat in one DOM update.
-        chatElement.append(newMessageElements);
+        chatElement[0].append(...newMessageElements);
 
         applyCharacterTagsToMessageDivs({ mesIds: range(startIndex, targetChat.length) });
 
@@ -1717,12 +1711,11 @@ export async function clearChat({ clearData = false } = {}) {
         $('#dialogue_del_mes_cancel').trigger('click');
     }
     //This will also remove non '.mes' elements, e.g. '<div id="show_more_messages">Show more messages</div>'.
-    chatElement.children().remove();
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    if ($('.zoomed_avatar[forChar]').length) {
+    chatElement[0].innerHTML = '';
+    const zoomedAvatars = document.querySelectorAll('.zoomed_avatar[forChar]');
+    if (zoomedAvatars.length) {
         console.debug('saw avatars to remove');
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('.zoomed_avatar[forChar]').remove();
+        zoomedAvatars.forEach(el => el.remove());
     } else { console.debug('saw no avatars'); }
 
     await saveItemizedPrompts(getCurrentChatId());
@@ -1737,7 +1730,8 @@ export async function clearChat({ clearData = false } = {}) {
 export async function deleteLastMessage() {
     deleteItemizedPromptForMessage(chat.length - 1);
     chat.length = chat.length - 1;
-    chatElement.children('.mes').last().remove();
+    const mesChildren = [...chatElement[0].children].filter(el => el.matches('.mes'));
+    mesChildren[mesChildren.length - 1]?.remove();
     await eventSource.emit(event_types.MESSAGE_DELETED, chat.length);
 }
 
@@ -1786,7 +1780,7 @@ export async function deleteMessage(id, swipeDeletionIndex = undefined, askConfi
     }
 
     chat.splice(id, 1);
-    messageElement.remove();
+    messageElement[0]?.remove();
 
     // @ts-expect-error TS(2339): Property 'tainted' does not exist on type '{}'.
     chat_metadata.tainted = true;
@@ -2083,11 +2077,11 @@ function insertSVGIcon(mes, extra) {
     const insertOrReplaceSVG = (image, className, targetSelector, insertBefore) => {
         image.onload = async function () {
             const existingSVG = insertBefore ? mes.find(targetSelector).prev(`.${className}`) : mes.find(targetSelector).next(`.${className}`);
+            const targetEl = mes.find(targetSelector)[0];
             if (existingSVG.length) {
-                existingSVG.replaceWith(image);
+                existingSVG[0]?.replaceWith(image);
             } else {
-                if (insertBefore) mes.find(targetSelector).before(image);
-                else mes.find(targetSelector).after(image);
+                if (targetEl) targetEl.insertAdjacentElement(insertBefore ? 'beforebegin' : 'afterend', image);
             }
             await SVGInject(image);
         };
@@ -2340,8 +2334,7 @@ export function appendMediaToMessage(mes, messageElement, scrollBehavior = SCROL
      * @returns {JQuery<HTMLElement>} The appended image container element
      */
     function appendImageAttachment(attachment, index) {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const template = $('#message_image_template .mes_img_container').clone();
+        const template = $(document.querySelector('#message_image_template .mes_img_container').cloneNode(true));
         template.attr('data-index', index);
 
         const image = template.find('.mes_img');
@@ -2385,8 +2378,7 @@ export function appendMediaToMessage(mes, messageElement, scrollBehavior = SCROL
      * @returns {JQuery<HTMLElement>} The appended video container element
      */
     function appendVideoAttachment(attachment, index) {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const template = $('#message_video_template .mes_video_container').clone();
+        const template = $(document.querySelector('#message_video_template .mes_video_container').cloneNode(true));
         template.attr('data-index', index);
 
         const video = template.find('.mes_video');
@@ -2427,8 +2419,7 @@ export function appendMediaToMessage(mes, messageElement, scrollBehavior = SCROL
      * @returns {JQuery<HTMLElement>} The appended audio container element
      */
     function appendAudioAttachment(attachment, index) {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const template = $('#message_audio_template .mes_audio_container').clone();
+        const template = $(document.querySelector('#message_audio_template .mes_audio_container').cloneNode(true));
         template.attr('data-index', index);
         const audio = template.find('.mes_audio');
         audio.attr('src', attachment.url);
@@ -2538,14 +2529,13 @@ export function appendMediaToMessage(mes, messageElement, scrollBehavior = SCROL
         const mediaIndex = getMediaIndex(mes);
         const selectedMedia = mes.extra.media[mediaIndex];
 
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const galleryControls = $('#message_gallery_controls .mes_img_swipes').clone();
+        const galleryControls = $(document.querySelector('#message_gallery_controls .mes_img_swipes').cloneNode(true));
         const counter = galleryControls.find('.mes_img_swipe_counter');
         counter.text(`${mediaIndex + 1}/${mes.extra.media.length}`);
 
         const template = appendMediaAttachment(selectedMedia, mediaIndex);
         template.addClass('img_swipes');
-        template.append(galleryControls);
+        template[0].append(galleryControls[0]);
     }
 
     // Add media as a list to message
@@ -2557,24 +2547,23 @@ export function appendMediaToMessage(mes, messageElement, scrollBehavior = SCROL
     }
 
     // Remove existing file containers
-    fileWrapper.empty();
+    fileWrapper[0].innerHTML = '';
 
     // Add files to message
     if (hasFiles) {
         for (let index = 0; index < mes.extra.files.length; index++) {
             const file = mes.extra.files[index];
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const template = $('#message_file_template .mes_file_container').clone();
+            const template = $(document.querySelector('#message_file_template .mes_file_container').cloneNode(true));
             template.attr('data-index', index);
             template.find('.mes_file_name').text(file.name).attr('title', file.name);
             template.find('.mes_file_size').text(humanFileSize(file.size)).attr('title', file.size);
-            fileWrapper.append(template);
+            fileWrapper[0].append(template[0]);
         }
     }
 
     // Early return if no media
     if (!hasMedia) {
-        mediaWrapper.empty();
+        mediaWrapper[0].innerHTML = '';
         doAdjustScroll();
         return;
     }
@@ -2582,7 +2571,8 @@ export function appendMediaToMessage(mes, messageElement, scrollBehavior = SCROL
     // TODO: Consider making this awaitable
     Promise.race([Promise.all(mediaPromises), delay(debounce_timeout.short)]).then(() => {
         const states = saveMediaStates();
-        mediaWrapper.empty().append(mediaBlocks);
+        mediaWrapper[0].innerHTML = '';
+        mediaWrapper[0].append(...mediaBlocks.map(el => el[0]));
         restoreMediaStates(states);
         doAdjustScroll();
     });
@@ -2699,14 +2689,12 @@ export function addOneMessage(mes, { type = undefined, insertAfter = null, scrol
         messageElement = updateMessageElement(mes, { messageId, adjustMediaScroll: scroll ? SCROLL_BEHAVIOR.ADJUST : SCROLL_BEHAVIOR.NONE });
         if (typeof insertAfter === 'number' && insertAfter >= 0) {
             const target = chatElement.find(`.mes[mesid="${insertAfter}"]`);
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(messageElement).insertAfter(target);
+            target[0].insertAdjacentElement('afterend', messageElement[0]);
         } else if (typeof insertBefore === 'number' && insertBefore >= 0) {
             const target = chatElement.find(`.mes[mesid="${insertBefore}"]`);
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(messageElement).insertBefore(target);
+            target[0].insertAdjacentElement('beforebegin', messageElement[0]);
         } else {
-            chatElement.append(messageElement);
+            chatElement[0].append(messageElement[0]);
         }
     }
 
@@ -2736,7 +2724,7 @@ export function addOneMessage(mes, { type = undefined, insertAfter = null, scrol
  * @param {SCROLL_BEHAVIOR} [options.adjustMediaScroll] Scroll behavior option passed to appendMediaToMessage.
  * @returns {JQuery<HTMLElement>} Rendered HTMLElement.
  */
-export function updateMessageElement(mes, { messageId = chat.length - 1, messageElement = messageTemplate.clone(), adjustMediaScroll = SCROLL_BEHAVIOR.NONE } = {}) {
+export function updateMessageElement(mes, { messageId = chat.length - 1, messageElement = $(messageTemplate[0].cloneNode(true)), adjustMediaScroll = SCROLL_BEHAVIOR.NONE } = {}) {
     let avatarImg = getThumbnailUrl('persona', user_avatar);
 
     //for non-user messages
@@ -4484,8 +4472,7 @@ function removeLastMessage() {
             return resolve();
         }
         lastMes.hide(animation_duration, function () {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(this).remove();
+            this.remove();
             // @ts-expect-error TS(2794): Expected 1 arguments, but got 0. Did you forget to... Remove this comment to see the full error message
             resolve();
         });
@@ -7982,15 +7969,14 @@ export function getThumbnailUrl(type, file, t = false) {
  */
 export function buildAvatarList(block, entities, { templateId = 'inline_avatar_template', empty = true, interactable = false, highlightFavs = true } = {}) {
     if (empty) {
-        block.empty();
+        block[0].innerHTML = '';
     }
 
     for (const entity of entities) {
         const id = entity.id;
 
         // Populate the template
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const avatarTemplate = $(`#${templateId} .avatar`).clone();
+        const avatarTemplate = $(document.querySelector(`#${templateId} .avatar`).cloneNode(true));
 
         let this_avatar = default_avatar;
         if (entity.item.avatar !== undefined && entity.item.avatar != 'none') {
@@ -8011,8 +7997,8 @@ export function buildAvatarList(block, entities, { templateId = 'inline_avatar_t
             const grpTemplate = getGroupAvatar(entity.item);
 
             avatarTemplate.addClass(grpTemplate.attr('class'));
-            avatarTemplate.empty();
-            avatarTemplate.append(grpTemplate.children());
+            avatarTemplate[0].innerHTML = '';
+            avatarTemplate[0].append(...grpTemplate.children().toArray());
             avatarTemplate.attr({ 'data-grid': id, 'data-chid': null });
             avatarTemplate.attr('title', `[Group] ${entity.item.name}`);
         } else if (entity.type === 'persona') {
@@ -8027,7 +8013,7 @@ export function buildAvatarList(block, entities, { templateId = 'inline_avatar_t
             avatarTemplate.toggleClass('group_select', entity.type === 'group');
         }
 
-        block.append(avatarTemplate);
+        block[0].append(avatarTemplate[0]);
     }
 }
 
@@ -8789,8 +8775,8 @@ function messageEditAuto(div) {
         {},
         false,
     ));
-    mesBlock.find('.mes_bias').empty();
-    mesBlock.find('.mes_bias').append(messageFormatting(bias, '', false, false, -1, {}, false));
+    mesBlock[0].querySelector('.mes_bias').innerHTML = '';
+    mesBlock[0].querySelector('.mes_bias').insertAdjacentHTML('beforeend', messageFormatting(bias, '', false, false, -1, {}, false));
     saveChatDebounced();
 }
 
@@ -8820,7 +8806,7 @@ export async function messageEdit(editMessageId) {
     const messageBlock = messageElement.find('.mes_block');
     const messageText = messageBlock.find('.mes_text');
 
-    messageText.empty();
+    messageText[0].innerHTML = '';
     messageBlock.find('.mes_buttons').css('display', 'none');
     messageBlock.find('.mes_edit_buttons').css('display', 'inline-flex');
 
@@ -8835,7 +8821,7 @@ export async function messageEdit(editMessageId) {
     editTextArea.className = 'edit_textarea mdHotkeys';
     // @ts-expect-error TS(4111): Property 'macros' comes from an index signature, s... Remove this comment to see the full error message
     editTextArea.dataset.macros = '';
-    messageText.append(editTextArea);
+    messageText[0].append(editTextArea);
 
     const text = trimSpaces(editMessage.mes || '');
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
@@ -8877,11 +8863,10 @@ async function messageEditCancel(messageId = this_edit_mes_id) {
     }
 
     const thisMesBlock = thisMesDiv.find('.mes_block');
-    thisMesBlock.find('.mes_text').empty();
+    thisMesBlock[0].querySelector('.mes_text').innerHTML = '';
     thisMesDiv.find('.mes_edit_buttons').css('display', 'none');
     thisMesBlock.find('.mes_buttons').css('display', '');
-    thisMesBlock.find('.mes_text')
-        .append(messageFormatting(
+    thisMesBlock[0].querySelector('.mes_text').insertAdjacentHTML('beforeend', messageFormatting(
             text,
             this_edit_mes_chname,
             chat[messageId].is_system,
@@ -8934,9 +8919,9 @@ async function messageEditMove(sourceId, targetId) {
     }
 
     if (sourceId <= targetId) {
-        sourceMessageDiv.insertAfter(targetMessageDiv);
+        targetMessageDiv[0].after(sourceMessageDiv[0]);
     } else {
-        sourceMessageDiv.insertBefore(targetMessageDiv);
+        targetMessageDiv[0].before(sourceMessageDiv[0]);
     }
 
     //Swap Ids.
@@ -8972,10 +8957,10 @@ async function messageEditDone(div) {
 
     await eventSource.emit(event_types.MESSAGE_EDITED, this_edit_mes_id);
     text = chat[this_edit_mes_id]?.mes ?? text;
-    mesBlock.find('.mes_text').empty();
+    mesBlock[0].querySelector('.mes_text').innerHTML = '';
     mesBlock.find('.mes_edit_buttons').css('display', 'none');
     mesBlock.find('.mes_buttons').css('display', '');
-    mesBlock.find('.mes_text').append(
+    mesBlock[0].querySelector('.mes_text').insertAdjacentHTML('beforeend',
         messageFormatting(
             text,
             this_edit_mes_chname,
@@ -8986,8 +8971,8 @@ async function messageEditDone(div) {
             false,
         ),
     );
-    mesBlock.find('.mes_bias').empty();
-    mesBlock.find('.mes_bias').append(messageFormatting(bias, '', false, false, -1, {}, false));
+    mesBlock[0].querySelector('.mes_bias').innerHTML = '';
+    mesBlock[0].querySelector('.mes_bias').insertAdjacentHTML('beforeend', messageFormatting(bias, '', false, false, -1, {}, false));
     appendMediaToMessage(mes, div.closest('.mes'));
     addCopyToCodeBlocks(div.closest('.mes'));
 
@@ -9119,8 +9104,7 @@ export function getCurrentChatDetails() {
  * @param {string[]} hightlightNames - An array of chat names to highlight
  */
 export async function displayPastChats(hightlightNames = []) {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#select_chat_div').empty();
+    document.getElementById('select_chat_div').innerHTML = '';
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#select_chat_search').val('').off('input');
 
@@ -9180,15 +9164,14 @@ async function displayChats(searchQuery, currentChat, displayName, avatarImg, se
         }
 
         const filteredData = await response.json();
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#select_chat_div').empty();
+        document.getElementById('select_chat_div').innerHTML = '';
 
         filteredData.sort((a, b) => sortMoments(timestampToMoment(a.last_mes), timestampToMoment(b.last_mes)));
 
         for (const chat of filteredData) {
             const isSelected = currentChat === chat.file_name;
             // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const template = $('#past_chat_template .select_chat_block_wrapper').clone();
+            const template = $(document.querySelector('#past_chat_template .select_chat_block_wrapper').cloneNode(true));
             template.find('.select_chat_block').attr('file_name', chat.file_name);
             template.find('.avatar img').attr('src', avatarImg);
             template.find('.select_chat_block_filename').text(chat.file_name);
@@ -9202,8 +9185,7 @@ async function displayChats(searchQuery, currentChat, displayName, avatarImg, se
                 template.find('.select_chat_block').attr('highlight', String(true));
             }
 
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#select_chat_div').append(template);
+            document.getElementById('select_chat_div').append(template[0]);
 
             if (Array.isArray(highlightNames) && highlightNames.includes(chat.file_name)) {
                 const templateOffset = template.offset().top - template.parent().offset().top;
@@ -9845,7 +9827,15 @@ export async function callPopup(text, type, inputValue = '', {
     $dialoguePopupCancel.css('display', 'inline-block');
     $dialoguePopupOk.text(getOkButtonText());
     $dialoguePopupInput.toggle(popup_type === 'input').val(inputValue).attr('rows', rows ?? 1);
-    $dialoguePopupText.empty().append(text);
+    const dpTextEl = $dialoguePopupText[0];
+    dpTextEl.innerHTML = '';
+    if (typeof text === 'string') {
+        dpTextEl.insertAdjacentHTML('beforeend', text);
+    } else if (text instanceof $) {
+        dpTextEl.append(text[0]);
+    } else {
+        dpTextEl.append(text);
+    }
     $shadowPopup.css('display', 'block');
 
     if (popup_type == 'input') {
@@ -10358,7 +10348,7 @@ async function openCharacterWorldPopup() {
     const charName = (menu_type == 'create' ? create_save.name : characters[chid]?.data?.name) || 'Nameless';
     const worldId = (menu_type == 'create' ? create_save.world : characters[chid]?.data?.extensions?.world) || '';
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const template = $('#character_world_template .character_world').clone();
+    const template = $(document.querySelector('#character_world_template .character_world').cloneNode(true));
     template.find('.character_name').text(charName);
 
     // --- Event Handlers ---
@@ -10391,7 +10381,7 @@ async function openCharacterWorldPopup() {
     // Append to primary dropdown.
     const primarySelect = template.find('.character_world_info_selector');
     world_names.forEach((item, i) => {
-        primarySelect.append(new Option(item, String(i), item === worldId, item === worldId));
+        primarySelect[0].append(new Option(item, String(i), item === worldId, item === worldId));
     });
 
     // Append to extras dropdown.
@@ -10401,7 +10391,7 @@ async function openCharacterWorldPopup() {
     world_names.forEach((item, i) => {
         const array = (menu_type == 'create' ? create_save.extra_books : existingCharLore?.extraBooks);
         const isSelected = !!array?.includes(item);
-        extrasSelect.append(new Option(item, String(i), isSelected, isSelected));
+        extrasSelect[0].append(new Option(item, String(i), isSelected, isSelected));
     });
 
     const popup = new Popup(template, POPUP_TYPE.TEXT, '', {
@@ -10447,7 +10437,7 @@ function openAlternateGreetings() {
     }
 
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const template = $('#alternate_greetings_template .alternate_grettings').clone();
+    const template = $(document.querySelector('#alternate_greetings_template .alternate_grettings').cloneNode(true));
     const getArray = () => menu_type == 'create' ? create_save.alternate_greetings : characters[chid].data.alternate_greetings;
     const popup = new Popup(template, POPUP_TYPE.TEXT, '', {
         wide: true,
@@ -10489,7 +10479,7 @@ function openAlternateGreetings() {
  */
 function addAlternateGreeting(template, greeting, index, getArray, popup) {
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const greetingBlock = $('#alternate_greeting_form_template .alternate_greeting').clone();
+    const greetingBlock = $(document.querySelector('#alternate_greeting_form_template .alternate_greeting').cloneNode(true));
     greetingBlock.attr('data-index', index);
     greetingBlock.find('.alternate_greeting_text')
         .attr('id', `alternate_greeting_${index}`)
@@ -10556,7 +10546,7 @@ function addAlternateGreeting(template, greeting, index, getArray, popup) {
         adjacentGreetingBlock.find('.alternate_greeting_text').val(array[newIndex]);
     }
 
-    template.find('.alternate_greetings_list').append(greetingBlock);
+    template[0].querySelector('.alternate_greetings_list').append(greetingBlock[0]);
 }
 
 /**
@@ -10673,11 +10663,9 @@ export async function createOrEditCharacter(e) {
 
             create_save.avatar = null;
 
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#add_avatar_button').replaceWith(
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                $('#add_avatar_button').val('').clone(true),
-            );
+            const oldAvatarBtn = document.getElementById('add_avatar_button');
+            const newAvatarBtn = oldAvatarBtn.cloneNode(true);
+            oldAvatarBtn.parentNode.replaceChild(newAvatarBtn, oldAvatarBtn);
 
             let oldSelectedChar = null;
             if (this_chid !== undefined) {
@@ -10727,11 +10715,9 @@ export async function createOrEditCharacter(e) {
             await getOneCharacter(formData.get('avatar_url'));
             favsToHotswap(); // Update fav state
 
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#add_avatar_button').replaceWith(
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                $('#add_avatar_button').val('').clone(true),
-            );
+            const oldAvatarBtn = document.getElementById('add_avatar_button');
+            const newAvatarBtn = oldAvatarBtn.cloneNode(true);
+            oldAvatarBtn.parentNode.replaceChild(newAvatarBtn, oldAvatarBtn);
             // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#create_button').attr('value', 'Save');
             crop_data = undefined;
@@ -12801,8 +12787,16 @@ jQuery(async function () {
             for (let i = (chat.length - 1); i >= this_del_mes; i--) {
                 deleteItemizedPromptForMessage(i);
             }
-            chatElement.find(`.mes[mesid="${this_del_mes}"]`).nextAll('div').remove();
-            chatElement.find(`.mes[mesid="${this_del_mes}"]`).remove();
+            const mesEl = chatElement[0].querySelector(`.mes[mesid="${this_del_mes}"]`);
+            if (mesEl) {
+                let sibling = mesEl.nextElementSibling;
+                while (sibling) {
+                    const next = sibling.nextElementSibling;
+                    if (sibling.tagName === 'DIV') sibling.remove();
+                    sibling = next;
+                }
+                mesEl.remove();
+            }
             chat.length = this_del_mes;
             // @ts-expect-error TS(2339): Property 'tainted' does not exist on type '{}'.
             chat_metadata.tainted = true;
@@ -13082,7 +13076,7 @@ jQuery(async function () {
 
         chat.splice(Number(this_edit_mes_id) + 1, 0, clone);
         const newMessageElement = updateMessageElement(clone);
-        this_edit_mes_element.after(newMessageElement);
+        this_edit_mes_element[0].after(newMessageElement[0]);
 
         updateViewMessageIds();
         await saveChatConditional();
@@ -13376,26 +13370,21 @@ jQuery(async function () {
 
         // Remove existing zoomed avatars for characters that are not the clicked character when moving UI is not enabled
         if (!power_user.movingUI) {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('.zoomed_avatar').each(function () {
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                const currentForChar = $(this).attr('forChar');
+            document.querySelectorAll('.zoomed_avatar').forEach(function (el) {
+                const currentForChar = el.getAttribute('forChar');
                 if (currentForChar !== charname && typeof currentForChar !== 'undefined') {
                     console.debug(`Removing zoomed avatar for character: ${currentForChar}`);
-                    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                    $(this).remove();
+                    el.remove();
                 }
             });
         }
 
         const avatarSrc = (isDataURL(thumbURL) || /^\/?img\/(?:.+)/.test(thumbURL)) ? thumbURL : charsPath + targetAvatarImg;
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        if ($(`.zoomed_avatar[forChar="${charname}"]`).length) {
+        const zoomedAvatarSelector = `.zoomed_avatar[forChar="${charname}"]`;
+        if (document.querySelector(zoomedAvatarSelector)) {
             console.debug('removing container as it already existed');
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(`.zoomed_avatar[forChar="${charname}"]`).fadeOut(animation_duration, () => {
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                $(`.zoomed_avatar[forChar="${charname}"]`).remove();
+            $(zoomedAvatarSelector).fadeOut(animation_duration, () => {
+                document.querySelectorAll(zoomedAvatarSelector).forEach(el => el.remove());
             });
         } else {
             console.debug('making new container from template');
@@ -13408,8 +13397,7 @@ jQuery(async function () {
             newElement.addClass('draggable');
             newElement.find('.drag-grabber').attr('id', `zoomFor_${charname}header`);
 
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('body').append(newElement);
+            document.body.append(newElement);
             newElement.fadeIn(animation_duration);
             // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const zoomedAvatarImgElement = $(`.zoomed_avatar[forChar="${charname}"] img`);
@@ -13441,10 +13429,8 @@ jQuery(async function () {
             // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('.zoomed_avatar, .zoomed_avatar .dragClose').on('click touchend', (e) => {
                 if (e.target.closest('.dragClose')) {
-                    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                     $(`.zoomed_avatar[forChar="${charname}"]`).fadeOut(animation_duration, () => {
-                        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                        $(`.zoomed_avatar[forChar="${charname}"]`).remove();
+                        document.querySelectorAll(`.zoomed_avatar[forChar="${charname}"]`).forEach(el => el.remove());
                     });
                 }
             });

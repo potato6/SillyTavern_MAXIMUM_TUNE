@@ -5075,8 +5075,9 @@ async function onPresetImportFileChange(e) {
         option.selected = true;
         option.value = String(openai_settings.length - 1);
         option.innerText = data.name;
+        document.getElementById('settings_preset_openai').append(option);
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#settings_preset_openai').append(option).trigger('change');
+        $('#settings_preset_openai').trigger('change');
     }
 }
 
@@ -5203,8 +5204,7 @@ async function onDeletePresetClick() {
 
     const nameToDelete = oai_settings.preset_settings_openai;
     const value = openai_setting_names[oai_settings.preset_settings_openai];
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(`#settings_preset_openai option[value="${value}"]`).remove();
+    document.querySelector(`#settings_preset_openai option[value="${value}"]`)?.remove();
     delete openai_setting_names[oai_settings.preset_settings_openai];
     oai_settings.preset_settings_openai = null;
 
@@ -5245,8 +5245,7 @@ async function onLogitBiasPresetDeleteClick() {
         return;
     }
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(`#openai_logit_bias_preset option[value="${oai_settings.bias_preset_selected}"]`).remove();
+    document.querySelector(`#openai_logit_bias_preset option[value="${oai_settings.bias_preset_selected}"]`)?.remove();
     delete oai_settings.bias_presets[oai_settings.bias_preset_selected];
     oai_settings.bias_preset_selected = null;
 
@@ -5291,8 +5290,7 @@ function onSettingsPresetChange() {
         presetNameBefore: presetNameBefore,
     }).finally(async () => {
         if (oai_settings.bind_preset_to_connection) {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('.model_custom_select').empty();
+            document.querySelectorAll('.model_custom_select').forEach(el => el.innerHTML = '');
         }
 
         for (const [key, [selector, setting, isCheckbox, isConnection]] of Object.entries(settingsToUpdate)) {
@@ -6969,16 +6967,15 @@ export function loadProxyPresets(settings) {
         proxies = proxyPresets;
     }
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#openai_proxy_preset').empty();
+    const proxyPresetEl = document.getElementById('openai_proxy_preset');
+    proxyPresetEl.innerHTML = '';
 
     for (const preset of proxyPresets) {
         const option = document.createElement('option');
         option.innerText = preset.name;
         option.value = preset.name;
         option.selected = preset.name === 'None';
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#openai_proxy_preset').append(option);
+        proxyPresetEl.append(option);
     }
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#openai_proxy_preset').val(selected_proxy.name);
@@ -7048,8 +7045,7 @@ $('#save_proxy').on('click', async function () {
         option.text = String(presetName);
         option.value = String(presetName);
 
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#openai_proxy_preset').append(option);
+        document.getElementById('openai_proxy_preset').append(option);
     }
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#openai_proxy_preset').val(presetName);
@@ -7063,8 +7059,7 @@ $('#delete_proxy').on('click', async function () {
 
     if (index !== -1) {
         proxies.splice(index, 1);
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#openai_proxy_preset option[value="' + presetName + '"]').remove();
+        document.querySelector('#openai_proxy_preset option[value="' + presetName + '"]')?.remove();
 
         if (proxies.length > 0) {
             const newIndex = Math.max(0, index - 1);
