@@ -188,7 +188,7 @@ function createThumbnailElement(imageData) {
     thumbnail.attr('bgfile', bg);
     thumbnail.attr('custom', String(isCustom));
     thumbnail.attr('animated', String(isAnimated));
-    thumbnail.data('url', url);
+    thumbnail.attr('data-url', url);
     titleElement.textContent = friendlyTitle;
 
     return thumbnail[0];
