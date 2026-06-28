@@ -141,14 +141,14 @@ class OpenAITtsProvider {
                     <div id="openai-character-instructions"></div>
                 </div>
             `;
-            $('#openai-tts-speed').parent().after(containerHtml);
+            document.getElementById('openai-tts-speed').parentElement.insertAdjacentHTML('afterend', containerHtml);
         }
     }
 
     populateCharacterInstructions() {
         const currentCharacters = $('.tts_voicemap_block_char span').map((i, el) => $(el).text()).get();
 
-        $('#openai-character-instructions').empty();
+        document.getElementById('openai-character-instructions').innerHTML = '';
 
         for (const char of currentCharacters) {
             if (char === 'SillyTavern System' || char === '[Default Voice]') continue;
@@ -172,7 +172,7 @@ class OpenAITtsProvider {
                 this.saveCharacterInstructions(char, textArea.value);
             });
 
-            $('#openai-character-instructions').append(instructionBlock);
+            document.getElementById('openai-character-instructions').append(instructionBlock);
         }
     }
 

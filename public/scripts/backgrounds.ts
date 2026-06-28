@@ -158,7 +158,7 @@ function createThumbnailElement(imageData) {
     const isAnimated = imageData.isAnimated ?? false;
 
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const thumbnail = $('#background_template .bg_example').clone();
+    const thumbnail = document.querySelector('#background_template .bg_example').cloneNode(true);
 
     const clipper = document.createElement('div');
     clipper.className = 'thumbnail-clipper lazy-load-background';
@@ -172,11 +172,11 @@ function createThumbnailElement(imageData) {
             clipper.style.backgroundColor = metadata.dominantColor;
         }
         if (metadata.aspectRatio) {
-            thumbnail.css('aspect-ratio', metadata.aspectRatio);
+            thumbnail.style.aspectRatio = metadata.aspectRatio;
         }
     }
 
-    const titleElement = thumbnail[0].querySelector('.BGSampleTitle');
+    const titleElement = thumbnail.querySelector('.BGSampleTitle');
     clipper.appendChild(titleElement);
     thumbnail.append(clipper);
 
@@ -184,14 +184,14 @@ function createThumbnailElement(imageData) {
     const title = isCustom ? bg.split('/').pop() : bg;
     const friendlyTitle = String(title || '').slice(0, title.lastIndexOf('.'));
 
-    thumbnail.attr('title', title);
-    thumbnail.attr('bgfile', bg);
-    thumbnail.attr('custom', String(isCustom));
-    thumbnail.attr('animated', String(isAnimated));
-    thumbnail.attr('data-url', url);
+    thumbnail.setAttribute('title', title);
+    thumbnail.setAttribute('bgfile', bg);
+    thumbnail.setAttribute('custom', String(isCustom));
+    thumbnail.setAttribute('animated', String(isAnimated));
+    thumbnail.setAttribute('data-url', url);
     titleElement.textContent = friendlyTitle;
 
-    return thumbnail[0];
+    return thumbnail;
 }
 
 /**
@@ -730,8 +730,8 @@ async function autoBackgroundCommand() {
 function renderSystemBackgrounds(backgrounds) {
     const sourceList = backgrounds || [];
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const container = $('#bg_menu_content');
-    container.empty();
+    const container = document.getElementById('bg_menu_content');
+    container.innerHTML = '';
 
     if (sourceList.length === 0) {
         syncGroupSelectionUi();
@@ -759,8 +759,8 @@ function renderSystemBackgrounds(backgrounds) {
 function renderChatBackgrounds(backgrounds) {
     const sourceList = backgrounds ?? (chat_metadata[LIST_METADATA_KEY] || []);
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const container = $('#bg_custom_content');
-    container.empty();
+    const container = document.getElementById('bg_custom_content');
+    container.innerHTML = '';
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#bg_chat_hint').toggle(!sourceList.length);
 
@@ -885,8 +885,8 @@ async function loadFolders() {
  */
 function renderFolderGrid() {
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const container = $('#bg_folder_grid');
-    container.empty();
+    const container = document.getElementById('bg_folder_grid');
+    container.innerHTML = '';
 
     if (folderList.length === 0 && !activeFolderId) {
         return;
@@ -905,7 +905,7 @@ function renderFolderGrid() {
  */
 function createFolderTileElement(folder) {
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const tile = $('#bg_folder_tile_template .bg_folder_tile').clone();
+    const tile = document.querySelector('#bg_folder_tile_template .bg_folder_tile').cloneNode(true);
     tile.attr('data-folder-id', folder.id);
     tile[0].querySelector('.bg_folder_tile_name').textContent = folder.name;
 

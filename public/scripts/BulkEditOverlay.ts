@@ -265,7 +265,7 @@ class BulkTagPopupHandler {
         }
 
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#bulkTagList').empty();
+        document.getElementById('bulkTagList').innerHTML = '';
     }
 
     /**
@@ -277,7 +277,7 @@ class BulkTagPopupHandler {
         }
 
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#bulkTagList').empty();
+        document.getElementById('bulkTagList').innerHTML = '';
     }
 
     /**
@@ -326,7 +326,7 @@ class BulkTagPopupHandler {
         }
 
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#bulkTagList').empty();
+        document.getElementById('bulkTagList').innerHTML = '';
 
         printCharactersDebounced();
     }
@@ -344,7 +344,7 @@ class BulkTagPopupHandler {
         }
 
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#bulkTagList').empty();
+        document.getElementById('bulkTagList').innerHTML = '';
 
         printCharactersDebounced();
     }

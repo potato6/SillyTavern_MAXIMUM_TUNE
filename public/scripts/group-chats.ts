@@ -838,7 +838,7 @@ export function getGroupBlock(group) {
     }
 
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const template = $('#group_list_template .group_select').clone();
+    const template = document.querySelector('#group_list_template .group_select').cloneNode(true);
     template.data('id', group.id);
     template.attr('data-grid', group.id);
     $(template[0].querySelector('.ch_name')).text(group.name).attr('title', `[Group] ${group.name}`);
@@ -855,7 +855,7 @@ export function getGroupBlock(group) {
     const avatar = getGroupAvatar(group);
     if (avatar) {
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(template[0].querySelector('.avatar')).replaceWith(avatar);
+        template.querySelector('.avatar').replaceWith(avatar[0]);
     }
 
     return template;
@@ -867,11 +867,13 @@ export function getGroupBlock(group) {
  */
 function updateGroupAvatar(group) {
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#group_avatar_preview').empty().append(getGroupAvatar(group));
+    const preview = document.getElementById('group_avatar_preview');
+    preview.innerHTML = '';
+    preview.append(getGroupAvatar(group)[0]);
 
     [...document.querySelectorAll('.group_select')].forEach(el => {
         if ($(el).data('id') == group.id) {
-            $(el.querySelector('.avatar')).replaceWith(getGroupAvatar(group));
+            el.querySelector('.avatar').replaceWith(getGroupAvatar(group)[0]);
         }
     });
 
@@ -925,7 +927,7 @@ function getGroupAvatar(group) {
 
     if (avatarCount >= 1 && avatarCount <= 4) {
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const groupAvatar = $(`#group_avatars_template .collage_${avatarCount}`).clone();
+        const groupAvatar = document.querySelector(`#group_avatars_template .collage_${avatarCount}`).cloneNode(true);
 
         for (let i = 0; i < avatarCount; i++) {
             $(groupAvatar[0].querySelector(`.img_${i + 1}`)).attr('src', memberAvatars[i]);
@@ -943,7 +945,7 @@ function getGroupAvatar(group) {
 
     // default avatar
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const groupAvatar = $('#group_avatars_template .collage_1').clone();
+    const groupAvatar = document.querySelector('#group_avatars_template .collage_1').cloneNode(true);
     $(groupAvatar[0].querySelector('.img_1')).attr('src', group.avatar_url || system_avatar);
     groupAvatar.attr('title', `[Group] ${group.name}`);
     return groupAvatar;
@@ -1728,10 +1730,10 @@ function printGroupCandidates() {
         },
         callback: function (data) {
             // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#rm_group_add_members').empty();
+            document.getElementById('rm_group_add_members').innerHTML = '';
             for (const i of data) {
                 // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                $('#rm_group_add_members').append(getGroupCharacterBlock(i.item));
+                document.getElementById('rm_group_add_members').append(getGroupCharacterBlock(i.item)[0]);
             }
             // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             localizePagination($('#rm_group_add_members_pagination'));
@@ -1765,9 +1767,9 @@ function printGroupMembers() {
                 paginationDropdownChangeHandler(e, size);
             },
             callback: function (data) {
-                $('.rm_group_members').empty();
+                document.querySelectorAll('.rm_group_members').forEach(el => el.innerHTML = '');
                 for (const i of data) {
-                    $('.rm_group_members').append(getGroupCharacterBlock(i.item));
+                    document.querySelectorAll('.rm_group_members').forEach(el => el.append(getGroupCharacterBlock(i.item)[0]));
                 }
                 // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 localizePagination($(that));
@@ -1784,7 +1786,7 @@ function printGroupMembers() {
 function getGroupCharacterBlock(character) {
     const avatar = getThumbnailUrl('avatar', character.avatar);
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const template = $('#group_member_template .group_member').clone();
+    const template = document.querySelector('#group_member_template .group_member').cloneNode(true);
     const isFav = !!character.fav || character.fav == 'true';
     template.data('id', character.avatar);
     $(template[0].querySelector('.avatar img')).attr({ 'src': avatar, 'title': character.avatar });
@@ -1927,7 +1929,9 @@ function select_group_chats(groupId, skipAnimation) {
 
     setMenuType(group ? 'group_edit' : 'group_create');
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#group_avatar_preview').empty().append(getGroupAvatar(group));
+    const preview = document.getElementById('group_avatar_preview');
+    preview.innerHTML = '';
+    preview.append(getGroupAvatar(group)[0]);
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#rm_group_restore_avatar').toggle(!!group && isValidImageUrl(group.avatar_url));
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message

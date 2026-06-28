@@ -609,7 +609,7 @@ export async function loadTextGenSettings(data, loadedSettings) {
         option.value = name;
         option.innerText = name;
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#settings_preset_textgenerationwebui').append(option);
+        document.getElementById('settings_preset_textgenerationwebui').append(option);
     }
 
     if (textgenerationwebui_settings.preset) {
@@ -655,7 +655,7 @@ function sortKoboldItemsByOrder(orderArray) {
     for (let i = 0; i < orderArray.length; i++) {
         const index = orderArray[i];
         const $item = $($draggableItems[0].querySelector(`[data-id="${index}"]`)).detach();
-        $draggableItems.append($item);
+            $draggableItems[0].append($item[0]);
     }
 }
 
@@ -670,7 +670,7 @@ function sortLlamacppItemsByOrder(orderArray) {
 
     orderArray.forEach((name) => {
         const $item = $($container[0].querySelector(`[data-name="${name}"]`)).detach();
-        $container.append($item);
+            $container[0].append($item[0]);
     });
 }
 
@@ -685,7 +685,7 @@ function sortOobaItemsByOrder(orderArray) {
 
     orderArray.forEach((name) => {
         const $item = $($container[0].querySelector(`[data-name="${name}"]`)).detach();
-        $container.append($item);
+            $container[0].append($item[0]);
     });
 }
 
@@ -700,7 +700,7 @@ function sortAphroditeItemsByOrder(orderArray) {
 
     orderArray.forEach((name) => {
         const $item = $($container[0].querySelector(`[data-name="${name}"]`)).detach();
-        $container.append($item);
+            $container[0].append($item[0]);
     });
 }
 

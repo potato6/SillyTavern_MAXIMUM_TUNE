@@ -4847,18 +4847,18 @@ function onLogitBiasPresetChange() {
     }
 
     // Check if a sortable instance exists
-    if (list.sortable('instance') !== undefined) {
+    if ($(list).sortable('instance') !== undefined) {
         // Destroy the instance
-        list.sortable('destroy');
+        $(list).sortable('destroy');
     }
 
     // Make the list sortable
-    list.sortable({
+    $(list).sortable({
         delay: getSortableDelay(),
         handle: '.drag-handle',
         stop: function () {
             const order = [];
-            for (const child of list[0].children) {
+            for (const child of list.children) {
                 order.unshift(child.dataset.id);
             }
             preset.sort((a, b) => order.indexOf(a.id) - order.indexOf(b.id));
