@@ -74,11 +74,11 @@ const state = {
  */
 function renderAlternativeTokensView() {
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const view = $('#logprobs_generation_output');
-    if (!view.is(':visible')) {
+    const view = document.getElementById('logprobs_generation_output');
+    if (!view || view.style.display === 'none') {
         return;
     }
-    view.empty();
+    if (view) view.innerHTML = '';
     state.selectedTokenLogprobs = null;
     renderTopLogprobs();
 
@@ -86,7 +86,7 @@ function renderAlternativeTokensView() {
     const usingSmoothStreaming = isStreamingEnabled() && power_user.smooth_streaming;
     if (!messageLogprobs?.length || usingSmoothStreaming) {
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const emptyState = $('<div></div>');
+        const emptyState = document.createElement('div');
         const noTokensMsg = !power_user.request_token_probabilities
             ? '<span>Enable <b>Request token probabilities</b> in the User Settings menu to use this feature.</span>'
             : usingSmoothStreaming
@@ -94,9 +94,9 @@ function renderAlternativeTokensView() {
                 : is_send_press
                     ? t`Generation in progress...`
                     : t`No token probabilities available for the current message.`;
-        emptyState.html(noTokensMsg);
-        emptyState.addClass('logprobs_empty_state');
-        view.append(emptyState);
+        emptyState.innerHTML = noTokensMsg;
+        emptyState.classList.add('logprobs_empty_state');
+        view?.appendChild(emptyState);
         return;
     }
 
@@ -146,7 +146,7 @@ function renderAlternativeTokensView() {
         tokenSpans.push(...withVirtualWhitespace(token, span));
     });
 
-    view.append(tokenSpans);
+    view?.append(...tokenSpans);
 
     // scroll past long prior context
     if (prefix) {
@@ -184,8 +184,8 @@ function renderTopLogprobs() {
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#logprobs_top_logprobs_hint').hide();
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const view = $('.logprobs_candidate_list');
-    view.empty();
+    const view = document.querySelector('.logprobs_candidate_list');
+    if (view) view.innerHTML = '';
 
     if (!state.selectedTokenLogprobs) {
         return;
@@ -211,7 +211,8 @@ function renderTopLogprobs() {
     let matched = false;
     for (const [token, probability, log] of candidates) {
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const container = $('<button class="flex-container flexFlowColumn logprobs_top_candidate"></button>');
+        const container = document.createElement('button');
+        container.className = 'flex-container flexFlowColumn logprobs_top_candidate';
         const tokenNormalized = String(token).replace(/^[▁Ġ]/g, ' ');
 
         if (token === selectedToken || tokenNormalized === selectedToken) {
@@ -220,9 +221,11 @@ function renderTopLogprobs() {
         }
 
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const tokenText = $('<span></span>').text(`${toVisibleWhitespace(token.toString())}`);
+        const tokenText = document.createElement('span');
+        tokenText.textContent = `${toVisibleWhitespace(token.toString())}`;
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const percentText = $('<span></span>').text(`${(+probability * 100).toFixed(2)}%`);
+        const percentText = document.createElement('span');
+        percentText.textContent = `${(+probability * 100).toFixed(2)}%`;
         container.append(tokenText, percentText);
         if (log) {
             container.attr('title', `logarithm: ${log}`);
@@ -242,7 +245,7 @@ function renderTopLogprobs() {
         nodes[nodes.length - 1].css('background-color', 'rgba(255, 0, 0, 0.1)');
     }
 
-    view.append(nodes);
+    view?.append(...nodes);
 }
 
 /**

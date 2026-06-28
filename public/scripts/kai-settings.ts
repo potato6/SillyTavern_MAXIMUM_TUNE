@@ -117,15 +117,17 @@ export function loadKoboldSettings(data, preset, settings) {
     });
 
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#settings_preset').empty();
+    if (document.getElementById('settings_preset')) {
+        document.getElementById('settings_preset')!.innerHTML = '';
+    }
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#settings_preset').append('<option value="gui">GUI KoboldAI Settings</option>');
+    document.getElementById('settings_preset')?.insertAdjacentHTML('beforeend', '<option value="gui">GUI KoboldAI Settings</option>');
     const names = {};
     // @ts-expect-error TS(6133): 'arr' is declared but its value is never read.
     koboldai_setting_names.forEach(function (item, i, arr) {
         names[item] = i;
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#settings_preset').append(`<option value=${i}>${item}</option>`);
+        document.getElementById('settings_preset')?.insertAdjacentHTML('beforeend', `<option value=${i}>${item}</option>`);
     });
     koboldai_setting_names = names;
 

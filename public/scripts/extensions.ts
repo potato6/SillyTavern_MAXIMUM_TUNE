@@ -733,9 +733,9 @@ async function addExtensionsButtonAndMenu() {
     const extensionsMenuHTML = await renderTemplateAsync('wandMenu');
 
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document.body).append(extensionsMenuHTML);
+    document.body.insertAdjacentHTML('beforeend', extensionsMenuHTML);
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#leftSendForm').append(buttonHTML);
+    document.getElementById('leftSendForm')?.insertAdjacentHTML('beforeend', buttonHTML);
 
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const button = $('#extensionsMenuButton');
@@ -1229,12 +1229,9 @@ async function showExtensionsDetails() {
         });
 
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const extensionsMenu = $('<div></div>')
-            .addClass('extensions_info')
-            .append(errors)
-            .append(defaultContainer)
-            .append(externalContainer)
-            .append(getModuleInformation());
+        const extensionsMenu = document.createElement('div');
+        extensionsMenu.classList.add('extensions_info');
+        extensionsMenu.append(errors, defaultContainer, externalContainer, getModuleInformation());
 
         {
             const updateAction = async (force) => {

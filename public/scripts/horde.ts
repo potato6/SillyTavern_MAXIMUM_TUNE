@@ -317,7 +317,8 @@ export async function getHordeModels(force) {
     const sortByPopular = (a, b) => b.tags?.includes('popular') - a.tags?.includes('popular');
 
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#horde_model').empty();
+    const hordeModelSelect = document.getElementById('horde_model');
+    if (hordeModelSelect) hordeModelSelect.innerHTML = '';
     models = (await getModels(force)).sort((a, b) => {
         return sortByWhitelisted(a, b) || sortByPopular(a, b) || sortByPerformance(a, b);
     });
@@ -327,7 +328,7 @@ export async function getHordeModels(force) {
         option.innerText = hordeModelTextString(model);
         option.selected = horde_settings.models.includes(model.name);
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#horde_model').append(option);
+        hordeModelSelect?.appendChild(option);
     }
 
     // if previously selected is no longer available

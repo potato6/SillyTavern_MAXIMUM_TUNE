@@ -532,10 +532,12 @@ export class Popup {
         this.content.innerHTML = '';
         // @ts-expect-error TS(2304): Cannot find name 'jQuery'.
         if (content instanceof jQuery) {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(this.content).append(content);
+            const contentElement = content[0];
+            if (contentElement instanceof HTMLElement) {
+                this.content.appendChild(contentElement);
+            }
         } else if (content instanceof HTMLElement) {
-            this.content.append(content);
+            this.content.appendChild(content);
         } else if (typeof content == 'string') {
             this.content.innerHTML = content;
         } else {
@@ -688,7 +690,7 @@ export class Popup {
      * @returns {Promise<string|number|boolean?>} A promise that resolves with the value of the popup when it is completed.
      */
     async show() {
-        document.body.append(this.dlg);
+        document.body.appendChild(this.dlg);
 
         // Run opening animation
         this.dlg.setAttribute('opening', '');

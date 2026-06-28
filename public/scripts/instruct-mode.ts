@@ -157,8 +157,7 @@ export async function loadInstructMode(data) {
         option.value = name;
         option.innerText = name;
         option.selected = name === power_user.instruct.preset;
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#instruct_presets').append(option);
+        document.getElementById('instruct_presets')?.appendChild(option);
     });
 }
 

@@ -2077,26 +2077,37 @@ function saveModelList(data) {
     if (oai_settings.chat_completion_source == chat_completion_sources.OPENROUTER) {
         model_list = sortModelsBy(model_list, oai_settings.sort_models, chat_completion_sources.OPENROUTER);
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#model_openrouter_select').empty();
+        const modelOpenRouterSelect = document.getElementById('model_openrouter_select');
+        if (modelOpenRouterSelect) modelOpenRouterSelect.innerHTML = '';
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#model_openrouter_select').append($('<option>', { value: openrouter_website_model, text: t`Use OpenRouter website setting` }));
+        const websiteOption = document.createElement('option');
+        websiteOption.value = openrouter_website_model;
+        websiteOption.textContent = t`Use OpenRouter website setting`;
+        modelOpenRouterSelect?.appendChild(websiteOption);
 
         if (oai_settings.group_models) {
             groupModelsByVendor(model_list, chat_completion_sources.OPENROUTER).forEach((models, vendor) => {
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                const optgroup = $('<optgroup>').attr('label', vendor);
-                models.forEach((model) => {
                     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                    optgroup.append($('<option>', { value: model.id, text: model.name }));
-                });
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                $('#model_openrouter_select').append(optgroup);
+                    const optgroup = document.createElement('optgroup');
+                    optgroup.label = vendor;
+                    models.forEach((model) => {
+                        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+                        const option = document.createElement('option');
+                        option.value = model.id;
+                        option.textContent = model.name;
+                        optgroup.appendChild(option);
+                    });
+                    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+                    document.getElementById('model_openrouter_select')?.appendChild(optgroup);
             });
         } else {
-            model_list.forEach((model) => {
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                $('#model_openrouter_select').append($('<option>', { value: model.id, text: model.name }));
-            });
+                model_list.forEach((model) => {
+                    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+                    const option = document.createElement('option');
+                    option.value = model.id;
+                    option.textContent = model.name;
+                    document.getElementById('model_openrouter_select')?.appendChild(option);
+                });
         }
 
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
@@ -2105,15 +2116,14 @@ function saveModelList(data) {
 
     if (oai_settings.chat_completion_source == chat_completion_sources.OPENAI) {
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#openai_external_category').empty();
+        const externalCategory = document.getElementById('openai_external_category');
+        if (externalCategory) externalCategory.innerHTML = '';
         model_list.forEach((model) => {
             // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#openai_external_category').append(
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                $('<option>', {
-                    value: model.id,
-                    text: model.id,
-                }));
+            const option = document.createElement('option');
+            option.value = model.id;
+            option.textContent = model.id;
+            externalCategory?.appendChild(option);
         });
         // If the selected model is not in the list, revert to default
         if (oai_settings.show_external_models) {
@@ -2125,18 +2135,23 @@ function saveModelList(data) {
 
     if (oai_settings.chat_completion_source == chat_completion_sources.CUSTOM) {
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('.model_custom_select').empty();
+        document.querySelectorAll('.model_custom_select').forEach(el => el.innerHTML = '');
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('.model_custom_select').append('<option value="">None</option>');
+        document.querySelectorAll('.model_custom_select').forEach(el => {
+            const option = document.createElement('option');
+            option.value = '';
+            option.textContent = 'None';
+            el.appendChild(option);
+        });
         model_list.forEach((model) => {
             // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('.model_custom_select').append(
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                $('<option>', {
-                    value: model.id,
-                    text: model.id,
-                    selected: model.id == oai_settings.custom_model,
-                }));
+            document.querySelectorAll('.model_custom_select').forEach(el => {
+                const option = document.createElement('option');
+                option.value = model.id;
+                option.textContent = model.id;
+                option.selected = model.id == oai_settings.custom_model;
+                el.appendChild(option);
+            });
         });
 
         if (!oai_settings.custom_model && model_list.length > 0) {
@@ -2149,23 +2164,31 @@ function saveModelList(data) {
         model_list = model_list.filter(m => m.type === 'chat-completion');
         model_list = sortModelsBy(model_list, oai_settings.sort_models, chat_completion_sources.AIMLAPI);
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#model_aimlapi_select').empty();
+        const aimlapiSelect = document.getElementById('model_aimlapi_select');
+        if (aimlapiSelect) aimlapiSelect.innerHTML = '';
 
         if (oai_settings.group_models) {
             groupModelsByVendor(model_list, chat_completion_sources.AIMLAPI).forEach((models, vendor) => {
                 // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                const optgroup = $('<optgroup>').attr('label', vendor);
+                const optgroup = document.createElement('optgroup');
+                optgroup.label = vendor;
                 models.forEach((model) => {
                     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                    optgroup.append($('<option>', { value: model.id, text: model.info?.name || model.id }));
+                    const option = document.createElement('option');
+                    option.value = model.id;
+                    option.textContent = model.info?.name || model.id;
+                    optgroup.appendChild(option);
                 });
                 // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                $('#model_aimlapi_select').append(optgroup);
+                aimlapiSelect?.appendChild(optgroup);
             });
         } else {
             model_list.forEach((model) => {
                 // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                $('#model_aimlapi_select').append($('<option>', { value: model.id, text: model.info?.name || model.id }));
+                const option = document.createElement('option');
+                option.value = model.id;
+                option.textContent = model.info?.name || model.id;
+                aimlapiSelect?.appendChild(option);
             });
         }
 
@@ -2179,11 +2202,13 @@ function saveModelList(data) {
 
     if (oai_settings.chat_completion_source == chat_completion_sources.MISTRALAI) {
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#model_mistralai_select').empty();
+        const mistralSelect = document.getElementById('model_mistralai_select');
+        if (mistralSelect) mistralSelect.innerHTML = '';
 
         for (const model of model_list.filter(model => model?.capabilities?.completion_chat)) {
             // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#model_mistralai_select').append(new Option(model.id, model.id));
+            const option = new Option(model.id, model.id);
+            mistralSelect?.appendChild(option);
         }
 
         const selectedModel = model_list.find(model => model.id === oai_settings.mistralai_model);
@@ -2199,23 +2224,31 @@ function saveModelList(data) {
         model_list = model_list.filter(model => model?.endpoints?.includes('/v1/chat/completions'));
         model_list = sortModelsBy(model_list, oai_settings.sort_models, chat_completion_sources.ELECTRONHUB);
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#model_electronhub_select').empty();
+        const electronHubSelect = document.getElementById('model_electronhub_select');
+        if (electronHubSelect) electronHubSelect.innerHTML = '';
 
         if (oai_settings.group_models) {
             groupModelsByVendor(model_list, chat_completion_sources.ELECTRONHUB).forEach((models, vendor) => {
                 // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                const optgroup = $('<optgroup>').attr('label', vendor);
+                const optgroup = document.createElement('optgroup');
+                optgroup.label = vendor;
                 models.forEach((model) => {
                     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                    optgroup.append($('<option>', { value: model.id, text: model.name }));
+                    const option = document.createElement('option');
+                    option.value = model.id;
+                    option.textContent = model.name;
+                    optgroup.appendChild(option);
                 });
                 // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                $('#model_electronhub_select').append(optgroup);
+                electronHubSelect?.appendChild(optgroup);
             });
         } else {
             model_list.forEach((model) => {
                 // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                $('#model_electronhub_select').append($('<option>', { value: model.id, text: model.name }));
+                const option = document.createElement('option');
+                option.value = model.id;
+                option.textContent = model.name;
+                electronHubSelect?.appendChild(option);
             });
         }
 
@@ -2232,23 +2265,23 @@ function saveModelList(data) {
         model_list = model_list.filter(model => typeof model.id === 'string' && !model.id.toLowerCase().includes('affine'));
         model_list = sortModelsBy(model_list, oai_settings.sort_models, chat_completion_sources.CHUTES);
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#model_chutes_select').empty();
+        const chutesSelect = document.getElementById('model_chutes_select');
+        if (chutesSelect) chutesSelect.innerHTML = '';
 
         if (oai_settings.group_models) {
             groupModelsByVendor(model_list, chat_completion_sources.CHUTES).forEach((models, vendor) => {
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                const optgroup = $('<optgroup>').attr('label', vendor);
-                models.forEach((model) => {
-                    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                    optgroup.append($('<option>', { value: model.id, text: model.id }));
-                });
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                $('#model_chutes_select').append(optgroup);
+                    const optgroup = document.createElement('optgroup');
+                    optgroup.label = vendor;
+                    models.forEach((model) => {
+                        const option = new Option(model.id, model.id);
+                        optgroup.appendChild(option);
+                    });
+                    chutesSelect?.appendChild(optgroup);
             });
         } else {
             model_list.forEach((model) => {
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                $('#model_chutes_select').append($('<option>', { value: model.id, text: model.id }));
+                const option = new Option(model.id, model.id);
+                chutesSelect?.appendChild(option);
             });
         }
 
@@ -2263,24 +2296,23 @@ function saveModelList(data) {
 
     if (oai_settings.chat_completion_source == chat_completion_sources.NANOGPT) {
         model_list = sortModelsBy(model_list, oai_settings.sort_models, chat_completion_sources.NANOGPT);
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#model_nanogpt_select').empty();
+        const nanogptSelect = document.getElementById('model_nanogpt_select');
+        if (nanogptSelect) nanogptSelect.innerHTML = '';
 
         if (oai_settings.group_models) {
             groupModelsByVendor(model_list, chat_completion_sources.NANOGPT).forEach((models, vendor) => {
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                const optgroup = $('<optgroup>').attr('label', vendor);
-                models.forEach((model) => {
-                    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                    optgroup.append($('<option>', { value: model.id, text: model.name || model.id }));
-                });
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                $('#model_nanogpt_select').append(optgroup);
+                    const optgroup = document.createElement('optgroup');
+                    optgroup.label = vendor;
+                    models.forEach((model) => {
+                        const option = new Option(model.name || model.id, model.id);
+                        optgroup.appendChild(option);
+                    });
+                    nanogptSelect?.appendChild(optgroup);
             });
         } else {
             model_list.forEach((model) => {
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                $('#model_nanogpt_select').append($('<option>', { value: model.id, text: model.name || model.id }));
+                const option = new Option(model.name || model.id, model.id);
+                nanogptSelect?.appendChild(option);
             });
         }
 
@@ -2289,16 +2321,18 @@ function saveModelList(data) {
             oai_settings.nanogpt_model = model_list[0].id;
         }
 
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#model_nanogpt_select').val(oai_settings.nanogpt_model).trigger('change');
+        if (nanogptSelect) {
+            nanogptSelect.value = oai_settings.nanogpt_model;
+            nanogptSelect.dispatchEvent(new Event('change'));
+        }
     }
 
     if (oai_settings.chat_completion_source == chat_completion_sources.DEEPSEEK) {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#model_deepseek_select').empty();
+        const deepseekSelect = document.getElementById('model_deepseek_select');
+        if (deepseekSelect) deepseekSelect.innerHTML = '';
         model_list.forEach((model) => {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#model_deepseek_select').append($('<option>', { value: model.id, text: model.id }));
+            const option = new Option(model.id, model.id);
+            deepseekSelect?.appendChild(option);
         });
 
         const selectedModel = model_list.find(model => model.id === oai_settings.deepseek_model);
@@ -2306,16 +2340,18 @@ function saveModelList(data) {
             oai_settings.deepseek_model = model_list[0].id;
         }
 
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#model_deepseek_select').val(oai_settings.deepseek_model).trigger('change');
+        if (deepseekSelect) {
+            deepseekSelect.value = oai_settings.deepseek_model;
+            deepseekSelect.dispatchEvent(new Event('change'));
+        }
     }
 
     if (oai_settings.chat_completion_source === chat_completion_sources.POLLINATIONS) {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#model_pollinations_select').empty();
+        const pollinationsSelect = document.getElementById('model_pollinations_select');
+        if (pollinationsSelect) pollinationsSelect.innerHTML = '';
         model_list.forEach((model) => {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#model_pollinations_select').append($('<option>', { value: model.id, text: model.id }));
+            const option = new Option(model.id, model.id);
+            pollinationsSelect?.appendChild(option);
         });
 
         const selectedModel = model_list.find(model => model.id === oai_settings.pollinations_model);
@@ -2323,36 +2359,31 @@ function saveModelList(data) {
             oai_settings.pollinations_model = model_list[0].id;
         }
 
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#model_pollinations_select').val(oai_settings.pollinations_model).trigger('change');
+        if (pollinationsSelect) {
+            pollinationsSelect.value = oai_settings.pollinations_model;
+            pollinationsSelect.dispatchEvent(new Event('change'));
+        }
     }
 
     if (oai_settings.chat_completion_source === chat_completion_sources.MAKERSUITE) {
-        // Clear only the "Other" optgroup for dynamic models
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#google_other_models').empty();
+        const googleOtherModels = document.getElementById('google_other_models');
+        if (googleOtherModels) googleOtherModels.innerHTML = '';
 
-        // Get static model options that are already in the HTML
+        const googleSelect = document.getElementById('model_google_select');
         const staticModels = [];
-        for (const el of $('#model_google_select option')) {
-            staticModels.push(el.value);
+        if (googleSelect) {
+            for (const el of googleSelect.options) {
+                staticModels.push(el.value);
+            }
         }
 
-        // Add dynamic models to the "Other" group
         model_list.forEach((model) => {
-            // Only add if not already in static list
             if (!staticModels.includes(model.id)) {
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                $('#google_other_models').append(
-                    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                    $('<option>', {
-                        value: model.id,
-                        text: model.id,
-                    }));
+                const option = new Option(model.id, model.id);
+                googleOtherModels?.appendChild(option);
             }
         });
 
-        // Merge static models into model_list
         staticModels.forEach(modelId => {
             if (!model_list.some(model => model.id === modelId)) {
                 model_list.push({ id: modelId });
@@ -2364,21 +2395,18 @@ function saveModelList(data) {
             oai_settings.google_model = model_list[0].id;
         }
 
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#model_google_select').val(oai_settings.google_model).trigger('change');
+        if (googleSelect) {
+            googleSelect.value = oai_settings.google_model;
+            googleSelect.dispatchEvent(new Event('change'));
+        }
     }
 
     if (oai_settings.chat_completion_source === chat_completion_sources.GROQ) {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#model_groq_select').empty();
+        const groqSelect = document.getElementById('model_groq_select');
+        if (groqSelect) groqSelect.innerHTML = '';
         model_list.forEach((model) => {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#model_groq_select').append(
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                $('<option>', {
-                    value: model.id,
-                    text: model.id,
-                }));
+            const option = new Option(model.id, model.id);
+            groqSelect?.appendChild(option);
         });
 
         const selectedModel = model_list.find(model => model.id === oai_settings.groq_model);
@@ -2386,21 +2414,18 @@ function saveModelList(data) {
             oai_settings.groq_model = model_list[0].id;
         }
 
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#model_groq_select').val(oai_settings.groq_model).trigger('change');
+        if (groqSelect) {
+            groqSelect.value = oai_settings.groq_model;
+            groqSelect.dispatchEvent(new Event('change'));
+        }
     }
 
     if (oai_settings.chat_completion_source === chat_completion_sources.SILICONFLOW) {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#model_siliconflow_select').empty();
+        const siliconflowSelect = document.getElementById('model_siliconflow_select');
+        if (siliconflowSelect) siliconflowSelect.innerHTML = '';
         model_list.forEach((model) => {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#model_siliconflow_select').append(
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                $('<option>', {
-                    value: model.id,
-                    text: model.id,
-                }));
+            const option = new Option(model.id, model.id);
+            siliconflowSelect?.appendChild(option);
         });
 
         const selectedModel = model_list.find(model => model.id === oai_settings.siliconflow_model);
@@ -2408,24 +2433,21 @@ function saveModelList(data) {
             oai_settings.siliconflow_model = model_list[0].id;
         }
 
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#model_siliconflow_select').val(oai_settings.siliconflow_model).trigger('change');
+        if (siliconflowSelect) {
+            siliconflowSelect.value = oai_settings.siliconflow_model;
+            siliconflowSelect.dispatchEvent(new Event('change'));
+        }
     }
 
     if (oai_settings.chat_completion_source === chat_completion_sources.FIREWORKS) {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#model_fireworks_select').empty();
+        const fireworksSelect = document.getElementById('model_fireworks_select');
+        if (fireworksSelect) fireworksSelect.innerHTML = '';
         model_list.forEach((model) => {
             if (!model?.supports_chat) {
                 return;
             }
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#model_fireworks_select').append(
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                $('<option>', {
-                    value: model.id,
-                    text: model.id,
-                }));
+            const option = new Option(model.id, model.id);
+            fireworksSelect?.appendChild(option);
         });
 
         const selectedModel = model_list.find(model => model.id === oai_settings.fireworks_model);
@@ -2433,21 +2455,18 @@ function saveModelList(data) {
             oai_settings.fireworks_model = model_list[0].id;
         }
 
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#model_fireworks_select').val(oai_settings.fireworks_model).trigger('change');
+        if (fireworksSelect) {
+            fireworksSelect.value = oai_settings.fireworks_model;
+            fireworksSelect.dispatchEvent(new Event('change'));
+        }
     }
 
     if (oai_settings.chat_completion_source === chat_completion_sources.WORKERS_AI) {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#model_workers_ai_select').empty();
+        const workersAiSelect = document.getElementById('model_workers_ai_select');
+        if (workersAiSelect) workersAiSelect.innerHTML = '';
         model_list.forEach((model) => {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#model_workers_ai_select').append(
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                $('<option>', {
-                    value: model.id,
-                    text: model.id,
-                }));
+            const option = new Option(model.id, model.id);
+            workersAiSelect?.appendChild(option);
         });
 
         const selectedModel = model_list.find(model => model.id === oai_settings.workers_ai_model);
@@ -2455,13 +2474,15 @@ function saveModelList(data) {
             oai_settings.workers_ai_model = model_list[0].id;
         }
 
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#model_workers_ai_select').val(oai_settings.workers_ai_model).trigger('change');
+        if (workersAiSelect) {
+            workersAiSelect.value = oai_settings.workers_ai_model;
+            workersAiSelect.dispatchEvent(new Event('change'));
+        }
     }
 
     if (oai_settings.chat_completion_source === chat_completion_sources.COMETAPI) {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#model_cometapi_select').empty();
+        const cometapiSelect = document.getElementById('model_cometapi_select');
+        if (cometapiSelect) cometapiSelect.innerHTML = '';
 
         model_list.forEach((model) => {
             const modelId = model.id.toLowerCase();
@@ -2471,8 +2492,8 @@ function saveModelList(data) {
                 return;
             }
 
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#model_cometapi_select').append(new Option(model.id, model.id));
+            const option = new Option(model.id, model.id);
+            cometapiSelect?.appendChild(option);
         });
 
         const selectedModel = model_list.find(model => model.id === oai_settings.cometapi_model);
@@ -2481,32 +2502,30 @@ function saveModelList(data) {
             saveSettingsDebounced();
         }
 
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#model_cometapi_select').val(oai_settings.cometapi_model).trigger('change');
+        if (cometapiSelect) {
+            cometapiSelect.value = oai_settings.cometapi_model;
+            cometapiSelect.dispatchEvent(new Event('change'));
+        }
     }
 
     if (oai_settings.chat_completion_source == chat_completion_sources.AZURE_OPENAI) {
         const modelId = model_list?.[0]?.id || '';
         oai_settings.azure_openai_model = modelId;
 
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#azure_openai_model')
-            .empty()
-            .append(new Option(modelId || 'None', modelId || '', true, true))
-            .trigger('change');
+        const azureSelect = document.getElementById('azure_openai_model');
+        if (azureSelect) {
+            azureSelect.innerHTML = '';
+            azureSelect.appendChild(new Option(modelId || 'None', modelId || '', true, true));
+            azureSelect.dispatchEvent(new Event('change'));
+        }
     }
 
     if (oai_settings.chat_completion_source == chat_completion_sources.XAI) {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#model_xai_select').empty();
+        const xaiSelect = document.getElementById('model_xai_select');
+        if (xaiSelect) xaiSelect.innerHTML = '';
         model_list.forEach((model) => {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#model_xai_select').append(
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                $('<option>', {
-                    value: model.id,
-                    text: model.id,
-                }));
+            const option = new Option(model.id, model.id);
+            xaiSelect?.appendChild(option);
         });
 
         const selectedModel = model_list.find(model => model.id === oai_settings.xai_model);
@@ -2514,16 +2533,18 @@ function saveModelList(data) {
             oai_settings.xai_model = model_list[0].id;
         }
 
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#model_xai_select').val(oai_settings.xai_model).trigger('change');
+        if (xaiSelect) {
+            xaiSelect.value = oai_settings.xai_model;
+            xaiSelect.dispatchEvent(new Event('change'));
+        }
     }
 
     if (oai_settings.chat_completion_source == chat_completion_sources.MOONSHOT) {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#model_moonshot_select').empty();
+        const moonshotSelect = document.getElementById('model_moonshot_select');
+        if (moonshotSelect) moonshotSelect.innerHTML = '';
         model_list.forEach((model) => {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#model_moonshot_select').append(new Option(model.id, model.id));
+            const option = new Option(model.id, model.id);
+            moonshotSelect?.appendChild(option);
         });
 
         const selectedModel = model_list.find(model => model.id === oai_settings.moonshot_model);
@@ -2531,8 +2552,10 @@ function saveModelList(data) {
             oai_settings.moonshot_model = model_list[0].id;
         }
 
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#model_moonshot_select').val(oai_settings.moonshot_model).trigger('change');
+        if (moonshotSelect) {
+            moonshotSelect.value = oai_settings.moonshot_model;
+            moonshotSelect.dispatchEvent(new Event('change'));
+        }
     }
 }
 
@@ -4441,16 +4464,16 @@ function loadOpenAISettings(data, settings) {
         openai_settings[i] = JSON.parse(item);
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#settings_preset_openai').empty();
+    const settingsPresetOpenai = document.getElementById('settings_preset_openai');
+    if (settingsPresetOpenai) settingsPresetOpenai.innerHTML = '';
     const settingNames = {};
     openai_setting_names.forEach(function (item, i) {
         settingNames[item] = i;
         const option = document.createElement('option');
         option.value = i;
         option.text = item;
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#settings_preset_openai').append(option);
+        const settingsPresetOpenai = document.getElementById('settings_preset_openai');
+        settingsPresetOpenai?.appendChild(option);
     });
     openai_setting_names = settingNames;
 
@@ -4501,8 +4524,8 @@ function loadOpenAISettings(data, settings) {
     $('#vertexai_service_account_json').val('');
     updateVertexAIServiceAccountStatus();
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#openai_logit_bias_preset').empty();
+    const logitBiasPreset = document.getElementById('openai_logit_bias_preset');
+    if (logitBiasPreset) logitBiasPreset.innerHTML = '';
     for (const preset of Object.keys(oai_settings.bias_presets)) {
         // Backfill missing IDs
         if (Array.isArray(oai_settings.bias_presets[preset])) {
@@ -4516,11 +4539,9 @@ function loadOpenAISettings(data, settings) {
         option.innerText = preset;
         option.value = preset;
         option.selected = preset === oai_settings.bias_preset_selected;
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#openai_logit_bias_preset').append(option);
+        logitBiasPreset?.appendChild(option);
     }
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#openai_logit_bias_preset').trigger('change');
+    if (logitBiasPreset) logitBiasPreset.dispatchEvent(new Event('change'));
 
     setNamesBehaviorControls();
     setContinuePostfixControls();
@@ -4667,8 +4688,7 @@ async function getStatusOpen() {
     }
 
     if (oai_settings.chat_completion_source === chat_completion_sources.CUSTOM) {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('.model_custom_select').empty();
+        document.querySelectorAll('.model_custom_select').forEach(el => el.innerHTML = '');
         // @ts-expect-error TS(2339): Property 'custom_url' does not exist on type '{ re... Remove this comment to see the full error message
         data.custom_url = oai_settings.custom_url;
         // @ts-expect-error TS(2339): Property 'custom_include_headers' does not exist o... Remove this comment to see the full error message
@@ -4791,8 +4811,11 @@ async function saveOpenAIPreset(name, settings, triggerUi = true) {
             option.selected = true;
             option.value = String(openai_settings.length - 1);
             option.innerText = data.name;
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            if (triggerUi) $('#settings_preset_openai').append(option).trigger('change');
+            const settingsPresetOpenai = document.getElementById('settings_preset_openai');
+            if (triggerUi && settingsPresetOpenai) {
+                settingsPresetOpenai.appendChild(option);
+                settingsPresetOpenai.dispatchEvent(new Event('change'));
+            }
         }
     } else {
         // @ts-expect-error TS(2304): Cannot find name 'toastr'.
@@ -4814,9 +4837,8 @@ function onLogitBiasPresetChange() {
     }
 
     oai_settings.bias_preset_selected = value;
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const list = $('.openai_logit_bias_list');
-    list.empty();
+    const list = document.querySelector('.openai_logit_bias_list');
+    if (list) list.innerHTML = '';
 
     for (const entry of preset) {
         if (entry) {
@@ -4869,41 +4891,38 @@ function createLogitBiasListItem(entry) {
         entry.id = uuidv4();
     }
     const id = entry.id;
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const template = $('#openai_logit_bias_template .openai_logit_bias_form').clone();
-    template.data('id', id);
-    $(template[0].querySelector('.openai_logit_bias_text')).val(entry.text).on('input', function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        entry.text = String($(this).val());
+    const template = document.querySelector('#openai_logit_bias_template .openai_logit_bias_form')!.cloneNode(true);
+    template.dataset.id = id;
+    const textInput = template.querySelector('.openai_logit_bias_text') as HTMLInputElement;
+    textInput.value = entry.text;
+    textInput.oninput = function () {
+        entry.text = String(textInput.value);
         biasCache = undefined;
         saveSettingsDebounced();
-    });
-    $(template[0].querySelector('.openai_logit_bias_value')).val(entry.value).on('input', function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const min = Number($(this).attr('min'));
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const max = Number($(this).attr('max'));
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        let value = Number($(this).val());
+    };
+    const valueInput = template.querySelector('.openai_logit_bias_value') as HTMLInputElement;
+    valueInput.value = String(entry.value);
+    valueInput.oninput = function () {
+        const min = Number(valueInput.min);
+        const max = Number(valueInput.max);
+        let value = Number(valueInput.value);
 
         if (value < min) {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(this).val(min);
+            valueInput.value = String(min);
             value = min;
         }
 
         if (value > max) {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(this).val(max);
+            valueInput.value = String(max);
             value = max;
         }
 
         entry.value = value;
         biasCache = undefined;
         saveSettingsDebounced();
-    });
-    $(template[0].querySelector('.openai_logit_bias_remove')).on('click', function () {
-        $(this.closest('.openai_logit_bias_form')).remove();
+    };
+    template.querySelector('.openai_logit_bias_remove')?.addEventListener('click', function () {
+        (template as HTMLElement).closest('.openai_logit_bias_form')?.remove();
         const preset = oai_settings.bias_presets[oai_settings.bias_preset_selected];
         const index = preset.findIndex(item => item.id === id);
         if (index >= 0) {
@@ -4911,8 +4930,7 @@ function createLogitBiasListItem(entry) {
         }
         onLogitBiasPresetChange();
     });
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('.openai_logit_bias_list').prepend(template);
+    document.querySelector('.openai_logit_bias_list')?.prepend(template);
 }
 
 /**
@@ -4948,10 +4966,9 @@ function addLogitBiasPresetOption(name) {
     option.value = name;
     option.selected = true;
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#openai_logit_bias_preset').append(option);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#openai_logit_bias_preset').trigger('change');
+    const logitBiasPreset = document.getElementById('openai_logit_bias_preset');
+    logitBiasPreset?.appendChild(option);
+    if (logitBiasPreset) logitBiasPreset.dispatchEvent(new Event('change'));
 }
 
 /**

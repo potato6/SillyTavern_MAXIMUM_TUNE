@@ -243,7 +243,8 @@ export async function openWelcomeScreen({ force = false, expand = false } = {}) 
         console.debug('Forcing welcome screen open.');
         chat.splice(0, chat.length);
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#chat').empty();
+        const chatEl = document.getElementById('chat');
+        if (chatEl) chatEl.innerHTML = '';
     }
 
     await sendWelcomePanel(recentChats, expand);
@@ -409,8 +410,7 @@ async function sendWelcomePanel(chats, expand = false) {
                     return;
                 }
                 const groupAvatar = getGroupAvatar(group);
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                $(avatar).replaceWith(groupAvatar);
+                    avatar.replaceWith(groupAvatar);
             }
         });
         fragment.querySelectorAll('.recentChat .renameChat').forEach((renameButton) => {
