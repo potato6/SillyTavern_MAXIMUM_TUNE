@@ -2622,40 +2622,61 @@ function stopAutoModeGeneration() {
  */
 function doCurMemberListPopout() {
     //repurposes the zoomed avatar template to server as a floating group member list
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    if ($('#groupMemberListPopout').length === 0) {
+    if (!document.getElementById('groupMemberListPopout')) {
         console.debug('did not see popout yet, creating');
         const memberListClone = this.parentElement?.parentElement?.querySelector('.inline-drawer-content')?.innerHTML ?? '';
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const template = $('#zoomed_avatar_template').html();
+        const templateElement = document.getElementById('zoomed_avatar_template');
+        let newElement = null;
+        if (templateElement instanceof HTMLTemplateElement) {
+            newElement = templateElement.content.firstElementChild?.cloneNode(true);
+        } else if (templateElement) {
+            newElement = templateElement.firstElementChild?.cloneNode(true);
+        }
+        if (!(newElement instanceof HTMLElement)) {
+            console.error('Zoomed avatar template is empty');
+            return;
+        }
         const controlBarHtml = `<div class="panelControlBar flex-container">
         <div id="groupMemberListPopoutheader" class="fa-solid fa-grip drag-grabber hoverglow"></div>
         <div id="groupMemberListPopoutClose" class="fa-solid fa-circle-xmark hoverglow"></div>
     </div>`;
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const newElement = $(template);
 
-        newElement.attr('id', 'groupMemberListPopout');
-        newElement[0].classList.remove('zoomed_avatar');
-        newElement[0].classList.add('draggable');
-        newElement.empty()
-            .append(controlBarHtml)
-            .append(memberListClone);
+        newElement.setAttribute('id', 'groupMemberListPopout');
+        newElement.classList.remove('zoomed_avatar');
+        newElement.classList.add('draggable');
+        newElement.innerHTML = '';
+        newElement.insertAdjacentHTML('beforeend', controlBarHtml);
+        newElement.insertAdjacentHTML('beforeend', memberListClone);
 
         // Remove pagination from popout
-        $(newElement[0].querySelector('.group_pagination')).empty();
+        const paginationEl = newElement.querySelector('.group_pagination');
+        if (paginationEl) paginationEl.innerHTML = '';
 
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#movingDivs').append(newElement);
+        document.getElementById('movingDivs')?.appendChild(newElement);
         loadMovingUIState();
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#groupMemberListPopout').fadeIn(animation_duration);
+
+        if (animation_duration > 0) {
+            newElement.style.opacity = '0';
+            newElement.style.transition = `opacity ${animation_duration}ms ease`;
+            newElement.offsetHeight;
+            newElement.style.opacity = '1';
+        }
+
         dragElement(newElement);
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#groupMemberListPopoutClose').off('click').on('click', function () {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#groupMemberListPopout').fadeOut(animation_duration, () => { $('#groupMemberListPopout').remove(); });
-        });
+        const closeBtn = document.getElementById('groupMemberListPopoutClose');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', function () {
+                if (animation_duration > 0) {
+                    newElement.style.transition = `opacity ${animation_duration}ms ease`;
+                    newElement.style.opacity = '0';
+                    setTimeout(() => {
+                        newElement.remove();
+                    }, animation_duration);
+                } else {
+                    newElement.remove();
+                }
+            });
+        }
 
         // Re-add pagination not working in popout
         printGroupMembers();

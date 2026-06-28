@@ -34,7 +34,7 @@ export class ButtonUi {
             document.body.append(this.render());
             loadMovingUIState();
             $(this.render()).fadeIn(animation_duration);
-            dragElement($(this.render()));
+            dragElement(this.render());
         } else {
             const sendForm = document.querySelector('#send_form');
             if (sendForm.children.length > 0) {

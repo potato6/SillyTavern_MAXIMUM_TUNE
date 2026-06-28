@@ -548,7 +548,7 @@ async function makeMovable(url) {
 
     loadMovingUIState();
     $(`.draggable[forChar="${id}"]`).css('display', 'block');
-    dragElement(newElement);
+    dragElement(newElement[0]);
     newElement.transition({
         opacity: 1,
         duration: animation_duration,
@@ -690,9 +690,8 @@ function makeDragImg(id, url) {
     // Step 4: Call dragElement and loadMovingUIState
     const appendedElement = document.getElementById(uniqueId);
     if (appendedElement) {
-        var elmntName = $(appendedElement);
         loadMovingUIState();
-        dragElement(elmntName);
+        dragElement(appendedElement);
 
         // Prevent dragging the image
         $(`#${uniqueId} img`).on('dragstart', (e) => {

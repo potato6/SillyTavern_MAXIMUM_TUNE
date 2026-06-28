@@ -987,29 +987,46 @@ function setMemoryContext(value, saveToMessage, index = null) {
 function doPopout(e) {
     const target = e.target;
     //repurposes the zoomed avatar template to server as a floating div
-    if ($('#summaryExtensionPopout').length === 0) {
+    if (!document.getElementById('summaryExtensionPopout')) {
         console.debug('did not see popout yet, creating');
-        const originalHTMLClone = $(target).parent().parent().parent().find('.inline-drawer-content').html();
-        const originalElement = $(target).parent().parent().parent().find('.inline-drawer-content');
-        const template = $('#zoomed_avatar_template').html();
+        const originalElement = target.closest('.inline-drawer');
+        const originalHTMLClone = originalElement?.querySelector('.inline-drawer-content')?.innerHTML ?? '';
+        const templateElement = document.getElementById('zoomed_avatar_template');
+        let newElement = null;
+        if (templateElement instanceof HTMLTemplateElement) {
+            newElement = templateElement.content.firstElementChild?.cloneNode(true);
+        } else if (templateElement) {
+            newElement = templateElement.firstElementChild?.cloneNode(true);
+        }
+        if (!(newElement instanceof HTMLElement)) {
+            console.error('Zoomed avatar template is empty');
+            return;
+        }
         const controlBarHtml = `<div class="panelControlBar flex-container">
         <div id="summaryExtensionPopoutheader" class="fa-solid fa-grip drag-grabber hoverglow"></div>
         <div id="summaryExtensionPopoutClose" class="fa-solid fa-circle-xmark hoverglow dragClose"></div>
     </div>`;
-        const newElement = $(template);
-        newElement.attr('id', 'summaryExtensionPopout')
-            .css('opacity', 0)
-            .removeClass('zoomed_avatar')
-            .addClass('draggable')
-            .empty();
-        const prevSummaryBoxContents = $('#memory_contents').val().toString(); //copy summary box before emptying
-        originalElement.empty();
-        originalElement.html('<div class="flex-container alignitemscenter justifyCenter wide100p"><small>Currently popped out</small></div>');
-        newElement.append(controlBarHtml).append(originalHTMLClone);
-        $('#movingDivs').append(newElement);
-        newElement.transition({ opacity: 1, duration: animation_duration, easing: animation_easing });
-        $('#summaryExtensionDrawerContents').addClass('scrollableInnerFull');
-        setMemoryContext(prevSummaryBoxContents, false); //paste prev summary box contents into popout box
+        newElement.setAttribute('id', 'summaryExtensionPopout');
+        newElement.style.opacity = '0';
+        newElement.classList.remove('zoomed_avatar');
+        newElement.classList.add('draggable');
+        newElement.innerHTML = '';
+        const prevSummaryBoxContents = document.getElementById('memory_contents')?.value?.toString() ?? '';
+        if (originalElement) {
+            const contentDiv = originalElement.querySelector('.inline-drawer-content');
+            if (contentDiv) {
+                contentDiv.innerHTML = '<div class="flex-container alignitemscenter justifyCenter wide100p"><small>Currently popped out</small></div>';
+            }
+        }
+        newElement.insertAdjacentHTML('beforeend', controlBarHtml);
+        newElement.insertAdjacentHTML('beforeend', originalHTMLClone);
+        document.getElementById('movingDivs')?.appendChild(newElement);
+        newElement.style.transition = `opacity ${animation_duration}ms ease`;
+        newElement.offsetHeight;
+        newElement.style.opacity = '1';
+        const drawerContents = document.getElementById('summaryExtensionDrawerContents');
+        if (drawerContents) drawerContents.classList.add('scrollableInnerFull');
+        setMemoryContext(prevSummaryBoxContents, false);
         setupListeners();
         loadSettings();
         loadMovingUIState();
@@ -1017,16 +1034,37 @@ function doPopout(e) {
         dragElement(newElement);
 
         //setup listener for close button to restore extensions menu
-        $('#summaryExtensionPopoutClose').off('click').on('click', function () {
-            $('#summaryExtensionDrawerContents').removeClass('scrollableInnerFull');
-            const summaryPopoutHTML = $('#summaryExtensionDrawerContents');
-            $('#summaryExtensionPopout').fadeOut(animation_duration, () => {
-                originalElement.empty();
-                originalElement.append(summaryPopoutHTML);
-                $('#summaryExtensionPopout').remove();
+        const closeBtn = document.getElementById('summaryExtensionPopoutClose');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', function () {
+                const drawerContents = document.getElementById('summaryExtensionDrawerContents');
+                if (drawerContents) drawerContents.classList.remove('scrollableInnerFull');
+                if (animation_duration > 0) {
+                    newElement.style.transition = `opacity ${animation_duration}ms ease`;
+                    newElement.style.opacity = '0';
+                    setTimeout(() => {
+                        if (originalElement) {
+                            const contentDiv = originalElement.querySelector('.inline-drawer-content');
+                            if (contentDiv) {
+                                contentDiv.innerHTML = '';
+                                contentDiv.append(drawerContents);
+                            }
+                        }
+                        newElement.remove();
+                    }, animation_duration);
+                } else {
+                    if (originalElement) {
+                        const contentDiv = originalElement.querySelector('.inline-drawer-content');
+                        if (contentDiv) {
+                            contentDiv.innerHTML = '';
+                            contentDiv.append(drawerContents);
+                        }
+                    }
+                    newElement.remove();
+                }
             });
             loadSettings();
-        });
+        }
     } else {
         console.debug('saw existing popout, removing');
         $('#summaryExtensionPopout').fadeOut(animation_duration, () => { $('#summaryExtensionPopoutClose').trigger('click'); });

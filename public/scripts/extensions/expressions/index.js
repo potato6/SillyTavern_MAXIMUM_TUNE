@@ -237,7 +237,7 @@ async function visualNovelSetCharacterSprites(vnContainer, spriteFolderName, exp
             template.attr('data-avatar', avatar);
             template.find('.drag-grabber').attr('id', `expression-${avatar}header`);
             $('#visual-novel-wrapper').append(template);
-            dragElement($(template[0]));
+            dragElement(template[0]);
             template.toggleClass('hidden', !spriteFile);
             img = template.find('img');
             await setImage(img, spriteFile?.imageSrc || '');
@@ -2256,7 +2256,7 @@ export async function init() {
     const updateFunction = wrapper.update.bind(wrapper);
     setInterval(updateFunction, UPDATE_INTERVAL);
     moduleWorker();
-    dragElement($('#expression-holder'));
+    dragElement(document.getElementById('expression-holder'));
     eventSource.on(event_types.CHAT_CHANGED, () => {
         // character changed
         removeExpression();

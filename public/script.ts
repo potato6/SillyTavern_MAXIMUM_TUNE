@@ -13357,14 +13357,22 @@ jQuery(async function () {
         resetMovableStyles(drawerId);
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document).on('click', '.mes .avatar', function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const messageElement = $(this).closest('.mes');
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const thumbURL = $(this).children('img').attr('src');
+    document.addEventListener('click', function (e) {
+        if (!(e.target instanceof HTMLElement)) return;
+        const avatar = e.target.closest('.avatar');
+        if (!avatar) return;
+        const messageElement = avatar.closest('.mes');
+        if (!messageElement) return;
+        const thumbURL = avatar.querySelector('img')?.getAttribute('src') ?? '';
         const charsPath = '/characters/';
-        const targetAvatarImg = thumbURL.substring(thumbURL.lastIndexOf('=') + 1);
+        const targetAvatarImg = (() => {
+            try {
+                const url = new URL(thumbURL, window.location.origin);
+                return url.searchParams.get('file') ?? thumbURL.substring(thumbURL.lastIndexOf('/') + 1);
+            } catch {
+                return thumbURL.substring(thumbURL.lastIndexOf('=') + 1);
+            }
+        })();
         const charname = targetAvatarImg.replace('.png', '');
         const isValidCharacter = characters.some(x => x.avatar === decodeURIComponent(targetAvatarImg));
 
@@ -13381,44 +13389,61 @@ jQuery(async function () {
 
         const avatarSrc = (isDataURL(thumbURL) || /^\/?img\/(?:.+)/.test(thumbURL)) ? thumbURL : charsPath + targetAvatarImg;
         const zoomedAvatarSelector = `.zoomed_avatar[forChar="${charname}"]`;
-        if (document.querySelector(zoomedAvatarSelector)) {
+        const existingZoomedAvatar = document.querySelector(zoomedAvatarSelector);
+        if (existingZoomedAvatar) {
             console.debug('removing container as it already existed');
-            $(zoomedAvatarSelector).fadeOut(animation_duration, () => {
-                document.querySelectorAll(zoomedAvatarSelector).forEach(el => el.remove());
-            });
+            if (animation_duration > 0) {
+                existingZoomedAvatar.style.transition = `opacity ${animation_duration}ms ease`;
+                existingZoomedAvatar.style.opacity = '0';
+                setTimeout(() => {
+                    document.querySelectorAll(zoomedAvatarSelector).forEach(el => el.remove());
+                }, animation_duration);
+            } else {
+                existingZoomedAvatar.remove();
+            }
         } else {
             console.debug('making new container from template');
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const template = $('#zoomed_avatar_template').html();
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const newElement = $(template);
-            newElement.attr('forChar', charname);
-            newElement.attr('id', `zoomFor_${charname}`);
-            newElement.addClass('draggable');
-            newElement.find('.drag-grabber').attr('id', `zoomFor_${charname}header`);
-
+            const templateElement = document.getElementById('zoomed_avatar_template');
+            let newElement = null;
+            if (templateElement instanceof HTMLTemplateElement) {
+                newElement = templateElement.content.firstElementChild?.cloneNode(true);
+            } else if (templateElement) {
+                newElement = templateElement.firstElementChild?.cloneNode(true);
+            }
+            if (!(newElement instanceof HTMLElement)) {
+                console.error('Zoomed avatar template is empty');
+                return;
+            }
+            newElement.setAttribute('forChar', charname);
+            newElement.setAttribute('id', `zoomFor_${charname}`);
+            newElement.classList.add('draggable');
+            newElement.querySelector('.drag-grabber')?.setAttribute('id', `zoomFor_${charname}header`);
             document.body.append(newElement);
-            newElement.fadeIn(animation_duration);
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const zoomedAvatarImgElement = $(`.zoomed_avatar[forChar="${charname}"] img`);
-            if (messageElement.attr('is_user') == 'true' || (messageElement.attr('is_system') == 'true' && !isValidCharacter)) {
-                //handle user and system avatars
+
+            if (animation_duration > 0) {
+                newElement.style.opacity = '0';
+                newElement.style.transition = `opacity ${animation_duration}ms ease`;
+                newElement.offsetHeight;
+                newElement.style.opacity = '1';
+            }
+
+            const zoomedAvatarImgElement = newElement.querySelector('img');
+            if (messageElement.getAttribute('is_user') == 'true' || (messageElement.getAttribute('is_system') == 'true' && !isValidCharacter)) {
                 const isValidPersona = decodeURIComponent(targetAvatarImg) in power_user.personas;
                 if (isValidPersona) {
                     const personaSrc = getUserAvatar(targetAvatarImg);
-                    zoomedAvatarImgElement.attr('src', personaSrc);
-                    zoomedAvatarImgElement.attr('data-izoomify-url', personaSrc);
+                    zoomedAvatarImgElement.src = personaSrc;
+                    zoomedAvatarImgElement.setAttribute('data-izoomify-url', personaSrc);
                 } else {
-                    zoomedAvatarImgElement.attr('src', thumbURL);
-                    zoomedAvatarImgElement.attr('data-izoomify-url', thumbURL);
+                    zoomedAvatarImgElement.src = thumbURL;
+                    zoomedAvatarImgElement.setAttribute('data-izoomify-url', thumbURL);
                 }
-            } else if (messageElement.attr('is_user') == 'false') { //handle char avatars
-                zoomedAvatarImgElement.attr('src', avatarSrc);
-                zoomedAvatarImgElement.attr('data-izoomify-url', avatarSrc);
+            } else if (messageElement.getAttribute('is_user') == 'false') {
+                zoomedAvatarImgElement.src = avatarSrc;
+                zoomedAvatarImgElement.setAttribute('data-izoomify-url', avatarSrc);
             }
             loadMovingUIState();
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(`.zoomed_avatar[forChar="${charname}"]`).css('display', 'flex');
+            newElement.style.display = 'flex';
             dragElement(newElement);
 
             if (power_user.zoomed_avatar_magnification) {
@@ -13426,16 +13451,23 @@ jQuery(async function () {
                 $('.zoomed_avatar_container').izoomify();
             }
 
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('.zoomed_avatar, .zoomed_avatar .dragClose').on('click touchend', (e) => {
+            const closeHandler = function (e) {
                 if (e.target.closest('.dragClose')) {
-                    $(`.zoomed_avatar[forChar="${charname}"]`).fadeOut(animation_duration, () => {
-                        document.querySelectorAll(`.zoomed_avatar[forChar="${charname}"]`).forEach(el => el.remove());
-                    });
+                    if (animation_duration > 0) {
+                        newElement.style.transition = `opacity ${animation_duration}ms ease`;
+                        newElement.style.opacity = '0';
+                        setTimeout(() => {
+                            document.querySelectorAll(zoomedAvatarSelector).forEach(el => el.remove());
+                        }, animation_duration);
+                    } else {
+                        newElement.remove();
+                    }
                 }
-            });
+            };
+            newElement.addEventListener('click', closeHandler);
+            newElement.addEventListener('touchend', closeHandler);
 
-            zoomedAvatarImgElement.on('dragstart', (e) => {
+            zoomedAvatarImgElement.addEventListener('dragstart', (e) => {
                 console.log('saw drag on avatar!');
                 e.preventDefault();
                 return false;

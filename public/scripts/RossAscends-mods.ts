@@ -521,13 +521,11 @@ function saveUserInput() {
 }
 const saveUserInputDebounced = debounce(saveUserInput);
 
-// Make the DIV element draggable:
-
 /**
  * Make the given element draggable. This is used for Moving UI.
- * @param {JQuery} $elmnt - The element to make draggable.
+ * @param {HTMLElement} elmnt - The element to make draggable.
  */
-export function dragElement($elmnt) {
+export function dragElement(elmnt) {
     let actionType = null; // "drag" or "resize"
     let isMouseDown = false;
 
@@ -535,13 +533,8 @@ export function dragElement($elmnt) {
     let height, width, top, left, right, bottom,
         maxX, maxY, winHeight, winWidth;
 
-    const elmntName = $elmnt.attr('id');
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const elmntNameEscaped = $.escapeSelector(elmntName);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const $elmntHeader = $(`#${elmntNameEscaped}header`);
+    const elmntName = elmnt.id;
 
-    // Helper: Save position/size to state and emit events
     /**
      *
      */
@@ -560,26 +553,26 @@ export function dragElement($elmnt) {
         saveSettingsDebounced();
     }
 
-    // Helper: Clamp element within viewport
     /**
      *
      */
     function clampToViewport() {
-        if (top <= 0) $elmnt[0].style.setProperty('top', '0px', 'important');
-        else if (maxY >= winHeight) $elmnt[0].style.setProperty('top', (winHeight - maxY + top - 1) + 'px', 'important');
-        if (left <= 0) $elmnt[0].style.setProperty('left', '0px', 'important');
-        else if (maxX >= winWidth) $elmnt[0].style.setProperty('left', (winWidth - maxX + left - 1) + 'px', 'important');
+        if (top <= 0) elmnt.style.setProperty('top', '0px', 'important');
+        else if (maxY >= winHeight) elmnt.style.setProperty('top', (winHeight - maxY + top - 1) + 'px', 'important');
+        if (left <= 0) elmnt.style.setProperty('left', '0px', 'important');
+        else if (maxX >= winWidth) elmnt.style.setProperty('left', (winWidth - maxX + left - 1) + 'px', 'important');
     }
 
-    // Observer for style changes (position/size)
     const observer = new MutationObserver((mutations) => {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const $target = $(mutations[0].target);
+        const target = mutations[0].target;
+        if (!(target instanceof HTMLElement)) {
+            observer.disconnect();
+            return;
+        }
         if (
-            !$target.is(':visible') ||
-            mutations[0].target.classList.contains('resizing') ||
-            $target.height() < 50 ||
-            $target.width() < 50 ||
+            target.offsetHeight < 50 ||
+            target.offsetWidth < 50 ||
+            target.classList.contains('resizing') ||
             power_user.movingUI === false ||
             isMobile() ||
             !isMouseDown
@@ -588,8 +581,7 @@ export function dragElement($elmnt) {
             return;
         }
 
-        const element = /** @type {HTMLElement} */ ($target[0]);
-        const style = getComputedStyle(element);
+        const style = getComputedStyle(target);
         height = parseInt(style.height);
         width = parseInt(style.width);
         top = parseInt(style.top);
@@ -601,54 +593,44 @@ export function dragElement($elmnt) {
         winWidth = window.innerWidth;
         winHeight = window.innerHeight;
 
-        // Prepare state object if missing
         if (!power_user.movingUIState[elmntName]) power_user.movingUIState[elmntName] = {};
 
         if (actionType === 'resize') {
             const containerAspectRatio = height / width;
-            if ($elmnt.attr('id').startsWith('zoomFor_')) {
-                const zoomedAvatarImage = $elmnt.find('.zoomed_avatar_img');
-                const imgHeight = zoomedAvatarImage.height();
-                const imgWidth = zoomedAvatarImage.width();
-                const imageAspectRatio = imgHeight / imgWidth;
-                if (containerAspectRatio !== imageAspectRatio) {
-                    $elmnt.css('width', $elmnt.width());
-                    $elmnt.css('height', $elmnt.width() * imageAspectRatio);
-                }
-                if (top + $elmnt.height() >= winHeight) {
-                     $elmnt[0].style.setProperty('height', (winHeight - top - 1) + 'px', 'important');
-                     $elmnt[0].style.setProperty('width', ((winHeight - top - 1) / imageAspectRatio) + 'px', 'important');
-                }
-                if (left + $elmnt.width() >= winWidth) {
-                     $elmnt[0].style.setProperty('width', (winWidth - left - 1) + 'px', 'important');
-                     $elmnt[0].style.setProperty('height', ((winWidth - left - 1) * imageAspectRatio) + 'px', 'important');
+            if (elmnt.id.startsWith('zoomFor_')) {
+                const zoomedAvatarImage = elmnt.querySelector('.zoomed_avatar_img');
+                if (zoomedAvatarImage instanceof HTMLElement) {
+                    const imgHeight = zoomedAvatarImage.offsetHeight;
+                    const imgWidth = zoomedAvatarImage.offsetWidth;
+                    if (imgWidth > 0) {
+                        const imageAspectRatio = imgHeight / imgWidth;
+                        if (containerAspectRatio !== imageAspectRatio) {
+                            elmnt.style.width = elmnt.offsetWidth + 'px';
+                            elmnt.style.height = elmnt.offsetWidth * imageAspectRatio + 'px';
+                        }
+                        if (top + elmnt.offsetHeight >= winHeight) {
+                            elmnt.style.setProperty('height', (winHeight - top - 1) + 'px', 'important');
+                            elmnt.style.setProperty('width', ((winHeight - top - 1) / imageAspectRatio) + 'px', 'important');
+                        }
+                        if (left + elmnt.offsetWidth >= winWidth) {
+                            elmnt.style.setProperty('width', (winWidth - left - 1) + 'px', 'important');
+                            elmnt.style.setProperty('height', ((winWidth - left - 1) * imageAspectRatio) + 'px', 'important');
+                        }
+                    }
                 }
             } else {
-                 if (top + $elmnt.height() >= winHeight) $elmnt[0].style.setProperty('height', (winHeight - top - 1) + 'px', 'important');
-                 if (left + $elmnt.width() >= winWidth) $elmnt[0].style.setProperty('width', (winWidth - left - 1) + 'px', 'important');
+                if (top + elmnt.offsetHeight >= winHeight) elmnt.style.setProperty('height', (winHeight - top - 1) + 'px', 'important');
+                if (left + elmnt.offsetWidth >= winWidth) elmnt.style.setProperty('width', (winWidth - left - 1) + 'px', 'important');
             }
-            //if (top < topBarLastY && maxX >= topBarFirstX && left <= topBarFirstX) {
-            //    $elmnt.css('width', width - 1 + 'px');
-            // }
-             $elmnt[0].style.setProperty('left', left + 'px', 'important');
-             $elmnt[0].style.setProperty('top', top + 'px', 'important');
-            $elmnt.off('mouseup').on('mouseup', () => {
-                if (
-                    power_user.movingUIState[elmntName].width === $elmnt.width() &&
-                    power_user.movingUIState[elmntName].height === $elmnt.height()
-                ) return;
-                savePositionAndSize();
-                observer.disconnect();
-            });
+            elmnt.style.setProperty('left', left + 'px', 'important');
+            elmnt.style.setProperty('top', top + 'px', 'important');
         } else if (actionType === 'drag') {
             clampToViewport();
         }
 
-        // Always update position in state
         savePositionAndSize();
     });
 
-    // Mouse event handlers
     /**
      *
      * @param e
@@ -661,10 +643,8 @@ export function dragElement($elmnt) {
             pos3 = e.clientX;
             pos4 = e.clientY;
         }
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(document).on('mouseup', closeDragElement);
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(document).on('mousemove', elementDrag);
+        document.addEventListener('mouseup', closeDragElement);
+        document.addEventListener('mousemove', elementDrag);
     }
 
     /**
@@ -678,12 +658,13 @@ export function dragElement($elmnt) {
         pos2 = pos4 - e.clientY;
         pos3 = e.clientX;
         pos4 = e.clientY;
-        $elmnt.attr('data-dragged', 'true');
-        $elmnt[0].style.setProperty('left', ($elmnt.offset().left - pos1) + 'px', 'important');
-        $elmnt[0].style.setProperty('top', ($elmnt.offset().top - pos2) + 'px', 'important');
-        $elmnt[0].style.setProperty('margin', 'unset', 'important');
-        $elmnt[0].style.setProperty('height', height + 'px', 'important');
-        $elmnt[0].style.setProperty('width', width + 'px', 'important');
+        elmnt.setAttribute('data-dragged', 'true');
+        const rect = elmnt.getBoundingClientRect();
+        elmnt.style.setProperty('left', (rect.left - pos1) + 'px', 'important');
+        elmnt.style.setProperty('top', (rect.top - pos2) + 'px', 'important');
+        elmnt.style.setProperty('margin', 'unset', 'important');
+        elmnt.style.setProperty('height', height + 'px', 'important');
+        elmnt.style.setProperty('width', width + 'px', 'important');
     }
 
     /**
@@ -692,44 +673,44 @@ export function dragElement($elmnt) {
     function closeDragElement() {
         isMouseDown = false;
         actionType = null;
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(document).off('mouseup', closeDragElement);
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(document).off('mousemove', elementDrag);
-        $elmnt.attr('data-dragged', 'false');
+        document.removeEventListener('mouseup', closeDragElement);
+        document.removeEventListener('mousemove', elementDrag);
+        elmnt.setAttribute('data-dragged', 'false');
         observer.disconnect();
         savePositionAndSize();
     }
 
-    // Setup event listeners
-    if ($elmntHeader.length) {
-        $elmntHeader.off('mousedown').on('mousedown', (e) => {
+    function onMouseUp() {
+        isMouseDown = false;
+        actionType = null;
+        observer.disconnect();
+    }
+
+    const elmntHeader = document.getElementById(elmntName + 'header');
+    if (elmntHeader) {
+        elmntHeader.addEventListener('mousedown', (e) => {
             if (e.target.classList.contains('drag-grabber')) {
                 actionType = 'drag';
                 isMouseDown = true;
-                observer.observe($elmnt[0], { attributes: true, attributeFilter: ['style'] });
+                observer.observe(elmnt, { attributes: true, attributeFilter: ['style'] });
                 dragMouseDown(e);
             }
         });
     }
 
-    $elmnt.off('mousedown').on('mousedown', (e) => {
-        const rect = $elmnt[0].getBoundingClientRect();
+    elmnt.addEventListener('mousedown', (e) => {
+        const rect = elmnt.getBoundingClientRect();
         const resizeMargin = 16;
         const isNearRight = e.clientX > rect.right - resizeMargin;
         const isNearBottom = e.clientY > rect.bottom - resizeMargin;
         if (isNearRight && isNearBottom) {
             actionType = 'resize';
             isMouseDown = true;
-            observer.observe($elmnt[0], { attributes: true, attributeFilter: ['style'] });
+            observer.observe(elmnt, { attributes: true, attributeFilter: ['style'] });
         }
     });
 
-    $elmnt.off('mouseup').on('mouseup', () => {
-        isMouseDown = false;
-        actionType = null;
-        observer.disconnect();
-    });
+    elmnt.addEventListener('mouseup', onMouseUp);
 }
 
 /**
@@ -738,20 +719,13 @@ export function dragElement($elmnt) {
 export async function initMovingUI() {
     if (!isMobile() && power_user.movingUI === true) {
         console.debug('START MOVING UI');
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        dragElement($('#sheld'));
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        dragElement($('#left-nav-panel'));
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        dragElement($('#right-nav-panel'));
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        dragElement($('#WorldInfo'));
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        dragElement($('#floatingPrompt'));
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        dragElement($('#logprobsViewer'));
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        dragElement($('#cfgConfig'));
+        dragElement(document.getElementById('sheld'));
+        dragElement(document.getElementById('left-nav-panel'));
+        dragElement(document.getElementById('right-nav-panel'));
+        dragElement(document.getElementById('WorldInfo'));
+        dragElement(document.getElementById('floatingPrompt'));
+        dragElement(document.getElementById('logprobsViewer'));
+        dragElement(document.getElementById('cfgConfig'));
     }
 }
 
