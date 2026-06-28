@@ -13380,7 +13380,7 @@ jQuery(async function () {
         if (!power_user.movingUI) {
             document.querySelectorAll('.zoomed_avatar').forEach(function (el) {
                 const currentForChar = el.getAttribute('forChar');
-                if (currentForChar !== charname && typeof currentForChar !== 'undefined') {
+                if (currentForChar !== null && currentForChar !== charname) {
                     console.debug(`Removing zoomed avatar for character: ${currentForChar}`);
                     el.remove();
                 }
