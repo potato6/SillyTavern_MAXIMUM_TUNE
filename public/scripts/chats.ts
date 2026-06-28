@@ -157,10 +157,9 @@ export async function hideChatMessageRange(start, end, unhide, nameFitler = null
         message.is_system = hide;
 
         // Also toggle "hidden" state for all visible messages
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const messageBlock = $(`.mes[mesid="${messageId}"]`);
-        if (!messageBlock.length) continue;
-        messageBlock.attr('is_system', String(hide));
+        const messageBlock = document.querySelector(`.mes[mesid="${messageId}"]`);
+        if (!messageBlock) continue;
+        messageBlock.setAttribute('is_system', String(hide));
     }
 
     // Reload swipes. Useful when a last message is hidden.
@@ -266,8 +265,7 @@ export async function populateFileAttachment(message, inputId = 'file_form_input
         // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.error(t`Either the file is corrupted or its format is not supported.`, t`Could not upload the file`);
     } finally {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#file_form').trigger('reset');
+        document.getElementById('file_form')?.reset();
     }
 }
 
@@ -380,8 +378,7 @@ async function onFileAttach(fileList) {
         if (!isValid) {
             // @ts-expect-error TS(2304): Cannot find name 'toastr'.
             toastr.warning(t`File ${file.name} is not supported.`);
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#file_form').trigger('reset');
+            document.getElementById('file_form')?.reset();
             return;
         }
     }
@@ -389,19 +386,24 @@ async function onFileAttach(fileList) {
     const name = fileList.length === 1 ? fileList[0].name : t`${fileList.length} files selected`;
     const size = [...fileList].reduce((acc, file) => acc + file.size, 0);
     const title = [...fileList].map(x => x.name).join('\n');
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#file_form .file_name').text(name).attr('title', title);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#file_form .file_size').text(humanFileSize(size)).attr('title', size);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#file_form').removeClass('displayNone');
+    
+    const fileNameEl = document.querySelector('#file_form .file_name');
+    if (fileNameEl) {
+        fileNameEl.textContent = name;
+        fileNameEl.title = title;
+    }
+    const fileSizeEl = document.querySelector('#file_form .file_size');
+    if (fileSizeEl) {
+        fileSizeEl.textContent = humanFileSize(size);
+        fileSizeEl.title = size;
+    }
+    document.getElementById('file_form')?.classList.remove('displayNone');
 
     // Reset form on chat change (if not on a welcome screen)
     const currentChatId = getCurrentChatId();
     if (currentChatId) {
         eventSource.once(event_types.CHAT_CHANGED, () => {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#file_form').trigger('reset');
+            document.getElementById('file_form')?.reset();
         });
     }
 }
@@ -493,11 +495,13 @@ function embedMessageFile(messageId, messageBlock) {
         return;
     }
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#embed_file_input')
-        .off('change')
-        .on('change', parseAndUploadEmbed)
-        .trigger('click');
+    const embedInput = document.getElementById('embed_file_input');
+    if (embedInput instanceof HTMLInputElement) {
+        const clonedInput = embedInput.cloneNode(true);
+        embedInput.parentNode.replaceChild(clonedInput, embedInput);
+        clonedInput.addEventListener('change', parseAndUploadEmbed);
+        clonedInput.click();
+    }
 
     /**
      *
@@ -513,8 +517,7 @@ function embedMessageFile(messageId, messageBlock) {
             if (!isValid) {
                 // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                 toastr.warning(t`File ${file.name} is not supported.`);
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                $('#file_form').trigger('reset');
+                document.getElementById('file_form')?.reset();
                 return;
             }
         }
@@ -761,26 +764,28 @@ async function openGlobalStylesPreferenceDialog() {
     const preference = new StylesPreference(entityId);
     const currentValue = preference.get();
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const template = $(await renderTemplateAsync('globalStylesPreference'));
+    const templateHTML = await renderTemplateAsync('globalStylesPreference');
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = templateHTML;
+    const template = tempDiv.firstElementChild;
 
-    const allowedRadio = template.find('#global_styles_allowed');
-    const forbiddenRadio = template.find('#global_styles_forbidden');
+    const allowedRadio = template.querySelector('#global_styles_allowed');
+    const forbiddenRadio = template.querySelector('#global_styles_forbidden');
 
-    allowedRadio.on('change', () => {
+    allowedRadio.addEventListener('change', () => {
         preference.set(true);
-        allowedRadio.prop('checked', true);
-        forbiddenRadio.prop('checked', false);
+        allowedRadio.checked = true;
+        forbiddenRadio.checked = false;
     });
 
-    forbiddenRadio.on('change', () => {
+    forbiddenRadio.addEventListener('change', () => {
         preference.set(false);
-        allowedRadio.prop('checked', false);
-        forbiddenRadio.prop('checked', true);
+        allowedRadio.checked = false;
+        forbiddenRadio.checked = true;
     });
 
     const currentPreferenceRadio = currentValue ? allowedRadio : forbiddenRadio;
-    template.find(currentPreferenceRadio).prop('checked', true);
+    currentPreferenceRadio.checked = true;
 
     await callGenericPopup(template, POPUP_TYPE.TEXT, '', { wide: false, large: false });
 
@@ -788,7 +793,7 @@ async function openGlobalStylesPreferenceDialog() {
     const newValue = preference.get();
     if (newValue !== currentValue) {
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#rm_button_selected_ch').trigger('click');
+        document.getElementById('rm_button_selected_ch')?.click();
         setGlobalStylesButtonClass(newValue);
     }
 }
@@ -814,9 +819,14 @@ async function checkForCreatorNotesStyles() {
     const preference = new StylesPreference(avatarId);
     const hasPreference = preference.exists();
     if (!hasPreference) {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const template = $(await renderTemplateAsync('globalStylesPopup'));
-        template.find('textarea').val(styleContents);
+        const templateHTML = await renderTemplateAsync('globalStylesPopup');
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = templateHTML;
+        const template = tempDiv.firstElementChild;
+        
+        const textarea = template.querySelector('textarea');
+        if (textarea) textarea.value = styleContents;
+
         const confirmResult = await callGenericPopup(template, POPUP_TYPE.CONFIRM, '', {
             wide: false,
             large: false,
@@ -837,7 +847,7 @@ async function checkForCreatorNotesStyles() {
         }
 
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#rm_button_selected_ch').trigger('click');
+        document.getElementById('rm_button_selected_ch')?.click();
     }
 
     const currentPreference = preference.get();
@@ -849,11 +859,10 @@ async function checkForCreatorNotesStyles() {
  * @param {boolean|null} state State of the button
  */
 function setGlobalStylesButtonClass(state) {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const button = $('#creators_note_styles_button');
-    button.toggleClass('empty', state === null);
-    button.toggleClass('allowed', state === true);
-    button.toggleClass('forbidden', state === false);
+    const button = document.getElementById('creators_note_styles_button');
+    button?.classList.toggle('empty', state === null);
+    button?.classList.toggle('allowed', state === true);
+    button?.classList.toggle('forbidden', state === false);
 }
 
 /**
@@ -887,17 +896,25 @@ async function openExternalMediaOverridesDialog() {
         return;
     }
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const template = $(await renderTemplateAsync('forbidMedia'));
-    template.find('.forbid_media_global_state_forbidden').toggle(power_user.forbid_external_media);
-    template.find('.forbid_media_global_state_allowed').toggle(!power_user.forbid_external_media);
+    const templateHTML = await renderTemplateAsync('forbidMedia');
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = templateHTML;
+    const template = tempDiv.firstElementChild;
+
+    const forbiddenEl = template.querySelector('.forbid_media_global_state_forbidden');
+    if (forbiddenEl) forbiddenEl.style.display = power_user.forbid_external_media ? 'block' : 'none';
+    const allowedEl = template.querySelector('.forbid_media_global_state_allowed');
+    if (allowedEl) allowedEl.style.display = !power_user.forbid_external_media ? 'block' : 'none';
 
     if (power_user.external_media_allowed_overrides.includes(entityId)) {
-        template.find('#forbid_media_override_allowed').prop('checked', true);
+        const overrideAllowed = template.querySelector('#forbid_media_override_allowed');
+        if (overrideAllowed) overrideAllowed.checked = true;
     } else if (power_user.external_media_forbidden_overrides.includes(entityId)) {
-        template.find('#forbid_media_override_forbidden').prop('checked', true);
+        const overrideForbidden = template.querySelector('#forbid_media_override_forbidden');
+        if (overrideForbidden) overrideForbidden.checked = true;
     } else {
-        template.find('#forbid_media_override_global').prop('checked', true);
+        const overrideGlobal = template.querySelector('#forbid_media_override_global');
+        if (overrideGlobal) overrideGlobal.checked = true;
     }
 
     callGenericPopup(template, POPUP_TYPE.TEXT, '', { wide: false, large: false });
@@ -1237,10 +1254,14 @@ export async function deleteFileFromServer(url, silent = false) {
 async function openFilePopup(attachment) {
     const fileText = attachment.text || (await getFileAttachment(attachment.url));
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const modalTemplate = $('<div><pre><code></code></pre></div>');
-    modalTemplate.find('code').addClass('txt').text(fileText);
-    modalTemplate.addClass('file_modal').addClass('textarea_compact').addClass('fontsize90p');
+    const modalTemplate = document.createElement('div');
+    modalTemplate.innerHTML = '<pre><code></code></pre>';
+    const codeEl = modalTemplate.querySelector('code');
+    if (codeEl) {
+        codeEl.classList.add('txt');
+        codeEl.textContent = fileText;
+    }
+    modalTemplate.classList.add('file_modal', 'textarea_compact', 'fontsize90p');
     addCopyToCodeBlocks(modalTemplate);
 
     callGenericPopup(modalTemplate, POPUP_TYPE.TEXT, '', { wide: true, large: true });
@@ -1254,20 +1275,28 @@ async function openFilePopup(attachment) {
  */
 async function editAttachment(attachment, source, callback) {
     const originalFileText = attachment.text || (await getFileAttachment(attachment.url));
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const template = $(await renderExtensionTemplateAsync('attachments', 'notepad'));
+    const templateHTML = await renderExtensionTemplateAsync('attachments', 'notepad');
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = templateHTML;
+    const template = tempDiv.firstElementChild;
 
     let editedFileText = originalFileText;
-    template.find('[name="notepadFileContent"]').val(editedFileText).on('input', function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        editedFileText = String($(this).val());
-    });
+    const contentInput = template.querySelector('[name="notepadFileContent"]');
+    if (contentInput instanceof HTMLInputElement || contentInput instanceof HTMLTextAreaElement) {
+        contentInput.value = editedFileText;
+        contentInput.addEventListener('input', function () {
+            editedFileText = String(this.value);
+        });
+    }
 
     let editedFileName = attachment.name;
-    template.find('[name="notepadFileName"]').val(editedFileName).on('input', function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        editedFileName = String($(this).val());
-    });
+    const nameInput = template.querySelector('[name="notepadFileName"]');
+    if (nameInput instanceof HTMLInputElement) {
+        nameInput.value = editedFileName;
+        nameInput.addEventListener('input', function () {
+            editedFileName = String(this.value);
+        });
+    }
 
     const result = await callGenericPopup(template, POPUP_TYPE.CONFIRM, '', { wide: true, large: true, okButton: 'Save', cancelButton: 'Cancel' });
 
@@ -1336,12 +1365,18 @@ function disableAttachment(attachment, callback) {
 async function moveAttachment(attachment, source, callback) {
     let selectedTarget = source;
     const targets = getAvailableTargets();
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const template = $(await renderExtensionTemplateAsync('attachments', 'move-attachment', { name: attachment.name, targets }));
-    template.find('.moveAttachmentTarget').val(source).on('input', function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        selectedTarget = String($(this).val());
-    });
+    const templateHTML = await renderExtensionTemplateAsync('attachments', 'move-attachment', { name: attachment.name, targets });
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = templateHTML;
+    const template = tempDiv.firstElementChild;
+
+    const targetInput = template.querySelector('.moveAttachmentTarget');
+    if (targetInput instanceof HTMLInputElement) {
+        targetInput.value = source;
+        targetInput.addEventListener('input', function () {
+            selectedTarget = String(this.value);
+        });
+    }
 
     const result = await callGenericPopup(template, POPUP_TYPE.CONFIRM, '', { wide: false, large: false, okButton: 'Move', cancelButton: 'Cancel' });
 
@@ -1458,23 +1493,28 @@ async function openAttachmentManager() {
             [ATTACHMENT_SOURCE.CHAT]: '.chatAttachmentsList',
         };
 
-        const containerEl = template[0].querySelector(sources[source]);
+        const containerEl = template.querySelector(sources[source]);
         const selected = Array.from(containerEl?.querySelectorAll('.attachmentListItemCheckbox:checked') ?? [])
             .map(el => el.closest('.attachmentListItem')?.getAttribute('data-attachment-url'));
 
-        template.find(sources[source]).empty();
+        const sourceContainer = template.querySelector(sources[source]);
+        if (sourceContainer) sourceContainer.innerHTML = '';
 
         // Sort attachments by sortField and sortOrder, and apply filter
         const sortedAttachmentList = attachments.slice().filter(filterFn).sort(sortFn);
 
         for (const attachment of sortedAttachmentList) {
             const isDisabled = isAttachmentDisabled(attachment);
-            const attachmentTemplate = template.find('.attachmentListItemTemplate .attachmentListItem').clone();
-            attachmentTemplate.toggleClass('disabled', isDisabled);
-            attachmentTemplate.attr('data-attachment-url', attachment.url);
-            attachmentTemplate.attr('data-attachment-source', source);
-            attachmentTemplate.find('.attachmentFileIcon').attr('title', attachment.url);
-            attachmentTemplate.find('.attachmentListItemName').text(attachment.name);
+            const attachmentTemplate = template.querySelector('.attachmentListItemTemplate .attachmentListItem').cloneNode(true);
+            attachmentTemplate.classList.toggle('disabled', isDisabled);
+            attachmentTemplate.setAttribute('data-attachment-url', attachment.url);
+            attachmentTemplate.setAttribute('data-attachment-source', source);
+            
+            const fileIcon = attachmentTemplate.querySelector('.attachmentFileIcon');
+            if (fileIcon) fileIcon.setAttribute('title', attachment.url);
+            
+            const listItemName = attachmentTemplate.querySelector('.attachmentListItemName');
+            if (listItemName) listItemName.textContent = attachment.name;
             attachmentTemplate.find('.attachmentListItemSize').text(humanFileSize(attachment.size));
             attachmentTemplate.find('.attachmentListItemCreated').text(new Date(attachment.created).toLocaleString());
             attachmentTemplate.find('.viewAttachmentButton').on('click', () => openFilePopup(attachment));
