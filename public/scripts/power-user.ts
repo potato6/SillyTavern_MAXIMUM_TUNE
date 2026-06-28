@@ -2198,7 +2198,9 @@ export function loadMovingUIState() {
                 const elmnt = $('#' + $.escapeSelector(elmntName));
                 if (elmnt.length) {
                     console.debug(`loading state for ${elmntName}`);
-                    elmnt.css(elmntState);
+                    for (const [prop, value] of Object.entries(elmntState)) {
+                        elmnt[0].style.setProperty(prop, value, 'important');
+                    }
                 } else {
                     console.debug(`skipping ${elmntName} because it doesn't exist in the DOM`);
                 }

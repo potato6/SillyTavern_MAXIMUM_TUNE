@@ -565,10 +565,10 @@ export function dragElement($elmnt) {
      *
      */
     function clampToViewport() {
-        if (top <= 0) $elmnt.css('top', '0px');
-        else if (maxY >= winHeight) $elmnt.css('top', winHeight - maxY + top - 1 + 'px');
-        if (left <= 0) $elmnt.css('left', '0px');
-        else if (maxX >= winWidth) $elmnt.css('left', winWidth - maxX + left - 1 + 'px');
+        if (top <= 0) $elmnt[0].style.setProperty('top', '0px', 'important');
+        else if (maxY >= winHeight) $elmnt[0].style.setProperty('top', (winHeight - maxY + top - 1) + 'px', 'important');
+        if (left <= 0) $elmnt[0].style.setProperty('left', '0px', 'important');
+        else if (maxX >= winWidth) $elmnt[0].style.setProperty('left', (winWidth - maxX + left - 1) + 'px', 'important');
     }
 
     // Observer for style changes (position/size)
@@ -616,21 +616,22 @@ export function dragElement($elmnt) {
                     $elmnt.css('height', $elmnt.width() * imageAspectRatio);
                 }
                 if (top + $elmnt.height() >= winHeight) {
-                    $elmnt.css('height', winHeight - top - 1 + 'px');
-                    $elmnt.css('width', (winHeight - top - 1) / imageAspectRatio + 'px');
+                     $elmnt[0].style.setProperty('height', (winHeight - top - 1) + 'px', 'important');
+                     $elmnt[0].style.setProperty('width', ((winHeight - top - 1) / imageAspectRatio) + 'px', 'important');
                 }
                 if (left + $elmnt.width() >= winWidth) {
-                    $elmnt.css('width', winWidth - left - 1 + 'px');
-                    $elmnt.css('height', (winWidth - left - 1) * imageAspectRatio + 'px');
+                     $elmnt[0].style.setProperty('width', (winWidth - left - 1) + 'px', 'important');
+                     $elmnt[0].style.setProperty('height', ((winWidth - left - 1) * imageAspectRatio) + 'px', 'important');
                 }
             } else {
-                if (top + $elmnt.height() >= winHeight) $elmnt.css('height', winHeight - top - 1 + 'px');
-                if (left + $elmnt.width() >= winWidth) $elmnt.css('width', winWidth - left - 1 + 'px');
+                 if (top + $elmnt.height() >= winHeight) $elmnt[0].style.setProperty('height', (winHeight - top - 1) + 'px', 'important');
+                 if (left + $elmnt.width() >= winWidth) $elmnt[0].style.setProperty('width', (winWidth - left - 1) + 'px', 'important');
             }
             //if (top < topBarLastY && maxX >= topBarFirstX && left <= topBarFirstX) {
             //    $elmnt.css('width', width - 1 + 'px');
             // }
-            $elmnt.css({ left, top });
+             $elmnt[0].style.setProperty('left', left + 'px', 'important');
+             $elmnt[0].style.setProperty('top', top + 'px', 'important');
             $elmnt.off('mouseup').on('mouseup', () => {
                 if (
                     power_user.movingUIState[elmntName].width === $elmnt.width() &&
@@ -678,11 +679,11 @@ export function dragElement($elmnt) {
         pos3 = e.clientX;
         pos4 = e.clientY;
         $elmnt.attr('data-dragged', 'true');
-        $elmnt.css('left', ($elmnt.offset().left - pos1) + 'px');
-        $elmnt.css('top', ($elmnt.offset().top - pos2) + 'px');
-        $elmnt.css('margin', 'unset');
-        $elmnt.css('height', height);
-        $elmnt.css('width', width);
+        $elmnt[0].style.setProperty('left', ($elmnt.offset().left - pos1) + 'px', 'important');
+        $elmnt[0].style.setProperty('top', ($elmnt.offset().top - pos2) + 'px', 'important');
+        $elmnt[0].style.setProperty('margin', 'unset', 'important');
+        $elmnt[0].style.setProperty('height', height + 'px', 'important');
+        $elmnt[0].style.setProperty('width', width + 'px', 'important');
     }
 
     /**
