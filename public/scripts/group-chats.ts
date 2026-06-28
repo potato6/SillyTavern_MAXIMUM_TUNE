@@ -839,14 +839,15 @@ export function getGroupBlock(group) {
 
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const template = document.querySelector('#group_list_template .group_select').cloneNode(true);
-    template.data('id', group.id);
-    template.attr('data-grid', group.id);
-    $(template[0].querySelector('.ch_name')).text(group.name).attr('title', `[Group] ${group.name}`);
-    $(template[0].querySelector('.group_fav_icon')).css('display', 'none');
-    template[0].classList.toggle('is_fav', !!group.fav);
-    $(template[0].querySelector('.ch_fav')).val(String(group.fav));
-    $(template[0].querySelector('.group_select_counter')).text(count + ' ' + (count != 1 ? t`characters` : t`character`));
-    $(template[0].querySelector('.group_select_block_list')).text(namesList.join(', '));
+    const $template = $(template);
+    $template.data('id', group.id);
+    $template.attr('data-grid', group.id);
+    $($template[0].querySelector('.ch_name')).text(group.name).attr('title', `[Group] ${group.name}`);
+    $($template[0].querySelector('.group_fav_icon')).css('display', 'none');
+    template.classList.toggle('is_fav', !!group.fav);
+    $($template[0].querySelector('.ch_fav')).val(String(group.fav));
+    $($template[0].querySelector('.group_select_counter')).text(count + ' ' + (count != 1 ? t`characters` : t`character`));
+    $($template[0].querySelector('.group_select_block_list')).text(namesList.join(', '));
 
     // Display inline tags
     const tagsElement = $(template[0].querySelector('.tags'));

@@ -1051,7 +1051,7 @@ function getCharacterBlock(item, id) {
     printTagList(tagsElement, { forEntityOrKey: id, tagOptions: { isCharacterList: true } });
 
     // Add to the list
-    return $templateClone;
+    return $templateClone[0];
 }
 
 /**

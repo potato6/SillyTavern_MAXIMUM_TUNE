@@ -523,7 +523,7 @@ function getTagBlock(tag, entities, hidden = 0, isUseless = false) {
     // Fill inline character images
     buildAvatarList($(template[0]?.querySelector('.bogus_folder_avatars_block')), entities);
 
-    return template;
+    return template[0];
 }
 
 /**
