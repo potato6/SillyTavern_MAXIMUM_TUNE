@@ -242,7 +242,6 @@ export async function openWelcomeScreen({ force = false, expand = false } = {}) 
     if (chatAfterFetch === undefined && force) {
         console.debug('Forcing welcome screen open.');
         chat.splice(0, chat.length);
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const chatEl = document.getElementById('chat');
         if (chatEl) chatEl.innerHTML = '';
     }
@@ -700,8 +699,7 @@ async function refreshWelcomeScreen({ flashChat = null } = {}) {
             if (!isElementInViewport(chatToFlash)) {
                 chatElement.scrollTop = chatToFlash.offsetTop - chatElement.offsetTop - (chatToFlash.clientHeight / 2);
             }
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            flashHighlight($(chatToFlash), 1000);
+            flashHighlight(chatToFlash, 1000);
         }
     } else {
         // Restore scroll position
