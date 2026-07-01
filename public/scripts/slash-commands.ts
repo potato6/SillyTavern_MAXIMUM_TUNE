@@ -3535,8 +3535,7 @@ export function initDefaultSlashCommands() {
                     behavior: 'smooth',
                 });
 
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                flashHighlight($(messageElement), 2000);
+                flashHighlight(messageElement, 2000);
             } else {
                 // @ts-expect-error TS(2304): Cannot find name 'toastr'.
                 toastr.warning(t`Could not find element for message ${messageIndex}. It might not be rendered yet or the index is invalid.`);

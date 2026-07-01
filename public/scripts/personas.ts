@@ -230,7 +230,7 @@ function verifyPersonaSearchSortRule() {
     if (searchTerm && isHidden) {
         searchOption.removeAttr('hidden');
         selector.val(searchOption.attr('value'));
-        flashHighlight(selector);
+        flashHighlight(selector[0]);
     }
     // If search got cleared, we make sure to hide the option and go back to the one before
     if (!searchTerm) {

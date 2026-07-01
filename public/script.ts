@@ -13789,7 +13789,7 @@ jQuery(async function () {
 
     charDragDropHandler = new DragAndDropHandler('body', async (files, event) => {
         if (!files.length) {
-            await importFromURL(event.originalEvent.dataTransfer.items, files);
+            await importFromURL(event.dataTransfer?.items, files);
         }
         await processDroppedFiles(files);
     }, { noAnimation: true });
@@ -13797,7 +13797,7 @@ jQuery(async function () {
     chatDragDropHandler = new DragAndDropHandler('#select_chat_popup', async (_, event) => {
         const importFile = document.getElementById('chat_import_file');
         if (importFile instanceof HTMLInputElement) {
-            importFile.files = event.originalEvent.dataTransfer.files;
+            importFile.files = event.dataTransfer?.files ?? importFile.files;
             // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(importFile).trigger('change');
         }

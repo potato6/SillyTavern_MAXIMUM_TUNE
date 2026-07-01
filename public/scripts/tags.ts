@@ -609,8 +609,7 @@ function filterByFolder(filterHelper) {
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#bogus_folders').prop('checked', true).trigger('input');
         onViewTagsListClick();
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        flashHighlight($('#tag_view_list .tag_as_folder, #tag_view_list .tag_folder_indicator'));
+        flashHighlight(document.querySelector('#tag_view_list .tag_as_folder, #tag_view_list .tag_folder_indicator'));
         return;
     }
 
@@ -2136,8 +2135,8 @@ function onTagCreateClick() {
     printViewTagList($('#tag_view_list .tag_view_list_tags'));
 
     const tagContainer = document.querySelector('#tag_view_list .tag_view_list_tags');
-    const tagElement = $(tagContainer?.querySelector(`.tag_view_item[id="${tag.id}"]`));
-    tagElement[0]?.scrollIntoView();
+    const tagElement = tagContainer?.querySelector(`.tag_view_item[id="${tag.id}"]`);
+    tagElement?.scrollIntoView();
     flashHighlight(tagElement);
 
     printCharactersDebounced();
@@ -3051,8 +3050,7 @@ export function initTags() {
         const newOrder = Array.from(newTagViewItems, el => el.id);
         const orderChanged = !oldOrder.every((id, index) => id === newOrder[index]);
         if (orderChanged) {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            flashHighlight($(`#tag_view_list .tag_view_item[id="${tagId}"]`));
+            flashHighlight(document.querySelector(`#tag_view_list .tag_view_item[id="${tagId}"]`));
         }
     });
 

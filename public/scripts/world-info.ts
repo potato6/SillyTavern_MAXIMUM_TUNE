@@ -2659,7 +2659,7 @@ async function displayWorldEntries(name, data, navigation = navigation_option.no
             const scrollOffset = elementOffset.top - parentOffset.top;
             // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#WorldInfo').scrollTop(scrollOffset);
-            if (flashOnNav) flashHighlight(element);
+            if (flashOnNav) flashHighlight(element[0]);
         });
     }
 
@@ -2871,7 +2871,7 @@ function verifyWorldInfoSearchSortRule() {
     if (searchTerm && isHidden) {
         searchOption.removeAttr('hidden');
         selector.val(searchOption.attr('value') || '0');
-        flashHighlight(selector);
+        flashHighlight(selector[0]);
     }
     // If search got cleared, we make sure to hide the option and go back to the one before
     if (!searchTerm && !isHidden) {
@@ -6656,7 +6656,7 @@ export function initWorldInfo() {
             // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#world_info_max_recursion_steps').val(0).trigger('input');
             // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            flashHighlight($(document.getElementById('world_info_max_recursion_steps').parentElement)); // flash the other control to show it has changed
+            flashHighlight(document.getElementById('world_info_max_recursion_steps').parentElement); // flash the other control to show it has changed
             console.info('[WI] Max recursion steps set to 0, as min activations is set to', world_info_min_activations);
         } else {
             saveSettings();
@@ -6749,7 +6749,7 @@ export function initWorldInfo() {
             // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#world_info_min_activations').val(0).trigger('input');
             // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            flashHighlight($(document.getElementById('world_info_min_activations').parentElement)); // flash the other control to show it has changed
+            flashHighlight(document.getElementById('world_info_min_activations').parentElement); // flash the other control to show it has changed
             console.info('[WI] Min activations set to 0, as max recursion steps is set to', world_info_max_recursion_steps);
         } else {
             saveSettings();

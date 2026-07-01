@@ -1768,11 +1768,13 @@ async function uploadChatBackground(formData) {
  * @param {string} bg
  */
 function highlightNewBackground(bg) {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const newBg = $(`.bg_example[bgfile="${bg}"]`);
-    const scrollOffset = newBg.offset().top - $(newBg[0].parentElement).offset().top;
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#Backgrounds').scrollTop(scrollOffset);
+    const newBg = document.querySelector(`.bg_example[bgfile="${bg}"]`);
+    if (!newBg) return;
+    const parent = newBg.parentElement;
+    if (!parent) return;
+    const scrollOffset = newBg.offsetTop - parent.offsetTop;
+    const bgContainer = document.querySelector('#Backgrounds');
+    if (bgContainer) bgContainer.scrollTop = scrollOffset;
     flashHighlight(newBg);
 }
 
