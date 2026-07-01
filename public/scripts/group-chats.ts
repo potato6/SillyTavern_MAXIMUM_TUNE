@@ -2175,7 +2175,7 @@ function filterGroupMemberList(event) {
  *
  */
 async function createGroup() {
-    const name = String(document.getElementById('rm_group_chat_name').value);
+    let name = String(document.getElementById('rm_group_chat_name').value);
     const allowSelfResponses = !!document.getElementById('rm_group_allow_self_responses').checked;
     const activationStrategy = Number(document.querySelector('#rm_group_activation_strategy :checked')?.value) ?? group_activation_strategy.NATURAL;
     const generationMode = Number(document.querySelector('#rm_group_generation_mode :checked')?.value) ?? group_generation_mode.SWAP;
