@@ -115,39 +115,35 @@ export async function loadInstructMode(data) {
 
     migrateInstructModeSettings(power_user.instruct);
 
-    $(document.getElementById('instruct_enabled').parentElement.querySelector('i')).toggleClass('toggleEnabled', !!power_user.instruct.enabled);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#instructSettingsBlock, #InstructSequencesColumn').toggleClass('disabled', !power_user.instruct.enabled);
-    $(document.getElementById('instruct_derived').parentElement.querySelector('i')).toggleClass('toggleEnabled', !!power_user.instruct_derived);
-    $(document.getElementById('instruct_bind_to_context').parentElement.querySelector('i')).toggleClass('toggleEnabled', !!power_user.instruct.bind_to_context);
+    document.getElementById('instruct_enabled')?.parentElement?.querySelector('i')?.classList.toggle('toggleEnabled', !!power_user.instruct.enabled);
+    document.querySelectorAll('#instructSettingsBlock, #InstructSequencesColumn').forEach(el => el.classList.toggle('disabled', !power_user.instruct.enabled));
+    document.getElementById('instruct_derived')?.parentElement?.querySelector('i')?.classList.toggle('toggleEnabled', !!power_user.instruct_derived);
+    document.getElementById('instruct_bind_to_context')?.parentElement?.querySelector('i')?.classList.toggle('toggleEnabled', !!power_user.instruct.bind_to_context);
 
     controls.forEach(control => {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const $element = $(`#${control.id}`);
+        const element = document.getElementById(control.id);
+        if (!element) return;
 
         if (control.isCheckbox) {
-            $element.prop('checked', power_user.instruct[control.property]);
-        } else if ($element.is('select')) {
+            if (element instanceof HTMLInputElement) element.checked = power_user.instruct[control.property];
+        } else if (element instanceof HTMLSelectElement) {
             const value = power_user.instruct[control.property];
-            $element.val(value);
-            if ($element[0]?.matches(`[value="${value}"]`)) $element.prop('checked', true);
+            element.value = value;
+            if (element.matches(`[value="${value}"]`)) element.checked = true;
         } else {
-            $element.val(power_user.instruct[control.property]);
+            element.value = power_user.instruct[control.property];
         }
 
-        $element.on('input', async function () {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            power_user.instruct[control.property] = control.isCheckbox ? !!$(this).prop('checked') : $(this).val();
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            if (!CSS.supports('field-sizing', 'content') && $(this).is('textarea')) {
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                await resetScrollHeight($(this));
+        element.addEventListener('input', async function () {
+            power_user.instruct[control.property] = control.isCheckbox ? !!this.checked : this.value;
+            if (!CSS.supports('field-sizing', 'content') && this instanceof HTMLTextAreaElement) {
+                await resetScrollHeight(this);
             }
             saveSettingsDebounced();
         });
 
         if (control.trigger) {
-            $element.trigger('input');
+            element.dispatchEvent(new Event('input'));
         }
     });
 
@@ -167,14 +163,12 @@ export async function loadInstructMode(data) {
 export function updateBindModelTemplatesState() {
     const bindModelTemplates = power_user.model_templates_mappings[online_status] ?? power_user.model_templates_mappings[power_user.chat_template_hash];
     const bindingsMatch = (bindModelTemplates && power_user.context.preset === bindModelTemplates.context && (!power_user.instruct.enabled || power_user.instruct.preset === bindModelTemplates.instruct)) ?? false;
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const currentState = $('#bind_model_templates').prop('checked');
+    const bmt = document.getElementById('bind_model_templates');
+    const currentState = bmt instanceof HTMLInputElement ? bmt.checked : false;
     if (bindingsMatch === currentState) {
-        // No change needed
         return;
     }
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#bind_model_templates').prop('checked', bindingsMatch);
+    if (bmt instanceof HTMLInputElement) bmt.checked = bindingsMatch;
 }
 
 /**
@@ -193,8 +187,11 @@ export function selectContextPreset(preset, { quiet = false, isAuto = false } = 
 
     // If context template is not already selected, select it
     if (preset !== power_user.context.preset) {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#context_presets').val(preset).trigger('change');
+        const cp = document.getElementById('context_presets');
+        if (cp instanceof HTMLSelectElement) {
+            cp.value = preset;
+            cp.dispatchEvent(new Event('change'));
+        }
         // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         !quiet && toastr.info(`Context Template: "${preset}" ${isAuto ? 'auto-' : ''}selected`);
     }
@@ -220,8 +217,11 @@ export function selectInstructPreset(preset, { quiet = false, isAuto = false } =
 
     // If instruct preset is not already selected, select it
     if (preset !== power_user.instruct.preset) {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#instruct_presets').val(preset).trigger('change');
+        const ip = document.getElementById('instruct_presets');
+        if (ip instanceof HTMLSelectElement) {
+            ip.value = preset;
+            ip.dispatchEvent(new Event('change'));
+        }
         // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         !quiet && toastr.info(`Instruct Template: "${preset}" ${isAuto ? 'auto-' : ''}selected`);
     }
@@ -229,8 +229,11 @@ export function selectInstructPreset(preset, { quiet = false, isAuto = false } =
     // If instruct mode is disabled, enable it
     if (!power_user.instruct.enabled) {
         power_user.instruct.enabled = true;
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#instruct_enabled').prop('checked', true).trigger('change');
+        const ie = document.getElementById('instruct_enabled');
+        if (ie instanceof HTMLInputElement) {
+            ie.checked = true;
+            ie.dispatchEvent(new Event('change'));
+        }
         // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         !quiet && toastr.info('Instruct Mode enabled');
     }
@@ -807,67 +810,49 @@ export function getInstructMacros(env) {
     return macros;
 }
 
-// @ts-expect-error TS(2304): Cannot find name 'jQuery'.
-jQuery(() => {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#instruct_system_same_as_user').on('input', function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const state = !!$(this).prop('checked');
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('instruct_system_same_as_user')?.addEventListener('input', function () {
+        const state = !!this.checked;
         if (state) {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#instruct_system_sequence_block').addClass('disabled');
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#instruct_system_suffix_block').addClass('disabled');
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#instruct_system_sequence').prop('readOnly', true);
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#instruct_system_suffix').prop('readOnly', true);
+            document.getElementById('instruct_system_sequence_block')?.classList.add('disabled');
+            document.getElementById('instruct_system_suffix_block')?.classList.add('disabled');
+            const seq = document.getElementById('instruct_system_sequence');
+            if (seq instanceof HTMLInputElement || seq instanceof HTMLTextAreaElement) seq.readOnly = true;
+            const suf = document.getElementById('instruct_system_suffix');
+            if (suf instanceof HTMLInputElement || suf instanceof HTMLTextAreaElement) suf.readOnly = true;
         } else {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#instruct_system_sequence_block').removeClass('disabled');
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#instruct_system_suffix_block').removeClass('disabled');
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#instruct_system_sequence').prop('readOnly', false);
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#instruct_system_suffix').prop('readOnly', false);
+            document.getElementById('instruct_system_sequence_block')?.classList.remove('disabled');
+            document.getElementById('instruct_system_suffix_block')?.classList.remove('disabled');
+            const seq = document.getElementById('instruct_system_sequence');
+            if (seq instanceof HTMLInputElement || seq instanceof HTMLTextAreaElement) seq.readOnly = false;
+            const suf = document.getElementById('instruct_system_suffix');
+            if (suf instanceof HTMLInputElement || suf instanceof HTMLTextAreaElement) suf.readOnly = false;
         }
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#instruct_enabled').on('change', function () {
-        //color toggle for the main switch
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(document.getElementById('instruct_enabled').parentElement.querySelector('i')).toggleClass('toggleEnabled', !!power_user.instruct.enabled);
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#instructSettingsBlock, #InstructSequencesColumn').toggleClass('disabled', !power_user.instruct.enabled);
+    document.getElementById('instruct_enabled')?.addEventListener('change', function () {
+        document.getElementById('instruct_enabled')?.parentElement?.querySelector('i')?.classList.toggle('toggleEnabled', !!power_user.instruct.enabled);
+        document.querySelectorAll('#instructSettingsBlock, #InstructSequencesColumn').forEach(el => el.classList.toggle('disabled', !power_user.instruct.enabled));
 
         if (!power_user.instruct.bind_to_context) {
             return;
         }
 
-        // When instruct mode gets enabled, select context template matching selected instruct preset
         if (power_user.instruct.enabled) {
             selectMatchingContextTemplate(power_user.instruct.preset);
         }
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#instruct_derived').on('change', function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(document.getElementById('instruct_derived').parentElement.querySelector('i')).toggleClass('toggleEnabled', !!power_user.instruct_derived);
+    document.getElementById('instruct_derived')?.addEventListener('change', function () {
+        document.getElementById('instruct_derived')?.parentElement?.querySelector('i')?.classList.toggle('toggleEnabled', !!power_user.instruct_derived);
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#instruct_bind_to_context').on('change', function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(document.getElementById('instruct_bind_to_context').parentElement.querySelector('i')).toggleClass('toggleEnabled', !!power_user.instruct.bind_to_context);
+    document.getElementById('instruct_bind_to_context')?.addEventListener('change', function () {
+        document.getElementById('instruct_bind_to_context')?.parentElement?.querySelector('i')?.classList.toggle('toggleEnabled', !!power_user.instruct.bind_to_context);
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#instruct_presets').on('change', function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const name = String(this.options[this.selectedIndex].value);
+    document.getElementById('instruct_presets')?.addEventListener('change', function () {
+        const name = String(this.value);
         const preset = instruct_presets.find(x => x.name === name);
 
         if (!preset) {
@@ -880,24 +865,27 @@ jQuery(() => {
         controls.forEach(control => {
             if (preset[control.property] !== undefined) {
                 power_user.instruct[control.property] = preset[control.property];
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                const $element = $(`#${control.id}`);
+                const element = document.getElementById(control.id);
+                if (!element) return;
 
                 if (control.isCheckbox) {
-                    $element.prop('checked', power_user.instruct[control.property]).trigger('input');
-                } else if ($element.is('select')) {
+                    if (element instanceof HTMLInputElement) element.checked = power_user.instruct[control.property];
+                    element.dispatchEvent(new Event('input'));
+                } else if (element instanceof HTMLSelectElement) {
                     const value = power_user.instruct[control.property];
-                    $element.val(value);
-                    if ($element[0]?.matches(`[value="${value}"]`)) $element.prop('checked', true).trigger('input');
+                    element.value = value;
+                    if (element.matches(`[value="${value}"]`)) {
+                        element.checked = true;
+                        element.dispatchEvent(new Event('input'));
+                    }
                 } else {
-                    $element.val(power_user.instruct[control.property]);
-                    $element.trigger('input');
+                    element.value = power_user.instruct[control.property];
+                    element.dispatchEvent(new Event('input'));
                 }
             }
         });
 
         if (power_user.instruct.bind_to_context) {
-            // Select matching context template
             selectMatchingContextTemplate(name);
         }
 
@@ -905,13 +893,12 @@ jQuery(() => {
     });
 
     if (!CSS.supports('field-sizing', 'content')) {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#InstructSequencesColumn details').on('toggle', function () {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            if ($(this).prop('open')) {
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                resetScrollHeight($(this.querySelector('textarea')));
-            }
-        });
+        for (const details of document.querySelectorAll('#InstructSequencesColumn details')) {
+            details.addEventListener('toggle', function () {
+                if (this.open) {
+                    resetScrollHeight(this.querySelector('textarea'));
+                }
+            });
+        }
     }
 });
