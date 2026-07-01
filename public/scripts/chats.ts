@@ -1515,19 +1515,33 @@ async function openAttachmentManager() {
             
             const listItemName = attachmentTemplate.querySelector('.attachmentListItemName');
             if (listItemName) listItemName.textContent = attachment.name;
-            attachmentTemplate.find('.attachmentListItemSize').text(humanFileSize(attachment.size));
-            attachmentTemplate.find('.attachmentListItemCreated').text(new Date(attachment.created).toLocaleString());
-            attachmentTemplate.find('.viewAttachmentButton').on('click', () => openFilePopup(attachment));
-            attachmentTemplate.find('.editAttachmentButton').on('click', () => editAttachment(attachment, source, renderAttachments));
-            attachmentTemplate.find('.deleteAttachmentButton').on('click', () => deleteAttachment(attachment, source, renderAttachments));
-            attachmentTemplate.find('.downloadAttachmentButton').on('click', () => downloadAttachment(attachment));
-            attachmentTemplate.find('.moveAttachmentButton').on('click', () => moveAttachment(attachment, source, renderAttachments));
-            attachmentTemplate.find('.enableAttachmentButton').toggle(isDisabled).on('click', () => enableAttachment(attachment, renderAttachments));
-            attachmentTemplate.find('.disableAttachmentButton').toggle(!isDisabled).on('click', () => disableAttachment(attachment, renderAttachments));
-            template.find(sources[source]).append(attachmentTemplate);
+            const sizeEl = attachmentTemplate.querySelector('.attachmentListItemSize');
+            if (sizeEl) sizeEl.textContent = humanFileSize(attachment.size);
+            const createdEl = attachmentTemplate.querySelector('.attachmentListItemCreated');
+            if (createdEl) createdEl.textContent = new Date(attachment.created).toLocaleString();
+            attachmentTemplate.querySelector('.viewAttachmentButton')?.addEventListener('click', () => openFilePopup(attachment));
+            attachmentTemplate.querySelector('.editAttachmentButton')?.addEventListener('click', () => editAttachment(attachment, source, renderAttachments));
+            attachmentTemplate.querySelector('.deleteAttachmentButton')?.addEventListener('click', () => deleteAttachment(attachment, source, renderAttachments));
+            attachmentTemplate.querySelector('.downloadAttachmentButton')?.addEventListener('click', () => downloadAttachment(attachment));
+            attachmentTemplate.querySelector('.moveAttachmentButton')?.addEventListener('click', () => moveAttachment(attachment, source, renderAttachments));
+            const enableBtn = attachmentTemplate.querySelector('.enableAttachmentButton');
+            if (enableBtn) {
+                enableBtn.style.display = isDisabled ? '' : 'none';
+                enableBtn.addEventListener('click', () => enableAttachment(attachment, renderAttachments));
+            }
+            const disableBtn = attachmentTemplate.querySelector('.disableAttachmentButton');
+            if (disableBtn) {
+                disableBtn.style.display = !isDisabled ? '' : 'none';
+                disableBtn.addEventListener('click', () => disableAttachment(attachment, renderAttachments));
+            }
+            const sourceContainer = template.querySelector(sources[source]);
+            if (sourceContainer) sourceContainer.appendChild(attachmentTemplate);
 
             if (selected.includes(attachment.url)) {
-                attachmentTemplate.find('.attachmentListItemCheckbox').prop('checked', true);
+                const checkbox = attachmentTemplate.querySelector('.attachmentListItemCheckbox');
+                if (checkbox instanceof HTMLInputElement) {
+                    checkbox.checked = true;
+                }
             }
         }
     }
@@ -1542,7 +1556,7 @@ async function openAttachmentManager() {
             [ATTACHMENT_SOURCE.CHAT]: '.chatAttachmentsTitle',
         };
 
-        const modal = template.find('.actionButtonsModal');
+        const modal = template.querySelector('.actionButtonsModal');
         const scrapers = ScraperManager.getDataBankScrapers();
 
         for (const scraper of scrapers) {
@@ -1551,26 +1565,27 @@ async function openAttachmentManager() {
                 continue;
             }
 
-            const buttonTemplate = template.find('.actionButtonTemplate .actionButton').clone();
+            const buttonTemplate = template.querySelector('.actionButtonTemplate .actionButton').cloneNode(true);
             if (scraper.iconAvailable) {
-                buttonTemplate.find('.actionButtonIcon').addClass(scraper.iconClass);
-                buttonTemplate.find('.actionButtonImg').remove();
+                buttonTemplate.querySelector('.actionButtonIcon')?.classList.add(...scraper.iconClass.split(' '));
+                buttonTemplate.querySelector('.actionButtonImg')?.remove();
             } else {
-                buttonTemplate.find('.actionButtonImg').attr('src', scraper.iconClass);
-                buttonTemplate.find('.actionButtonIcon').remove();
+                buttonTemplate.querySelector('.actionButtonImg')?.setAttribute('src', scraper.iconClass);
+                buttonTemplate.querySelector('.actionButtonIcon')?.remove();
             }
-            buttonTemplate.find('.actionButtonText').text(scraper.name);
-            buttonTemplate.attr('title', scraper.description);
-            buttonTemplate.on('click', () => {
-                const target = modal.attr('data-attachment-manager-target');
+            const textEl = buttonTemplate.querySelector('.actionButtonText');
+            if (textEl) textEl.textContent = scraper.name;
+            buttonTemplate.setAttribute('title', scraper.description);
+            buttonTemplate.addEventListener('click', () => {
+                const target = modal?.getAttribute('data-attachment-manager-target');
                 runScraper(scraper.id, target, renderAttachments);
             });
-            modal.append(buttonTemplate);
+            modal?.append(buttonTemplate);
         }
 
         const modalButtonData = Object.entries(sources).map(entry => {
             const [source, selector] = entry;
-            const button = template[0]?.querySelector(`${selector} .openActionModalButton`);
+            const button = template?.querySelector(`${selector} .openActionModalButton`);
 
             if (!button) {
                 // @ts-expect-error TS(7030): Not all code paths return a value.
@@ -1580,16 +1595,16 @@ async function openAttachmentManager() {
             button.addEventListener('pointerdown', (e) => { e.stopPropagation(); });
             button.addEventListener('mousedown', (e) => { e.stopPropagation(); });
             button.addEventListener('click', () => {
-                modal.attr('data-attachment-manager-target', source);
+                modal?.setAttribute('data-attachment-manager-target', source);
                 button.style.setProperty('anchor-name', '--action-btn');
-                modal[0].togglePopover();
+                modal?.togglePopover();
             });
 
             return;
         }).filter(Boolean);
 
         return () => {
-            modal.remove();
+            modal?.remove();
         };
     }
 
@@ -1611,14 +1626,18 @@ async function openAttachmentManager() {
 
         const isNotCharacter = this_chid === undefined || selected_group;
         const isNotInChat = getCurrentChatId() === undefined;
-        template.find('.characterAttachmentsBlock').toggle(!isNotCharacter);
-        template.find('.chatAttachmentsBlock').toggle(!isNotInChat);
+        const charBlock = template.querySelector('.characterAttachmentsBlock');
+        if (charBlock) charBlock.style.display = isNotCharacter ? 'none' : '';
+        const chatBlock = template.querySelector('.chatAttachmentsBlock');
+        if (chatBlock) chatBlock.style.display = isNotInChat ? 'none' : '';
 
         const characterName = characters[this_chid]?.name || 'Anonymous';
-        template.find('.characterAttachmentsName').text(characterName);
+        const charNameEl = template.querySelector('.characterAttachmentsName');
+        if (charNameEl) charNameEl.textContent = characterName;
 
         const chatName = getCurrentChatId() || 'Unnamed chat';
-        template.find('.chatAttachmentsName').text(chatName);
+        const chatNameEl = template.querySelector('.chatAttachmentsName');
+        if (chatNameEl) chatNameEl.textContent = chatName;
     }
 
     // @ts-expect-error TS(6133): 'event' is declared but its value is never read.
@@ -1626,12 +1645,15 @@ async function openAttachmentManager() {
         let selectedTarget = ATTACHMENT_SOURCE.GLOBAL;
         const targets = getAvailableTargets();
 
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const targetSelectTemplate = $(await renderExtensionTemplateAsync('attachments', 'files-dropped', { count: files.length, targets: targets }));
-        targetSelectTemplate.find('.droppedFilesTarget').on('input', function () {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            selectedTarget = String($(this).val());
-        });
+        const targetTemplateHtml = await renderExtensionTemplateAsync('attachments', 'files-dropped', { count: files.length, targets: targets });
+        const targetSelectTemplate = document.createElement('div');
+        targetSelectTemplate.innerHTML = targetTemplateHtml;
+        const targetInput = targetSelectTemplate.querySelector('.droppedFilesTarget');
+        if (targetInput instanceof HTMLInputElement) {
+            targetInput.addEventListener('input', function () {
+                selectedTarget = String(this.value);
+            });
+        }
         const result = await callGenericPopup(targetSelectTemplate, POPUP_TYPE.CONFIRM, '', { wide: false, large: false, okButton: 'Upload', cancelButton: 'Cancel' });
         if (result !== POPUP_RESULT.AFFIRMATIVE) {
             console.log('File upload cancelled');
@@ -1647,15 +1669,17 @@ async function openAttachmentManager() {
     let sortOrder = accountStorage.getItem('DataBank_sortOrder') || 'desc';
     let filterString = '';
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const template = $(await renderExtensionTemplateAsync('attachments', 'manager', {}));
+    const templateHtml = await renderExtensionTemplateAsync('attachments', 'manager', {});
+    const template = document.createElement('div');
+    template.innerHTML = templateHtml;
 
-    template.find('.attachmentSearch').on('input', function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        filterString = String($(this).val());
+    template.querySelector('.attachmentSearch')?.addEventListener('input', function () {
+        if (this instanceof HTMLInputElement) {
+            filterString = String(this.value);
+        }
         renderAttachments();
     });
-    template.find('.attachmentSort').on('change', function () {
+    template.querySelector('.attachmentSort')?.addEventListener('change', function () {
         if (!(this instanceof HTMLSelectElement) || this.selectedOptions.length === 0) {
             return;
         }
@@ -1715,27 +1739,27 @@ async function openAttachmentManager() {
         };
     }
 
-    template.find('.bulkActionDisable').on('click', handleBulkAction({
+    template.querySelector('.bulkActionDisable')?.addEventListener('click', handleBulkAction({
         perform: (attachment) => disableAttachment(attachment, () => { }),
     }));
 
-    template.find('.bulkActionEnable').on('click', handleBulkAction({
+    template.querySelector('.bulkActionEnable')?.addEventListener('click', handleBulkAction({
         perform: (attachment) => enableAttachment(attachment, () => { }),
     }));
 
-    template.find('.bulkActionDelete').on('click', handleBulkAction({
+    template.querySelector('.bulkActionDelete')?.addEventListener('click', handleBulkAction({
         confirmMessage: 'Are you sure you want to delete the selected attachments?',
         perform: async (attachment, source) => await deleteAttachment(attachment, source, () => { }, false),
     }));
 
-    template.find('.bulkActionSelectAll').on('click', () => {
+    template.querySelector('.bulkActionSelectAll')?.addEventListener('click', () => {
         document.querySelectorAll('.attachmentListItemCheckbox:visible').forEach(checkbox => {
             if (checkbox instanceof HTMLInputElement) {
                 checkbox.checked = true;
             }
         });
     });
-    template.find('.bulkActionSelectNone').on('click', () => {
+    template.querySelector('.bulkActionSelectNone')?.addEventListener('click', () => {
         document.querySelectorAll('.attachmentListItemCheckbox:visible').forEach(checkbox => {
             if (checkbox instanceof HTMLInputElement) {
                 checkbox.checked = false;
