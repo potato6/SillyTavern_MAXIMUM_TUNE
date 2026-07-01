@@ -639,16 +639,13 @@ export class ConnectionManagerRequestService {
             throw new Error('Connection Manager is not available');
         }
 
-        /**
-         * @type {JQuery<HTMLSelectElement>}
-         */
-        const dropdown = $(selector);
+        const dropdown = /** @type {HTMLSelectElement} */ (document.querySelector(selector));
 
-        if (!dropdown || !dropdown.length) {
+        if (!dropdown) {
             throw new Error(`Could not find dropdown with selector ${selector}`);
         }
 
-        dropdown.empty();
+        dropdown.innerHTML = '';
 
         // Create default option using document.createElement
         const defaultOption = document.createElement('option');
@@ -704,7 +701,7 @@ export class ConnectionManagerRequestService {
 
         const selectedProfile = profiles.find((p) => p.id === initialSelectedProfileId);
         if (selectedProfile) {
-            dropdown.val(selectedProfile.id);
+            dropdown.value = selectedProfile.id;
         }
 
         context.eventSource.on(context.eventTypes.CONNECTION_PROFILE_CREATED, async (profile) => {
@@ -723,14 +720,14 @@ export class ConnectionManagerRequestService {
         });
 
         context.eventSource.on(context.eventTypes.CONNECTION_PROFILE_UPDATED, async (oldProfile, newProfile) => {
-            const currentSelected = dropdown.val();
+            const currentSelected = dropdown.value;
             const isSelectedProfile = currentSelected === oldProfile.id;
             await unUpdate(oldProfile, newProfile);
 
             if (!this.isProfileSupported(newProfile)) {
                 if (isSelectedProfile) {
-                    dropdown.val('');
-                    dropdown.trigger('change');
+                    dropdown.value = '';
+                    dropdown.dispatchEvent(new Event('change'));
                 }
                 return;
             }
@@ -748,13 +745,13 @@ export class ConnectionManagerRequestService {
 
             if (isSelectedProfile) {
                 // Ackchyually, we don't need to reselect but what if id changes? It is not possible for now I couldn't stop myself.
-                dropdown.val(newProfile.id);
-                dropdown.trigger('change');
+                dropdown.value = newProfile.id;
+                dropdown.dispatchEvent(new Event('change'));
             }
         });
 
         context.eventSource.on(context.eventTypes.CONNECTION_PROFILE_DELETED, async (profile) => {
-            const currentSelected = dropdown.val();
+            const currentSelected = dropdown.value;
             const isSelectedProfile = currentSelected === profile.id;
             if (!this.isProfileSupported(profile)) {
                 return;
@@ -767,15 +764,15 @@ export class ConnectionManagerRequestService {
             }
 
             if (isSelectedProfile) {
-                dropdown.val('');
-                dropdown.trigger('change');
+                dropdown.value = '';
+                dropdown.dispatchEvent(new Event('change'));
             }
 
             await onDelete(profile);
         });
 
-        dropdown.on('change', async () => {
-            const profileId = dropdown.val();
+        dropdown.addEventListener('change', async () => {
+            const profileId = dropdown.value;
             const profile = context.extensionSettings.connectionManager.profiles.find((p) => p.id === profileId);
             await onChange(profile);
         });
