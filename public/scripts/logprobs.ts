@@ -18,17 +18,14 @@ import { t } from './i18n.js';
 
 const TINTS = 4;
 const MAX_MESSAGE_LOGPROBS = 100;
-// @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-const REROLL_BUTTON = $('#logprobsReroll');
+const REROLL_BUTTON = document.getElementById('logprobsReroll');
 
 /**
  * Tuple of a candidate token and its logarithm of probability of being chosen
  * @typedef {[string, number]} Candidate - (token, logprob)
  */
 
-/**
- * @typedef {(Node|JQuery<Text>|JQuery<HTMLElement>)[]} NodeArray - Array of DOM nodes
- */
+
 
 /**
  * Logprob data for a single message
@@ -73,7 +70,6 @@ const state = {
  * logprobs data. If the message has no token logprobs, a message is displayed.
  */
 function renderAlternativeTokensView() {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const view = document.getElementById('logprobs_generation_output');
     if (!view || view.style.display === 'none') {
         return;
@@ -85,7 +81,6 @@ function renderAlternativeTokensView() {
     const { messageLogprobs, continueFrom } = getActiveMessageLogprobData() || {};
     const usingSmoothStreaming = isStreamingEnabled() && power_user.smooth_streaming;
     if (!messageLogprobs?.length || usingSmoothStreaming) {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const emptyState = document.createElement('div');
         const noTokensMsg = !power_user.request_token_probabilities
             ? '<span>Enable <b>Request token probabilities</b> in the User Settings menu to use this feature.</span>'
@@ -102,25 +97,32 @@ function renderAlternativeTokensView() {
 
     const prefix = continueFrom || '';
     const tokenSpans = [];
-    REROLL_BUTTON.toggle(!!prefix);
+    if (REROLL_BUTTON) {
+        REROLL_BUTTON.style.display = prefix ? '' : 'none';
+    }
 
     if (prefix) {
-        REROLL_BUTTON.off('click').on('click', () => onPrefixClicked(prefix.length));
+        if (REROLL_BUTTON) {
+            if (REROLL_BUTTON._rerollHandler) {
+                REROLL_BUTTON.removeEventListener('click', REROLL_BUTTON._rerollHandler);
+            }
+            REROLL_BUTTON._rerollHandler = () => onPrefixClicked(prefix.length);
+            REROLL_BUTTON.addEventListener('click', REROLL_BUTTON._rerollHandler);
+        }
 
         let cumulativeOffset = 0;
         const words = prefix.split(/\s+/);
-        const delimiters = prefix.match(/\s+/g) || []; // Capture the actual delimiters
+        const delimiters = prefix.match(/\s+/g) || [];
 
         words.forEach((word, i) => {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const span = $('<span></span>');
-            span.text(`${word} `);
+            const span = document.createElement('span');
+            span.textContent = `${word} `;
 
-            span.addClass('logprobs_output_prefix');
-            span.attr('title', t`Reroll from this point`);
+            span.classList.add('logprobs_output_prefix');
+            span.setAttribute('title', t`Reroll from this point`);
 
             const offset = cumulativeOffset;
-            span.on('click', () => onPrefixClicked(offset));
+            span.addEventListener('click', () => onPrefixClicked(offset));
             addKeyboardProps(span);
 
             tokenSpans.push(span);
@@ -135,13 +137,12 @@ function renderAlternativeTokensView() {
 
     messageLogprobs.forEach((tokenData, i) => {
         const { token } = tokenData;
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const span = $('<span></span>');
+        const span = document.createElement('span');
         const text = toVisibleWhitespace(token);
-        span.text(text);
-        span.addClass('logprobs_output_token');
-        span.addClass('logprobs_tint_' + (i % TINTS));
-        span.on('click', () => onSelectedTokenChanged(tokenData, span));
+        span.textContent = text;
+        span.classList.add('logprobs_output_token');
+        span.classList.add('logprobs_tint_' + (i % TINTS));
+        span.addEventListener('click', () => onSelectedTokenChanged(tokenData, span));
         addKeyboardProps(span);
         tokenSpans.push(...withVirtualWhitespace(token, span));
     });
@@ -150,7 +151,7 @@ function renderAlternativeTokensView() {
 
     // scroll past long prior context
     if (prefix) {
-        const element = view[0].querySelector('.logprobs_output_token');
+        const element = view.querySelector('.logprobs_output_token');
         if (element) {
             const scrollOffset = element.getBoundingClientRect().top - element.parentElement.getBoundingClientRect().top;
             element.parentElement.scrollTop = scrollOffset;
@@ -163,9 +164,9 @@ function renderAlternativeTokensView() {
  * @param element
  */
 function addKeyboardProps(element) {
-    element.attr('role', 'button');
-    element.attr('tabindex', '0');
-    element.keydown(function (e) {
+    element.setAttribute('role', 'button');
+    element.setAttribute('tabindex', '0');
+    element.addEventListener('keydown', function (e) {
         if (e.key === 'Enter' || e.key === ' ') {
             element.click();
         }
@@ -181,9 +182,8 @@ function addKeyboardProps(element) {
  * - onSelectedTokenChanged, to update the view when a token is selected
  */
 function renderTopLogprobs() {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#logprobs_top_logprobs_hint').hide();
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    const hint = document.getElementById('logprobs_top_logprobs_hint');
+    if (hint) hint.style.display = 'none';
     const view = document.querySelector('.logprobs_candidate_list');
     if (view) view.innerHTML = '';
 
@@ -210,31 +210,28 @@ function renderTopLogprobs() {
 
     let matched = false;
     for (const [token, probability, log] of candidates) {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const container = document.createElement('button');
         container.className = 'flex-container flexFlowColumn logprobs_top_candidate';
         const tokenNormalized = String(token).replace(/^[▁Ġ]/g, ' ');
 
         if (token === selectedToken || tokenNormalized === selectedToken) {
             matched = true;
-            container.addClass('selected');
+            container.classList.add('selected');
         }
 
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const tokenText = document.createElement('span');
         tokenText.textContent = `${toVisibleWhitespace(token.toString())}`;
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const percentText = document.createElement('span');
         percentText.textContent = `${(+probability * 100).toFixed(2)}%`;
         container.append(tokenText, percentText);
         if (log) {
-            container.attr('title', `logarithm: ${log}`);
+            container.setAttribute('title', `logarithm: ${log}`);
         }
         addKeyboardProps(container);
         if (token !== '<others>') {
-            container.on('click', () => onAlternativeClicked(state.selectedTokenLogprobs, token.toString()));
+            container.addEventListener('click', () => onAlternativeClicked(state.selectedTokenLogprobs, token.toString()));
         } else {
-            container.prop('disabled', true);
+            container.disabled = true;
         }
         nodes.push(container);
     }
@@ -242,7 +239,7 @@ function renderTopLogprobs() {
     // Highlight the <others> node if the selected token was not included in the
     // top logprobs
     if (!matched) {
-        nodes[nodes.length - 1].css('background-color', 'rgba(255, 0, 0, 0.1)');
+        nodes[nodes.length - 1].style.backgroundColor = 'rgba(255, 0, 0, 0.1)';
     }
 
     view?.append(...nodes);
@@ -252,17 +249,15 @@ function renderTopLogprobs() {
  * User clicks on a token in the token output view. It updates the selected token state
  * and re-renders the top logprobs view, or deselects the token if it was already selected.
  * @param {TokenLogprobs} logprobs - logprob data for the selected token
- * @param {Node|JQuery} span - target span node that was clicked
+ * @param {HTMLElement} span - target span node that was clicked
  */
 function onSelectedTokenChanged(logprobs, span) {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('.logprobs_output_token.selected').removeClass('selected');
+    document.querySelectorAll('.logprobs_output_token.selected').forEach((el) => el.classList.remove('selected'));
     if (state.selectedTokenLogprobs === logprobs) {
         state.selectedTokenLogprobs = null;
     } else {
         state.selectedTokenLogprobs = logprobs;
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(span).addClass('selected');
+        span.classList.add('selected');
     }
     renderTopLogprobs();
 }
@@ -340,14 +335,19 @@ function checkGenerateReady() {
  */
 function addGeneration(prompt) {
     const messageId = chat.length - 1;
+    const triggerSwipe = () => {
+        const swipes = document.querySelectorAll('.swipe_right');
+        const lastSwipe = swipes[swipes.length - 1];
+        if (lastSwipe instanceof HTMLElement) {
+            lastSwipe.click();
+        }
+    };
     if (prompt && prompt.length > 0) {
         createSwipe(messageId, prompt);
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('.swipe_right:last').trigger('click');
+        triggerSwipe();
         void Generate('continue');
     } else {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('.swipe_right:last').trigger('click');
+        triggerSwipe();
     }
 }
 
@@ -357,34 +357,43 @@ function addGeneration(prompt) {
  * close button.
  */
 function onToggleLogprobsPanel() {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const logprobsViewer = $('#logprobsViewer');
+    const logprobsViewer = document.getElementById('logprobsViewer');
+    if (!logprobsViewer) {
+        return;
+    }
 
     // largely copied from CFGScale toggle
-    if (logprobsViewer.css('display') === 'none') {
-        logprobsViewer.addClass('resizing');
-        logprobsViewer.css('display', 'flex');
-        logprobsViewer.css('opacity', 0.0);
+    if (getComputedStyle(logprobsViewer).display === 'none') {
+        logprobsViewer.classList.add('resizing');
+        logprobsViewer.style.display = 'flex';
+        logprobsViewer.style.opacity = '0';
         renderAlternativeTokensView();
-        logprobsViewer.transition({
-            opacity: 1.0,
+        const anim = logprobsViewer.animate([
+            { opacity: '0' },
+            { opacity: '1' },
+        ], {
             duration: animation_duration,
-        }, async function () {
-            await delay(50);
-            logprobsViewer.removeClass('resizing');
+            easing: 'ease',
         });
+        anim.onfinish = async function () {
+            await delay(50);
+            logprobsViewer.classList.remove('resizing');
+        };
     } else {
-        logprobsViewer.addClass('resizing');
-        logprobsViewer.transition({
-            opacity: 0.0,
+        logprobsViewer.classList.add('resizing');
+        const anim = logprobsViewer.animate([
+            { opacity: getComputedStyle(logprobsViewer).opacity },
+            { opacity: '0' },
+        ], {
             duration: animation_duration,
-        },
-        async function () {
-            await delay(50);
-            logprobsViewer.removeClass('resizing');
+            easing: 'ease',
         });
+        anim.onfinish = async function () {
+            await delay(50);
+            logprobsViewer.classList.remove('resizing');
+        };
         setTimeout(function () {
-            logprobsViewer.hide();
+            logprobsViewer.style.display = 'none';
         }, animation_duration);
     }
 }
@@ -489,18 +498,17 @@ function toVisibleWhitespace(input) {
  * after the span node if its token begins or ends with whitespace in order to
  * allow text to wrap despite whitespace characters being replaced with a dot.
  * @param {string} text - token text being evaluated for whitespace
- * @param {Node|JQuery} span - target span node to be wrapped
- * @returns {NodeArray} - array of nodes to be appended to the parent element
+ * @param {Node} span - target span node to be wrapped
+ * @returns {Node[]} - array of nodes to be appended to the parent element
  */
 function withVirtualWhitespace(text, span) {
-    /** @type {NodeArray} */
+    /** @type {Node[]} */
     const result = [span];
     if (text.match(/^\s/)) {
         result.unshift(document.createTextNode('\u200b'));
     }
     if (text.match(/\s$/)) {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        result.push($(document.createTextNode('\u200b')));
+        result.push(document.createTextNode('\u200b'));
     }
     if (text.match(/^[▁Ġ]/)) {
         result.unshift(document.createTextNode('\u200b'));
@@ -511,16 +519,12 @@ function withVirtualWhitespace(text, span) {
 
     // matches leading line break, at least one character, and trailing line break
     if (text.match(/^\n(?:.|\n)+\n$/)) {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        result.unshift($('<br>'));
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        result.push($('<br>'));
+        result.unshift(document.createElement('br'));
+        result.push(document.createElement('br'));
     } else if (text.match(/^\n/)) {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        result.unshift($('<br>'));
+        result.unshift(document.createElement('br'));
     } else if (text.match(/\n$/)) {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        result.push($('<br>'));
+        result.push(document.createElement('br'));
     }
     return result;
 }
@@ -639,12 +643,12 @@ function convertTokenIdLogprobsToText(input) {
  *
  */
 export function initLogprobs() {
-    REROLL_BUTTON.hide();
+    if (REROLL_BUTTON) REROLL_BUTTON.style.display = 'none';
     const debouncedRender = debounce(renderAlternativeTokensView);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#logprobsViewerClose').on('click', onToggleLogprobsPanel);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#option_toggle_logprobs').on('click', onToggleLogprobsPanel);
+    const closeBtn = document.getElementById('logprobsViewerClose');
+    if (closeBtn) closeBtn.addEventListener('click', onToggleLogprobsPanel);
+    const toggleBtn = document.getElementById('option_toggle_logprobs');
+    if (toggleBtn) toggleBtn.addEventListener('click', onToggleLogprobsPanel);
     eventSource.on(event_types.CHAT_CHANGED, debouncedRender);
     eventSource.on(event_types.CHARACTER_MESSAGE_RENDERED, debouncedRender);
     eventSource.on(event_types.IMPERSONATE_READY, debouncedRender);
