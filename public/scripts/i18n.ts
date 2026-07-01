@@ -194,18 +194,18 @@ async function getMissingTranslations() {
     for (const language of langsToProcess) {
         const localeData = await getLocaleData(language.lang);
         document.querySelectorAll('[data-i18n]').forEach(function (el) {
-            const keys = $(el).data('i18n').split(';'); // Multi-key entries are ; delimited
+            const keys = el.getAttribute('data-i18n').split(';'); // Multi-key entries are ; delimited
             for (const key of keys) {
                 const attributeMatch = key.match(/\[(\S+)\](.+)/); // [attribute]key
                 if (attributeMatch) { // attribute-tagged key
                     const localizedValue = localeData?.[attributeMatch[2]];
                     if (!localizedValue) {
-                        missingData.push({ key, language: language.lang, value: String($(el).attr(attributeMatch[1])) });
+                        missingData.push({ key, language: language.lang, value: String(el.getAttribute(attributeMatch[1])) });
                     }
                 } else { // No attribute tag, treat as 'text'
                     const localizedValue = localeData?.[key];
                     if (!localizedValue) {
-                        missingData.push({ key, language: language.lang, value: $(el).text().trim() });
+                        missingData.push({ key, language: language.lang, value: el.textContent.trim() });
                     }
                 }
             }
@@ -266,18 +266,21 @@ export function applyLocale(root = document) {
  *
  */
 function addLanguagesToDropdown() {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const uiLanguageSelects = $('#ui_language_select, #onboarding_ui_language_select');
-    for (const langObj of langs) { // Set the value to the language code
-        const option = document.createElement('option');
-        option.value = langObj.lang; // Set the value to the language code
-        option.innerText = langObj.display; // Set the display text to the language name
-        uiLanguageSelects.append(option);
+    const uiLanguageSelects = document.querySelectorAll('#ui_language_select, #onboarding_ui_language_select');
+    for (const langObj of langs) {
+        for (const select of uiLanguageSelects) {
+            const option = document.createElement('option');
+            option.value = langObj.lang;
+            option.innerText = langObj.display;
+            select.appendChild(option);
+        }
     }
 
     const selectedLanguage = localStorage.getItem(storageKey);
     if (selectedLanguage) {
-        uiLanguageSelects.val(selectedLanguage);
+        for (const select of uiLanguageSelects) {
+            select.value = selectedLanguage;
+        }
     }
 }
 
@@ -292,19 +295,19 @@ export async function initLocales() {
     addLanguagesToDropdown();
     updateSecretDisplay();
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#ui_language_select, #onboarding_ui_language_select').on('change', async function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const language = String($(this).val());
+    for (const select of document.querySelectorAll('#ui_language_select, #onboarding_ui_language_select')) {
+        select.addEventListener('change', async function () {
+            const language = String(this.value);
 
-        if (language) {
-            localStorage.setItem(storageKey, language);
-        } else {
-            localStorage.removeItem(storageKey);
-        }
+            if (language) {
+                localStorage.setItem(storageKey, language);
+            } else {
+                localStorage.removeItem(storageKey);
+            }
 
-        location.reload();
-    });
+            location.reload();
+        });
+    }
 
     observer.observe(document, {
         childList: true,
