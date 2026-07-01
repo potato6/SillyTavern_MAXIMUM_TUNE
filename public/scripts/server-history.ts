@@ -31,16 +31,17 @@ function findServers(request, resolve, serverLabel) {
  */
 function selectServer(event, ui, serverLabel) {
     // unfocus the input
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(event.target).val(ui.item.value).trigger('input').trigger('blur');
+    if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) {
+        event.target.value = ui.item.value;
+        event.target.dispatchEvent(new Event('input', { bubbles: true }));
+        event.target.dispatchEvent(new Event('blur', { bubbles: true }));
+    }
 
     document.querySelectorAll('[data-server-connect]').forEach(function (el) {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const serverLabels = String($(el).data('server-connect')).split(',');
+        const serverLabels = String(el.dataset.serverConnect).split(',');
 
         if (serverLabels.includes(serverLabel)) {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(el).trigger('click');
+            el.dispatchEvent(new Event('click', { bubbles: true }));
         }
     });
 }
@@ -49,41 +50,37 @@ function selectServer(event, ui, serverLabel) {
  *
  */
 function createServerAutocomplete() {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const inputElement = $(this);
-    const serverLabel = inputElement.data('server-history');
+    const serverLabel = this.dataset.serverHistory;
 
-    inputElement
-        .autocomplete({
-            source: (i, o) => findServers(i, o, serverLabel),
-            select: (e, u) => selectServer(e, u, serverLabel),
-            minLength: 0,
-        })
-        .on('focus', onInputFocus); // <== show tag list on click
+    inputElement.autocomplete({
+        source: (i, o) => findServers(i, o, serverLabel),
+        select: (e, u) => selectServer(e, u, serverLabel),
+        minLength: 0,
+    });
+    this.addEventListener('focus', onInputFocus);
 }
 
 /**
  *
  */
 function onInputFocus() {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(this).autocomplete('search', $(this).val());
+    $(this).autocomplete('search', this.value);
 }
 
 /**
  *
  */
 function onServerConnectClick() {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const serverLabels = String($(this).data('server-connect')).split(',');
+    const serverLabels = String(this.dataset.serverConnect).split(',');
 
     serverLabels.forEach(serverLabel => {
         if (!power_user.servers) {
             power_user.servers = [];
         }
 
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const value = String($(`[data-server-history="${serverLabel}"]`).val()).toLowerCase().trim();
+        const input = document.querySelector(`[data-server-history="${serverLabel}"]`);
+        const value = String(input ? input.value : '').toLowerCase().trim();
 
         // Don't save empty values or invalid URLs
         if (!value || !isValidUrl(value)) {
@@ -107,6 +104,10 @@ function onServerConnectClick() {
  */
 export function initServerHistory() {
     document.querySelectorAll('[data-server-history]').forEach(el => createServerAutocomplete.call(el));
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document).on('click', '[data-server-connect]', onServerConnectClick);
+    document.addEventListener('click', function (event) {
+        const target = event.target.closest('[data-server-connect]');
+        if (target instanceof HTMLElement) {
+            onServerConnectClick.call(target, event);
+        }
+    });
 }
