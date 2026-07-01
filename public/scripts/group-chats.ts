@@ -817,16 +817,10 @@ async function getGroups() {
     }
 }
 
-/**
- * Gets a group UI block for the list.
- * @param {Group} group Group object
- * @returns {JQuery<HTMLElement>} jQuery element representing the group block
- */
 export function getGroupBlock(group) {
     let count = 0;
     const namesList = [];
 
-    // Build inline name list
     if (Array.isArray(group.members) && group.members.length) {
         for (const member of group.members) {
             const character = characters.find(x => x.avatar === member || x.name === member);
@@ -837,43 +831,35 @@ export function getGroupBlock(group) {
         }
     }
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const template = document.querySelector('#group_list_template .group_select').cloneNode(true);
-    const $template = $(template);
-    $template.data('id', group.id);
-    $template.attr('data-grid', group.id);
-    $($template[0].querySelector('.ch_name')).text(group.name).attr('title', `[Group] ${group.name}`);
-    $($template[0].querySelector('.group_fav_icon')).css('display', 'none');
+    template.dataset.id = group.id;
+    template.setAttribute('data-grid', group.id);
+    template.querySelector('.ch_name').textContent = group.name;
+    template.querySelector('.ch_name').setAttribute('title', `[Group] ${group.name}`);
+    template.querySelector('.group_fav_icon').style.display = 'none';
     template.classList.toggle('is_fav', !!group.fav);
-    $($template[0].querySelector('.ch_fav')).val(String(group.fav));
-    $($template[0].querySelector('.group_select_counter')).text(count + ' ' + (count != 1 ? t`characters` : t`character`));
-    $($template[0].querySelector('.group_select_block_list')).text(namesList.join(', '));
+    template.querySelector('.ch_fav').value = String(group.fav);
+    template.querySelector('.group_select_counter').textContent = count + ' ' + (count != 1 ? t`characters` : t`character`);
+    template.querySelector('.group_select_block_list').textContent = namesList.join(', ');
 
-    // Display inline tags
-    const tagsElement = $(template[0].querySelector('.tags'));
+    const tagsElement = $(template.querySelector('.tags'));
     printTagList(tagsElement, { forEntityOrKey: group.id, tagOptions: { isCharacterList: true } });
 
     const avatar = getGroupAvatar(group);
     if (avatar) {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         template.querySelector('.avatar').replaceWith(avatar[0]);
     }
 
     return template;
 }
 
-/**
- * Updates the avatar display for a given group.
- * @param {Group} group Group object
- */
 function updateGroupAvatar(group) {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const preview = document.getElementById('group_avatar_preview');
     preview.innerHTML = '';
     preview.append(getGroupAvatar(group)[0]);
 
-    [...document.querySelectorAll('.group_select')].forEach(el => {
-        if ($(el).data('id') == group.id) {
+    document.querySelectorAll('.group_select').forEach(el => {
+        if (el.dataset.id == group.id) {
             el.querySelector('.avatar').replaceWith(getGroupAvatar(group)[0]);
         }
     });
@@ -894,20 +880,19 @@ function isValidImageUrl(url) {
     return isDataURL(url) || (url && (url.startsWith('user') || url.startsWith('/user')));
 }
 
-/**
- * Gets a group avatar element.
- * @param {Group} group Group object
- * @returns {JQuery<HTMLElement>} Group avatar element
- */
 function getGroupAvatar(group) {
     if (!group) {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        return $(`<div class="avatar"><img src="${default_avatar}"></div>`);
+        const div = document.createElement('div');
+        div.className = 'avatar';
+        div.innerHTML = `<img src="${default_avatar}">`;
+        return $(div);
     }
-    // if isDataURL or if it's a valid local file url
     if (isValidImageUrl(group.avatar_url)) {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        return $(`<div class="avatar" title="[Group] ${group.name}"><img src="${group.avatar_url}"></div>`);
+        const div = document.createElement('div');
+        div.className = 'avatar';
+        div.title = `[Group] ${group.name}`;
+        div.innerHTML = `<img src="${group.avatar_url}">`;
+        return $(div);
     }
 
     const memberAvatars = [];
@@ -927,29 +912,24 @@ function getGroupAvatar(group) {
     const avatarCount = memberAvatars.length;
 
     if (avatarCount >= 1 && avatarCount <= 4) {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const groupAvatar = document.querySelector(`#group_avatars_template .collage_${avatarCount}`).cloneNode(true);
-
         for (let i = 0; i < avatarCount; i++) {
-            $(groupAvatar[0].querySelector(`.img_${i + 1}`)).attr('src', memberAvatars[i]);
+            groupAvatar.querySelector(`.img_${i + 1}`).setAttribute('src', memberAvatars[i]);
         }
-
-        groupAvatar.attr('title', `[Group] ${group.name}`);
-        return groupAvatar;
+        groupAvatar.setAttribute('title', `[Group] ${group.name}`);
+        return $(groupAvatar);
     }
 
-    // catch edge case where group had one member and that member is deleted
     if (avatarCount === 0) {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        return $('<div class="missing-avatar fa-solid fa-user-slash"></div>');
+        const div = document.createElement('div');
+        div.className = 'missing-avatar fa-solid fa-user-slash';
+        return $(div);
     }
 
-    // default avatar
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const groupAvatar = document.querySelector('#group_avatars_template .collage_1').cloneNode(true);
-    $(groupAvatar[0].querySelector('.img_1')).attr('src', group.avatar_url || system_avatar);
-    groupAvatar.attr('title', `[Group] ${group.name}`);
-    return groupAvatar;
+    groupAvatar.querySelector('.img_1').setAttribute('src', group.avatar_url || system_avatar);
+    groupAvatar.setAttribute('title', `[Group] ${group.name}`);
+    return $(groupAvatar);
 }
 
 /**
@@ -1779,51 +1759,45 @@ function printGroupMembers() {
     }
 }
 
-/**
- * Creates a jQuery element representing a group character block.
- * @param {Character} character Character object
- * @returns {JQuery<HTMLElement>} jQuery element representing the group character block
- */
 function getGroupCharacterBlock(character) {
     const avatar = getThumbnailUrl('avatar', character.avatar);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const template = document.querySelector('#group_member_template .group_member').cloneNode(true);
     const isFav = !!character.fav || character.fav == 'true';
-    template.data('id', character.avatar);
-    $(template[0].querySelector('.avatar img')).attr({ 'src': avatar, 'title': character.avatar });
-    $(template[0].querySelector('.ch_name')).text(character.name);
-    template.attr('data-chid', characters.indexOf(character));
-    $(template[0].querySelector('.ch_fav')).val(String(isFav));
-    template[0].classList.toggle('is_fav', isFav);
+    template.dataset.id = character.avatar;
+    template.querySelector('.avatar img').setAttribute('src', avatar);
+    template.querySelector('.avatar img').setAttribute('title', character.avatar);
+    template.querySelector('.ch_name').textContent = character.name;
+    template.setAttribute('data-chid', characters.indexOf(character));
+    template.querySelector('.ch_fav').value = String(isFav);
+    template.classList.toggle('is_fav', isFav);
 
     const auxFieldName = power_user.aux_field || 'character_version';
     const auxFieldValue = (character.data && character.data[auxFieldName]) || '';
     if (auxFieldValue) {
-        $(template[0].querySelector('.character_version')).text(auxFieldValue);
+        template.querySelector('.character_version').textContent = auxFieldValue;
     } else {
-        $(template[0].querySelector('.character_version')).hide();
+        template.querySelector('.character_version').style.display = 'none';
     }
 
     const queuePosition = groupChatQueueOrder.get(character.avatar);
     if (queuePosition) {
-        $(template[0].querySelector('.queue_position')).text(queuePosition);
-        template[0].classList.toggle('is_queued', queuePosition > 1);
-        template[0].classList.toggle('is_active', queuePosition === 1);
+        template.querySelector('.queue_position').textContent = queuePosition;
+        template.classList.toggle('is_queued', queuePosition > 1);
+        template.classList.toggle('is_active', queuePosition === 1);
     }
 
-    template[0].classList.toggle('disabled', isGroupMemberDisabled(character.avatar));
+    template.classList.toggle('disabled', isGroupMemberDisabled(character.avatar));
 
-    // Display inline tags
-    const tagsElement = $(template[0].querySelector('.tags'));
+    const tagsElement = $(template.querySelector('.tags'));
     printTagList(tagsElement, { forEntityOrKey: characters.indexOf(character), tagOptions: { isCharacterList: true } });
 
     if (!openGroupId) {
-        $(template[0].querySelector('[data-action="speak"]')).hide();
-        $(template[0].querySelector('[data-action="enable"]')).hide();
-        $(template[0].querySelector('[data-action="disable"]')).hide();
+        template.querySelector('[data-action="speak"]').style.display = 'none';
+        template.querySelector('[data-action="enable"]').style.display = 'none';
+        template.querySelector('[data-action="disable"]').style.display = 'none';
     }
 
-    return template;
+    return $(template);
 }
 
 /**

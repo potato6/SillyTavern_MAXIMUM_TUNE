@@ -1,0 +1,125 @@
+TODO: Deprecate jQuery for Native JS
+======================================
+
+Priority ordering: easiest/independent first, hardest/blocked-by-plugins last.
+
+## do NOT use mass replacemenbt tools, eg: bash, python or anything of the kind, analyze context and make sure the replacement mantains the behavior.
+
+PHASE 1 — Low-hanging fruit (no plugin dependency) ✅
+---------------------------------------------------
+[x] Replace `$.trim(str)` with `str.trim()` — not found in codebase
+[x] Replace `$.each(arr, fn)` with `arr.forEach(fn)` or `for...of` — not found in codebase
+[x] Replace `$.map(arr, fn)` with `arr.map(fn)` — not found in codebase
+[x] Replace `$.inArray(val, arr)` with `arr.includes(val)` or `arr.indexOf(val)` — not found in codebase
+[x] Replace `$.extend({}, a, b)` with `Object.assign({}, a, b)` or spread `{...a, ...b}` — replaced `$.extend(true, {}, data)` in utils.ts:2927 with `structuredClone(data)`
+[x] Replace `$.isArray(val)` with `Array.isArray(val)` — not found in codebase
+[x] Replace `$.param(obj)` with `new URLSearchParams(obj).toString()` — not found in codebase
+[x] Replace `$.grep(arr, fn)` with `arr.filter(fn)` — not found in codebase
+[x] Replace `$.makeArray(x)` with `Array.from(x)` or spread `[...x]` — not found in codebase
+
+PHASE 2 — DOM traversal & manipulation (no plugin dependency) ✅
+--------------------------------------------------------------
+[x] Replace `.closest(sel)` with `.closest(sel)` (already native — just remove $ wrapping)
+[x] Replace `.find(sel)` with `.querySelectorAll(sel)`
+[x] Replace `.parent()` / `.parents(sel)` with `.parentElement` / `.closest(sel)`
+[x] Replace `.children()` with `.children`
+[x] Replace `.siblings()` with manual filter of `.parentElement.children`
+[x] Replace `.prev()` / `.next()` with `.previousElementSibling` / `.nextElementSibling`
+[x] Replace `.filter(fn)` / `.not(sel)` with `Array.from(...).filter(...)`
+[x] Replace `.first()` / `.last()` / `.eq(n)` with array index access
+[x] Replace `.end()` by restructuring chains into separate statements
+[x] Replace `.each(fn)` on jQuery collections with `for...of` or `forEach`
+
+PHASE 3 — DOM read/write (no plugin dependency) ✅
+-------------------------------------------------
+[x] Replace `.val()` with `.value` (input/select/textarea)
+[x] Replace `.text()` with `.textContent`
+[x] Replace `.html()` with `.innerHTML`
+[x] Replace `.attr(name)` / `.attr(name, val)` with `.getAttribute(name)` / `.setAttribute(name, val)`
+[x] Replace `.removeAttr(name)` with `.removeAttribute(name)`
+[x] Replace `.prop(name)` / `.prop(name, val)` with direct property access
+[x] Replace `.data(name)` with `.dataset.name` or `getAttribute('data-'+name)`
+[x] Replace `.css(prop)` / `.css(prop, val)` with `.style.prop` / `.style.setProperty(prop, val)`
+[x] Replace `.addClass(c)` with `.classList.add(c)`
+[x] Replace `.removeClass(c)` with `.classList.remove(c)`
+[x] Replace `.toggleClass(c)` with `.classList.toggle(c)`
+[x] Replace `.hasClass(c)` with `.classList.contains(c)`
+
+PHASE 4 — DOM manipulation (no plugin dependency) ✅
+---------------------------------------------------
+[x] Replace `.append(html)` with `.insertAdjacentHTML('beforeend', html)` or `.appendChild(el)`
+[x] Replace `.prepend(html)` with `.insertAdjacentHTML('afterbegin', html)`
+[x] Replace `.before(html)` with `.insertAdjacentHTML('beforebegin', html)`
+[x] Replace `.after(html)` with `.insertAdjacentHTML('afterend', html)`
+[x] Replace `.remove()` with `.remove()` (already native — just remove $ wrapping)
+[x] Replace `.empty()` with `.innerHTML = ''`
+[x] Replace `.wrap(html)` with manual `outerHTML` or `insertAdjacentHTML`
+[x] Replace `.clone()` with `.cloneNode(true)`
+[x] Replace `.replaceWith(html)` with `.outerHTML = html` or `.replaceWith(...)`
+
+PHASE 5 — Events (no plugin dependency)
+-----------------------------------------
+[ ] Replace `$(sel).on(event, handler)` with `el.addEventListener(event, handler)`
+[ ] Replace `$(sel).off(event, handler)` with `el.removeEventListener(event, handler)`
+[ ] Replace `$(sel).trigger(event)` with `el.dispatchEvent(new Event(event))`
+[ ] Replace `$(document).on(event, sel, handler)` delegation with event delegation on closest static parent
+[ ] Replace `.click(fn)`, `.change(fn)`, `.keyup(fn)`, `.keydown(fn)`, `.focus(fn)`, `.blur(fn)`, `.submit(fn)` shorthand with `.addEventListener(event, fn)`
+[ ] Replace `.hover(fnIn, fnOut)` with `mouseenter`/`mouseleave` listeners
+[ ] Replace `.serialize()` with manual `FormData` + iteration or `URLSearchParams(new FormData(form))`
+[ ] Replace `.serializeArray()` with `Array.from(new FormData(form).entries())`
+
+- public/scripts/group-chats.ts
+- public/scripts/data-maid.ts
+- public/scripts/extensions/shared.js
+
+PHASE 6 — Effects & animation (needs CSS transitions or JS fallback)
+----------------------------------------------------------------------
+[ ] Replace `.show()` / `.hide()` / `.toggle()` with `.style.display = 'block'/'none'/toggle
+[ ] Replace `.fadeIn()` / `.fadeOut()` with CSS transitions or Web Animations API (`el.animate()`)
+[ ] Replace `.slideUp()` / `.slideDown()` with CSS `max-height` transitions or Web Animations API
+[ ] Replace `.animate(props, dur)` with CSS transitions + `style` changes or Web Animations API
+[ ] Replace `.delay()` / `.stop()` / `.finish()` with `setTimeout` / `cancelAnimationFrame` equivalents
+[ ] Replace `jQuery.fx.off` with a global CSS transition disable or `matchMedia('prefers-reduced-motion')`
+
+Affected: power-user.ts (reduced_motion), various animations in script.ts, chats.ts, etc.
+
+PHASE 7 — ajax (only in tokenizers.ts)
+----------------------------------------
+[ ] Replace `jQuery.ajax()` in tokenizers.ts with `fetch()` + AbortController
+
+PHASE 8 — jQuery plugins (hard, requires replacement strategy)
+----------------------------------------------------------------
+Tightest couplings — these plugins require jQuery and must be replaced or the lib must be kept:
+
+[ ] **select2** (~466 refs): Heaviest plugin dependency. Replace with Choices.js, Tom Select, or vanilla custom dropdown. Found in: openai.ts, textgen-settings.ts, power-user.ts, world-info.ts, slash-commands.ts, utils.ts, tags.ts, etc.
+[ ] **autocomplete** (jQuery UI, ~70 refs): Replace with custom datalist-based autocomplete or dedicated lib. Found in: autocomplete/AutoComplete.ts, world-info.ts, utils.ts
+[ ] **cropper** (~58 refs): `jquery-cropper` wrapping Cropper.js. Can use Cropper.js directly (no jQuery needed). Found in: popup.ts, power-user.ts, group-chats.ts
+[ ] **sortable** (~20 refs): Replace SortableJS lib (works standalone, no jQuery). Found in: power-user.ts, tags.ts, world-info.ts
+[ ] **tooltip** (~21 refs): jQuery UI tooltip. Replace with CSS-only tooltips or a lightweight lib. Found in: power-user.ts, textgen-models.ts
+[ ] **slider** (~7 refs): jQuery UI slider. Replace with native `<input type="range">` with + custom styling, or lightweight lib. Found in: textgen-settings.ts, kai-settings.ts, server-history.ts
+[ ] **draggable** (~6 refs): jQuery UI draggable. Found in: RossAscends-mods.ts, group-chats.ts, dragdrop.ts
+[ ] **pagination** (~12 refs): Custom pagination plugin on jQuery. Need to reverse-engineer or replace.
+[ ] **toastr**: Already used as standalone global. Remove jQuery dependency if possible, or switch to a vanilla toast library.
+[ ] **izoomify** (~2 refs): jQuery image zoom plugin. Find vanilla alternative if needed.
+[ ] **nanogallery2**: Type declarations only? Verify if still actively used.
+
+PHASE 9 — Cleanup
+-------------------
+[ ] Remove `jquery-3.5.1.min.js` script tag from index.html and login.html
+[ ] Remove `jquery-ui.min.js`, `jquery-ui.min.css` from index.html
+[ ] Remove `jquery.transit.min.js` from index.html
+[ ] Remove `jquery-cookie-1.4.1.min.js` from index.html (use `localStorage`/`sessionStorage` directly)
+[ ] Remove `jquery.ui.touch-punch.min.js` from index.html
+[ ] Remove `jquery-cropper.min.js` from index.html
+[ ] Remove `jquery.izoomify.js` from index.html
+[ ] Remove `@types/jquery`, `@types/jqueryui`, `@types/jquery-cropper`, `@types/jquery.transit` from package.json
+[ ] Remove `jquery: true` from eslint.config.ts env
+[ ] Remove `jQuery` type references from global.d.ts, JSDoc annotations across all files
+
+NOTES
+-----
+- Many files use `JQuery<HTMLElement>` only for JSDoc type annotations — these can be changed to `HTMLElement` early, without functional changes.
+- The `$` alias is also used in the codebase. Any file that loads jQuery gets `$` globally. Migration must ensure `$` is not referenced before removing the jQuery script.
+- Helper functions in utils.ts (`jQuery.fn` instanceof checks) can be simplified once jQuery is gone.
+- `power-user.ts` controls `jQuery.fx.off` for reduced motion — needs a non-jQuery approach.
+- Each phase should be done file-by-file, with testing between each file migration.
