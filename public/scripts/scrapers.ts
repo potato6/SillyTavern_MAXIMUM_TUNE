@@ -118,20 +118,26 @@ class Notepad {
      * @returns {Promise<File[]>} File attachments scraped from the text
      */
     async scrape() {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const template = $(await renderExtensionTemplateAsync('attachments', 'notepad', {}));
+        const templateHtml = await renderExtensionTemplateAsync('attachments', 'notepad', {});
+        const container = document.createElement('div');
+        container.innerHTML = templateHtml;
         let fileName = `Untitled - ${new Date().toLocaleString()}`;
         let text = '';
-        template.find('input[name="notepadFileName"]').val(fileName).on('input', function () {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            fileName = String($(this).val()).trim();
-        });
-        template.find('textarea[name="notepadFileContent"]').on('input', function () {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            text = String($(this).val());
-        });
+        const fileNameInput = container.querySelector('input[name="notepadFileName"]');
+        if (fileNameInput instanceof HTMLInputElement) {
+            fileNameInput.value = fileName;
+            fileNameInput.addEventListener('input', function () {
+                fileName = String(this.value).trim();
+            });
+        }
+        const contentTextarea = container.querySelector('textarea[name="notepadFileContent"]');
+        if (contentTextarea instanceof HTMLTextAreaElement) {
+            contentTextarea.addEventListener('input', function () {
+                text = String(this.value);
+            });
+        }
 
-        const result = await callGenericPopup(template, POPUP_TYPE.CONFIRM, '', { wide: true, large: true, okButton: 'Save', cancelButton: 'Cancel' });
+        const result = await callGenericPopup(container, POPUP_TYPE.CONFIRM, '', { wide: true, large: true, okButton: 'Save', cancelButton: 'Cancel' });
 
         if (!result || text === '') {
             // @ts-expect-error TS(7030): Not all code paths return a value.
@@ -185,9 +191,10 @@ class WebScraper {
      * @returns {Promise<File[]>} File attachments scraped from the webpage
      */
     async scrape() {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const template = $(await renderExtensionTemplateAsync('attachments', 'web-scrape', {}));
-        const linksString = await callGenericPopup(template, POPUP_TYPE.INPUT, '', { wide: false, large: false, okButton: 'Scrape', cancelButton: 'Cancel', rows: 4 });
+        const templateHtml = await renderExtensionTemplateAsync('attachments', 'web-scrape', {});
+        const container = document.createElement('div');
+        container.innerHTML = templateHtml;
+        const linksString = await callGenericPopup(container, POPUP_TYPE.INPUT, '', { wide: false, large: false, okButton: 'Scrape', cancelButton: 'Cancel', rows: 4 });
 
         if (!linksString) {
             // @ts-expect-error TS(7030): Not all code paths return a value.
@@ -304,22 +311,29 @@ class MediaWikiScraper {
         let filter = '';
         let output = 'single';
 
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const template = $(await renderExtensionTemplateAsync('attachments', 'mediawiki-scrape', {}));
-        template.find('input[name="scrapeInput"]').on('input', function () {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            url = String($(this).val()).trim();
-        });
-        template.find('input[name="scrapeFilter"]').on('input', function () {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            filter = String($(this).val());
-        });
-        template.find('input[name="scrapeOutput"]').on('input', function () {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            output = String($(this).val());
-        });
+        const templateHtml = await renderExtensionTemplateAsync('attachments', 'mediawiki-scrape', {});
+        const container = document.createElement('div');
+        container.innerHTML = templateHtml;
+        const urlInput = container.querySelector('input[name="scrapeInput"]');
+        if (urlInput instanceof HTMLInputElement) {
+            urlInput.addEventListener('input', function () {
+                url = String(this.value).trim();
+            });
+        }
+        const filterInput = container.querySelector('input[name="scrapeFilter"]');
+        if (filterInput instanceof HTMLInputElement) {
+            filterInput.addEventListener('input', function () {
+                filter = String(this.value);
+            });
+        }
+        const outputInput = container.querySelector('input[name="scrapeOutput"]');
+        if (outputInput instanceof HTMLInputElement) {
+            outputInput.addEventListener('input', function () {
+                output = String(this.value);
+            });
+        }
 
-        const confirm = await callGenericPopup(template, POPUP_TYPE.CONFIRM, '', { wide: false, large: false, okButton: 'Scrape', cancelButton: 'Cancel' });
+        const confirm = await callGenericPopup(container, POPUP_TYPE.CONFIRM, '', { wide: false, large: false, okButton: 'Scrape', cancelButton: 'Cancel' });
 
         if (confirm !== POPUP_RESULT.AFFIRMATIVE) {
             // @ts-expect-error TS(7030): Not all code paths return a value.
@@ -425,22 +439,29 @@ class FandomScraper {
         let filter = '';
         let output = 'single';
 
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const template = $(await renderExtensionTemplateAsync('attachments', 'fandom-scrape', {}));
-        template.find('input[name="fandomScrapeInput"]').on('input', function () {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            fandom = String($(this).val()).trim();
-        });
-        template.find('input[name="fandomScrapeFilter"]').on('input', function () {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            filter = String($(this).val());
-        });
-        template.find('input[name="fandomScrapeOutput"]').on('input', function () {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            output = String($(this).val());
-        });
+        const templateHtml = await renderExtensionTemplateAsync('attachments', 'fandom-scrape', {});
+        const container = document.createElement('div');
+        container.innerHTML = templateHtml;
+        const fandomInput = container.querySelector('input[name="fandomScrapeInput"]');
+        if (fandomInput instanceof HTMLInputElement) {
+            fandomInput.addEventListener('input', function () {
+                fandom = String(this.value).trim();
+            });
+        }
+        const filterInput = container.querySelector('input[name="fandomScrapeFilter"]');
+        if (filterInput instanceof HTMLInputElement) {
+            filterInput.addEventListener('input', function () {
+                filter = String(this.value);
+            });
+        }
+        const outputInput = container.querySelector('input[name="fandomScrapeOutput"]');
+        if (outputInput instanceof HTMLInputElement) {
+            outputInput.addEventListener('input', function () {
+                output = String(this.value);
+            });
+        }
 
-        const confirm = await callGenericPopup(template, POPUP_TYPE.CONFIRM, '', { wide: false, large: false, okButton: 'Scrape', cancelButton: 'Cancel' });
+        const confirm = await callGenericPopup(container, POPUP_TYPE.CONFIRM, '', { wide: false, large: false, okButton: 'Scrape', cancelButton: 'Cancel' });
 
         if (confirm !== POPUP_RESULT.AFFIRMATIVE) {
             // @ts-expect-error TS(7030): Not all code paths return a value.
@@ -586,14 +607,17 @@ class YouTubeScraper {
      */
     async scrape() {
         let lang = '';
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const template = $(await renderExtensionTemplateAsync('attachments', 'youtube-scrape', {}));
-        const videoUrl = await callGenericPopup(template, POPUP_TYPE.INPUT, '', { wide: false, large: false, okButton: 'Scrape', cancelButton: 'Cancel' });
+        const templateHtml = await renderExtensionTemplateAsync('attachments', 'youtube-scrape', {});
+        const container = document.createElement('div');
+        container.innerHTML = templateHtml;
+        const videoUrl = await callGenericPopup(container, POPUP_TYPE.INPUT, '', { wide: false, large: false, okButton: 'Scrape', cancelButton: 'Cancel' });
 
-        template.find('input[name="youtubeLanguageCode"]').on('input', function () {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            lang = String($(this).val()).trim();
-        });
+        const langInput = container.querySelector('input[name="youtubeLanguageCode"]');
+        if (langInput instanceof HTMLInputElement) {
+            langInput.addEventListener('input', function () {
+                lang = String(this.value).trim();
+            });
+        }
 
         if (!videoUrl) {
             // @ts-expect-error TS(7030): Not all code paths return a value.
