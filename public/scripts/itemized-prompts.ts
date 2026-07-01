@@ -355,8 +355,10 @@ export async function promptItemize(itemizedPrompts, requestedMesId) {
             container.innerHTML = DOMPurify.sanitize(ds);
             const rawPromptWrapper = document.getElementById('rawPromptWrapper');
             rawPromptWrapper.replaceChildren(container);
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#rawPromptPopup').slideToggle();
+            const rawPromptPopup = document.getElementById('rawPromptPopup');
+            if (rawPromptPopup) {
+                rawPromptPopup.style.display = getComputedStyle(rawPromptPopup).display === 'none' ? '' : 'none';
+            }
         });
     } else {
         diffPrevPrompt.style.display = 'none';
@@ -396,8 +398,10 @@ export async function promptItemize(itemizedPrompts, requestedMesId) {
         //let DisplayStringifiedPrompt = JSON.stringify(itemizedPrompts[PromptArrayItemForRawPromptDisplay].rawPrompt).replace(/\n+/g, '<br>');
         const rawPromptWrapper = document.getElementById('rawPromptWrapper');
         rawPromptWrapper.innerText = rawPrompt;
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#rawPromptPopup').slideToggle();
+        const rawPromptPopup = document.getElementById('rawPromptPopup');
+        if (rawPromptPopup) {
+            rawPromptPopup.style.display = getComputedStyle(rawPromptPopup).display === 'none' ? '' : 'none';
+        }
     });
 
     await popup.show();
@@ -416,11 +420,14 @@ export function initItemizedPrompts() {
         }
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document).on('pointerup', '.mes_prompt', async function () {
-        const mesIdForItemization = this.closest('.mes').getAttribute('mesId');
+    document.addEventListener('pointerup', async function (event) {
+        const target = event.target.closest('.mes_prompt');
+        if (!target) {
+            return;
+        }
+        const mesIdForItemization = target.closest('.mes')?.getAttribute('mesId');
         console.log(`looking for mesID: ${mesIdForItemization}`);
-        if (itemizedPrompts.length !== undefined && itemizedPrompts.length !== 0) {
+        if (mesIdForItemization && itemizedPrompts.length !== undefined && itemizedPrompts.length !== 0) {
             await promptItemize(itemizedPrompts, mesIdForItemization);
         }
     });
