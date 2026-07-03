@@ -847,7 +847,7 @@ export function getGroupBlock(group) {
 
     const avatar = getGroupAvatar(group);
     if (avatar) {
-        template.querySelector('.avatar').replaceWith(avatar[0]);
+        template.querySelector('.avatar').replaceWith(avatar);
     }
 
     return template;
@@ -856,11 +856,11 @@ export function getGroupBlock(group) {
 function updateGroupAvatar(group) {
     const preview = document.getElementById('group_avatar_preview');
     preview.innerHTML = '';
-    preview.append(getGroupAvatar(group)[0]);
+    preview.append(getGroupAvatar(group));
 
     document.querySelectorAll('.group_select').forEach(el => {
         if (el.dataset.id == group.id) {
-            el.querySelector('.avatar').replaceWith(getGroupAvatar(group)[0]);
+            el.querySelector('.avatar').replaceWith(getGroupAvatar(group));
         }
     });
 
@@ -885,14 +885,14 @@ function getGroupAvatar(group) {
         const div = document.createElement('div');
         div.className = 'avatar';
         div.innerHTML = `<img src="${default_avatar}">`;
-        return $(div);
+        return div;
     }
     if (isValidImageUrl(group.avatar_url)) {
         const div = document.createElement('div');
         div.className = 'avatar';
         div.title = `[Group] ${group.name}`;
         div.innerHTML = `<img src="${group.avatar_url}">`;
-        return $(div);
+        return div;
     }
 
     const memberAvatars = [];
@@ -917,19 +917,19 @@ function getGroupAvatar(group) {
             groupAvatar.querySelector(`.img_${i + 1}`).setAttribute('src', memberAvatars[i]);
         }
         groupAvatar.setAttribute('title', `[Group] ${group.name}`);
-        return $(groupAvatar);
+        return groupAvatar;
     }
 
     if (avatarCount === 0) {
         const div = document.createElement('div');
         div.className = 'missing-avatar fa-solid fa-user-slash';
-        return $(div);
+        return div;
     }
 
     const groupAvatar = document.querySelector('#group_avatars_template .collage_1').cloneNode(true);
     groupAvatar.querySelector('.img_1').setAttribute('src', group.avatar_url || system_avatar);
     groupAvatar.setAttribute('title', `[Group] ${group.name}`);
-    return $(groupAvatar);
+    return groupAvatar;
 }
 
 /**
@@ -1689,13 +1689,13 @@ function printGroupCandidates() {
             accountStorage.setItem(storageKey, e.target.value);
             paginationDropdownChangeHandler(e, size);
         },
-        callback: function (data) {
-            document.getElementById('rm_group_add_members').innerHTML = '';
-            for (const i of data) {
-                document.getElementById('rm_group_add_members').append(getGroupCharacterBlock(i.item)[0]);
-            }
-            localizePagination($('#rm_group_add_members_pagination'));
-        },
+            callback: function (data) {
+                document.getElementById('rm_group_add_members').innerHTML = '';
+                for (const i of data) {
+                    document.getElementById('rm_group_add_members').append(getGroupCharacterBlock(i.item));
+                }
+                localizePagination($('#rm_group_add_members_pagination'));
+            },
     });
 }
 
@@ -1727,7 +1727,7 @@ function printGroupMembers() {
             callback: function (data) {
                 document.querySelectorAll('.rm_group_members').forEach(el => el.innerHTML = '');
                 for (const i of data) {
-                    document.querySelectorAll('.rm_group_members').forEach(el => el.append(getGroupCharacterBlock(i.item)[0]));
+                    document.querySelectorAll('.rm_group_members').forEach(el => el.append(getGroupCharacterBlock(i.item)));
                 }
                 // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 localizePagination($(that));
@@ -1774,7 +1774,7 @@ function getGroupCharacterBlock(character) {
         template.querySelector('[data-action="disable"]').style.display = 'none';
     }
 
-    return $(template);
+    return template;
 }
 
 /**
@@ -1874,7 +1874,7 @@ function select_group_chats(groupId, skipAnimation) {
     setMenuType(group ? 'group_edit' : 'group_create');
     const preview = document.getElementById('group_avatar_preview');
     preview.innerHTML = '';
-    preview.append(getGroupAvatar(group)[0]);
+    preview.append(getGroupAvatar(group));
     document.getElementById('rm_group_restore_avatar').style.display = (!!group && isValidImageUrl(group.avatar_url)) ? '' : 'none';
     document.getElementById('rm_group_filter').value = '';
     document.getElementById('rm_group_filter').dispatchEvent(new Event('input', { bubbles: true }));
@@ -2009,7 +2009,7 @@ async function uploadGroupAvatar(event) {
     _thisGroup.avatar_url = thumbnailUrl;
     const _preview = document.getElementById('group_avatar_preview');
     _preview.innerHTML = '';
-    _preview.append(getGroupAvatar(_thisGroup)[0]);
+    _preview.append(getGroupAvatar(_thisGroup));
     document.getElementById('rm_group_restore_avatar').style.display = '';
     await editGroup(openGroupId, true, true);
 }
@@ -2034,7 +2034,7 @@ async function restoreGroupAvatar() {
     _thisGroup.avatar_url = '';
     const _previewRestore = document.getElementById('group_avatar_preview');
     _previewRestore.innerHTML = '';
-    _previewRestore.append(getGroupAvatar(_thisGroup)[0]);
+    _previewRestore.append(getGroupAvatar(_thisGroup));
     document.getElementById('rm_group_restore_avatar').style.display = 'none';
     await editGroup(openGroupId, true, true);
 }
