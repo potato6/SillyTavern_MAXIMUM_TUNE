@@ -680,6 +680,9 @@ export function dragElement(elmnt) {
         savePositionAndSize();
     }
 
+    /**
+     *
+     */
     function onMouseUp() {
         isMouseDown = false;
         actionType = null;

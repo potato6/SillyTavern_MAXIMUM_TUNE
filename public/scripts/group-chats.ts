@@ -817,6 +817,10 @@ async function getGroups() {
     }
 }
 
+/**
+ *
+ * @param group
+ */
 export function getGroupBlock(group) {
     let count = 0;
     const namesList = [];
@@ -853,6 +857,10 @@ export function getGroupBlock(group) {
     return template;
 }
 
+/**
+ *
+ * @param group
+ */
 function updateGroupAvatar(group) {
     const preview = document.getElementById('group_avatar_preview');
     preview.innerHTML = '';
@@ -880,6 +888,10 @@ function isValidImageUrl(url) {
     return isDataURL(url) || (url && (url.startsWith('user') || url.startsWith('/user')));
 }
 
+/**
+ *
+ * @param group
+ */
 function getGroupAvatar(group) {
     if (!group) {
         const div = document.createElement('div');
@@ -1443,6 +1455,12 @@ async function groupChatAutoModeWorker() {
     await generateGroupWrapper(true, 'auto', { signal: groupAutoModeAbortController.signal });
 }
 
+/**
+ *
+ * @param groupId
+ * @param groupMember
+ * @param isDelete
+ */
 async function modifyGroupMember(groupId, groupMember, isDelete) {
     const id = groupMember.dataset.id;
     const thisGroup = groups.find((x) => x.id == groupId);
@@ -1473,6 +1491,12 @@ async function modifyGroupMember(groupId, groupMember, isDelete) {
     document.getElementById('rm_group_submit').disabled = !groupHasMembers;
 }
 
+/**
+ *
+ * @param groupId
+ * @param groupMember
+ * @param direction
+ */
 async function reorderGroupMember(groupId, groupMember, direction) {
     const id = groupMember.dataset.id;
     const thisGroup = groups.find((x) => x.id == groupId);
@@ -1556,6 +1580,7 @@ async function onGroupAutoModeDelayInput(e) {
 
 /**
  *
+ * @param event
  */
 async function onGroupNameInput(event) {
     if (openGroupId) {
@@ -1736,6 +1761,10 @@ function printGroupMembers() {
     }
 }
 
+/**
+ *
+ * @param character
+ */
 function getGroupCharacterBlock(character) {
     const avatar = getThumbnailUrl('avatar', character.avatar);
     const template = document.querySelector('#group_member_template .group_member').cloneNode(true);
@@ -1823,6 +1852,7 @@ async function onFavoriteGroupClick() {
 
 /**
  *
+ * @param event
  */
 async function onGroupSelfResponsesClick(event) {
     if (openGroupId) {
@@ -1847,6 +1877,11 @@ async function onHideMutedSpritesClick(value) {
     }
 }
 
+/**
+ *
+ * @param group
+ * @param generationMode
+ */
 function toggleHiddenControls(group, generationMode = null) {
     const isJoin = [group_generation_mode.APPEND, group_generation_mode.APPEND_DISABLED].includes(generationMode ?? group?.generation_mode);
     document.getElementById('rm_group_generation_mode_join_prefix').parentElement.style.display = isJoin ? '' : 'none';
@@ -2095,6 +2130,10 @@ async function onGroupActionClick(event) {
     await eventSource.emit(event_types.GROUP_UPDATED);
 }
 
+/**
+ *
+ * @param state
+ */
 function updateFavButtonState(state) {
     fav_grp_checked = state;
     document.getElementById('rm_group_fav').value = String(fav_grp_checked);
@@ -2140,6 +2179,10 @@ export async function openGroupById(groupId) {
     return false;
 }
 
+/**
+ *
+ * @param characterSelect
+ */
 async function openCharacterDefinition(characterSelect) {
     if (is_group_generating) {
         // @ts-expect-error TS(2304): Cannot find name 'toastr'.
@@ -2161,11 +2204,19 @@ async function openCharacterDefinition(characterSelect) {
     applyTagsOnCharacterSelect(chid);
 }
 
+/**
+ *
+ * @param event
+ */
 function filterGroupMembers(event) {
     const searchValue = String(event.currentTarget.value).toLowerCase();
     groupCandidatesFilter.setFilterData(FILTER_TYPES.SEARCH, searchValue);
 }
 
+/**
+ *
+ * @param event
+ */
 function filterGroupMemberList(event) {
     const searchValue = String(event.currentTarget.value).toLowerCase();
     groupMembersFilter.setFilterData(FILTER_TYPES.SEARCH, searchValue);
@@ -2511,6 +2562,7 @@ function stopAutoModeGeneration() {
 
 /**
  *
+ * @param event
  */
 function doCurMemberListPopout(event) {
     //repurposes the zoomed avatar template to server as a floating group member list
