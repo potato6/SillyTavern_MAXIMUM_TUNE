@@ -29,7 +29,7 @@ import { isFirefox } from './express-common.js';
 /**
  * Parsed config object.
  */
-let CACHED_CONFIG: Record<string, any> | null = null;
+let CACHED_CONFIG: Record<string, unknown> | null = null;
 let CONFIG_PATH: string | null = null;
 
 /**
@@ -53,9 +53,9 @@ export function setConfigFilePath(configFilePath: string) {
 
 /**
  * Returns the config object from the config.yaml file.
- * @returns {object} Config object
+ * @returns {Record<string, unknown>} Config object
  */
-export function getConfig() {
+export function getConfig(): Record<string, unknown> {
     if (CONFIG_PATH === null) {
         console.trace();
         console.error(color.red('No config file path set. Please set the config file path using setConfigFilePath().'));
@@ -84,13 +84,14 @@ export function getConfig() {
 /**
  * Returns the value for the given key from the config object.
  * @param {string} key - Key to get from the config object
- * @param {any} defaultValue - Default value to return if the key is not found
+ * @param {unknown} defaultValue - Default value to return if the key is not found
  * @param {'number'|'boolean'|null} typeConverter - Type to convert the value to
- * @returns {any} Value for the given key
+ * @returns {unknown} Value for the given key
  */
 export function getConfigValue(key: string, defaultValue = null, typeConverter = null) {
     /**
-     *
+     * Gets the value from environment variables or config file.
+     * @returns {unknown} The retrieved value
      */
     function _getValue() {
         const envKey = keyToEnv(key);
@@ -116,8 +117,8 @@ export function getConfigValue(key: string, defaultValue = null, typeConverter =
 
 /**
  * THIS FUNCTION IS DEPRECATED AND ONLY EXISTS FOR BACKWARDS COMPATIBILITY. DON'T USE IT.
- * @param {any} _key Unused
- * @param {any} _value Unused
+ * @param {unknown} _key Unused
+ * @param {unknown} _value Unused
  * @deprecated Configs are read-only. Use environment variables instead.
  */
 export function setConfigValue(_key: unknown, _value: unknown) {
@@ -341,7 +342,7 @@ export async function getImageBuffers(zipFilePath: string) {
 
 /**
  * Gets all chunks of data from the given readable stream.
- * @param {any} readableStream Readable stream to read from
+ * @param {Readable} readableStream Readable stream to read from
  * @returns {Promise<Buffer[]>} Array of chunks
  */
 export async function readAllChunks(readableStream: Readable) {
@@ -365,19 +366,21 @@ export async function readAllChunks(readableStream: Readable) {
 }
 
 /**
- *
- * @param item
+ * Checks if the item is a plain object.
+ * @param {unknown} item Item to check
+ * @returns {boolean} True if the item is an object and not an array
  */
 function isObject(item: unknown) {
     return (item && typeof item === 'object' && !Array.isArray(item));
 }
 
 /**
- *
- * @param target
- * @param source
+ * Deeply merges two objects.
+ * @param {Record<string, unknown>} target Target object
+ * @param {Record<string, unknown>} source Source object
+ * @returns {Record<string, unknown>} Merged object
  */
-export function deepMerge(target: Record<string, any>, source: Record<string, any>) {
+export function deepMerge(target: Record<string, unknown>, source: Record<string, unknown>) {
     const output = Object.assign({}, target);
     if (isObject(target) && isObject(source)) {
         Object.keys(source).forEach(key => {
@@ -442,8 +445,9 @@ export function humanizedDateTime(timestamp = Date.now()) {
 }
 
 /**
- *
- * @param str
+ * Attempts to parse a JSON string.
+ * @param {string} str JSON string to parse
+ * @returns {unknown} Parsed object or undefined if parsing fails
  */
 export function tryParse(str: string) {
     try {
@@ -458,7 +462,7 @@ export function tryParse(str: string) {
  * client can fetch it from. This involves stripping the data root path prefix and always using `/` as the separator.
  * @param {string} root The root directory of the user data folder.
  * @param {string} inputPath The path to be converted.
- * @returns The relative URL path from which the client can access the file.
+ * @returns {string} The relative URL path from which the client can access the file.
  */
 export function clientRelativePath(root: string, inputPath: string) {
     if (!inputPath.startsWith(root)) {
@@ -507,14 +511,15 @@ export function sanitizeSafeCharacterReplacements(char: string) {
 /**
  * Strip the last file extension from a given file name. If there are multiple extensions, only the last is removed.
  * @param {string} filename The file name to remove the extension from.
- * @returns The file name, sans extension
+ * @returns {string} The file name, sans extension
  */
 export function removeFileExtension(filename: string) {
     return filename.replace(/\.[^.]+$/, '');
 }
 
 /**
- *
+ * Generates a timestamp string.
+ * @returns {string} Timestamp in format YYYYMMDD-HHMMSS
  */
 export function generateTimestamp() {
     const now = new Date();
@@ -562,7 +567,8 @@ export function removeOldBackups(directory: string, prefix: string, limit = null
  */
 export function getImages(directoryPath: string, sortBy = 'name', type = MEDIA_REQUEST_TYPE.IMAGE) {
     /**
-     *
+     * Returns the sort function based on the sortBy parameter.
+     * @returns {(a: string, b: string) => number} The sort function
      */
     function getSortFunction() {
         switch (sortBy) {
@@ -711,11 +717,11 @@ export function makeHttp2Request(endpoint: string, method: string, body: string,
 
 /**
  * Adds YAML-serialized object to the object.
- * @param {object} obj Object
+ * @param {Record<string, unknown>} obj Object
  * @param {string} yamlString YAML-serialized object
- * @returns
+ * @returns {void}
  */
-export function mergeObjectWithYaml(obj: Record<string, any>, yamlString: string) {
+export function mergeObjectWithYaml(obj: Record<string, unknown>, yamlString: string) {
     if (!yamlString) {
         return;
     }
@@ -739,11 +745,11 @@ export function mergeObjectWithYaml(obj: Record<string, any>, yamlString: string
 
 /**
  * Removes keys from the object by YAML-serialized array.
- * @param {object} obj Object
+ * @param {Record<string, unknown>} obj Object
  * @param {string} yamlString YAML-serialized array
  * @returns {void} Nothing
  */
-export function excludeKeysByYaml(obj: Record<string, any>, yamlString: string) {
+export function excludeKeysByYaml(obj: Record<string, unknown>, yamlString: string) {
     if (!yamlString) {
         return;
     }
@@ -789,7 +795,7 @@ export function trimTrailingSlash(str: unknown) {
  * Simple TTL memory cache.
  */
 export class Cache {
-    cache: Map<string, { value: any, expiry: number }>;
+    cache: Map<string, { value: unknown, expiry: number }>;
     ttl: number;
     /**
      * @param {number} ttl Time to live in milliseconds
@@ -802,6 +808,7 @@ export class Cache {
     /**
      * Gets a value from the cache.
      * @param {string} key Cache key
+     * @returns {unknown} Cached value or null
      */
     get(key: string) {
         const value = this.cache.get(key);
@@ -819,7 +826,7 @@ export class Cache {
      * @param {string} key Key
      * @param {object} value Value
      */
-    set(key: string, value: any) {
+    set(key: string, value: unknown) {
         this.cache.set(key, {
             value: value,
             expiry: Date.now() + this.ttl,
@@ -894,7 +901,7 @@ export function urlHostnameToIPv6(hostname: string) {
  * @param {string} name Domain name to use
  * @param {boolean} useIPv6 If use IPv6
  * @param {boolean} useIPv4 If use IPv4
- * @returns Promise<boolean> If the URL is valid
+ * @returns {Promise<boolean>} Whether the domain can be resolved
  */
 export async function canResolve(name: string, useIPv6 = true, useIPv4 = true) {
     try {
@@ -974,7 +981,7 @@ export async function getHasIP() {
 /**
  * Converts various JavaScript primitives to boolean values.
  * Handles special case for "true"/"false" strings (case-insensitive)
- * @param {any} value - The value to convert to boolean
+ * @param {unknown} value - The value to convert to boolean
  * @returns {boolean} - The boolean representation of the value
  */
 export function toBoolean(value: unknown) {
@@ -1037,8 +1044,8 @@ export class MemoryLimitedMap {
     /**
      * Estimates the memory usage of a string in bytes.
      * Assumes each character occupies 2 bytes (UTF-16).
-     * @param {string} str
-     * @returns {number}
+     * @param {string} str The string to estimate
+     * @returns {number} Estimated size in bytes
      */
     static estimateStringSize(str: string) {
         return str ? str.length * 2 : 0;
@@ -1047,8 +1054,8 @@ export class MemoryLimitedMap {
     /**
      * Adds or updates a key-value pair in the map.
      * If adding the new value exceeds the memory limit, evicts oldest entries.
-     * @param {string} key
-     * @param {string} value
+     * @param {string} key The key to set
+     * @param {string} value The value to set
      */
     set(key: string, value: string) {
         if (this.maxMemory <= 0) {
@@ -1100,8 +1107,8 @@ export class MemoryLimitedMap {
 
     /**
      * Retrieves the value associated with the given key.
-     * @param {string} key
-     * @returns {string | undefined}
+     * @param {string} key The key to retrieve
+     * @returns {string | undefined} The associated value or undefined
      */
     get(key: string) {
         return this.map.get(key);
@@ -1109,8 +1116,8 @@ export class MemoryLimitedMap {
 
     /**
      * Checks if the map contains the given key.
-     * @param {string} key
-     * @returns {boolean}
+     * @param {string} key The key to check
+     * @returns {boolean} True if the key exists in the map
      */
     has(key: string) {
         return this.map.has(key);
@@ -1118,7 +1125,7 @@ export class MemoryLimitedMap {
 
     /**
      * Deletes the key-value pair associated with the given key.
-     * @param {string} key
+     * @param {string} key The key to delete
      * @returns {boolean} - Returns true if the key was found and deleted, else false.
      */
     delete(key: string) {
@@ -1150,7 +1157,7 @@ export class MemoryLimitedMap {
 
     /**
      * Returns the number of key-value pairs in the map.
-     * @returns {number}
+     * @returns {number} The number of entries
      */
     size() {
         return this.map.size;
@@ -1158,7 +1165,7 @@ export class MemoryLimitedMap {
 
     /**
      * Returns the current memory usage in bytes.
-     * @returns {number}
+     * @returns {number} The current memory usage in bytes
      */
     totalMemory() {
         return this.currentMemory;
@@ -1166,7 +1173,7 @@ export class MemoryLimitedMap {
 
     /**
      * Returns an iterator over the keys in the map.
-     * @returns {IterableIterator<string>}
+     * @returns {IterableIterator<string>} An iterator over the keys
      */
     keys() {
         return this.map.keys();
@@ -1174,7 +1181,7 @@ export class MemoryLimitedMap {
 
     /**
      * Returns an iterator over the values in the map.
-     * @returns {IterableIterator<string>}
+     * @returns {IterableIterator<string>} An iterator over the values
      */
     values() {
         return this.map.values();
@@ -1182,7 +1189,7 @@ export class MemoryLimitedMap {
 
     /**
      * Iterates over the map in insertion order.
-     * @param {Function} callback - Function to execute for each element.
+     * @param {(value: string, key: string, map: MemoryLimitedMap) => void} callback - Function to execute for each element.
      */
     forEach(callback: (value: string, key: string, map: MemoryLimitedMap) => void) {
         this.map.forEach((value, key) => {
@@ -1203,7 +1210,7 @@ export class MemoryLimitedMap {
  * A 'safe' version of `fs.readFileSync()`. Returns the contents of a file if it exists, falling back to a default value if not.
  * @param {string} filePath Path of the file to be read.
  * @param {Parameters<typeof fs.readFileSync>[1]} options Options object to pass through to `fs.readFileSync()` (default: `{ encoding: 'utf-8' }`).
- * @returns The contents at `filePath` if it exists, or `null` if not.
+ * @returns {string | null} The contents at `filePath` if it exists, or `null` if not.
  */
 export function safeReadFileSync(filePath: string, options = { encoding: 'utf-8' }) {
     // @ts-expect-error TS(2769): No overload matches this call.
@@ -1226,10 +1233,10 @@ export function setWindowTitle(title: string) {
 /**
  * Parses a JSON string and applies a mutation function to the parsed object.
  * @param {string} jsonString JSON string to parse
- * @param {function(any): void} mutation Mutation function to apply to the parsed JSON object
+ * @param {(obj: unknown) => void} mutation Mutation function to apply to the parsed JSON object
  * @returns {string} Mutated JSON string
  */
-export function mutateJsonString(jsonString: string, mutation: (obj: any) => void) {
+export function mutateJsonString(jsonString: string, mutation: (obj: unknown) => void) {
     try {
         const json = JSON.parse(jsonString);
         mutation(json);
@@ -1330,11 +1337,11 @@ export function getRequestURL(request: string | URL | Request) {
 /**
  * Flattens and simplifies a JSON schema to be compatible with the strict requirements
  * of Google's Generative AI API.
- * @param {object} schema The JSON schema to process.
+ * @param {Record<string, unknown>} schema The JSON schema to process.
  * @param {string} api The API source.
- * @returns {object} The flattened and simplified schema.
+ * @returns {Record<string, unknown>} The flattened and simplified schema.
  */
-export function flattenSchema(schema: Record<string, any>, api: string) {
+export function flattenSchema(schema: Record<string, unknown>, api: string) {
     if (!schema || typeof schema !== 'object') {
         return schema;
     }
@@ -1346,11 +1353,12 @@ export function flattenSchema(schema: Record<string, any>, api: string) {
     delete schemaCopy.$defs;
 
     /**
-     *
-     * @param obj
-     * @param parents
+     * Resolves $refs in the schema.
+     * @param {unknown} obj Object to resolve
+     * @param {string[]} parents List of parents to prevent recursion
+     * @returns {unknown} The resolved object
      */
-    function resolve(obj: any, parents: string[] = []) {
+    function resolve(obj: unknown, parents: string[] = []) {
         if (!obj || typeof obj !== 'object') {
             return obj;
         }
@@ -1391,8 +1399,8 @@ export function flattenSchema(schema: Record<string, any>, api: string) {
 
 /**
  * Writes to a file, creating it's parent directories if needed.
- * @param {string} filePath
- * @param {string} data
+ * @param {string} filePath Path to the file
+ * @param {string} data Data to write
  */
 export function tryWriteFileSync(filePath: string, data: string) {
     const directory = path.dirname(filePath);
@@ -1405,8 +1413,8 @@ export function tryWriteFileSync(filePath: string, data: string) {
 
 /**
  * Attempts to read a file as utf8.
- * @param {string} filePath
- * @returns {string|null}
+ * @param {string} filePath Path to the file
+ * @returns {string|null} File contents or null if reading fails
  */
 export function tryReadFileSync(filePath: string) {
     try {
