@@ -47,7 +47,7 @@ const DEFAULT_COLLAPSED_DISPLAYED = 3;
 
 /**
  * Gets the current recent chats settings from account storage.
- * @returns {{ maxDisplayed: number, collapsedDisplayed: number }}
+ * @returns {{ maxDisplayed: number, collapsedDisplayed: number }} The current recent chats settings
  */
 function getRecentChatsSettings() {
     const value = accountStorage.getItem(recentChatsSettingsKey);
@@ -67,7 +67,7 @@ function getRecentChatsSettings() {
 
 /**
  * Saves recent chats settings to account storage.
- * @param {{ maxDisplayed: number, collapsedDisplayed: number }} settings
+ * @param {{ maxDisplayed: number, collapsedDisplayed: number }} settings The settings to save
  */
 function saveRecentChatsSettings(settings) {
     accountStorage.setItem(recentChatsSettingsKey, JSON.stringify(settings));
@@ -94,7 +94,7 @@ class PinnedChatsManager {
 
     /**
      * Loads state from storage.
-     * @returns {Record<string, PinnedChat>}
+     * @returns {Record<string, PinnedChat>} The pinned chat state loaded from storage
      */
     static #loadFromStorage() {
         const pinnedState = /** @type {Record<string, PinnedChat>} */ ({});
@@ -120,7 +120,7 @@ class PinnedChatsManager {
 
     /**
      * Gets the pinned chat state from cache.
-     * @returns {Record<string, PinnedChat>}
+     * @returns {Record<string, PinnedChat>} The current pinned chat state
      */
     static getState() {
         if (this.#cachedState === null) {
@@ -193,7 +193,7 @@ class PinnedChatsManager {
 
     /**
      * Gets all pinned chats.
-     * @returns {PinnedChat[]}
+     * @returns {PinnedChat[]} An array of all pinned chats
      */
     static getAll() {
         const pinState = this.getState();
@@ -202,7 +202,8 @@ class PinnedChatsManager {
 }
 
 /**
- *
+ * Gets the avatar of the permanent assistant.
+ * @returns {string} The assistant's avatar filename
  */
 export function getPermanentAssistantAvatar() {
     const assistantAvatar = accountStorage.getItem(assistantAvatarKey);
@@ -839,10 +840,11 @@ async function getRecentChats() {
 }
 
 /**
- *
- * @param root0
- * @param root0.tryCreate
- * @param root0.created
+ * Opens the permanent assistant chat.
+ * @param {object} [options] Options for opening the chat.
+ * @param {boolean} [options.tryCreate=true] Whether to try creating the assistant if not found.
+ * @param {boolean} [options.created=false] Whether the assistant was just created.
+ * @returns {Promise<void>}
  */
 export async function openPermanentAssistantChat({ tryCreate = true, created = false } = {}) {
     const avatar = getPermanentAssistantAvatar();
