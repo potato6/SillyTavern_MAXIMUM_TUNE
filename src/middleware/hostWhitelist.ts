@@ -1,4 +1,5 @@
 import path from 'node:path';
+import type { Request, Response, NextFunction } from 'express';
 import { color, getConfigValue, safeReadFileSync } from '../util.js';
 // @ts-expect-error TS(2792): Cannot find module 'host-validation-middleware'. D... Remove this comment to see the full error message
 import { isHostAllowed, hostValidationMiddleware } from 'host-validation-middleware';
@@ -22,8 +23,9 @@ const validationMiddleware = hostValidationMiddleware({
  * @param {import('express').Request} req Request
  * @param {import('express').Response} res Response
  * @param {import('express').NextFunction} next Next middleware
+ * @returns {void}
  */
-export default function hostWhitelistMiddleware(req: any, res: any, next: any) {
+export default function hostWhitelistMiddleware(req: Request, res: Response, next: NextFunction) {
     const hostValue = req.headers.host;
     if (hostWhitelistScan && !isHostAllowed(hostValue, hostWhitelist) && !knownHosts.has(hostValue) && knownHosts.size < maxKnownHosts) {
         const isFirstWarning = knownHosts.size === 0;
