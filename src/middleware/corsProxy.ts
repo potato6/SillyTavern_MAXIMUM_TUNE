@@ -1,3 +1,4 @@
+import type { Request, Response } from 'express';
 import fetch from 'node-fetch';
 import { forwardFetchResponse } from '../util.js';
 
@@ -5,8 +6,9 @@ import { forwardFetchResponse } from '../util.js';
  * Middleware to proxy requests to a different domain
  * @param {import('express').Request} req Express request object
  * @param {import('express').Response} res Express response object
+ * @returns {Promise<void>}
  */
-export default async function corsProxyMiddleware(req: any, res: any) {
+export default async function corsProxyMiddleware(req: Request, res: Response) {
     const url = req.url.slice(1); // get the url from the request path
 
     // Disallow circular requests
