@@ -2,22 +2,22 @@
  * Validates the data structure of character cards.
  * Supported specs: V1, V2
  * Up to: 8083fb3
- * @link https://github.com/malfoyslastname/character-card-spec-v2
+ * @see https://github.com/malfoyslastname/character-card-spec-v2
  */
 export class TavernCardValidator {
-    card: any;
+    card: Record<string, unknown>;
     /**
      * @type {string|null}
      */
     #lastValidationError = null;
 
-    constructor(card: any) {
+    constructor(card: Record<string, unknown>) {
         this.card = card;
     }
 
     /**
      * Field that caused the validation to fail
-     * @returns {null|string}
+     * @returns {null|string} The field that caused validation to fail, or null if validation passed
      */
     get lastValidationError() {
         return this.#lastValidationError;
@@ -47,7 +47,7 @@ export class TavernCardValidator {
 
     /**
      * Validate against V1 specification
-     * @returns {this is string[]}
+     * @returns {boolean} true if all required V1 fields are present
      */
     validateV1() {
         const requiredFields = ['name', 'description', 'personality', 'scenario', 'first_mes', 'mes_example'];
@@ -62,7 +62,7 @@ export class TavernCardValidator {
 
     /**
      * Validate against V2 specification
-     * @returns {false|boolean|*}
+     * @returns {boolean} true if the card conforms to V2 spec
      */
     validateV2() {
         return this.#validateSpecV2()
@@ -73,7 +73,7 @@ export class TavernCardValidator {
 
     /**
      * Validate against V3 specification
-     * @returns {boolean}
+     * @returns {boolean} true if the card conforms to V3 spec
      */
     validateV3() {
         return this.#validateSpecV3()
