@@ -1,6 +1,10 @@
 import fetch from 'node-fetch';
 import { SECRET_KEYS, readSecret } from '../endpoints/secrets.js';
 
+type NomicAIEmbeddingResponse = {
+    embeddings: number[][];
+};
+
 const SOURCES = {
     'nomicai': {
         secretKey: SECRET_KEYS.NOMICAI,
@@ -16,7 +20,7 @@ const SOURCES = {
  * @param {import('../users.js').UserDirectoryList} directories - The directories object for the user
  * @returns {Promise<number[][]>} - The array of vectors for the texts
  */
-export async function getNomicAIBatchVector(texts: any, source: any, directories: any) {
+export async function getNomicAIBatchVector(texts: string[], source: string, directories: import('../users.js').UserDirectoryList): Promise<number[][]> {
     // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     const config = SOURCES[source];
 
@@ -33,8 +37,7 @@ export async function getNomicAIBatchVector(texts: any, source: any, directories
     }
 
     const url = config.url;
-    let response;
-    response = await fetch(`https://${url}`, {
+    const response = await fetch(`https://${url}`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -52,15 +55,12 @@ export async function getNomicAIBatchVector(texts: any, source: any, directories
         throw new Error('API request failed');
     }
 
-    /** @type {any} */
-    const data = await response.json();
-    // @ts-expect-error TS(2571): Object is of type 'unknown'.
+    const data = await response.json() as NomicAIEmbeddingResponse;
     if (!Array.isArray(data?.embeddings)) {
         console.warn('API response was not an array');
         throw new Error('API response was not an array');
     }
 
-    // @ts-expect-error TS(2571): Object is of type 'unknown'.
     return data.embeddings;
 }
 
@@ -71,7 +71,7 @@ export async function getNomicAIBatchVector(texts: any, source: any, directories
  * @param {import('../users.js').UserDirectoryList} directories - The directories object for the user
  * @returns {Promise<number[]>} - The vector for the text
  */
-export async function getNomicAIVector(text: any, source: any, directories: any) {
+export async function getNomicAIVector(text: string, source: string, directories: import('../users.js').UserDirectoryList): Promise<number[]> {
     const vectors = await getNomicAIBatchVector([text], source, directories);
     return vectors[0];
 }
