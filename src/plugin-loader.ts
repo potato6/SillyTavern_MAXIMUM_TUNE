@@ -11,36 +11,49 @@ import { getConfigValue, color } from './util.js';
 const enableServerPlugins = !!getConfigValue('enableServerPlugins', false, 'boolean');
 const enableServerPluginsAutoUpdate = !!getConfigValue('enableServerPluginsAutoUpdate', true, 'boolean');
 
+interface PluginInfo {
+    id: string;
+    name: string;
+    description: string;
+}
+
+interface PluginModule {
+    info?: PluginInfo;
+    init?: (router: express.Router) => void | Promise<void>;
+    exit?: () => void | Promise<void>;
+    default?: PluginModule;
+}
+
 /**
  * Map of loaded plugins.
- * @type {Map<string, any>}
+ * @type {Map<string, PluginModule>}
  */
-const loadedPlugins = new Map();
+const loadedPlugins = new Map<string, PluginModule>();
 
 /**
  * Determine if a file is a CommonJS module.
  * @param {string} file Path to file
  * @returns {boolean} True if file is a CommonJS module
  */
-const isCommonJS = (file: any) => path.extname(file) === '.js' || path.extname(file) === '.cjs';
+const isCommonJS = (file: string) => path.extname(file) === '.js' || path.extname(file) === '.cjs';
 
 /**
  * Determine if a file is an ECMAScript module.
  * @param {string} file Path to file
  * @returns {boolean} True if file is an ECMAScript module
  */
-const isESModule = (file: any) => path.extname(file) === '.mjs';
+const isESModule = (file: string) => path.extname(file) === '.mjs';
 
 /**
  * Load and initialize server plugins from a directory if they are enabled.
  * @param {import('express').Express} app Express app
  * @param {string} pluginsPath Path to plugins directory
- * @returns {Promise<Function>} Promise that resolves when all plugins are loaded. Resolves to a "cleanup" function to
+ * @returns {Promise<() => Promise<unknown[]> | (() => void)>} Promise that resolves when all plugins are loaded. Resolves to a "cleanup" function to
  * be called before the server shuts down.
  */
-export async function loadPlugins(app: any, pluginsPath: any) {
+export async function loadPlugins(app: express.Express, pluginsPath: string) {
     try {
-        const exitHooks: any = [];
+        const exitHooks: Array<() => unknown> = [];
         const emptyFn = () => { };
 
         // Server plugins are disabled.
@@ -91,12 +104,12 @@ export async function loadPlugins(app: any, pluginsPath: any) {
 }
 
 /**
- *
- * @param app
- * @param pluginDirectoryPath
- * @param exitHooks
+ * Load and initialize plugins from a directory.
+ * @param {import('express').Express} app Express app
+ * @param {string} pluginDirectoryPath Path to plugin directory
+ * @param {Array<() => unknown>} exitHooks Array of cleanup functions to be called on plugin exit
  */
-async function loadFromDirectory(app: any, pluginDirectoryPath: any, exitHooks: any) {
+async function loadFromDirectory(app: express.Express, pluginDirectoryPath: string, exitHooks: Array<() => unknown>) {
     const files = fs.readdirSync(pluginDirectoryPath);
 
     // No plugins to load.
@@ -129,11 +142,11 @@ async function loadFromDirectory(app: any, pluginDirectoryPath: any, exitHooks: 
  * Loads and initializes a plugin from an npm package.
  * @param {import('express').Express} app Express app
  * @param {string} packageJsonPath Path to package.json file
- * @param {Array<Function>} exitHooks Array of functions to be run on plugin exit. Will be pushed to if the plugin has
+ * @param {Array<() => unknown>} exitHooks Array of functions to be run on plugin exit. Will be pushed to if the plugin has
  * an "exit" function.
  * @returns {Promise<boolean>} Promise that resolves to true if plugin was loaded successfully
  */
-async function loadFromPackage(app: any, packageJsonPath: any, exitHooks: any) {
+async function loadFromPackage(app: express.Express, packageJsonPath: string, exitHooks: Array<() => unknown>) {
     try {
         const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
         if (packageJson.main) {
@@ -150,11 +163,11 @@ async function loadFromPackage(app: any, packageJsonPath: any, exitHooks: any) {
  * Loads and initializes a plugin from a file.
  * @param {import('express').Express} app Express app
  * @param {string} pluginFilePath Path to plugin directory
- * @param {Array.<Function>} exitHooks Array of functions to be run on plugin exit. Will be pushed to if the plugin has
+ * @param {Array<() => unknown>} exitHooks Array of functions to be run on plugin exit. Will be pushed to if the plugin has
  * an "exit" function.
  * @returns {Promise<boolean>} Promise that resolves to true if plugin was loaded successfully
  */
-async function loadFromFile(app: any, pluginFilePath: any, exitHooks: any) {
+async function loadFromFile(app: express.Express, pluginFilePath: string, exitHooks: Array<() => unknown>) {
     try {
         const fileUrl = url.pathToFileURL(pluginFilePath).toString();
         const plugin = await import(fileUrl);
@@ -171,19 +184,19 @@ async function loadFromFile(app: any, pluginFilePath: any, exitHooks: any) {
  * @param {string} id The plugin ID to check
  * @returns {boolean} True if the plugin ID is valid.
  */
-function isValidPluginID(id: any) {
+function isValidPluginID(id: string) {
     return /^[a-z0-9_-]+$/.test(id);
 }
 
 /**
  * Initializes a plugin module.
  * @param {import('express').Express} app Express app
- * @param {any} plugin Plugin module
- * @param {Array.<Function>} exitHooks Array of functions to be run on plugin exit. Will be pushed to if the plugin has
+ * @param {PluginModule} plugin Plugin module
+ * @param {Array<() => unknown>} exitHooks Array of functions to be run on plugin exit. Will be pushed to if the plugin has
  * an "exit" function.
  * @returns {Promise<boolean>} Promise that resolves to true if plugin was initialized successfully
  */
-async function initPlugin(app: any, plugin: any, exitHooks: any) {
+async function initPlugin(app: express.Express, plugin: PluginModule, exitHooks: Array<() => unknown>) {
     const info = plugin.info || plugin.default?.info;
     if (typeof info !== 'object') {
         console.error('Failed to load plugin module; plugin info not found');
@@ -241,7 +254,7 @@ async function initPlugin(app: any, plugin: any, exitHooks: any) {
  * Automatically update all git plugins in the ./plugins directory
  * @param {string} pluginsPath Path to plugins directory
  */
-async function updatePlugins(pluginsPath: any) {
+async function updatePlugins(pluginsPath: string) {
     if (!enableServerPluginsAutoUpdate) {
         return;
     }
