@@ -1,4 +1,5 @@
 import crypto from 'node:crypto';
+import type { Request, Response, NextFunction } from 'express';
 import { DEFAULT_USER } from '../constants.js';
 import { getConfigValue } from '../util.js';
 
@@ -42,7 +43,7 @@ class CacheBuster {
      * @param {import('express').Response} response Express response object.
      * @returns {boolean} Whether the cache should be busted.
      */
-    shouldBust(request: any, response: any) {
+    shouldBust(request: Request, response: Response) {
         // If disabled with config, don't do anything
         if (!this.#isEnabled) {
             return false;
@@ -69,7 +70,7 @@ class CacheBuster {
      * Middleware to bust the browser cache for the current user.
      * @type {import('express').RequestHandler}
      */
-    #middleware(request: any, response: any, next: any) {
+    #middleware(request: Request, response: Response, next: NextFunction) {
         const handle = request.user?.profile?.handle || DEFAULT_USER.handle;
         const userAgent = request.headers['user-agent'] || '';
         const hash = crypto.createHash('sha256').update(userAgent).digest('hex');
@@ -98,7 +99,7 @@ class CacheBuster {
      * @param {import('express').Response} response Express response object.
      * @returns {void}
      */
-    bust(request: any, response: any) {
+    bust(request: Request, response: Response) {
         if (this.shouldBust(request, response)) {
             response.setHeader('Clear-Site-Data', '"cache"');
         }
