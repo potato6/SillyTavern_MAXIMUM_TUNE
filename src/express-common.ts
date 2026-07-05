@@ -4,9 +4,10 @@ import ipaddr from 'ipaddr.js';
 import ipMatching from 'ip-matching';
 // @ts-expect-error TS(2792): Cannot find module 'rate-limiter-flexible'. Did yo... Remove this comment to see the full error message
 import { RateLimiterRes } from 'rate-limiter-flexible';
+import express from 'express';
 import { getConfigValue } from './util.js';
 
-const noopMiddleware = (_req: any, _res: any, next: any) => next();
+const noopMiddleware = (_req: express.Request, _res: express.Response, next: express.NextFunction) => next();
 /** @deprecated Do not use. A global middleware is provided at the application level. */
 export const jsonParser = noopMiddleware;
 /** @deprecated Do not use. A global middleware is provided at the application level. */
@@ -17,7 +18,7 @@ export const urlencodedParser = noopMiddleware;
  * @param {import('express').Request} req Request object
  * @returns {string} IP address of the client
  */
-export function getIpFromRequest(req: any) {
+export function getIpFromRequest(req: express.Request) {
     let clientIp = req.socket.remoteAddress;
     if (!clientIp) {
         return 'unknown';
@@ -38,7 +39,7 @@ export function getIpFromRequest(req: any) {
  * @param {import('express').Request} req Express request object
  * @returns {string|undefined} The client IP address
  */
-export function getRealOrForwardedIp(req: any) {
+export function getRealOrForwardedIp(req: express.Request) {
     const xRealIpEnabled = !!getConfigValue('forwardedHeaders.xRealIp', true, 'boolean');
     const cfConnectingIpEnabled = !!getConfigValue('forwardedHeaders.cfConnectingIp', false, 'boolean');
     const xForwardedForEnabled = !!getConfigValue('forwardedHeaders.xForwardedFor', true, 'boolean');
@@ -55,7 +56,7 @@ export function getRealOrForwardedIp(req: any) {
 
     // Check for X-Forwarded-For and parse if available
     if (req.headers['x-forwarded-for'] && xForwardedForEnabled) {
-        const ipList = req.headers['x-forwarded-for'].toString().split(',').map((ip: any) => ip.trim());
+        const ipList = req.headers['x-forwarded-for'].toString().split(',').map((ip: string) => ip.trim());
         return ipList[0];
     }
 
@@ -70,7 +71,7 @@ export function getRealOrForwardedIp(req: any) {
  * @param {boolean} includeHeaderIp Whether to include the real/forwarded IP from headers
  * @returns {string} IP address of the client (will include "forwarded" info if includeHeaderIp is true and headers are present)
  */
-export function getIpAddress(request: any, includeHeaderIp: any) {
+export function getIpAddress(request: express.Request, includeHeaderIp: boolean) {
     const socketIp = getIpFromRequest(request);
     const forwardedIp = includeHeaderIp && getRealOrForwardedIp(request);
     return forwardedIp ? `${socketIp} (forwarded: ${forwardedIp})` : socketIp;
@@ -81,7 +82,7 @@ export function getIpAddress(request: any, includeHeaderIp: any) {
  * @param {import('express').Request} req Request object
  * @returns {boolean} True if the request is from Firefox, false otherwise.
  */
-export function isFirefox(req: any) {
+export function isFirefox(req: express.Request) {
     const userAgent = req.headers['user-agent'] || '';
     return /firefox/i.test(userAgent);
 }
@@ -92,8 +93,8 @@ export function isFirefox(req: any) {
  * @param {(entry: string, message: string) => string} formatLog - The function to format the warning message for invalid entries
  * @returns {string[]} The list of valid IP patterns
  */
-export function filterValidIpPatterns(entries: any, formatLog: any) {
-    const validEntries: any = [];
+export function filterValidIpPatterns(entries: string[], formatLog: (entry: string, message: string) => string) {
+    const validEntries: string[] = [];
 
     if (!Array.isArray(entries)) {
         return validEntries;
@@ -120,7 +121,7 @@ export function filterValidIpPatterns(entries: any, formatLog: any) {
  * @param {RateLimiterRes} rateLimit The rate limit information from rate-limiter-flexible
  * @returns {import('express').Response} The response object with the Retry-After header set if applicable
  */
-export function retryAfter(response: any, rateLimit: any) {
+export function retryAfter(response: express.Response, rateLimit: RateLimiterRes) {
     if (response.headersSent || !(rateLimit instanceof RateLimiterRes)) {
         return response;
     }
