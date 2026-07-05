@@ -1,5 +1,6 @@
 import path from 'node:path';
 import fs from 'node:fs';
+import type { Request, Response, NextFunction } from 'express';
 import { getIpAddress } from '../express-common.js';
 import { color, getConfigValue } from '../util.js';
 
@@ -31,11 +32,11 @@ export function migrateAccessLog() {
 
 /**
  * Creates middleware for logging access and new connections
- * @returns {import('express').RequestHandler}
+ * @returns {import('express').RequestHandler} Express request handler middleware
  */
 export default function accessLoggerMiddleware() {
     // @ts-expect-error TS(6133): 'res' is declared but its value is never read.
-    return function (req: any, res: any, next: any) {
+    return function (req: Request, res: Response, next: NextFunction) {
         const clientIp = getIpAddress(req, true);
         const userAgent = req.headers['user-agent'];
 
