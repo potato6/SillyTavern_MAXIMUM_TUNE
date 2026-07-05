@@ -842,8 +842,8 @@ async function getRecentChats() {
 /**
  * Opens the permanent assistant chat.
  * @param {object} [options] Options for opening the chat.
- * @param {boolean} [options.tryCreate=true] Whether to try creating the assistant if not found.
- * @param {boolean} [options.created=false] Whether the assistant was just created.
+ * @param {boolean} [options.tryCreate] Whether to try creating the assistant if not found.
+ * @param {boolean} [options.created] Whether the assistant was just created.
  * @returns {Promise<void>}
  */
 export async function openPermanentAssistantChat({ tryCreate = true, created = false } = {}) {
