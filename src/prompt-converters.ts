@@ -33,6 +33,8 @@ const GEMINI_MEDIA_RESOLUTION = {
 
 const enableThoughtSignatures = !!getConfigValue('gemini.thoughtSignatures', true, 'boolean');
 
+type Message = Record<string, unknown>;
+
 /**
  * @typedef {object} PromptNames
  * @property {string} charName Character name
@@ -46,29 +48,29 @@ const enableThoughtSignatures = !!getConfigValue('gemini.thoughtSignatures', tru
  * @param {import('express').Request} request Express request object
  * @returns {PromptNames} Prompt names
  */
-export function getPromptNames(request: any) {
+export function getPromptNames(request: import('express').Request) {
     return {
         charName: String(request.body.char_name || ''),
         userName: String(request.body.user_name || ''),
         groupNames: Array.isArray(request.body.group_names) ? request.body.group_names.map(String) : [],
-        startsWithGroupName: function (message: any) {
-            return this.groupNames.some((name: any) => message.startsWith(`${name}: `));
+        startsWithGroupName: function (message: string) {
+            return this.groupNames.some((name: string) => message.startsWith(`${name}: `));
         },
     };
 }
 
 /**
  * Adds an assistant prefix to the last message.
- * @param {any[]} prompt Prompt messages array
- * @param {any[]} tools Array of tool definitions
+ * @param {object[]} prompt Prompt messages array
+ * @param {object[]} tools Array of tool definitions
  * @param {string} property The property to set the prefix on
- * @returns {any[]} Transformed messages array
+ * @returns {object[]} Transformed messages array
  */
-export function addAssistantPrefix(prompt: any, tools: any, property: any) {
+export function addAssistantPrefix(prompt: Message[], tools: object[], property: string) {
     if (!prompt.length) {
         return prompt;
     }
-    const hasAnyTools = (Array.isArray(tools) && tools.length > 0) || prompt.some((x: any) => x.role === 'tool');
+    const hasAnyTools = (Array.isArray(tools) && tools.length > 0) || prompt.some((x: Message) => x.role === 'tool');
     if (!hasAnyTools && prompt[prompt.length - 1].role === 'assistant') {
         prompt[prompt.length - 1][property] = true;
     }
@@ -80,9 +82,9 @@ export function addAssistantPrefix(prompt: any, tools: any, property: any) {
  * @param {object[]} messages Messages to post-process
  * @param {string} type Prompt conversion type
  * @param {PromptNames} names Prompt names
- * @returns
+ * @returns {object[]} Post-processed messages
  */
-export function postProcessPrompt(messages: any, type: any, names: any) {
+export function postProcessPrompt(messages: object[], type: string, names: PromptNames) {
     switch (type) {
         case PROMPT_PROCESSING_TYPE.MERGE:
         case PROMPT_PROCESSING_TYPE.CLAUDE:
@@ -112,16 +114,16 @@ export function postProcessPrompt(messages: any, type: any, names: any) {
  * @param {string}   addAssistantPrefill Add Assistant prefill after the assistant postfix.
  * @param {boolean}  withSysPromptSupport Indicates if the Claude model supports the system prompt format.
  * @param {boolean}  useSystemPrompt Indicates if the system prompt format should be used.
- * @param {boolean}  excludePrefixes Exlude Human/Assistant prefixes.
  * @param {string}   addSysHumanMsg Add Human message between system prompt and assistant.
+ * @param {boolean}  excludePrefixes Exlude Human/Assistant prefixes.
  * @returns {string} Prompt for Claude
  * @copyright Prompt Conversion script taken from RisuAI by kwaroran (GPLv3).
  */
-export function convertClaudePrompt(messages: any, addAssistantPostfix: any, addAssistantPrefill: any, withSysPromptSupport: any, useSystemPrompt: any, addSysHumanMsg: any, excludePrefixes: any) {
+export function convertClaudePrompt(messages: Message[], addAssistantPostfix: boolean, addAssistantPrefill: string, withSysPromptSupport: boolean, useSystemPrompt: boolean, addSysHumanMsg: string, excludePrefixes: boolean) {
     //Prepare messages for claude.
     //When 'Exclude Human/Assistant prefixes' checked, setting messages role to the 'system'(last message is exception).
     if (messages.length > 0) {
-        messages.forEach((m: any) => {
+        messages.forEach((m: Message) => {
             if (!m.content) {
                 m.content = '';
             }
@@ -130,7 +132,7 @@ export function convertClaudePrompt(messages: any, addAssistantPostfix: any, add
             }
         });
         if (excludePrefixes) {
-            messages.slice(0, -1).forEach((message: any) => message.role = 'system');
+            messages.slice(0, -1).forEach((message: Message) => message.role = 'system');
         } else {
             messages[0].role = 'system';
         }
@@ -143,7 +145,7 @@ export function convertClaudePrompt(messages: any, addAssistantPostfix: any, add
         }
         // Find the index of the first message with an assistant role and check for a "'user' role/Human:" before it.
         let hasUser = false;
-        const firstAssistantIndex = messages.findIndex((message: any, i: any) => {
+        const firstAssistantIndex = messages.findIndex((message: Message, i: number) => {
             if (i >= 0 && (message.role === 'user' || message.content.includes('\n\nHuman: '))) {
                 hasUser = true;
             }
@@ -170,7 +172,7 @@ export function convertClaudePrompt(messages: any, addAssistantPostfix: any, add
     }
 
     // Convert messages to the prompt.
-    const requestPrompt = messages.map((v: any, i: any) => {
+    const requestPrompt = messages.map((v: Message, i: number) => {
         // Set prefix according to the role. Also, when "Exclude Human/Assistant prefixes" is checked, names are added via the system prefix.
         const prefix = {
             'assistant': '\n\nAssistant: ',
@@ -194,8 +196,8 @@ export function convertClaudePrompt(messages: any, addAssistantPostfix: any, add
  * @param {PromptNames} names Prompt names
  * @returns {{messages: object[], systemPrompt: object[]}} Prompt for Anthropic
  */
-export function convertClaudeMessages(messages: any, prefillString: any, useSysPrompt: any, useTools: any, names: any) {
-    const systemPrompt = [];
+export function convertClaudeMessages(messages: Message[], prefillString: string, useSysPrompt: boolean, useTools: boolean, names: PromptNames) {
+    const systemPrompt: Message[] = [];
     if (useSysPrompt) {
         // Collect all the system messages up until the first instance of a non-system message, and then remove them from the messages array.
         let i;
@@ -230,10 +232,10 @@ export function convertClaudeMessages(messages: any, prefillString: any, useSysP
     }
 
     // Now replace all further messages that have the role 'system' with the role 'user'. (or all if we're not using one)
-    const parse = (str: any) => typeof str === 'string' ? JSON.parse(str) : str;
-    messages.forEach((message: any) => {
+    const parse = (str: string) => typeof str === 'string' ? JSON.parse(str) : str;
+    messages.forEach((message: Message) => {
         if (message.role === 'assistant' && message.tool_calls) {
-            message.content = message.tool_calls.map((tc: any) => ({
+            message.content = (message.tool_calls as Message[]).map((tc: Message) => ({
                 type: 'tool_use',
                 id: tc.id,
                 name: tc.function.name,
@@ -276,7 +278,7 @@ export function convertClaudeMessages(messages: any, prefillString: any, useSysP
 
             message.content = [{ type: 'text', text: message.content }];
         } else if (Array.isArray(message.content)) {
-            message.content = message.content.map((content: any) => {
+            message.content = (message.content as Message[]).map((content: Message) => {
                 if (content.type === 'image_url') {
                     const imageEntry = content?.image_url;
                     const imageData = imageEntry?.url;
@@ -314,7 +316,7 @@ export function convertClaudeMessages(messages: any, prefillString: any, useSysP
 
     // Images in assistant messages should be moved to the next user message
     for (let i = 0; i < messages.length; i++) {
-        if (messages[i].role === 'assistant' && messages[i].content.some((c: any) => c.type === 'image')) {
+        if ((messages[i] as Message).role === 'assistant' && ((messages[i] as Message).content as Message[]).some((c: Message) => c.type === 'image')) {
             // Find the next user message
             let j = i + 1;
             while (j < messages.length && messages[j].role !== 'user') {
@@ -327,8 +329,8 @@ export function convertClaudeMessages(messages: any, prefillString: any, useSysP
                 messages.splice(i + 1, 0, { role: 'user', content: [] });
             }
 
-            messages[j].content.push(...messages[i].content.filter((c: any) => c.type === 'image'));
-            messages[i].content = messages[i].content.filter((c: any) => c.type !== 'image');
+            ((messages[j] as Message).content as Message[]).push(...((messages[i] as Message).content as Message[]).filter((c: Message) => c.type === 'image'));
+            (messages[i] as Message).content = ((messages[i] as Message).content as Message[]).filter((c: Message) => c.type !== 'image');
         }
     }
 
@@ -343,8 +345,8 @@ export function convertClaudeMessages(messages: any, prefillString: any, useSysP
 
     // Since the messaging endpoint only supports user assistant roles in turns, we have to merge messages with the same role if they follow eachother
     // Also handle multi-modality, holy slop.
-    const mergedMessages: any = [];
-    messages.forEach((message: any) => {
+    const mergedMessages: Message[] = [];
+    messages.forEach((message: Message) => {
         if (mergedMessages.length > 0 && mergedMessages[mergedMessages.length - 1].role === message.role) {
             mergedMessages[mergedMessages.length - 1].content.push(...message.content);
         } else {
@@ -354,7 +356,7 @@ export function convertClaudeMessages(messages: any, prefillString: any, useSysP
 
     if (!useTools) {
         mergedMessages.forEach((message) => {
-            message.content.forEach((content: any) => {
+            (message.content as Message[]).forEach((content: Message) => {
                 if (content.type === 'tool_use') {
                     content.type = 'text';
                     content.text = JSON.stringify(content.input);
@@ -381,7 +383,7 @@ export function convertClaudeMessages(messages: any, prefillString: any, useSysP
  * @param {PromptNames} names Prompt names
  * @returns {{chatHistory: object[]}} Prompt for Cohere
  */
-export function convertCohereMessages(messages: any, names: any) {
+export function convertCohereMessages(messages: Message[], names: PromptNames) {
     if (messages.length === 0) {
         messages.unshift({
             role: 'user',
@@ -389,14 +391,14 @@ export function convertCohereMessages(messages: any, names: any) {
         });
     }
 
-    messages.forEach((msg: any, index: any) => {
+    messages.forEach((msg: Message, index: number) => {
         // Tool calls require an assistent primer
         if (Array.isArray(msg.tool_calls)) {
-            if (index > 0 && messages[index - 1].role === 'assistant') {
-                msg.content = messages[index - 1].content;
+            if (index > 0 && (messages[index - 1] as Message).role === 'assistant') {
+                msg.content = (messages[index - 1] as Message).content;
                 messages.splice(index - 1, 1);
             } else {
-                msg.content = `I'm going to call a tool for that: ${msg.tool_calls.map((tc: any) => tc?.function?.name).join(', ')}`;
+                msg.content = `I'm going to call a tool for that: ${(msg.tool_calls as Message[]).map((tc: Message) => (tc?.function as Message)?.name).join(', ')}`;
             }
         }
         // No names support (who would've thought)
@@ -427,10 +429,10 @@ export function convertCohereMessages(messages: any, names: any) {
  * @param {string} model Model name
  * @param {boolean} useSysPrompt Use system prompt
  * @param {PromptNames} names Prompt names
- * @returns {{contents: *[], system_instruction: {parts: {text: string}[]}}} Prompt for Google MakerSuite models
+ * @returns {{contents: object[], system_instruction: {parts: {text: string}[]}}} Prompt for Google MakerSuite models
  */
-export function convertGooglePrompt(messages: any, model: any, useSysPrompt: any, names: any) {
-    const sysPrompt = [];
+export function convertGooglePrompt(messages: Message[], model: string, useSysPrompt: boolean, names: PromptNames) {
+    const sysPrompt: string[] = [];
 
     if (useSysPrompt) {
         while (messages.length > 1 && messages[0].role === 'system') {
@@ -451,10 +453,10 @@ export function convertGooglePrompt(messages: any, model: any, useSysPrompt: any
     }
 
     const system_instruction = { parts: sysPrompt.map(text => ({ text })) };
-    const toolNameMap = {};
+    const toolNameMap: Record<string, string> = {};
 
-    const contents: any = [];
-    messages.forEach((message: any, index: any) => {
+    const contents: Message[] = [];
+    messages.forEach((message: Message, index: number) => {
         // fix the roles
         if (message.role === 'system' || message.role === 'tool') {
             message.role = 'user';
@@ -483,7 +485,7 @@ export function convertGooglePrompt(messages: any, model: any, useSysPrompt: any
 
         // similar story as claude
         if (message.name) {
-            message.content.forEach((part: any) => {
+            (message.content as Message[]).forEach((part: Message) => {
                 if (part.type !== 'text') {
                     return;
                 }
@@ -506,9 +508,9 @@ export function convertGooglePrompt(messages: any, model: any, useSysPrompt: any
         }
 
         //create the prompt parts
-        const parts: any = [];
-        message.content.forEach((part: any) => {
-            const addDataUrlPart = (/** @type {string} */ url: any, /** @type {string} */ defaultMimeType: any, /** @type {string?} */ detail = null) => {
+        const parts: Message[] = [];
+        (message.content as Message[]).forEach((part: Message) => {
+            const addDataUrlPart = (url: string, defaultMimeType: string, detail: string | null = null) => {
                 if (url && url.startsWith('data:')) {
                     const [header, base64Data] = url.split(',');
                     const mimeType = header.match(/data:([^;]+)/)?.[1] || defaultMimeType;
@@ -544,7 +546,7 @@ export function convertGooglePrompt(messages: any, model: any, useSysPrompt: any
                     },
                 });
             } else if (part.type === 'tool_calls') {
-                part.tool_calls.forEach((toolCall: any) => {
+                (part.tool_calls as Message[]).forEach((toolCall: Message) => {
                     parts.push({
                         functionCall: {
                             name: toolCall.function.name,
@@ -597,7 +599,7 @@ export function convertGooglePrompt(messages: any, model: any, useSysPrompt: any
         if (index > 0 && message.role === contents[contents.length - 1].role) {
             parts.forEach((part) => {
                 if (part.text) {
-                    const textPart = contents[contents.length - 1].parts.find((p: any) => typeof p.text === 'string');
+                    const textPart = ((contents[contents.length - 1] as Message).parts as Message[]).find((p: Message) => typeof p.text === 'string');
                     if (textPart) {
                         textPart.text += '\n\n' + part.text;
                     } else {
@@ -625,7 +627,7 @@ export function convertGooglePrompt(messages: any, model: any, useSysPrompt: any
  * @param {PromptNames} names Prompt names
  * @returns {object[]} Prompt for AI21
  */
-export function convertAI21Messages(messages: any, names: any) {
+export function convertAI21Messages(messages: Message[], names: PromptNames) {
     if (!Array.isArray(messages)) {
         return [];
     }
@@ -679,10 +681,10 @@ export function convertAI21Messages(messages: any, names: any) {
     });
 
     // Since the messaging endpoint only supports alternating turns, we have to merge messages with the same role if they follow each other
-    const mergedMessages: any = [];
-    messages.forEach((message) => {
-        if (mergedMessages.length > 0 && mergedMessages[mergedMessages.length - 1].role === message.role) {
-            mergedMessages[mergedMessages.length - 1].content += '\n\n' + message.content;
+    const mergedMessages: Message[] = [];
+    messages.forEach((message: Message) => {
+        if (mergedMessages.length > 0 && (mergedMessages[mergedMessages.length - 1] as Message).role === message.role) {
+            (mergedMessages[mergedMessages.length - 1] as Message).content = ((mergedMessages[mergedMessages.length - 1] as Message).content as string) + '\n\n' + (message.content as string);
         } else {
             mergedMessages.push(message);
         }
@@ -697,7 +699,7 @@ export function convertAI21Messages(messages: any, names: any) {
  * @param {PromptNames} names Prompt names
  * @returns {object[]} Prompt for MistralAI
  */
-export function convertMistralMessages(messages: any, names: any) {
+export function convertMistralMessages(messages: Message[], names: PromptNames) {
     if (!Array.isArray(messages)) {
         return [];
     }
@@ -709,12 +711,12 @@ export function convertMistralMessages(messages: any, names: any) {
         lastMsg.prefix = true;
     }
 
-    const sanitizeToolId = (id: any) => crypto.createHash('sha512').update(id).digest('hex').slice(0, 9);
+    const sanitizeToolId = (id: string) => crypto.createHash('sha512').update(id).digest('hex').slice(0, 9);
 
     // Doesn't support completion names, so prepend if not already done by the frontend (e.g. for group chats).
     messages.forEach(msg => {
         if ('tool_calls' in msg && Array.isArray(msg.tool_calls)) {
-            msg.tool_calls.forEach((tool: any) => {
+            (msg.tool_calls as Message[]).forEach((tool: Message) => {
                 tool.id = sanitizeToolId(tool.id);
             });
         }
@@ -752,7 +754,7 @@ export function convertMistralMessages(messages: any, names: any) {
                 }
                 if (message.role === 'tool' && messages[i + 1].role === 'user') {
                     // @ts-expect-error TS(2339): Property 'findLastIndex' does not exist on type 'a... Remove this comment to see the full error message
-                    const lastUserMessage = messages.slice(0, i).findLastIndex((m: any) => m.role === 'user' && m.content);
+                    const lastUserMessage = messages.slice(0, i).findLastIndex((m: Message) => m.role === 'user' && m.content);
                     if (lastUserMessage !== -1) {
                         messages[lastUserMessage].content += '\n\n' + messages[i + 1].content;
                         messages.splice(i + 1, 1);
@@ -780,7 +782,7 @@ export function convertMistralMessages(messages: any, names: any) {
  * @param {PromptNames} names Prompt names
  * @returns {object[]} Prompt for xAI
  */
-export function convertXAIMessages(messages: any, names: any) {
+export function convertXAIMessages(messages: Message[], names: PromptNames) {
     if (!Array.isArray(messages)) {
         return [];
     }
@@ -813,34 +815,34 @@ export function convertXAIMessages(messages: any, names: any) {
 
 /**
  * Merge messages with the same consecutive role, removing names if they exist.
- * @param {any[]} messages Messages to merge
+ * @param {object[]} messages Messages to merge
  * @param {PromptNames} names Prompt names
  * @param {object} options Options for merging
  * @param {boolean} [options.strict] Enable strict mode: only allow one system message at the start, force user first message
  * @param {boolean} [options.placeholders] Add user placeholders to the messages in strict mode
  * @param {boolean} [options.single] Force every role to be user, merging all messages into one
  * @param {boolean} [options.tools] Allow tool calls in the prompt. If false, tool call messages are removed.
- * @returns {any[]} Merged messages
+ * @returns {object[]} Merged messages
  */
-export function mergeMessages(messages: any, names: any, { strict = false, placeholders = false, single = false, tools = false } = {}) {
-    const mergedMessages: any = [];
+export function mergeMessages(messages: Message[], names: PromptNames, { strict = false, placeholders = false, single = false, tools = false } = {}) {
+    const mergedMessages: Message[] = [];
 
-    /** @type {Map<string,object>} */
-    const contentTokens = new Map();
+    /** @type {Map<string,Message>} */
+    const contentTokens = new Map<string, Message>();
 
     // Remove names from the messages
-    messages.forEach((message: any) => {
+    messages.forEach((message: Message) => {
         if (!message.content) {
             message.content = '';
         }
         // Flatten contents and replace image URLs with random tokens
         if (Array.isArray(message.content)) {
-            const text = message.content.map((content: any) => {
+            const text = (message.content as Message[]).map((content: Message) => {
                 if (content.type === 'text') {
-                    return content.text;
+                    return content.text as string;
                 }
                 // Could be extended with other non-text types
-                if (['image_url', 'video_url', 'audio_url'].includes(content.type)) {
+                if (['image_url', 'video_url', 'audio_url'].includes((content.type as string))) {
                     const token = crypto.randomBytes(32).toString('base64');
                     contentTokens.set(token, content);
                     return token;
@@ -889,9 +891,9 @@ export function mergeMessages(messages: any, names: any, { strict = false, place
     });
 
     // Squash consecutive messages with the same role
-    messages.forEach((message: any) => {
-        if (mergedMessages.length > 0 && mergedMessages[mergedMessages.length - 1].role === message.role && message.content && message.role !== 'tool') {
-            mergedMessages[mergedMessages.length - 1].content += '\n\n' + message.content;
+    messages.forEach((message: Message) => {
+        if (mergedMessages.length > 0 && (mergedMessages[mergedMessages.length - 1] as Message).role === message.role && message.content && message.role !== 'tool') {
+            (mergedMessages[mergedMessages.length - 1] as Message).content = ((mergedMessages[mergedMessages.length - 1] as Message).content as string) + '\n\n' + (message.content as string);
         } else {
             mergedMessages.push(message);
         }
@@ -912,16 +914,16 @@ export function mergeMessages(messages: any, names: any, { strict = false, place
 
             if (hasValidToken) {
                 const splitContent = message.content.split('\n\n');
-                const mergedContent: any = [];
+                const mergedContent: Message[] = [];
 
-                splitContent.forEach((content: any) => {
+                splitContent.forEach((content: string) => {
                     if (contentTokens.has(content)) {
-                        mergedContent.push(contentTokens.get(content));
+                        mergedContent.push(contentTokens.get(content) as Message);
                     } else {
-                        if (mergedContent.length > 0 && mergedContent[mergedContent.length - 1].type === 'text') {
-                            mergedContent[mergedContent.length - 1].text += `\n\n${content}`;
+                        if (mergedContent.length > 0 && (mergedContent[mergedContent.length - 1] as Message).type === 'text') {
+                            (mergedContent[mergedContent.length - 1] as Message).text = ((mergedContent[mergedContent.length - 1] as Message).text as string) + `\n\n${content}`;
                         } else {
-                            mergedContent.push({ type: 'text', text: content });
+                            mergedContent.push({ type: 'text', text: content } as Message);
                         }
                     }
                 });
@@ -956,13 +958,13 @@ export function mergeMessages(messages: any, names: any, { strict = false, place
  * @param {object[]} messages Array of messages
  * @returns {string} Prompt for Text Completion API
  */
-export function convertTextCompletionPrompt(messages: any) {
+export function convertTextCompletionPrompt(messages: Message[] | string) {
     if (typeof messages === 'string') {
         return messages;
     }
 
-    const messageStrings: any = [];
-    messages.forEach((m: any) => {
+    const messageStrings: string[] = [];
+    messages.forEach((m: Message) => {
         if (m.role === 'system' && m.name === undefined) {
             messageStrings.push('System: ' + m.content);
         } else if (m.role === 'system' && m.name !== undefined) {
@@ -976,11 +978,11 @@ export function convertTextCompletionPrompt(messages: any) {
 
 /**
  * Append cache_control object to a Claude messages at depth. Directly modifies the messages array.
- * @param {any[]} messages Messages to modify
+ * @param {object[]} messages Messages to modify
  * @param {number} cachingAtDepth Depth at which caching is supposed to occur
  * @param {string} ttl TTL value
  */
-export function cachingAtDepthForClaude(messages: any, cachingAtDepth: any, ttl: any) {
+export function cachingAtDepthForClaude(messages: Message[], cachingAtDepth: number, ttl: string) {
     let passedThePrefill = false;
     let depth = 0;
     let previousRoleName = '';
@@ -1015,7 +1017,7 @@ export function cachingAtDepthForClaude(messages: any, cachingAtDepth: any, ttl:
  * @param {number} cachingAtDepth Depth at which caching is supposed to occur
  * @param {string} ttl TTL value
  */
-export function cachingAtDepthForOpenRouterClaude(messages: any, cachingAtDepth: any, ttl: any) {
+export function cachingAtDepthForOpenRouterClaude(messages: Message[], cachingAtDepth: number, ttl: string) {
     //caching the prefill is a terrible idea in general
     let passedThePrefill = false;
     //depth here is the number of message role switches
@@ -1066,7 +1068,7 @@ export function cachingAtDepthForOpenRouterClaude(messages: any, cachingAtDepth:
  * @param {object[]} messages Array of messages
  * @param {string} [ttl] TTL value (optional)
  */
-export function cachingSystemPromptForOpenRouter(messages: any, ttl = undefined) {
+export function cachingSystemPromptForOpenRouter(messages: Message[], ttl?: string) {
     if (!Array.isArray(messages) || messages.length === 0) {
         return;
     }
@@ -1087,7 +1089,7 @@ export function cachingSystemPromptForOpenRouter(messages: any, ttl = undefined)
         : { type: 'ephemeral' };
 
     if (Array.isArray(systemMessage.content)) {
-        const hasExistingCacheControl = systemMessage.content.some((part: any) => part?.cache_control);
+        const hasExistingCacheControl = (systemMessage.content as Message[]).some((part: Message) => part?.cache_control);
         if (hasExistingCacheControl) {
             return;
         }
@@ -1118,7 +1120,7 @@ export function cachingSystemPromptForOpenRouter(messages: any, ttl = undefined)
  * @param {boolean} isAdaptiveModel If the model supports adaptive thinking (Opus 4.6+)
  * @returns {number|string|null} Budget tokens, effort string, or null
  */
-export function calculateClaudeBudgetTokens(maxTokens: any, reasoningEffort: any, stream: any, isAdaptiveModel: any) {
+export function calculateClaudeBudgetTokens(maxTokens: number, reasoningEffort: string, stream: boolean, isAdaptiveModel: boolean) {
     // Adaptive thinking for Opus 4.6+: return effort string (like Gemini 3)
     if (isAdaptiveModel) {
         switch (reasoningEffort) {
@@ -1176,9 +1178,9 @@ export function calculateClaudeBudgetTokens(maxTokens: any, reasoningEffort: any
  * @param {string} model Model name
  * @returns {number|string|null} Budget tokens
  */
-export function calculateGoogleBudgetTokens(maxTokens: any, reasoningEffort: any, model: any) {
+export function calculateGoogleBudgetTokens(maxTokens: number, reasoningEffort: string, model: string) {
     /**
-     *
+     * @returns {number} Budget tokens
      */
     function getFlashBudget() {
         let budgetTokens = 0;
@@ -1208,7 +1210,7 @@ export function calculateGoogleBudgetTokens(maxTokens: any, reasoningEffort: any
     }
 
     /**
-     *
+     * @returns {number} Budget tokens
      */
     function getFlashLiteBudget() {
         let budgetTokens = 0;
@@ -1238,7 +1240,7 @@ export function calculateGoogleBudgetTokens(maxTokens: any, reasoningEffort: any
     }
 
     /**
-     *
+     * @returns {number} Budget tokens
      */
     function getProBudget() {
         let budgetTokens = 0;
@@ -1269,7 +1271,7 @@ export function calculateGoogleBudgetTokens(maxTokens: any, reasoningEffort: any
     }
 
     /**
-     *
+     * @returns {string|null} Budget tokens
      */
     function getGemini3FlashBudget() {
         switch (reasoningEffort) {
@@ -1291,7 +1293,7 @@ export function calculateGoogleBudgetTokens(maxTokens: any, reasoningEffort: any
     }
 
     /**
-     *
+     * @returns {string|null} Budget tokens
      */
     function getGemini3ProBudget() {
         switch (reasoningEffort) {
@@ -1343,7 +1345,7 @@ export function calculateGoogleBudgetTokens(maxTokens: any, reasoningEffort: any
  * @param {boolean} [options.video] Enable video embedding (default: true)
  * @returns {void}
  */
-export function embedOpenRouterMedia(messages: any, { audio = true, video = true } = { audio: true, video: true }) {
+export function embedOpenRouterMedia(messages: Message[], { audio = true, video = true } = { audio: true, video: true }) {
     if (!Array.isArray(messages)) {
         return;
     }
@@ -1384,7 +1386,7 @@ export function embedOpenRouterMedia(messages: any, { audio = true, video = true
  * @param {object[]} messages Array of messages
  * @returns {void}
  */
-export function addReasoningContentToToolCalls(messages: any) {
+export function addReasoningContentToToolCalls(messages: Message[]) {
     if (!Array.isArray(messages)) {
         return;
     }
@@ -1404,7 +1406,7 @@ export function addReasoningContentToToolCalls(messages: any) {
  * @param {string} model Model name
  * @returns {void}
  */
-export function addOpenRouterSignatures(messages: any, model: any) {
+export function addOpenRouterSignatures(messages: Message[], model: string) {
     const getFormatForModel = () => {
         if (/google\/gemini/.test(model)) {
             return 'google-gemini-v1';
@@ -1426,8 +1428,8 @@ export function addOpenRouterSignatures(messages: any, model: any) {
     }
 
     for (const message of messages) {
-        const details: any = [];
-        const addDetail = (data: any, id: any) => {
+        const details: Message[] = [];
+        const addDetail = (data: string, id: string) => {
             if (typeof data !== 'string' || data.length === 0) {
                 return;
             }
@@ -1448,7 +1450,7 @@ export function addOpenRouterSignatures(messages: any, model: any) {
             delete message.signature;
         }
         if (Array.isArray(message.tool_calls)) {
-            message.tool_calls.forEach((toolCall: any) => {
+            (message.tool_calls as Message[]).forEach((toolCall: Message) => {
                 if (typeof toolCall.signature === 'string') {
                     addDetail(toolCall.signature, toolCall.id);
                     delete toolCall.signature;
