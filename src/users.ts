@@ -33,7 +33,7 @@ const AUTHELIA_AUTH = getConfigValue('sso.autheliaAuth', false, 'boolean');
 const AUTHENTIK_AUTH = getConfigValue('sso.authentikAuth', false, 'boolean');
 const PER_USER_BASIC_AUTH = getConfigValue('perUserBasicAuth', false, 'boolean');
 const ANON_CSRF_SECRET = crypto.randomBytes(64).toString('base64');
-const TRUSTED_PROXIES = filterValidIpPatterns(getConfigValue('sso.trustedProxies', ['127.0.0.1', '::1']) ?? [], (entry: any, message: any) => `${color.red('Warning')}: Ignoring invalid sso.trustedProxies entry ${color.yellow(entry)} - ${message}`);
+const TRUSTED_PROXIES = filterValidIpPatterns(getConfigValue('sso.trustedProxies', ['127.0.0.1', '::1']) ?? [], (entry: string, message: string) => `${color.red('Warning')}: Ignoring invalid sso.trustedProxies entry ${color.yellow(entry)} - ${message}`);
 
 /**
  * Cache for user directories.
@@ -138,7 +138,7 @@ export async function ensurePublicDirectoriesExist() {
  * @param {string} message The error message to print
  * @returns {void}
  */
-function logSecurityAlert(message: any) {
+function logSecurityAlert(message: string) {
     const { basicAuthMode, whitelistMode } = globalThis.COMMAND_LINE_ARGS;
     if (basicAuthMode || whitelistMode) return; // safe!
     console.error(color.red(message));
@@ -444,7 +444,7 @@ export async function migrateUserData() {
 export async function migrateSystemPrompts() {
     /**
      * Gets the default system prompts.
-     * @returns {Promise<any[]>} - The list of default system prompts
+     * @returns {Promise<object[]>} - The list of default system prompts
      */
     async function getDefaultSystemPrompts() {
         try {
@@ -548,7 +548,7 @@ export async function migratePublicOverrides() {
  * @param {string} handle User handle
  * @returns {string} The key for the user storage
  */
-export function toKey(handle: any) {
+export function toKey(handle: string) {
     return `${KEY_PREFIX}${handle}`;
 }
 
@@ -557,7 +557,7 @@ export function toKey(handle: any) {
  * @param {string} handle User handle
  * @returns {string} The key for the avatar storage
  */
-export function toAvatarKey(handle: any) {
+export function toAvatarKey(handle: string) {
     return `${AVATAR_PREFIX}${handle}`;
 }
 
@@ -566,7 +566,7 @@ export function toAvatarKey(handle: any) {
  * @param {string} dataRoot The root directory for user data
  * @returns {Promise<void>}
  */
-export async function initUserStorage(dataRoot: any) {
+export async function initUserStorage(dataRoot: string) {
     console.log('Using data root:', color.green(dataRoot));
     await storage.init({
         dir: path.join(dataRoot, '_storage'),
@@ -587,7 +587,7 @@ export async function initUserStorage(dataRoot: any) {
  * @param {string} dataRoot The root directory for user data
  * @returns {string} The cookie secret
  */
-export function getCookieSecret(dataRoot: any) {
+export function getCookieSecret(dataRoot: string) {
     const cookieSecretPath = path.join(dataRoot, COOKIE_SECRET_PATH);
 
     if (fs.existsSync(cookieSecretPath)) {
@@ -630,7 +630,8 @@ export function getCookieSessionName() {
 }
 
 /**
- *
+ * Gets the session cookie age in milliseconds.
+ * @returns {number|undefined} The session cookie age in milliseconds, or undefined for session cookie
  */
 export function getSessionCookieAge() {
     // Defaults to "no expiration" if not set
@@ -657,7 +658,7 @@ export function getSessionCookieAge() {
  * @param {string} salt Salt to use for hashing
  * @returns {string} Hashed password
  */
-export function getPasswordHash(password: any, salt: any) {
+export function getPasswordHash(password: string, salt: string) {
     return crypto.scryptSync(password.normalize(), salt, 64).toString('base64');
 }
 
@@ -666,7 +667,7 @@ export function getPasswordHash(password: any, salt: any) {
  * @param {import('express').Request} [request] HTTP request object
  * @returns {string} The CSRF secret
  */
-export function getCsrfSecret(request: any) {
+export function getCsrfSecret(request: import('express').Request) {
     if (!request || !request.user) {
         return ANON_CSRF_SECRET;
     }
@@ -696,7 +697,7 @@ export async function getAllUserHandles() {
  * @param {string} handle User handle
  * @returns {UserDirectoryList} User directories
  */
-export function getUserDirectories(handle: any) {
+export function getUserDirectories(handle: string) {
     if (DIRECTORIES_CACHE.has(handle)) {
         const cache = DIRECTORIES_CACHE.get(handle);
         if (cache) {
@@ -717,7 +718,7 @@ export function getUserDirectories(handle: any) {
  * @param {string} handle User handle
  * @returns {Promise<string>} User avatar URL
  */
-export async function getUserAvatar(handle: any) {
+export async function getUserAvatar(handle: string) {
     try {
         // Check if the user has a custom avatar
         const avatarKey = toAvatarKey(handle);
@@ -753,7 +754,7 @@ export async function getUserAvatar(handle: any) {
  * @param {import('express').Request} request Request object
  * @returns {boolean} Whether the user should be redirected to the login page
  */
-export function shouldRedirectToLogin(request: any) {
+export function shouldRedirectToLogin(request: import('express').Request) {
     return ENABLE_ACCOUNTS && !request.user;
 }
 
@@ -764,7 +765,7 @@ export function shouldRedirectToLogin(request: any) {
  * @param {boolean} basicAuthMode If Basic auth mode is enabled
  * @returns {Promise<boolean>} Whether auto-login was performed
  */
-export async function tryAutoLogin(request: any, basicAuthMode: any) {
+export async function tryAutoLogin(request: import('express').Request, basicAuthMode: boolean) {
     if (!ENABLE_ACCOUNTS || request.user || !request.session) {
         return false;
     }
@@ -795,7 +796,7 @@ export async function tryAutoLogin(request: any, basicAuthMode: any) {
  * @param {import('express').Request} request Request object
  * @returns {Promise<boolean>} Whether auto-login was performed
  */
-async function singleUserLogin(request: any) {
+async function singleUserLogin(request: import('express').Request) {
     if (!request.session) {
         return false;
     }
@@ -818,7 +819,7 @@ async function singleUserLogin(request: any) {
  * @param {import('express').Request} request Request object
  * @returns {Promise<boolean>} Whether auto-login was performed
  */
-async function autheliaUserLogin(request: any) {
+async function autheliaUserLogin(request: import('express').Request) {
     return headerUserLogin(request, 'Remote-User');
 }
 
@@ -828,7 +829,7 @@ async function autheliaUserLogin(request: any) {
  * @param {import('express').Request} request Request object
  * @returns {Promise<boolean>} Whether auto-login was performed
  */
-async function authentikUserLogin(request: any) {
+async function authentikUserLogin(request: import('express').Request) {
     return headerUserLogin(request, 'X-Authentik-Username');
 }
 
@@ -837,7 +838,7 @@ async function authentikUserLogin(request: any) {
  * @param {string} ip The IP address of the request
  * @returns {boolean} If the request is from a trusted proxy based on the configuration
  */
-function isRequestFromTrustedProxy(ip: any) {
+function isRequestFromTrustedProxy(ip: string) {
     if (!Array.isArray(TRUSTED_PROXIES)) {
         console.warn(color.yellow('sso.trustedProxies is not an array. Please check your config.yaml. SSO auto-login will not work.'));
         return false;
@@ -862,7 +863,7 @@ function isRequestFromTrustedProxy(ip: any) {
             if (ipMatching.matches(ip, match)) {
                 return true;
             }
-        } catch (e) {
+        } catch (_e) {
             continue;
         }
     }
@@ -876,7 +877,7 @@ function isRequestFromTrustedProxy(ip: any) {
  * @param {string} [header] The header to use for the trusted user
  * @returns {Promise<boolean>} Whether auto-login was performed
  */
-async function headerUserLogin(request: any, header = 'Remote-User') {
+async function headerUserLogin(request: import('express').Request, header = 'Remote-User') {
     if (!request.session) {
         return false;
     }
@@ -913,7 +914,7 @@ async function headerUserLogin(request: any, header = 'Remote-User') {
  * @param {import('express').Request} request Request object
  * @returns {Promise<boolean>} Whether auto-login was performed
  */
-async function basicUserLogin(request: any) {
+async function basicUserLogin(request: import('express').Request) {
     if (!request.session) {
         return false;
     }
@@ -956,7 +957,7 @@ async function basicUserLogin(request: any) {
  * @param {User} user User account object
  * @returns {string} Account version tag
  */
-export function getAccountVersion(user: any) {
+export function getAccountVersion(user: User) {
     return crypto.createHash('shake256', { outputLength: 8 })
         .update(JSON.stringify([user.handle, user.password, user.salt]))
         .digest('hex');
@@ -967,8 +968,9 @@ export function getAccountVersion(user: any) {
  * @param {import('express').Request} request Request object
  * @param {import('express').Response} response Response object
  * @param {import('express').NextFunction} next Next function
+ * @returns {Promise<void>}
  */
-export async function setUserDataMiddleware(request: any, response: any, next: any) {
+export async function setUserDataMiddleware(request: express.Request, response: express.Response, next: express.NextFunction) {
     // If user accounts are disabled, use the default user
     if (!ENABLE_ACCOUNTS) {
         const handle = DEFAULT_USER.handle;
@@ -1035,12 +1037,13 @@ export async function setUserDataMiddleware(request: any, response: any, next: a
 }
 
 /**
- * Middleware to add user data to the request object.
+ * Middleware to require a logged-in user.
  * @param {import('express').Request} request Request object
  * @param {import('express').Response} response Response object
  * @param {import('express').NextFunction} next Next function
+ * @returns {void}
  */
-export function requireLoginMiddleware(request: any, response: any, next: any) {
+export function requireLoginMiddleware(request: express.Request, response: express.Response, next: express.NextFunction) {
     if (!request.user) {
         return response.sendStatus(403);
     }
@@ -1052,8 +1055,9 @@ export function requireLoginMiddleware(request: any, response: any, next: any) {
  * Middleware to host the login page.
  * @param {import('express').Request} request Request object
  * @param {import('express').Response} response Response object
+ * @returns {Promise<void>}
  */
-export async function loginPageMiddleware(request: any, response: any) {
+export async function loginPageMiddleware(request: express.Request, response: express.Response) {
     if (!ENABLE_ACCOUNTS) {
         console.log('User accounts are disabled. Redirecting to index page.');
         return response.redirect('/');
@@ -1076,10 +1080,10 @@ export async function loginPageMiddleware(request: any, response: any) {
 /**
  * Creates a route handler for serving files from a specific directory.
  * @param {(req: import('express').Request) => string} directoryFn A function that returns the directory path to serve files from
- * @returns {import('express').RequestHandler}
+ * @returns {import('express').RequestHandler} Express request handler
  */
-function createRouteHandler(directoryFn: any) {
-    return async (req: any, res: any) => {
+function createRouteHandler(directoryFn: (req: express.Request) => string) {
+    return async (req: express.Request, res: express.Response) => {
         try {
             const directory = directoryFn(req);
             const filePath = path.join(...req.params.filePath);
@@ -1094,7 +1098,7 @@ function createRouteHandler(directoryFn: any) {
 
             invalidateFirefoxCache(filePath, req, res);
             return res.sendFile(filePath, { root: directory });
-        } catch (error) {
+        } catch (_error) {
             return res.sendStatus(500);
         }
     };
@@ -1103,10 +1107,10 @@ function createRouteHandler(directoryFn: any) {
 /**
  * Creates a route handler for serving extensions.
  * @param {(req: import('express').Request) => string} directoryFn A function that returns the directory path to serve files from
- * @returns {import('express').RequestHandler}
+ * @returns {import('express').RequestHandler} Express request handler
  */
-function createExtensionsRouteHandler(directoryFn: any) {
-    return async (req: any, res: any) => {
+function createExtensionsRouteHandler(directoryFn: (req: express.Request) => string) {
+    return async (req: express.Request, res: express.Response) => {
         try {
             const directory = directoryFn(req);
             const filePath = path.join(...req.params.filePath);
@@ -1129,7 +1133,7 @@ function createExtensionsRouteHandler(directoryFn: any) {
             }
 
             return res.sendStatus(404);
-        } catch (error) {
+        } catch (_error) {
             return res.sendStatus(500);
         }
     };
@@ -1140,9 +1144,9 @@ function createExtensionsRouteHandler(directoryFn: any) {
  * @param {import('express').Request} request Request object
  * @param {import('express').Response} response Response object
  * @param {import('express').NextFunction} next Next function
- * @returns {any}
+ * @returns {void}
  */
-export function requireAdminMiddleware(request: any, response: any, next: any) {
+export function requireAdminMiddleware(request: express.Request, response: express.Response, next: express.NextFunction) {
     if (!request.user) {
         return response.sendStatus(403);
     }
@@ -1161,7 +1165,7 @@ export function requireAdminMiddleware(request: any, response: any, next: any) {
  * @param {import('express').Response} response Express response object to write to
  * @returns {Promise<void>} Promise that resolves when the archive is created
  */
-export async function createBackupArchive(handle: any, response: any) {
+export async function createBackupArchive(handle: string, response: express.Response) {
     const directories = getUserDirectories(handle);
 
     console.info('Backup requested for', handle);
@@ -1199,7 +1203,7 @@ export async function createBackupArchive(handle: any, response: any) {
 
 /**
  * Gets all of the users.
- * @returns {Promise<User[]>}
+ * @returns {Promise<User[]>} The list of all users
  */
 async function getAllUsers() {
     if (!ENABLE_ACCOUNTS) {
@@ -1214,7 +1218,7 @@ async function getAllUsers() {
 
 /**
  * Gets all of the enabled users.
- * @returns {Promise<User[]>}
+ * @returns {Promise<User[]>} The list of enabled users
  */
 export async function getAllEnabledUsers() {
     const users = await getAllUsers();
@@ -1225,10 +1229,10 @@ export async function getAllEnabledUsers() {
  * Express router for serving files from the user's directories.
  */
 export const router = express.Router();
-router.use('/backgrounds/*filePath', createRouteHandler((req: any) => req.user.directories.backgrounds));
-router.use('/characters/*filePath', createRouteHandler((req: any) => req.user.directories.characters));
-router.use('/User%20Avatars/*filePath', createRouteHandler((req: any) => req.user.directories.avatars));
-router.use('/assets/*filePath', createRouteHandler((req: any) => req.user.directories.assets));
-router.use('/user/images/*filePath', createRouteHandler((req: any) => req.user.directories.userImages));
-router.use('/user/files/*filePath', createRouteHandler((req: any) => req.user.directories.files));
-router.use('/scripts/extensions/third-party/*filePath', extensionsEnabledFeatureGuard, createExtensionsRouteHandler((req: any) => req.user.directories.extensions));
+router.use('/backgrounds/*filePath', createRouteHandler((req: express.Request) => req.user.directories.backgrounds));
+router.use('/characters/*filePath', createRouteHandler((req: express.Request) => req.user.directories.characters));
+router.use('/User%20Avatars/*filePath', createRouteHandler((req: express.Request) => req.user.directories.avatars));
+router.use('/assets/*filePath', createRouteHandler((req: express.Request) => req.user.directories.assets));
+router.use('/user/images/*filePath', createRouteHandler((req: express.Request) => req.user.directories.userImages));
+router.use('/user/files/*filePath', createRouteHandler((req: express.Request) => req.user.directories.files));
+router.use('/scripts/extensions/third-party/*filePath', extensionsEnabledFeatureGuard, createExtensionsRouteHandler((req: express.Request) => req.user.directories.extensions));
