@@ -2,6 +2,18 @@ import fetch from 'node-fetch';
 import { SECRET_KEYS, readSecret } from '../endpoints/secrets.js';
 import { OPENROUTER_HEADERS } from '../constants.js';
 
+type EmbeddingRequestBody = {
+    input: string[];
+    model: string | null;
+};
+
+type OpenAIEmbeddingResponse = {
+    data: Array<{
+        index: number;
+        embedding: number[];
+    }>;
+};
+
 const SOURCES = {
     'togetherai': {
         secretKey: SECRET_KEYS.TOGETHERAI,
@@ -43,7 +55,7 @@ const SOURCES = {
         url: 'https://{{MODEL}}.chutes.ai/v1',
         model: 'chutes-qwen-qwen3-embedding-8b',
         headers: {},
-        processBody: (body: any) => {
+        processBody: (body: EmbeddingRequestBody) => {
             body.model = null;
         },
     },
@@ -79,7 +91,7 @@ const SOURCES = {
  * @param {string|null} urlOverride - Optional URL override for the API endpoint
  * @returns {Promise<number[][]>} - The array of vectors for the texts
  */
-export async function getOpenAIBatchVector(texts: any, source: any, directories: any, model = '', urlOverride = null) {
+export async function getOpenAIBatchVector(texts: string[], source: string, directories: import('../users.js').UserDirectoryList, model = '', urlOverride: string | null = null): Promise<number[][]> {
     // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     const config = SOURCES[source];
 
@@ -127,21 +139,17 @@ export async function getOpenAIBatchVector(texts: any, source: any, directories:
         throw new Error('API request failed');
     }
 
-    /** @type {any} */
-    const data = await response.json();
+    const data = await response.json() as OpenAIEmbeddingResponse;
 
-    // @ts-expect-error TS(2571): Object is of type 'unknown'.
     if (!Array.isArray(data?.data)) {
         console.warn('API response was not an array');
         throw new Error('API response was not an array');
     }
 
     // Sort data by x.index to ensure the order is correct
-    // @ts-expect-error TS(2571): Object is of type 'unknown'.
-    data.data.sort((a: any, b: any) => a.index - b.index);
+    data.data.sort((a, b) => a.index - b.index);
 
-    // @ts-expect-error TS(2571): Object is of type 'unknown'.
-    const vectors = data.data.map((x: any) => x.embedding);
+    const vectors = data.data.map((x) => x.embedding);
     return vectors;
 }
 
@@ -154,7 +162,7 @@ export async function getOpenAIBatchVector(texts: any, source: any, directories:
  * @param {string|null} urlOverride - Optional URL override for the API endpoint
  * @returns {Promise<number[]>} - The vector for the text
  */
-export async function getOpenAIVector(text: any, source: any, directories: any, model = '', urlOverride = null) {
+export async function getOpenAIVector(text: string, source: string, directories: import('../users.js').UserDirectoryList, model = '', urlOverride: string | null = null): Promise<number[]> {
     const vectors = await getOpenAIBatchVector([text], source, directories, model, urlOverride);
     return vectors[0];
 }
