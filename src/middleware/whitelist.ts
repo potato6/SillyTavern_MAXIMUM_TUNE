@@ -8,6 +8,7 @@ import Handlebars from 'handlebars';
 import ipMatching from 'ip-matching';
 // @ts-expect-error TS(2792): Cannot find module 'is-docker'. Did you mean to se... Remove this comment to see the full error message
 import isDocker from 'is-docker';
+import express from 'express';
 
 import { filterValidIpPatterns, getIpFromRequest, getRealOrForwardedIp } from '../express-common.js';
 import { color, getConfigValue, safeReadFileSync } from '../util.js';
@@ -29,7 +30,7 @@ if (fs.existsSync(whitelistPath)) {
     }
 }
 
-whitelist = filterValidIpPatterns(whitelist, (entry: any, message: any) => `${color.red('Warning')}: Ignoring invalid whitelist entry ${color.yellow(entry)} - ${message}`);
+whitelist = filterValidIpPatterns(whitelist, (entry: string, message: string) => `${color.red('Warning')}: Ignoring invalid whitelist entry ${color.yellow(entry)} - ${message}`);
 
 /**
  * Resolves the IP addresses of Docker hostnames and adds them to the whitelist.
@@ -47,7 +48,7 @@ async function addDockerHostsToWhitelist() {
             const result = await dns.promises.lookup(entry);
             console.info(`Resolved whitelist hostname ${color.green(entry)} to IPv${result.family} address ${color.green(result.address)}`);
             whitelist.push(result.address);
-        } catch (e) {
+    } catch {
             console.warn(`Failed to resolve whitelist hostname ${color.red(entry)}: ${e.message}`);
         }
     }
@@ -68,7 +69,7 @@ export default async function getWhitelistMiddleware() {
 
     await addDockerHostsToWhitelist();
 
-    return function (req: any, res: any, next: any) {
+    return function (req: express.Request, res: express.Response, next: express.NextFunction) {
         const clientIp = getIpFromRequest(req);
         const forwardedIp = enableForwardedWhitelist && getRealOrForwardedIp(req);
         const userAgent = req.headers['user-agent'];
@@ -79,8 +80,8 @@ export default async function getWhitelistMiddleware() {
          * @param {string} ip - The IP address to check
          * @returns {boolean} True if the IP matches any whitelist entry
          */
-        function isIPInWhitelist(whitelist: any, ip: any) {
-            return whitelist.some((x: any) => ipMatching.matches(ip, ipMatching.getMatch(x)));
+        function isIPInWhitelist(whitelist: string[], ip: string) {
+            return whitelist.some((x: string) => ipMatching.matches(ip, ipMatching.getMatch(x)));
         }
 
         //clientIp = req.connection.remoteAddress.split(':').pop();
