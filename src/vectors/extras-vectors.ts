@@ -7,8 +7,8 @@ import fetch from 'node-fetch';
  * @param {string} apiKey - The Extras API key, or empty string if API key not enabled
  * @returns {Promise<number[][]>} - The array of vectors for the texts
  */
-export async function getExtrasBatchVector(texts: any, apiUrl: any, apiKey: any) {
-    return getExtrasVectorImpl(texts, apiUrl, apiKey);
+export async function getExtrasBatchVector(texts: string[], apiUrl: string, apiKey: string): Promise<number[][]> {
+    return getExtrasVectorImpl(texts, apiUrl, apiKey) as Promise<number[][]>;
 }
 
 /**
@@ -18,8 +18,8 @@ export async function getExtrasBatchVector(texts: any, apiUrl: any, apiKey: any)
  * @param {string} apiKey - The Extras API key, or empty string if API key not enabled
  * @returns {Promise<number[]>} - The vector for the text
  */
-export async function getExtrasVector(text: any, apiUrl: any, apiKey: any) {
-    return getExtrasVectorImpl(text, apiUrl, apiKey);
+export async function getExtrasVector(text: string, apiUrl: string, apiKey: string): Promise<number[]> {
+    return getExtrasVectorImpl(text, apiUrl, apiKey) as Promise<number[]>;
 }
 
 /**
@@ -29,7 +29,7 @@ export async function getExtrasVector(text: any, apiUrl: any, apiKey: any) {
  * @param {string} apiKey - The Extras API key, or empty string if API key not enabled *
  * @returns {Promise<Array>} - The vector for a single text if input is string, or the array of vectors for multiple texts if input is string[]
  */
-async function getExtrasVectorImpl(text: any, apiUrl: any, apiKey: any) {
+async function getExtrasVectorImpl(text: string | string[], apiUrl: string, apiKey: string): Promise<number[] | number[][]> {
     let url;
     try {
         url = new URL(apiUrl);
@@ -65,10 +65,8 @@ async function getExtrasVectorImpl(text: any, apiUrl: any, apiKey: any) {
         throw new Error('Extras request failed');
     }
 
-    /** @type {any} */
-    const data = await response.json();
-    // @ts-expect-error TS(2571): Object is of type 'unknown'.
-    const vector = data.embedding;  // `embedding`: number[] (one text item), or number[][] (multiple text items).
+    const data = await response.json() as { embedding: number[] | number[][] };
+    const vector = data.embedding;
 
     return vector;
 }
