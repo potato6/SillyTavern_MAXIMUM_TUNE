@@ -4,6 +4,7 @@
  */
 import { Buffer } from 'node:buffer';
 import path from 'node:path';
+import type { Request, Response, NextFunction } from 'express';
 import storage from 'node-persist';
 // @ts-expect-error TS(2792): Cannot find module 'rate-limiter-flexible'. Did yo... Remove this comment to see the full error message
 import { RateLimiterMemory, RateLimiterRes } from 'rate-limiter-flexible';
@@ -21,8 +22,8 @@ const basicAuthLimiter = new RateLimiterMemory({
     duration: 60,
 });
 
-const basicAuthMiddleware = async function (request: any, response: any, callback: any) {
-    const unauthorizedResponse = (res: any) => {
+const basicAuthMiddleware = async function (request: Request, response: Response, callback: NextFunction) {
+    const unauthorizedResponse = (res: Response) => {
         const unauthorizedWebpage = safeReadFileSync(path.join(globalThis.DATA_ROOT, '_errors', 'unauthorized.html')) ?? '';
         res.set('WWW-Authenticate', 'Basic realm="SillyTavern", charset="UTF-8"');
         return res.status(401).send(unauthorizedWebpage);
