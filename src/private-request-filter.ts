@@ -67,7 +67,7 @@ class PrivateRequestAgent extends Agent {
 
     /**
      * Create a new PrivateRequestAgent instance.
-     * @param {object} options
+     * @param {object} options Constructor options.
      * @param {string[]} options.privateAddressWhitelist List of private IP addresses or CIDR ranges to allow.
      * @param {boolean} options.logBlocked Whether to log blocked requests to the console.
      * @param {boolean} options.logAllowed Whether to log allowed requests to the console.
@@ -77,9 +77,9 @@ class PrivateRequestAgent extends Agent {
     constructor(options = { privateAddressWhitelist: [], logBlocked: true, logAllowed: false, allowUnresolvedHosts: false, enableKeepAlive: false }) {
         super({ keepAlive: options.enableKeepAlive });
 
-        const logEntryWarning = (entry: any, message: any) => `${color.red('Warning')}: Ignoring invalid private whitelist entry ${color.yellow(entry)} - ${message}`;
+        const logEntryWarning = (entry: string, message: string) => `${color.red('Warning')}: Ignoring invalid private whitelist entry ${color.yellow(entry)} - ${message}`;
         const whitelistArray = Array.isArray(options.privateAddressWhitelist) ? options.privateAddressWhitelist : [];
-        this.privateAddressWhitelist = Object.freeze(filterValidIpPatterns(whitelistArray, logEntryWarning).map((pattern: any) => ipMatch.getMatch(pattern)));
+        this.privateAddressWhitelist = Object.freeze(filterValidIpPatterns(whitelistArray, logEntryWarning).map((pattern: string) => ipMatch.getMatch(pattern)));
         this.allowUnresolvedHosts = options.allowUnresolvedHosts;
         this.logBlocked = options.logBlocked;
         this.logAllowed = options.logAllowed;
@@ -90,7 +90,7 @@ class PrivateRequestAgent extends Agent {
      * @param {string} address The IP address to check.
      * @returns {boolean} Whether the given address is a private IP address.
      */
-    #isPrivateIp(address: any) {
+    #isPrivateIp(address: string) {
         return privateIpRanges.some(range => range.matches(address));
     }
 
@@ -99,7 +99,7 @@ class PrivateRequestAgent extends Agent {
      * @param {string} address The IP address to check.
      * @returns {boolean} Whether the given address is allowed based on the private address whitelist.
      */
-    #isAllowedPrivateAddress(address: any) {
+    #isAllowedPrivateAddress(address: string) {
         // Permit the request if the private IP address is in the whitelist
         return this.privateAddressWhitelist.some(match => match.matches(address));
     }
@@ -108,14 +108,15 @@ class PrivateRequestAgent extends Agent {
      * Connect method that checks if the target host resolves to a private IP address and blocks the request if it does.
      * @param {http.ClientRequest} _req HTTP request object.
      * @param {import('agent-base').AgentConnectOpts} options Agent connection options.
+     * @returns {Promise<net.Socket | tls.TLSSocket>} A socket connected to the target host.
      */
-    async connect(_req: any, options: any) {
+    async connect(_req: http.ClientRequest, options: import('agent-base').AgentConnectOpts) {
         /**
          * Raise an error and log it if necessary.
          * @param {string} message The error message.
          * @param {boolean} [log] Whether to log the error to the console.
          */
-        const raiseError = (message: any, log = true) => {
+        const raiseError = (message: string, log = true) => {
             if (log) {
                 console.error(color.red(LOG_HEADER), message);
             }
@@ -143,7 +144,7 @@ class PrivateRequestAgent extends Agent {
          * @param {string} ip The IP address to validate.
          * @returns {net.Socket|tls.TLSSocket} A socket connected to the target IP address if it's allowed, otherwise an error is raised.
          */
-        const validateIpAddress = (ip: any) => {
+        const validateIpAddress = (ip: string) => {
             // Not a private IP address, allow the request
             if (!this.#isPrivateIp(ip)) {
                 return connect(ip);
@@ -166,7 +167,7 @@ class PrivateRequestAgent extends Agent {
          * @param {string} host The host to resolve to an IP address.
          * @returns {Promise<string>} The resolved IP address for the given host, or an empty string if the host cannot be resolved.
          */
-        const lookupHost = async (host: any) => {
+        const lookupHost = async (host: string) => {
             try {
                 return (await dns.promises.lookup(host)).address;
             } catch {
@@ -199,6 +200,16 @@ class PrivateRequestAgent extends Agent {
     }
 }
 
+interface InitPrivateRequestFilterOptions {
+    listen: boolean;
+    enabled: boolean;
+    privateAddressWhitelist: string[];
+    logBlocked: boolean;
+    logAllowed: boolean;
+    allowUnresolvedHosts: boolean;
+    enableKeepAlive: boolean;
+}
+
 /**
  * Initialize the private request filter by replacing the global HTTP and HTTPS agents with an instance of PrivateRequestAgent.
  * @param {object} options Options for initializing the private request filter.
@@ -218,7 +229,7 @@ export default function initPrivateRequestFilter({
     logAllowed,
     allowUnresolvedHosts,
     enableKeepAlive
-}: any) {
+}: InitPrivateRequestFilterOptions) {
     if (!enabled) {
         if (listen) {
             console.warn();
