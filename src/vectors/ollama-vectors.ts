@@ -2,6 +2,10 @@ import fetch from 'node-fetch';
 import { setAdditionalHeadersByType } from '../additional-headers.js';
 import { TEXTGEN_TYPES } from '../constants.js';
 
+type OllamaEmbeddingResponse = {
+    embeddings: number[][];
+};
+
 /**
  * Gets the vector for the given text from Ollama
  * @param {string[]} texts - The array of texts to get the vectors for
@@ -11,7 +15,7 @@ import { TEXTGEN_TYPES } from '../constants.js';
  * @param {import('../users.js').UserDirectoryList} directories - The directories object for the user
  * @returns {Promise<number[][]>} - The array of vectors for the texts
  */
-export async function getOllamaBatchVector(texts: any, apiUrl: any, model: any, keep: any, directories: any) {
+export async function getOllamaBatchVector(texts: string[], apiUrl: string, model: string, keep: boolean, directories: import('../users.js').UserDirectoryList): Promise<number[][]> {
     const url = new URL(apiUrl);
     url.pathname = '/api/embed';
 
@@ -37,15 +41,12 @@ export async function getOllamaBatchVector(texts: any, apiUrl: any, model: any, 
         throw new Error(`Ollama: Failed to get batch vectors: ${response.statusText} ${responseText}`);
     }
 
-    /** @type {any} */
-    const data = await response.json();
+    const data = await response.json() as OllamaEmbeddingResponse;
 
-    // @ts-expect-error TS(2571): Object is of type 'unknown'.
     if (!Array.isArray(data?.embeddings)) {
         throw new Error('API response was not an array');
     }
 
-    // @ts-expect-error TS(2571): Object is of type 'unknown'.
     return data.embeddings;
 }
 
@@ -58,7 +59,7 @@ export async function getOllamaBatchVector(texts: any, apiUrl: any, model: any, 
  * @param {import('../users.js').UserDirectoryList} directories - The directories object for the user
  * @returns {Promise<number[]>} - The vector for the text
  */
-export async function getOllamaVector(text: any, apiUrl: any, model: any, keep: any, directories: any) {
+export async function getOllamaVector(text: string, apiUrl: string, model: string, keep: boolean, directories: import('../users.js').UserDirectoryList): Promise<number[]> {
     const vectors = await getOllamaBatchVector([text], apiUrl, model, keep, directories);
     return vectors[0];
 }
