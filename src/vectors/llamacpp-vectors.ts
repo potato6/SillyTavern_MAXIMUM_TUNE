@@ -3,6 +3,13 @@ import { setAdditionalHeadersByType } from '../additional-headers.js';
 import { TEXTGEN_TYPES } from '../constants.js';
 import { trimV1 } from '../util.js';
 
+type LlamaCppEmbeddingResponse = {
+    data: Array<{
+        index: number;
+        embedding: number[];
+    }>;
+};
+
 /**
  * Gets the vector for the given text from LlamaCpp
  * @param {string[]} texts - The array of texts to get the vectors for
@@ -10,7 +17,7 @@ import { trimV1 } from '../util.js';
  * @param {import('../users.js').UserDirectoryList} directories - The directories object for the user
  * @returns {Promise<number[][]>} - The array of vectors for the texts
  */
-export async function getLlamaCppBatchVector(texts: any, apiUrl: any, directories: any) {
+export async function getLlamaCppBatchVector(texts: string[], apiUrl: string, directories: import('../users.js').UserDirectoryList): Promise<number[][]> {
     const url = new URL(trimV1(apiUrl) + '/v1/embeddings');
 
     const headers = {};
@@ -30,20 +37,16 @@ export async function getLlamaCppBatchVector(texts: any, apiUrl: any, directorie
         throw new Error(`LlamaCpp: Failed to get vector for text: ${response.statusText} ${responseText}`);
     }
 
-    /** @type {any} */
-    const data = await response.json();
+    const data = await response.json() as LlamaCppEmbeddingResponse;
 
-    // @ts-expect-error TS(2571): Object is of type 'unknown'.
     if (!Array.isArray(data?.data)) {
         throw new Error('API response was not an array');
     }
 
     // Sort data by x.index to ensure the order is correct
-    // @ts-expect-error TS(2571): Object is of type 'unknown'.
-    data.data.sort((a: any, b: any) => a.index - b.index);
+    data.data.sort((a, b) => a.index - b.index);
 
-    // @ts-expect-error TS(2571): Object is of type 'unknown'.
-    const vectors = data.data.map((x: any) => x.embedding);
+    const vectors = data.data.map((x) => x.embedding);
     return vectors;
 }
 
@@ -54,7 +57,7 @@ export async function getLlamaCppBatchVector(texts: any, apiUrl: any, directorie
  * @param {import('../users.js').UserDirectoryList} directories - The directories object for the user
  * @returns {Promise<number[]>} - The vector for the text
  */
-export async function getLlamaCppVector(text: any, apiUrl: any, directories: any) {
+export async function getLlamaCppVector(text: string, apiUrl: string, directories: import('../users.js').UserDirectoryList): Promise<number[]> {
     const vectors = await getLlamaCppBatchVector([text], apiUrl, directories);
     return vectors[0];
 }
