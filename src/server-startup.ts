@@ -64,16 +64,16 @@ import { router as volcengineRouter } from './endpoints/volcengine.js';
  * Redirect deprecated API endpoints to their replacements.
  * @param {import('express').Express} app The Express app to use
  */
-export function redirectDeprecatedEndpoints(app: any) {
+export function redirectDeprecatedEndpoints(app: import('express').Express) {
     /**
      * Redirect a deprecated API endpoint URL to its replacement. Because fetch, form submissions, and $.ajax follow
      * redirects, this is transparent to client-side code.
      * @param {string} src The URL to redirect from.
      * @param {string} destination The URL to redirect to.
      */
-    function redirect(src: any, destination: any) {
+    function redirect(src: string, destination: string) {
         // @ts-expect-error TS(6133): 'req' is declared but its value is never read.
-        app.use(src, (req: any, res: any) => {
+        app.use(src, (req: import('express').Request, res: import('express').Response) => {
             console.warn(`API endpoint ${src} is deprecated; use ${destination} instead`);
             // HTTP 301 causes the request to become a GET. 308 preserves the request method.
             res.redirect(308, destination);
@@ -136,7 +136,7 @@ export function redirectDeprecatedEndpoints(app: any) {
  * Setup the routers for the endpoints.
  * @param {import('express').Express} app The Express app to use
  */
-export function setupPrivateEndpoints(app: any) {
+export function setupPrivateEndpoints(app: import('express').Express) {
     app.use('/', userDataRouter);
     app.use('/api/users', usersPrivateRouter);
     app.use('/api/users', usersAdminRouter);
@@ -188,33 +188,33 @@ export function setupPrivateEndpoints(app: any) {
  * Utilities for starting the express server.
  */
 export class ServerStartup {
-    app: any;
-    cliArgs: any;
+    app: import('express').Express;
+    cliArgs: import('./command-line.js').CommandLineArguments;
     /**
      * Creates a new ServerStartup instance.
      * @param {import('express').Express} app The Express app to use
      * @param {import('./command-line.js').CommandLineArguments} cliArgs The command-line arguments
      */
-    constructor(app: any, cliArgs: any) {
+    constructor(app: import('express').Express, cliArgs: import('./command-line.js').CommandLineArguments) {
         this.app = app;
         this.cliArgs = cliArgs;
     }
 
     /**
      * Prints a fatal error message and exits the process.
-     * @param {string} message
+     * @param {string} message The error message to print
      */
-    #fatal(message: any) {
+    #fatal(message: string) {
         console.error(color.red(message));
         process.exit(1);
     }
 
     /**
      * Checks if the error was caused by an occupied port.
-     * @param {unknown} error
-     * @returns {error is NodeJS.ErrnoException}
+     * @param {unknown} error The error to check
+     * @returns {error is NodeJS.ErrnoException} True if the error is an EADDRINUSE error
      */
-    #isAddressInUseError(error: any) {
+    #isAddressInUseError(error: unknown) {
         return typeof error === 'object' && error !== null && 'code' in error && error.code === 'EADDRINUSE';
     }
 
@@ -222,9 +222,9 @@ export class ServerStartup {
      * Gets a readable listen address for an IP version.
      * @param {URL} url The URL to listen on
      * @param {number} ipVersion The IP version to use
-     * @returns {string}
+     * @returns {string} The listen address string
      */
-    #getListenAddress(url: any, ipVersion: any) {
+    #getListenAddress(url: URL, ipVersion: number) {
         const host = ipVersion === 6 ? urlHostnameToIPv6(url.hostname) : url.hostname;
         return `${host}:${Number(url.port || (this.cliArgs.ssl ? 443 : 80))}`;
     }
@@ -233,9 +233,9 @@ export class ServerStartup {
      * Builds a user-facing error for an occupied port.
      * @param {URL} url The URL that failed to bind
      * @param {number} ipVersion The IP version that failed
-     * @returns {string}
+     * @returns {string} The error message
      */
-    #getAddressInUseMessage(url: any, ipVersion: any) {
+    #getAddressInUseMessage(url: URL, ipVersion: number) {
         const listenAddress = this.#getListenAddress(url, ipVersion);
         return `Address ${listenAddress} is already in use. Another SillyTavern instance may already be running. Stop the other process or change "port" in config.yaml.`;
     }
@@ -270,7 +270,7 @@ export class ServerStartup {
      * @param {number} ipVersion the ip version to use
      * @returns {Promise<void>} A promise that resolves when the server is listening
      */
-    #createHttpsServer(url: any, ipVersion: any) {
+    #createHttpsServer(url: URL, ipVersion: number) {
         this.#verifySslOptions();
         return new Promise((resolve, reject) => {
             /** @type {import('https').ServerOptions} */
@@ -300,7 +300,7 @@ export class ServerStartup {
      * @param {number} ipVersion the ip version to use
      * @returns {Promise<void>} A promise that resolves when the server is listening
      */
-    #createHttpServer(url: any, ipVersion: any) {
+    #createHttpServer(url: URL, ipVersion: number) {
         return new Promise((resolve, reject) => {
             const server = http.createServer(this.app);
             server.on('error', reject);
@@ -323,7 +323,7 @@ export class ServerStartup {
      * @param {boolean} useIPv4 If use IPv4
      * @returns {Promise<[boolean, boolean, unknown, unknown]>} A promise that resolves with an array of booleans indicating if the server failed to start on IPv6 and IPv4, respectively, and the corresponding errors
      */
-    async #startHTTPorHTTPS(useIPv6: any, useIPv4: any) {
+    async #startHTTPorHTTPS(useIPv6: boolean, useIPv4: boolean) {
         let v6Failed = false;
         let v4Failed = false;
         let v6Error;
@@ -378,7 +378,7 @@ export class ServerStartup {
         v4Error,
         useIPv6,
         useIPv4
-    }: any) {
+    }: ServerStartupResult) {
         if (v6Failed && !useIPv4) {
             if (this.#isAddressInUseError(v6Error)) {
                 this.#fatal('Error: Startup aborted because IPv6 is the only enabled protocol and its listen port is already in use.');

@@ -232,8 +232,8 @@ app.get('/callback{/:source}', (request, response) => {
     const source = request.params.source;
     const query = request.url.split('?')[1];
     const searchParams = new URLSearchParams();
-    source && searchParams.set('source', source);
-    query && searchParams.set('query', query);
+    if (source) searchParams.set('source', source);
+    if (query) searchParams.set('query', query);
     const path = `/?${searchParams.toString()}`;
     return response.redirect(307, path);
 });
@@ -369,7 +369,7 @@ async function preSetupTasks() {
  * @param {import('./server-startup.js').ServerStartupResult} result The result of the server startup
  * @returns {Promise<void>}
  */
-async function postSetupTasks(result: any) {
+async function postSetupTasks(result: import('./server-startup.js').ServerStartupResult) {
     const browserLaunchHostname = await cliArgs.getBrowserLaunchHostname(result);
     const browserLaunchUrl = cliArgs.getBrowserLaunchUrl(browserLaunchHostname);
     const browserLaunchApp = String(getConfigValue('browserLaunch.browser', 'default') ?? '');
@@ -382,7 +382,8 @@ async function postSetupTasks(result: any) {
             const { default: open, apps } = openModule;
 
             /**
-             *
+             * Gets the available browsers for launching.
+             * @returns {Record<string, unknown>} A map of browser names to open apps
              */
             function getBrowsers() {
                 const isAndroid = process.platform === 'android';
@@ -487,7 +488,7 @@ function setDnsResolutionOrder() {
             dns.setDefaultResultOrder('ipv4first');
             console.log('Preferring IPv4 for DNS resolution');
         }
-    } catch (error) {
+    } catch (_error) {
         console.warn('Failed to set DNS resolution order. Possibly unsupported in this Node version.');
     }
 }
