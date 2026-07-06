@@ -1298,7 +1298,7 @@ function setReasoningEventHandlers() {
         const reasoning = String(message?.extra?.reasoning ?? '');
         const chatElement = document.getElementById('chat');
         const textarea = document.createElement('textarea');
-        const reasoningBlock = messageBlock.find('.mes_reasoning');
+        const reasoningBlock = messageBlock.querySelector('.mes_reasoning');
         textarea.classList.add('reasoning_edit_textarea');
         textarea.value = reasoning;
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
@@ -1347,8 +1347,8 @@ function setReasoningEventHandlers() {
             return;
         }
 
-        const textarea = messageBlock.find('.reasoning_edit_textarea');
-        let newReasoning = String(textarea.val());
+        const textarea = messageBlock.querySelector('.reasoning_edit_textarea');
+        let newReasoning = String(textarea.value);
         newReasoning = substituteParams(newReasoning);
         textarea.remove();
         if (newReasoning === message.extra.reasoning) {
@@ -1358,7 +1358,7 @@ function setReasoningEventHandlers() {
         await saveChatConditional();
         updateMessageBlock(messageId, message);
 
-        messageBlock.find('.mes_edit_done:visible').trigger('click');
+        messageBlock.querySelector('.mes_edit_done')?.click();
         await eventSource.emit(event_types.MESSAGE_REASONING_EDITED, messageId);
     });
 
@@ -1368,10 +1368,10 @@ function setReasoningEventHandlers() {
         e.preventDefault();
 
         const { messageBlock } = getMessageFromJquery(this);
-        const textarea = messageBlock.find('.reasoning_edit_textarea');
+        const textarea = messageBlock.querySelector('.reasoning_edit_textarea');
         textarea.remove();
 
-        messageBlock.find('.mes_reasoning_edit_cancel:visible').trigger('click');
+        messageBlock.querySelector('.mes_reasoning_edit_cancel')?.click();
 
         updateReasoningUI(messageBlock);
     });
@@ -1389,17 +1389,17 @@ function setReasoningEventHandlers() {
             return;
         }
 
-        messageBlock.addClass('reasoning');
+        messageBlock.classList.add('reasoning');
 
         // To make hidden reasoning blocks editable, we just set them to "Done" here already.
         // They will be done on save anyway - and on cancel the reasoning block gets rerendered too.
-        if (messageBlock.attr('data-reasoning-state') === ReasoningState.Hidden) {
-            messageBlock.attr('data-reasoning-state', ReasoningState.Done);
+        if (messageBlock.getAttribute('data-reasoning-state') === ReasoningState.Hidden) {
+            messageBlock.setAttribute('data-reasoning-state', ReasoningState.Done);
         }
 
         // Open the reasoning area so we can actually edit it
-        messageBlock.find('.mes_reasoning_details').attr('open', '');
-        messageBlock.find('.mes_reasoning_edit').trigger('click');
+        messageBlock.querySelector('.mes_reasoning_details')?.setAttribute('open', '');
+        messageBlock.querySelector('.mes_reasoning_edit')?.click();
         await saveChatConditional();
     });
 
@@ -1423,8 +1423,7 @@ function setReasoningEventHandlers() {
         delete message.extra.reasoning_duration;
         await saveChatConditional();
         updateMessageBlock(messageId, message);
-        const textarea = messageBlock.find('.reasoning_edit_textarea');
-        textarea.remove();
+        messageBlock.querySelector('.reasoning_edit_textarea')?.remove();
         await eventSource.emit(event_types.MESSAGE_REASONING_DELETED, messageId);
     });
 
