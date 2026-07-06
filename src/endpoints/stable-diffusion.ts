@@ -16,10 +16,10 @@ import { AIMLAPI_HEADERS } from '../constants.js';
 
 /**
  * Gets the comfy workflows.
- * @param {import('../users.js').UserDirectoryList} directories
+ * @param {import('../users.js').UserDirectoryList} directories - User directories
  * @returns {string[]} List of comfy workflows
  */
-function getComfyWorkflows(directories: any) {
+function getComfyWorkflows(directories: import('../users.js').UserDirectoryList) {
     return fs
         .readdirSync(directories.comfyWorkflows)
         .filter(file => file[0] !== '.' && file.toLowerCase().endsWith('.json'))
@@ -53,9 +53,6 @@ router.post('/ping', async (request, response) => {
 
 router.post('/upscalers', async (request, response) => {
     try {
-        /**
-         *
-         */
         async function getUpscalerModels() {
             const url = new URL(request.body.url);
             url.pathname = '/sdapi/v1/upscalers';
@@ -71,14 +68,10 @@ router.post('/upscalers', async (request, response) => {
                 throw new Error('SD WebUI returned an error.');
             }
 
-            /** @type {any} */
-            const data = await result.json();
-            return data.map((x: any) => x.name);
+            const data = await result.json() as { name: string }[];
+            return data.map(x => x.name);
         }
 
-        /**
-         *
-         */
         async function getLatentUpscalers() {
             const url = new URL(request.body.url);
             url.pathname = '/sdapi/v1/latent-upscale-modes';
@@ -94,9 +87,8 @@ router.post('/upscalers', async (request, response) => {
                 throw new Error('SD WebUI returned an error.');
             }
 
-            /** @type {any} */
-            const data = await result.json();
-            return data.map((x: any) => x.name);
+            const data = await result.json() as { name: string }[];
+            return data.map(x => x.name);
         }
 
         const [upscalers, latentUpscalers] = await Promise.all([getUpscalerModels(), getLatentUpscalers()]);
@@ -160,9 +152,8 @@ router.post('/samplers', async (request, response) => {
             throw new Error('SD WebUI returned an error.');
         }
 
-        /** @type {any} */
-        const data = await result.json();
-        const names = data.map((x: any) => x.name);
+        const data = await result.json() as { name: string }[];
+        const names = data.map(x => x.name);
         return response.send(names);
     } catch (error) {
         console.error(error);
@@ -186,9 +177,8 @@ router.post('/schedulers', async (request, response) => {
             throw new Error('SD WebUI returned an error.');
         }
 
-        /** @type {any} */
-        const data = await result.json();
-        const names = data.map((x: any) => x.name);
+        const data = await result.json() as { name: string }[];
+        const names = data.map(x => x.name);
         return response.send(names);
     } catch (error) {
         console.error(error);
@@ -212,9 +202,8 @@ router.post('/models', async (request, response) => {
             throw new Error('SD WebUI returned an error.');
         }
 
-        /** @type {any} */
-        const data = await result.json();
-        const models = data.map((x: any) => ({
+        const data = await result.json() as { title: string }[];
+        const models = data.map(x => ({
             value: x.title,
             text: x.title
         }));
@@ -236,8 +225,7 @@ router.post('/get-model', async (request, response) => {
                 'Authorization': getBasicAuthHeader(request.body.auth),
             },
         });
-        /** @type {any} */
-        const data = await result.json();
+        const data = await result.json() as { sd_model_checkpoint: string };
         return response.send(data.sd_model_checkpoint);
     } catch (error) {
         console.error(error);
@@ -247,9 +235,6 @@ router.post('/get-model', async (request, response) => {
 
 router.post('/set-model', async (request, response) => {
     try {
-        /**
-         *
-         */
         async function getProgress() {
             const url = new URL(request.body.url);
             url.pathname = '/sdapi/v1/progress';
@@ -287,8 +272,7 @@ router.post('/set-model', async (request, response) => {
         const CHECK_INTERVAL = 2000;
 
         for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
-            /** @type {any} */
-            const progressState = await getProgress();
+            const progressState = await getProgress() as { progress: number; state: { job_count: number } };
 
             const progress = progressState.progress;
             const jobCount = progressState.state.job_count;
@@ -314,7 +298,7 @@ router.post('/generate', async (request, response) => {
             optionsUrl.pathname = '/sdapi/v1/options';
             const optionsResult = await fetch(optionsUrl, { headers: { 'Authorization': getBasicAuthHeader(request.body.auth) } });
             if (optionsResult.ok) {
-                const optionsData = /** @type {any} */ (await optionsResult.json());
+                const optionsData = await optionsResult.json() as Record<string, unknown>;
                 const isForge = 'forge_preset' in optionsData;
 
                 if (!isForge) {
@@ -382,9 +366,8 @@ router.post('/sd-next/upscalers', async (request, response) => {
         // Vlad doesn't provide Latent Upscalers in the API, so we have to hardcode them here
         const latentUpscalers = ['Latent', 'Latent (antialiased)', 'Latent (bicubic)', 'Latent (bicubic antialiased)', 'Latent (nearest)', 'Latent (nearest-exact)'];
 
-        /** @type {any} */
-        const data = await result.json();
-        const names = data.map((x: any) => x.name);
+        const data = await result.json() as { name: string }[];
+        const names = data.map(x => x.name);
 
         // 0 = None, then Latent Upscalers, then Upscalers
         names.splice(1, 0, ...latentUpscalers);
@@ -423,8 +406,7 @@ comfy.post('/samplers', async (request, response) => {
             throw new Error('ComfyUI returned an error.');
         }
 
-        /** @type {any} */
-        const data = await result.json();
+        const data = await result.json() as { KSampler: { input: { required: { sampler_name: [string[]] } } } };
         return response.send(data.KSampler.input.required.sampler_name[0]);
     } catch (error) {
         console.error(error);
@@ -440,20 +422,23 @@ comfy.post('/models', async (request, response) => {
         if (!result.ok) {
             throw new Error('ComfyUI returned an error.');
         }
-        /** @type {any} */
-        const data = await result.json();
+        const data = await result.json() as {
+            CheckpointLoaderSimple: { input: { required: { ckpt_name: [string[]] } } };
+            UNETLoader: { input: { required: { unet_name: [string[]] } } };
+            UnetLoaderGGUF?: { input: { required: { unet_name: [string[]] } } };
+        };
 
-        const ckpts = data.CheckpointLoaderSimple.input.required.ckpt_name[0].map((it: any) => ({
+        const ckpts = data.CheckpointLoaderSimple.input.required.ckpt_name[0].map(it => ({
             value: it,
             text: it
         })) || [];
-        const unets = data.UNETLoader.input.required.unet_name[0].map((it: any) => ({
+        const unets = data.UNETLoader.input.required.unet_name[0].map(it => ({
             value: it,
             text: `UNet: ${it}`
         })) || [];
 
         // load list of GGUF unets from diffusion_models if the loader node is available
-        const ggufs = data.UnetLoaderGGUF?.input.required.unet_name[0].map((it: any) => ({
+        const ggufs = data.UnetLoaderGGUF?.input.required.unet_name[0].map(it => ({
             value: it,
             text: `GGUF: ${it}`
         })) || [];
@@ -478,8 +463,7 @@ comfy.post('/schedulers', async (request, response) => {
             throw new Error('ComfyUI returned an error.');
         }
 
-        /** @type {any} */
-        const data = await result.json();
+        const data = await result.json() as { KSampler: { input: { required: { scheduler: [string[]] } } } };
         return response.send(data.KSampler.input.required.scheduler[0]);
     } catch (error) {
         console.error(error);
@@ -496,8 +480,7 @@ comfy.post('/vaes', async (request, response) => {
             throw new Error('ComfyUI returned an error.');
         }
 
-        /** @type {any} */
-        const data = await result.json();
+        const data = await result.json() as { VAELoader: { input: { required: { vae_name: [string[]] } } } };
         return response.send(data.VAELoader.input.required.vae_name[0]);
     } catch (error) {
         console.error(error);
@@ -582,9 +565,25 @@ comfy.post('/rename-workflow', getFileNameValidationFunction('old_name'), getFil
     }
 });
 
+interface ComfyHistoryItem {
+    status: {
+        status_str: string;
+        messages?: Array<[string, {
+            node_type: string;
+            node_id: string;
+            exception_type: string;
+            exception_message: string;
+        }]>;
+    };
+    outputs: Record<string, {
+        images?: Array<{ filename: string; subfolder: string; type: string }>;
+        gifs?: Array<{ filename: string; subfolder: string; type: string }>;
+    }>;
+}
+
 comfy.post('/generate', async (request, response) => {
     try {
-        let item: any;
+        let item: ComfyHistoryItem | undefined;
         const url = new URL(request.body.url.replace(/\/+$/, '') + '/prompt');
 
         const controller = new AbortController();
@@ -606,8 +605,7 @@ comfy.post('/generate', async (request, response) => {
             throw new Error('ComfyUI returned an error.', { cause: tryParse(text) });
         }
 
-        /** @type {any} */
-        const data = await promptResult.json();
+        const data = await promptResult.json() as { prompt_id: string };
         const id = data.prompt_id;
         const historyUrl = new URL(request.body.url.replace(/\/+$/, '') + '/history');
         while (true) {
@@ -615,8 +613,7 @@ comfy.post('/generate', async (request, response) => {
             if (!result.ok) {
                 throw new Error('ComfyUI returned an error.');
             }
-            /** @type {any} */
-            const history = await result.json();
+            const history = await result.json() as Record<string, ComfyHistoryItem>;
             item = history[id];
             if (item) {
                 break;
@@ -626,9 +623,9 @@ comfy.post('/generate', async (request, response) => {
         if (item.status.status_str === 'error') {
             // Report node tracebacks if available
             const errorMessages = item.status?.messages
-                ?.filter((it: any) => it[0] === 'execution_error')
-                .map((it: any) => it[1])
-                .map((it: any) => `${it.node_type} [${it.node_id}] ${it.exception_type}: ${it.exception_message}`)
+                ?.filter((it: [string, unknown]) => it[0] === 'execution_error')
+                .map((it: [string, { node_type: string; node_id: string; exception_type: string; exception_message: string }]) => it[1])
+                .map(it => `${it.node_type} [${it.node_id}] ${it.exception_type}: ${it.exception_message}`)
                 .join('\n') || '';
             throw new Error(`ComfyUI generation did not succeed.\n\n${errorMessages}`.trim());
         }
@@ -674,8 +671,7 @@ comfyRunPod.post('/ping', async (request, response) => {
         if (!result.ok) {
             throw new Error('ComfyUI returned an error.');
         }
-        /** @type {any} */
-        const data = await result.json();
+        const data = await result.json() as { workers: { ready: number } };
         if (data.workers.ready <= 0) {
             console.warn(`No workers reported as ready. ${result}`);
         }
@@ -696,8 +692,9 @@ comfyRunPod.post('/generate', async (request, response) => {
             return response.sendStatus(400);
         }
 
-        let jobId: any;
-        let item: any;
+        // eslint-disable-next-line prefer-const
+        let jobId: string | undefined;
+        let item: { filename: string; data: string } | undefined;
         const url = new URL(request.body.url.replace(/\/+$/, '') + '/run');
 
         const controller = new AbortController();
@@ -725,8 +722,7 @@ comfyRunPod.post('/generate', async (request, response) => {
             throw new Error('ComfyUI returned an error.', { cause: tryParse(text) });
         }
 
-        /** @type {any} */
-        const data = await promptResult.json();
+        const data = await promptResult.json() as { id: string };
         jobId = data.id;
         const statusUrl = new URL(request.body.url.replace(/\/+$/, '') + `/status/${jobId}`);
         while (true) {
@@ -737,8 +733,7 @@ comfyRunPod.post('/generate', async (request, response) => {
             if (!result.ok) {
                 throw new Error('ComfyUI returned an error.');
             }
-            /** @type {any} */
-            const status = await result.json();
+            const status = await result.json() as { output?: { images: Array<{ filename: string; data: string }> } };
             if (status.output) {
                 item = status.output.images[0];
             }
@@ -832,8 +827,7 @@ together.post('/generate', async (request, response) => {
             return response.sendStatus(500);
         }
 
-        /** @type {any} */
-        const data = await result.json();
+        const data = await result.json() as { data?: Array<{ b64_json?: string; url?: string }> };
         console.debug('TogetherAI response:', data);
 
         const choice = data?.data?.[0];
@@ -968,8 +962,7 @@ drawthings.post('/get-model', async (request, response) => {
             method: 'GET',
         });
 
-        /** @type {any} */
-        const data = await result.json();
+        const data = await result.json() as { model: string };
 
         return response.send(data.model);
     } catch (error) {
@@ -987,8 +980,7 @@ drawthings.post('/get-upscaler', async (request, response) => {
             method: 'GET',
         });
 
-        /** @type {any} */
-        const data = await result.json();
+        const data = await result.json() as { upscaler: string };
 
         return response.send(data.upscaler);
     } catch (error) {
@@ -1227,8 +1219,7 @@ electronhub.post('/models', async (request, response) => {
             return response.sendStatus(500);
         }
 
-        /** @type {any} */
-        const data = await modelsResponse.json();
+        const data = await modelsResponse.json() as { data?: Array<{ id: string; name: string; endpoints: string[] }> };
 
         if (!Array.isArray(data?.data)) {
             console.warn('Electron Hub returned invalid data.');
@@ -1236,8 +1227,8 @@ electronhub.post('/models', async (request, response) => {
         }
 
         const models = data.data
-            .filter((x: any) => x && Array.isArray(x.endpoints) && x.endpoints.includes('/v1/images/generations'))
-            .map((x: any) => ({
+            .filter(x => x && Array.isArray(x.endpoints) && x.endpoints.includes('/v1/images/generations'))
+            .map(x => ({
             ...x,
             value: x.id,
             text: x.name
@@ -1293,8 +1284,7 @@ electronhub.post('/generate', async (request, response) => {
             return response.sendStatus(500);
         }
 
-        /** @type {any} */
-        const data = await result.json();
+        const data = await result.json() as { data?: Array<{ b64_json?: string }> };
         const image = data?.data?.[0]?.b64_json;
 
         if (!image) {
@@ -1322,9 +1312,7 @@ electronhub.post('/sizes', async (request, response) => {
         return response.sendStatus(500);
     }
 
-    /** @type {any} */
-    const data = await result.json();
-
+    const data = await result.json() as { sizes?: unknown };
     const sizes = data.sizes;
 
     if (!sizes) {
@@ -1359,13 +1347,11 @@ chutes.post('/models', async (request, response) => {
             return response.sendStatus(500);
         }
 
-        const data = await modelsResponse.json();
-
-        const chutesData = /** @type {{items: Array<{name: string}>}} */ (data);
-        const models = chutesData.items.map((x: any) => ({
+        const data = await modelsResponse.json() as { items: Array<{ name: string }> };
+        const models = data.items.map(x => ({
             value: x.name,
             text: x.name
-        })).sort((a: any, b: any) => a?.text?.localeCompare(b?.text));
+        })).sort((a, b) => a?.text?.localeCompare(b?.text));
         return response.send(models);
     } catch (error) {
         console.error(error);
@@ -1443,8 +1429,7 @@ nanogpt.post('/models', async (request, response) => {
             return response.sendStatus(500);
         }
 
-        /** @type {any} */
-        const data = await modelsResponse.json();
+        const data = await modelsResponse.json() as { models?: { image?: Record<string, { model: string; name: string }> } };
         const imageModels = data?.models?.image;
 
         if (!imageModels || typeof imageModels !== 'object') {
@@ -1452,7 +1437,6 @@ nanogpt.post('/models', async (request, response) => {
             return response.sendStatus(500);
         }
 
-        // @ts-expect-error TS(2339): Property 'model' does not exist on type 'unknown'.
         const models = Object.values(imageModels).map(x => ({ value: x.model, text: x.name }));
         return response.send(models);
     } catch (error) {
@@ -1486,8 +1470,7 @@ nanogpt.post('/generate', async (request, response) => {
             return response.sendStatus(500);
         }
 
-        /** @type {any} */
-        const data = await result.json();
+        const data = await result.json() as { data?: Array<{ b64_json?: string }> };
 
         const image = data?.data?.[0]?.b64_json;
         if (!image) {
@@ -1527,17 +1510,18 @@ bfl.post('/generate', async (request, response) => {
         };
 
         /**
-         *
-         * @param width
-         * @param height
+         * Returns the closest aspect ratio string within valid bounds.
+         * @param width - Image width in pixels
+         * @param height - Image height in pixels
+         * @returns Aspect ratio string
          */
-        function getClosestAspectRatio(width: any, height: any) {
+        function getClosestAspectRatio(width: number, height: number) {
             const minAspect = 9 / 21;
             const maxAspect = 21 / 9;
             const currentAspect = width / height;
 
-            const gcd = (a: any, b: any) => b === 0 ? a : gcd(b, a % b);
-            const simplifyRatio = (w: any, h: any) => {
+            const gcd = (a: number, b: number): number => b === 0 ? a : gcd(b, a % b);
+            const simplifyRatio = (w: number, h: number) => {
                 const divisor = gcd(w, h);
                 return `${w / divisor}:${h / divisor}`;
             };
@@ -1584,8 +1568,7 @@ bfl.post('/generate', async (request, response) => {
             return response.sendStatus(500);
         }
 
-        /** @type {any} */
-        const taskData = await result.json();
+        const taskData = await result.json() as { id: string };
         const { id } = taskData;
 
         const MAX_ATTEMPTS = 100;
@@ -1600,8 +1583,7 @@ bfl.post('/generate', async (request, response) => {
                 return response.sendStatus(500);
             }
 
-            /** @type {any} */
-            const statusData = await statusResult.json();
+            const statusData = await statusResult.json() as { status?: string; result?: { sample: string } };
 
             if (statusData?.status === 'Pending') {
                 continue;
@@ -1629,9 +1611,8 @@ falai.post('/models', async (_request, response) => {
     try {
         const modelsUrl = new URL('https://fal.ai/api/models?categories=text-to-image');
         let page = 1;
-        /** @type {any} */
-        let modelsResponse;
-        let models: any = [];
+        let modelsResponse: { items?: Array<{ title: string; modelUrl: string }>; page?: number; pages?: number };
+        let models: Array<{ title: string; modelUrl: string }> = [];
 
         do {
             modelsUrl.searchParams.set('page', page.toString());
@@ -1642,7 +1623,7 @@ falai.post('/models', async (_request, response) => {
                 throw new Error('FAL.AI request failed.');
             }
 
-            modelsResponse = await result.json();
+            modelsResponse = await result.json() as { items: Array<{ title: string; modelUrl: string }>; page: number; pages: number };
             if (!('items' in modelsResponse) || !Array.isArray(modelsResponse.items)) {
                 console.warn('FAL.AI returned invalid data.');
                 throw new Error('FAL.AI request failed.');
@@ -1650,7 +1631,7 @@ falai.post('/models', async (_request, response) => {
 
             models = models.concat(
                 modelsResponse.items.filter(
-                    (x: any) => !x.title.toLowerCase().includes('inpainting') &&
+                    x => !x.title.toLowerCase().includes('inpainting') &&
                     !x.title.toLowerCase().includes('control') &&
                     !x.title.toLowerCase().includes('upscale') &&
                     !x.title.toLowerCase().includes('lora'),
@@ -1707,8 +1688,7 @@ falai.post('/generate', async (request, response) => {
             return response.sendStatus(500);
         }
 
-        /** @type {any} */
-        const taskData = await result.json();
+        const taskData = await result.json() as { status_url: string };
         const { status_url } = taskData;
 
         const MAX_ATTEMPTS = 100;
@@ -1727,22 +1707,20 @@ falai.post('/generate', async (request, response) => {
                 return response.sendStatus(500);
             }
 
-            /** @type {any} */
-            const statusData = await statusResult.json();
+            const statusData = await statusResult.json() as { status?: string; response_url?: string };
 
             if (statusData?.status === 'IN_QUEUE' || statusData?.status === 'IN_PROGRESS') {
                 continue;
             }
 
             if (statusData?.status === 'COMPLETED') {
-                const resultFetch = await fetch(statusData?.response_url, {
+                const resultFetch = await fetch(statusData?.response_url as string, {
                     method: 'GET',
                     headers: {
                         'Authorization': `Key ${key}`,
                     },
                 });
-                /** @type {any} */
-                const resultData = await resultFetch.json();
+                const resultData = await resultFetch.json() as { detail?: Array<{ loc: [string, string]; msg: string }>; images: Array<{ url: string }> };
 
                 if (resultData.detail !== null && resultData.detail !== undefined) {
                     // @ts-expect-error TS(2322): Type 'string' is not assignable to type 'Error'.
@@ -1804,8 +1782,7 @@ xai.post('/generate', async (request, response) => {
             return response.sendStatus(500);
         }
 
-        /** @type {any} */
-        const data = await result.json();
+        const data = await result.json() as { data?: Array<{ b64_json?: string }> };
 
         // Can either be a base64 buffer (always JPEG) or a data URL (with MIME type)
         const encodedImage = String(data?.data?.[0]?.b64_json || '');
@@ -1849,14 +1826,13 @@ aimlapi.post('/models', async (request, response) => {
             return response.sendStatus(500);
         }
 
-        /** @type {any} */
-        const data = await modelsResponse.json();
+        const data = await modelsResponse.json() as { data: Array<{ id: string; type: string; info?: { name?: string } }> };
         const models = (data.data || [])
-            .filter((model: any) => model.type === 'image' &&
+            .filter(model => model.type === 'image' &&
         model.id !== 'triposr' &&
         model.id !== 'flux/dev/image-to-image',
             )
-            .map((model: any) => ({
+            .map(model => ({
             value: model.id,
             text: model.info?.name || model.id
         }));
@@ -1885,8 +1861,7 @@ aimlapi.post('/generate-image', async (req, res) => {
             const err = await apiRes.text();
             return res.status(500).send(err);
         }
-        /** @type {any} */
-        const data = await apiRes.json();
+        const data = await apiRes.json() as { images?: Array<{ b64_json?: string; base64?: string; url?: string }>; data?: Array<{ b64_json?: string; base64?: string; url?: string }> };
 
         const imgObj = Array.isArray(data.images) ? data.images[0] : data.data?.[0];
         if (!imgObj) return res.status(500).send('No image returned');
@@ -1944,8 +1919,7 @@ zai.post('/generate', async (request, response) => {
             return response.sendStatus(500);
         }
 
-        /** @type {any} */
-        const data = await generateResponse.json();
+        const data = await generateResponse.json() as { data?: Array<{ url?: string }>; id?: string };
         console.debug('Z.AI image response:', data);
 
         const urlString = String(data?.data?.[0]?.url ?? '');
@@ -2028,8 +2002,7 @@ zai.post('/generate-video', async (request, response) => {
             return response.sendStatus(500);
         }
 
-        /** @type {any} */
-        const data = await generateResponse.json();
+        const data = await generateResponse.json() as { id?: string };
         console.debug('Z.AI video response:', data);
 
         // Poll for video generation completion
@@ -2055,8 +2028,7 @@ zai.post('/generate-video', async (request, response) => {
                 return response.status(500).send(text);
             }
 
-            /** @type {any} */
-            const pollResult = await pollResponse.json();
+            const pollResult = await pollResponse.json() as { task_status?: string; video_result?: Array<{ url?: string }> };
             console.debug(`Z.AI video job status: ${pollResult.task_status}`);
 
             if (pollResult.task_status === 'FAIL') {
@@ -2124,15 +2096,14 @@ workersai.post('/models', async (request, response) => {
             return response.sendStatus(500);
         }
 
-        /** @type {any} */
-        const data = await result.json();
+        const data = await result.json() as { success: boolean; result: Array<{ name: string }> };
 
         if (!data.success || !Array.isArray(data.result)) {
             console.warn('Cloudflare Workers AI returned invalid data.');
             return response.sendStatus(500);
         }
 
-        const models = data.result.map((x: any) => ({
+        const models = data.result.map(x => ({
             value: x.name,
             text: x.name
         }));
@@ -2218,8 +2189,7 @@ workersai.post('/generate', async (request, response) => {
 
         // Partner models return JSON with base64 image
         if (contentType.includes('application/json')) {
-            /** @type {any} */
-            const data = await result.json();
+            const data = await result.json() as { result?: { image?: string }; image?: string };
             const image = data?.result?.image || data?.image;
             if (!image) {
                 console.warn('Cloudflare Workers AI returned JSON without image data.');
