@@ -24,10 +24,10 @@ const USER_AGENT = 'SillyTavern';
 
 /**
  * @typedef {object} ContentItem
- * @property {string} filename
- * @property {string} type
- * @property {string} [name]
- * @property {string|null} [folder]
+ * @property {string} filename - File name of the content item
+ * @property {string} type - Content type identifier
+ * @property {string} [name] - Display name of the content item
+ * @property {string|null} [folder] - Parent folder path
  */
 
 /**
@@ -70,7 +70,7 @@ export const CONTENT_SCOPE = {
  * @param {CONTENT_TYPES} type Content type
  * @returns {CONTENT_SCOPE} Resolved content scope
  */
-function getScopeByType(type: any) {
+function getScopeByType(type: string) {
     const globalTypes = [
         CONTENT_TYPES.ERROR_PAGE,
         CONTENT_TYPES.STYLESHEET,
@@ -83,7 +83,7 @@ function getScopeByType(type: any) {
  * @param {import('../users.js').UserDirectoryList} directories User directories
  * @returns {object[]} Array of default presets
  */
-export function getDefaultPresets(directories: any) {
+export function getDefaultPresets(directories: import('../users.js').UserDirectoryList) {
     try {
         const contentIndex = getContentIndex(CONTENT_SCOPE.USER);
         const presets = [];
@@ -108,7 +108,7 @@ export function getDefaultPresets(directories: any) {
  * @param {string} filename Name of the file to get
  * @returns {object | null} JSON object or null if the file doesn't exist
  */
-export function getDefaultPresetFile(filename: any) {
+export function getDefaultPresetFile(filename: string) {
     try {
         const contentPath = path.join(contentDirectory, filename);
 
@@ -132,7 +132,7 @@ export function getDefaultPresetFile(filename: any) {
  * @param {string[]} [forceCategories] List of categories to force check (even if content check is skipped)
  * @returns {boolean} Whether any content was added
  */
-function seedContent(contentIndex: any, contentLogPath: any, resolveTarget: any, forceCategories: any) {
+function seedContent(contentIndex: ContentItem[], contentLogPath: string, resolveTarget: (type: string) => string | null, forceCategories?: string[]) {
     let anyContentAdded = false;
     const contentLog = getContentLog(contentLogPath);
 
@@ -187,13 +187,13 @@ function seedContent(contentIndex: any, contentLogPath: any, resolveTarget: any,
  * @param {string[]} forceCategories List of categories to force check (even if content check is skipped)
  * @returns {Promise<boolean>} Whether any content was added
  */
-async function seedContentForUser(contentIndex: any, directories: any, forceCategories: any) {
+async function seedContentForUser(contentIndex: ContentItem[], directories: import('../users.js').UserDirectoryList, forceCategories: string[]) {
     if (!fs.existsSync(directories.root)) {
         fs.mkdirSync(directories.root, { recursive: true });
     }
 
     const contentLogPath = path.join(directories.root, 'content.log');
-    return seedContent(contentIndex, contentLogPath, (type: any) => getUserTargetByType(type, directories), forceCategories);
+    return seedContent(contentIndex, contentLogPath, (type: string) => getUserTargetByType(type, directories), forceCategories);
 }
 
 /**
@@ -201,7 +201,7 @@ async function seedContentForUser(contentIndex: any, directories: any, forceCate
  * @param {ContentItem[]} contentIndex Content index
  * @returns {Promise<boolean>} Whether any content was added
  */
-async function seedGlobalContent(contentIndex: any) {
+async function seedGlobalContent(contentIndex: ContentItem[]) {
     const contentLogPath = path.join(globalThis.DATA_ROOT, 'content.log');
     // @ts-expect-error TS(2554): Expected 4 arguments, but got 3.
     return seedContent(contentIndex, contentLogPath, getGlobalTargetByType);
@@ -213,7 +213,7 @@ async function seedGlobalContent(contentIndex: any) {
  * @param {string[]} forceCategories List of categories to force check (even if content check is skipped)
  * @returns {Promise<void>}
  */
-export async function checkForNewContent(directoriesList: any, forceCategories = []) {
+export async function checkForNewContent(directoriesList: import('../users.js').UserDirectoryList[], forceCategories: string[] = []) {
     try {
         const contentCheckSkip = getConfigValue('skipContentCheck', false, 'boolean');
         if (contentCheckSkip && forceCategories?.length === 0) {
@@ -289,7 +289,7 @@ function getContentIndex(scope = CONTENT_SCOPE.USER) {
  * @param {CONTENT_SCOPE} scope Scope of content to get
  * @returns {string[]|Buffer[]} Array of content
  */
-export function getContentOfType(type: any, format: any, scope = CONTENT_SCOPE.USER) {
+export function getContentOfType(type: string, format: 'json' | 'string' | 'raw', scope = CONTENT_SCOPE.USER) {
     const contentIndex = getContentIndex(scope);
     const indexItems = contentIndex.filter((item) => item.type === type && item.folder);
     const files = [];
@@ -324,7 +324,7 @@ export function getContentOfType(type: any, format: any, scope = CONTENT_SCOPE.U
  * @param {import('../users.js').UserDirectoryList} directories User directories
  * @returns {string | null} Target directory
  */
-export function getUserTargetByType(type: any, directories: any) {
+export function getUserTargetByType(type: string, directories: import('../users.js').UserDirectoryList) {
     switch (type) {
         case CONTENT_TYPES.SETTINGS:
             return directories.root;
@@ -372,7 +372,7 @@ export function getUserTargetByType(type: any, directories: any) {
  * @param {CONTENT_TYPES} type Content type
  * @returns {string | null} Target directory
  */
-export function getGlobalTargetByType(type: any) {
+export function getGlobalTargetByType(type: string) {
     switch (type) {
         case CONTENT_TYPES.ERROR_PAGE:
             return path.join(globalThis.DATA_ROOT, '_errors');
@@ -388,7 +388,7 @@ export function getGlobalTargetByType(type: any) {
  * @param {string} contentLogPath Path to the content log file
  * @returns {string[]} Array of content log lines
  */
-function getContentLog(contentLogPath: any) {
+function getContentLog(contentLogPath: string) {
     if (!fs.existsSync(contentLogPath)) {
         return [];
     }
@@ -398,10 +398,11 @@ function getContentLog(contentLogPath: any) {
 }
 
 /**
- *
- * @param id
+ * Downloads a lorebook from Chub.
+ * @param {string} id - Chub lorebook identifier
+ * @returns {Promise<{buffer: Buffer, fileName: string, fileType: string}>}
  */
-async function downloadChubLorebook(id: any) {
+async function downloadChubLorebook(id: string) {
     const [lorebooks, creatorName, projectName] = id.split('/');
     const result = await fetch(`https://api.chub.ai/api/${lorebooks}/${creatorName}/${projectName}`, {
         method: 'GET',
@@ -414,7 +415,7 @@ async function downloadChubLorebook(id: any) {
         throw new Error('Failed to fetch lorebook metadata');
     }
 
-    /** @type {any} */
+    /** @type {{ node?: { id: string } }} */
     const metadata = await result.json();
     const projectId = metadata.node?.id;
 
@@ -443,10 +444,11 @@ async function downloadChubLorebook(id: any) {
 }
 
 /**
- *
- * @param id
+ * Downloads a character from Chub.
+ * @param {string} id - Chub character identifier
+ * @returns {Promise<{buffer: Buffer, fileName: string, fileType: string}>}
  */
-async function downloadChubCharacter(id: any) {
+async function downloadChubCharacter(id: string) {
     const [creatorName, projectName] = id.split('/');
     const result = await fetch(`https://api.chub.ai/api/characters/${creatorName}/${projectName}?full=true`, {
         method: 'GET',
@@ -459,7 +461,7 @@ async function downloadChubCharacter(id: any) {
         throw new Error('Failed to fetch character metadata');
     }
 
-    /** @type {any} */
+    /** @type {{ node: { definition: Record<string, unknown>; topics: string[]; max_res_url?: string } }} */
     const metadata = await result.json();
     const { definition, topics } = metadata.node;
 
@@ -512,7 +514,7 @@ async function downloadChubCharacter(id: any) {
  * @param {string} id UUID of the character
  * @returns {Promise<{buffer: Buffer, fileName: string, fileType: string}>}
  */
-async function downloadPygmalionCharacter(id: any) {
+async function downloadPygmalionCharacter(id: string) {
     const result = await fetch(`https://server.pygmalion.chat/api/export/character/${id}/v2`);
 
     if (!result.ok) {
@@ -521,7 +523,7 @@ async function downloadPygmalionCharacter(id: any) {
         throw new Error('Failed to download character');
     }
 
-    /** @type {any} */
+    /** @type {{ character?: Record<string, unknown> }} */
     const jsonData = await result.json();
     const characterData = jsonData?.character;
 
@@ -563,7 +565,7 @@ async function downloadPygmalionCharacter(id: any) {
  * @param {string} str
  * @returns { { id: string, type: "character" | "lorebook" } | null }
  */
-function parseChubUrl(str: any) {
+function parseChubUrl(str: string) {
     const splitStr = str.split('/');
     const length = splitStr.length;
 
@@ -573,7 +575,7 @@ function parseChubUrl(str: any) {
 
     let domainIndex = -1;
 
-    splitStr.forEach((part: any, index: any) => {
+    splitStr.forEach((part: string, index: number) => {
         if (part === 'www.chub.ai' || part === 'chub.ai' || part === 'www.characterhub.org' || part === 'characterhub.org') {
             domainIndex = index;
         }
@@ -600,12 +602,12 @@ function parseChubUrl(str: any) {
     return null;
 }
 
-// Warning: Some characters might not exist in JannyAI.me
 /**
- *
- * @param uuid
+ * Downloads a character from JannyAI.
+ * @param {string} uuid - UUID of the character
+ * @returns {Promise<{buffer: Buffer, fileName: string, fileType: string}>}
  */
-async function downloadJannyCharacter(uuid: any) {
+async function downloadJannyCharacter(uuid: string) {
     // This endpoint is being guarded behind Bot Fight Mode of Cloudflare
     // So hosted ST on Azure/AWS/GCP/Collab might get blocked by IP
     // Should work normally on self-host PC/Android
@@ -618,7 +620,7 @@ async function downloadJannyCharacter(uuid: any) {
     });
 
     if (result.ok) {
-        /** @type {any} */
+        /** @type {{ status: string; downloadUrl: string }} */
         const downloadResult = await result.json();
         if (downloadResult.status === 'ok') {
             const imageResult = await fetch(downloadResult.downloadUrl);
@@ -637,12 +639,12 @@ async function downloadJannyCharacter(uuid: any) {
     throw new Error('Failed to download character');
 }
 
-//Download Character Cards from AICharactersCards.com (AICC) API.
 /**
- *
- * @param id
+ * Downloads a character card from AICharactersCards.com (AICC) API.
+ * @param {string} id - AICC character identifier
+ * @returns {Promise<{buffer: Buffer, fileName: string, fileType: string}>}
  */
-async function downloadAICCCharacter(id: any) {
+async function downloadAICCCharacter(id: string) {
     const apiURL = `https://aicharactercards.com/wp-json/pngapi/v1/image/${id}`;
     try {
         const response = await fetch(apiURL);
@@ -670,7 +672,7 @@ async function downloadAICCCharacter(id: any) {
  * @param {string} url URL to parse
  * @returns {string | null} AICC path
  */
-function parseAICC(url: any) {
+function parseAICC(url: string) {
     try {
         if (isValidUrl(url)) {
             const urlObj = new URL(url);
@@ -695,9 +697,10 @@ function parseAICC(url: any) {
 
 /**
  * Download character card from generic url.
- * @param {string} url
+ * @param {string} url - URL of the character card
+ * @returns {Promise<{buffer: Buffer, fileName: string, fileType: string} | null>}
  */
-async function downloadGenericPng(url: any) {
+async function downloadGenericPng(url: string) {
     try {
         const result = await fetch(url);
 
@@ -736,7 +739,7 @@ async function downloadGenericPng(url: any) {
  * @param {string} url Risu Realm URL
  * @returns {string | null} UUID of the character
  */
-function parseRisuUrl(url: any) {
+function parseRisuUrl(url: string) {
     // Example: https://realm.risuai.net/character/7adb0ed8d81855c820b3506980fb40f054ceef010ff0c4bab73730c0ebe92279
     // or https://realm.risuai.net/character/7adb0ed8-d818-55c8-20b3-506980fb40f0
     const pattern = /^https?:\/\/realm\.risuai\.net\/character\/([a-f0-9-]+)\/?$/i;
@@ -749,7 +752,7 @@ function parseRisuUrl(url: any) {
  * @param {string} uuid UUID of the character
  * @returns {Promise<{buffer: Buffer, fileName: string, fileType: string}>}
  */
-async function downloadRisuCharacter(uuid: any) {
+async function downloadRisuCharacter(uuid: string) {
     const result = await fetch(`https://realm.risuai.net/api/v1/download/png-v3/${uuid}?non_commercial=true`);
 
     if (!result.ok) {
@@ -770,7 +773,7 @@ async function downloadRisuCharacter(uuid: any) {
  * @param {string} uuid UUID string to check
  * @returns {boolean} True if the UUID is valid, false otherwise
  */
-function isPerchanceUUID(uuid: any) {
+function isPerchanceUUID(uuid: string) {
     if (!uuid) {
         return false;
     }
@@ -787,7 +790,7 @@ function isPerchanceUUID(uuid: any) {
  * @param {string} url Perchance character URL
  * @returns {string} Slug of the character
  */
-function parsePerchanceSlug(url: any) {
+function parsePerchanceSlug(url: string) {
     // Example: https://perchance.org/ai-character-chat?data=Personality_Advisor~6903e991c90fd1dba52c036d917e99c6.gz
     // or: Personality_Advisor~6903e991c90fd1dba52c036d917e99c6.gz
     return url?.split('~')[1] || '';
@@ -798,7 +801,7 @@ function parsePerchanceSlug(url: any) {
  * @param {string} slug Slug of the character
  * @returns {Promise<{buffer: Buffer, fileName: string, fileType: string} | null>}
  */
-async function downloadPerchanceCharacter(slug: any) {
+async function downloadPerchanceCharacter(slug: string) {
     // example of slug
     // 6903e991c90fd1dba52c036d917e99c6.gz
     const perchanceBaseURL = 'https://user.uploads.dev/file';
@@ -873,7 +876,7 @@ async function downloadPerchanceCharacter(slug: any) {
  * @returns {Promise<object>} Parsed Perchance character data
  * @throws {Error} If the character data is invalid or missing required fields
  */
-async function extractPerchanceCharacterFromGz(result: any) {
+async function extractPerchanceCharacterFromGz(result: import('node-fetch').Response) {
     const compressedBuffer = await result.arrayBuffer();
     const decompressedBuffer = zlib.gunzipSync(compressedBuffer);
 
@@ -901,7 +904,7 @@ async function extractPerchanceCharacterFromGz(result: any) {
  * @param {boolean} isAvatarBase64 Flag indicating if the avatar URL is a base64 string
  * @returns {Promise<Buffer>} Buffer containing the avatar image
  */
-async function fetchPerchanceAvatar(avatarUrl: any, isAvatarBase64: any) {
+async function fetchPerchanceAvatar(avatarUrl: string, isAvatarBase64: boolean) {
     const defaultAvatarPath = path.join(serverDirectory, DEFAULT_AVATAR_PATH);
     const defaultAvatarBuffer = fs.readFileSync(defaultAvatarPath);
 
@@ -955,10 +958,11 @@ async function fetchPerchanceAvatar(avatarUrl: any, isAvatarBase64: any) {
 }
 
 /**
- * @param {string} url
+ * Extracts a UUID from a URL.
+ * @param {string} url - URL to extract UUID from
  * @returns {string | null} UUID of the character
  */
-function getUuidFromUrl(url: any) {
+function getUuidFromUrl(url: string) {
     // Extract UUID from URL
     const uuidRegex = /[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}/;
     const matches = url.match(uuidRegex);
@@ -973,7 +977,7 @@ function getUuidFromUrl(url: any) {
  * @param {string} url URL to strip
  * @returns {string} Domain name
  */
-export function getHostFromUrl(url: any) {
+export function getHostFromUrl(url: string) {
     try {
         const urlObj = new URL(url);
         return urlObj.hostname;
@@ -987,7 +991,7 @@ export function getHostFromUrl(url: any) {
  * @param {string} host Host to check
  * @returns {boolean} If the host is on the whitelist.
  */
-export function isHostWhitelisted(host: any) {
+export function isHostWhitelisted(host: string) {
     return WHITELIST_GENERIC_URL_DOWNLOAD_SOURCES.includes(host);
 }
 
