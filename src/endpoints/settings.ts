@@ -24,7 +24,7 @@ const AUTOSAVE_INTERVAL = 10 * 60 * 1000;
 
 /**
  * Map of functions to trigger settings autosave for a user.
- * @type {Map<string, Function>}
+ * @type {Map<string, () => void>}
  */
 const AUTOSAVE_FUNCTIONS = new Map();
 
@@ -33,7 +33,7 @@ const AUTOSAVE_FUNCTIONS = new Map();
  * @param {string} handle User handle
  * @returns {void}
  */
-function triggerAutoSave(handle: any) {
+function triggerAutoSave(handle: string) {
     if (!AUTOSAVE_FUNCTIONS.has(handle)) {
         const throttledAutoSave = throttle(() => backupUserSettings(handle, true), AUTOSAVE_INTERVAL);
         AUTOSAVE_FUNCTIONS.set(handle, throttledAutoSave);
@@ -51,13 +51,13 @@ function triggerAutoSave(handle: any) {
  * @param {string} fileExtension File extension
  * @returns {Array} Parsed files
  */
-function readAndParseFromDirectory(directoryPath: any, fileExtension = '.json') {
+function readAndParseFromDirectory(directoryPath: string, fileExtension = '.json') {
     const files = fs
         .readdirSync(directoryPath)
         .filter(x => path.parse(x).ext == fileExtension)
         .sort();
 
-    const parsedFiles: any = [];
+    const parsedFiles: any[] = [];
 
     files.forEach(item => {
         try {
@@ -73,11 +73,11 @@ function readAndParseFromDirectory(directoryPath: any, fileExtension = '.json') 
 
 /**
  * Gets a sort function for sorting strings.
- * @param {*} _
+ * @param {string} _directoryPath Directory path (unused)
  * @returns {(a: string, b: string) => number} Sort function
  */
-function sortByName(_: any) {
-    return (a: any, b: any) => a.localeCompare(b);
+function sortByName(_directoryPath: string) {
+    return (a: string, b: string) => a.localeCompare(b);
 }
 
 /**
@@ -85,28 +85,29 @@ function sortByName(_: any) {
  * @param {string} handle User handle
  * @returns {string} File prefix
  */
-export function getSettingsBackupFilePrefix(handle: any) {
+export function getSettingsBackupFilePrefix(handle: string) {
     return `settings_${handle}_`;
 }
 
 /**
- *
- * @param directoryPath
- * @param options
+ * Reads presets from a directory.
+ * @param {string} directoryPath Path to the directory
+ * @param {Object} options Options object
+ * @param {Function} [options.sortFunction] Sort function for files
+ * @param {boolean} [options.removeFileExtension] Whether to remove file extensions from names
+ * @param {string} [options.fileExtension] File extension to filter by
+ * @returns {{ fileContents: string[], fileNames: string[] }} Object with file contents and names
  */
-function readPresetsFromDirectory(directoryPath: any, options = {}) {
+function readPresetsFromDirectory(directoryPath: string, options: { sortFunction?: (a: string, b: string) => number; removeFileExtension?: boolean; fileExtension?: string } = {}) {
     const {
-        // @ts-expect-error TS(2339): Property 'sortFunction' does not exist on type '{}... Remove this comment to see the full error message
         sortFunction,
-        // @ts-expect-error TS(2339): Property 'removeFileExtension' does not exist on t... Remove this comment to see the full error message
         removeFileExtension = false,
-        // @ts-expect-error TS(2339): Property 'fileExtension' does not exist on type '{... Remove this comment to see the full error message
         fileExtension = '.json',
     } = options;
 
     const files = fs.readdirSync(directoryPath).sort(sortFunction).filter(x => path.parse(x).ext == fileExtension);
-    const fileContents: any = [];
-    const fileNames: any = [];
+    const fileContents: string[] = [];
+    const fileNames: string[] = [];
 
     files.forEach(item => {
         try {
@@ -144,7 +145,7 @@ async function backupSettings() {
  * @param {boolean} preventDuplicates Prevent duplicate backups
  * @returns {void}
  */
-function backupUserSettings(handle: any, preventDuplicates: any) {
+function backupUserSettings(handle: string, preventDuplicates: boolean) {
     const userDirectories = getUserDirectories(handle);
 
     if (!fs.existsSync(userDirectories.root)) {
@@ -172,7 +173,7 @@ function backupUserSettings(handle: any, preventDuplicates: any) {
  * @param {string} sourceFile Source file path
  * @returns {boolean} True if the backup is a duplicate
  */
-function isDuplicateBackup(handle: any, sourceFile: any) {
+function isDuplicateBackup(handle: string, sourceFile: string) {
     const latestBackup = getLatestBackup(handle);
     if (!latestBackup) {
         return false;
@@ -184,8 +185,9 @@ function isDuplicateBackup(handle: any, sourceFile: any) {
  * Returns true if the two files are equal.
  * @param {string} file1 File path
  * @param {string} file2 File path
+ * @returns {boolean} True if the files are equal
  */
-function areFilesEqual(file1: any, file2: any) {
+function areFilesEqual(file1: string, file2: string) {
     if (!fs.existsSync(file1) || !fs.existsSync(file2)) {
         return false;
     }
@@ -200,7 +202,7 @@ function areFilesEqual(file1: any, file2: any) {
  * @param {string} handle User handle
  * @returns {string|null} Latest backup file. Null if no backup exists.
  */
-function getLatestBackup(handle: any) {
+function getLatestBackup(handle: string) {
     const userDirectories = getUserDirectories(handle);
     const backupFiles = fs.readdirSync(userDirectories.backups)
         .filter(x => x.startsWith(getSettingsBackupFilePrefix(handle)))
@@ -233,7 +235,7 @@ router.post('/get', (request, response) => {
     try {
         const pathToSettings = path.join(request.user.directories.root, SETTINGS_FILE);
         settings = fs.readFileSync(pathToSettings, 'utf8');
-    } catch (e) {
+    } catch (_e) {
         return response.sendStatus(500);
     }
 
