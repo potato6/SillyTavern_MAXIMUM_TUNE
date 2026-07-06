@@ -97,7 +97,7 @@ const result = await Bun.build({
   sourcemap: "linked",
   splitting: true,
   format: "esm",
-  minify: false,
+  minify: true,
 });
 
 if (!result.success) {
@@ -114,4 +114,26 @@ if (!result.success) {
     writeFileSync(COMMIT_HASH_FILE, commitHash, "utf-8");
     console.log(`Stored build commit hash: ${commitHash}`);
   }
+}
+
+console.log("Compiling backend binary...");
+const serverResult = await Bun.build({
+  entrypoints: ["server.ts"],
+  outdir: "dist/server",
+  target: "bun",
+  compile: true,
+  minify: true,
+  bytecode: false, // causing bugs
+  sourcemap: "linked",
+  external: ["@huggingface/transformers"],
+});
+
+if (!serverResult.success) {
+  console.error("Backend build failed:");
+  for (const message of serverResult.logs) {
+    console.error(message);
+  }
+  process.exit(1);
+} else {
+  console.log("Backend binary compiled successfully.");
 }

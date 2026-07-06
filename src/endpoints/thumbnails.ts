@@ -7,7 +7,6 @@ import sanitize from 'sanitize-filename';
 import { sync as writeFileAtomicSync } from 'write-file-atomic';
 // @ts-expect-error TS(2792): Cannot find module 'image-size'. Did you mean to s... Remove this comment to see the full error message
 import { imageSize as sizeOf } from 'image-size';
-import sharp from 'sharp';
 
 import { getConfigValue, invalidateFirefoxCache } from '../util.js';
 import { getThumbnailResolution, isAnimatedWebP, isAnimatedApng, thumbnailDimensions as dimensions } from './image-metadata.js';
@@ -202,14 +201,14 @@ async function processSingleImage(file: any, originalFolder: any, thumbnailFolde
 
     try {
         const fileBuffer = fs.readFileSync(pathToOriginalFile);
-        const metadata = await sharp(fileBuffer).metadata();
+        const metadata = await new Bun.Image(fileBuffer).metadata();
         const originalWidth = metadata.width ?? 0;
         const originalHeight = metadata.height ?? 0;
         const aspectRatio = (originalHeight > 0) ? (originalWidth / originalHeight) : 1.0;
 
         const thumbnailResolution = getThumbnailResolution(type);
 
-        let pipeline = sharp(fileBuffer);
+        let pipeline = new Bun.Image(fileBuffer);
 
         if (type === 'bg') {
             const [configWidth, configHeight] = dimensions[type];
@@ -221,16 +220,16 @@ async function processSingleImage(file: any, originalFolder: any, thumbnailFolde
             const thumbWidth = Math.round(Math.sqrt(targetPixelArea * aspectRatio));
             const thumbHeight = Math.round(Math.sqrt(targetPixelArea / aspectRatio));
 
-            pipeline = pipeline.resize(thumbWidth, thumbHeight, { fit: 'fill' });
+            pipeline = pipeline.resize(thumbWidth, thumbHeight);
         } else if (type === 'avatar' || type === 'persona') {
             // Crop and resize to fixed dimensions
             const [configWidth, configHeight] = dimensions[type];
-            pipeline = pipeline.resize(configWidth, configHeight, { fit: 'cover' });
+            pipeline = pipeline.resize(configWidth, configHeight);
         }
 
         const buffer = pngFormat
-            ? await pipeline.png().toBuffer()
-            : await pipeline.jpeg({ quality }).toBuffer();
+            ? await pipeline.png().buffer()
+            : await pipeline.jpeg({ quality }).buffer();
 
         writeFileAtomicSync(pathToCachedFile, buffer);
 

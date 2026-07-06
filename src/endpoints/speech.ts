@@ -1,8 +1,7 @@
 import { Buffer } from 'node:buffer';
 import fs from 'node:fs';
 import express from 'express';
-// @ts-expect-error TS(2792): Cannot find module 'wavefile'. Did you mean to set... Remove this comment to see the full error message
-import wavefile from 'wavefile';
+import * as wavefile from 'wavefile';
 import fetch from 'node-fetch';
 // @ts-expect-error TS(2792): Cannot find module 'form-data'. Did you mean to se... Remove this comment to see the full error message
 import FormData from 'form-data';

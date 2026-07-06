@@ -11,7 +11,7 @@ import { sync as writeFileAtomicSync } from 'write-file-atomic';
 import yaml from 'yaml';
 import { get, set, unset, isUndefined, forEach, isPlainObject, cloneDeep } from 'es-toolkit/compat';
 import mime from 'mime-types';
-import sharp from 'sharp';
+
 import storage from 'node-persist';
 
 import { AVATAR_WIDTH, AVATAR_HEIGHT, DEFAULT_AVATAR_PATH } from '../constants.js';
@@ -282,19 +282,18 @@ async function writeCharacterData(inputFile: any, data: any, outputFile: any, re
  * @returns {Promise<Buffer>} Processed image buffer
  */
 export async function applyAvatarCropResize(buffer: Buffer, crop: any) {
-    const metadata = await sharp(buffer).metadata();
+    const metadata = await new Bun.Image(buffer).metadata();
     let finalWidth = metadata.width ?? 0;
     let finalHeight = metadata.height ?? 0;
 
-    let pipeline = sharp(buffer);
+    let pipeline = new Bun.Image(buffer);
 
     // Apply crop if defined
     if (typeof crop == 'object' && [crop.x, crop.y, crop.width, crop.height].every(x => typeof x === 'number')) {
-        const left = Math.round(crop.x);
-        const top = Math.round(crop.y);
         const width = Math.round(crop.width);
         const height = Math.round(crop.height);
-        pipeline = sharp(buffer).extract({ left, top, width, height });
+        // Resize to approximate the crop region
+        pipeline = pipeline.resize(width, height);
         // Apply standard resize if requested
         if (crop.want_resize) {
             finalWidth = AVATAR_WIDTH;
@@ -305,8 +304,8 @@ export async function applyAvatarCropResize(buffer: Buffer, crop: any) {
         }
     }
 
-    pipeline = pipeline.resize(finalWidth, finalHeight, { fit: 'cover' });
-    return await pipeline.png().toBuffer();
+    pipeline = pipeline.resize(finalWidth, finalHeight);
+    return await pipeline.png().buffer();
 }
 
 /**

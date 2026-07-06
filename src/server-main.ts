@@ -147,10 +147,7 @@ if (cliArgs.listen && cliArgs.basicAuthMode) {
     app.use(basicAuthMiddleware);
 }
 
-if (cliArgs.whitelistMode) {
-    const whitelistMiddleware = await getWhitelistMiddleware();
-    app.use(whitelistMiddleware);
-}
+const whitelistPromise = cliArgs.whitelistMode ? getWhitelistMiddleware() : null;
 
 app.use(hostWhitelistMiddleware);
 
@@ -292,6 +289,10 @@ setupPrivateEndpoints(app);
  * @returns {Promise<void>}
  */
 async function preSetupTasks() {
+    if (whitelistPromise) {
+        const whitelistMiddleware = await whitelistPromise;
+        app.use(whitelistMiddleware);
+    }
     const version = await getVersion();
 
     // Print formatted header

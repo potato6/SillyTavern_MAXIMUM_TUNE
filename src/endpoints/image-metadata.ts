@@ -10,7 +10,7 @@ import crypto from 'node:crypto';
 import { imageSize } from 'image-size';
 import writeFileAtomic from 'write-file-atomic';
 import express from 'express';
-import sharp from 'sharp';
+import { inflateSync } from 'node:zlib';
 import { getConfigValue, isPathUnderParent, uuidv4 } from '../util.js';
 
 export const METADATA_FILE = 'image-metadata.json';
@@ -78,19 +78,30 @@ export function isAnimatedWebP(buffer: any) {
 }
 
 /**
- * Calculate average color using sharp.
+ * Calculate average color using Bun.Image.
  * Resizes the image to 1x1 to efficiently get the average color.
  * @param {Buffer} buffer The image buffer.
  * @returns {Promise<string>} The average color as a hex string (e.g., '#RRGGBB').
  */
 async function getAverageColor(buffer: any) {
     try {
-        const { data } = await sharp(buffer).resize(1, 1, { fit: 'fill' }).raw().toBuffer({ resolveWithObject: true });
-
-        const toHex = (c: any) => c.toString(16).padStart(2, '0');
-        return `#${toHex(data[0])}${toHex(data[1])}${toHex(data[2])}`;
+        const pixel = await new Bun.Image(buffer).resize(1, 1).png().buffer();
+        const png = new Uint8Array(pixel);
+        let offset = 8;
+        while (offset < png.length) {
+            const length = new DataView(png.buffer, offset, 4).getUint32(0);
+            const type = String.fromCharCode(png[offset + 4], png[offset + 5], png[offset + 6], png[offset + 7]);
+            if (type === 'IDAT') {
+                const compressed = png.slice(offset + 8, offset + 8 + length);
+                const raw = inflateSync(compressed);
+                const toHex = (c: any) => c.toString(16).padStart(2, '0');
+                return `#${toHex(raw[1])}${toHex(raw[2])}${toHex(raw[3])}`;
+            }
+            offset += 12 + length;
+        }
+        return '#808080';
     } catch (error) {
-        console.warn('[Sharp] Failed to calculate average color:', error.message);
+        console.warn('[Bun.Image] Failed to calculate average color:', error.message);
         return '#808080';
     }
 }

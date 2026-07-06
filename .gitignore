@@ -61,3 +61,5 @@ test-results/
 public/dist/
 shell.nix
 .bun
+server
+dist
