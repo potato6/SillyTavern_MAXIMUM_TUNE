@@ -8,80 +8,71 @@ import { CHAT_BACKUPS_PREFIX } from './chats.js';
 import { isPathUnderParent, tryParse } from '../util.js';
 import { SETTINGS_FILE } from '../constants.js';
 
-const sha256 = (str: any) => crypto.createHash('sha256').update(str).digest('hex');
+const sha256 = (str: string) => crypto.createHash('sha256').update(str).digest('hex');
 
-/**
- * @typedef {object} DataMaidRawReport
- * @property {string[]} images - List of loose user images
- * @property {string[]} files - List of loose user files
- * @property {string[]} chats - List of loose character chats
- * @property {string[]} groupChats - List of loose group chats
- * @property {string[]} avatarThumbnails - List of loose avatar thumbnails
- * @property {string[]} backgroundThumbnails - List of loose background thumbnails
- * @property {string[]} personaThumbnails - List of loose persona thumbnails
- * @property {string[]} chatBackups - List of chat backups
- * @property {string[]} settingsBackups - List of settings backups
- */
+interface DataMaidRawReport {
+    images: string[];
+    files: string[];
+    chats: string[];
+    groupChats: string[];
+    avatarThumbnails: string[];
+    backgroundThumbnails: string[];
+    personaThumbnails: string[];
+    chatBackups: string[];
+    settingsBackups: string[];
+}
 
-/**
- * @typedef {object} DataMaidSanitizedRecord - The entry excluding the sensitive paths.
- * @property {string} name - The name of the file.
- * @property {string} hash - The SHA-256 hash of the file path.
- * @property {string} [parent] - The name of the parent directory, if applicable.
- * @property {number} [size] - The size of the file in bytes, if available.
- * @property {number} [mtime] - The last modification time of the file, if available.
- */
+interface DataMaidSanitizedRecord {
+    name: string;
+    hash: string;
+    parent?: string;
+    size?: number;
+    mtime?: number;
+}
 
-/**
- * @typedef {object} DataMaidSanitizedReport - The report containing loose user data.
- * @property {DataMaidSanitizedRecord[]} images - List of sanitized loose user images
- * @property {DataMaidSanitizedRecord[]} files - List of sanitized loose user files
- * @property {DataMaidSanitizedRecord[]} chats - List of sanitized loose character chats
- * @property {DataMaidSanitizedRecord[]} groupChats - List of sanitized loose group chats
- * @property {DataMaidSanitizedRecord[]} avatarThumbnails - List of sanitized loose avatar thumbnails
- * @property {DataMaidSanitizedRecord[]} backgroundThumbnails - List of sanitized loose background thumbnails
- * @property {DataMaidSanitizedRecord[]} personaThumbnails - List of sanitized loose persona thumbnails
- * @property {DataMaidSanitizedRecord[]} chatBackups - List of sanitized chat backups
- * @property {DataMaidSanitizedRecord[]} settingsBackups - List of sanitized settings backups
- */
+interface DataMaidSanitizedReport {
+    images: DataMaidSanitizedRecord[];
+    files: DataMaidSanitizedRecord[];
+    chats: DataMaidSanitizedRecord[];
+    groupChats: DataMaidSanitizedRecord[];
+    avatarThumbnails: DataMaidSanitizedRecord[];
+    backgroundThumbnails: DataMaidSanitizedRecord[];
+    personaThumbnails: DataMaidSanitizedRecord[];
+    chatBackups: DataMaidSanitizedRecord[];
+    settingsBackups: DataMaidSanitizedRecord[];
+}
 
-/**
- * @typedef {object} DataMaidMessage - The chat message object.
- * @property {DataMaidMessageExtra} [extra] - The extra data object.
- * @property {DataMaidChatMetadata} [chat_metadata] - The chat metadata object.
- */
+interface DataMaidFile {
+    url: string;
+}
 
-/**
- * @typedef {object} DataMaidFile - The file object.
- * @property {string} url - The file URL
- */
+interface DataMaidMedia {
+    url: string;
+}
 
-/**
- * @typedef {object} DataMaidMedia - The media object.
- * @property {string} url - The media URL
- */
+interface DataMaidMessageExtra {
+    image?: string;
+    video?: string;
+    image_swipes?: string[];
+    media?: DataMaidMedia[];
+    file?: DataMaidFile;
+    files?: DataMaidFile[];
+}
 
-/**
- * @typedef {object} DataMaidChatMetadata - The chat metadata object.
- * @property {DataMaidFile[]} [attachments] - The array of attachments, if any.
- * @property {string[]} [chat_backgrounds] - The array of chat background image links, if any.
- */
+interface DataMaidChatMetadata {
+    attachments?: DataMaidFile[];
+    chat_backgrounds?: string[];
+}
 
-/**
- * @typedef {object} DataMaidMessageExtra - The extra data object.
- * @property {string} [image] - The link to the image, if any - DEPRECATED, use `media` instead.
- * @property {string} [video] - The link to the video, if any - DEPRECATED, use `media` instead.
- * @property {string[]} [image_swipes] - The links to the image swipes, if any - DEPRECATED, use `media` instead.
- * @property {DataMaidMedia[]} [media] - The links to the media, if any.
- * @property {DataMaidFile} [file] - The file object, if any - DEPRECATED, use `files` instead.
- * @property {DataMaidFile[]} [files] - The array of file objects, if any.
- */
+interface DataMaidMessage {
+    extra?: DataMaidMessageExtra;
+    chat_metadata?: DataMaidChatMetadata;
+}
 
-/**
- * @typedef {object} DataMaidTokenEntry
- * @property {string} handle - The user's handle or identifier.
- * @property {{path: string, hash: string}[]} paths - The list of file paths and their hashes that can be cleaned up.
- */
+interface DataMaidTokenEntry {
+    handle: string;
+    paths: { path: string; hash: string }[];
+}
 
 /**
  * Service for detecting and managing loose user data files.
@@ -93,15 +84,15 @@ export class DataMaidService {
      */
     static TOKENS = new Map();
 
-    directories: any;
-    handle: any;
+    directories: import('../users.js').UserDirectoryList;
+    handle: string;
 
     /**
      * Creates a new DataMaidService instance for a specific user.
      * @param {string} handle - The user's handle.
      * @param {import('../users.js').UserDirectoryList} directories - List of user directories to scan for loose data.
      */
-    constructor(handle: any, directories: any) {
+    constructor(handle: string, directories: import('../users.js').UserDirectoryList) {
         this.handle = handle;
         this.directories = directories;
     }
@@ -135,7 +126,7 @@ export class DataMaidService {
      * @param {boolean} withParent If the model should include the parent directory name.
      * @returns {Promise<DataMaidSanitizedRecord>} A sanitized record with the file name, hash, parent directory name, size, and modification time.
      */
-    async #sanitizeRecord(name: any, withParent: any) {
+    async #sanitizeRecord(name: string, withParent: boolean) {
         const stat = fs.existsSync(name) ? await fs.promises.stat(name) : null;
         return {
             name: path.basename(name),
@@ -151,17 +142,17 @@ export class DataMaidService {
      * @param {DataMaidRawReport} report - The raw report containing loose user data.
      * @returns {Promise<DataMaidSanitizedReport>} A sanitized report with sensitive paths removed.
      */
-    async sanitizeReport(report: any) {
+    async sanitizeReport(report: DataMaidRawReport) {
         const sanitizedReport = {
-            images: await Promise.all(report.images.map((i: any) => this.#sanitizeRecord(i, true))),
-            files: await Promise.all(report.files.map((i: any) => this.#sanitizeRecord(i, false))),
-            chats: await Promise.all(report.chats.map((i: any) => this.#sanitizeRecord(i, true))),
-            groupChats: await Promise.all(report.groupChats.map((i: any) => this.#sanitizeRecord(i, false))),
-            avatarThumbnails: await Promise.all(report.avatarThumbnails.map((i: any) => this.#sanitizeRecord(i, false))),
-            backgroundThumbnails: await Promise.all(report.backgroundThumbnails.map((i: any) => this.#sanitizeRecord(i, false))),
-            personaThumbnails: await Promise.all(report.personaThumbnails.map((i: any) => this.#sanitizeRecord(i, false))),
-            chatBackups: await Promise.all(report.chatBackups.map((i: any) => this.#sanitizeRecord(i, false))),
-            settingsBackups: await Promise.all(report.settingsBackups.map((i: any) => this.#sanitizeRecord(i, false))),
+            images: await Promise.all(report.images.map((i: string) => this.#sanitizeRecord(i, true))),
+            files: await Promise.all(report.files.map((i: string) => this.#sanitizeRecord(i, false))),
+            chats: await Promise.all(report.chats.map((i: string) => this.#sanitizeRecord(i, true))),
+            groupChats: await Promise.all(report.groupChats.map((i: string) => this.#sanitizeRecord(i, false))),
+            avatarThumbnails: await Promise.all(report.avatarThumbnails.map((i: string) => this.#sanitizeRecord(i, false))),
+            backgroundThumbnails: await Promise.all(report.backgroundThumbnails.map((i: string) => this.#sanitizeRecord(i, false))),
+            personaThumbnails: await Promise.all(report.personaThumbnails.map((i: string) => this.#sanitizeRecord(i, false))),
+            chatBackups: await Promise.all(report.chatBackups.map((i: string) => this.#sanitizeRecord(i, false))),
+            settingsBackups: await Promise.all(report.settingsBackups.map((i: string) => this.#sanitizeRecord(i, false))),
         };
 
         return sanitizedReport;
@@ -177,7 +168,7 @@ export class DataMaidService {
         const result = [];
 
         try {
-            const messages = await this.#parseAllChats((x: any) => !!x?.extra?.image || !!x?.extra?.video || Array.isArray(x?.extra?.image_swipes) || Array.isArray(x?.extra?.media));
+            const messages = await this.#parseAllChats((x: DataMaidMessage) => !!x?.extra?.image || !!x?.extra?.video || Array.isArray(x?.extra?.image_swipes) || Array.isArray(x?.extra?.media));
             const knownImages = new Set();
             for (const message of messages) {
                 if (message?.extra?.image) {
@@ -199,7 +190,7 @@ export class DataMaidService {
                     }
                 }
             }
-            const metadata = await this.#parseAllMetadata((x: any) => Array.isArray(x?.chat_backgrounds) && x.chat_backgrounds.length > 0);
+            const metadata = await this.#parseAllMetadata((x: DataMaidChatMetadata) => Array.isArray(x?.chat_backgrounds) && x.chat_backgrounds.length > 0);
             for (const meta of metadata) {
                 if (Array.isArray(meta?.chat_backgrounds)) {
                     for (const background of meta.chat_backgrounds) {
@@ -251,7 +242,7 @@ export class DataMaidService {
         const result = [];
 
         try {
-            const messages = await this.#parseAllChats((x: any) => !!x?.extra?.file?.url || (Array.isArray(x?.extra?.files) && x.extra.files.length > 0));
+            const messages = await this.#parseAllChats((x: DataMaidMessage) => !!x?.extra?.file?.url || (Array.isArray(x?.extra?.files) && x.extra.files.length > 0));
             const knownFiles = new Set();
             for (const message of messages) {
                 if (message?.extra?.file?.url) {
@@ -265,7 +256,7 @@ export class DataMaidService {
                     }
                 }
             }
-            const metadata = await this.#parseAllMetadata((x: any) => Array.isArray(x?.attachments) && x.attachments.length > 0);
+            const metadata = await this.#parseAllMetadata((x: DataMaidChatMetadata) => Array.isArray(x?.attachments) && x.attachments.length > 0);
             for (const meta of metadata) {
                 if (Array.isArray(meta?.attachments)) {
                     for (const attachment of meta.attachments) {
@@ -535,7 +526,7 @@ export class DataMaidService {
      * @param {function(DataMaidMessage): boolean} filterFn - Filter function to apply to each message.
      * @returns {Promise<DataMaidMessage[]>} Array of chat messages
      */
-    async #parseAllChats(filterFn: any) {
+    async #parseAllChats(filterFn: (message: DataMaidMessage) => boolean) {
         try {
             const allChats = [];
 
@@ -573,7 +564,7 @@ export class DataMaidService {
      * @param {function(DataMaidChatMetadata): boolean} filterFn - Filter function to apply to each metadata entry.
      * @returns {Promise<DataMaidChatMetadata[]>} Parsed chat metadata as an array.
      */
-    async #parseAllMetadata(filterFn: any) {
+    async #parseAllMetadata(filterFn: (metadata: DataMaidChatMetadata) => boolean) {
         try {
             const allMetadata = [];
 
@@ -638,7 +629,7 @@ export class DataMaidService {
      * @param {string} filePath Path to the chat file to parse.
      * @returns {Promise<DataMaidMessage[]>} Parsed chat messages as an array.
      */
-    async #parseChatFile(filePath: any) {
+    async #parseChatFile(filePath: string) {
         try {
             const content = await fs.promises.readFile(filePath, 'utf-8');
             const chatData = content.split('\n').map(tryParse).filter(Boolean);
@@ -656,7 +647,7 @@ export class DataMaidService {
      * @param {DataMaidRawReport} report - The report containing loose user data.
      * @returns {string} A unique token.
      */
-    static generateToken(handle: any, report: any) {
+    static generateToken(handle: string, report: DataMaidRawReport) {
         // Remove any existing token for this user
         for (const [token, entry] of this.TOKENS.entries()) {
             if (entry.handle === handle) {
@@ -749,7 +740,7 @@ router.get('/view', async (req, res) => {
             return res.sendStatus(403);
         }
 
-        const fileEntry = tokenEntry.paths.find((entry: any) => entry.hash === hash);
+        const fileEntry = tokenEntry.paths.find((entry: { path: string; hash: string }) => entry.hash === hash);
         if (!fileEntry) {
             return res.sendStatus(404);
         }
@@ -797,7 +788,7 @@ router.post('/delete', async (req, res) => {
         }
 
         for (const hash of hashes) {
-            const fileEntry = tokenEntry.paths.find((entry: any) => entry.hash === hash);
+            const fileEntry = tokenEntry.paths.find((entry: { path: string; hash: string }) => entry.hash === hash);
             if (!fileEntry) {
                 continue;
             }
