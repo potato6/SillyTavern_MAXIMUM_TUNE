@@ -401,6 +401,11 @@ async function countSentencepieceTokens(tokenizer: SentencePieceTokenizer, text:
  * @param {object[]} array Array of objects to tokenize
  * @returns {Promise<number>} Number of tokens
  */
+/**
+ *
+ * @param tokenizer
+ * @param array
+ */
 async function countSentencepieceArrayTokens(tokenizer: SentencePieceTokenizer, array: object[]) {
     const jsonBody = array.flatMap((x: Record<string, unknown>) => Object.values(x)).join('\n\n');
     const result = await countSentencepieceTokens(tokenizer, jsonBody);
