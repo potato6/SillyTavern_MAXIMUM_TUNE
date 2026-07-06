@@ -7,8 +7,6 @@ import express from 'express';
 // @ts-expect-error TS(2792): Cannot find module 'sanitize-filename'. Did you me... Remove this comment to see the full error message
 import sanitize from 'sanitize-filename';
 
-import { getConfigValue } from '../util.js';
-
 import { getNomicAIBatchVector, getNomicAIVector } from '../vectors/nomicai-vectors.js';
 import { getOpenAIVector, getOpenAIBatchVector } from '../vectors/openai-vectors.js';
 import { getExtrasVector, getExtrasBatchVector } from '../vectors/extras-vectors.js';
@@ -42,6 +40,17 @@ const SOURCES = [
     'workers_ai',
 ];
 
+interface SourceSettings {
+    model?: string;
+    apiUrl?: string;
+    keep?: boolean;
+    extrasUrl?: string;
+    extrasKey?: string;
+    request?: express.Request;
+    embeddings?: Record<string, number[]>;
+    urlOverride?: string | null;
+}
+
 /**
  * Gets the vector for the given text from the given source.
  * @param {string} source - The source of the vector
@@ -51,7 +60,7 @@ const SOURCES = [
  * @param {import('../users.js').UserDirectoryList} directories - The directories object for the user
  * @returns {Promise<number[]>} - The vector for the text
  */
-async function getVector(source: any, sourceSettings: any, text: any, isQuery: any, directories: any) {
+async function getVector(source: string, sourceSettings: SourceSettings, text: string, isQuery: boolean, directories: import('../users.js').UserDirectoryList) {
     switch (source) {
         case 'nomicai':
             return getNomicAIVector(text, source, directories);
@@ -103,7 +112,7 @@ async function getVector(source: any, sourceSettings: any, text: any, isQuery: a
  * @param {import('../users.js').UserDirectoryList} directories - The directories object for the user
  * @returns {Promise<number[][]>} - The array of vectors for the texts
  */
-async function getBatchVector(source: any, sourceSettings: any, texts: any, isQuery: any, directories: any) {
+async function getBatchVector(source: string, sourceSettings: SourceSettings, texts: string[], isQuery: boolean, directories: import('../users.js').UserDirectoryList) {
     const batchSize = 10;
     const batches = Array(Math.ceil(texts.length / batchSize)).fill(undefined).map((_, i) => texts.slice(i * batchSize, i * batchSize + batchSize));
 
@@ -146,10 +155,10 @@ async function getBatchVector(source: any, sourceSettings: any, texts: any, isQu
                 results.push(...(await getOllamaBatchVector(batch, sourceSettings.apiUrl, sourceSettings.model, sourceSettings.keep, directories)));
                 break;
             case 'webllm':
-                results.push(...texts.map((x: any) => sourceSettings.embeddings[x]));
+                results.push(...texts.map((x: string) => sourceSettings.embeddings![x]));
                 break;
             case 'koboldcpp':
-                results.push(...texts.map((x: any) => sourceSettings.embeddings[x]));
+                results.push(...texts.map((x: string) => sourceSettings.embeddings![x]));
                 break;
             case 'chutes':
                 results.push(...(await getOpenAIBatchVector(batch, source, directories, sourceSettings.model)));
@@ -177,7 +186,7 @@ async function getBatchVector(source: any, sourceSettings: any, texts: any, isQu
  * @param {object} request - The HTTP request object.
  * @returns {object} - An object that can be used as `sourceSettings` in functions that take that parameter.
  */
-function getSourceSettings(source: any, request: any) {
+function getSourceSettings(source: string, request: express.Request): SourceSettings {
     switch (source) {
         case 'togetherai':
             return {
@@ -276,7 +285,7 @@ function getSourceSettings(source: any, request: any) {
  * @param {object} sourceSettings - The settings for the source
  * @returns {string} The model scope for the source
  */
-function getModelScope(sourceSettings: any) {
+function getModelScope(sourceSettings: SourceSettings) {
     return (sourceSettings?.model || '');
 }
 
@@ -288,7 +297,7 @@ function getModelScope(sourceSettings: any) {
  * @param {object} sourceSettings - The model for the source
  * @returns {Promise<vectra.LocalIndex>} - The index for the collection
  */
-async function getIndex(directories: any, collectionId: any, source: any, sourceSettings: any) {
+async function getIndex(directories: import('../users.js').UserDirectoryList, collectionId: string, source: string, sourceSettings: SourceSettings) {
     const model = getModelScope(sourceSettings);
     const pathToFile = path.join(directories.vectors, sanitize(source), sanitize(collectionId), sanitize(model));
     const store = new vectra.LocalIndex(pathToFile);
@@ -308,12 +317,12 @@ async function getIndex(directories: any, collectionId: any, source: any, source
  * @param {object} sourceSettings - Settings for the source, if it needs any
  * @param {{ hash: number; text: string; index: number; }[]} items - The items to insert
  */
-async function insertVectorItems(directories: any, collectionId: any, source: any, sourceSettings: any, items: any) {
+async function insertVectorItems(directories: import('../users.js').UserDirectoryList, collectionId: string, source: string, sourceSettings: SourceSettings, items: { hash: number; text: string; index: number }[]) {
     const store = await getIndex(directories, collectionId, source, sourceSettings);
 
     await store.beginUpdate();
 
-    const vectors = await getBatchVector(source, sourceSettings, items.map((x: any) => x.text), false, directories);
+    const vectors = await getBatchVector(source, sourceSettings, items.map((x) => x.text), false, directories);
 
     for (let i = 0; i < items.length; i++) {
         const item = items[i];
@@ -332,7 +341,7 @@ async function insertVectorItems(directories: any, collectionId: any, source: an
  * @param {object} sourceSettings - Settings for the source, if it needs any
  * @returns {Promise<number[]>} - The hashes of the items in the collection
  */
-async function getSavedHashes(directories: any, collectionId: any, source: any, sourceSettings: any) {
+async function getSavedHashes(directories: import('../users.js').UserDirectoryList, collectionId: string, source: string, sourceSettings: SourceSettings) {
     const store = await getIndex(directories, collectionId, source, sourceSettings);
 
     const items = await store.listItems();
@@ -349,7 +358,7 @@ async function getSavedHashes(directories: any, collectionId: any, source: any, 
  * @param {object} sourceSettings - Settings for the source, if it needs any
  * @param {number[]} hashes - The hashes of the items to delete
  */
-async function deleteVectorItems(directories: any, collectionId: any, source: any, sourceSettings: any, hashes: any) {
+async function deleteVectorItems(directories: import('../users.js').UserDirectoryList, collectionId: string, source: string, sourceSettings: SourceSettings, hashes: number[]) {
     const store = await getIndex(directories, collectionId, source, sourceSettings);
     const items = await store.listItemsByMetadata({ hash: { '$in': hashes } });
 
@@ -373,7 +382,7 @@ async function deleteVectorItems(directories: any, collectionId: any, source: an
  * @param {number} threshold - The threshold for the search
  * @returns {Promise<{hashes: number[], metadata: object[]}>} - The metadata of the items that match the search text
  */
-async function queryCollection(directories: any, collectionId: any, source: any, sourceSettings: any, searchText: any, topK: any, threshold: any) {
+async function queryCollection(directories: import('../users.js').UserDirectoryList, collectionId: string, source: string, sourceSettings: SourceSettings, searchText: string, topK: number, threshold: number) {
     const store = await getIndex(directories, collectionId, source, sourceSettings);
     const vector = await getVector(source, sourceSettings, searchText, true, directories);
 
@@ -394,7 +403,7 @@ async function queryCollection(directories: any, collectionId: any, source: any,
  * @param {number} threshold - The threshold for the search
  * @returns {Promise<Record<string, { hashes: number[], metadata: object[] }>>} - The top K results from each collection
  */
-async function multiQueryCollection(directories: any, collectionIds: any, source: any, sourceSettings: any, searchText: any, topK: any, threshold: any) {
+async function multiQueryCollection(directories: import('../users.js').UserDirectoryList, collectionIds: string[], source: string, sourceSettings: SourceSettings, searchText: string, topK: number, threshold: number) {
     const vector = await getVector(source, sourceSettings, searchText, true, directories);
     const results = [];
 
@@ -432,9 +441,9 @@ async function multiQueryCollection(directories: any, collectionIds: any, source
  * @param {import('express').Request} req Express request object
  * @param {import('express').Response} res Express response object
  * @param {Error} error Error object
- * @returns {Promise<any>} Promise
+ * @returns {Promise<import('express').Response>} Promise
  */
-async function regenerateCorruptedIndexErrorHandler(req: any, res: any, error: any) {
+async function regenerateCorruptedIndexErrorHandler(req: express.Request, res: express.Response, error: unknown) {
     if (error instanceof SyntaxError && !req.query.regenerated) {
         const collectionId = String(req.body.collectionId);
         const source = String(req.body.source) || 'openai';
@@ -485,7 +494,7 @@ router.post('/query-multi', async (req, res) => {
             return res.sendStatus(400);
         }
 
-        const collectionIds = req.body.collectionIds.map((x: any) => String(x));
+        const collectionIds = req.body.collectionIds.map((x: unknown) => String(x));
         const searchText = String(req.body.searchText);
         const topK = Number(req.body.topK) || 10;
         const threshold = Number(req.body.threshold) || 0.0;
@@ -506,7 +515,7 @@ router.post('/insert', async (req, res) => {
         }
 
         const collectionId = String(req.body.collectionId);
-        const items = req.body.items.map((x: any) => ({
+        const items = req.body.items.map((x: { hash: unknown; text: unknown; index: unknown }) => ({
             hash: x.hash,
             text: x.text,
             index: x.index
@@ -545,7 +554,7 @@ router.post('/delete', async (req, res) => {
         }
 
         const collectionId = String(req.body.collectionId);
-        const hashes = req.body.hashes.map((x: any) => Number(x));
+        const hashes = req.body.hashes.map((x: unknown) => Number(x));
         const source = String(req.body.source) || 'openai';
         const sourceSettings = getSourceSettings(source, req);
 
