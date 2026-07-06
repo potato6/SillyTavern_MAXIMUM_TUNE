@@ -14,7 +14,7 @@ import { get, set, has, unset, defaultsDeep } from 'es-toolkit/compat';
 type MigrationMap = {
     oldKey: string;
     newKey: string;
-    migrate: (value: any) => any;
+    migrate: (value: unknown) => unknown;
     remove?: boolean;
 };
 
@@ -22,87 +22,87 @@ const keyMigrationMap: MigrationMap[] = [
     {
         oldKey: 'disableThumbnails',
         newKey: 'thumbnails.enabled',
-        migrate: (value: any) => !value,
+        migrate: (value: unknown) => !Boolean(value),
     },
     {
         oldKey: 'thumbnailsQuality',
         newKey: 'thumbnails.quality',
-        migrate: (value: any) => value,
+        migrate: (value: unknown) => value,
     },
     {
         oldKey: 'avatarThumbnailsPng',
         newKey: 'thumbnails.format',
-        migrate: (value: any) => value ? 'png' : 'jpg',
+        migrate: (value: unknown) => Boolean(value) ? 'png' : 'jpg',
     },
     {
         oldKey: 'disableChatBackup',
         newKey: 'backups.chat.enabled',
-        migrate: (value: any) => !value,
+        migrate: (value: unknown) => !Boolean(value),
     },
     {
         oldKey: 'numberOfBackups',
         newKey: 'backups.common.numberOfBackups',
-        migrate: (value: any) => value,
+        migrate: (value: unknown) => value,
     },
     {
         oldKey: 'maxTotalChatBackups',
         newKey: 'backups.chat.maxTotalBackups',
-        migrate: (value: any) => value,
+        migrate: (value: unknown) => value,
     },
     {
         oldKey: 'chatBackupThrottleInterval',
         newKey: 'backups.chat.throttleInterval',
-        migrate: (value: any) => value,
+        migrate: (value: unknown) => value,
     },
     {
         oldKey: 'enableExtensions',
         newKey: 'extensions.enabled',
-        migrate: (value: any) => value,
+        migrate: (value: unknown) => value,
     },
     {
         oldKey: 'enableExtensionsAutoUpdate',
         newKey: 'extensions.autoUpdate',
-        migrate: (value: any) => value,
+        migrate: (value: unknown) => value,
     },
     {
         oldKey: 'extras.disableAutoDownload',
         newKey: 'extensions.models.autoDownload',
-        migrate: (value: any) => !value,
+        migrate: (value: unknown) => !Boolean(value),
     },
     {
         oldKey: 'extras.classificationModel',
         newKey: 'extensions.models.classification',
-        migrate: (value: any) => value,
+        migrate: (value: unknown) => value,
     },
     {
         oldKey: 'extras.captioningModel',
         newKey: 'extensions.models.captioning',
-        migrate: (value: any) => value,
+        migrate: (value: unknown) => value,
     },
     {
         oldKey: 'extras.embeddingModel',
         newKey: 'extensions.models.embedding',
-        migrate: (value: any) => value,
+        migrate: (value: unknown) => value,
     },
     {
         oldKey: 'extras.speechToTextModel',
         newKey: 'extensions.models.speechToText',
-        migrate: (value: any) => value,
+        migrate: (value: unknown) => value,
     },
     {
         oldKey: 'extras.textToSpeechModel',
         newKey: 'extensions.models.textToSpeech',
-        migrate: (value: any) => value,
+        migrate: (value: unknown) => value,
     },
     {
         oldKey: 'minLogLevel',
         newKey: 'logging.minLogLevel',
-        migrate: (value: any) => value,
+        migrate: (value: unknown) => value,
     },
     {
         oldKey: 'cardsCacheCapacity',
         newKey: 'performance.memoryCacheCapacity',
-        migrate: (value: any) => `${value}mb`,
+        migrate: (value: unknown) => `${String(value)}mb`,
     },
     {
         oldKey: 'cookieSecret',
@@ -113,22 +113,22 @@ const keyMigrationMap: MigrationMap[] = [
     {
         oldKey: 'autorun',
         newKey: 'browserLaunch.enabled',
-        migrate: (value: any) => value,
+        migrate: (value: unknown) => value,
     },
     {
         oldKey: 'autorunHostname',
         newKey: 'browserLaunch.hostname',
-        migrate: (value: any) => value,
+        migrate: (value: unknown) => value,
     },
     {
         oldKey: 'autorunPortOverride',
         newKey: 'browserLaunch.port',
-        migrate: (value: any) => value,
+        migrate: (value: unknown) => value,
     },
     {
         oldKey: 'avoidLocalhost',
         newKey: 'browserLaunch.avoidLocalhost',
-        migrate: (value: any) => value,
+        migrate: (value: unknown) => value,
     },
     {
         oldKey: 'extras.promptExpansionModel',
@@ -139,12 +139,12 @@ const keyMigrationMap: MigrationMap[] = [
     {
         oldKey: 'autheliaAuth',
         newKey: 'sso.autheliaAuth',
-        migrate: (value: any) => value,
+        migrate: (value: unknown) => value,
     },
     {
         oldKey: 'authentikAuth',
         newKey: 'sso.authentikAuth',
-        migrate: (value: any) => value,
+        migrate: (value: unknown) => value,
     },
 ];
 
@@ -154,16 +154,12 @@ const keyMigrationMap: MigrationMap[] = [
  * @param {string} prefix Prefix to prepend to all keys
  * @returns {string[]} Array of all keys in the object
  */
-function getAllKeys(obj: any, prefix = ''): string[] {
-    if (typeof obj !== 'object' || Array.isArray(obj) || obj === null) {
-        return [];
-    }
-
-    // Handled natively using ES6+ Object.keys() and Array.prototype.flatMap()
+function getAllKeys(obj: Record<string, unknown>, prefix = ''): string[] {
     return Object.keys(obj).flatMap(key => {
         const newPrefix = prefix ? `${prefix}.${key}` : key;
-        if (typeof obj[key] === 'object' && obj[key] !== null && !Array.isArray(obj[key])) {
-            return getAllKeys(obj[key], newPrefix);
+        const value = obj[key];
+        if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+            return getAllKeys(value as Record<string, unknown>, newPrefix);
         } else {
             return [newPrefix];
         }
