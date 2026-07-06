@@ -21,7 +21,7 @@ import { setAdditionalHeaders } from '../additional-headers.js';
 import { getConfigValue, isValidUrl } from '../util.js';
 
 /**
- * @typedef { (req: import('express').Request, res: import('express').Response) => Promise<any> } TokenizationHandler
+ * @typedef { (req: import('express').Request, res: import('express').Response) => Promise<import('express').Response> } TokenizationHandler
  */
 
 /**
@@ -69,7 +69,7 @@ const gunzip = promisify(zlib.gunzip);
  * @param {string} str String to tokenize.
  * @returns {number} Token count.
  */
-function guesstimate(str: any) {
+function guesstimate(str: string) {
     const byteLength = Buffer.byteLength(str, 'utf8');
     return Math.ceil(byteLength / BYTES_PER_TOKEN);
 }
@@ -80,7 +80,7 @@ function guesstimate(str: any) {
  * @param {string|undefined} fallbackModel Fallback model path
  * @returns {Promise<string>} Path to the tokenizer model
  */
-async function getPathToTokenizer(model: any, fallbackModel: any) {
+async function getPathToTokenizer(model: string, fallbackModel: string | undefined) {
     if (!isValidUrl(model)) {
         return model;
     }
@@ -144,7 +144,7 @@ async function getPathToTokenizer(model: any, fallbackModel: any) {
         writeFileAtomicSync(cachedFile, Buffer.from(arrayBuffer));
         return cachedFile;
     } catch (error) {
-        const getLastSegment = (str: any) => str?.split('/')?.pop() || '';
+        const getLastSegment = (str: string) => str?.split('/')?.pop() || '';
         if (fallbackModel) {
             console.error(`Could not get a tokenizer from ${getLastSegment(model)}. Reason: ${error.message}. Using a fallback model: ${getLastSegment(fallbackModel)}.`);
             return fallbackModel;
@@ -176,7 +176,7 @@ class SentencePieceTokenizer {
      * @param {string} model Path to the tokenizer model
      * @param {string} [fallbackModel] Path to the fallback model
      */
-    constructor(model: any, fallbackModel: any) {
+    constructor(model: string, fallbackModel?: string) {
         this.#model = model;
         this.#fallbackModel = fallbackModel;
     }
@@ -225,7 +225,7 @@ class WebTokenizer {
      * @param {string} model Path to the tokenizer model
      * @param {string} [fallbackModel] Path to the fallback model
      */
-    constructor(model: any, fallbackModel: any) {
+    constructor(model: string, fallbackModel?: string) {
         this.#model = model;
         this.#fallbackModel = fallbackModel;
     }
@@ -301,7 +301,7 @@ export const webTokenizers = [
  * @param {string} model Sentencepiece model name
  * @returns {SentencePieceTokenizer|null} Sentencepiece tokenizer
  */
-export function getSentencepiceTokenizer(model: any) {
+export function getSentencepiceTokenizer(model: string) {
     if (model.includes('llama')) {
         return spp_llama;
     }
@@ -338,7 +338,7 @@ export function getSentencepiceTokenizer(model: any) {
  * @param {string} model Web tokenizer model name
  * @returns {WebTokenizer|null} Web tokenizer
  */
-export function getWebTokenizer(model: any) {
+export function getWebTokenizer(model: string) {
     if (model.includes('llama3')) {
         return llama3_tokenizer;
     }
@@ -376,7 +376,7 @@ export function getWebTokenizer(model: any) {
  * @param {string} text Text to tokenize
  * @returns { Promise<{ids: number[], count: number}> } Tokenization result
  */
-async function countSentencepieceTokens(tokenizer: any, text: any) {
+async function countSentencepieceTokens(tokenizer: SentencePieceTokenizer, text: string) {
     const instance = await tokenizer?.get();
 
     // Fallback to strlen estimation
@@ -396,25 +396,25 @@ async function countSentencepieceTokens(tokenizer: any, text: any) {
     };
 }
 
-/**
- * Counts the tokens in the given array of objects using the Sentencepiece tokenizer.
- * @param {SentencePieceTokenizer} tokenizer
+ /* Counts the tokens in the given array of objects using the Sentencepiece tokenizer.
+ * @param {SentencePieceTokenizer} tokenizer Sentencepiece tokenizer instance
  * @param {object[]} array Array of objects to tokenize
  * @returns {Promise<number>} Number of tokens
  */
-async function countSentencepieceArrayTokens(tokenizer: any, array: any) {
-    const jsonBody = array.flatMap((x: any) => Object.values(x)).join('\n\n');
+async function countSentencepieceArrayTokens(tokenizer: SentencePieceTokenizer, array: object[]) {
+    const jsonBody = array.flatMap((x: Record<string, unknown>) => Object.values(x)).join('\n\n');
     const result = await countSentencepieceTokens(tokenizer, jsonBody);
     const num_tokens = result.count;
     return num_tokens;
 }
 
 /**
- *
- * @param tokenizer
- * @param ids
+ * Gets the token chunks for the given token IDs using the Tiktoken tokenizer.
+ * @param {import('tiktoken').Tiktoken} tokenizer Tiktoken tokenizer instance
+ * @param {number[]} ids Token IDs
+ * @returns {Promise<string[]>} Token chunks
  */
-async function getTiktokenChunks(tokenizer: any, ids: any) {
+async function getTiktokenChunks(tokenizer: import('tiktoken').Tiktoken, ids: number[]) {
     const decoder = new TextDecoder();
     const chunks = [];
 
@@ -434,7 +434,7 @@ async function getTiktokenChunks(tokenizer: any, ids: any) {
  * @param {number[]} ids Token IDs
  * @returns {string[]} Token chunks
  */
-function getWebTokenizersChunks(tokenizer: any, ids: any) {
+function getWebTokenizersChunks(tokenizer: Tokenizer, ids: number[]) {
     const chunks = [];
 
     for (let i = 0, lastProcessed = 0; i < ids.length; i++) {
@@ -455,7 +455,7 @@ function getWebTokenizersChunks(tokenizer: any, ids: any) {
  * @param {string} requestModel Models to use for tokenization
  * @returns {string} Tokenizer model to use
  */
-export function getTokenizerModel(requestModel: any) {
+export function getTokenizerModel(requestModel: string) {
     if (requestModel === 'o1' || requestModel.includes('o1-preview') || requestModel.includes('o1-mini') || requestModel.includes('o3-mini')) {
         return 'o1';
     }
@@ -545,10 +545,11 @@ export function getTokenizerModel(requestModel: any) {
 }
 
 /**
- *
- * @param model
+ * Gets a Tiktoken tokenizer by model name, using a cache.
+ * @param {string} model Tiktoken model name
+ * @returns {import('tiktoken').Tiktoken} Tiktoken tokenizer
  */
-export function getTiktokenTokenizer(model: any) {
+export function getTiktokenTokenizer(model: string) {
     if (tokenizersCache[model]) {
         return tokenizersCache[model];
     }
@@ -565,7 +566,7 @@ export function getTiktokenTokenizer(model: any) {
  * @param {object[]} messages Array of messages
  * @returns {number} Number of tokens
  */
-export function countWebTokenizerTokens(tokenizer: any, messages: any) {
+export function countWebTokenizerTokens(tokenizer: Tokenizer | null, messages: object[]) {
     // Should be fine if we use the old conversion method instead of the messages API one i think?
     const convertedPrompt = convertClaudePrompt(messages, false, '', false, false, '', false);
 
@@ -583,13 +584,14 @@ export function countWebTokenizerTokens(tokenizer: any, messages: any) {
  * @param {SentencePieceTokenizer} tokenizer Sentencepiece tokenizer
  * @returns {TokenizationHandler} Handler function
  */
-function createSentencepieceEncodingHandler(tokenizer: any) {
+function createSentencepieceEncodingHandler(tokenizer: SentencePieceTokenizer): TokenizationHandler {
     /**
      * Request handler for encoding Sentencepiece tokens.
-     * @param {import('express').Request} request
-     * @param {import('express').Response} response
+     * @param {import('express').Request} request The Express request object The Express request object
+     * @param {import('express').Response} response The Express response object The Express response object
+     * @returns {Promise<import('express').Response>} Promise
      */
-    return async function (request: any, response: any) {
+    return async function (request: express.Request, response: express.Response) {
         try {
             if (!request.body) {
                 return response.sendStatus(400);
@@ -612,13 +614,14 @@ function createSentencepieceEncodingHandler(tokenizer: any) {
  * @param {SentencePieceTokenizer} tokenizer Sentencepiece tokenizer
  * @returns {TokenizationHandler} Handler function
  */
-function createSentencepieceDecodingHandler(tokenizer: any) {
+function createSentencepieceDecodingHandler(tokenizer: SentencePieceTokenizer): TokenizationHandler {
     /**
      * Request handler for decoding Sentencepiece tokens.
-     * @param {import('express').Request} request
-     * @param {import('express').Response} response
+     * @param {import('express').Request} request The Express request object The Express request object
+     * @param {import('express').Response} response The Express response object The Express response object
+     * @returns {Promise<import('express').Response>} Promise
      */
-    return async function (request: any, response: any) {
+    return async function (request: express.Request, response: express.Response) {
         try {
             if (!request.body) {
                 return response.sendStatus(400);
@@ -627,7 +630,7 @@ function createSentencepieceDecodingHandler(tokenizer: any) {
             const ids = request.body.ids || [];
             const instance = await tokenizer?.get();
             if (!instance) throw new Error('Failed to load the Sentencepiece tokenizer');
-            const ops = ids.map((id: any) => instance.decodeIds([id]));
+            const ops = ids.map((id: unknown) => instance.decodeIds([id]));
             const chunks = await Promise.all(ops);
             const text = chunks.join('');
             return response.send({ text, chunks });
@@ -643,13 +646,14 @@ function createSentencepieceDecodingHandler(tokenizer: any) {
  * @param {string} modelId Tiktoken model ID
  * @returns {TokenizationHandler} Handler function
  */
-function createTiktokenEncodingHandler(modelId: any) {
+function createTiktokenEncodingHandler(modelId: string): TokenizationHandler {
     /**
      * Request handler for encoding Tiktoken tokens.
-     * @param {import('express').Request} request
-     * @param {import('express').Response} response
+     * @param {import('express').Request} request The Express request object
+     * @param {import('express').Response} response The Express response object
+     * @returns {Promise<import('express').Response>} Promise
      */
-    return async function (request: any, response: any) {
+    return async function (request: express.Request, response: express.Response) {
         try {
             if (!request.body) {
                 return response.sendStatus(400);
@@ -672,13 +676,14 @@ function createTiktokenEncodingHandler(modelId: any) {
  * @param {string} modelId Tiktoken model ID
  * @returns {TokenizationHandler} Handler function
  */
-function createTiktokenDecodingHandler(modelId: any) {
+function createTiktokenDecodingHandler(modelId: string): TokenizationHandler {
     /**
      * Request handler for decoding Tiktoken tokens.
-     * @param {import('express').Request} request
-     * @param {import('express').Response} response
+     * @param {import('express').Request} request The Express request object
+     * @param {import('express').Response} response The Express response object
+     * @returns {Promise<import('express').Response>} Promise
      */
-    return async function (request: any, response: any) {
+    return async function (request: express.Request, response: express.Response) {
         try {
             if (!request.body) {
                 return response.sendStatus(400);
@@ -701,13 +706,14 @@ function createTiktokenDecodingHandler(modelId: any) {
  * @param {WebTokenizer} tokenizer WebTokenizer instance
  * @returns {TokenizationHandler} Handler function
  */
-function createWebTokenizerEncodingHandler(tokenizer: any) {
+function createWebTokenizerEncodingHandler(tokenizer: WebTokenizer): TokenizationHandler {
     /**
      * Request handler for encoding WebTokenizer tokens.
-     * @param {import('express').Request} request
-     * @param {import('express').Response} response
+     * @param {import('express').Request} request The Express request object
+     * @param {import('express').Response} response The Express response object
+     * @returns {Promise<import('express').Response>} Promise
      */
-    return async function (request: any, response: any) {
+    return async function (request: express.Request, response: express.Response) {
         try {
             if (!request.body) {
                 return response.sendStatus(400);
@@ -731,14 +737,14 @@ function createWebTokenizerEncodingHandler(tokenizer: any) {
  * @param {WebTokenizer} tokenizer WebTokenizer instance
  * @returns {TokenizationHandler} Handler function
  */
-function createWebTokenizerDecodingHandler(tokenizer: any) {
+function createWebTokenizerDecodingHandler(tokenizer: WebTokenizer): TokenizationHandler {
     /**
      * Request handler for decoding WebTokenizer tokens.
-     * @param {import('express').Request} request
-     * @param {import('express').Response} response
-     * @returns {Promise<any>}
+     * @param {import('express').Request} request The Express request object
+     * @param {import('express').Response} response The Express response object
+     * @returns {Promise<import('express').Response>} Promise
      */
-    return async function (request: any, response: any) {
+    return async function (request: express.Request, response: express.Response) {
         try {
             if (!request.body) {
                 return response.sendStatus(400);
@@ -1085,8 +1091,7 @@ router.post('/remote/kobold/count', async function (request, response) {
             return response.send({ error: true });
         }
 
-        /** @type {any} */
-        const data = await result.json();
+        const data = await result.json() as { value: unknown; ids: unknown };
         const count = data.value;
         const ids = data.ids ?? [];
         return response.send({ count, ids });
@@ -1155,8 +1160,7 @@ router.post('/remote/textgenerationwebui/encode', async function (request, respo
             return response.send({ error: true });
         }
 
-        /** @type {any} */
-        const data = await result.json();
+        const data = await result.json() as { length?: number; count?: number; value?: number; tokens?: { length?: number }; ids?: unknown[] };
         const count = (data?.length ?? data?.count ?? data?.value ?? data?.tokens?.length);
         const ids = (data?.tokens ?? data?.ids ?? []);
 
