@@ -215,8 +215,7 @@ export class AutoCompleteOption {
      */
     renderItem() {
         // throw new Error(`${this.constructor.name}.renderItem() is not implemented`);
-        let li;
-        li = this.makeItem(this.name, this.typeIcon, true);
+        const li = this.makeItem(this.name, this.typeIcon, true);
         li.setAttribute('data-name', this.name);
         li.setAttribute('data-option-type', this.type);
         return li;

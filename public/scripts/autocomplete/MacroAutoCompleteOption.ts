@@ -15,8 +15,7 @@ export class MacroAutoCompleteOption extends AutoCompleteOption {
 
     // @ts-expect-error TS(4114): This member must have an 'override' modifier becau... Remove this comment to see the full error message
     renderItem() {
-        let li;
-        li = this.makeItem(`${this.fullName}`, '{}', true, [], [], null, this.description);
+        const li = this.makeItem(`${this.fullName}`, '{}', true, [], [], null, this.description);
         li.setAttribute('data-name', this.name);
         li.setAttribute('data-option-type', 'macro');
         return li;

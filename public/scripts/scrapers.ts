@@ -92,11 +92,11 @@ export class ScraperManager {
  * @implements {Scraper}
  */
 class Notepad {
-    description: any;
-    iconAvailable: any;
-    iconClass: any;
-    id: any;
-    name: any;
+    description: string;
+    iconAvailable: boolean;
+    iconClass: string;
+    id: string;
+    name: string;
     constructor() {
         this.id = 'text';
         this.name = 'Notepad';
@@ -154,11 +154,11 @@ class Notepad {
  * @implements {Scraper}
  */
 class WebScraper {
-    description: any;
-    iconAvailable: any;
-    iconClass: any;
-    id: any;
-    name: any;
+    description: string;
+    iconAvailable: boolean;
+    iconClass: string;
+    id: string;
+    name: string;
     constructor() {
         this.id = 'web';
         this.name = 'Web';
@@ -241,11 +241,11 @@ class WebScraper {
  * @implements {Scraper}
  */
 class FileScraper {
-    description: any;
-    iconAvailable: any;
-    iconClass: any;
-    id: any;
-    name: any;
+    description: string;
+    iconAvailable: boolean;
+    iconClass: string;
+    id: string;
+    name: string;
     constructor() {
         this.id = 'file';
         this.name = 'File';
@@ -279,11 +279,11 @@ class FileScraper {
 }
 
 class MediaWikiScraper {
-    description: any;
-    iconAvailable: any;
-    iconClass: any;
-    id: any;
-    name: any;
+    description: string;
+    iconAvailable: boolean;
+    iconClass: string;
+    id: string;
+    name: string;
     constructor() {
         this.id = 'mediawiki';
         this.name = 'MediaWiki';
@@ -389,11 +389,11 @@ class MediaWikiScraper {
  * @implements {Scraper}
  */
 class FandomScraper {
-    description: any;
-    iconAvailable: any;
-    iconClass: any;
-    id: any;
-    name: any;
+    description: string;
+    iconAvailable: boolean;
+    iconClass: string;
+    id: string;
+    name: string;
     constructor() {
         this.id = 'fandom';
         this.name = 'Fandom';
@@ -535,11 +535,11 @@ const iso6391Codes = [
  * @implements {Scraper}
  */
 class YouTubeScraper {
-    description: any;
-    iconAvailable: any;
-    iconClass: any;
-    id: any;
-    name: any;
+    description: string;
+    iconAvailable: boolean;
+    iconClass: string;
+    id: string;
+    name: string;
     constructor() {
         this.id = 'youtube';
         this.name = 'YouTube';

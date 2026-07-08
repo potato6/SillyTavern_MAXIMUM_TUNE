@@ -193,7 +193,7 @@ export function selectContextPreset(preset, { quiet = false, isAuto = false } = 
             cp.dispatchEvent(new Event('change'));
         }
         // @ts-expect-error TS(2304): Cannot find name 'toastr'.
-        !quiet && toastr.info(`Context Template: "${preset}" ${isAuto ? 'auto-' : ''}selected`);
+        if (!quiet) toastr.info(`Context Template: "${preset}" ${isAuto ? 'auto-' : ''}selected`);
     }
 
     updateBindModelTemplatesState();
@@ -223,7 +223,7 @@ export function selectInstructPreset(preset, { quiet = false, isAuto = false } =
             ip.dispatchEvent(new Event('change'));
         }
         // @ts-expect-error TS(2304): Cannot find name 'toastr'.
-        !quiet && toastr.info(`Instruct Template: "${preset}" ${isAuto ? 'auto-' : ''}selected`);
+        if (!quiet) toastr.info(`Instruct Template: "${preset}" ${isAuto ? 'auto-' : ''}selected`);
     }
 
     // If instruct mode is disabled, enable it
@@ -235,7 +235,7 @@ export function selectInstructPreset(preset, { quiet = false, isAuto = false } =
             ie.dispatchEvent(new Event('change'));
         }
         // @ts-expect-error TS(2304): Cannot find name 'toastr'.
-        !quiet && toastr.info('Instruct Mode enabled');
+        if (!quiet) toastr.info('Instruct Mode enabled');
     }
 
     updateBindModelTemplatesState();

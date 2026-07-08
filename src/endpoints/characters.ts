@@ -737,6 +737,8 @@ function convertWorldInfoToCharacterBook(name: string, entries: Record<string, u
  * Import a character from a YAML file.
  * @param {string} uploadPath Path to the uploaded file
  * @param {{ request: import('express').Request, response: import('express').Response }} context Express request and response objects
+ * @param context.request
+ * @param context.response
  * @param {string|undefined} preservedFileName Preserved file name
  * @returns {Promise<string>} Internal name of the character
  */

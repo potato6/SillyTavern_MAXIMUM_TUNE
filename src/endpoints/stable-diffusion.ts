@@ -53,6 +53,9 @@ router.post('/ping', async (request, response) => {
 
 router.post('/upscalers', async (request, response) => {
     try {
+        /**
+         *
+         */
         async function getUpscalerModels() {
             const url = new URL(request.body.url);
             url.pathname = '/sdapi/v1/upscalers';
@@ -72,6 +75,9 @@ router.post('/upscalers', async (request, response) => {
             return data.map(x => x.name);
         }
 
+        /**
+         *
+         */
         async function getLatentUpscalers() {
             const url = new URL(request.body.url);
             url.pathname = '/sdapi/v1/latent-upscale-modes';
@@ -235,6 +241,9 @@ router.post('/get-model', async (request, response) => {
 
 router.post('/set-model', async (request, response) => {
     try {
+        /**
+         *
+         */
         async function getProgress() {
             const url = new URL(request.body.url);
             url.pathname = '/sdapi/v1/progress';

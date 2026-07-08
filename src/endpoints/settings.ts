@@ -92,7 +92,7 @@ export function getSettingsBackupFilePrefix(handle: string) {
 /**
  * Reads presets from a directory.
  * @param {string} directoryPath Path to the directory
- * @param {Object} options Options object
+ * @param {object} options Options object
  * @param {Function} [options.sortFunction] Sort function for files
  * @param {boolean} [options.removeFileExtension] Whether to remove file extensions from names
  * @param {string} [options.fileExtension] File extension to filter by

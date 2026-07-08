@@ -32,7 +32,7 @@ export const AUTOCOMPLETE_STATE = {
 };
 
 export class AutoComplete {
-    isShowForced: any;
+    isShowForced: boolean;
     /**@type {HTMLTextAreaElement|HTMLInputElement}*/ textarea;
     /**@type {boolean}*/ isFloating = false;
     /**@type {()=>boolean}*/ checkIfActivate;
@@ -883,7 +883,7 @@ export class AutoComplete {
             this.selectionStart = this.textarea.selectionStart;
             this.show(this.isReplaceable || oldText != this.textarea.value);
         } else if (this.isActive) {
-            this.text != this.textarea.value && this.show(this.isReplaceable);
+            if (this.text != this.textarea.value) this.show(this.isReplaceable);
         }
     }
 }
