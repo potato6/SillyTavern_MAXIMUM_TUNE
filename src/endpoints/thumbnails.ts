@@ -32,7 +32,7 @@ const pngFormat = String(getConfigValue('thumbnails.format', 'jpg')).toLowerCase
  * @param {ThumbnailType} type Thumbnail type
  * @returns {string} Path to the thumbnails folder
  */
-function getThumbnailFolder(directories: any, type: any) {
+function getThumbnailFolder(directories: import('../users.js').UserDirectoryList, type: 'bg' | 'avatar' | 'persona') {
     let thumbnailFolder;
 
     switch (type) {
@@ -56,7 +56,7 @@ function getThumbnailFolder(directories: any, type: any) {
  * @param {ThumbnailType} type Thumbnail type
  * @returns {string} Path to the original images folder
  */
-function getOriginalFolder(directories: any, type: any) {
+function getOriginalFolder(directories: import('../users.js').UserDirectoryList, type: 'bg' | 'avatar' | 'persona') {
     let originalFolder;
 
     switch (type) {
@@ -80,7 +80,7 @@ function getOriginalFolder(directories: any, type: any) {
  * @param {ThumbnailType} type Type of the thumbnail
  * @param {string} file Name of the file
  */
-export function invalidateThumbnail(directories: any, type: any, file: any) {
+export function invalidateThumbnail(directories: import('../users.js').UserDirectoryList, type: 'bg' | 'avatar' | 'persona', file: string) {
     const folder = getThumbnailFolder(directories, type);
     if (folder === undefined) throw new Error('Invalid thumbnail type');
 
@@ -100,7 +100,7 @@ export function invalidateThumbnail(directories: any, type: any, file: any) {
  * @param {boolean|null} [isKnownAnimated] - If true, skips generation. If false, assumes static. If null, checks.
  * @returns {Promise<{path: string|null, aspectRatio: number|null, resolution: number|null}>} Path to thumbnail, its aspect ratio, and resolution.
  */
-export async function generateThumbnail(directories: any, type: any, file: any, forceGenerate = false, isKnownAnimated = null) {
+export async function generateThumbnail(directories: import('../users.js').UserDirectoryList, type: 'bg' | 'avatar' | 'persona', file: string, forceGenerate = false, isKnownAnimated: boolean | null = null) {
     // If the caller has already determined the file is animated, skip processing.
     if (isKnownAnimated) {
         return { path: null, aspectRatio: null, resolution: null };
@@ -137,7 +137,7 @@ export async function generateThumbnail(directories: any, type: any, file: any, 
                     const resolution = getThumbnailResolution(type);
                     return { path: pathToCachedFile, aspectRatio: ratio, resolution };
                 }
-            } catch (e) {
+            } catch {
                 forceGenerate = true;
             }
         }
@@ -195,7 +195,7 @@ export async function generateThumbnail(directories: any, type: any, file: any, 
  * @param {ThumbnailType} type - The type of thumbnail to generate.
  * @returns {Promise<{success: boolean, filename?: string, error?: string, aspectRatio?: number, resolution?: number}>} Result of the processing.
  */
-async function processSingleImage(file: any, originalFolder: any, thumbnailFolder: any, type: any) {
+async function processSingleImage(file: string, originalFolder: string, thumbnailFolder: string, type: 'bg' | 'avatar' | 'persona') {
     const pathToOriginalFile = path.join(originalFolder, file);
     const pathToCachedFile = path.join(thumbnailFolder, file);
 

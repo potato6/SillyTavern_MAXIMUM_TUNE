@@ -24,7 +24,7 @@ router.post('/models/providers', async (req, res) => {
         /** @type {any} */
         const data = await response.json();
         const endpoints = data?.data?.endpoints || [];
-        const providerNames = endpoints.map((e: any) => e.provider_name);
+        const providerNames = endpoints.map((e: { provider_name: string }) => e.provider_name);
 
         return res.json(providerNames);
     } catch (error) {
@@ -41,7 +41,7 @@ router.post('/models/providers', async (req, res) => {
  * @param {((model: any) => any) | null} [mapFn] - Optional mapping function to transform the results
  * @returns {Promise<any[]>} Filtered and/or mapped models
  */
-async function fetchModelsByModality(endpoint: any, inputModality: any, outputModality: any, mapFn = null) {
+async function fetchModelsByModality(endpoint: string, inputModality: string, outputModality: string, mapFn: ((model: Record<string, unknown>) => unknown) | null = null) {
     const response = await fetch(`${API_OPENROUTER}${endpoint}?output_modalities=${encodeURIComponent(outputModality)}`, {
         method: 'GET',
         headers: { 'Accept': 'application/json' },
@@ -61,11 +61,11 @@ async function fetchModelsByModality(endpoint: any, inputModality: any, outputMo
     }
 
     const filtered = data.data
-        .filter((m: any) => Array.isArray(m?.architecture?.input_modalities))
-        .filter((m: any) => m.architecture.input_modalities.includes(inputModality))
-        .filter((m: any) => Array.isArray(m?.architecture?.output_modalities))
-        .filter((m: any) => m.architecture.output_modalities.includes(outputModality))
-        .sort((a: any, b: any) => a?.id && b?.id ? a.id.localeCompare(b.id) : 0);
+        .filter((m: { architecture?: { input_modalities?: string[]; output_modalities?: string[] } }) => Array.isArray(m?.architecture?.input_modalities))
+        .filter((m: { architecture: { input_modalities: string[]; output_modalities?: string[] } }) => m.architecture.input_modalities.includes(inputModality))
+        .filter((m: { architecture?: { input_modalities?: string[]; output_modalities?: string[] } }) => Array.isArray(m?.architecture?.output_modalities))
+        .filter((m: { architecture: { input_modalities?: string[]; output_modalities: string[] } }) => m.architecture.output_modalities.includes(outputModality))
+        .sort((a: { id?: string }, b: { id?: string }) => a?.id && b?.id ? a.id.localeCompare(b.id) : 0);
 
     return typeof mapFn === 'function' ? filtered.map(mapFn) : filtered;
 }
