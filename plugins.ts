@@ -88,8 +88,8 @@ async function updatePlugins() {
 }
 
 /**
- *
- * @param pluginName
+ * @param {string} pluginName Name of the plugin to install
+ * @returns {Promise<void>}
  */
 async function installPlugin(pluginName) {
     try {
