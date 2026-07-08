@@ -184,6 +184,22 @@ class Prompt {
      * @param {boolean} [param0.forbid_overrides] - Indicates if the prompt should not be overridden.
      * @param {boolean} [param0.extension] - Prompt is added by an extension.
      */
+    /**
+     * @typedef {Object} PromptConstructorParams
+     * @property {string} [identifier]
+     * @property {string} [role]
+     * @property {string} [content]
+     * @property {string} [name]
+     * @property {boolean} [system_prompt]
+     * @property {string|number} [position]
+     * @property {number} [injection_position]
+     * @property {number} [injection_depth]
+     * @property {number} [injection_order]
+     * @property {string[]} [injection_trigger]
+     * @property {boolean} [forbid_overrides]
+     * @property {boolean} [extension]
+     */
+
     constructor({
         identifier,
         role,
@@ -197,7 +213,7 @@ class Prompt {
         extension,
         injection_order,
         injection_trigger
-    }: any = {}) {
+    }: PromptConstructorParams = {}) {
         this.identifier = identifier;
         this.role = role;
         this.content = content;
@@ -308,34 +324,34 @@ export class PromptCollection {
 }
 
 class PromptManager {
-    activeCharacter: any;
-    configuration: any;
-    containerElement: any;
-    error: any;
-    handleAppendPrompt: any;
-    handleCharacterExport: any;
-    handleCharacterReset: any;
-    handleDeletePrompt: any;
-    handleDetach: any;
-    handleEdit: any;
-    handleFullExport: any;
-    handleImport: any;
-    handleInspect: any;
-    handleNewPrompt: any;
-    handleResetPrompt: any;
-    handleSavePrompt: any;
-    handleToggle: any;
-    listElement: any;
-    messages: any;
-    overridablePrompts: any;
-    overriddenPrompts: any;
-    renderDebounced: any;
-    saveServiceSettings: any;
-    serviceSettings: any;
-    systemPrompts: any;
-    tokenHandler: any;
-    tokenUsage: any;
-    tryGenerate: any;
+    activeCharacter: object | null;
+    configuration: Record<string, unknown>;
+    containerElement: HTMLElement | null;
+    error: string | null;
+    handleAppendPrompt: () => void;
+    handleCharacterExport: () => void;
+    handleCharacterReset: () => void;
+    handleDeletePrompt: (promptId: string) => void;
+    handleDetach: () => void;
+    handleEdit: (promptId: string) => void;
+    handleFullExport: () => void;
+    handleImport: () => void;
+    handleInspect: () => void;
+    handleNewPrompt: () => void;
+    handleResetPrompt: () => void;
+    handleSavePrompt: () => void;
+    handleToggle: (promptId: string) => void;
+    listElement: HTMLElement | null;
+    messages: object | null;
+    overridablePrompts: string[];
+    overriddenPrompts: string[];
+    renderDebounced: ReturnType<typeof debounce>;
+    saveServiceSettings: () => Promise<void>;
+    serviceSettings: object | null;
+    systemPrompts: string[];
+    tokenHandler: object | null;
+    tokenUsage: number;
+    tryGenerate: () => Promise<void>;
     get promptSources() {
         return {
             charDescription: t`Character Description`,
@@ -1077,9 +1093,11 @@ class PromptManager {
         }
 
         // Check whether the referenced prompts are present.
-        this.serviceSettings.prompts.length === 0
-            ? this.setPrompts(chatCompletionDefaultPrompts.prompts)
-            : this.checkForMissingPrompts(this.serviceSettings.prompts);
+        if (this.serviceSettings.prompts.length === 0) {
+            this.setPrompts(chatCompletionDefaultPrompts.prompts);
+        } else {
+            this.checkForMissingPrompts(this.serviceSettings.prompts);
+        }
 
         // Add identifiers if there are none assigned to a prompt
         this.serviceSettings.prompts.forEach(prompt => prompt && (prompt.identifier = prompt.identifier ?? this.getUuidv4()));
