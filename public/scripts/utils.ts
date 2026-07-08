@@ -783,6 +783,7 @@ export function incrementString(str) {
 /**
  * Formats a string using the specified arguments.
  * @param {string} format The format string.
+ * @param {...any} args
  * @returns {string} The formatted string.
  * @example
  * stringFormat('Hello, {0}!', 'world'); // 'Hello, world!'

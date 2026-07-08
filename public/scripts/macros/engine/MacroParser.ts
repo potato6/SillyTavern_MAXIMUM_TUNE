@@ -13,7 +13,9 @@ const { CstParser, Lexer } = chevrotain;
  * The singleton instance of the MacroParser.
  * @type {MacroParser}
  */
-const instance: MacroParser = new MacroParser();
+// The singleton instance is assigned after the class definition to handle circular references
+// eslint-disable-next-line prefer-const
+let instance: MacroParser;
 export { instance as MacroParser };
 
 class MacroParser extends CstParser {

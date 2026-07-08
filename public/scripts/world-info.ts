@@ -3043,7 +3043,8 @@ export function parseRegexFromString(input) {
         return null; // Not a valid regex format
     }
 
-    const [, pattern, flags] = match;
+    const [, rawPattern, flags] = match;
+    let pattern = rawPattern;
 
     // If we find any unescaped slash delimiter, we also exit out.
     // JS doesn't care about delimiters inside regex patterns, but for this to be a valid regex outside of our implementation,

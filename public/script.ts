@@ -3225,6 +3225,7 @@ export function getStoppingStrings(isImpersonate, isContinue, api = main_api) {
  * @property {boolean} [removeReasoning] Parses and removes the reasoning block according to reasoning format preferences
  * @property {boolean} [trimToSentence] Whether to trim the response to the last complete sentence
  * @param {GenerateQuietPromptParams} params Parameters for the quiet prompt generation
+ * @param {...any} args
  * @returns {Promise<string>} Generated text. If using structured output, will contain a serialized JSON object.
  * @property
  */
@@ -4337,6 +4338,7 @@ export async function generateRawData({ prompt = '', api = null, instructOverrid
  * Generates a message using the provided prompt.
  * If the prompt is an array of chat-style messages and not using chat completion, it will be converted to a text prompt.
  * @param {GenerateRawParams} params Parameters for generating a message
+ * @param {...any} args
  * @returns {Promise<string>} Generated output: a cleaned-up message string when `jsonSchema` is not provided, or an extracted JSON string conforming to `jsonSchema` when it is.
  */
 export async function generateRaw({ prompt = '', api = null, instructOverride = false, quietToLoud = false, systemPrompt = '', responseLength = null, trimNames = true, prefill = '', jsonSchema = null } = {}, ...args: unknown[]) {
@@ -6750,6 +6752,7 @@ function extractMultiSwipes(data, type) {
  * @param {boolean} [options.includeUserPromptBias] Whether to permit prepending the user prompt bias at the beginning.
  * @param {boolean} [options.trimNames] Whether to allow trimming "{{char}}:" or "{{user}}:" from the beginning.
  * @param {boolean} [options.trimWrongNames] Whether to allow deleting responses prefixed by the incorrect name, depending on isImpersonate
+ * @param {...any} args
  * @returns {string} The formatted message
  */
 export function cleanUpMessage({
@@ -6944,6 +6947,7 @@ async function processImageAttachment(message, { imageUrls }) {
 /**
  * Saves a resulting message to the chat.
  * @param {SaveReplyParams} params
+ * @param {...any} args
  * @returns {Promise<SaveReplyResult>} Promise when the message is saved
  * @typedef {object} SaveReplyParams
  * @property {string} type Type of generation
@@ -7786,6 +7790,7 @@ export function saveChatDebounced() {
  * @param {number} [options.mesId] The message ID to save the chat up to
  * @param {boolean} [options.force] Force the saving despite the integrity check result
  * @param {ChatMessage[]} [options.chatData] Chat snapshot to save instead of the current in-memory chat
+ * @param {...any} args
  * @returns {Promise<void>}
  */
 export async function saveChat({

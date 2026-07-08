@@ -185,7 +185,7 @@ class Prompt {
      * @param {boolean} [param0.extension] - Prompt is added by an extension.
      */
     /**
-     * @typedef {Object} PromptConstructorParams
+     * @typedef {object} PromptConstructorParams
      * @property {string} [identifier]
      * @property {string} [role]
      * @property {string} [content]

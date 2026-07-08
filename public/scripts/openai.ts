@@ -1332,7 +1332,7 @@ async function populateChatCompletion(prompts, chatCompletion, { bias, quietProm
         const assistantPrefill = isAssistantRole && supportsAssistantPrefill ? substituteParams(oai_settings.assistant_prefill) : '';
         const messageContent = [assistantPrefill, chatMessage.content].filter(x => x).join('\n\n');
         const continueMessage = await Message.createAsync(chatMessage.role, messageContent, 'continuePrefill');
-        chatMessage.name && namesInCompletion && (await continueMessage.setName(promptManager.sanitizeName(chatMessage.name)));
+        if (chatMessage.name && namesInCompletion) await continueMessage.setName(promptManager.sanitizeName(chatMessage.name));
         controlPrompts.add(continueMessage);
         chatCompletion.reserveBudget(continueMessage);
     }
@@ -1664,19 +1664,19 @@ export function tryParseStreamingError(response, decoded, { quiet = false } = {}
 
         if (data.error) {
             // @ts-expect-error TS(2304): Cannot find name 'toastr'.
-            !quiet && toastr.error(data.error.message || response.statusText, 'Chat Completion API');
+            if (!quiet) toastr.error(data.error.message || response.statusText, 'Chat Completion API');
             throw new Error(data);
         }
 
         if (data.message) {
             // @ts-expect-error TS(2304): Cannot find name 'toastr'.
-            !quiet && toastr.error(data.message, 'Chat Completion API');
+            if (!quiet) toastr.error(data.message, 'Chat Completion API');
             throw new Error(data);
         }
 
         if (data.detail) {
             // @ts-expect-error TS(2304): Cannot find name 'toastr'.
-            !quiet && toastr.error(data.detail?.error?.message || response.statusText, 'Chat Completion API');
+            if (!quiet) toastr.error(data.detail?.error?.message || response.statusText, 'Chat Completion API');
             throw new Error(data);
         }
     } catch {
@@ -1698,7 +1698,9 @@ function checkQuotaError(data, { quiet = false } = {}) {
     }
 
     if (data.quota_error) {
-        !quiet && renderTemplateAsync('quotaError').then((html) => Popup.show.text('Quota Error', html));
+        if (!quiet) {
+            renderTemplateAsync('quotaError').then((html) => Popup.show.text('Quota Error', html));
+        }
 
         // this does not throw correctly (equiv to Error("[object Object]"))
         // if trying to fix "[object Object]" displayed to users, start here
@@ -3568,8 +3570,8 @@ async function calculateLogitBias() {
 }
 
 class TokenHandler {
-    countTokenAsyncFn: any;
-    counts: any;
+    countTokenAsyncFn: (messages: object[] | object, full?: boolean) => Promise<number>;
+    counts: Record<string, number>;
     /**
      * @param {(messages: object[] | object, full?: boolean) => Promise<number>} countTokenAsyncFn Function to count tokens
      */
@@ -3664,7 +3666,7 @@ class InvalidCharacterNameError extends Error {
 class Message {
     static tokensPerImage = 85;
 
-    tool_calls: any;
+    tool_calls: import('./tool-calling.js').ToolCall[];
 
     /** @type {number} */
     tokens;
@@ -4076,10 +4078,10 @@ class MessageCollection {
  * @see https://platform.openai.com/docs/guides/gpt/chat-completions-api
  */
 export class ChatCompletion {
-    loggingEnabled: any;
-    messages: any;
-    overriddenPrompts: any;
-    tokenBudget: any;
+    loggingEnabled: boolean;
+    messages: MessageCollection;
+    overriddenPrompts: string[];
+    tokenBudget: number;
     /**
      * Combines consecutive system messages into one if they have no name attached.
      * @returns {Promise<void>}
@@ -5006,7 +5008,7 @@ async function onPresetImportFileChange(e) {
     try {
         // @ts-expect-error TS(2345): Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
         presetBody = JSON.parse(importedFile);
-    } catch (err) {
+    } catch {
         // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.error(t`Invalid file`);
         return;
@@ -6644,7 +6646,7 @@ async function testApiConnection() {
         console.log(reply);
         // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.success(t`API connection successful!`);
-    } catch (err) {
+    } catch {
         // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.error(t`Could not get a reply from API. Check your connection settings / API key and try again.`);
     }
@@ -7222,7 +7224,7 @@ function onVertexAIServiceAccountJsonChange() {
             } else {
                 updateVertexAIServiceAccountStatus(false, t`Incomplete or invalid JSON`);
             }
-        } catch (error) {
+        } catch {
             updateVertexAIServiceAccountStatus(false, t`Invalid JSON format`);
         }
     } else {
