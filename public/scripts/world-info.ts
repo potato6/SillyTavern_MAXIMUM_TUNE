@@ -168,20 +168,20 @@ const KNOWN_DECORATORS = ['@@activate', '@@dont_activate'];
  * @typedef {object} WIActivated
  * @property {string} worldInfoBefore The world info before the chat.
  * @property {string} worldInfoAfter The world info after the chat.
- * @property {any[]} EMEntries The entries for examples.
- * @property {any[]} WIDepthEntries The depth entries.
- * @property {any[]} ANBeforeEntries The entries before Author's Note.
- * @property {any[]} ANAfterEntries The entries after Author's Note.
+ * @property {object[]} EMEntries The entries for examples.
+ * @property {object[]} WIDepthEntries The depth entries.
+ * @property {object[]} ANBeforeEntries The entries before Author's Note.
+ * @property {object[]} ANAfterEntries The entries after Author's Note.
  * @property {{[key: string]: string[]}} outletEntries - Array of entries to be added to an outlet
- * @property {Set<any>} allActivatedEntries All entries.
+ * @property {Set<object>} allActivatedEntries All entries.
  */
 
 /**
  * @typedef {object} WIEntryFieldDefinition
- * @property {any} default - Default value for the field
+ * @property {string|number|boolean|null} default - Default value for the field
  * @property {string} type - Type of the field, can be 'string', 'number', 'boolean', 'array', 'enum'
  * @property {boolean} [excludeFromTemplate=false] - Whether to exclude this field from the template
- * @property {(value: any) => boolean} [arrayFilter] - Optional filter function for array fields to filter out unwanted values
+ * @property {(value: unknown) => boolean} [arrayFilter] - Optional filter function for array fields to filter out unwanted values
  */
 // End typedef area
 
@@ -817,7 +817,7 @@ class WorldInfoTimedEffects {
 }
 
 /**
- *
+ * @returns {WorldInfoSettings} The current world info settings
  */
 export function getWorldInfoSettings() {
     return {
@@ -846,7 +846,7 @@ export function getWorldInfoSettings() {
 export function updateWorldInfoSettings(settings, activeWorldInfo) {
     console.debug('[WI] Updating world info settings', settings, activeWorldInfo);
 
-    /** @type {Record<keyof WorldInfoSettings, (value: any) => void>} */
+    /** @type {Record<keyof WorldInfoSettings, (value: unknown) => void>} */
     const fields = {
         world_info_depth: (value) => world_info_depth = Number(value),
         world_info_min_activations: (value) => world_info_min_activations = Number(value),
@@ -941,9 +941,9 @@ export async function getWorldInfoPrompt(chat, maxContext, isDryRun, globalScanD
 }
 
 /**
- *
- * @param settings
- * @param data
+ * @param {WorldInfoSettings} settings - Settings object
+ * @param {object} data - Data object
+ * @returns {void}
  */
 export function setWorldInfoSettings(settings, data) {
     if (settings.world_info_depth !== undefined)
@@ -1106,26 +1106,26 @@ export function reloadEditor(file, loadIfNotSelected = false) {
 
 //MARK: regWISlashCommands
 /**
- *
+ * @returns {void}
  */
 function registerWorldInfoSlashCommands() {
     /**
      * Gets a *rough* approximation of the current chat context.
      * Normally, it is provided externally by the prompt builder.
      * Don't use for anything critical!
-     * @returns {string[]}
+     * @returns {string[]} Array of chat messages
      */
     function getScanningChat() {
         return getContext().chat.filter(x => !x.is_system).map(x => x.mes);
     }
 
     /**
-     *
-     * @param file
-     * @param root0
-     * @param root0.args
-     * @param root0.unnamed
-     * @param root0.callbackName
+     * @param {string} file - World info file name
+     * @param {object} root0 - Options object
+     * @param {object} [root0.args] - Arguments
+     * @param {unknown} [root0.unnamed] - Unnamed argument
+     * @param {string} [root0.callbackName] - Callback name for logging
+     * @returns {Promise<string|object[]>} Entries from file or empty string
      */
     async function getEntriesFromFile(file, { args = {}, unnamed = null, callbackName = 'getEntriesFromFile' } = {}) {
         if (!file || !world_names.includes(file)) {
@@ -1258,9 +1258,9 @@ function registerWorldInfoSlashCommands() {
     }
 
     /**
-     *
-     * @param possibleName
-     * @param fallbackName
+     * @param {string} [possibleName] - Possible name for the world
+     * @param {string} [fallbackName] - Fallback name if possible name is not provided
+     * @returns {Promise<string>} The created world name
      */
     async function createWorldWithName(possibleName = undefined, fallbackName = undefined) {
         let newName = (() => {
@@ -1285,9 +1285,9 @@ function registerWorldInfoSlashCommands() {
     }
 
     /**
-     *
-     * @param args
-     * @param value
+     * @param {object} args - Arguments object containing file and field
+     * @param {string} value - Search value
+     * @returns {Promise<string>} The matching entry UID or empty string
      */
     async function findBookEntryCallback(args, value) {
         const file = args.file;
@@ -1334,9 +1334,9 @@ function registerWorldInfoSlashCommands() {
     }
 
     /**
-     *
-     * @param args
-     * @param uid
+     * @param {object} args - Arguments object containing file and field
+     * @param {string} uid - Entry UID
+     * @returns {Promise<string>} The entry field value or empty string
      */
     async function getEntryFieldCallback(args, uid) {
         const file = args.file;
@@ -1412,9 +1412,9 @@ function registerWorldInfoSlashCommands() {
     }
 
     /**
-     *
-     * @param args
-     * @param content
+     * @param {object} args - Arguments object containing file and key
+     * @param {string} [content] - Entry content
+     * @returns {Promise<string>} The created entry UID or empty string
      */
     async function createEntryCallback(args, content) {
         const file = args.file;
@@ -1452,9 +1452,9 @@ function registerWorldInfoSlashCommands() {
     }
 
     /**
-     *
-     * @param args
-     * @param value
+     * @param {object} args - Arguments object containing file, uid, and field
+     * @param {string} value - New field value
+     * @returns {Promise<string>} Empty string on success
      */
     async function setEntryFieldCallback(args, value) {
         const file = args.file;
@@ -1567,9 +1567,9 @@ function registerWorldInfoSlashCommands() {
     }
 
     /**
-     *
-     * @param args
-     * @param value
+     * @param {object} args - Arguments object containing file and effect
+     * @param {string} value - Entry UID
+     * @returns {Promise<string>} Timed effect data or empty string
      */
     async function getTimedEffectCallback(args, value) {
         if (!getCurrentChatId()) {
@@ -1619,9 +1619,9 @@ function registerWorldInfoSlashCommands() {
     }
 
     /**
-     *
-     * @param args
-     * @param value
+     * @param {object} args - Arguments object containing file, uid, and effect
+     * @param {string} value - New effect state
+     * @returns {Promise<string>} Empty string on success
      */
     async function setTimedEffectCallback(args, value) {
         if (!getCurrentChatId()) {
@@ -1705,14 +1705,18 @@ function registerWorldInfoSlashCommands() {
 
     /** A collection of local enum providers for this context of world info */
     const localEnumProviders = {
-        /** All possible fields that can be set in a WI entry */
+        /**
+         * All possible fields that can be set in a WI entry
+         * @returns {SlashCommandEnumValue[]} Array of enum values for WI entry fields
+         */
         wiEntryFields: () => Object.entries(newWorldInfoEntryDefinition).map(([key, value]) =>
             new SlashCommandEnumValue(key, `[${value.type}] default: ${(typeof value.default === 'string' ? `'${value.default}'` : JSON.stringify(value.default))}`,
                 enumTypes.enum, enumIcons.getDataTypeIcon(value.type))),
 
         /**
          * All existing UIDs based on the file argument as world name
-         * @param executor
+         * @param {import('./slash-commands/SlashCommandExecutor.js').SlashCommandExecutor} executor - The slash command executor
+         * @returns {SlashCommandEnumValue[]} Array of enum values for WI entry UIDs
          */
         wiUids: (/** @type {import('./slash-commands/SlashCommandExecutor.js').SlashCommandExecutor} */ executor) => {
             const file = executor.namedArgumentList.find(it => it.name == 'file')?.value;
@@ -1727,6 +1731,9 @@ function registerWorldInfoSlashCommands() {
                     enumTypes.enum, enumIcons.getWiStatusIcon(data)));
         },
 
+        /**
+         * @returns {SlashCommandEnumValue[]} Array of enum values for timed effects
+         */
         timedEffects: () => [
             new SlashCommandEnumValue('sticky', 'Stays active for N messages', enumTypes.enum, '📌'),
             new SlashCommandEnumValue('cooldown', 'Cooldown for N messages', enumTypes.enum, '⌛'),
@@ -1734,8 +1741,8 @@ function registerWorldInfoSlashCommands() {
     };
 
     /**
-     *
-     * @param entry
+     * @param {object} entry - WI entry object
+     * @returns {string} Position string representation
      */
     function getWiPositionString(entry) {
         switch (entry.position) {
@@ -1751,7 +1758,7 @@ function registerWorldInfoSlashCommands() {
     }
 
     /**
-     *
+     * @returns {Promise<string>} JSON string of selected global books
      */
     async function getGlobalBooksCallback() {
         if (!selected_world_info?.length) {
@@ -2241,15 +2248,15 @@ export async function updateWorldInfoList() {
 }
 
 /**
- *
+ * @returns {Promise<void>}
  */
 async function hideWorldEditor() {
     await displayWorldEntries(null, null);
 }
 
 /**
- *
- * @param name
+ * @param {string} name - World info name to find
+ * @returns {JQuery<HTMLElement>} The matching element
  */
 function getWIElement(name) {
     const wiElement = $(Array.from(document.getElementById('world_info').children).filter(function (child) {
@@ -2262,8 +2269,8 @@ function getWIElement(name) {
 /**
  * Adds missing fields to WI entries that are present in the entry template, but not in the data.
  * Additionally verify that array/object fields are of the expected type.
- * @param {any[]} data WI entries
- * @returns {any[]} Data with backfilled fields
+ * @param {object[]} data WI entries
+ * @returns {object[]} Data with backfilled fields
  */
 function addMissingWorldInfoFields(data) {
     data.forEach((entry) => {
@@ -2301,10 +2308,10 @@ function addMissingWorldInfoFields(data) {
 
 /**
  * Sorts the given data based on the selected sort option
- * @param {any[]} data WI entries
+ * @param {object[]} data WI entries
  * @param {object} [options] - Optional arguments
  * @param {{sortField?: string, sortOrder?: string, sortRule?: string}} [options.customSort] - Custom sort options, instead of the chosen UI sort
- * @returns {any[]} Sorted data
+ * @returns {object[]} Sorted data
  */
 export function sortWorldInfoEntries(data, { customSort = null } = {}) {
     const option = $(document.getElementById('world_info_sort_order').options[document.getElementById('world_info_sort_order').selectedIndex]);
@@ -2315,7 +2322,7 @@ export function sortWorldInfoEntries(data, { customSort = null } = {}) {
 
     if (!data.length) return data;
 
-    /** @type {(a: any, b: any) => number} */
+    /** @type {(a: object, b: object) => number} */
     let primarySort;
 
     // Secondary and tertiary it will always be sorted by Order descending, and last UID ascending
@@ -2412,8 +2419,8 @@ function updateWorldEntryKeyOptionsCache(keyOptions, { remove = false, reset = f
 }
 
 /**
- *
- * @param $list
+ * @param {JQuery<HTMLElement>} $list - The list element to clear
+ * @returns {void}
  */
 function clearEntryList($list) {
     console.time('clearEntryList');
@@ -2475,11 +2482,11 @@ function clearEntryList($list) {
 
 //MARK: displayWorldEntries
 /**
- *
- * @param name
- * @param data
- * @param navigation
- * @param flashOnNav
+ * @param {string|null} name - World info name
+ * @param {object|null} data - World info data
+ * @param {number} [navigation] - Navigation option
+ * @param {boolean} [flashOnNav] - Whether to flash highlight on navigation
+ * @returns {Promise<void>}
  */
 async function displayWorldEntries(name, data, navigation = navigation_option.none, flashOnNav = true) {
     updateEditor = async (navigation, flashOnNav = true) => await displayWorldEntries(name, data, navigation, flashOnNav);
@@ -2541,8 +2548,8 @@ async function displayWorldEntries(name, data, navigation = navigation_option.no
     verifyWorldInfoSearchSortRule();
 
     /**
-     *
-     * @param callback
+     * @param {(entries: object[]) => void} callback - Callback to process the entries array
+     * @returns {object[]} Array of entry objects
      */
     function getDataArray(callback) {
         // Convert the data.entries object into an array
@@ -2565,7 +2572,7 @@ async function displayWorldEntries(name, data, navigation = navigation_option.no
         updateWorldEntryKeyOptionsCache(keys, { reset: true });
 
         // Run the callback for printing this
-        typeof callback === 'function' && callback(entriesArray);
+        if (typeof callback === 'function') callback(entriesArray);
         return entriesArray;
     }
 
@@ -2887,7 +2894,7 @@ function verifyWorldInfoSearchSortRule() {
  * @param {object} data - The data object containing the original data entries.
  * @param {number} uid - The unique identifier of the data entry.
  * @param {string} key - The key of the value to be set.
- * @param {any} value - The value to be set.
+ * @param {unknown} value - The value to be set.
  */
 export function setWIOriginalDataValue(data, uid, key, value) {
     if (data.originalData && Array.isArray(data.originalData.entries)) {
@@ -3036,7 +3043,7 @@ export function parseRegexFromString(input) {
         return null; // Not a valid regex format
     }
 
-    let [, pattern, flags] = match;
+    const [, pattern, flags] = match;
 
     // If we find any unescaped slash delimiter, we also exit out.
     // JS doesn't care about delimiters inside regex patterns, but for this to be a valid regex outside of our implementation,
@@ -3051,7 +3058,7 @@ export function parseRegexFromString(input) {
     // Then we return the regex. If it fails, it was invalid syntax.
     try {
         return new RegExp(pattern, flags);
-    } catch (e) {
+    } catch {
         return null;
     }
 }
@@ -3065,6 +3072,7 @@ export function parseRegexFromString(input) {
  * @param {string} params.originalDataValueName - The name of the original data value to be set.
  * @param {string} params.name - The name of the world info entry.
  * @param {object} params.data - The data object containing entries.
+ * @returns {void}
  */
 function enableKeysInputHelper({ template, entry, entryPropName, originalDataValueName, name, data }) {
     // @ts-expect-error TS(2339): Property 'wi_key_input_plaintext' does not exist o... Remove this comment to see the full error message
@@ -3077,10 +3085,10 @@ function enableKeysInputHelper({ template, entry, entryPropName, originalDataVal
     });
 
     /**
-     *
-     * @param item
-     * @param root0
-     * @param root0.searchStyle
+     * @param {object} item - The select2 item object
+     * @param {object} root0 - Options object
+     * @param {boolean} [root0.searchStyle] - Whether to apply search style
+     * @returns {JQuery<HTMLElement>|Element} The styled element
      */
     function templateStyling(item, { searchStyle = false } = {}) {
         const content = document.createElement('span');
@@ -3218,7 +3226,7 @@ function handleMatchCheckboxHelper({ template, entry, fieldName, data, name }) {
         const value = $(this).prop('checked');
         data.entries[uid][fieldName] = value;
         setWIOriginalDataValue(data, uid, key, data.entries[uid][fieldName]);
-        !noSave && (await saveWorldInfo(name, data));
+        if (!noSave) await saveWorldInfo(name, data);
     });
     checkBoxElem.prop('checked', !!entry[fieldName]).trigger('input', { noSave: true });
 }
@@ -3349,7 +3357,7 @@ function handleProbabilityInputHelper({ probabilityInput, data, entry, name }) {
             }
         }
         setWIOriginalDataValue(data, uid, 'extensions.probability', data.entries[uid].probability);
-        !noSave && (await saveWorldInfo(name, data));
+        if (!noSave) await saveWorldInfo(name, data);
     });
     probabilityInput.val(entry.probability).trigger('input', { noSave: true });
     probabilityInput.css('width', 'calc(3em + 15px)');
@@ -3373,8 +3381,8 @@ function handleProbabilityToggleHelper({ probabilityToggle, data, entry, name, p
         const value = $(this).prop('checked');
         data.entries[uid].useProbability = value;
         const probabilityContainer = $(this.closest('.world_entry').querySelector('.probabilityContainer'));
-        !noSave && (await saveWorldInfo(name, data));
-        value ? probabilityContainer.show() : probabilityContainer.hide();
+        if (!noSave) await saveWorldInfo(name, data);
+        if (value) probabilityContainer.show(); else probabilityContainer.hide();
         if (value && data.entries[uid].probability === null) {
             data.entries[uid].probability = 100;
         }
@@ -3405,7 +3413,7 @@ function handleBooleanSelectHelper({ selectElem, entry, entryKey, data, name }) 
         const value = $(this).val();
         data.entries[uid][entryKey] = value === 'null' ? null : value === 'true';
         setWIOriginalDataValue(data, uid, `extensions.${entryKey.replace(/[A-Z]/g, m => `_${m.toLowerCase()}`)}`, data.entries[uid][entryKey]);
-        !noSave && (await saveWorldInfo(name, data));
+        if (!noSave) await saveWorldInfo(name, data);
     });
     selectElem.val((entry[entryKey] === null || entry[entryKey] === undefined) ? 'null' : entry[entryKey] ? 'true' : 'false').trigger('input', { noSave: true });
 }
@@ -3442,7 +3450,7 @@ function handleNumberInputHelper({ inputElem, entry, entryKey, data, name, min, 
         }
         data.entries[uid][entryKey] = !isNaN(value) ? value : null;
         setWIOriginalDataValue(data, uid, `extensions.${entryKey.replace(/[A-Z]/g, m => `_${m.toLowerCase()}`)}`, data.entries[uid][entryKey]);
-        !noSave && (await saveWorldInfo(name, data));
+        if (!noSave) await saveWorldInfo(name, data);
     });
     inputElem.val(entry[entryKey] ?? (clamp ? min : '')).trigger('input', { noSave: true });
 }
@@ -3484,7 +3492,7 @@ function handleEntryStateSelectorHelper({ entryStateSelector, entry, data, name 
                 setWIOriginalDataValue(data, uid, 'extensions.vectorized', true);
                 break;
         }
-        !noSave && (await saveWorldInfo(name, data));
+        if (!noSave) await saveWorldInfo(name, data);
     });
     const entryState = () => entry.constant === true ? 'constant' : entry.vectorized === true ? 'vectorized' : 'normal';
     entryStateSelector.find(`option[value=${entryState()}]`).prop('selected', true).trigger('input', { noSave: true });
@@ -3533,6 +3541,7 @@ function setCommentPlaceholder(keys, commentInput) {
  * @param {string} name - The name of the world info file.
  * @param {object} data - The world info data object.
  * @param {object} entry - The entry object to be edited.
+ * @returns {Promise<JQuery<HTMLElement>>} The entry header template element
  */
 export async function getWorldEntry(name, data, entry) {
     if (!data.entries[entry.uid]) return;
@@ -3557,10 +3566,10 @@ export async function getWorldEntry(name, data, entry) {
         const uid = $(this).data('uid');
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const value = $(this).val();
-        !skipReset && (await resetScrollHeight(this));
+        if (!skipReset) await resetScrollHeight(this);
         data.entries[uid].comment = value;
         setWIOriginalDataValue(data, uid, 'comment', data.entries[uid].comment);
-        !noSave && (await saveWorldInfo(name, data));
+        if (!noSave) await saveWorldInfo(name, data);
     });
     commentInput.val(entry.comment).trigger('input', { skipReset: true, noSave: true });
 
@@ -3575,7 +3584,7 @@ export async function getWorldEntry(name, data, entry) {
         data.entries[uid].order = !isNaN(value) ? value : 0;
         updatePosOrdDisplayHelper({ template: headerTemplate, data, uid });
         setWIOriginalDataValue(data, uid, 'insertion_order', data.entries[uid].order);
-        !noSave && (await saveWorldInfo(name, data));
+        if (!noSave) await saveWorldInfo(name, data);
     });
     orderInput.val(entry.order).trigger('input', { noSave: true });
     orderInput.css('width', 'calc(3em + 15px)');
@@ -3617,7 +3626,7 @@ export async function getWorldEntry(name, data, entry) {
         setWIOriginalDataValue(data, uid, 'position', data.entries[uid].position == 0 ? 'before_char' : 'after_char');
         setWIOriginalDataValue(data, uid, 'extensions.position', data.entries[uid].position);
         setWIOriginalDataValue(data, uid, 'extensions.role', data.entries[uid].role);
-        !noSave && (await saveWorldInfo(name, data));
+        if (!noSave) await saveWorldInfo(name, data);
     });
     const roleValue = entry.position === world_info_position.atDepth ? String(entry.role ?? extension_prompt_roles.SYSTEM) : '';
     headerTemplate.find(`select[name="position"] option[value="${entry.position}"][data-role="${roleValue}"]`).prop('selected', true).trigger('input', { noSave: true });
@@ -3791,8 +3800,8 @@ export async function getWorldEntry(name, data, entry) {
             // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const commentContainer = $(this.closest('.world_entry').querySelector('.commentContainer'));
             data.entries[uid].addMemo = value;
-            !noSave && (await saveWorldInfo(name, data));
-            value ? commentContainer.show() : commentContainer.hide();
+            if (!noSave) await saveWorldInfo(name, data);
+            if (value) commentContainer.show(); else commentContainer.hide();
         });
         commentToggle.prop('checked', true).trigger('input', { noSave: true });
         $(commentToggle[0].parentElement).hide();
@@ -3808,7 +3817,7 @@ export async function getWorldEntry(name, data, entry) {
             const value = Number($(this).val());
             data.entries[uid].selectiveLogic = !isNaN(value) ? value : world_info_logic.AND_ANY;
             setWIOriginalDataValue(data, uid, 'selectiveLogic', data.entries[uid].selectiveLogic);
-            !noSave && (await saveWorldInfo(name, data));
+            if (!noSave) await saveWorldInfo(name, data);
         });
         editTemplate.find(`select[name="entryLogicType"] option[value=${entry.selectiveLogic}]`).prop('selected', true).trigger('input', { noSave: true });
 
@@ -3822,14 +3831,14 @@ export async function getWorldEntry(name, data, entry) {
             const value = $(this).prop('checked');
             data.entries[uid].selective = value;
             setWIOriginalDataValue(data, uid, 'selective', data.entries[uid].selective);
-            !noSave && (await saveWorldInfo(name, data));
+            if (!noSave) await saveWorldInfo(name, data);
             // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const keysecondary = $(this.closest('.world_entry').querySelector('.keysecondary'));
             const keysecondarytextpole = $(this.closest('.world_entry').querySelector('.keysecondarytextpole'));
             const keyprimaryselect = $(this.closest('.world_entry').querySelector('.keyprimaryselect'));
             const keyprimaryHeight = keyprimaryselect.outerHeight();
             keysecondarytextpole.css('height', keyprimaryHeight + 'px');
-            value ? keysecondary.show() : keysecondary.hide();
+            if (value) keysecondary.show(); else keysecondary.hide();
         });
         selectiveInput.prop('checked', true).trigger('input', { noSave: true });
         $(selectiveInput[0].parentElement).hide();
@@ -3862,7 +3871,7 @@ export async function getWorldEntry(name, data, entry) {
                 }
             }
             setWIOriginalDataValue(data, uid, 'character_filter', data.entries[uid].characterFilter);
-            !noSave && (await saveWorldInfo(name, data));
+            if (!noSave) await saveWorldInfo(name, data);
         });
         characterExclusionInput.prop('checked', entry.characterFilter?.isExclude ?? false).trigger('input', { noSave: true });
 
@@ -3887,14 +3896,14 @@ export async function getWorldEntry(name, data, entry) {
         contentInput.on('input', async function (_, {
             skipCount,
             noSave
-        }: any = {}) {
+        }: { skipCount?: boolean; noSave?: boolean } = {}) {
             // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const uid = $(this).data('uid');
             // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const value = $(this).val();
             data.entries[uid].content = value;
             setWIOriginalDataValue(data, uid, 'content', data.entries[uid].content);
-            !noSave && (await saveWorldInfo(name, data));
+            if (!noSave) await saveWorldInfo(name, data);
             if (!skipCount) countTokensDebounced(counter, value);
         });
         contentInput.val(entry.content).trigger('input', { skipCount: true, noSave: true });
@@ -3910,7 +3919,7 @@ export async function getWorldEntry(name, data, entry) {
             const value = $(this).val();
             data.entries[uid].outletName = value;
             setWIOriginalDataValue(data, uid, 'extensions.outlet_name', data.entries[uid].outletName);
-            !noSave && (await saveWorldInfo(name, data));
+            if (!noSave) await saveWorldInfo(name, data);
         });
         outletNameInput.val(entry.outletName ?? '').trigger('input', { noSave: true });
         setTimeout(() => createEntryInputAutocomplete(outletNameInput, getOutletNameCallback(data), { allowMultiple: true }), 1);
@@ -3941,7 +3950,7 @@ export async function getWorldEntry(name, data, entry) {
             }
             data.entries[uid].scanDepth = !isEmpty && !isNaN(value) && value >= 0 && value <= MAX_SCAN_DEPTH ? Math.floor(value) : null;
             setWIOriginalDataValue(data, uid, 'extensions.scan_depth', data.entries[uid].scanDepth);
-            !noSave && (await saveWorldInfo(name, data));
+            if (!noSave) await saveWorldInfo(name, data);
         });
         scanDepthInput.val(entry.scanDepth ?? null).trigger('input', { noSave: true });
 
@@ -3955,7 +3964,7 @@ export async function getWorldEntry(name, data, entry) {
             const value = String($(this).val()).trim();
             data.entries[uid].group = value;
             setWIOriginalDataValue(data, uid, 'extensions.group', data.entries[uid].group);
-            !noSave && (await saveWorldInfo(name, data));
+            if (!noSave) await saveWorldInfo(name, data);
         });
         groupInput.val(entry.group ?? '').trigger('input', { noSave: true });
         setTimeout(() => createEntryInputAutocomplete(groupInput, getInclusionGroupCallback(data), { allowMultiple: true }), 1);
@@ -3970,7 +3979,7 @@ export async function getWorldEntry(name, data, entry) {
             const value = $(this).prop('checked');
             data.entries[uid].groupOverride = value;
             setWIOriginalDataValue(data, uid, 'extensions.group_override', data.entries[uid].groupOverride);
-            !noSave && (await saveWorldInfo(name, data));
+            if (!noSave) await saveWorldInfo(name, data);
         });
         groupOverrideInput.prop('checked', entry.groupOverride).trigger('input', { noSave: true });
 
@@ -4012,7 +4021,7 @@ export async function getWorldEntry(name, data, entry) {
             if (!toggled) delayUntilRecursionLevelInput.val('');
             data.entries[uid].delayUntilRecursion = value;
             setWIOriginalDataValue(data, uid, 'extensions.delay_until_recursion', data.entries[uid].delayUntilRecursion);
-            !noSave && (await saveWorldInfo(name, data));
+            if (!noSave) await saveWorldInfo(name, data);
         });
         delayUntilRecursionInput.prop('checked', entry.delayUntilRecursion).trigger('input', { noSave: true });
         delayUntilRecursionLevelInput.on('input', async function (_, { noSave = false } = {}) {
@@ -4026,7 +4035,7 @@ export async function getWorldEntry(name, data, entry) {
                         : false;
             data.entries[uid].delayUntilRecursion = value;
             setWIOriginalDataValue(data, uid, 'extensions.delay_until_recursion', data.entries[uid].delayUntilRecursion);
-            !noSave && (await saveWorldInfo(name, data));
+            if (!noSave) await saveWorldInfo(name, data);
         });
         delayUntilRecursionLevelInput.val(['number', 'string'].includes(typeof entry.delayUntilRecursion) ? entry.delayUntilRecursion : '').trigger('input', { noSave: true });
 
@@ -4053,7 +4062,7 @@ export async function getWorldEntry(name, data, entry) {
             const value = $(this).val();
             data.entries[uid].automationId = value;
             setWIOriginalDataValue(data, uid, 'extensions.automation_id', data.entries[uid].automationId);
-            !noSave && (await saveWorldInfo(name, data));
+            if (!noSave) await saveWorldInfo(name, data);
         });
         automationIdInput.val(entry.automationId ?? '').trigger('input', { noSave: true });
         setTimeout(() => createEntryInputAutocomplete(automationIdInput, getAutomationIdCallback(data)), 1);
@@ -4068,7 +4077,7 @@ export async function getWorldEntry(name, data, entry) {
             const value = $(this).val();
             data.entries[uid].triggers = Array.isArray(value) ? value : [];
             setWIOriginalDataValue(data, uid, 'extensions.triggers', data.entries[uid].triggers);
-            !noSave && (await saveWorldInfo(name, data));
+            if (!noSave) await saveWorldInfo(name, data);
         });
         if (!isMobile()) {
             generationTypeTriggers.select2({
@@ -4093,7 +4102,7 @@ export async function getWorldEntry(name, data, entry) {
             const value = $(this).prop('checked');
             data.entries[uid].ignoreBudget = value;
             setWIOriginalDataValue(data, uid, 'extensions.ignore_budget', data.entries[uid].ignoreBudget);
-            !noSave && (await saveWorldInfo(name, data));
+            if (!noSave) await saveWorldInfo(name, data);
         });
         ignoreBudgetInput.prop('checked', entry.ignoreBudget ?? false).trigger('input', { noSave: true });
 
@@ -4112,17 +4121,18 @@ export async function getWorldEntry(name, data, entry) {
 /**
  * Builds a jQuery UI autocomplete callback: (control, request, response) => void
  * @param {object} [opt] - Optional arguments
- * @param {{entries: Record<string, any>}} [opt.data]   - Your WI data
- * @param {(entry:any)=>string|string[]|null|undefined} [opt.collectValues] - Extract values from one entry
+ * @param {{entries: Record<string, unknown>}} [opt.data]   - Your WI data
+ * @param {(entry:unknown)=>string|string[]|null|undefined} [opt.collectValues] - Extract values from one entry
  * @param {() => Iterable<string>} [opt.includeExtras] - Optional global extras to include
- * @param {(ctx:{result:string[], control:JQuery, input:any, haystack:string[]})=>string[]} [opt.postFilter] - Optional final filter step (for special rules like your "group" de-dupe logic)
+ * @param {(ctx:{result:string[], control:JQuery, input:unknown, haystack:string[]})=>string[]} [opt.postFilter] - Optional final filter step (for special rules like your "group" de-dupe logic)
+ * @returns {(control: JQuery<HTMLElement>, input: {term: string}, output: (data: string[]) => void) => void} Autocomplete callback
  */
 function buildAutocompleteCallback({
     data,
     collectValues,
     includeExtras = () => [],
     postFilter
-}: any = {}) {
+}: { data?: { entries: Record<string, unknown> }; collectValues?: (entry: unknown) => string | string[] | null | undefined; includeExtras?: () => Iterable<string>; postFilter?: (ctx: { result: string[]; control: JQuery<HTMLElement>; input: unknown; haystack: string[] }) => string[] } = {}) {
     return function (control, input, output) {
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const uid = $(control).data('uid');
@@ -4175,8 +4185,8 @@ const splitCsv = s => String(s ?? '').split(/,\s*/).filter(Boolean);
 
 /**
  * Get the inclusion groups for the autocomplete.
- * @param {any} data WI data
- * @returns {(input: any, output: any) => any} Callback function for the autocomplete
+ * @param {object} data WI data
+ * @returns {(input: {term: string}, output: (data: string[]) => void) => void} Callback function for the autocomplete
  */
 function getInclusionGroupCallback(data) {
     return buildAutocompleteCallback({
@@ -4199,8 +4209,8 @@ function getInclusionGroupCallback(data) {
 }
 
 /**
- *
- * @param data
+ * @param {object} data - WI data
+ * @returns {(input: {term: string}, output: (data: string[]) => void) => void} Autocomplete callback
  */
 function getAutomationIdCallback(data) {
     return buildAutocompleteCallback({
@@ -4214,8 +4224,8 @@ function getAutomationIdCallback(data) {
 }
 
 /**
- *
- * @param data
+ * @param {object} data - WI data
+ * @returns {(input: {term: string}, output: (data: string[]) => void) => void} Autocomplete callback
  */
 function getOutletNameCallback(data) {
     return buildAutocompleteCallback({
@@ -4227,7 +4237,7 @@ function getOutletNameCallback(data) {
 /**
  * Create an autocomplete for an input element.
  * @param {JQuery<HTMLElement>} input - Input element to attach the autocomplete to
- * @param {(control: JQuery<HTMLElement>, input: any, output: any) => any} callback - Source data callbacks
+ * @param {(control: JQuery<HTMLElement>, input: {term: string}, output: (data: string[]) => void) => void} callback - Source data callbacks
  * @param {object} [options] - Optional arguments
  * @param {boolean} [options.allowMultiple] - Whether to allow multiple comma-separated values
  */
@@ -4273,9 +4283,9 @@ function createEntryInputAutocomplete(input, callback, { allowMultiple = false }
 
 /**
  * Duplicate a WI entry by copying all of its properties and assigning a new uid
- * @param {*} data - The data of the book
+ * @param {object} data - The data of the book
  * @param {number} uid - The uid of the entry to copy in this book
- * @returns {*} The new WI duplicated entry
+ * @returns {object|undefined} The new WI duplicated entry
  */
 export function duplicateWorldInfoEntry(data, uid) {
     if (!data || !('entries' in data) || !data.entries[uid]) {
@@ -4296,7 +4306,7 @@ export function duplicateWorldInfoEntry(data, uid) {
 
 /**
  * Deletes a WI entry, with a user confirmation dialog
- * @param {*[]} data - The data of the book
+ * @param {object} data - The data of the book
  * @param {number} uid - The uid of the entry to copy in this book
  * @param {object} [options] - Optional arguments
  * @param {boolean} [options.silent] - Whether to prompt the user for deletion or just do it
@@ -4394,7 +4404,7 @@ export const newWorldInfoEntryTemplate = Object.fromEntries(
 /**
  * Creates a new world info entry from template.
  * @param {string} _name Name of the WI (unused)
- * @param {any} data WI data
+ * @param {object} data WI data
  * @returns {object | undefined} New entry object or undefined if failed
  */
 export function createWorldInfoEntry(_name, data) {
@@ -4413,9 +4423,9 @@ export function createWorldInfoEntry(_name, data) {
 }
 
 /**
- *
- * @param name
- * @param data
+ * @param {string} name - World info name
+ * @param {object} data - World info data to save
+ * @returns {Promise<void>}
  */
 async function _save(name, data) {
     // Prevent double saving if both immediate and debounced save are called
@@ -4438,7 +4448,7 @@ async function _save(name, data) {
  * It is your responsibility to not modify the saved data object after calling this function, or there will be data inconsistencies.
  * Call `loadWorldInfoData` or query directly from cache if you need the object again.
  * @param {string} name - The name of the world info
- * @param {any} data - The data to be saved
+ * @param {object} data - The data to be saved
  * @param {boolean} [immediately] - Whether to save immediately or use debouncing
  * @returns {Promise<void>} A promise that resolves when the world info is saved
  */
@@ -4458,9 +4468,9 @@ export async function saveWorldInfo(name, data, immediately = false) {
 }
 
 /**
- *
- * @param name
- * @param data
+ * @param {string} name - Current world info name
+ * @param {object} data - World info data
+ * @returns {Promise<void>}
  */
 async function renameWorldInfo(name, data) {
     const oldName = name;
@@ -4642,8 +4652,8 @@ export async function deleteWorldInfo(worldInfoName) {
 }
 
 /**
- *
- * @param data
+ * @param {object} data - World info data containing entries
+ * @returns {number|null} A free UID or null if none available
  */
 export function getFreeWorldEntryUid(data) {
     if (!data || !('entries' in data)) {
@@ -4725,7 +4735,7 @@ export async function createNewWorldInfo(worldName, { interactive = false } = {}
 }
 
 /**
- *
+ * @returns {Promise<object[]>} Array of character lore entries
  */
 async function getCharacterLore() {
     const character = characters[this_chid];
@@ -4781,7 +4791,7 @@ async function getCharacterLore() {
 }
 
 /**
- *
+ * @returns {Promise<object[]>} Array of global lore entries
  */
 async function getGlobalLore() {
     if (!selected_world_info?.length) {
@@ -4801,7 +4811,7 @@ async function getGlobalLore() {
 }
 
 /**
- *
+ * @returns {Promise<object[]>} Array of chat lore entries
  */
 async function getChatLore() {
     const chatWorld = chat_metadata[METADATA_KEY];
@@ -4824,7 +4834,7 @@ async function getChatLore() {
 }
 
 /**
- *
+ * @returns {Promise<object[]>} Array of persona lore entries
  */
 async function getPersonaLore() {
     const chatWorld = chat_metadata[METADATA_KEY];
@@ -4853,7 +4863,7 @@ async function getPersonaLore() {
 }
 
 /**
- *
+ * @returns {Promise<object[]>} Sorted array of all lore entries
  */
 export async function getSortedEntries() {
     try {
@@ -5055,8 +5065,8 @@ export async function checkWorldInfo(chat, maxContext, isDryRun, globalScanData 
             // Logging preparation
             let headerLogged = false;
             /**
-             *
-             * @param {...any} args
+             * @param {...unknown} args - Arguments to log
+             * @returns {void}
              */
             function log(...args) {
                 if (!headerLogged) {
@@ -5278,7 +5288,7 @@ export async function checkWorldInfo(chat, maxContext, isDryRun, globalScanData 
         filterByInclusionGroups(newEntries, allActivatedEntries, buffer, scanState, timedEffects);
 
         console.debug('[WI] --- PROBABILITY CHECKS ---');
-        !newEntries.length && console.debug('[WI] No probability checks to do');
+        if (!newEntries.length) console.debug('[WI] No probability checks to do');
 
         // @ts-expect-error TS(2339): Property 'ignoreBudget' does not exist on type 'un... Remove this comment to see the full error message
         let ignoresBudget = newEntries.filter(e => e.ignoreBudget).length;
@@ -5295,7 +5305,7 @@ export async function checkWorldInfo(chat, maxContext, isDryRun, globalScanData 
             }
 
             /**
-             *
+             * @returns {boolean} Whether the probability check passes
              */
             function verifyProbability() {
                 // If we don't need to roll, it's always true
@@ -5374,11 +5384,11 @@ export async function checkWorldInfo(chat, maxContext, isDryRun, globalScanData 
         }
 
         /**
-         *
-         * @param {...any} args
+         * @param {...unknown} args - Arguments to log
+         * @returns {void}
          */
         function logNextState(...args) {
-            args.length && console.debug(args.shift(), ...args);
+            if (args.length) console.debug(args.shift(), ...args);
             console.debug('[WI] Setting scan state', Object.entries(scan_state).find(x => x[1] === scanState));
         }
 
@@ -5704,10 +5714,10 @@ function filterByInclusionGroups(newEntries, allActivatedEntries, buffer, scanSt
 
     const removeEntry = (entry) => newEntries.splice(newEntries.indexOf(entry), 1);
     /**
-     *
-     * @param group
-     * @param chosen
-     * @param logging
+     * @param {object[]} group - Array of entries in the group
+     * @param {object} chosen - The chosen entry to keep
+     * @param {boolean} [logging] - Whether to log removed entries
+     * @returns {void}
      */
     function removeAllBut(group, chosen, logging = true) {
         for (const entry of group) {
@@ -5782,8 +5792,8 @@ function filterByInclusionGroups(newEntries, allActivatedEntries, buffer, scanSt
 }
 
 /**
- *
- * @param inputObj
+ * @param {object} inputObj - Agnai memory book data
+ * @returns {{entries: Record<string, object>}} Converted WI entries
  */
 function convertAgnaiMemoryBook(inputObj) {
     const outputObj = { entries: {} };
@@ -5831,8 +5841,8 @@ function convertAgnaiMemoryBook(inputObj) {
 }
 
 /**
- *
- * @param inputObj
+ * @param {object} inputObj - Risu lorebook data
+ * @returns {{entries: Record<string, object>}} Converted WI entries
  */
 function convertRisuLorebook(inputObj) {
     const outputObj = { entries: {} };
@@ -5880,8 +5890,8 @@ function convertRisuLorebook(inputObj) {
 }
 
 /**
- *
- * @param inputObj
+ * @param {object} inputObj - Novel lorebook data
+ * @returns {{entries: Record<string, object>}} Converted WI entries
  */
 function convertNovelLorebook(inputObj) {
     const outputObj = {
@@ -5934,8 +5944,8 @@ function convertNovelLorebook(inputObj) {
 }
 
 /**
- *
- * @param characterBook
+ * @param {object} characterBook - Character book data
+ * @returns {{entries: Record<string, object>, originalData: object}} Converted WI data
  */
 export function convertCharacterBook(characterBook) {
     const result = { entries: {}, originalData: characterBook };
@@ -5997,9 +6007,9 @@ export function convertCharacterBook(characterBook) {
 }
 
 /**
- *
- * @param chid
- * @param forceValue
+ * @param {number} [chid] - Character ID
+ * @param {boolean} [forceValue] - Force a specific state
+ * @returns {void}
  */
 export function setWorldInfoButtonClass(chid, forceValue = undefined) {
     if (forceValue !== undefined) {
@@ -6017,8 +6027,8 @@ export function setWorldInfoButtonClass(chid, forceValue = undefined) {
 }
 
 /**
- *
- * @param chid
+ * @param {number|undefined} chid - Character ID
+ * @returns {boolean} Whether the character has an embedded world
  */
 export function checkEmbeddedWorld(chid) {
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
@@ -6064,8 +6074,8 @@ export function checkEmbeddedWorld(chid) {
 }
 
 /**
- *
- * @param skipPopup
+ * @param {boolean} [skipPopup] - Whether to skip the confirmation popup
+ * @returns {Promise<void>}
  */
 export async function importEmbeddedWorldInfo(skipPopup = false) {
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
@@ -6114,9 +6124,9 @@ export async function importEmbeddedWorldInfo(skipPopup = false) {
 }
 
 /**
- *
- * @param args
- * @param text
+ * @param {object|string} args - Arguments object or '__notSlashCommand__' string
+ * @param {string} [text] - World info names to toggle
+ * @returns {string} Empty string
  */
 export function onWorldInfoChange(args, text) {
     if (args !== '__notSlashCommand__') { // if it's a slash command
@@ -6206,6 +6216,7 @@ export function onWorldInfoChange(args, text) {
 /**
  * Imports world info from a file.
  * @param {File} file File to import
+ * @returns {Promise<void>}
  */
 // @ts-expect-error TS(7030): Not all code paths return a value.
 export async function importWorldInfo(file) {
@@ -6537,9 +6548,9 @@ export function charSetAuxWorlds(fileName, books) {
 }
 
 /**
- *
- * @param fileName
- * @param computeNext
+ * @param {string} fileName - Character filename
+ * @param {(books: string[]) => string[]} computeNext - Function to compute the next list of books
+ * @returns {void}
  */
 function updateAuxBooks(fileName, computeNext) {
     if (!fileName) return;
