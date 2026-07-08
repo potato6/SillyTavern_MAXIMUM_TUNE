@@ -268,17 +268,17 @@ export const ReasoningState = {
  * This class is used inside the {@link StreamingProcessor} to manage reasoning states and UI updates.
  */
 export class ReasoningHandler {
-    endTime: any;
-    initialTime: any;
-    messageDom: any;
-    messageReasoningContentDom: any;
-    messageReasoningDetailsDom: any;
-    messageReasoningHeaderDom: any;
-    reasoning: any;
-    reasoningDisplayText: any;
-    startTime: any;
-    state: any;
-    type: any;
+    endTime: Date | null;
+    initialTime: Date;
+    messageDom: JQuery<HTMLElement> | null;
+    messageReasoningContentDom: JQuery<HTMLElement> | null;
+    messageReasoningDetailsDom: JQuery<HTMLElement> | null;
+    messageReasoningHeaderDom: JQuery<HTMLElement> | null;
+    reasoning: string;
+    reasoningDisplayText: string | null;
+    startTime: Date | null;
+    state: number;
+    type: string | null;
     /** @type {boolean} True if the model supports reasoning, but hides the reasoning output */
     #isHiddenReasoningModel;
     /** @type {boolean} True if the handler is currently handling a manual parse of reasoning blocks */
@@ -673,12 +673,12 @@ export class PromptReasoning {
      */
     static REASONING_PLACEHOLDER = '\u200B';
 
-    counter: any;
-    prefixDuration: any;
-    prefixIncomplete: any;
-    prefixLength: any;
-    prefixReasoning: any;
-    prefixReasoningFormatted: any;
+    counter: number;
+    prefixDuration: number | null;
+    prefixIncomplete: boolean;
+    prefixLength: number;
+    prefixReasoning: string;
+    prefixReasoningFormatted: string;
 
     /**
      * Returns the latest formatted reasoning prefix if the prefix is incomplete.
@@ -904,7 +904,7 @@ function selectReasoningTemplateCallback(args, name) {
 
         if (result.length === 0) {
             // @ts-expect-error TS(2304): Cannot find name 'toastr'.
-            !quiet && toastr.warning(`Reasoning template "${name}" not found`);
+            if (!quiet) toastr.warning(`Reasoning template "${name}" not found`);
             return '';
         }
 
@@ -913,7 +913,7 @@ function selectReasoningTemplateCallback(args, name) {
 
     UI.$select.val(foundName).trigger('change');
     // @ts-expect-error TS(2304): Cannot find name 'toastr'.
-    !quiet && toastr.success(`Reasoning template "${foundName}" selected`);
+    if (!quiet) toastr.success(`Reasoning template "${foundName}" selected`);
     return foundName;
 }
 
