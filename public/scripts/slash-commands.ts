@@ -94,6 +94,7 @@ import { SlashCommandExecutionError } from './slash-commands/SlashCommandExecuti
 import { slashCommandReturnHelper } from './slash-commands/SlashCommandReturnHelper.js';
 import { accountStorage } from './util/AccountStorage.js';
 // @ts-expect-error TS(6133): 'SlashCommandDebugController' is declared but its ... Remove this comment to see the full error message
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { SlashCommandDebugController } from './slash-commands/SlashCommandDebugController.js';
 // @ts-expect-error TS(6133): 'SlashCommandScope' is declared but its value is n... Remove this comment to see the full error message
 import { SlashCommandScope } from './slash-commands/SlashCommandScope.js';
@@ -574,7 +575,7 @@ export function initDefaultSlashCommands() {
 
             if (result.length === 0) {
                 // @ts-expect-error TS(2304): Cannot find name 'toastr'.
-                !quiet && toastr.warning(t`Instruct template '${name}' not found`);
+                if (!quiet) toastr.warning(t`Instruct template '${name}' not found`);
                 return '';
             }
 
@@ -648,7 +649,11 @@ export function initDefaultSlashCommands() {
             }
 
             const newState = isTrueBoolean(state);
-            newState ? enableInstructCallback() : disableInstructCallback();
+            if (newState) {
+                enableInstructCallback();
+            } else {
+                disableInstructCallback();
+            }
             return String(power_user.instruct.enabled);
         },
     }));
@@ -666,7 +671,7 @@ export function initDefaultSlashCommands() {
 
             if (result.length === 0) {
                 // @ts-expect-error TS(2304): Cannot find name 'toastr'.
-                !quiet && toastr.warning(t`Context template '${name}' not found`);
+                if (!quiet) toastr.warning(t`Context template '${name}' not found`);
                 return '';
             }
 
@@ -4163,8 +4168,7 @@ async function buttonsCallback(args, text) {
             const safeValue = DOMPurify.sanitize(text || '');
 
             /** @type {Popup} */
-            let popup;
-
+            const popup = new Popup(popupContainer, POPUP_TYPE.TEXT, '', { okButton: multiple ? t`Ok` : t`Cancel`, allowVerticalScrolling: true });
             const buttonContainer = document.createElement('div');
             buttonContainer.classList.add('flex-container', 'flexFlowColumn', 'wide100p');
 
@@ -4227,7 +4231,6 @@ async function buttonsCallback(args, text) {
             popupContainer.style.flexDirection = 'column';
             popupContainer.style.maxHeight = '80vh'; // Limit the overall height of the popup
 
-            popup = new Popup(popupContainer, POPUP_TYPE.TEXT, '', { okButton: multiple ? t`Ok` : t`Cancel`, allowVerticalScrolling: true });
             popup.show()
                 .then((result => resolve(getResult(result))))
                 .catch(() => resolve(''));
@@ -6721,7 +6724,7 @@ function getModelOptions(quiet) {
 
     if (!modelSelectItem) {
         // @ts-expect-error TS(2304): Cannot find name 'toastr'.
-        !quiet && toastr.info(t`Setting a model for your API is not supported or not implemented yet.`);
+        if (!quiet) toastr.info(t`Setting a model for your API is not supported or not implemented yet.`);
         return nullResult;
     }
 
@@ -6729,7 +6732,7 @@ function getModelOptions(quiet) {
 
     if (!(modelSelectControl instanceof HTMLSelectElement) && !(modelSelectControl instanceof HTMLInputElement)) {
         // @ts-expect-error TS(2304): Cannot find name 'toastr'.
-        !quiet && toastr.error(t`Model select control not found: ${main_api}[${apiSubType}]`);
+        if (!quiet) toastr.error(t`Model select control not found: ${main_api}[${apiSubType}]`);
         return nullResult;
     }
 
@@ -6784,13 +6787,13 @@ function modelCallback(args, model) {
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(modelSelectControl).trigger('input');
         // @ts-expect-error TS(2304): Cannot find name 'toastr'.
-        !quiet && toastr.success(t`Model set to "${model}"`);
+        if (!quiet) toastr.success(t`Model set to "${model}"`);
         return model;
     }
 
     if (!options.length) {
         // @ts-expect-error TS(2304): Cannot find name 'toastr'.
-        !quiet && toastr.warning(t`No model options found. Check your API settings.`);
+        if (!quiet) toastr.warning(t`No model options found. Check your API settings.`);
         return '';
     }
 
@@ -6815,11 +6818,11 @@ function modelCallback(args, model) {
         // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(modelSelectControl).trigger('change');
         // @ts-expect-error TS(2304): Cannot find name 'toastr'.
-        !quiet && toastr.success(t`Model set to "${newSelectedOption.text}"`);
+        if (!quiet) toastr.success(t`Model set to "${newSelectedOption.text}"`);
         return newSelectedOption.value;
     } else {
         // @ts-expect-error TS(2304): Cannot find name 'toastr'.
-        !quiet && toastr.warning(t`No model found with name "${model}"`);
+        if (!quiet) toastr.warning(t`No model found with name "${model}"`);
         return '';
     }
 }
@@ -7032,7 +7035,7 @@ async function setApiUrlCallback({ api = null, connect = 'true', quiet = 'false'
         const permittedValues = Object.values(ZAI_ENDPOINT);
         if (!permittedValues.includes(url)) {
             // @ts-expect-error TS(2304): Cannot find name 'toastr'.
-            !isQuiet && toastr.warning(t`Valid options are: ${permittedValues.join(', ')}`, t`ZAI endpoint '${url}' is not a valid option.`);
+            if (!isQuiet) toastr.warning(t`Valid options are: ${permittedValues.join(', ')}`, t`ZAI endpoint '${url}' is not a valid option.`);
             return '';
         }
 
@@ -7062,7 +7065,7 @@ async function setApiUrlCallback({ api = null, connect = 'true', quiet = 'false'
         const permittedValues = Object.values(SILICONFLOW_ENDPOINT);
         if (!permittedValues.includes(url)) {
             // @ts-expect-error TS(2304): Cannot find name 'toastr'.
-            !isQuiet && toastr.warning(t`Valid options are: ${permittedValues.join(', ')}`, t`SiliconFlow endpoint '${url}' is not a valid option.`);
+            if (!isQuiet) toastr.warning(t`Valid options are: ${permittedValues.join(', ')}`, t`SiliconFlow endpoint '${url}' is not a valid option.`);
             return '';
         }
 
@@ -7092,7 +7095,7 @@ async function setApiUrlCallback({ api = null, connect = 'true', quiet = 'false'
         const permittedValues = Object.values(MINIMAX_ENDPOINT);
         if (!permittedValues.includes(url)) {
             // @ts-expect-error TS(2304): Cannot find name 'toastr'.
-            !isQuiet && toastr.warning(t`Valid options are: ${permittedValues.join(', ')}`, t`MiniMax endpoint '${url}' is not a valid option.`);
+            if (!isQuiet) toastr.warning(t`Valid options are: ${permittedValues.join(', ')}`, t`MiniMax endpoint '${url}' is not a valid option.`);
             return '';
         }
 
@@ -7127,7 +7130,7 @@ async function setApiUrlCallback({ api = null, connect = 'true', quiet = 'false'
 
         if (!permittedValues.includes(url)) {
             // @ts-expect-error TS(2304): Cannot find name 'toastr'.
-            !isQuiet && toastr.info(t`Generation requests may fail.`, t`Unknown VertexAI region '${url}'`);
+            if (!isQuiet) toastr.info(t`Generation requests may fail.`, t`Unknown VertexAI region '${url}'`);
         }
 
         if (!isCurrentlyVertexAI && autoConnect) {
@@ -7177,22 +7180,22 @@ async function setApiUrlCallback({ api = null, connect = 'true', quiet = 'false'
     // Do some checks and get the api type we are targeting with this command
     if (api && !Object.values(textgen_types).includes(api)) {
         // @ts-expect-error TS(2304): Cannot find name 'toastr'.
-        !isQuiet && toastr.warning(t`API '${api}' is not a valid text_gen API.`);
+        if (!isQuiet) toastr.warning(t`API '${api}' is not a valid text_gen API.`);
         return '';
     }
     if (!api && !Object.values(textgen_types).includes(textgenerationwebui_settings.type)) {
         // @ts-expect-error TS(2304): Cannot find name 'toastr'.
-        !isQuiet && toastr.warning(t`API '${textgenerationwebui_settings.type}' is not a valid text_gen API.`);
+        if (!isQuiet) toastr.warning(t`API '${textgenerationwebui_settings.type}' is not a valid text_gen API.`);
         return '';
     }
     if (!api && main_api !== 'textgenerationwebui') {
         // @ts-expect-error TS(2304): Cannot find name 'toastr'.
-        !isQuiet && toastr.warning(t`API type '${main_api}' does not support setting the server URL.`);
+        if (!isQuiet) toastr.warning(t`API type '${main_api}' does not support setting the server URL.`);
         return '';
     }
     if (api && url && autoConnect && api !== textgenerationwebui_settings.type) {
         // @ts-expect-error TS(2304): Cannot find name 'toastr'.
-        !isQuiet && toastr.warning(t`API '${api}' is not the currently selected API, so we cannot do an auto-connect. Consider switching to it via /api beforehand.`);
+        if (!isQuiet) toastr.warning(t`API '${api}' is not the currently selected API, so we cannot do an auto-connect. Consider switching to it via /api beforehand.`);
         return '';
     }
     const type = api || textgenerationwebui_settings.type;
@@ -7200,7 +7203,7 @@ async function setApiUrlCallback({ api = null, connect = 'true', quiet = 'false'
     const inputSelector = SERVER_INPUTS[type];
     if (!inputSelector) {
         // @ts-expect-error TS(2304): Cannot find name 'toastr'.
-        !isQuiet && toastr.warning(t`API '${type}' does not have a server url input.`);
+        if (!isQuiet) toastr.warning(t`API '${type}' does not have a server url input.`);
         return '';
     }
 
