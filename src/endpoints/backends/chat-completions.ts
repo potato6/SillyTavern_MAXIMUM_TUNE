@@ -110,7 +110,7 @@ const enableAdaptiveThinking = getConfigValue('claude.enableAdaptiveThinking', t
  * Cache for cacheable (writing) OpenRouter model IDs.
  * @type {string[]}
  */
-const openRouterCacheableModels: any = [];
+const openRouterCacheableModels: string[] = [];
 
 /**
  * Checks if an OpenRouter model supports prompt cache writing.
@@ -118,7 +118,7 @@ const openRouterCacheableModels: any = [];
  * @param {string} modelId - The OpenRouter model ID
  * @returns {Promise<boolean>} `true` if the model supports writing cache
  */
-async function isOpenRouterModelCacheable(modelId: any) {
+async function isOpenRouterModelCacheable(modelId: string) {
     if (openRouterCacheableModels.includes(modelId)) {
         return true;
     }
@@ -136,7 +136,7 @@ async function isOpenRouterModelCacheable(modelId: any) {
             return false;
         }
 
-        /** @type {any} */
+        /** @type {Record<string, unknown>} */
         const data = await response.json();
 
         if (!Array.isArray(data?.data)) {
@@ -144,7 +144,7 @@ async function isOpenRouterModelCacheable(modelId: any) {
             return false;
         }
 
-        const model = data.data.find((m: any) => m.id === modelId);
+        const model = (data.data as Array<Record<string, unknown>>).find((m) => m.id === modelId);
         const supportsCache = model?.pricing?.input_cache_write != null;
 
         if (supportsCache) {
@@ -164,7 +164,7 @@ async function isOpenRouterModelCacheable(modelId: any) {
  * @returns {string[] | undefined} OpenRouter transforms
  */
 // @ts-expect-error TS(7030): Not all code paths return a value.
-function getOpenRouterTransforms(request: any) {
+function getOpenRouterTransforms(request: express.Request) {
     switch (request.body.middleout) {
         case 'on':
             return ['middle-out'];
@@ -177,10 +177,10 @@ function getOpenRouterTransforms(request: any) {
 
 /**
  * Gets OpenRouter plugins based on the request.
- * @param {import('express').Request} request
- * @returns {any[]} OpenRouter plugins
+ * @param {import('express').Request} request Express request
+ * @returns {{ id: string }[]} OpenRouter plugins
  */
-function getOpenRouterPlugins(request: any) {
+function getOpenRouterPlugins(request: express.Request) {
     const plugins = [];
 
     if (request.body.enable_web_search) {
@@ -195,8 +195,9 @@ function getOpenRouterPlugins(request: any) {
  * @param {object} bodyParams Additional body parameters
  * @param {object[]} messages Array of messages
  * @param {object} jsonSchema JSON schema object
+ * @param {object} jsonSchema.value JSON schema value
  */
-function setJsonObjectFormat(bodyParams: any, messages: any, jsonSchema: any) {
+function setJsonObjectFormat(bodyParams: Record<string, unknown>, messages: Array<Record<string, unknown>>, jsonSchema: { value: Record<string, unknown> }) {
     bodyParams['response_format'] = {
         type: 'json_object',
     };
@@ -211,8 +212,9 @@ function setJsonObjectFormat(bodyParams: any, messages: any, jsonSchema: any) {
  * Sends a request to Claude API.
  * @param {express.Request} request Express request
  * @param {express.Response} response Express response
+ * @returns {Promise<void>}
  */
-async function sendClaudeRequest(request: any, response: any) {
+async function sendClaudeRequest(request: express.Request, response: express.Response) {
     const apiUrl = new URL(request.body.reverse_proxy || API_CLAUDE).toString();
     const apiKey = request.body.reverse_proxy ? request.body.proxy_password : readSecret(request.user.directories, SECRET_KEYS.CLAUDE, request.body.secret_id);
     const divider = '-'.repeat(process.stdout.columns);
@@ -248,7 +250,7 @@ async function sendClaudeRequest(request: any, response: any) {
         }
 
         const requestBody = {
-            /** @type {any} */ system: [],
+            /** @type {Array<Record<string, unknown>>} */ system: [],
             messages: convertedPrompt.messages,
             model: request.body.model,
             max_tokens: request.body.max_tokens,
@@ -273,9 +275,9 @@ async function sendClaudeRequest(request: any, response: any) {
             requestBody.tool_choice = { type: request.body.tool_choice };
             // @ts-expect-error TS(2339): Property 'tools' does not exist on type '{ system:... Remove this comment to see the full error message
             requestBody.tools = request.body.tools
-                .filter((tool: any) => tool.type === 'function')
-                .map((tool: any) => tool.function)
-                .map((fn: any) => ({
+                .filter((tool: { type: string; function: { name: string; description: string; parameters: Record<string, unknown> } }) => tool.type === 'function')
+                .map((tool) => tool.function)
+                .map((fn) => ({
                 name: fn.name,
                 description: fn.description,
                 input_schema: flattenSchema(fn.parameters, request.body.chat_completion_source)
@@ -416,7 +418,7 @@ async function sendClaudeRequest(request: any, response: any) {
                 return response.status(500).send({ error: true });
             }
 
-            /** @type {any} */
+            /** @type {Record<string, unknown>} */
             const generateResponseJson = await generateResponse.json();
             const responseText = generateResponseJson?.content?.[0]?.text || '';
             console.debug('Claude response:', generateResponseJson);
@@ -437,8 +439,9 @@ async function sendClaudeRequest(request: any, response: any) {
  * Sends a request to Google AI API.
  * @param {express.Request} request Express request
  * @param {express.Response} response Express response
+ * @returns {Promise<void>}
  */
-async function sendMakerSuiteRequest(request: any, response: any) {
+async function sendMakerSuiteRequest(request: express.Request, response: express.Response) {
     const useVertexAi = request.body.chat_completion_source === CHAT_COMPLETION_SOURCES.VERTEXAI;
     const apiName = useVertexAi ? 'Google Vertex AI' : 'Google AI Studio';
     let apiUrl;
@@ -499,7 +502,7 @@ async function sendMakerSuiteRequest(request: any, response: any) {
     };
 
     /**
-     *
+     * @returns {Record<string, unknown>} Gemini request body
      */
     function getGeminiBody() {
         // #region UGLY MODEL LISTS AREA
@@ -513,8 +516,8 @@ async function sendMakerSuiteRequest(request: any, response: any) {
             'gemini-3.1-flash-image-preview',
         ];
 
-        const isThinkingConfigModel = (m: any) => (/^gemini-2.5-(flash|pro)/.test(m) && !/-image(-preview)?$/.test(m)) || (/^gemini-3[.\d]*-(flash|pro)/.test(m));
-        const isImageSizeModel = (m: any) => /^gemini-3/.test(m);
+        const isThinkingConfigModel = (m: string) => (/^gemini-2.5-(flash|pro)/.test(m) && !/-image(-preview)?$/.test(m)) || (/^gemini-3[.\d]*-(flash|pro)/.test(m));
+        const isImageSizeModel = (m: string) => /^gemini-3/.test(m);
 
         const noSearchModels = [
             'gemini-2.0-flash-lite',
@@ -746,7 +749,7 @@ async function sendMakerSuiteRequest(request: any, response: any) {
                 return response.status(500).send(errorJson);
             }
 
-            /** @type {any} */
+            /** @type {Record<string, unknown>} */
             const generateResponseJson = await generateResponse.json();
 
             const candidates = generateResponseJson?.candidates;
@@ -760,11 +763,11 @@ async function sendMakerSuiteRequest(request: any, response: any) {
             }
 
             const responseContent = candidates[0].content ?? candidates[0].output;
-            const functionCall = (candidates?.[0]?.content?.parts ?? []).some((part: any) => part.functionCall);
-            const inlineData = (candidates?.[0]?.content?.parts ?? []).some((part: any) => part.inlineData);
+            const functionCall = (candidates?.[0]?.content?.parts ?? []).some((part: { functionCall?: unknown }) => part.functionCall);
+            const inlineData = (candidates?.[0]?.content?.parts ?? []).some((part: { inlineData?: unknown }) => part.inlineData);
             console.debug(`${apiName} response:`, util.inspect(generateResponseJson, { depth: 5, colors: true }));
 
-            const responseText = typeof responseContent === 'string' ? responseContent : responseContent?.parts?.filter((part: any) => !part.thought)?.map((part: any) => part.text)?.join('\n\n');
+            const responseText = typeof responseContent === 'string' ? responseContent : responseContent?.parts?.filter((part: { thought?: boolean }) => !part.thought)?.map((part: { text?: string }) => part.text)?.join('\n\n');
             if (!responseText && !functionCall && !inlineData) {
                 const message = `${apiName} Candidate text empty`;
                 console.warn(message, generateResponseJson);
@@ -787,8 +790,9 @@ async function sendMakerSuiteRequest(request: any, response: any) {
  * Sends a request to AI21 API.
  * @param {express.Request} request Express request
  * @param {express.Response} response Express response
+ * @returns {Promise<void>}
  */
-async function sendAI21Request(request: any, response: any) {
+async function sendAI21Request(request: express.Request, response: express.Response) {
     if (!request.body) return response.sendStatus(400);
 
     const apiKey = readSecret(request.user.directories, SECRET_KEYS.AI21, request.body.secret_id);
@@ -869,8 +873,9 @@ async function sendAI21Request(request: any, response: any) {
  * Sends a request to MistralAI API.
  * @param {express.Request} request Express request
  * @param {express.Response} response Express response
+ * @returns {Promise<void>}
  */
-async function sendMistralAIRequest(request: any, response: any) {
+async function sendMistralAIRequest(request: express.Request, response: express.Response) {
     const apiUrl = new URL(request.body.reverse_proxy || API_MISTRAL).toString();
     const apiKey = request.body.reverse_proxy ? request.body.proxy_password : readSecret(request.user.directories, SECRET_KEYS.MISTRALAI, request.body.secret_id);
 
@@ -959,8 +964,9 @@ async function sendMistralAIRequest(request: any, response: any) {
  * Sends a request to Cohere API.
  * @param {express.Request} request Express request
  * @param {express.Response} response Express response
+ * @returns {Promise<void>}
  */
-async function sendCohereRequest(request: any, response: any) {
+async function sendCohereRequest(request: express.Request, response: express.Response) {
     const apiKey = readSecret(request.user.directories, SECRET_KEYS.COHERE, request.body.secret_id);
     const controller = new AbortController();
     request.socket.removeAllListeners('close');
@@ -1061,8 +1067,9 @@ async function sendCohereRequest(request: any, response: any) {
  * Sends a request to DeepSeek API.
  * @param {express.Request} request Express request
  * @param {express.Response} response Express response
+ * @returns {Promise<void>}
  */
-async function sendDeepSeekRequest(request: any, response: any) {
+async function sendDeepSeekRequest(request: express.Request, response: express.Response) {
     const apiUrl = new URL(request.body.reverse_proxy || API_DEEPSEEK).toString();
     const apiKey = request.body.reverse_proxy ? request.body.proxy_password : readSecret(request.user.directories, SECRET_KEYS.DEEPSEEK, request.body.secret_id);
 
@@ -1091,7 +1098,7 @@ async function sendDeepSeekRequest(request: any, response: any) {
 
             // DeepSeek doesn't permit empty required arrays
             // @ts-expect-error TS(2339): Property 'tools' does not exist on type '{}'.
-            bodyParams.tools.forEach((tool: any) => {
+            (bodyParams.tools as Array<{ function?: { parameters?: { required?: unknown } } }>).forEach((tool) => {
                 const required = tool?.function?.parameters?.required;
                 if (Array.isArray(required) && required.length === 0) {
                     delete tool.function.parameters.required;
@@ -1176,8 +1183,9 @@ async function sendDeepSeekRequest(request: any, response: any) {
  * Sends a request to XAI API.
  * @param {express.Request} request Express request
  * @param {express.Response} response Express response
+ * @returns {Promise<void>}
  */
-async function sendXaiRequest(request: any, response: any) {
+async function sendXaiRequest(request: express.Request, response: express.Response) {
     const apiUrl = new URL(request.body.reverse_proxy || API_XAI).toString();
     const apiKey = request.body.reverse_proxy ? request.body.proxy_password : readSecret(request.user.directories, SECRET_KEYS.XAI, request.body.secret_id);
 
@@ -1282,8 +1290,9 @@ async function sendXaiRequest(request: any, response: any) {
  * Sends a request to AI/ML API.
  * @param {express.Request} request Express request
  * @param {express.Response} response Express response
+ * @returns {Promise<void>}
  */
-async function sendAimlapiRequest(request: any, response: any) {
+async function sendAimlapiRequest(request: express.Request, response: express.Response) {
     const apiUrl = API_AIMLAPI;
     const apiKey = readSecret(request.user.directories, SECRET_KEYS.AIMLAPI, request.body.secret_id);
 
@@ -1387,8 +1396,9 @@ async function sendAimlapiRequest(request: any, response: any) {
  * Sends a request to Electron Hub.
  * @param {express.Request} request Express request
  * @param {express.Response} response Express response
+ * @returns {Promise<void>}
  */
-async function sendElectronHubRequest(request: any, response: any) {
+async function sendElectronHubRequest(request: express.Request, response: express.Response) {
     const apiUrl = API_ELECTRONHUB;
     const apiKey = readSecret(request.user.directories, SECRET_KEYS.ELECTRONHUB, request.body.secret_id);
 
@@ -1499,8 +1509,9 @@ async function sendElectronHubRequest(request: any, response: any) {
  * Sends a request to Chutes.
  * @param {express.Request} request Express request
  * @param {express.Response} response Express response
+ * @returns {Promise<void>}
  */
-async function sendChutesRequest(request: any, response: any) {
+async function sendChutesRequest(request: express.Request, response: express.Response) {
     const apiUrl = API_CHUTES;
     const apiKey = readSecret(request.user.directories, SECRET_KEYS.CHUTES, request.body.secret_id);
 
@@ -1600,8 +1611,9 @@ async function sendChutesRequest(request: any, response: any) {
  * Sends a request to MiniMax.
  * @param {express.Request} request Express request
  * @param {express.Response} response Express response
+ * @returns {Promise<void>}
  */
-async function sendMinimaxRequest(request: any, response: any) {
+async function sendMinimaxRequest(request: express.Request, response: express.Response) {
     const apiUrl = request.body.minimax_endpoint === MINIMAX_ENDPOINT.CN
         ? API_MINIMAX_CN : API_MINIMAX;
     const apiKey = readSecret(request.user.directories, SECRET_KEYS.MINIMAX, request.body.secret_id);
@@ -1680,8 +1692,9 @@ async function sendMinimaxRequest(request: any, response: any) {
 /**
  * @param {express.Request} request Express request object (contains request.body with all generate_data)
  * @param {express.Response} response Express response object
+ * @returns {Promise<express.Response | void>} Express response or void
  */
-async function sendAzureOpenAIRequest(request: any, response: any) {
+async function sendAzureOpenAIRequest(request: express.Request, response: express.Response) {
     // 1. GATHER & VALIDATE SETTINGS
     const { azure_base_url, azure_deployment_name, azure_api_version } = request.body;
     const apiKey = readSecret(request.user.directories, SECRET_KEYS.AZURE_OPENAI, request.body.secret_id);
@@ -1699,7 +1712,7 @@ async function sendAzureOpenAIRequest(request: any, response: any) {
     const endpointUrl = url.toString();
 
     // Create the base payload with all standard parameters
-    const apiRequestBody = /** @type {any} */ ({});
+    const apiRequestBody = /** @type {Record<string, unknown>} */ ({});
     for (const key of AZURE_OPENAI_KEYS) {
         if (Object.hasOwn(request.body, key)) {
             apiRequestBody[key] = request.body[key];
@@ -1756,7 +1769,7 @@ async function sendAzureOpenAIRequest(request: any, response: any) {
         }
 
         if (fetchResponse.ok) {
-            /** @type {any} */
+            /** @type {Record<string, unknown>} */
             const json = await fetchResponse.json();
             console.debug('Azure OpenAI response:', json);
             return response.send(json);
@@ -1870,17 +1883,17 @@ router.post('/status', async function (request, statusResponse) {
                 const response = await fetch(modelsUrl);
 
                 if (response.ok) {
-                    /** @type {any} */
-                    const data = await response.json();
-                    // Transform Google AI Studio models to OpenAI format
-                    const models = data.models
-                        ?.filter((model: any) => model.supportedGenerationMethods?.includes('generateContent'))
-                        ?.map((model: any) => ({
+                /** @type {Record<string, unknown>} */
+                const data = await response.json();
+                // Transform Google AI Studio models to OpenAI format
+                const models = (data.models as Array<Record<string, unknown>>)
+                    ?.filter((model) => (model.supportedGenerationMethods as string[])?.includes('generateContent'))
+                    ?.map((model) => ({
                         ...model,
                         id: model.name.replace('models/', '')
                     })) || [];
 
-                    console.info('Available Google AI Studio models:', models.map((m: any) => m.id));
+                    console.info('Available Google AI Studio models:', models.map((m: { id: string }) => m.id));
                     return statusResponse.send({ data: models });
                 } else {
                     console.warn('Google AI Studio models endpoint failed:', response.status, response.statusText);
@@ -1953,7 +1966,7 @@ router.post('/status', async function (request, statusResponse) {
                     modelResponse = { raw: 'Failed to parse JSON response from chat completions probe.' };
                 }
 
-                const modelId = /** @type {any} */ (modelResponse)?.model;
+                const modelId = (modelResponse as Record<string, unknown>)?.model;
                 if (!modelId) {
                     console.warn('Azure status check succeeded but could not find a model ID in the response.');
                     console.debug('Azure Response Body:', modelResponse);
@@ -2002,16 +2015,16 @@ router.post('/status', async function (request, statusResponse) {
                 });
 
                 if (response.ok) {
-                    /** @type {any} */
-                    const data = await response.json();
-                    const models = Array.isArray(data?.result)
-                        ? data.result.map((model: any) => ({
-                        ...model,
-                        id: model.name
-                    }))
-                        : [];
+                /** @type {Record<string, unknown>} */
+                const data = await response.json();
+                const models = Array.isArray(data?.result)
+                    ? (data.result as Array<Record<string, unknown>>).map((model) => ({
+                    ...model,
+                    id: model.name
+                }))
+                    : [];
 
-                    console.debug('Available Cloudflare Workers AI models:', models.map((m: any) => m.id));
+                console.debug('Available Cloudflare Workers AI models:', models.map((m: { id: string }) => m.id));
                     return statusResponse.send({ data: models });
                 } else {
                     console.warn('Cloudflare Workers AI models endpoint failed:', response.status, response.statusText);
@@ -2044,7 +2057,7 @@ router.post('/status', async function (request, statusResponse) {
         });
 
         if (response.ok) {
-            /** @type {any} */
+            /** @type {Record<string, unknown>} */
             let data = await response.json();
 
             if (request.body.chat_completion_source === CHAT_COMPLETION_SOURCES.POLLINATIONS && Array.isArray(data)) {
@@ -2052,9 +2065,9 @@ router.post('/status', async function (request, statusResponse) {
             }
 
             if (request.body.chat_completion_source === CHAT_COMPLETION_SOURCES.CHUTES && Array.isArray(data?.data)) {
-                data.data = data.data
-                    .filter((model: any) => model?.id)
-                    .map((model: any) => {
+                data.data = (data.data as Array<Record<string, unknown>>)
+                    .filter((model) => model?.id)
+                    .map((model) => {
                         if (model.pricing?.prompt !== undefined && model.pricing?.completion !== undefined) {
                             return {
                                 ...model,
@@ -2072,16 +2085,16 @@ router.post('/status', async function (request, statusResponse) {
             statusResponse.send(data);
 
             if (request.body.chat_completion_source === CHAT_COMPLETION_SOURCES.COHERE && Array.isArray(data?.models)) {
-                data.data = data.models.map((model: any) => ({
+                data.data = (data.models as Array<Record<string, unknown>>).map((model) => ({
                     id: model.name,
                     ...model
                 }));
             }
 
             if (request.body.chat_completion_source === CHAT_COMPLETION_SOURCES.OPENROUTER && Array.isArray(data?.data)) {
-                const models: any = [];
+                const models: Record<string, { tokens_per_dollar: string; context_length: unknown }> = {};
 
-                data.data.forEach((model: any) => {
+                (data.data as Array<Record<string, unknown>>).forEach((model) => {
                     const context_length = model.context_length;
                     const tokens_dollar = Number(1 / (1000 * model.pricing?.prompt));
                     const tokens_rounded = (Math.round(tokens_dollar * 1000) / 1000).toFixed(0);
@@ -2143,7 +2156,7 @@ router.post('/bias', async function (request, response) {
                 console.error('Tokenizer not initialized:', model);
                 return response.send({});
             }
-            encodeFunction = (text: any) => new Uint32Array(instance.encodeIds(text));
+            encodeFunction = (text: string) => new Uint32Array(instance.encodeIds(text));
         } else if (webTokenizers.includes(model)) {
             const tokenizer = getWebTokenizer(model);
             const instance = await tokenizer?.get();
@@ -2151,7 +2164,7 @@ router.post('/bias', async function (request, response) {
                 console.warn('Tokenizer not initialized:', model);
                 return response.send({});
             }
-            encodeFunction = (text: any) => new Uint32Array(instance.encode(text));
+            encodeFunction = (text: string) => new Uint32Array(instance.encode(text));
         } else {
             const tokenizer = getTiktokenTokenizer(model);
             encodeFunction = (tokenizer.encode.bind(tokenizer));
@@ -2183,7 +2196,7 @@ router.post('/bias', async function (request, response) {
          * @param {(string) => Uint32Array} encode Function to encode text to token ids
          * @returns {Uint32Array} Array of token ids
          */
-        function getEntryTokens(text: any, encode: any) {
+        function getEntryTokens(text: string, encode: (text: string) => Uint32Array) {
             // Get raw token ids from JSON array
             if (text.trim().startsWith('[') && text.trim().endsWith(']')) {
                 try {
@@ -2491,9 +2504,11 @@ router.post('/generate', async function (request, response) {
                     type: request.body.include_reasoning ? 'enabled' : 'disabled',
                 },
             };
-            request.body.json_schema
-                ? setJsonObjectFormat(bodyParams, request.body.messages, request.body.json_schema)
-                : addAssistantPrefix(request.body.messages, [], 'partial');
+            if (request.body.json_schema) {
+                setJsonObjectFormat(bodyParams, request.body.messages, request.body.json_schema);
+            } else {
+                addAssistantPrefix(request.body.messages, [], 'partial');
+            }
         } else if (request.body.chat_completion_source === CHAT_COMPLETION_SOURCES.COMETAPI) {
             apiUrl = API_COMETAPI;
             apiKey = readSecret(request.user.directories, SECRET_KEYS.COMETAPI, request.body.secret_id);
@@ -2648,7 +2663,7 @@ router.post('/generate', async function (request, response) {
         }
 
         if (fetchResponse.ok) {
-            /** @type {any} */
+            /** @type {Record<string, unknown>} */
             const json = await fetchResponse.json();
             console.debug('Chat Completion response:', json);
             return response.send(json);
@@ -2692,16 +2707,16 @@ multimodalModels.post('/pollinations', async (_req, res) => {
             return res.json([]);
         }
 
-        /** @type {any} */
+        /** @type {Record<string, unknown>} */
         const data = await response.json();
 
         if (!Array.isArray(data)) {
             return res.json([]);
         }
 
-        const multimodalModels = data
+        const multimodalModels = (data as Array<Record<string, unknown>>)
             .filter(m => Array.isArray(m?.input_modalities))
-            .filter(m => m.input_modalities.includes('image'))
+            .filter(m => (m.input_modalities as string[]).includes('image'))
             .map(m => m.name);
         return res.json(multimodalModels);
     } catch (error) {
@@ -2718,14 +2733,14 @@ multimodalModels.post('/aimlapi', async (_req, res) => {
             return res.json([]);
         }
 
-        /** @type {any} */
+        /** @type {Record<string, unknown>} */
         const data = await response.json();
 
         if (!Array.isArray(data?.data)) {
             return res.json([]);
         }
 
-        const multimodalModels = data.data.filter((m: any) => m?.features?.includes('openai/chat-completion.vision')).map((m: any) => m.id);
+        const multimodalModels = (data.data as Array<Record<string, unknown>>).filter((m) => (m.features as string[])?.includes('openai/chat-completion.vision')).map((m) => m.id);
         return res.json(multimodalModels);
     } catch (error) {
         console.error(error);
@@ -2741,14 +2756,14 @@ multimodalModels.post('/nanogpt', async (_req, res) => {
             return res.json([]);
         }
 
-        /** @type {any} */
+        /** @type {Record<string, unknown>} */
         const data = await response.json();
 
         if (!Array.isArray(data?.data)) {
             return res.json([]);
         }
 
-        const multimodalModels = data.data.filter((m: any) => m?.capabilities?.vision).map((m: any) => m.id);
+        const multimodalModels = (data.data as Array<Record<string, unknown>>).filter((m) => (m.capabilities as Record<string, unknown>)?.vision).map((m) => m.id);
         return res.json(multimodalModels);
     } catch (error) {
         console.error(error);
@@ -2764,9 +2779,9 @@ multimodalModels.post('/electronhub', async (_req, res) => {
             return res.json([]);
         }
 
-        /** @type {any} */
+        /** @type {Record<string, unknown>} */
         const data = await response.json();
-        const multimodalModels = data.data.filter((m: any) => m.metadata?.vision).map((m: any) => m.id);
+        const multimodalModels = (data.data as Array<Record<string, unknown>>).filter((m) => (m.metadata as Record<string, unknown>)?.vision).map((m) => m.id);
         return res.json(multimodalModels);
     } catch (error) {
         console.error(error);
@@ -2796,8 +2811,8 @@ multimodalModels.post('/chutes', async (req, res) => {
 
         const modelsData = /** @type {{object: string, data: Array<{id: string, input_modalities?: string[]}>}} */ (data);
         const multimodalModels = modelsData.data
-            .filter((m: any) => m.input_modalities?.includes('image'))
-            .map((m: any) => m.id);
+            .filter((m: { input_modalities?: string[] }) => m.input_modalities?.includes('image'))
+            .map((m: { id: string }) => m.id);
         return res.json(multimodalModels);
     } catch (error) {
         console.error(error);
@@ -2823,9 +2838,9 @@ multimodalModels.post('/mistral', async (req, res) => {
             return res.json([]);
         }
 
-        /** @type {any} */
+        /** @type {Record<string, unknown>} */
         const data = await response.json();
-        const multimodalModels = data.data.filter((m: any) => m.capabilities?.vision).map((m: any) => m.id);
+        const multimodalModels = (data.data as Array<Record<string, unknown>>).filter((m) => (m.capabilities as Record<string, unknown>)?.vision).map((m) => m.id);
         return res.json(multimodalModels);
     } catch (error) {
         console.error(error);
@@ -2852,9 +2867,9 @@ multimodalModels.post('/xai', async (req, res) => {
             return res.json([]);
         }
 
-        /** @type {any} */
+        /** @type {Record<string, unknown>} */
         const data = await response.json();
-        const multimodalModels = data.models.filter((m: any) => m.input_modalities?.includes('image')).map((m: any) => m.id);
+        const multimodalModels = (data.models as Array<Record<string, unknown>>).filter((m) => (m.input_modalities as string[])?.includes('image')).map((m) => m.id);
         if (!multimodalModels.includes('grok-4-0709')) {
             // The endpoint says it doesn't support images, but it does
             multimodalModels.push('grok-4-0709');
@@ -2884,10 +2899,10 @@ multimodalModels.post('/moonshot', async (req, res) => {
             return res.json([]);
         }
 
-        /** @type {any} */
+        /** @type {Record<string, unknown>} */
         const data = await response.json();
 
-        const multimodalModels = data.data.filter((m: any) => m.supports_image_in).map((m: any) => m.id);
+        const multimodalModels = (data.data as Array<Record<string, unknown>>).filter((m) => m.supports_image_in).map((m) => m.id);
         return res.json(multimodalModels);
     } catch (error) {
         console.error(error);
@@ -2914,12 +2929,12 @@ multimodalModels.post('/workers_ai', async (req, res) => {
             return res.json([]);
         }
 
-        /** @type {any} */
+        /** @type {Record<string, unknown>} */
         const data = await response.json();
         const models = Array.isArray(data?.result)
-            ? data.result
-                .filter((m: any) => Array.isArray(m.properties) && m.properties.some((p: any) => p.property_id === 'vision' && p.value === 'true'))
-                .map((m: any) => m.name)
+            ? (data.result as Array<Record<string, unknown>>)
+                .filter((m) => Array.isArray(m.properties) && (m.properties as Array<Record<string, unknown>>).some((p) => p.property_id === 'vision' && p.value === 'true'))
+                .map((m) => m.name)
             : [];
         return res.json(models);
     } catch (error) {
