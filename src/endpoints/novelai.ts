@@ -73,51 +73,49 @@ const eratoLogitBiasExp = [
 ];
 
 /**
- *
- * @param model
+ * Returns the bad words list for the given model
+ * @param {string} model Model name
+ * @returns {number[][]} List of bad word token sequences
  */
-function getBadWordsList(model: any) {
-    let list: any = [];
-
+function getBadWordsList(model: string): number[][] {
     if (model.includes('hypebot')) {
-        list = hypeBotBadWordsList;
+        return hypeBotBadWordsList.slice();
     }
 
     if (model.includes('clio') || model.includes('kayra')) {
-        list = badWordsList;
+        return badWordsList.slice();
     }
 
     if (model.includes('erato')) {
-        list = eratoBadWordsList;
+        return eratoBadWordsList.slice();
     }
 
-    // Clone the list so we don't modify the original
-    return list.slice();
+    return [];
 }
 
 /**
- *
- * @param model
+ * Returns the logit bias list for the given model
+ * @param {string} model Model name
+ * @returns {Array<{sequence: number[], bias: number, ensure_sequence_finish: boolean, generate_once: boolean}>} List of logit bias expressions
  */
-function getLogitBiasList(model: any) {
-    let list: any = [];
-
+function getLogitBiasList(model: string) {
     if (model.includes('erato')) {
-        list = eratoLogitBiasExp;
+        return eratoLogitBiasExp.slice();
     }
 
     if (model.includes('clio') || model.includes('kayra')) {
-        list = logitBiasExp;
+        return logitBiasExp.slice();
     }
 
-    return list.slice();
+    return [];
 }
 
 /**
- *
- * @param model
+ * Returns the repetition penalty whitelist for the given model
+ * @param {string} model Model name
+ * @returns {number[] | null} Whitelist of token IDs or null
  */
-function getRepPenaltyWhitelist(model: any) {
+function getRepPenaltyWhitelist(model: string): number[] | null {
     if (model.includes('clio') || model.includes('kayra')) {
         return repPenaltyAllowList.flat();
     }
@@ -130,12 +128,13 @@ function getRepPenaltyWhitelist(model: any) {
 }
 
 /**
- *
- * @param width
- * @param height
- * @param modelName
+ * Calculates the skip_cfg_above_sigma value for variety boost
+ * @param {number} width Image width
+ * @param {number} height Image height
+ * @param {string} modelName Model name
+ * @returns {number} The calculated sigma value
  */
-function calculateSkipCfgAboveSigma(width: any, height: any, modelName: any) {
+function calculateSkipCfgAboveSigma(width: number, height: number, modelName: string): number {
     const magicConstant = modelName?.includes('nai-diffusion-4-5')
         ? SIGMA_MAGIC_NUMBER_V4_5
         : SIGMA_MAGIC_NUMBER;
@@ -308,12 +307,12 @@ router.post('/generate', async function (req, res) {
                 return res.status(500).send({ error: { message } });
             }
 
-            /** @type {any} */
+            /** @type {object} */
             const data = await response.json();
             console.info('NovelAI Output', data?.output);
             return res.send(data);
         }
-    } catch (error) {
+    } catch {
         return res.send({ error: true });
     }
 });
@@ -496,7 +495,7 @@ router.post('/generate-voice', async (request, response) => {
 
         const chunks = await readAllChunks(result.body);
         // @ts-expect-error TS(2339): Property 'map' does not exist on type 'unknown'.
-        const buffer = Buffer.concat(chunks.map((chunk: any) => new Uint8Array(chunk)));
+        const buffer = Buffer.concat(chunks.map((chunk: Buffer) => new Uint8Array(chunk)));
         response.setHeader('Content-Type', 'audio/mpeg');
         return response.send(buffer);
     } catch (error) {
