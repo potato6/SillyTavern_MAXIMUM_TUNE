@@ -28,7 +28,7 @@ class CharacterContextMenu {
     /**
      * Tag one or more characters,
      * opens a popup.
-     * @param {Array<number>} selectedCharacters
+     * @param {Array<number>} selectedCharacters Character IDs to tag
      */
     static tag = (selectedCharacters) => {
         characterGroupOverlay.bulkTagPopupHandler.show(selectedCharacters);
@@ -36,8 +36,8 @@ class CharacterContextMenu {
 
     /**
      * Duplicate one or more characters
-     * @param {number} characterId
-     * @returns {Promise<any>}
+     * @param {number} characterId Character ID to duplicate
+     * @returns {Promise<object>} The response data from the duplicate API call
      */
     static duplicate = async (characterId) => {
         const character = CharacterContextMenu.#getCharacter(characterId);
@@ -60,7 +60,7 @@ class CharacterContextMenu {
     /**
      * Favorite a character
      * and highlight it.
-     * @param {number} characterId
+     * @param {number} characterId Character ID to favorite
      * @returns {Promise<void>}
      */
     static favorite = async (characterId) => {
@@ -96,7 +96,7 @@ class CharacterContextMenu {
     /**
      * Convert one or more characters to persona,
      * may open a popup for one or more characters.
-     * @param {number} characterId
+     * @param {number} characterId Character ID to convert to persona
      * @returns {Promise<void>}
      */
     static persona = async (characterId) => void (await convertCharacterToPersona(characterId));
@@ -104,8 +104,8 @@ class CharacterContextMenu {
     /**
      * Delete one or more characters,
      * opens a popup.
-     * @param {string|string[]} characterKey
-     * @param {boolean} [deleteChats]
+     * @param {string|string[]} characterKey Character key(s) to delete
+     * @param {boolean} [deleteChats] Whether to also delete associated chat files
      * @returns {Promise<void>}
      */
     static delete = async (characterKey, deleteChats = false) => {
@@ -116,8 +116,8 @@ class CharacterContextMenu {
 
     /**
      * Show the context menu at the given position
-     * @param positionX
-     * @param positionY
+     * @param {number} positionX X coordinate for the context menu
+     * @param {number} positionY Y coordinate for the context menu
      */
     static show = (positionX, positionY) => {
         const contextMenu = document.getElementById(BulkEditOverlay.contextMenuId);
@@ -138,12 +138,13 @@ class CharacterContextMenu {
 
     /**
      * Hide the context menu
+     * @returns {void}
      */
     static hide = () => document.getElementById(BulkEditOverlay.contextMenuId).classList.add('hidden');
 
     /**
      * Sets up the context menu for the given overlay
-     * @param characterGroupOverlay
+     * @param {object} characterGroupOverlay The bulk edit overlay instance
      */
     constructor(characterGroupOverlay) {
         const contextMenuItems = [
@@ -183,7 +184,7 @@ class BulkTagPopupHandler {
 
     /**
      * Gets the HTML as a string that is going to be the popup for the bulk tag edit
-     * @returns String containing the html for the popup
+     * @returns {string} String containing the html for the popup
      */
     #getHtml = () => {
         const characterData = JSON.stringify({ characterIds: this.characterIds });
@@ -414,7 +415,7 @@ class BulkEditOverlay {
     #cancelNextToggle = false;
 
     /**
-     * @type HTMLElement
+     * @type {HTMLElement}
      */
     container = null;
 
@@ -445,8 +446,8 @@ class BulkEditOverlay {
     }
 
     /**
-     *
-     * @returns {number[]}
+     * The currently selected character IDs
+     * @returns {number[]} Array of selected character IDs
      */
     get selectedCharacters() {
         return this.#selectedCharacters;
@@ -454,7 +455,7 @@ class BulkEditOverlay {
 
     /**
      * The instance of the bulk tag popup handler that handles tagging of all selected characters
-     * @returns {BulkTagPopupHandler}
+     * @returns {BulkTagPopupHandler} The bulk tag popup handler instance
      */
     get bulkTagPopupHandler() {
         return this.#bulkTagPopupHandler;
@@ -472,11 +473,13 @@ class BulkEditOverlay {
 
     /**
      * Set the overlay to browse mode
+     * @returns {void}
      */
     browseState = () => this.state = BulkEditOverlayState.browse;
 
     /**
      * Set the overlay to select mode
+     * @returns {void}
      */
     selectState = () => this.state = BulkEditOverlayState.select;
 
@@ -559,7 +562,7 @@ class BulkEditOverlay {
 
     /**
      * Opens menu on long-press.
-     * @param event - Pointer event
+     * @param {MouseEvent|TouchEvent} event Pointer event
      */
     handleHold = (event) => {
         if (0 !== event.button && event.type !== 'touchstart') return;
@@ -607,8 +610,8 @@ class BulkEditOverlay {
 
     /**
      * Returns the position of the mouse/touch location
-     * @param event
-     * @returns {(boolean|number|*)[]}
+     * @param {MouseEvent|TouchEvent} event Pointer event
+     * @returns {[number, number]} X and Y coordinates
      */
     #getContextMenuPosition = (event) => [
         event.clientX || event.touches[0].clientX,
@@ -777,7 +780,7 @@ class BulkEditOverlay {
 
     /**
      * Concurrently handle character duplicate requests.
-     * @returns {Promise<number>}
+     * @returns {Promise<number>} Number of duplicated characters
      */
     handleContextMenuDuplicate = () => Promise.all(this.selectedCharacters.map(async characterId => CharacterContextMenu.duplicate(characterId)))
         .then(() => getCharacters())
@@ -798,7 +801,7 @@ class BulkEditOverlay {
     /**
      * Gets the HTML as a string that is displayed inside the popup for the bulk delete
      * @param {Array<number>} characterIds - The characters that are shown inside the popup
-     * @returns String containing the html for the popup content
+     * @returns {string} String containing the html for the popup content
      */
     static #getDeletePopupContentHtml = (characterIds) => {
         return `
@@ -820,7 +823,7 @@ class BulkEditOverlay {
     /**
      * Request user input before concurrently handle deletion
      * requests.
-     * @returns {Promise<number>}
+     * @returns {Promise<number|undefined>} Promise resolving when deletion is complete
      */
     handleContextMenuDelete = () => {
         const characterIds = this.selectedCharacters;
