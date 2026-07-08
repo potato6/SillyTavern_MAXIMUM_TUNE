@@ -25,7 +25,7 @@ import { power_user } from './power-user.js';
 
 const MODULE_NAME = '2_floating_prompt'; // <= Deliberate, for sorting lower than memory
 
-export var shouldWIAddPrompt = false;
+export let shouldWIAddPrompt = false;
 
 export const metadata_keys = {
     prompt: 'note_prompt',
@@ -42,9 +42,9 @@ const chara_note_position = {
 };
 
 /**
- *
- * @param _
- * @param text
+ * @param {string} _ Unused
+ * @param {string} text Text to set as author's note
+ * @returns {string} Current author's note text
  */
 function setNoteTextCommand(_, text) {
     if (text) {
@@ -57,9 +57,9 @@ function setNoteTextCommand(_, text) {
 }
 
 /**
- *
- * @param _
- * @param text
+ * @param {string} _ Unused
+ * @param {string} text Depth value to set
+ * @returns {number|undefined} Current depth, or undefined if invalid
  */
 function setNoteDepthCommand(_, text) {
     if (text) {
@@ -80,9 +80,9 @@ function setNoteDepthCommand(_, text) {
 }
 
 /**
- *
- * @param _
- * @param text
+ * @param {string} _ Unused
+ * @param {string} text Interval value to set
+ * @returns {number|undefined} Current interval, or undefined if invalid
  */
 function setNoteIntervalCommand(_, text) {
     if (text) {
@@ -103,9 +103,9 @@ function setNoteIntervalCommand(_, text) {
 }
 
 /**
- *
- * @param _
- * @param text
+ * @param {string} _ Unused
+ * @param {string} text Position value to set
+ * @returns {string|undefined} Current position name, or undefined if invalid
  */
 function setNotePositionCommand(_, text) {
     const validPositions = {
@@ -135,9 +135,9 @@ function setNotePositionCommand(_, text) {
 }
 
 /**
- *
- * @param _
- * @param text
+ * @param {string} _ Unused
+ * @param {string} text Role value to set
+ * @returns {string|undefined} Current role name, or undefined if invalid
  */
 function setNoteRoleCommand(_, text) {
     const validRoles = {
@@ -220,8 +220,7 @@ async function onExtensionFloatingDepthInput() {
 }
 
 /**
- *
- * @param e
+ * @param {Event} e Input event
  */
 async function onExtensionFloatingPositionInput(e) {
     chat_metadata[metadata_keys.position] = Number(e.target.value);
@@ -230,8 +229,7 @@ async function onExtensionFloatingPositionInput(e) {
 }
 
 /**
- *
- * @param e
+ * @param {Event} e Input event
  */
 async function onDefaultPositionInput(e) {
     // @ts-expect-error TS(2339): Property 'defaultPosition' does not exist on type ... Remove this comment to see the full error message
@@ -267,8 +265,7 @@ async function onDefaultIntervalInput() {
 }
 
 /**
- *
- * @param e
+ * @param {Event} e Input event
  */
 function onExtensionFloatingRoleInput(e) {
     chat_metadata[metadata_keys.role] = Number(e.target.value);
@@ -276,8 +273,7 @@ function onExtensionFloatingRoleInput(e) {
 }
 
 /**
- *
- * @param e
+ * @param {Event} e Input event
  */
 function onExtensionDefaultRoleInput(e) {
     // @ts-expect-error TS(2339): Property 'defaultRole' does not exist on type '{ d... Remove this comment to see the full error message
@@ -286,8 +282,7 @@ function onExtensionDefaultRoleInput(e) {
 }
 
 /**
- *
- * @param e
+ * @param {Event} e Input event
  */
 async function onExtensionFloatingCharPositionInput(e) {
     const value = e.target.value;
