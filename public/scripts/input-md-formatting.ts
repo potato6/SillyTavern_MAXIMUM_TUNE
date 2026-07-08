@@ -5,14 +5,11 @@ import { power_user } from './power-user.js';
  */
 export function initInputMarkdown() {
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document).on('keydown', 'textarea.mdHotkeys', function (e) {
+    $(document).on('keydown', 'textarea.mdHotkeys', function (this: HTMLTextAreaElement, e) {
         if (!power_user.enable_md_hotkeys) { return; }
 
-        // Ensure that the element is a textarea
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
         const textarea = this;
-        if (!(textarea instanceof HTMLTextAreaElement)) {
-            return;
-        }
 
         // Early return on only control or no control, alt key, and win/cmd key
         if (e.key === 'Control' || !e.ctrlKey || e.altKey || e.metaKey || (e.shiftKey && !(e.ctrlKey && e.shiftKey && e.code === 'Backquote'))) {
