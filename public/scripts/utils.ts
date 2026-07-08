@@ -54,7 +54,7 @@ export function canUseNegativeLookbehind() {
         try {
             new RegExp('(?<!_)');
             result = true;
-        } catch (e) {
+        } catch {
             result = false;
         }
         // @ts-expect-error TS(2339): Property 'result' does not exist on type '() => an... Remove this comment to see the full error message
@@ -185,7 +185,7 @@ export function isValidUrl(value) {
     try {
         new URL(value);
         return true;
-    } catch (_) {
+    } catch {
         return false;
     }
 }
@@ -681,8 +681,8 @@ export function debouncedThrottle(func, limit = 300) {
     let last, deferTimer;
     const db = debounce(func);
 
-    return function () {
-        const now = +new Date, args = arguments;
+    return function (...args) {
+        const now = +new Date;
         if (!last || (last && now < last + limit)) {
             clearTimeout(deferTimer);
             db.apply(this, args);
@@ -787,8 +787,7 @@ export function incrementString(str) {
  * @example
  * stringFormat('Hello, {0}!', 'world'); // 'Hello, world!'
  */
-export function stringFormat(format) {
-    const args = Array.prototype.slice.call(arguments, 1);
+export function stringFormat(format, ...args) {
     return format.replace(/{(\d+)}/g, function (match, number) {
         return typeof args[number] != 'undefined'
             ? args[number]
@@ -1088,7 +1087,7 @@ export function parseStringArray(value) {
             throw new Error('Not an array');
         }
         return parsedValue.map(x => String(x));
-    } catch (e) {
+    } catch {
         return value.split(',').map(x => x.trim()).filter(x => x);
     }
 }
@@ -1458,8 +1457,8 @@ export function regexFromString(input) {
 }
 
 export class Stopwatch {
-    interval: any;
-    lastAction: any;
+    interval: number;
+    lastAction: number;
     /**
      * Initializes a Stopwatch class.
      * @param {number} interval Update interval in milliseconds. Must be a finite number above zero.
@@ -1495,9 +1494,9 @@ export class Stopwatch {
  * Provides an interface for rate limiting function calls.
  */
 export class RateLimiter {
-    interval: any;
-    lastResolveTime: any;
-    pendingResolve: any;
+    interval: number;
+    lastResolveTime: number;
+    pendingResolve: Promise<void>;
     /**
      * Creates a new RateLimiter.
      * @param {number} interval The interval in milliseconds.
@@ -1793,9 +1792,11 @@ export function loadFileToDocument(url, type) {
         element.onload = resolve;
         element.onerror = reject;
 
-        type === 'css'
-            ? document.head.appendChild(element)
-            : document.body.appendChild(element);
+        if (type === 'css') {
+            document.head.appendChild(element);
+        } else {
+            document.body.appendChild(element);
+        }
     });
 }
 
@@ -2191,7 +2192,7 @@ export async function extractTextFromOffice(blob) {
             });
 
             return result.ok;
-        } catch (error) {
+        } catch {
             return false;
         }
     }
@@ -2523,7 +2524,7 @@ export function highlightRegex(regexStr) {
                 flags: new RegExp('(?<=\\/)([gimsuy]*)$', 'g'),  // Match trailing flags
                 delimiters: new RegExp('^\\/|(?<![\\\\<])\\/', 'g'),  // Match leading or trailing delimiters
             };
-        } catch (error) {
+        } catch {
             return {
                 brackets: new RegExp('(\\\\)?\\[.*?\\]', 'g'),  // Non-escaped square brackets
                 quantifiers: new RegExp('(\\\\)?[*+?{}]', 'g'),  // Non-escaped quantifiers
