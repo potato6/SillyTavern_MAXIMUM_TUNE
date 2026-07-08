@@ -37,9 +37,8 @@ export const CHAT_BACKUPS_PREFIX = 'chat_';
  * @param {string} name The name of the chat.
  * @param {string} data The serialized chat to save.
  * @param {string} backupPrefix The file prefix. Typically CHAT_BACKUPS_PREFIX.
- * @returns
  */
-function backupChat(directory: any, name: any, data: any, backupPrefix = CHAT_BACKUPS_PREFIX) {
+function backupChat(directory: string, name: string, data: string, backupPrefix = CHAT_BACKUPS_PREFIX) {
     try {
         if (!isBackupEnabled) { return; }
         if (!fs.existsSync(directory)) {
@@ -71,7 +70,7 @@ const backupFunctions = new Map();
  * @param {string} handle User handle
  * @returns {typeof backupChat} Backup function
  */
-function getBackupFunction(handle: any) {
+function getBackupFunction(handle: string) {
     if (!backupFunctions.has(handle)) {
         backupFunctions.set(handle, throttle(backupChat, throttleInterval, { leading: true, trailing: true }));
     }
@@ -83,7 +82,7 @@ function getBackupFunction(handle: any) {
  * @param {string} [lastMessage] - The message to truncate
  * @returns {string} A truncated preview of the last message or empty string if no messages
  */
-function getPreviewMessage(lastMessage: any) {
+function getPreviewMessage(lastMessage: string): string {
     const strlen = 400;
 
     if (!lastMessage) {
@@ -108,7 +107,7 @@ process.on('exit', () => {
  * @param {object} jsonData JSON data
  * @returns {string} Chat data
  */
-function importOobaChat(userName: any, characterName: any, jsonData: any) {
+function importOobaChat(userName: string, characterName: string, jsonData: object): string {
     /** @type {object[]} */
     const chat = [{
         chat_metadata: {},
@@ -151,7 +150,7 @@ function importOobaChat(userName: any, characterName: any, jsonData: any) {
  * @param {object} jsonData Chat data
  * @returns {string} Chat data
  */
-function importAgnaiChat(userName: any, characterName: any, jsonData: any) {
+function importAgnaiChat(userName: string, characterName: string, jsonData: object): string {
     /** @type {object[]} */
     const chat = [{
         chat_metadata: {},
@@ -181,20 +180,20 @@ function importAgnaiChat(userName: any, characterName: any, jsonData: any) {
  * @param {object} jsonData JSON data
  * @returns {string[]} Converted data
  */
-function importCAIChat(userName: any, characterName: any, jsonData: any) {
+function importCAIChat(userName: string, characterName: string, jsonData: object): string[] {
     /**
      * Converts the chat data to suitable format.
      * @param {object} history Imported chat data
      * @returns {object[]} Converted chat data
      */
-    function convert(history: any) {
+    function convert(history: object) {
         const starter = {
             chat_metadata: {},
             user_name: 'unused',
             character_name: 'unused',
         };
 
-        const historyData = history.msgs.map((msg: any) => ({
+        const historyData = history.msgs.map((msg: { src: { is_human: boolean }; text: string }) => ({
             name: msg.src.is_human ? userName : characterName,
             is_user: msg.src.is_human,
             send_date: new Date().toISOString(),
@@ -205,7 +204,7 @@ function importCAIChat(userName: any, characterName: any, jsonData: any) {
         return [starter, ...historyData];
     }
 
-    const newChats = (jsonData.histories.histories ?? []).map((history: any) => newChats.push(convert(history).map(obj => JSON.stringify(obj)).join('\n')));
+    const newChats = (jsonData.histories.histories ?? []).map((history: object) => newChats.push(convert(history).map(obj => JSON.stringify(obj)).join('\n')));
     return newChats;
 }
 
@@ -216,12 +215,12 @@ function importCAIChat(userName: any, characterName: any, jsonData: any) {
  * @param {object} data JSON data
  * @returns {string} Chat data
  */
-function importKoboldLiteChat(_userName: any, _characterName: any, data: any) {
+function importKoboldLiteChat(_userName: string, _characterName: string, data: object): string {
     const inputToken = '{{[INPUT]}}';
     const outputToken = '{{[OUTPUT]}}';
 
     /** @type {function(string): object} */
-    function processKoboldMessage(msg: any) {
+    function processKoboldMessage(msg: string): object {
         const isUser = msg.includes(inputToken);
         return {
             name: isUser ? userName : characterName,
@@ -260,20 +259,22 @@ function importKoboldLiteChat(_userName: any, _characterName: any, data: any) {
  * @returns {string} Converted data
  */
 // @ts-expect-error TS(6133): 'userName' is declared but its value is never read... Remove this comment to see the full error message
-function flattenChubChat(userName: any, characterName: any, lines: any) {
+function flattenChubChat(userName: string, characterName: string, lines: string[]): string {
     /**
-     *
-     * @param swipe
+     * Flattens a swipe entry
+     * @param {{message?: string} | string} swipe Swipe entry
+     * @returns {string} The flattened swipe message
      */
-    function flattenSwipe(swipe: any) {
-        return swipe.message ? swipe.message : swipe;
+    function flattenSwipe(swipe: { message?: string } | string): string {
+        return typeof swipe === 'object' && swipe.message ? swipe.message : String(swipe);
     }
 
     /**
-     *
-     * @param line
+     * Converts a single chat line
+     * @param {string} line Serialized chat line
+     * @returns {string} Converted chat line
      */
-    function convert(line: any) {
+    function convert(line: string): string {
         const lineData = tryParse(line);
         if (!lineData) return line;
 
@@ -282,7 +283,7 @@ function flattenChubChat(userName: any, characterName: any, lines: any) {
         }
 
         if (lineData?.swipes && Array.isArray(lineData.swipes)) {
-            lineData.swipes = lineData.swipes.map((swipe: any) => flattenSwipe(swipe));
+            lineData.swipes = lineData.swipes.map((swipe: { message?: string } | string) => flattenSwipe(swipe));
         }
 
         return JSON.stringify(lineData);
@@ -298,7 +299,7 @@ function flattenChubChat(userName: any, characterName: any, lines: any) {
  * @param {object} jsonData Imported chat data
  * @returns {string} Chat data
  */
-function importRisuChat(userName: any, characterName: any, jsonData: any) {
+function importRisuChat(userName: string, characterName: string, jsonData: object): string {
     /** @type {object[]} */
     const chat = [{
         chat_metadata: {},
@@ -327,7 +328,7 @@ function importRisuChat(userName: any, characterName: any, jsonData: any) {
  * @param {string} integritySlug Integrity slug
  * @returns {Promise<boolean>} Whether the chat is intact
  */
-async function checkChatIntegrity(filePath: any, integritySlug: any) {
+async function checkChatIntegrity(filePath: string, integritySlug: string): Promise<boolean> {
     // If the chat file doesn't exist, assume it's intact
     if (!fs.existsSync(filePath)) {
         return true;
@@ -366,10 +367,10 @@ async function checkChatIntegrity(filePath: any, integritySlug: any) {
  * @param {object} additionalData - Additional data to include in the result
  * @param {boolean} withMetadata - Whether to read chat metadata
  * @param {ChatMatchFunction|null} matcher - Optional function to match messages
- * @returns {Promise<ChatInfo>}
+ * @returns {Promise<ChatInfo>} Chat information
  * @typedef {(textArray: string[]) => boolean} ChatMatchFunction
  */
-export async function getChatInfo(pathToFile: any, additionalData = {}, withMetadata = false, matcher = null) {
+export async function getChatInfo(pathToFile: string, additionalData: Record<string, unknown> = {}, withMetadata = false, matcher: ChatMatchFunction | null = null) {
     return new Promise(async (res) => {
         const parsedPath = path.parse(pathToFile);
         const stats = await fs.promises.stat(pathToFile);
@@ -397,10 +398,10 @@ export async function getChatInfo(pathToFile: any, additionalData = {}, withMeta
             crlfDelay: Infinity,
         });
 
-        let lastLine: any;
+        let lastLine: string | undefined;
         let itemCounter = 0;
         let hasAnyMatch = false;
-        let matchBuffer: any = [];
+        let matchBuffer: string[] = [];
         rl.on('line', (line) => {
             if (withMetadata && itemCounter === 0) {
                 const jsonData = tryParse(line);
@@ -448,8 +449,8 @@ export const router = express.Router();
 
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error
 class IntegrityMismatchError extends Error {
-    date: any;
-    constructor(...params: any[]) {
+    date: Date;
+    constructor(...params: unknown[]) {
         // Pass remaining arguments (including vendor specific ones) to parent constructor
         super(...params);
         // Maintains proper stack trace for where our error was thrown (non-standard)
@@ -469,8 +470,8 @@ class IntegrityMismatchError extends Error {
  * @param {string} cardName Passed to backupChat.
  * @param {string} backupDirectory Passed to backupChat.
  */
-export async function trySaveChat(chatData: any, filePath: any, skipIntegrityCheck = false, handle: any, cardName: any, backupDirectory: any) {
-    const jsonlData = chatData?.map((m: any) => JSON.stringify(m)).join('\n');
+export async function trySaveChat(chatData: { chat_metadata?: { integrity?: string } }[], filePath: string, skipIntegrityCheck = false, handle: string, cardName: string, backupDirectory: string): Promise<void> {
+    const jsonlData = chatData?.map((m: unknown) => JSON.stringify(m)).join('\n');
 
     const doIntegrityCheck = (checkIntegrity && !skipIntegrityCheck);
     const chatIntegritySlug = doIntegrityCheck ? chatData?.[0]?.chat_metadata?.integrity : undefined;
@@ -514,7 +515,7 @@ router.post('/save', validateAvatarUrlMiddleware, async function (request, respo
  * @param {string} chatFilePath The full chat file path.
  * @returns {Array}} If the chatFilePath cannot be read, this will return [].
  */
-export function getChatData(chatFilePath: any) {
+export function getChatData(chatFilePath: string): object[] {
     let chatData = [];
 
     const chatJSON = tryReadFileSync(chatFilePath) ?? '';
@@ -717,7 +718,7 @@ router.post('/import', validateAvatarUrlMiddleware, function (request, response)
     const avatarUrl = (request.body.avatar_url).replace('.png', '');
     const characterName = sanitize(request.body.character_name) || 'Character';
     const userName = sanitize(request.body.user_name) || 'User';
-    const fileNames: any = [];
+    const fileNames: string[] = [];
 
     if (!request.file) {
         return response.sendStatus(400);
@@ -754,7 +755,7 @@ router.post('/import', validateAvatarUrlMiddleware, function (request, response)
                 return response.send({ error: true });
             }
 
-            const handleChat = (chat: any) => {
+            const handleChat = (chat: string) => {
                 const fileName = `${characterName} - ${humanizedDateTime()} imported.jsonl`;
                 const filePath = path.join(directoryPath, fileName);
                 fileNames.push(fileName);
@@ -921,8 +922,8 @@ router.post('/search', validateAvatarUrlMiddleware, async function (request, res
             // Find group chat files for given group ID
             const groupChatsDir = path.join(request.user.directories.groupChats);
             chatFiles = targetGroup.chats
-                .map((chatId: any) => path.join(groupChatsDir, `${chatId}.jsonl`))
-                .filter((fileName: any) => fs.existsSync(fileName));
+                .map((chatId: string) => path.join(groupChatsDir, `${chatId}.jsonl`))
+                .filter((fileName: string) => fs.existsSync(fileName));
         } else {
             // Regular character chat directory
             const character_name = avatar_url.replace('.png', '');
@@ -949,14 +950,14 @@ router.post('/search', validateAvatarUrlMiddleware, async function (request, res
         const results = [];
 
         /** @type {string[]} */
-        const fragments = query ? query.trim().toLowerCase().split(/\s+/).filter((x: any) => x) : [];
+        const fragments = query ? query.trim().toLowerCase().split(/\s+/).filter((x: string) => x) : [];
 
         /** @type {ChatMatchFunction} */
-        const hasTextMatch = (textArray: any) => {
+        const hasTextMatch = (textArray: string[]): boolean => {
             if (fragments.length === 0) {
                 return true;
             }
-            return fragments.every((fragment: any) => textArray.some((text: any) => String(text ?? '').toLowerCase().includes(fragment)));
+            return fragments.every((fragment: string) => textArray.some((text: string) => String(text ?? '').toLowerCase().includes(fragment)));
         };
 
         for (const chatFile of chatFiles) {
@@ -1005,7 +1006,7 @@ router.post('/recent', async function (request, response) {
     try {
         /** @typedef {{pngFile?: string, groupId?: string, filePath: string, mtime: number}} ChatFile */
         /** @type {ChatFile[]} */
-        const allChatFiles: any = [];
+        const allChatFiles: ChatFile[] = [];
         /** @type {import('../../public/scripts/welcome-screen.js').PinnedChat[]} */
         const pinnedChats = Array.isArray(request.body.pinned) ? request.body.pinned : [];
 
@@ -1053,7 +1054,7 @@ router.post('/recent', async function (request, response) {
                             allChatFiles.push({ groupId: groupData.id, filePath, mtime: stats.mtimeMs });
                         }
                     }
-                } catch (error) {
+                } catch {
                     // Skip group files that can't be read or parsed
                     continue;
                 }
@@ -1074,7 +1075,7 @@ router.post('/recent', async function (request, response) {
         await Promise.allSettled([getCharacterChatFiles(), getGroupChatFiles(), getRootChatFiles()]);
 
         const max = parseInt(request.body.max ?? Number.MAX_SAFE_INTEGER) + pinnedChats.length;
-        const isPinned = (/** @type {ChatFile} */ chatFile: any) => pinnedChats.some((p: any) => p.file_name === path.basename(chatFile.filePath) && (p.avatar === chatFile.pngFile || p.group === chatFile.groupId));
+        const isPinned = (chatFile: ChatFile) => pinnedChats.some((p) => p.file_name === path.basename(chatFile.filePath) && (p.avatar === chatFile.pngFile || p.group === chatFile.groupId));
         const recentChats = allChatFiles.sort((a, b) => {
             const isAPinned = isPinned(a);
             const isBPinned = isPinned(b);
