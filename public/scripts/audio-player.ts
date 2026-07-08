@@ -1,14 +1,23 @@
 import { formatTime } from './utils.js';
 
 export class AudioPlayer {
-    audio: any;
-    boundHandlers: any;
-    container: any;
-    elements: any;
-    isDestroyed: any;
-    isDragging: any;
-    observer: any;
-    options: any;
+    audio: HTMLAudioElement;
+    boundHandlers: Record<string, EventListenerOrEventListenerObject> | null;
+    container: HTMLElement | null;
+    elements: Record<string, HTMLElement | null> | null;
+    isDestroyed: boolean;
+    isDragging: boolean;
+    observer: MutationObserver | null;
+    options: {
+        title: string;
+        autoplay: boolean;
+        volume: number;
+        onPlay: ((this: AudioPlayer) => void) | null;
+        onPause: ((this: AudioPlayer) => void) | null;
+        onEnded: ((this: AudioPlayer) => void) | null;
+        onTimeUpdate: ((this: AudioPlayer, currentTime: number, duration: number) => void) | null;
+        onVolumeChange: ((this: AudioPlayer, volume: number, muted: boolean) => void) | null;
+    } | null;
     /**
      * Creates an audio player instance
      * @param {HTMLElement} audioElement - The audio element to control
