@@ -124,7 +124,7 @@ export function humanizeGenTime(total_gen_time) {
 let parsedUA = null;
 
 /**
- *
+ * @returns {object|null} Parsed user agent object, or null if not yet parsed
  */
 export function getParsedUA() {
     if (!parsedUA) {
@@ -149,7 +149,7 @@ export function isMobile() {
 }
 
 /**
- *
+ * @returns {boolean} Whether enter should send the message
  */
 // @ts-expect-error TS(7030): Not all code paths return a value.
 export function shouldSendOnEnter() {
@@ -382,8 +382,7 @@ function RA_checkOnlineStatus() {
 //Auto-connect to API (when set to kobold, API URL exists, and auto_connect is true)
 
 /**
- *
- * @param PrevApi
+ * @param {string} PrevApi The previous API name
  */
 // @ts-expect-error TS(6133): 'PrevApi' is declared but its value is never read.
 function RA_autoconnect(PrevApi) {
@@ -632,8 +631,7 @@ export function dragElement(elmnt) {
     });
 
     /**
-     *
-     * @param e
+     * @param {MouseEvent} e Mouse event
      */
     function dragMouseDown(e) {
         if (e) {
@@ -648,8 +646,7 @@ export function dragElement(elmnt) {
     }
 
     /**
-     *
-     * @param e
+     * @param {MouseEvent} e Mouse event
      */
     function elementDrag(e) {
         if (!power_user.movingUIState[elmntName]) power_user.movingUIState[elmntName] = {};
@@ -1051,7 +1048,7 @@ export function initRossMods() {
 
 
     /**
-     *
+     * @returns {boolean} Whether an input element is currently focused
      */
     function isInputElementInFocus() {
         //return $(document.activeElement).is(":input");
@@ -1067,8 +1064,8 @@ export function initRossMods() {
     }
 
     /**
-     *
-     * @param event
+     * @param {KeyboardEvent} event Keyboard event to check
+     * @returns {boolean} Whether the event has modifier keys pressed
      */
     function isModifiedKeyboardEvent(event) {
         return (event instanceof KeyboardEvent &&
@@ -1090,7 +1087,7 @@ export function initRossMods() {
 
     //Additional hotkeys CTRL+ENTER and CTRL+UPARROW
     /**
-     * @param {KeyboardEvent} event
+     * @param {KeyboardEvent} event Keyboard event to process
      */
     async function processHotkeys(event) {
         // Default hotkeys and shortcuts shouldn't work if any popup is currently open
@@ -1221,7 +1218,7 @@ export function initRossMods() {
 
         // Helper function to check if nanogallery2's lightbox is active
         /**
-         *
+         * @returns {boolean} Whether nanogallery2 lightbox is active
          */
         function isNanogallery2LightboxActive() {
             // Check if the body has the 'nGY2On' class, adjust this based on actual behavior
