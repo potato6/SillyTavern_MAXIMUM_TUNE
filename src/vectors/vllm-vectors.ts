@@ -18,7 +18,7 @@ interface VllmEmbeddingResponse {
  * @param {import('../users.js').UserDirectoryList} directories - The directories object for the user
  * @returns {Promise<number[][]>} - The array of vectors for the texts
  */
-export async function getVllmBatchVector(texts: string[], apiUrl: string, model: string, directories: import('../users.js').UserDirectoryList) {
+export async function getBatchVector(texts: string[], apiUrl: string, model: string, directories: import('../users.js').UserDirectoryList) {
     const url = new URL(trimV1(apiUrl) + '/v1/embeddings');
 
     const headers = {};
@@ -59,7 +59,7 @@ export async function getVllmBatchVector(texts: string[], apiUrl: string, model:
  * @param {import('../users.js').UserDirectoryList} directories - The directories object for the user
  * @returns {Promise<number[]>} - The vector for the text
  */
-export async function getVllmVector(text: string, apiUrl: string, model: string, directories: import('../users.js').UserDirectoryList) {
-    const vectors = await getVllmBatchVector([text], apiUrl, model, directories);
+export async function getVector(text: string, apiUrl: string, model: string, directories: import('../users.js').UserDirectoryList) {
+    const vectors = await getBatchVector([text], apiUrl, model, directories);
     return vectors[0];
 }

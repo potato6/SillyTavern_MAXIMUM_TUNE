@@ -17,7 +17,7 @@ type LlamaCppEmbeddingResponse = {
  * @param {import('../users.js').UserDirectoryList} directories - The directories object for the user
  * @returns {Promise<number[][]>} - The array of vectors for the texts
  */
-export async function getLlamaCppBatchVector(texts: string[], apiUrl: string, directories: import('../users.js').UserDirectoryList): Promise<number[][]> {
+export async function getBatchVector(texts: string[], apiUrl: string, directories: import('../users.js').UserDirectoryList): Promise<number[][]> {
     const url = new URL(trimV1(apiUrl) + '/v1/embeddings');
 
     const headers = {};
@@ -57,7 +57,7 @@ export async function getLlamaCppBatchVector(texts: string[], apiUrl: string, di
  * @param {import('../users.js').UserDirectoryList} directories - The directories object for the user
  * @returns {Promise<number[]>} - The vector for the text
  */
-export async function getLlamaCppVector(text: string, apiUrl: string, directories: import('../users.js').UserDirectoryList): Promise<number[]> {
-    const vectors = await getLlamaCppBatchVector([text], apiUrl, directories);
+export async function getVector(text: string, apiUrl: string, directories: import('../users.js').UserDirectoryList): Promise<number[]> {
+    const vectors = await getBatchVector([text], apiUrl, directories);
     return vectors[0];
 }

@@ -7,15 +7,31 @@ import express from 'express';
 // @ts-expect-error TS(2792): Cannot find module 'sanitize-filename'. Did you me... Remove this comment to see the full error message
 import sanitize from 'sanitize-filename';
 
-import { getNomicAIBatchVector, getNomicAIVector } from '../vectors/nomicai-vectors.js';
-import { getOpenAIVector, getOpenAIBatchVector } from '../vectors/openai-vectors.js';
-import { getExtrasVector, getExtrasBatchVector } from '../vectors/extras-vectors.js';
-import { getMakerSuiteVector, getMakerSuiteBatchVector } from '../vectors/google-vectors.js';
-import { getVertexVector, getVertexBatchVector } from '../vectors/google-vectors.js';
-import { getCohereVector, getCohereBatchVector } from '../vectors/cohere-vectors.js';
-import { getLlamaCppVector, getLlamaCppBatchVector } from '../vectors/llamacpp-vectors.js';
-import { getVllmVector, getVllmBatchVector } from '../vectors/vllm-vectors.js';
-import { getOllamaVector, getOllamaBatchVector } from '../vectors/ollama-vectors.js';
+const registry: Record<string, () => Promise<any>> = {
+    nomicai: () => import('../vectors/nomicai-vectors.js'),
+    openai: () => import('../vectors/openai-vectors.js'),
+    mistral: () => import('../vectors/openai-vectors.js'),
+    togetherai: () => import('../vectors/openai-vectors.js'),
+    electronhub: () => import('../vectors/openai-vectors.js'),
+    openrouter: () => import('../vectors/openai-vectors.js'),
+    chutes: () => import('../vectors/openai-vectors.js'),
+    nanogpt: () => import('../vectors/openai-vectors.js'),
+    siliconflow: () => import('../vectors/openai-vectors.js'),
+    workers_ai: () => import('../vectors/openai-vectors.js'),
+    extras: () => import('../vectors/extras-vectors.js'),
+    palm: () => import('../vectors/google-vectors.js').then(m => ({
+        getVector: m.getMakerSuiteVector,
+        getBatchVector: m.getMakerSuiteBatchVector,
+    })),
+    vertexai: () => import('../vectors/google-vectors.js').then(m => ({
+        getVector: m.getVertexVector,
+        getBatchVector: m.getVertexBatchVector,
+    })),
+    cohere: () => import('../vectors/cohere-vectors.js'),
+    llamacpp: () => import('../vectors/llamacpp-vectors.js'),
+    vllm: () => import('../vectors/vllm-vectors.js'),
+    ollama: () => import('../vectors/ollama-vectors.js'),
+};
 
 // Don't forget to add new sources to the SOURCES array
 const SOURCES = [
@@ -61,43 +77,44 @@ interface SourceSettings {
  * @returns {Promise<number[]>} - The vector for the text
  */
 async function getVector(source: string, sourceSettings: SourceSettings, text: string, isQuery: boolean, directories: import('../users.js').UserDirectoryList) {
+    if (source === 'webllm' || source === 'koboldcpp') {
+        return sourceSettings.embeddings[text];
+    }
+
+    const providerLoader = registry[source];
+    if (!providerLoader) {
+        throw new Error(`Unknown vector source ${source}`);
+    }
+
+    const provider = await providerLoader();
+
     switch (source) {
         case 'nomicai':
-            return getNomicAIVector(text, source, directories);
+            return provider.getVector(text, source, directories);
         case 'togetherai':
         case 'mistral':
         case 'openai':
-            return getOpenAIVector(text, source, directories, sourceSettings.model);
         case 'electronhub':
-            return getOpenAIVector(text, source, directories, sourceSettings.model);
         case 'openrouter':
-            return getOpenAIVector(text, source, directories, sourceSettings.model);
-        case 'extras':
-            return getExtrasVector(text, sourceSettings.extrasUrl, sourceSettings.extrasKey);
-        case 'palm':
-            return getMakerSuiteVector(text, sourceSettings.model, sourceSettings.request);
-        case 'vertexai':
-            return getVertexVector(text, sourceSettings.model, sourceSettings.request);
-        case 'cohere':
-            return getCohereVector(text, isQuery, directories, sourceSettings.model);
-        case 'llamacpp':
-            return getLlamaCppVector(text, sourceSettings.apiUrl, directories);
-        case 'vllm':
-            return getVllmVector(text, sourceSettings.apiUrl, sourceSettings.model, directories);
-        case 'ollama':
-            return getOllamaVector(text, sourceSettings.apiUrl, sourceSettings.model, sourceSettings.keep, directories);
-        case 'webllm':
-            return sourceSettings.embeddings[text];
-        case 'koboldcpp':
-            return sourceSettings.embeddings[text];
         case 'chutes':
-            return getOpenAIVector(text, source, directories, sourceSettings.model);
         case 'nanogpt':
-            return getOpenAIVector(text, source, directories, sourceSettings.model);
         case 'siliconflow':
-            return getOpenAIVector(text, source, directories, sourceSettings.model, sourceSettings.urlOverride);
         case 'workers_ai':
-            return getOpenAIVector(text, source, directories, sourceSettings.model, sourceSettings.urlOverride);
+            return provider.getVector(text, source, directories, sourceSettings.model, sourceSettings.urlOverride);
+        case 'extras':
+            return provider.getVector(text, sourceSettings.extrasUrl, sourceSettings.extrasKey);
+        case 'palm':
+            return provider.getVector(text, sourceSettings.model, sourceSettings.request);
+        case 'vertexai':
+            return provider.getVector(text, sourceSettings.model, sourceSettings.request);
+        case 'cohere':
+            return provider.getVector(text, isQuery, directories, sourceSettings.model);
+        case 'llamacpp':
+            return provider.getVector(text, sourceSettings.apiUrl, directories);
+        case 'vllm':
+            return provider.getVector(text, sourceSettings.apiUrl, sourceSettings.model, directories);
+        case 'ollama':
+            return provider.getVector(text, sourceSettings.apiUrl, sourceSettings.model, sourceSettings.keep, directories);
     }
 
     throw new Error(`Unknown vector source ${source}`);
@@ -118,59 +135,55 @@ async function getBatchVector(source: string, sourceSettings: SourceSettings, te
 
     const results = [];
     for (const batch of batches) {
+        if (source === 'webllm' || source === 'koboldcpp') {
+            results.push(...texts.map((x: string) => sourceSettings.embeddings![x]));
+            // Note: Since webllm/koboldcpp don't use batches, we only need to do this once.
+            // However, to keep the loop structure, I'll just return results early.
+            return results;
+        }
+
+        const providerLoader = registry[source];
+        if (!providerLoader) {
+            throw new Error(`Unknown vector source ${source}`);
+        }
+
+        const provider = await providerLoader();
+
         switch (source) {
             case 'nomicai':
-                results.push(...(await getNomicAIBatchVector(batch, source, directories)));
+                results.push(...(await provider.getBatchVector(batch, source, directories)));
                 break;
             case 'togetherai':
             case 'mistral':
             case 'openai':
-                results.push(...(await getOpenAIBatchVector(batch, source, directories, sourceSettings.model)));
-                break;
             case 'electronhub':
-                results.push(...(await getOpenAIBatchVector(batch, source, directories, sourceSettings.model)));
+            case 'openrouter':
+            case 'chutes':
+            case 'nanogpt':
+            case 'siliconflow':
+            case 'workers_ai':
+                results.push(...(await provider.getBatchVector(batch, source, directories, sourceSettings.model, sourceSettings.urlOverride)));
                 break;
-                case 'openrouter':
-                    results.push(...(await getOpenAIBatchVector(batch, source, directories, sourceSettings.model)));
-                    break;
-                case 'extras':
-                    results.push(...(await getExtrasBatchVector(batch, sourceSettings.extrasUrl, sourceSettings.extrasKey)));
-                    break;
+            case 'extras':
+                results.push(...(await provider.getBatchVector(batch, sourceSettings.extrasUrl, sourceSettings.extrasKey)));
+                break;
             case 'palm':
-                results.push(...(await getMakerSuiteBatchVector(batch, sourceSettings.model, sourceSettings.request)));
+                results.push(...(await provider.getBatchVector(batch, sourceSettings.model, sourceSettings.request)));
                 break;
             case 'vertexai':
-                results.push(...(await getVertexBatchVector(batch, sourceSettings.model, sourceSettings.request)));
+                results.push(...(await provider.getBatchVector(batch, sourceSettings.model, sourceSettings.request)));
                 break;
             case 'cohere':
-                results.push(...(await getCohereBatchVector(batch, isQuery, directories, sourceSettings.model)));
+                results.push(...(await provider.getBatchVector(batch, isQuery, directories, sourceSettings.model)));
                 break;
             case 'llamacpp':
-                results.push(...(await getLlamaCppBatchVector(batch, sourceSettings.apiUrl, directories)));
+                results.push(...(await provider.getBatchVector(batch, sourceSettings.apiUrl, directories)));
                 break;
             case 'vllm':
-                results.push(...(await getVllmBatchVector(batch, sourceSettings.apiUrl, sourceSettings.model, directories)));
+                results.push(...(await provider.getBatchVector(batch, sourceSettings.apiUrl, sourceSettings.model, directories)));
                 break;
             case 'ollama':
-                results.push(...(await getOllamaBatchVector(batch, sourceSettings.apiUrl, sourceSettings.model, sourceSettings.keep, directories)));
-                break;
-            case 'webllm':
-                results.push(...texts.map((x: string) => sourceSettings.embeddings![x]));
-                break;
-            case 'koboldcpp':
-                results.push(...texts.map((x: string) => sourceSettings.embeddings![x]));
-                break;
-            case 'chutes':
-                results.push(...(await getOpenAIBatchVector(batch, source, directories, sourceSettings.model)));
-                break;
-            case 'nanogpt':
-                results.push(...(await getOpenAIBatchVector(batch, source, directories, sourceSettings.model)));
-                break;
-            case 'siliconflow':
-                results.push(...(await getOpenAIBatchVector(batch, source, directories, sourceSettings.model, sourceSettings.urlOverride)));
-                break;
-            case 'workers_ai':
-                results.push(...(await getOpenAIBatchVector(batch, source, directories, sourceSettings.model, sourceSettings.urlOverride)));
+                results.push(...(await provider.getBatchVector(batch, sourceSettings.apiUrl, sourceSettings.model, sourceSettings.keep, directories)));
                 break;
             default:
                 throw new Error(`Unknown vector source ${source}`);

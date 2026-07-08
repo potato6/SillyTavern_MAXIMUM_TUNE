@@ -20,7 +20,7 @@ const SOURCES = {
  * @param {import('../users.js').UserDirectoryList} directories - The directories object for the user
  * @returns {Promise<number[][]>} - The array of vectors for the texts
  */
-export async function getNomicAIBatchVector(texts: string[], source: string, directories: import('../users.js').UserDirectoryList): Promise<number[][]> {
+export async function getBatchVector(texts: string[], source: string, directories: import('../users.js').UserDirectoryList): Promise<number[][]> {
     // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     const config = SOURCES[source];
 
@@ -71,7 +71,7 @@ export async function getNomicAIBatchVector(texts: string[], source: string, dir
  * @param {import('../users.js').UserDirectoryList} directories - The directories object for the user
  * @returns {Promise<number[]>} - The vector for the text
  */
-export async function getNomicAIVector(text: string, source: string, directories: import('../users.js').UserDirectoryList): Promise<number[]> {
-    const vectors = await getNomicAIBatchVector([text], source, directories);
+export async function getVector(text: string, source: string, directories: import('../users.js').UserDirectoryList): Promise<number[]> {
+    const vectors = await getBatchVector([text], source, directories);
     return vectors[0];
 }

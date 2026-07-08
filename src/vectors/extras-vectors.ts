@@ -7,7 +7,7 @@ import fetch from 'node-fetch';
  * @param {string} apiKey - The Extras API key, or empty string if API key not enabled
  * @returns {Promise<number[][]>} - The array of vectors for the texts
  */
-export async function getExtrasBatchVector(texts: string[], apiUrl: string, apiKey: string): Promise<number[][]> {
+export async function getBatchVector(texts: string[], apiUrl: string, apiKey: string): Promise<number[][]> {
     return getExtrasVectorImpl(texts, apiUrl, apiKey) as Promise<number[][]>;
 }
 
@@ -18,7 +18,7 @@ export async function getExtrasBatchVector(texts: string[], apiUrl: string, apiK
  * @param {string} apiKey - The Extras API key, or empty string if API key not enabled
  * @returns {Promise<number[]>} - The vector for the text
  */
-export async function getExtrasVector(text: string, apiUrl: string, apiKey: string): Promise<number[]> {
+export async function getVector(text: string, apiUrl: string, apiKey: string): Promise<number[]> {
     return getExtrasVectorImpl(text, apiUrl, apiKey) as Promise<number[]>;
 }
 

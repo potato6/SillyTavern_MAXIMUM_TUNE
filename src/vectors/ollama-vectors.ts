@@ -15,7 +15,7 @@ type OllamaEmbeddingResponse = {
  * @param {import('../users.js').UserDirectoryList} directories - The directories object for the user
  * @returns {Promise<number[][]>} - The array of vectors for the texts
  */
-export async function getOllamaBatchVector(texts: string[], apiUrl: string, model: string, keep: boolean, directories: import('../users.js').UserDirectoryList): Promise<number[][]> {
+export async function getBatchVector(texts: string[], apiUrl: string, model: string, keep: boolean, directories: import('../users.js').UserDirectoryList): Promise<number[][]> {
     const url = new URL(apiUrl);
     url.pathname = '/api/embed';
 
@@ -59,7 +59,7 @@ export async function getOllamaBatchVector(texts: string[], apiUrl: string, mode
  * @param {import('../users.js').UserDirectoryList} directories - The directories object for the user
  * @returns {Promise<number[]>} - The vector for the text
  */
-export async function getOllamaVector(text: string, apiUrl: string, model: string, keep: boolean, directories: import('../users.js').UserDirectoryList): Promise<number[]> {
-    const vectors = await getOllamaBatchVector([text], apiUrl, model, keep, directories);
+export async function getVector(text: string, apiUrl: string, model: string, keep: boolean, directories: import('../users.js').UserDirectoryList): Promise<number[]> {
+    const vectors = await getBatchVector([text], apiUrl, model, keep, directories);
     return vectors[0];
 }
