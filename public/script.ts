@@ -959,7 +959,7 @@ export async function selectCharacterById(id, { switchMenu = true } = {}) {
         }
     } else {
         //if clicked on character that was already selected
-        switchMenu && (selected_button = 'character_edit');
+        if (switchMenu) selected_button = 'character_edit';
         await unshallowCharacter(this_chid);
         select_selected_character(this_chid, { switchMenu });
     }
@@ -2770,10 +2770,10 @@ export function updateMessageElement(mes, { messageId = chat.length - 1, message
     messageElement.find('.ch_name .name_text').text(mes.name);
     messageElement.find('.timestamp').text(timestamp).attr('title', `${mes.extra?.api ? mes.extra.api + ' - ' : ''}${mes.extra?.model ?? ''}`);
     messageElement.find('.mesIDDisplay').text(`#${messageId}`);
-    tokenCount && messageElement.find('.tokenCounterDisplay').text(`${tokenCount}t`);
-    mes.title && messageElement.attr('title', mes.title);
-    timerValue && messageElement.find('.mes_timer').attr('title', timerTitle).text(timerValue);
-    bookmarkLink && updateBookmarkDisplay(messageElement);
+    if (tokenCount) messageElement.find('.tokenCounterDisplay').text(`${tokenCount}t`);
+    if (mes.title) messageElement.attr('title', mes.title);
+    if (timerValue) messageElement.find('.mes_timer').attr('title', timerTitle).text(timerValue);
+    if (bookmarkLink) updateBookmarkDisplay(messageElement);
 
     if (mes.extra?.bias !== '') {
         const bias = messageFormatting(mes.extra?.bias, '', false, false, -1, {}, false);
@@ -2887,7 +2887,7 @@ let requestId = null;
  */
 export function scrollChatToBottom({
     waitForFrame
-}: any = {}) {
+}: { waitForFrame?: boolean } = {}) {
     if (!power_user.auto_scroll_chat_to_bottom) {
         return;
     }
@@ -3128,7 +3128,7 @@ export function substituteParams(content, options = {}) {
     // We'll simply re-route them to a temporary legacy function. In the future, we'll remove this and cleanly build the options object ourselves.
     const isOptionsObject = options && typeof options === 'object' && !Array.isArray(options);
     if (!isOptionsObject) {
-        return substituteParamsLegacy.call(this, ...arguments);
+        return substituteParamsLegacy.call(this, content, options);
     }
 
     // Keep the new macro engine behind a feature switch for now
@@ -3228,10 +3228,10 @@ export function getStoppingStrings(isImpersonate, isContinue, api = main_api) {
  * @returns {Promise<string>} Generated text. If using structured output, will contain a serialized JSON object.
  * @property
  */
-export async function generateQuietPrompt({ quietPrompt = '', quietToLoud = false, skipWIAN = false, quietImage = null, quietName = null, responseLength = null, forceChId = null, jsonSchema = null, removeReasoning = true, trimToSentence = false } = {}) {
-    if (arguments.length > 0 && typeof arguments[0] !== 'object') {
+export async function generateQuietPrompt({ quietPrompt = '', quietToLoud = false, skipWIAN = false, quietImage = null, quietName = null, responseLength = null, forceChId = null, jsonSchema = null, removeReasoning = true, trimToSentence = false } = {}, ...args: unknown[]) {
+    if (args.length > 0 && typeof args[0] !== 'object') {
         console.trace('generateQuietPrompt called with positional arguments. Please use an object instead.');
-        [quietPrompt, quietToLoud, skipWIAN, quietImage, quietName, responseLength, forceChId, jsonSchema] = arguments;
+        [quietPrompt, quietToLoud, skipWIAN, quietImage, quietName, responseLength, forceChId, jsonSchema] = args;
     }
 
     const responseLengthCustomized = typeof responseLength === 'number' && responseLength > 0;
@@ -3725,32 +3725,32 @@ function hideStopButton() {
 }
 
 class StreamingProcessor {
-    abortController: any;
-    continueMessage: any;
-    createdAt: any;
-    firstMessageText: any;
-    force_name2: any;
-    generator: any;
-    images: any;
-    isFinished: any;
-    isStopped: any;
-    messageDom: any;
-    messageId: any;
-    messageLogprobs: any;
-    messageTextDom: any;
-    messageTimerDom: any;
-    messageTokenCounterDom: any;
-    promptReasoning: any;
-    reasoningHandler: any;
-    reasoningSignature: any;
-    result: any;
-    sendTextarea: any;
-    stoppingStrings: any;
-    swipes: any;
-    timeStarted: any;
-    timeToFirstToken: any;
-    toolCalls: any;
-    type: any;
+    abortController: AbortController;
+    continueMessage: string;
+    createdAt: Date;
+    firstMessageText: string;
+    force_name2: boolean;
+    generator: AsyncGenerator;
+    images: string[];
+    isFinished: boolean;
+    isStopped: boolean;
+    messageDom: HTMLElement | null;
+    messageId: number;
+    messageLogprobs: TokenLogprobs[];
+    messageTextDom: HTMLElement | null;
+    messageTimerDom: HTMLElement | null;
+    messageTokenCounterDom: HTMLElement | null;
+    promptReasoning: PromptReasoning;
+    reasoningHandler: ReasoningHandler;
+    reasoningSignature: string | null;
+    result: string;
+    sendTextarea: HTMLTextAreaElement;
+    stoppingStrings: string[];
+    swipes: string[];
+    timeStarted: Date;
+    timeToFirstToken: number | null;
+    toolCalls: unknown[];
+    type: string;
     /**
      * Creates a new streaming processor.
      * @param {string} type Generation type
@@ -4339,10 +4339,10 @@ export async function generateRawData({ prompt = '', api = null, instructOverrid
  * @param {GenerateRawParams} params Parameters for generating a message
  * @returns {Promise<string>} Generated output: a cleaned-up message string when `jsonSchema` is not provided, or an extracted JSON string conforming to `jsonSchema` when it is.
  */
-export async function generateRaw({ prompt = '', api = null, instructOverride = false, quietToLoud = false, systemPrompt = '', responseLength = null, trimNames = true, prefill = '', jsonSchema = null } = {}) {
-    if (arguments.length > 0 && typeof arguments[0] !== 'object') {
+export async function generateRaw({ prompt = '', api = null, instructOverride = false, quietToLoud = false, systemPrompt = '', responseLength = null, trimNames = true, prefill = '', jsonSchema = null } = {}, ...args: unknown[]) {
+    if (args.length > 0 && typeof args[0] !== 'object') {
         console.trace('generateRaw called with positional arguments. Please use an object instead.');
-        [prompt, api, instructOverride, quietToLoud, systemPrompt, responseLength, trimNames, prefill, jsonSchema] = arguments;
+        [prompt, api, instructOverride, quietToLoud, systemPrompt, responseLength, trimNames, prefill, jsonSchema] = args;
     }
 
     const data = await generateRawData({ prompt, api, instructOverride, quietToLoud, systemPrompt, responseLength, prefill, jsonSchema });
@@ -4520,7 +4520,7 @@ export async function Generate(type, {
     quietName,
     jsonSchema = null,
     depth = 0
-}: any = {}, dryRun = false) {
+}: Record<string, unknown> = {}, dryRun = false) {
     console.log('Generate entered');
     setGenerationProgress(0);
     generation_started = new Date();
@@ -4696,17 +4696,17 @@ export async function Generate(type, {
         await sendMessageAsUser(oai_settings.send_if_empty.trim(), messageBias);
     }
 
-    let {
+    const characterFields = getCharacterCardFields();
+    const {
         description,
         personality,
         persona,
         scenario,
         mesExamples,
-        system,
-        jailbreak,
         charDepthPrompt,
         creatorNotes,
-    } = getCharacterCardFields();
+    } = characterFields;
+    let { system, jailbreak } = characterFields;
 
     // Depth prompt (character-specific A/N)
     removeDepthPrompts();
@@ -5673,7 +5673,7 @@ export async function Generate(type, {
                 const lastMessage = chat[chat.length - 1];
                 const hasToolCalls = ToolManager.hasToolCalls(streamingProcessor.toolCalls);
                 const shouldDeleteMessage = type !== 'swipe' && ['', '...'].includes(lastMessage?.mes) && !lastMessage?.extra?.reasoning && ['', '...'].includes(streamingProcessor?.result);
-                hasToolCalls && shouldDeleteMessage && (await deleteLastMessage());
+                if (hasToolCalls && shouldDeleteMessage) await deleteLastMessage();
                 if (hasToolCalls && !shouldDeleteMessage) {
                     await streamingProcessor.finalizeIntermediaryMessage(streamingProcessor.messageId, getMessage, { unlockUI: false });
                 }
@@ -5805,7 +5805,7 @@ export async function Generate(type, {
         if (canPerformToolCalls) {
             const hasToolCalls = ToolManager.hasToolCalls(data);
             const shouldDeleteMessage = type !== 'swipe' && ['', '...'].includes(getMessage) && !reasoning;
-            hasToolCalls && shouldDeleteMessage && (await deleteLastMessage());
+            if (hasToolCalls && shouldDeleteMessage) await deleteLastMessage();
             const invocationResult = await ToolManager.invokeFunctionTools(data, { reasoningText: reasoning });
             const shouldStopGeneration = (!invocationResult.invocations.length && shouldDeleteMessage) || invocationResult.stealthCalls.length;
             if (hasToolCalls) {
@@ -6761,10 +6761,10 @@ export function cleanUpMessage({
     includeUserPromptBias = true,
     trimNames = true,
     trimWrongNames = true
-}: any = {}) {
-    if (arguments.length > 0 && typeof arguments[0] !== 'object') {
+}: Record<string, unknown> = {}, ...args: unknown[]) {
+    if (args.length > 0 && typeof args[0] !== 'object') {
         console.trace('cleanUpMessage called with positional arguments. Please use an object instead.');
-        [getMessage, isImpersonate, isContinue, displayIncompleteSentences, stoppingStrings, includeUserPromptBias, trimNames, trimWrongNames] = arguments;
+        [getMessage, isImpersonate, isContinue, displayIncompleteSentences, stoppingStrings, includeUserPromptBias, trimNames, trimWrongNames] = args;
     }
 
     if (!getMessage) {
@@ -6958,11 +6958,11 @@ async function processImageAttachment(message, { imageUrls }) {
  * @property {string} type Type of generation
  * @property {string} getMessage Generated message
  */
-export async function saveReply({ type, getMessage, fromStreaming = false, title = '', swipes = [], reasoning = '', imageUrls = [], reasoningSignature = null }) {
+export async function saveReply({ type, getMessage, fromStreaming = false, title = '', swipes = [], reasoning = '', imageUrls = [], reasoningSignature = null }, ...args: unknown[]) {
     // Backward compatibility
-    if (arguments.length > 1 && typeof arguments[0] !== 'object') {
+    if (args.length > 1 && typeof args[0] !== 'object') {
         console.trace('saveReply called with positional arguments. Please use an object instead.');
-        [type, getMessage, fromStreaming, title, swipes, reasoning, imageUrls, reasoningSignature] = arguments;
+        [type, getMessage, fromStreaming, title, swipes, reasoning, imageUrls, reasoningSignature] = args;
     }
 
     const lastMessage = chat[chat.length - 1];
@@ -7008,9 +7008,9 @@ export async function saveReply({ type, getMessage, fromStreaming = false, title
                 lastMessage.extra.token_count = await getTokenCountAsync(tokenCountText, 0);
             }
             const chat_id = (chat.length - 1);
-            !fromStreaming && (await eventSource.emit(event_types.MESSAGE_RECEIVED, chat_id, type));
+            if (!fromStreaming) await eventSource.emit(event_types.MESSAGE_RECEIVED, chat_id, type);
             addOneMessage(chat[chat_id], { type: 'swipe' });
-            !fromStreaming && (await eventSource.emit(event_types.CHARACTER_MESSAGE_RENDERED, chat_id, type));
+            if (!fromStreaming) await eventSource.emit(event_types.CHARACTER_MESSAGE_RENDERED, chat_id, type);
         } else {
             lastMessage.mes = getMessage;
         }
@@ -7034,9 +7034,9 @@ export async function saveReply({ type, getMessage, fromStreaming = false, title
             lastMessage.extra.token_count = await getTokenCountAsync(tokenCountText, 0);
         }
         const chat_id = (chat.length - 1);
-        !fromStreaming && (await eventSource.emit(event_types.MESSAGE_RECEIVED, chat_id, type));
+        if (!fromStreaming) await eventSource.emit(event_types.MESSAGE_RECEIVED, chat_id, type);
         addOneMessage(chat[chat_id], { type: 'swipe' });
-        !fromStreaming && (await eventSource.emit(event_types.CHARACTER_MESSAGE_RENDERED, chat_id, type));
+        if (!fromStreaming) await eventSource.emit(event_types.CHARACTER_MESSAGE_RENDERED, chat_id, type);
     } else if (type === 'appendFinal') {
         oldMessage = lastMessage.mes;
         console.debug('Trying to appendFinal.');
@@ -7057,9 +7057,9 @@ export async function saveReply({ type, getMessage, fromStreaming = false, title
             lastMessage.extra.token_count = await getTokenCountAsync(tokenCountText, 0);
         }
         const chat_id = (chat.length - 1);
-        !fromStreaming && (await eventSource.emit(event_types.MESSAGE_RECEIVED, chat_id, type));
+        if (!fromStreaming) await eventSource.emit(event_types.MESSAGE_RECEIVED, chat_id, type);
         addOneMessage(chat[chat_id], { type: 'swipe' });
-        !fromStreaming && (await eventSource.emit(event_types.CHARACTER_MESSAGE_RENDERED, chat_id, type));
+        if (!fromStreaming) await eventSource.emit(event_types.CHARACTER_MESSAGE_RENDERED, chat_id, type);
     } else {
         console.debug('entering chat update routine for non-swipe post');
         const newMessage = {};
@@ -7118,9 +7118,9 @@ export async function saveReply({ type, getMessage, fromStreaming = false, title
         await processImageAttachment(newMessage, { imageUrls });
         const chat_id = (chat.length - 1);
 
-        !fromStreaming && (await eventSource.emit(event_types.MESSAGE_RECEIVED, chat_id, type));
+        if (!fromStreaming) await eventSource.emit(event_types.MESSAGE_RECEIVED, chat_id, type);
         addOneMessage(chat[chat_id]);
-        !fromStreaming && (await eventSource.emit(event_types.CHARACTER_MESSAGE_RENDERED, chat_id, type));
+        if (!fromStreaming) await eventSource.emit(event_types.CHARACTER_MESSAGE_RENDERED, chat_id, type);
     }
 
     const item = chat[chat.length - 1];
@@ -7794,16 +7794,16 @@ export async function saveChat({
     mesId,
     force = false,
     chatData = undefined
-}: any = {}) {
+}: Record<string, unknown> = {}, ...args: unknown[]) {
     if (selected_group) {
         // @ts-expect-error TS(2304): Cannot find name 'toastr'.
         toastr.error(t`Operation was aborted to prevent data corruption.`, t`saveChat called for a group chat`);
         throw new Error('saveChat called for a group chat');
     }
 
-    if (arguments.length > 0 && typeof arguments[0] !== 'object') {
+    if (args.length > 0 && typeof args[0] !== 'object') {
         console.trace('saveChat called with positional arguments. Please use an object instead.');
-        [chatName, withMetadata, mesId, force] = arguments;
+        [chatName, withMetadata, mesId, force] = args;
     }
 
     const metadata = { ...chat_metadata, ...(withMetadata || {}) };
@@ -8953,7 +8953,9 @@ async function messageEditDone(div) {
         return;
     }
 
-    let { mesBlock, text, mes, bias } = updateMessage(div);
+    const updateMsg = updateMessage(div);
+    const { mesBlock, mes, bias } = updateMsg;
+    let { text } = updateMsg;
 
     await eventSource.emit(event_types.MESSAGE_EDITED, this_edit_mes_id);
     text = chat[this_edit_mes_id]?.mes ?? text;
@@ -9246,8 +9248,9 @@ export function select_rm_info(type, charId, previousCharId = null) {
         toastr.error(t`Invalid process (no 'type')`);
         return;
     }
+    let displayName = '';
     if (type !== 'group_create') {
-        var displayName = String(charId).replace('.png', '');
+        displayName = String(charId).replace('.png', '');
     }
 
     if (type === 'char_delete') {
@@ -9360,7 +9363,7 @@ export function select_selected_character(chid, { switchMenu = true } = {}) {
     //character select
     //console.log('select_selected_character() -- starting with input of -- ' + chid + ' (name:' + characters[chid].name + ')');
     select_rm_create({ switchMenu });
-    switchMenu && setMenuType('character_edit');
+    if (switchMenu) setMenuType('character_edit');
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#delete_button').css('display', 'flex');
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
@@ -9492,7 +9495,7 @@ export function select_selected_character(chid, { switchMenu = true } = {}) {
  * @param {boolean} [options.switchMenu] Whether to switch the menu
  */
 function select_rm_create({ switchMenu = true } = {}) {
-    switchMenu && setMenuType('create');
+    if (switchMenu) setMenuType('create');
 
     //console.log('select_rm_Create() -- selected button: '+selected_button);
     if (selected_button == 'create' && create_save.avatar) {
@@ -9502,7 +9505,7 @@ function select_rm_create({ switchMenu = true } = {}) {
         read_avatar_load(addAvatarInput);
     }
 
-    switchMenu && selectRightMenuWithAnimation('rm_ch_create_block');
+    if (switchMenu) selectRightMenuWithAnimation('rm_ch_create_block');
 
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#set_chat_character_settings').hide();
@@ -9780,7 +9783,7 @@ export async function callPopup(text, type, inputValue = '', {
     allowVerticalScrolling,
     // @ts-expect-error TS(6133): 'cropAspect' is declared but its value is never re... Remove this comment to see the full error message
     cropAspect
-}: any = {}) {
+}: Record<string, unknown> = {}) {
     try {
         /**
          *
@@ -10645,7 +10648,7 @@ export async function createOrEditCharacter(e) {
                 const fieldValue = field.defaultValue !== undefined ? field.defaultValue : '';
                 // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $(field.id).val(fieldValue);
-                field.callback && field.callback(fieldValue);
+                if (field.callback) field.callback(fieldValue);
             });
 
             if (Array.isArray(create_save.extra_books) && create_save.extra_books.length > 0) {
@@ -10782,7 +10785,7 @@ export async function swipe(event, direction, {
     forceMesId,
     forceSwipeId,
     forceDuration
-}: any = {}) {
+}: Record<string, unknown> = {}) {
     if (chat.length === 0) {
         console.warn('Swipe was called on an empty chat.');
         return;
@@ -11287,11 +11290,11 @@ export async function swipe(event, direction, {
  * @param {boolean} [params.repeated] Is the swipe event repeated.
  * @param {object} [params.message] The chat message to swipe.
  */
-export async function swipe_left(event, {
+export async function swipe_left(event: Event, {
     source,
     repeated,
     message
-}: any = {}) {
+}: { source?: string; repeated?: boolean; message?: string } = {}) {
     await swipe.call(this, event, SWIPE_DIRECTION.LEFT, { source: source, repeated: repeated, message: message });
 }
 
@@ -11305,11 +11308,11 @@ export async function swipe_left(event, {
  * @param {object} [params.message] The chat message to swipe.
  */
 //MARK: swipe_right
-export async function swipe_right(event = null, {
+export async function swipe_right(event: Event | null = null, {
     source,
     repeated,
     message
-}: any = {}) {
+}: { source?: string; repeated?: boolean; message?: string } = {}) {
     await swipe.call(this, event, SWIPE_DIRECTION.RIGHT, { source: source, repeated: repeated, message: message });
 }
 
@@ -12170,7 +12173,8 @@ jQuery(async function () {
             if (e.target instanceof HTMLTextAreaElement && e.target.classList.contains('edit_textarea')) {
                 const scrollbarShown = e.target.clientWidth < e.target.offsetWidth && e.target.offsetHeight >= window.innerHeight * 0.75;
                 const immediately = (e.target.scrollHeight > e.target.offsetHeight && !scrollbarShown) || e.target.value === '';
-                immediately ? autoFitEditTextArea(e.target) : autoFitEditTextAreaDebounced(e.target);
+                if (immediately) autoFitEditTextArea(e.target);
+                else autoFitEditTextAreaDebounced(e.target);
             }
         });
     }
@@ -12389,9 +12393,8 @@ jQuery(async function () {
     });
 
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#add_avatar_button').on('change', function () {
-        const inputElement = /** @type {HTMLInputElement} */ (this);
-        read_avatar_load(inputElement);
+    $('#add_avatar_button').on('change', function (this: HTMLInputElement) {
+        read_avatar_load(this);
     });
 
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
@@ -12941,7 +12944,7 @@ jQuery(async function () {
                 await messageEditDone(mes_edited);
             }
             // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            var edit_mes_id = Number($(this).closest('.mes').attr('mesid'));
+            const edit_mes_id = Number($(this).closest('.mes').attr('mesid'));
 
             await messageEdit(edit_mes_id);
         }
@@ -13423,7 +13426,7 @@ jQuery(async function () {
             if (animation_duration > 0) {
                 newElement.style.opacity = '0';
                 newElement.style.transition = `opacity ${animation_duration}ms ease`;
-                newElement.offsetHeight;
+                void newElement.offsetHeight;
                 newElement.style.opacity = '1';
             }
 
