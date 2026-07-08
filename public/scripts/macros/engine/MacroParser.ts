@@ -13,35 +13,37 @@ const { CstParser, Lexer } = chevrotain;
  * The singleton instance of the MacroParser.
  * @type {MacroParser}
  */
-let instance: MacroParser;
+const instance: MacroParser = new MacroParser();
 export { instance as MacroParser };
 
 class MacroParser extends CstParser {
-    document: any;
-    macro: any;
-    macroBody: any;
-    variableExpr: any;
-    variableOperator: any;
-    variableValue: any;
-    arguments: any;
-    argument: any;
-    argumentAllowingColons: any;
+    document: () => unknown;
+    macro: () => unknown;
+    macroBody: () => unknown;
+    variableExpr: () => unknown;
+    variableOperator: () => unknown;
+    variableValue: () => unknown;
+    arguments: () => unknown;
+    argument: () => unknown;
+    argumentAllowingColons: () => unknown;
 
-    lexerInstance: any; // Used to cache the Lexer locally
+    lexerInstance: import('./MacroLexer.js').MacroLexer | null; // Used to cache the Lexer locally
 
     /** @type {MacroParser} */ static #instance: MacroParser;
     /** @type {MacroParser} */ static get instance() { return MacroParser.#instance ?? (MacroParser.#instance = new MacroParser()); }
 
     /** @private */
     constructor() {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         super((MacroLexer as any).def, {
             traceInitPerf: false,
             nodeLocationTracking: 'full',
             recoveryEnabled: true,
         });
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const Tokens = (MacroLexer as any).tokens;
 
-        // Cast alias to 'any' to bypass TS visibility checks for protected Chevrotain parser methods
+        // eslint-disable-next-line @typescript-eslint/no-this-alias, @typescript-eslint/no-explicit-any
         const $: any = this;
 
         // Top-level document rule that can handle both plaintext and macros
@@ -205,6 +207,7 @@ class MacroParser extends CstParser {
      * @param input
      */
     tokenizeInput(input: string) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const lexerAny = MacroLexer as any;
 
         if (typeof lexerAny.tokenize === 'function') {
@@ -249,7 +252,7 @@ class MacroParser extends CstParser {
 
         // "input" is a setter which will reset the parser's state.
         this.input = lexingResult.tokens;
-        const cst = this.macro();
+        return this.macro();
 
    }
 }
