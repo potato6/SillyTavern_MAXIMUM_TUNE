@@ -8,8 +8,8 @@ const COMMIT_HASH_FILE = path.join(DIST_DIR, ".commit-hash");
 
 /**
  * Recursively copy static assets.
- * @param src
- * @param dest
+ * @param {string} src Source directory path
+ * @param {string} dest Destination directory path
  */
 function copyRecursiveSync(src: string, dest: string) {
   if (!existsSync(dest)) {
