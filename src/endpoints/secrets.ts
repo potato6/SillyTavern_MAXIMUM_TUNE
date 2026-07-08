@@ -111,13 +111,13 @@ export const allowKeysExposure = !!getConfigValue('allowKeysExposure', false, 'b
  * SecretManager class to handle all secret operations
  */
 export class SecretManager {
-    defaultSecrets: any;
-    directories: any;
-    filePath: any;
+    defaultSecrets: Record<string, never>;
+    directories: import('../users.js').UserDirectoryList;
+    filePath: string;
     /**
-     * @param {import('../users.js').UserDirectoryList} directories
+     * @param {import('../users.js').UserDirectoryList} directories User directories
      */
-    constructor(directories: any) {
+    constructor(directories: import('../users.js').UserDirectoryList) {
         this.directories = directories;
         this.filePath = path.join(directories.root, SECRETS_FILE);
         this.defaultSecrets = {};
@@ -136,7 +136,7 @@ export class SecretManager {
     /**
      * Reads and parses the secrets file
      * @private
-     * @returns {SecretKeys}
+     * @returns {SecretKeys} The parsed secrets from the file
      */
     _readSecretsFile() {
         this._ensureSecretsFile();
@@ -147,19 +147,19 @@ export class SecretManager {
     /**
      * Writes secrets to the file atomically
      * @private
-     * @param {SecretKeys} secrets
+     * @param {SecretKeys} secrets The secrets object to write
      */
-    _writeSecretsFile(secrets: any) {
+    _writeSecretsFile(secrets: SecretKeys) {
         writeFileAtomicSync(this.filePath, JSON.stringify(secrets, null, 4), 'utf-8');
     }
 
     /**
      * Deactivates all secrets for a given key
      * @private
-     * @param {SecretValue[]} secretArray
+     * @param {SecretValue[]} secretArray Array of secrets to deactivate
      */
-    _deactivateAllSecrets(secretArray: any) {
-        secretArray.forEach((secret: any) => {
+    _deactivateAllSecrets(secretArray: SecretValue[]) {
+        secretArray.forEach((secret: SecretValue) => {
             secret.active = false;
         });
     }
@@ -167,11 +167,11 @@ export class SecretManager {
     /**
      * Validates that the secret key exists and has valid structure
      * @private
-     * @param {SecretKeys} secrets
-     * @param {string} key
-     * @returns {boolean}
+     * @param {SecretKeys} secrets The secrets object
+     * @param {string} key The secret key to validate
+     * @returns {boolean} Whether the key exists and has a valid secret array
      */
-    _validateSecretKey(secrets: any, key: any) {
+    _validateSecretKey(secrets: SecretKeys, key: string) {
         return Object.hasOwn(secrets, key) && Array.isArray(secrets[key]);
     }
 
@@ -181,7 +181,7 @@ export class SecretManager {
      * @param {string} key The secret key
      * @returns {string} A masked version of the value for peeking
      */
-    getMaskedValue(value: any, key: any) {
+    getMaskedValue(value: string, key: string) {
         // No masking if exposure is allowed
         if (allowKeysExposure || EXPORTABLE_KEYS.includes(key)) {
             return value;
@@ -204,7 +204,7 @@ export class SecretManager {
      * @param {string} label Label for the secret
      * @returns {string} The ID of the newly created secret
      */
-    writeSecret(key: any, value: any, label = 'Unlabeled') {
+    writeSecret(key: string, value: string, label = 'Unlabeled') {
         const secrets = this._readSecretsFile();
 
         if (!Array.isArray(secrets[key])) {
@@ -230,7 +230,7 @@ export class SecretManager {
      * @param {string} key Secret key
      * @param {string?} id Secret ID to delete
      */
-    deleteSecret(key: any, id: any) {
+    deleteSecret(key: string, id: string | null) {
         if (!fs.existsSync(this.filePath)) {
             return;
         }
@@ -242,7 +242,7 @@ export class SecretManager {
         }
 
         const secretArray = secrets[key];
-        const targetIndex = secretArray.findIndex((s: any) => id ? s.id === id : s.active);
+        const targetIndex = secretArray.findIndex((s: SecretValue) => id ? s.id === id : s.active);
 
         // Delete the secret if found
         if (targetIndex !== -1) {
@@ -250,7 +250,7 @@ export class SecretManager {
         }
 
         // Reactivate the first secret if none are active
-        if (secretArray.length && !secretArray.some((s: any) => s.active)) {
+        if (secretArray.length && !secretArray.some((s: SecretValue) => s.active)) {
             secretArray[0].active = true;
         }
 
@@ -268,7 +268,7 @@ export class SecretManager {
      * @param {string?} id ID of the secret to read (optional)
      * @returns {string} Secret value or empty string if not found
      */
-    readSecret(key: any, id: any) {
+    readSecret(key: string, id: string | null = null) {
         if (!fs.existsSync(this.filePath)) {
             return '';
         }
@@ -289,7 +289,7 @@ export class SecretManager {
      * @param {string} key Secret key to rotate
      * @param {string} id ID of the secret to activate
      */
-    rotateSecret(key: any, id: any) {
+    rotateSecret(key: string, id: string) {
         if (!fs.existsSync(this.filePath)) {
             return;
         }
@@ -301,7 +301,7 @@ export class SecretManager {
         }
 
         const secretArray = secrets[key];
-        const targetIndex = secretArray.findIndex((s: any) => s.id === id);
+        const targetIndex = secretArray.findIndex((s: SecretValue) => s.id === id);
 
         if (targetIndex === -1) {
             console.warn(`Secret with ID ${id} not found for key ${key}`);
@@ -320,7 +320,7 @@ export class SecretManager {
      * @param {string} id ID of the secret to rename
      * @param {string} label New label for the secret
      */
-    renameSecret(key: any, id: any, label: any) {
+    renameSecret(key: string, id: string, label: string) {
         const secrets = this._readSecretsFile();
 
         if (!this._validateSecretKey(secrets, key)) {
@@ -328,7 +328,7 @@ export class SecretManager {
         }
 
         const secretArray = secrets[key];
-        const targetIndex = secretArray.findIndex((s: any) => s.id === id);
+        const targetIndex = secretArray.findIndex((s: SecretValue) => s.id === id);
 
         if (targetIndex === -1) {
             console.warn(`Secret with ID ${id} not found for key ${key}`);
@@ -427,8 +427,9 @@ export class SecretManager {
  * @param {import('../users.js').UserDirectoryList} directories User directories
  * @param {string} key Secret key
  * @param {string} value Secret value
+ * @returns {string} The ID of the newly created secret
  */
-export function writeSecret(directories: any, key: any, value: any) {
+export function writeSecret(directories: import('../users.js').UserDirectoryList, key: string, value: string) {
     return new SecretManager(directories).writeSecret(key, value);
 }
 
@@ -436,8 +437,9 @@ export function writeSecret(directories: any, key: any, value: any) {
  * Deletes a secret from the secrets file
  * @param {import('../users.js').UserDirectoryList} directories User directories
  * @param {string} key Secret key
+ * @returns {void}
  */
-export function deleteSecret(directories: any, key: any) {
+export function deleteSecret(directories: import('../users.js').UserDirectoryList, key: string) {
     return new SecretManager(directories).deleteSecret(key, null);
 }
 
@@ -448,7 +450,7 @@ export function deleteSecret(directories: any, key: any) {
  * @param {string?} id Secret ID (optional)
  * @returns {string} Secret value
  */
-export function readSecret(directories: any, key: any, id = null) {
+export function readSecret(directories: import('../users.js').UserDirectoryList, key: string, id: string | null = null) {
     return new SecretManager(directories).readSecret(key, id);
 }
 
@@ -457,7 +459,7 @@ export function readSecret(directories: any, key: any, id = null) {
  * @param {import('../users.js').UserDirectoryList} directories User directories
  * @returns {Record<string, boolean>} Secret state
  */
-export function readSecretState(directories: any) {
+export function readSecretState(directories: import('../users.js').UserDirectoryList) {
     const state = new SecretManager(directories).getSecretState();
     const result = /** @type {Record<string, boolean>} */ ({});
     for (const key of Object.values(SECRET_KEYS)) {
@@ -475,7 +477,7 @@ export function readSecretState(directories: any) {
  * @param {import('../users.js').UserDirectoryList} directories User directories
  * @returns {Record<string, string>} Secrets
  */
-export function getAllSecrets(directories: any) {
+export function getAllSecrets(directories: import('../users.js').UserDirectoryList) {
     const secrets = new SecretManager(directories).getAllSecrets();
     const result = /** @type {Record<string, string>} */ ({});
     for (const [key, values] of Object.entries(secrets)) {
@@ -498,7 +500,7 @@ export function getAllSecrets(directories: any) {
  * Migrates legacy flat secrets format to the new format for all user directories
  * @param {import('../users.js').UserDirectoryList[]} directoriesList User directories
  */
-export function migrateFlatSecrets(directoriesList: any) {
+export function migrateFlatSecrets(directoriesList: import('../users.js').UserDirectoryList[]) {
     for (const directories of directoriesList) {
         try {
             const manager = new SecretManager(directories);
