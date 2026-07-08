@@ -237,7 +237,7 @@ export class ActionLoaderHandle {
 
     /**
      * The unique identifier for this loader handle.
-     * @returns {string}
+     * @returns {string} The unique identifier for this loader handle
      */
     get id() {
         return this.#id;
@@ -245,7 +245,7 @@ export class ActionLoaderHandle {
 
     /**
      * The unique slug for this loader handle, used to identify it easily via code or CSS.
-     * @returns {string|null}
+     * @returns {string|null} The unique slug for this loader handle
      */
     get slug() {
         return this.#slug;
@@ -253,7 +253,7 @@ export class ActionLoaderHandle {
 
     /**
      * Whether this handle is still active (not disposed).
-     * @returns {boolean}
+     * @returns {boolean} Whether this handle is still active
      */
     get isActive() {
         return !this.#disposed;
@@ -261,7 +261,7 @@ export class ActionLoaderHandle {
 
     /**
      * Whether this loader blocks the UI with an overlay.
-     * @returns {boolean}
+     * @returns {boolean} Whether this loader blocks the UI
      */
     get isBlocking() {
         return this.#blocking;
