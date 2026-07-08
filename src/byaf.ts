@@ -16,7 +16,10 @@ export class ByafParser {
      * Creates an instance of ByafParser.
      * @param {ArrayBufferLike} data BYAF ZIP buffer
      */
-    constructor(data: any) {
+    /**
+     * @param {ArrayBufferLike} data
+     */
+    constructor(data: ArrayBufferLike) {
         this.#data = data;
     }
 
@@ -26,7 +29,7 @@ export class ByafParser {
      * @returns {string} String with macros replaced
      * @private
      */
-    static replaceMacros(str: any) {
+    static replaceMacros(str: string) {
         return String(str || '')
             .replace(/#{user}:/gi, '{{user}}:')
             .replace(/#{character}:/gi, '{{char}}:')
@@ -40,7 +43,7 @@ export class ByafParser {
      * @returns {string} Formatted example messages
      * @private
      */
-    static formatExampleMessages(examples: any) {
+    static formatExampleMessages(examples: Array<ByafExampleMessage>) {
         if (!Array.isArray(examples)) {
             return '';
         }
@@ -63,7 +66,7 @@ export class ByafParser {
      * @returns {string[]} Formatted alternate greetings
      * @private
      */
-    formatAlternateGreetings(scenarios: any) {
+    formatAlternateGreetings(scenarios: Array<Partial<ByafScenario>>) {
         if (!Array.isArray(scenarios)) {
             return [];
         }
@@ -91,7 +94,7 @@ export class ByafParser {
      * @returns {CharacterBook|undefined} Converted character book or undefined if invalid
      * @private
      */
-    convertCharacterBook(items: any) {
+    convertCharacterBook(items: Array<ByafLoreItem>) {
         if (!Array.isArray(items) || items.length === 0) {
             return undefined;
         }
@@ -124,7 +127,7 @@ export class ByafParser {
      * @returns {Promise<{character:ByafCharacter,characterPath:string}>} Character object
      * @private
      */
-    async getCharacterFromManifest(manifest: any) {
+    async getCharacterFromManifest(manifest: ByafManifest) {
         const charactersArray = manifest?.characters;
 
         if (!Array.isArray(charactersArray)) {
@@ -164,7 +167,7 @@ export class ByafParser {
      * @returns {Promise<Partial<ByafScenario>[]>} Scenarios array
      * @private
      */
-    async getScenariosFromManifest(manifest: any) {
+    async getScenariosFromManifest(manifest: ByafManifest) {
         const scenariosArray = manifest?.scenarios;
 
         if (!Array.isArray(scenariosArray) || scenariosArray.length === 0) {
@@ -203,7 +206,7 @@ export class ByafParser {
      * @returns {Promise<{filename: string, image: Buffer, label: string}[]>} Image buffer
      * @private
      */
-    async getCharacterImages(character: any, characterPath: any) {
+    async getCharacterImages(character: ByafCharacter, characterPath: string) {
         const defaultAvatarBuffer = await fsPromises.readFile(DEFAULT_AVATAR_PATH);
         const characterImages = character?.images;
 
@@ -244,7 +247,7 @@ export class ByafParser {
      * @returns {TavernCardV2} Character card object
      * @private
      */
-    getCharacterCard(manifest: any, character: any, scenarios: any) {
+    getCharacterCard(manifest: ByafManifest, character: ByafCharacter, scenarios: Array<Partial<ByafScenario>>) {
         return {
             spec: 'chara_card_v2',
             spec_version: '2.0',
@@ -275,7 +278,7 @@ export class ByafParser {
      * @returns {Promise<Array<ByafChatBackground>>} Chat backgrounds
      * @private
      */
-    async getChatBackgrounds(character: any, scenarios: any) {
+    async getChatBackgrounds(character: ByafCharacter, scenarios: Array<Partial<ByafScenario>>) {
         // Implementation for extracting chat backgrounds from BYAF data
         const backgrounds = [];
         let i = 1;
@@ -327,9 +330,9 @@ export class ByafParser {
      * @param {Array<ByafChatBackground>} chatBackgrounds Chat backgrounds
      * @returns {string} Chat data
      */
-    static getChatFromScenario(scenario: any, userName: any, characterName: any, chatBackgrounds: any) {
-        const chatStartDate = scenario?.messages?.length == 0 ? new Date().toISOString() : scenario?.messages?.filter((m: any) => 'createdAt' in m)[0].createdAt;
-        const chatBackground = chatBackgrounds.find((bg: any) => bg.paths.includes(scenario?.backgroundImage || ''))?.name || '';
+    static getChatFromScenario(scenario: Partial<ByafScenario>, userName: string, characterName: string, chatBackgrounds: Array<ByafChatBackground>) {
+        const chatStartDate = scenario?.messages?.length == 0 ? new Date().toISOString() : scenario?.messages?.filter((m: ByafHumanMessage | ByafAiMessage) => 'createdAt' in m)[0].createdAt;
+        const chatBackground = chatBackgrounds.find((bg: ByafChatBackground) => bg.paths.includes(scenario?.backgroundImage || ''))?.name || '';
         /** @type {object[]} */
         const chat = [{
             user_name: 'unused',
@@ -366,21 +369,21 @@ export class ByafParser {
             });
         }
 
-        const sortByTimestamp = (newest: any, curr: any) => {
+        const sortByTimestamp = (newest: ByafAiMessage['outputs'][0], curr: ByafAiMessage['outputs'][0]) => {
             const aTime = new Date(newest.activeTimestamp);
             const bTime = new Date(curr.activeTimestamp);
             return aTime >= bTime ? newest : curr;
         };
 
-        const getNewestAiMessage = (message: any) => {
+        const getNewestAiMessage = (message: ByafAiMessage) => {
             return message.outputs.reduce(sortByTimestamp);
         };
-        const getSwipesForAiMessage = (aiMessage: any) => {
-            return aiMessage.outputs.map((output: any) => output.text);
+        const getSwipesForAiMessage = (aiMessage: ByafAiMessage) => {
+            return aiMessage.outputs.map((output: ByafAiMessage['outputs'][0]) => output.text);
         };
 
-        const userMessages = scenario?.messages?.filter((msg: any) => msg.type === 'human');
-        const characterMessages = scenario?.messages?.filter((msg: any) => msg.type === 'ai');
+        const userMessages = scenario?.messages?.filter((msg: ByafHumanMessage | ByafAiMessage): msg is ByafHumanMessage => msg.type === 'human');
+        const characterMessages = scenario?.messages?.filter((msg: ByafHumanMessage | ByafAiMessage): msg is ByafAiMessage => msg.type === 'ai');
         /**
          * Reorders messages by interleaving user and character messages so that they are in correct chronological order.
          * This is only needed to import old chats from Backyard AI that were incorrectly imported by an earlier version
@@ -405,7 +408,7 @@ export class ByafParser {
                     send_date: Number(aiMessage.createdAt),
                     mes: aiMessage.text,
                     swipes: aiSwipes,
-                    swipe_id: aiSwipes.findIndex((s: any) => s === aiMessage.text),
+                    swipe_id: aiSwipes.findIndex((s: string) => s === aiMessage.text),
                 });
             }
         } else if (scenario?.messages) {
@@ -423,7 +426,7 @@ export class ByafParser {
                     // @ts-expect-error TS(2339): Property 'swipes' does not exist on type '{ name: ... Remove this comment to see the full error message
                     chatMessage.swipes = aiSwipes;
                     // @ts-expect-error TS(2339): Property 'swipe_id' does not exist on type '{ name... Remove this comment to see the full error message
-                    chatMessage.swipe_id = aiSwipes.findIndex((s: any) => s === aiMessage.text);
+                    chatMessage.swipe_id = aiSwipes.findIndex((s: string) => s === aiMessage.text);
                 }
                 // @ts-expect-error TS(2345): Argument of type '{ name: any; is_user: boolean; s... Remove this comment to see the full error message
                 chat.push(chatMessage);
