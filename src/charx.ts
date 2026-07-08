@@ -20,7 +20,7 @@ const ZIP_SIGNATURE = Buffer.from([0x50, 0x4B, 0x03, 0x04]);
  * @param {Buffer} buffer
  * @returns {Buffer} Buffer starting at ZIP signature, or original if not found
  */
-function findZipStart(buffer: any) {
+function findZipStart(buffer: Buffer) {
     const buf = Buffer.isBuffer(buffer) ? buffer : Buffer.from(buffer);
     const index = buf.indexOf(ZIP_SIGNATURE);
     if (index > 0) {
@@ -54,7 +54,7 @@ export class CharXParser {
     /**
      * @param {ArrayBuffer|Buffer} data
      */
-    constructor(data: any) {
+    constructor(data: ArrayBuffer | Buffer) {
         // Handle SFX (self-extracting) ZIP archives by finding the actual ZIP start
         this.#data = findZipStart(Buffer.isBuffer(data) ? data : Buffer.from(data));
     }
@@ -110,7 +110,7 @@ export class CharXParser {
         return { card, avatar, auxiliaryAssets, extractedBuffers };
     }
 
-    getEmbeddedZipPathFromUri(uri: any) {
+    getEmbeddedZipPathFromUri(uri: string) {
         if (typeof uri !== 'string') {
             return null;
         }
@@ -136,7 +136,7 @@ export class CharXParser {
      * @param {string} ext
      * @returns {string}
      */
-    normalizeExtString(ext: any) {
+    normalizeExtString(ext: string) {
         if (typeof ext !== 'string') return '';
         return ext.trim().toLowerCase().replace(/^\./, '');
     }
@@ -148,7 +148,7 @@ export class CharXParser {
      * @param {string} expectedExt - The expected extension (lowercase, no dot)
      * @returns {string} Name with trailing extension stripped if it matched
      */
-    stripTrailingImageExtension(name: any, expectedExt: any) {
+    stripTrailingImageExtension(name: string, expectedExt: string) {
         if (!name || !expectedExt) return name;
         const lower = name.toLowerCase();
         // Check if name ends with the expected extension
@@ -164,13 +164,13 @@ export class CharXParser {
         return name;
     }
 
-    deriveCharXAssetExtension(assetExt: any, zipPath: any) {
+    deriveCharXAssetExtension(assetExt: string, zipPath: string) {
         const metaExt = this.normalizeExtString(assetExt);
         const pathExt = this.normalizeExtString(path.extname(zipPath || ''));
         return metaExt || pathExt;
     }
 
-    collectCharXAssets(card: any) {
+    collectCharXAssets(card: object) {
         const assets = card?.data?.assets;
         if (!Array.isArray(assets)) {
             return [];
@@ -200,13 +200,13 @@ export class CharXParser {
         }).filter(Boolean);
     }
 
-    pickCharXIconAsset(assets: any) {
-        const iconAssets = assets.filter((asset: any) => asset.type === 'icon' && CHARX_IMAGE_EXTENSIONS.has(asset.ext) && asset.zipPath);
+    pickCharXIconAsset(assets: Array<CharXAsset>) {
+        const iconAssets = assets.filter((asset: CharXAsset) => asset.type === 'icon' && CHARX_IMAGE_EXTENSIONS.has(asset.ext) && asset.zipPath);
         if (iconAssets.length === 0) {
             return null;
         }
 
-        const mainIcon = iconAssets.find((asset: any) => asset.name?.toLowerCase() === 'main');
+        const mainIcon = iconAssets.find((asset: CharXAsset) => asset.name?.toLowerCase() === 'main');
         return mainIcon || iconAssets[0];
     }
 
@@ -217,7 +217,7 @@ export class CharXParser {
      * @param {boolean} useHyphens - Use hyphens instead of underscores (for sprites)
      * @returns {string} Normalized filename base (without extension)
      */
-    getCharXAssetBaseName(name: any, fallback: any, useHyphens = false) {
+    getCharXAssetBaseName(name: string, fallback: string, useHyphens = false) {
         const cleaned = (String(name ?? '').trim() || '');
         if (!cleaned) {
             return fallback.toLowerCase();
@@ -238,8 +238,8 @@ export class CharXParser {
         return (sanitized || fallback).toLowerCase();
     }
 
-    mapCharXAssetsForStorage(assets: any) {
-        return assets.reduce((acc: any, asset: any) => {
+    mapCharXAssetsForStorage(assets: Array<CharXAsset>) {
+        return assets.reduce((acc: Array<CharXAsset>, asset: CharXAsset) => {
             if (!asset?.zipPath) {
                 return acc;
             }
@@ -285,7 +285,7 @@ export class CharXParser {
  * @param {string} dirPath - Directory path
  * @param {string} baseName - Base filename without extension
  */
-function deleteExistingByBaseName(dirPath: any, baseName: any) {
+function deleteExistingByBaseName(dirPath: string, baseName: string) {
     try {
         const files = fs.readdirSync(dirPath, { withFileTypes: true }).filter(f => f.isFile()).map(f => f.name);
         for (const file of files) {
@@ -307,15 +307,15 @@ function deleteExistingByBaseName(dirPath: any, baseName: any) {
  * @param {string} characterFolder - Character folder name (sanitized)
  * @returns {{sprites: number, backgrounds: number, misc: number}}
  */
-export function persistCharXAssets(assets: any, bufferMap: any, directories: any, characterFolder: any) {
+export function persistCharXAssets(assets: Array<CharXAsset>, bufferMap: Map<string, Buffer>, directories: Record<string, string>, characterFolder: string) {
     /** @type {{sprites: number, backgrounds: number, misc: number}} */
     const summary = { sprites: 0, backgrounds: 0, misc: 0 };
     if (!Array.isArray(assets) || assets.length === 0) {
         return summary;
     }
 
-    let spritesPath: any = null;
-    let miscPath: any = null;
+    let spritesPath: string | null = null;
+    let miscPath: string | null = null;
 
     const ensureSpritesPath = () => {
         if (spritesPath) {
