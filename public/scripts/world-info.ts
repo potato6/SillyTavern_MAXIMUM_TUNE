@@ -1391,7 +1391,8 @@ function registerWorldInfoSlashCommands() {
             return '';
         }
 
-        const result = /** @type {{ uid?: string }} */ (results[0]?.item)?.uid;
+        // @ts-expect-error TS(2339) - results[0]?.item typed as {}
+        const result = results[0]?.item?.uid;
 
         if (result === undefined) {
             return '';
