@@ -2402,10 +2402,10 @@ export function addDOMPurifyHooks() {
 // @ts-expect-error TS(7006) FIXME: Parameter 'messageId' implicitly has an 'any' type... Remove this comment to see the full error message
 async function onImageSwiped(messageId, element, direction) {
     const animationClass = 'fa-fade';
-    const messageMedia = element.find('.mes_img, .mes_video');
+    const messageMedia = element.querySelectorAll('.mes_img, .mes_video');
 
     // Current image is already animating
-    if (messageMedia.hasClass(animationClass)) {
+    if (messageMedia.length > 0 && messageMedia[0].classList.contains(animationClass)) {
         return;
     }
 
@@ -2455,105 +2455,102 @@ async function onImageSwiped(messageId, element, direction) {
  *
  */
 export function initChatUtilities() {
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document).on('click', '.mes_hide', async function () {
-        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-        const messageBlock = this.closest('.mes');
-        const messageId = Number(messageBlock?.getAttribute('mesid'));
-        await hideChatMessageRange(messageId, messageId, false);
+    document.addEventListener('click', function (e) {
+        const el = e.target.closest('.mes_hide');
+        if (el) hideChatMessageRange(Number(el.closest('.mes')?.getAttribute('mesid')), null, false);
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document).on('click', '.mes_unhide', async function () {
-        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-        const messageBlock = this.closest('.mes');
-        const messageId = Number(messageBlock?.getAttribute('mesid'));
-        await hideChatMessageRange(messageId, messageId, true);
+    document.addEventListener('click', function (e) {
+        const el = e.target.closest('.mes_unhide');
+        if (el) hideChatMessageRange(Number(el.closest('.mes')?.getAttribute('mesid')), null, true);
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document).on('click', '.mes_file_delete', async function () {
-        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-        const messageBlock = this.closest('.mes');
-        const messageId = Number(messageBlock?.getAttribute('mesid'));
-        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-        const fileBlock = this.closest('.mes_file_container');
-        const fileIndex = Number(fileBlock?.getAttribute('data-index'));
-        await deleteMessageFile(messageBlock, messageId, fileIndex);
+    document.addEventListener('click', function (e) {
+        const el = e.target.closest('.mes_file_delete');
+        if (el) {
+            const messageBlock = el.closest('.mes');
+            const messageId = Number(messageBlock?.getAttribute('mesid'));
+            const fileBlock = el.closest('.mes_file_container');
+            const fileIndex = Number(fileBlock?.getAttribute('data-index'));
+            deleteMessageFile(messageBlock, messageId, fileIndex);
+        }
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document).on('click', '.mes_file_open', async function () {
-        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-        const messageBlock = this.closest('.mes');
-        const messageId = Number(messageBlock?.getAttribute('mesid'));
-        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-        const fileBlock = this.closest('.mes_file_container');
-        const fileIndex = Number(fileBlock?.getAttribute('data-index'));
-        await viewMessageFile(messageId, fileIndex);
+    document.addEventListener('click', function (e) {
+        const el = e.target.closest('.mes_file_open');
+        if (el) {
+            const messageBlock = el.closest('.mes');
+            const messageId = Number(messageBlock?.getAttribute('mesid'));
+            const fileBlock = el.closest('.mes_file_container');
+            const fileIndex = Number(fileBlock?.getAttribute('data-index'));
+            viewMessageFile(messageId, fileIndex);
+        }
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document).on('click', '.assistant_note_export', async function (_e) {
-        /** @type {ChatHeader} */
-        const chatHeader = {
-            chat_metadata: chat_metadata,
-            user_name: 'unused',
-            character_name: 'unused',
-        };
-        const chatToSave = [
-            chatHeader,
-            // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type 'never'.
-            ...chat.filter(x => x?.extra?.type !== system_message_types.ASSISTANT_NOTE),
-        ];
+    document.addEventListener('click', function (e) {
+        const el = e.target.closest('.assistant_note_export');
+        if (el) {
+            /** @type {ChatHeader} */
+            const chatHeader = {
+                chat_metadata: chat_metadata,
+                user_name: 'unused',
+                character_name: 'unused',
+            };
+            const chatToSave = [
+                chatHeader,
+                // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type 'never'.
+                ...chat.filter(x => x?.extra?.type !== system_message_types.ASSISTANT_NOTE),
+            ];
 
-        download(chatToSave.map((m) => JSON.stringify(m)).join('\n'), `Assistant - ${humanizedDateTime()}.jsonl`, 'application/json');
+            download(chatToSave.map((m) => JSON.stringify(m)).join('\n'), `Assistant - ${humanizedDateTime()}.jsonl`, 'application/json');
+        }
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document).on('click', '.assistant_note_import', async function () {
-        const importFile = async () => {
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-            const file = fileInput.files[0];
-            if (!file) {
-                return;
-            }
+    document.addEventListener('click', function (e) {
+        const el = e.target.closest('.assistant_note_import');
+        if (el) {
+            const importFile = async () => {
+                // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
+                const file = fileInput.files[0];
+                if (!file) {
+                    return;
+                }
 
-            try {
-                const text = await getFileText(file);
-                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-                const lines = text.split('\n').filter(line => line.trim() !== '');
-                // @ts-expect-error TS(7006) FIXME: Parameter 'line' implicitly has an 'any' type.
-                const messages = lines.map(line => JSON.parse(line));
-                const metadata = messages.shift()?.chat_metadata || {};
-                // @ts-expect-error TS(2554) FIXME: Expected 2-3 arguments, but got 1.
-                messages.unshift(getSystemMessageByType(system_message_types.ASSISTANT_NOTE));
-                await clearChat();
-                // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
-                chat.splice(0, chat.length, ...messages);
-                updateChatMetadata(metadata, true);
-                await printMessages();
-            } catch (error) {
-                console.error('Error importing assistant chat:', error);
-                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                toastr.error(t`It's either corrupted or not a valid JSONL file.`, t`Failed to import chat`);
-            }
-        };
-        const fileInput = document.createElement('input');
-        fileInput.type = 'file';
-        fileInput.accept = '.jsonl';
-        fileInput.addEventListener('change', importFile);
-        fileInput.click();
+                try {
+                    const text = await getFileText(file);
+                    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
+                    const lines = text.split('\n').filter(line => line.trim() !== '');
+                    // @ts-expect-error TS(7006) FIXME: Parameter 'line' implicitly has an 'any' type.
+                    const messages = lines.map(line => JSON.parse(line));
+                    const metadata = messages.shift()?.chat_metadata || {};
+                    // @ts-expect-error TS(2554) FIXME: Expected 2-3 arguments, but got 1.
+                    messages.unshift(getSystemMessageByType(system_message_types.ASSISTANT_NOTE));
+                    await clearChat();
+                    // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame...
+                    chat.splice(0, chat.length, ...messages);
+                    updateChatMetadata(metadata, true);
+                    await printMessages();
+                } catch (error) {
+                    console.error('Error importing assistant chat:', error);
+                    // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
+                    toastr.error(t`It's either corrupted or not a valid JSONL file.`, t`Failed to import chat`);
+                }
+            };
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.accept = '.jsonl';
+            fileInput.addEventListener('change', importFile);
+            fileInput.click();
+        }
     });
 
     const fileInput = document.getElementById('file_form_input');
 
     // Do not change. #attachFile is added by extension.
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document).on('click', '#attachFile', function () {
+    document.addEventListener('click', function (e) {
+        const el = e.target.closest('#attachFile');
+        if (!el) return;
         if (!(fileInput instanceof HTMLInputElement)) return;
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const $fileInput = $(fileInput);
 
         // Preserve existing files in DataTransfer
         const dataTransfer = new DataTransfer();
@@ -2562,7 +2559,7 @@ export function initChatUtilities() {
             dataTransfer.items.add(file);
         }
 
-        $fileInput.off('change').on('change', async () => {
+        const onChangeHandler = async () => {
             // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             for (const file of fileInput.files) {
                 if (!Array.from(dataTransfer.files).some(f => isSameFile(f, file))) {
@@ -2572,63 +2569,66 @@ export function initChatUtilities() {
 
             fileInput.files = dataTransfer.files;
             await onFileAttach(fileInput.files);
-        });
+        };
 
-        $fileInput.trigger('click');
+        fileInput.addEventListener('change', onChangeHandler);
+
+        fileInput.click();
     });
 
     // Do not change. #manageAttachments is added by extension.
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document).on('click', '#manageAttachments', function () {
-        openAttachmentManager();
+    document.addEventListener('click', function (e) {
+        const el = e.target.closest('#manageAttachments');
+        if (el) openAttachmentManager();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document).on('click', '.mes_embed', function () {
-        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-        const messageBlock = this.closest('.mes');
-        const messageId = Number(messageBlock?.getAttribute('mesid'));
-        embedMessageFile(messageId, messageBlock);
+    document.addEventListener('click', function (e) {
+        const el = e.target.closest('.mes_embed');
+        if (el) {
+            const messageBlock = el.closest('.mes');
+            const messageId = Number(messageBlock?.getAttribute('mesid'));
+            embedMessageFile(messageId, messageBlock);
+        }
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document).on('click', '.editor_maximize', async function (e) {
+    document.addEventListener('click', async function (e) {
+        const el = e.target.closest('.editor_maximize');
+        if (!el) return;
         e.preventDefault();
         e.stopPropagation();
 
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const broId = $(this).attr('data-for');
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const bro = $(`#${broId}`);
-        const contentEditable = bro.is('[contenteditable]');
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const withTab = $(this).attr('data-tab');
+        const broId = el.getAttribute('data-for');
+        const broEl = document.getElementById(broId);
 
-        if (!bro.length) {
+        if (!broEl) {
             console.error('Could not find editor with id', broId);
             return;
         }
+
+        const contentEditable = broEl.hasAttribute('contenteditable');
+        const withTab = el.getAttribute('data-tab');
 
         const wrapper = document.createElement('div');
         wrapper.classList.add('height100p', 'wide100p', 'flex-container');
         wrapper.classList.add('flexFlowColumn', 'justifyCenter', 'alignitemscenter');
         const textarea = document.createElement('textarea');
         textarea.dataset.for = broId;
-        if (bro[0].dataset.macros !== undefined) {
-            textarea.dataset.macros = bro[0].dataset.macros;
+        if (broEl.dataset.macros !== undefined) {
+            textarea.dataset.macros = broEl.dataset.macros;
             textarea.dataset.macrosAutocomplete = 'always'; // Always show autocomplete in expanded editor
             textarea.dataset.macrosAutocompleteStyle = 'expanded'; // Use expanded autocomplete style
         }
-        textarea.value = String(contentEditable ? bro[0].innerText : bro.val());
+        textarea.value = String(contentEditable ? broEl.innerText : broEl.value);
         textarea.classList.add('height100p', 'wide100p', 'maximized_textarea');
-        if (bro.hasClass('monospace')) textarea.classList.add('monospace');
-        if (bro.hasClass('mdHotkeys')) textarea.classList.add('mdHotkeys');
+        if (broEl.classList.contains('monospace')) textarea.classList.add('monospace');
+        if (broEl.classList.contains('mdHotkeys')) textarea.classList.add('mdHotkeys');
         textarea.addEventListener('input', function () {
             if (contentEditable) {
-                bro[0].innerText = textarea.value;
-                bro.trigger('input');
+                broEl.innerText = textarea.value;
+                broEl.dispatchEvent(new Event('input', { bubbles: true }));
             } else {
-                bro.val(textarea.value).trigger('input');
+                broEl.value = textarea.value;
+                broEl.dispatchEvent(new Event('input', { bubbles: true }));
             }
         });
         wrapper.appendChild(textarea);
@@ -2666,45 +2666,48 @@ export function initChatUtilities() {
         await callGenericPopup(wrapper, POPUP_TYPE.TEXT, '', { wide: true, large: true });
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document).on('click', 'body .mes .mes_text, body .mes .mes_reasoning', function (event) {
+    document.addEventListener('click', function (event) {
+        const el = event.target.closest('body .mes .mes_text, body .mes .mes_reasoning');
+        if (!el) return;
         if (!power_user.click_to_edit) return;
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         if (window.getSelection().toString()) return;
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        if ($('.edit_textarea').length) return;
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(this.closest('.mes')?.querySelector('.mes_edit')).trigger('click');
+        if (document.querySelector('.edit_textarea')) return;
+        el.closest('.mes')?.querySelector('.mes_edit')?.click();
         if (event.target.closest('.mes_reasoning')) {
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('.reasoning_edit_textarea').trigger('focus');
+            document.querySelector('.reasoning_edit_textarea')?.focus();
         }
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document).on('click', '.open_media_overrides', openExternalMediaOverridesDialog);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document).on('input', '#forbid_media_override_allowed', function () {
+    document.addEventListener('click', function (e) {
+        const el = e.target.closest('.open_media_overrides');
+        if (el) openExternalMediaOverridesDialog();
+    });
+    document.addEventListener('input', function (e) {
+        const el = e.target.closest('#forbid_media_override_allowed');
+        if (!el) return;
         const entityId = getCurrentEntityId();
         if (!entityId) return;
-        // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
+        // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame...
         power_user.external_media_allowed_overrides.push(entityId);
         power_user.external_media_forbidden_overrides = power_user.external_media_forbidden_overrides.filter((v) => v !== entityId);
         saveSettingsDebounced();
         reloadCurrentChat();
     });
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document).on('input', '#forbid_media_override_forbidden', function () {
+    document.addEventListener('input', function (e) {
+        const el = e.target.closest('#forbid_media_override_forbidden');
+        if (!el) return;
         const entityId = getCurrentEntityId();
         if (!entityId) return;
-        // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
+        // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame...
         power_user.external_media_forbidden_overrides.push(entityId);
         power_user.external_media_allowed_overrides = power_user.external_media_allowed_overrides.filter((v) => v !== entityId);
         saveSettingsDebounced();
         reloadCurrentChat();
     });
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document).on('input', '#forbid_media_override_global', function () {
+    document.addEventListener('input', function (e) {
+        const el = e.target.closest('#forbid_media_override_global');
+        if (!el) return;
         const entityId = getCurrentEntityId();
         if (!entityId) return;
         power_user.external_media_allowed_overrides = power_user.external_media_allowed_overrides.filter((v) => v !== entityId);
@@ -2713,8 +2716,7 @@ export function initChatUtilities() {
         reloadCurrentChat();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#creators_note_styles_button').on('click', function (e) {
+    document.getElementById('creators_note_styles_button')?.addEventListener('click', function (e) {
         e.stopPropagation();
         openGlobalStylesPreferenceDialog();
     });
@@ -2724,61 +2726,71 @@ export function initChatUtilities() {
      * @param containerClass
      * @returns {MediaContainerInfo} Information about the media container
      * @typedef {object} MediaContainerInfo
-     * @property {JQuery<HTMLElement>} messageBlock The closest message block
+     * @property {HTMLElement} messageBlock The closest message block
      * @property {number} messageId The message ID
-     * @property {JQuery<HTMLElement>} mediaBlock The closest media container block
+     * @property {HTMLElement} mediaBlock The closest media container block
      * @property {number} mediaIndex The media index within the message
      */
     function getMediaContainerInfo(containerClass = '.mes_media_container') {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const messageBlock = $(this.closest('.mes'));
-        const messageId = Number(messageBlock.attr('mesid'));
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const mediaBlock = $(this.closest(containerClass));
-        const mediaIndex = Number(mediaBlock.attr('data-index'));
+        const messageBlock = this.closest('.mes');
+        const messageId = Number(messageBlock?.getAttribute('mesid'));
+        const mediaBlock = this.closest(containerClass);
+        const mediaIndex = Number(mediaBlock?.getAttribute('data-index'));
         return { messageBlock, messageId, mediaBlock, mediaIndex };
     }
-    chatElement.on('click', '.mes_img', async function () {
-        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-        const { messageId, mediaIndex } = getMediaContainerInfo.call(this);
-        expandMessageMedia(messageId, mediaIndex);
+    chatElement.addEventListener('click', async function (e) {
+        const el = e.target.closest('.mes_img');
+        if (el) {
+            const { messageId, mediaIndex } = getMediaContainerInfo.call(el);
+            expandMessageMedia(messageId, mediaIndex);
+        }
     });
-    chatElement.on('click', '.mes_media_enlarge', async function () {
-        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-        const { messageId, mediaIndex } = getMediaContainerInfo.call(this);
-        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-        expandMessageMedia(messageId, mediaIndex).click();
+    chatElement.addEventListener('click', async function (e) {
+        const el = e.target.closest('.mes_media_enlarge');
+        if (el) {
+            const { messageId, mediaIndex } = getMediaContainerInfo.call(el);
+            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
+            expandMessageMedia(messageId, mediaIndex)?.click();
+        }
     });
-    chatElement.on('click', '.mes_media_delete', async function () {
-        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-        const { messageId, mediaIndex, messageBlock } = getMediaContainerInfo.call(this);
-        await deleteMessageMedia(messageId, mediaIndex, messageBlock);
+    chatElement.addEventListener('click', async function (e) {
+        const el = e.target.closest('.mes_media_delete');
+        if (el) {
+            const { messageId, mediaIndex, messageBlock } = getMediaContainerInfo.call(el);
+            await deleteMessageMedia(messageId, mediaIndex, messageBlock);
+        }
     });
-    chatElement.on('click', '.mes_media_list', async function () {
-        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-        const { messageId, messageBlock } = getMediaContainerInfo.call(this);
-        await switchMessageMediaDisplay(messageId, messageBlock, MEDIA_DISPLAY.GALLERY);
+    chatElement.addEventListener('click', async function (e) {
+        const el = e.target.closest('.mes_media_list');
+        if (el) {
+            const { messageId, messageBlock } = getMediaContainerInfo.call(el);
+            await switchMessageMediaDisplay(messageId, messageBlock, MEDIA_DISPLAY.GALLERY);
+        }
     });
-    chatElement.on('click', '.mes_media_gallery', async function () {
-        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-        const { messageId, messageBlock } = getMediaContainerInfo.call(this);
-        await switchMessageMediaDisplay(messageId, messageBlock, MEDIA_DISPLAY.LIST);
+    chatElement.addEventListener('click', async function (e) {
+        const el = e.target.closest('.mes_media_gallery');
+        if (el) {
+            const { messageId, messageBlock } = getMediaContainerInfo.call(el);
+            await switchMessageMediaDisplay(messageId, messageBlock, MEDIA_DISPLAY.LIST);
+        }
     });
-    chatElement.on('click', '.mes_img_swipe_left', async function () {
-        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-        const { messageId, messageBlock } = getMediaContainerInfo.call(this);
-        await onImageSwiped(messageId, messageBlock, SWIPE_DIRECTION.LEFT);
+    chatElement.addEventListener('click', async function (e) {
+        const el = e.target.closest('.mes_img_swipe_left');
+        if (el) {
+            const { messageId, messageBlock } = getMediaContainerInfo.call(el);
+            await onImageSwiped(messageId, messageBlock, SWIPE_DIRECTION.LEFT);
+        }
     });
-    chatElement.on('click', '.mes_img_swipe_right', async function () {
-        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-        const { messageId, messageBlock } = getMediaContainerInfo.call(this);
-        await onImageSwiped(messageId, messageBlock, SWIPE_DIRECTION.RIGHT);
+    chatElement.addEventListener('click', async function (e) {
+        const el = e.target.closest('.mes_img_swipe_right');
+        if (el) {
+            const { messageId, messageBlock } = getMediaContainerInfo.call(el);
+            await onImageSwiped(messageId, messageBlock, SWIPE_DIRECTION.RIGHT);
+        }
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#file_form').on('reset', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#file_form').addClass('displayNone');
+    document.getElementById('file_form')?.addEventListener('reset', function () {
+        document.getElementById('file_form')?.classList.add('displayNone');
     });
 
     // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
