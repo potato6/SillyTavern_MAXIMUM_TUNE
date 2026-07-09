@@ -2,49 +2,31 @@
  * Add all the libraries that you want to expose to the client here.
  * They are bundled and exposed by Webpack in the /lib.js file.
  */
-// @ts-expect-error TS(2792) FIXME: Cannot find module 'es-toolkit/compat'. Did you me... Remove this comment to see the full error message
 import * as lodash from 'es-toolkit/compat';
-// @ts-expect-error TS(2792) FIXME: Cannot find module 'fuse.js'. Did you mean to set ... Remove this comment to see the full error message
 import Fuse from 'fuse.js';
-// @ts-expect-error TS(2792) FIXME: Cannot find module 'dompurify'. Did you mean to se... Remove this comment to see the full error message
 import DOMPurify from 'dompurify';
-// @ts-expect-error TS(2792) FIXME: Cannot find module 'highlight.js'. Did you mean to... Remove this comment to see the full error message
 import hljs from 'highlight.js';
-// @ts-expect-error TS(2792) FIXME: Cannot find module 'localspace'. Did you mean to s... Remove this comment to see the full error message
 import localspace from 'localspace';
-// @ts-expect-error TS(2792) FIXME: Cannot find module 'handlebars'. Did you mean to s... Remove this comment to see the full error message
 import Handlebars from 'handlebars';
-// @ts-expect-error TS(2792) FIXME: Cannot find module '@adobe/css-tools'. Did you mea... Remove this comment to see the full error message
 import css from '@adobe/css-tools';
-// @ts-expect-error TS(2792) FIXME: Cannot find module 'bowser'. Did you mean to set t... Remove this comment to see the full error message
 import Bowser from 'bowser';
-// @ts-expect-error TS(2792) FIXME: Cannot find module 'diff-match-patch'. Did you mea... Remove this comment to see the full error message
+// @ts-expect-error
 import DiffMatchPatch from 'diff-match-patch';
-// @ts-expect-error TS(2792) FIXME: Cannot find module '@mozilla/readability'. Did you... Remove this comment to see the full error message
 import { isProbablyReaderable, Readability } from '@mozilla/readability';
-// @ts-expect-error TS(2792) FIXME: Cannot find module '@iconfu/svg-inject'. Did you m... Remove this comment to see the full error message
 import SVGInject from '@iconfu/svg-inject';
-// @ts-expect-error TS(2792) FIXME: Cannot find module 'markdown-it'. Did you mean to ... Remove this comment to see the full error message
+// @ts-expect-error
 import MarkdownIt from 'markdown-it';
-// @ts-expect-error TS(2792) FIXME: Cannot find module 'moment'. Did you mean to set t... Remove this comment to see the full error message
 import moment from 'moment';
-// @ts-expect-error TS(2792) FIXME: Cannot find module 'seedrandom'. Did you mean to s... Remove this comment to see the full error message
+// @ts-expect-error
 import seedrandom from 'seedrandom';
-// @ts-expect-error TS(2792) FIXME: Cannot find module 'droll'. Did you mean to set th... Remove this comment to see the full error message
+// @ts-expect-error
 import droll from 'droll';
-// @ts-expect-error TS(2792) FIXME: Cannot find module 'morphdom'. Did you mean to set... Remove this comment to see the full error message
 import morphdom from 'morphdom';
-// @ts-expect-error TS(2792) FIXME: Cannot find module 'slidetoggle'. Did you mean to ... Remove this comment to see the full error message
 import { toggle as slideToggle } from 'slidetoggle';
-// @ts-expect-error TS(2792) FIXME: Cannot find module 'chalk'. Did you mean to set th... Remove this comment to see the full error message
 import chalk from 'chalk';
-// @ts-expect-error TS(2792) FIXME: Cannot find module 'yaml'. Did you mean to set the... Remove this comment to see the full error message
 import yaml from 'yaml';
-// @ts-expect-error TS(2792) FIXME: Cannot find module 'chevrotain'. Did you mean to s... Remove this comment to see the full error message
 import * as chevrotain from 'chevrotain';
-// @ts-expect-error TS(2792) FIXME: Cannot find module 'fflate'. Did you mean to set t... Remove this comment to see the full error message
 import { gzipSync, gzip } from 'fflate';
-// @ts-expect-error TS(2792) FIXME: Cannot find module 'js-sha256'. Did you mean to se... Remove this comment to see the full error message
 import { sha256 } from 'js-sha256';
 
 /**
