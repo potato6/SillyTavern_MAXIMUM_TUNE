@@ -31,11 +31,19 @@ const settingType = {
     positive_prompt: 2,
 };
 
+/**
+ *
+ */
 function updateSettings() {
     saveSettingsDebounced();
     loadSettings();
 }
 
+/**
+ *
+ * @param tempValue
+ * @param setting
+ */
 function setCharCfg(tempValue: string, setting: number) {
     const avatarName = getCharaFilename();
 
@@ -94,6 +102,11 @@ function setCharCfg(tempValue: string, setting: number) {
     return true;
 }
 
+/**
+ *
+ * @param tempValue
+ * @param setting
+ */
 function setChatCfg(tempValue: string, setting: number) {
     switch (setting) {
         case settingType.guidance_scale:
@@ -114,6 +127,9 @@ function setChatCfg(tempValue: string, setting: number) {
     return true;
 }
 
+/**
+ *
+ */
 function onCfgMenuItemClick() {
     if (!selected_group && this_chid === undefined) {
         toastr.warning('Select a character before trying to configure CFG', '', { timeOut: 2000 });
@@ -155,11 +171,17 @@ function onCfgMenuItemClick() {
     $('#options').stop().fadeOut(animation_duration);
 }
 
+/**
+ *
+ */
 async function onChatChanged() {
     loadSettings();
     await modifyCharaHtml();
 }
 
+/**
+ *
+ */
 async function modifyCharaHtml() {
     if (selected_group) {
         $('#chara_cfg_container').hide();
@@ -170,6 +192,9 @@ async function modifyCharaHtml() {
     }
 }
 
+/**
+ *
+ */
 function loadSettings() {
     $('#chat_cfg_guidance_scale').val(chat_metadata[metadataKeys.guidance_scale] ?? (1.0).toFixed(2));
     $('#chat_cfg_guidance_scale_counter').val(chat_metadata[metadataKeys.guidance_scale]?.toFixed(2) ?? (1.0).toFixed(2));
@@ -211,6 +236,9 @@ function loadSettings() {
     }
 }
 
+/**
+ *
+ */
 async function initialLoadSettings() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const _ext = extension_settings as any;
@@ -227,6 +255,9 @@ async function initialLoadSettings() {
     $('#global_cfg_positive_prompt').val(_ext.cfg.global.positive_prompt);
 }
 
+/**
+ *
+ */
 function migrateSettings() {
     let performSettingsSave = false;
     let performMetaSave = false;
@@ -275,6 +306,9 @@ function migrateSettings() {
     }
 }
 
+/**
+ *
+ */
 export function initCfg() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const _ext = extension_settings as any;
@@ -395,6 +429,9 @@ export const metadataKeys = {
     prompt_separator: 'cfg_prompt_separator',
 };
 
+/**
+ *
+ */
 export function getGuidanceScale() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const _ext = extension_settings as any;
@@ -430,6 +467,9 @@ export function getGuidanceScale() {
     }
 }
 
+/**
+ *
+ */
 function getCustomSeparator() {
     const defaultSeparator = '\n';
 
@@ -445,6 +485,14 @@ function getCustomSeparator() {
     }
 }
 
+/**
+ *
+ * @param guidanceScale
+ * @param guidanceScale.type
+ * @param guidanceScale.value
+ * @param isNegative
+ * @param quiet
+ */
 export function getCfgPrompt(guidanceScale: { type: number; value: number }, isNegative: boolean, quiet = false) {
     const splitCfgPrompt = [];
 
