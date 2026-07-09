@@ -101,7 +101,7 @@ export class ByafParser {
 
         /** @type {CharacterBook} */
         const book = {
-            entries: [],
+            entries: /** @type {Array<CharacterBookEntry>} */ ([]),
             extensions: {},
         };
 
@@ -109,6 +109,7 @@ export class ByafParser {
             if (!item) {
                 return;
             }
+            // @ts-expect-error entries inferred as never[]
             book.entries.push({
                 keys: ByafParser.replaceMacros(item?.key).split(',').map(key => key.trim()).filter(Boolean),
                 content: ByafParser.replaceMacros(item?.value),
