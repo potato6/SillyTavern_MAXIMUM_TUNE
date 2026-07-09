@@ -13,10 +13,12 @@ import { createThumbnail, isValidUrl } from '../utils.js';
  * @param {string} prompt Prompt to use for captioning
  * @returns {Promise<string>} Generated caption
  */
-export async function getMultimodalCaption(base64Img, prompt) {
+export async function getMultimodalCaption(base64Img: string, prompt: string) {
+    const captionSettings = extension_settings.caption as any;
+    const captionServerUrls = textgenerationwebui_settings.server_urls as Record<string, string>;
     const useReverseProxy =
-        (['openai', 'anthropic', 'google', 'mistral', 'vertexai', 'xai', 'zai', 'moonshot'].includes(extension_settings.caption.multimodal_api))
-        && extension_settings.caption.allow_reverse_proxy
+        (['openai', 'anthropic', 'google', 'mistral', 'vertexai', 'xai', 'zai', 'moonshot'].includes(captionSettings.multimodal_api))
+        && captionSettings.allow_reverse_proxy
         && oai_settings.reverse_proxy
         && isValidUrl(oai_settings.reverse_proxy);
 
@@ -24,96 +26,96 @@ export async function getMultimodalCaption(base64Img, prompt) {
 
     // OpenRouter has a payload limit of ~2MB. Google is 4MB, but we love democracy.
     // Ooba requires all images to be JPEGs. Koboldcpp just asked nicely.
-    const isOllama = extension_settings.caption.multimodal_api === 'ollama';
-    const isLlamaCpp = extension_settings.caption.multimodal_api === 'llamacpp';
-    const isCustom = extension_settings.caption.multimodal_api === 'custom';
-    const isOoba = extension_settings.caption.multimodal_api === 'ooba';
-    const isKoboldCpp = extension_settings.caption.multimodal_api === 'koboldcpp';
-    const isVllm = extension_settings.caption.multimodal_api === 'vllm';
+    const isOllama = captionSettings.multimodal_api === 'ollama';
+    const isLlamaCpp = captionSettings.multimodal_api === 'llamacpp';
+    const isCustom = captionSettings.multimodal_api === 'custom';
+    const isOoba = captionSettings.multimodal_api === 'ooba';
+    const isKoboldCpp = captionSettings.multimodal_api === 'koboldcpp';
+    const isVllm = captionSettings.multimodal_api === 'vllm';
     const base64Bytes = base64Img.length * 0.75;
     const compressionLimit = 2 * 1024 * 1024;
     const safeMimeTypes = ['image/jpeg', 'image/png', 'image/webp'];
     const mimeType = base64Img?.split(';')?.[0]?.split(':')?.[1] || 'image/jpeg';
     const isImage = mimeType.startsWith('image/');
-    const thumbnailNeeded = ['google', 'openrouter', 'mistral', 'groq', 'vertexai'].includes(extension_settings.caption.multimodal_api);
+    const thumbnailNeeded = ['google', 'openrouter', 'mistral', 'groq', 'vertexai'].includes(captionSettings.multimodal_api);
     if ((isImage && thumbnailNeeded && base64Bytes > compressionLimit) || isOoba || isKoboldCpp) {
         const maxSide = 2048;
-        base64Img = await createThumbnail(base64Img, maxSide, maxSide);
+        base64Img = await createThumbnail(base64Img, maxSide as any, maxSide as any) as string;
     } else if (isImage && !safeMimeTypes.includes(mimeType)) {
-        base64Img = await createThumbnail(base64Img, null, null);
+        base64Img = await createThumbnail(base64Img, null, null) as string;
     }
     if (isOllama && base64Img.startsWith('data:image/')) {
-        base64Img = base64Img.split(',')[1];
+        base64Img = base64Img.split(',')[1] ?? '';
     }
 
     const proxyUrl = useReverseProxy ? oai_settings.reverse_proxy : '';
     const proxyPassword = useReverseProxy ? oai_settings.proxy_password : '';
 
-    const requestBody = {
+    const requestBody: Record<string, any> = {
         image: base64Img,
         prompt: prompt,
         reverse_proxy: proxyUrl,
         proxy_password: proxyPassword,
-        api: extension_settings.caption.multimodal_api || 'openai',
-        model: extension_settings.caption.multimodal_model || 'gpt-4-turbo',
+        api: captionSettings.multimodal_api || 'openai',
+        model: captionSettings.multimodal_model || 'gpt-4-turbo',
     };
 
     // Add Vertex AI specific parameters if using Vertex AI
-    if (extension_settings.caption.multimodal_api === 'vertexai') {
+    if (captionSettings.multimodal_api === 'vertexai') {
         requestBody.vertexai_auth_mode = oai_settings.vertexai_auth_mode;
         requestBody.vertexai_region = oai_settings.vertexai_region;
         requestBody.vertexai_express_project_id = oai_settings.vertexai_express_project_id;
     }
 
     if (isOllama) {
-        if (extension_settings.caption.multimodal_model === 'ollama_current') {
+        if (captionSettings.multimodal_model === 'ollama_current') {
             requestBody.model = textgenerationwebui_settings.ollama_model;
         }
 
-        if (extension_settings.caption.multimodal_model === 'ollama_custom') {
-            requestBody.model = extension_settings.caption.ollama_custom_model;
+        if (captionSettings.multimodal_model === 'ollama_custom') {
+            requestBody.model = captionSettings.ollama_custom_model;
         }
 
-        requestBody.server_url = extension_settings.caption.alt_endpoint_enabled
-            ? extension_settings.caption.alt_endpoint_url
-            : textgenerationwebui_settings.server_urls[textgen_types.OLLAMA];
+        requestBody.server_url = captionSettings.alt_endpoint_enabled
+            ? captionSettings.alt_endpoint_url
+            : captionServerUrls[textgen_types.OLLAMA];
     }
 
     if (isVllm) {
-        if (extension_settings.caption.multimodal_model === 'vllm_current') {
+        if (captionSettings.multimodal_model === 'vllm_current') {
             requestBody.model = textgenerationwebui_settings.vllm_model;
         }
 
-        requestBody.server_url = extension_settings.caption.alt_endpoint_enabled
-            ? extension_settings.caption.alt_endpoint_url
-            : textgenerationwebui_settings.server_urls[textgen_types.VLLM];
+        requestBody.server_url = captionSettings.alt_endpoint_enabled
+            ? captionSettings.alt_endpoint_url
+            : captionServerUrls[textgen_types.VLLM];
     }
 
     if (isLlamaCpp) {
-        requestBody.server_url = extension_settings.caption.alt_endpoint_enabled
-            ? extension_settings.caption.alt_endpoint_url
-            : textgenerationwebui_settings.server_urls[textgen_types.LLAMACPP];
+        requestBody.server_url = captionSettings.alt_endpoint_enabled
+            ? captionSettings.alt_endpoint_url
+            : captionServerUrls[textgen_types.LLAMACPP];
     }
 
     if (isOoba) {
-        requestBody.server_url = extension_settings.caption.alt_endpoint_enabled
-            ? extension_settings.caption.alt_endpoint_url
-            : textgenerationwebui_settings.server_urls[textgen_types.OOBA];
+        requestBody.server_url = captionSettings.alt_endpoint_enabled
+            ? captionSettings.alt_endpoint_url
+            : captionServerUrls[textgen_types.OOBA];
     }
 
     if (isKoboldCpp) {
-        requestBody.server_url = extension_settings.caption.alt_endpoint_enabled
-            ? extension_settings.caption.alt_endpoint_url
-            : textgenerationwebui_settings.server_urls[textgen_types.KOBOLDCPP];
+        requestBody.server_url = captionSettings.alt_endpoint_enabled
+            ? captionSettings.alt_endpoint_url
+            : captionServerUrls[textgen_types.KOBOLDCPP];
     }
 
     if (isCustom) {
-        if (extension_settings.caption.multimodal_model === 'custom_current') {
+        if (captionSettings.multimodal_model === 'custom_current') {
             requestBody.model = oai_settings.custom_model || '';
         }
 
-        if (extension_settings.caption.multimodal_model === 'custom_custom') {
-            requestBody.model = extension_settings.caption.custom_model || '';
+        if (captionSettings.multimodal_model === 'custom_custom') {
+            requestBody.model = captionSettings.custom_model || '';
         }
 
         requestBody.server_url = oai_settings.custom_url;
@@ -122,16 +124,16 @@ export async function getMultimodalCaption(base64Img, prompt) {
         requestBody.custom_exclude_body = oai_settings.custom_exclude_body;
     }
 
-    if (extension_settings.caption.multimodal_api === 'zai') {
+    if (captionSettings.multimodal_api === 'zai') {
         requestBody.zai_endpoint = oai_settings.zai_endpoint || ZAI_ENDPOINT.COMMON;
     }
 
-    if (extension_settings.caption.multimodal_api === 'workers_ai') {
+    if (captionSettings.multimodal_api === 'workers_ai') {
         requestBody.workers_ai_account_id = oai_settings.workers_ai_account_id;
     }
 
     function getEndpointUrl() {
-        switch (extension_settings.caption.multimodal_api) {
+        switch (captionSettings.multimodal_api) {
             case 'google':
             case 'vertexai':
                 return '/api/google/caption-image';
@@ -158,33 +160,36 @@ export async function getMultimodalCaption(base64Img, prompt) {
     return String(caption).trim();
 }
 
-function throwIfInvalidModel(useReverseProxy) {
-    const altEndpointEnabled = extension_settings.caption.alt_endpoint_enabled;
-    const altEndpointUrl = extension_settings.caption.alt_endpoint_url;
-    const multimodalModel = extension_settings.caption.multimodal_model;
-    const multimodalApi = extension_settings.caption.multimodal_api;
+function throwIfInvalidModel(useReverseProxy: boolean) {
+    const captionSettings = extension_settings.caption as any;
+    const captionServerUrls = textgenerationwebui_settings.server_urls as Record<string, string>;
+    const secrets = secret_state as Record<string, any>;
+    const altEndpointEnabled = captionSettings.alt_endpoint_enabled;
+    const altEndpointUrl = captionSettings.alt_endpoint_url;
+    const multimodalModel = captionSettings.multimodal_model;
+    const multimodalApi = captionSettings.multimodal_api;
 
     if (altEndpointEnabled && ['llamacpp', 'ooba', 'koboldcpp', 'vllm', 'ollama'].includes(multimodalApi) && !altEndpointUrl) {
         throw new Error('Secondary endpoint URL is not set.');
     }
 
-    if (multimodalApi === 'openai' && !secret_state[SECRET_KEYS.OPENAI] && !useReverseProxy) {
+    if (multimodalApi === 'openai' && !secrets[SECRET_KEYS.OPENAI] && !useReverseProxy) {
         throw new Error('OpenAI API key is not set.');
     }
 
-    if (multimodalApi === 'openrouter' && !secret_state[SECRET_KEYS.OPENROUTER]) {
+    if (multimodalApi === 'openrouter' && !secrets[SECRET_KEYS.OPENROUTER]) {
         throw new Error('OpenRouter API key is not set.');
     }
 
-    if (multimodalApi === 'anthropic' && !secret_state[SECRET_KEYS.CLAUDE] && !useReverseProxy) {
+    if (multimodalApi === 'anthropic' && !secrets[SECRET_KEYS.CLAUDE] && !useReverseProxy) {
         throw new Error('Anthropic (Claude) API key is not set.');
     }
 
-    if (multimodalApi === 'groq' && !secret_state[SECRET_KEYS.GROQ]) {
+    if (multimodalApi === 'groq' && !secrets[SECRET_KEYS.GROQ]) {
         throw new Error('Groq API key is not set.');
     }
 
-    if (multimodalApi === 'google' && !secret_state[SECRET_KEYS.MAKERSUITE] && !useReverseProxy) {
+    if (multimodalApi === 'google' && !secrets[SECRET_KEYS.MAKERSUITE] && !useReverseProxy) {
         throw new Error('Google AI Studio API key is not set.');
     }
 
@@ -194,12 +199,12 @@ function throwIfInvalidModel(useReverseProxy) {
 
         if (authMode === 'express') {
             // Express mode requires API key
-            if (!secret_state[SECRET_KEYS.VERTEXAI]) {
+            if (!secrets[SECRET_KEYS.VERTEXAI]) {
                 throw new Error('Google Vertex AI API key is not set for Express mode.');
             }
         } else if (authMode === 'full') {
             // Full mode requires Service Account JSON and region settings
-            if (!secret_state[SECRET_KEYS.VERTEXAI_SERVICE_ACCOUNT]) {
+            if (!secrets[SECRET_KEYS.VERTEXAI_SERVICE_ACCOUNT]) {
                 throw new Error('Service Account JSON is required for Vertex AI Full mode. Please validate and save your Service Account JSON.');
             }
             if (!oai_settings.vertexai_region) {
@@ -208,19 +213,19 @@ function throwIfInvalidModel(useReverseProxy) {
         }
     }
 
-    if (multimodalApi === 'mistral' && !secret_state[SECRET_KEYS.MISTRALAI] && !useReverseProxy) {
+    if (multimodalApi === 'mistral' && !secrets[SECRET_KEYS.MISTRALAI] && !useReverseProxy) {
         throw new Error('Mistral AI API key is not set.');
     }
 
-    if (multimodalApi === 'cohere' && !secret_state[SECRET_KEYS.COHERE]) {
+    if (multimodalApi === 'cohere' && !secrets[SECRET_KEYS.COHERE]) {
         throw new Error('Cohere API key is not set.');
     }
 
-    if (multimodalApi === 'xai' && !secret_state[SECRET_KEYS.XAI] && !useReverseProxy) {
+    if (multimodalApi === 'xai' && !secrets[SECRET_KEYS.XAI] && !useReverseProxy) {
         throw new Error('xAI API key is not set.');
     }
 
-    if (multimodalApi === 'ollama' && !textgenerationwebui_settings.server_urls[textgen_types.OLLAMA] && !altEndpointEnabled) {
+    if (multimodalApi === 'ollama' && !captionServerUrls[textgen_types.OLLAMA] && !altEndpointEnabled) {
         throw new Error('Ollama server URL is not set.');
     }
 
@@ -228,23 +233,23 @@ function throwIfInvalidModel(useReverseProxy) {
         throw new Error('Ollama model is not set.');
     }
 
-    if (multimodalApi === 'ollama' && multimodalModel === 'ollama_custom' && !extension_settings.caption.ollama_custom_model) {
+    if (multimodalApi === 'ollama' && multimodalModel === 'ollama_custom' && !captionSettings.ollama_custom_model) {
         throw new Error('Ollama custom model tag is not set.');
     }
 
-    if (multimodalApi === 'llamacpp' && !textgenerationwebui_settings.server_urls[textgen_types.LLAMACPP] && !altEndpointEnabled) {
+    if (multimodalApi === 'llamacpp' && !captionServerUrls[textgen_types.LLAMACPP] && !altEndpointEnabled) {
         throw new Error('LlamaCPP server URL is not set.');
     }
 
-    if (multimodalApi === 'ooba' && !textgenerationwebui_settings.server_urls[textgen_types.OOBA] && !altEndpointEnabled) {
+    if (multimodalApi === 'ooba' && !captionServerUrls[textgen_types.OOBA] && !altEndpointEnabled) {
         throw new Error('Text Generation WebUI server URL is not set.');
     }
 
-    if (multimodalApi === 'koboldcpp' && !textgenerationwebui_settings.server_urls[textgen_types.KOBOLDCPP] && !altEndpointEnabled) {
+    if (multimodalApi === 'koboldcpp' && !captionServerUrls[textgen_types.KOBOLDCPP] && !altEndpointEnabled) {
         throw new Error('KoboldCpp server URL is not set.');
     }
 
-    if (multimodalApi === 'vllm' && !textgenerationwebui_settings.server_urls[textgen_types.VLLM] && !altEndpointEnabled) {
+    if (multimodalApi === 'vllm' && !captionServerUrls[textgen_types.VLLM] && !altEndpointEnabled) {
         throw new Error('vLLM server URL is not set.');
     }
 
@@ -256,39 +261,39 @@ function throwIfInvalidModel(useReverseProxy) {
         throw new Error('Custom API URL is not set.');
     }
 
-    if (multimodalApi === 'custom' && multimodalModel === 'custom_custom' && !extension_settings.caption.custom_model) {
+    if (multimodalApi === 'custom' && multimodalModel === 'custom_custom' && !captionSettings.custom_model) {
         throw new Error('Custom OpenAI-compatible Model ID is not set.');
     }
 
-    if (multimodalApi === 'aimlapi' && !secret_state[SECRET_KEYS.AIMLAPI]) {
+    if (multimodalApi === 'aimlapi' && !secrets[SECRET_KEYS.AIMLAPI]) {
         throw new Error('AI/ML API key is not set.');
     }
 
-    if (multimodalApi === 'moonshot' && !secret_state[SECRET_KEYS.MOONSHOT]) {
+    if (multimodalApi === 'moonshot' && !secrets[SECRET_KEYS.MOONSHOT]) {
         throw new Error('Moonshot AI API key is not set.');
     }
 
-    if (multimodalApi === 'nanogpt' && !secret_state[SECRET_KEYS.NANOGPT]) {
+    if (multimodalApi === 'nanogpt' && !secrets[SECRET_KEYS.NANOGPT]) {
         throw new Error('NanoGPT API key is not set.');
     }
 
-    if (multimodalApi === 'electronhub' && !secret_state[SECRET_KEYS.ELECTRONHUB]) {
+    if (multimodalApi === 'electronhub' && !secrets[SECRET_KEYS.ELECTRONHUB]) {
         throw new Error('Electron Hub API key is not set.');
     }
 
-    if (multimodalApi === 'chutes' && !secret_state[SECRET_KEYS.CHUTES]) {
+    if (multimodalApi === 'chutes' && !secrets[SECRET_KEYS.CHUTES]) {
         throw new Error('Chutes API key is not set.');
     }
 
-    if (multimodalApi === 'zai' && !secret_state[SECRET_KEYS.ZAI]) {
+    if (multimodalApi === 'zai' && !secrets[SECRET_KEYS.ZAI]) {
         throw new Error('Z.AI API key is not set.');
     }
 
-    if (multimodalApi === 'pollinations' && !secret_state[SECRET_KEYS.POLLINATIONS]) {
+    if (multimodalApi === 'pollinations' && !secrets[SECRET_KEYS.POLLINATIONS]) {
         throw new Error('Pollinations API key is not set.');
     }
 
-    if (multimodalApi === 'workers_ai' && (!secret_state[SECRET_KEYS.WORKERS_AI] || !oai_settings.workers_ai_account_id)) {
+    if (multimodalApi === 'workers_ai' && (!secrets[SECRET_KEYS.WORKERS_AI] || !oai_settings.workers_ai_account_id)) {
         throw new Error('Workers AI API key or account ID is not set.');
     }
 }
@@ -301,7 +306,7 @@ export function isWebLlmSupported() {
     if (!('gpu' in navigator)) {
         const warningKey = 'webllm_browser_warning_shown';
         if (!sessionStorage.getItem(warningKey)) {
-            toastr.error('Your browser does not support the WebGPU API. Please use a different browser.', 'WebLLM', {
+            (window as any).toastr.error('Your browser does not support the WebGPU API. Please use a different browser.', 'WebLLM', {
                 preventDuplicates: true,
                 timeOut: 0,
                 extendedTimeOut: 0,
@@ -314,7 +319,7 @@ export function isWebLlmSupported() {
     if (!('llm' in SillyTavern)) {
         const warningKey = 'webllm_extension_warning_shown';
         if (!sessionStorage.getItem(warningKey)) {
-            toastr.error('WebLLM extension is not installed. Click here to install it.', 'WebLLM', {
+            (window as any).toastr.error('WebLLM extension is not installed. Click here to install it.', 'WebLLM', {
                 timeOut: 0,
                 extendedTimeOut: 0,
                 preventDuplicates: true,
@@ -334,7 +339,7 @@ export function isWebLlmSupported() {
  * @param {object} params Additional parameters
  * @returns {Promise<string>} Generated response
  */
-export async function generateWebLlmChatPrompt(messages, params = {}) {
+export async function generateWebLlmChatPrompt(messages: any[], params: Record<string, any> = {}) {
     if (!isWebLlmSupported()) {
         throw new Error('WebLLM extension is not installed.');
     }
@@ -352,7 +357,7 @@ export async function generateWebLlmChatPrompt(messages, params = {}) {
  * @param {string} text Text to count tokens in
  * @returns {Promise<number>} Number of tokens in the text
  */
-export async function countWebLlmTokens(text) {
+export async function countWebLlmTokens(text: string) {
     if (!isWebLlmSupported()) {
         throw new Error('WebLLM extension is not installed.');
     }
@@ -416,10 +421,10 @@ export class ConnectionManagerRequestService {
      * @param {Record<string, any>} [overridePayload] - Override payload for the request
      * @returns {Promise<import('../custom-request.js').ExtractedData | (() => AsyncGenerator<import('../custom-request.js').StreamResponse>)>} If not streaming, returns extracted data; if streaming, returns a function that creates an AsyncGenerator
      */
-    static async sendRequest(profileId, prompt, maxTokens, custom = this.defaultSendRequestParams, overridePayload = {}) {
+    static async sendRequest(profileId: string, prompt: string | any[], maxTokens: number, custom: Record<string, any> = this.defaultSendRequestParams, overridePayload: Record<string, any> = {}) {
         const { stream, signal, extractData, includePreset, includeInstruct, instructSettings } = { ...this.defaultSendRequestParams, ...custom };
 
-        const context = SillyTavern.getContext();
+        const context = (SillyTavern.getContext() as any);
         if (context.extensionSettings.disabledExtensions.includes('connection-manager')) {
             throw new Error('Connection Manager is not available');
         }
@@ -493,8 +498,8 @@ export class ConnectionManagerRequestService {
     * @param {string} profileId ID of a given connection profile (from which to infer a completion preset).
     * @param {InstructSettings} instructSettings optional instruct settings
     */
-    static constructPrompt(prompt, profileId, instructSettings = null) {
-        const context = SillyTavern.getContext();
+    static constructPrompt(prompt: any[], profileId: string, instructSettings: any = null) {
+        const context = (SillyTavern.getContext() as any);
         const profile = this.getProfile(profileId);
         const selectedApiMap = this.validateProfile(profile);
         const instructName = profile.instruct;
@@ -523,13 +528,13 @@ export class ConnectionManagerRequestService {
      * @returns {import('./connection-manager/index.js').ConnectionProfile[]}
      */
     static getSupportedProfiles() {
-        const context = SillyTavern.getContext();
+        const context = (SillyTavern.getContext() as any);
         if (context.extensionSettings.disabledExtensions.includes('connection-manager')) {
             throw new Error('Connection Manager is not available');
         }
 
         const profiles = context.extensionSettings.connectionManager.profiles;
-        return profiles.filter((p) => this.isProfileSupported(p));
+        return profiles.filter((p: any) => this.isProfileSupported(p));
     }
 
     /**
@@ -538,8 +543,8 @@ export class ConnectionManagerRequestService {
      * @returns {import('./connection-manager/index.js').ConnectionProfile?} [profile]
      * @throws {Error}
      */
-    static getProfile(profileId) {
-        const profile = SillyTavern.getContext().extensionSettings.connectionManager.profiles.find((p) => p.id === profileId);
+    static getProfile(profileId: string) {
+        const profile = (SillyTavern.getContext() as any).extensionSettings.connectionManager.profiles.find((p: any) => p.id === profileId);
         if (!profile) throw new Error(`Profile not found (ID: ${profileId})`);
         return profile;
     }
@@ -550,12 +555,12 @@ export class ConnectionManagerRequestService {
      * @param {string} [profileId] - Profile ID. If omitted, uses the currently selected profile.
      * @returns {HTMLImageElement | null}
      */
-    static getProfileIcon(profileId) {
-        if ((SillyTavern.getContext()).extensionSettings.disabledExtensions.includes('connection-manager')) {
+    static getProfileIcon(profileId?: string) {
+        if (((SillyTavern.getContext() as any)).extensionSettings.disabledExtensions.includes('connection-manager')) {
             return null;
         }
 
-        const id = profileId ?? (SillyTavern.getContext()).extensionSettings.connectionManager.selectedProfile;
+        const id = profileId ?? ((SillyTavern.getContext() as any)).extensionSettings.connectionManager.selectedProfile;
         if (!id) return null;
 
         try {
@@ -571,12 +576,12 @@ export class ConnectionManagerRequestService {
      * @param {import('./connection-manager/index.js').ConnectionProfile?} [profile]
      * @returns {boolean}
      */
-    static isProfileSupported(profile) {
+    static isProfileSupported(profile?: any) {
         if (!profile || !profile.api) {
             return false;
         }
 
-        const apiMap = CONNECT_API_MAP[profile.api];
+        const apiMap = (CONNECT_API_MAP as any)[profile.api];
         if (!Object.hasOwn(this.getAllowedTypes(), apiMap.selected)) {
             return false;
         }
@@ -597,7 +602,7 @@ export class ConnectionManagerRequestService {
      * @return {import('../slash-commands.js').ConnectAPIMap}
      * @throws {Error}
      */
-    static validateProfile(profile) {
+    static validateProfile(profile?: any) {
         if (!profile) {
             throw new Error('Could not find profile.');
         }
@@ -605,7 +610,7 @@ export class ConnectionManagerRequestService {
             throw new Error('Select a connection profile that has an API');
         }
 
-        const context = SillyTavern.getContext();
+        const context = (SillyTavern.getContext() as any);
         const selectedApiMap = context.CONNECT_API_MAP[profile.api];
         if (!selectedApiMap) {
             throw new Error(`Unknown API type ${profile.api}`);
@@ -627,19 +632,19 @@ export class ConnectionManagerRequestService {
      * @param {(profile: import('./connection-manager/index.js').ConnectionProfile) => Promise<void> | void} onDelete
      */
     static handleDropdown(
-        selector,
-        initialSelectedProfileId,
-        onChange = () => { },
-        onCreate = () => { },
-        unUpdate = () => { },
-        onDelete = () => { },
+        selector: string,
+        initialSelectedProfileId: string,
+        onChange: (profile?: any) => Promise<void> | void = () => {},
+        onCreate: (profile: any) => Promise<void> | void = () => {},
+        unUpdate: (oldProfile: any, newProfile: any) => Promise<void> | void = () => {},
+        onDelete: (profile: any) => Promise<void> | void = () => {},
     ) {
-        const context = SillyTavern.getContext();
+        const context = (SillyTavern.getContext() as any);
         if (context.extensionSettings.disabledExtensions.includes('connection-manager')) {
             throw new Error('Connection Manager is not available');
         }
 
-        const dropdown = /** @type {HTMLSelectElement} */ (document.querySelector(selector));
+        const dropdown = document.querySelector(selector) as HTMLSelectElement;
 
         if (!dropdown) {
             throw new Error(`Could not find dropdown with selector ${selector}`);
@@ -657,23 +662,24 @@ export class ConnectionManagerRequestService {
         const profiles = context.extensionSettings.connectionManager.profiles;
 
         // Create optgroups using document.createElement
-        const groups = {};
+        const groups: Record<string, any> = {};
         for (const [apiType, groupLabel] of Object.entries(this.getAllowedTypes())) {
             const optgroup = document.createElement('optgroup');
             optgroup.label = groupLabel;
             groups[apiType] = optgroup;
         }
 
-        const sortedProfilesByGroup = {};
+        const sortedProfilesByGroup: Record<string, any[]> = {};
         for (const apiType of Object.keys(this.getAllowedTypes())) {
             sortedProfilesByGroup[apiType] = [];
         }
 
         for (const profile of profiles) {
             if (this.isProfileSupported(profile)) {
-                const apiMap = CONNECT_API_MAP[profile.api];
-                if (sortedProfilesByGroup[apiMap.selected]) {
-                    sortedProfilesByGroup[apiMap.selected].push(profile);
+                const apiMap = (CONNECT_API_MAP as any)[profile.api];
+                const groupList = sortedProfilesByGroup[apiMap.selected];
+                if (groupList) {
+                    groupList.push(profile);
                 }
             }
         }
@@ -699,18 +705,18 @@ export class ConnectionManagerRequestService {
             }
         }
 
-        const selectedProfile = profiles.find((p) => p.id === initialSelectedProfileId);
+        const selectedProfile = profiles.find((p: any) => p.id === initialSelectedProfileId);
         if (selectedProfile) {
             dropdown.value = selectedProfile.id;
         }
 
-        context.eventSource.on(context.eventTypes.CONNECTION_PROFILE_CREATED, async (profile) => {
+        context.eventSource.on(context.eventTypes.CONNECTION_PROFILE_CREATED, async (profile: any) => {
             const isSupported = this.isProfileSupported(profile);
             if (!isSupported) {
                 return;
             }
 
-            const group = groups[CONNECT_API_MAP[profile.api].selected];
+            const group = groups[(CONNECT_API_MAP as any)[profile.api].selected];
             const option = document.createElement('option');
             option.value = profile.id;
             option.textContent = profile.name;
@@ -719,7 +725,7 @@ export class ConnectionManagerRequestService {
             await onCreate(profile);
         });
 
-        context.eventSource.on(context.eventTypes.CONNECTION_PROFILE_UPDATED, async (oldProfile, newProfile) => {
+        context.eventSource.on(context.eventTypes.CONNECTION_PROFILE_UPDATED, async (oldProfile: any, newProfile: any) => {
             const currentSelected = dropdown.value;
             const isSelectedProfile = currentSelected === oldProfile.id;
             await unUpdate(oldProfile, newProfile);
@@ -732,7 +738,7 @@ export class ConnectionManagerRequestService {
                 return;
             }
 
-            const group = groups[CONNECT_API_MAP[newProfile.api].selected];
+            const group = groups[(CONNECT_API_MAP as any)[newProfile.api].selected];
             const oldOption = group.querySelector(`option[value="${oldProfile.id}"]`);
             if (oldOption) {
                 oldOption.remove();
@@ -750,14 +756,14 @@ export class ConnectionManagerRequestService {
             }
         });
 
-        context.eventSource.on(context.eventTypes.CONNECTION_PROFILE_DELETED, async (profile) => {
+        context.eventSource.on(context.eventTypes.CONNECTION_PROFILE_DELETED, async (profile: any) => {
             const currentSelected = dropdown.value;
             const isSelectedProfile = currentSelected === profile.id;
             if (!this.isProfileSupported(profile)) {
                 return;
             }
 
-            const group = groups[CONNECT_API_MAP[profile.api].selected];
+            const group = groups[(CONNECT_API_MAP as any)[profile.api].selected];
             const optionToRemove = group.querySelector(`option[value="${profile.id}"]`);
             if (optionToRemove) {
                 optionToRemove.remove();
@@ -773,7 +779,7 @@ export class ConnectionManagerRequestService {
 
         dropdown.addEventListener('change', async () => {
             const profileId = dropdown.value;
-            const profile = context.extensionSettings.connectionManager.profiles.find((p) => p.id === profileId);
+            const profile = context.extensionSettings.connectionManager.profiles.find((p: any) => p.id === profileId);
             await onChange(profile);
         });
     }
