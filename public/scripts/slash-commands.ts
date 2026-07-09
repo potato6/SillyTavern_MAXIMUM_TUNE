@@ -303,32 +303,38 @@ export function initDefaultSlashCommands() {
             let connectionRequired = false;
 
             if (main_api !== apiConfig.selected) {
-                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                $(`#main_api option[value='${apiConfig.selected || text}']`).prop('selected', true);
-                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                $('#main_api').trigger('change');
+                const mainApiSelect = document.getElementById('main_api');
+                if (mainApiSelect) {
+                    const option = mainApiSelect.querySelector(`option[value='${apiConfig.selected || text}']`);
+                    if (option) (option as HTMLOptionElement).selected = true;
+                    mainApiSelect.dispatchEvent(new Event('change'));
+                }
                 connectionRequired = true;
             }
 
             if (apiConfig.source && oai_settings.chat_completion_source !== apiConfig.source) {
-                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                $(`#chat_completion_source option[value='${apiConfig.source}']`).prop('selected', true);
-                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                $('#chat_completion_source').trigger('change');
+                const sourceSelect = document.getElementById('chat_completion_source');
+                if (sourceSelect) {
+                    const option = sourceSelect.querySelector(`option[value='${apiConfig.source}']`);
+                    if (option) (option as HTMLOptionElement).selected = true;
+                    sourceSelect.dispatchEvent(new Event('change'));
+                }
                 connectionRequired = true;
             }
 
             if (apiConfig.type && textgenerationwebui_settings.type !== apiConfig.type) {
-                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                $(`#textgen_type option[value='${apiConfig.type}']`).prop('selected', true);
-                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                $('#textgen_type').trigger('change');
+                const typeSelect = document.getElementById('textgen_type');
+                if (typeSelect) {
+                    const option = typeSelect.querySelector(`option[value='${apiConfig.type}']`);
+                    if (option) (option as HTMLOptionElement).selected = true;
+                    typeSelect.dispatchEvent(new Event('change'));
+                }
                 connectionRequired = true;
             }
 
             if (connectionRequired && apiConfig.button) {
-                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                $(apiConfig.button).trigger('click');
+                const btn = document.querySelector(apiConfig.button);
+                if (btn) (btn as HTMLElement).click();
             }
 
             const quiet = isTrueBoolean(args?.quiet?.toString());
