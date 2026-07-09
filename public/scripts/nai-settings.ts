@@ -215,19 +215,24 @@ export async function loadNovelSubscriptionData() {
  *
  * @param preset
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'preset' implicitly has an 'any' type.
-export function loadNovelPreset(preset) {
+export function loadNovelPreset(preset: any) {
     if (preset.genamt === undefined) {
         const needsUnlock = preset.max_context > MAX_CONTEXT_DEFAULT || preset.max_length > MAX_RESPONSE_DEFAULT;
-        const amountGen = document.getElementById('amount_gen');
-        amountGen.value = preset.max_length;
-        amountGen.dispatchEvent(new Event('input'));
-        const maxContextUnlocked = document.getElementById('max_context_unlocked');
-        maxContextUnlocked.checked = needsUnlock;
-        maxContextUnlocked.dispatchEvent(new Event('change'));
-        const maxContext = document.getElementById('max_context');
-        maxContext.value = preset.max_context;
-        maxContext.dispatchEvent(new Event('input'));
+        const amountGen = document.getElementById('amount_gen') as HTMLInputElement | null;
+        if (amountGen) {
+            amountGen.value = String(preset.max_length);
+            amountGen.dispatchEvent(new Event('input'));
+        }
+        const maxContextUnlocked = document.getElementById('max_context_unlocked') as HTMLInputElement | null;
+        if (maxContextUnlocked) {
+            maxContextUnlocked.checked = needsUnlock;
+            maxContextUnlocked.dispatchEvent(new Event('change'));
+        }
+        const maxContext = document.getElementById('max_context') as HTMLInputElement | null;
+        if (maxContext) {
+            maxContext.value = String(preset.max_context);
+            maxContext.dispatchEvent(new Event('input'));
+        }
     } else {
         setGenerationParamsFromPreset(preset);
     }
@@ -1099,20 +1104,21 @@ export async function getStatusNovel() {
 export function initNovelAISettings() {
     sliders.forEach(slider => {
         document.addEventListener('input', function (event) {
+            if (!(event.target instanceof Element)) return;
             const el = event.target.closest(slider.sliderId);
             if (!el) return;
-            const value = el.value;
+            const value = (el as HTMLInputElement).value;
             const formattedValue = slider.format(value);
             slider.setValue(value);
             const counter = document.querySelector(slider.counterId);
-            if (counter) counter.value = formattedValue;
+            if (counter) (counter as HTMLInputElement).value = formattedValue;
             saveSettingsDebounced();
         });
     });
 
     document.getElementById('api_button_novel')?.addEventListener('click', async function (e) {
         e.stopPropagation();
-        const api_key_novel = String(document.getElementById('api_key_novel')?.value).trim();
+        const api_key_novel = String((document.getElementById('api_key_novel') as HTMLInputElement | null)?.value).trim();
 
         if (api_key_novel.length) {
             // @ts-expect-error TS(2554) FIXME: Expected 3-4 arguments, but got 2.
@@ -1154,8 +1160,7 @@ export function initNovelAISettings() {
         // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         const default_preset = default_presets[nai_settings.model_novel];
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        document.getElementById('settings_preset_novel').value = novelai_setting_names[default_preset];
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
+        document.getElementById('settings_preset_novel').value = novelai_setting_names[default_preset] as any;
         document.querySelector(`#settings_preset_novel option[value="${novelai_setting_names[default_preset]}"]`)?.setAttribute('selected', 'true');
         document.getElementById('settings_preset_novel')?.dispatchEvent(new Event('change'));
     });
@@ -1179,6 +1184,7 @@ export function initNovelAISettings() {
     });
 
     document.addEventListener('click', function (event) {
+        if (!(event.target instanceof Element)) return;
         const el = event.target.closest('#novel_order .toggle_button');
         if (!el) return;
         const item = el.closest('[data-id]');
