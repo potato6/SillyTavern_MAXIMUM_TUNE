@@ -202,15 +202,13 @@ async function openSwipePicker(messageId) {
                 })
                 .removeClass('exportRawChatButton fa-solid fa-file-export')
                 .addClass('swipe_picker_branch mes_button fa-fw fa-regular fa-code-branch')
-                // @ts-expect-error TS(7006) FIXME: Parameter 'event' implicitly has an 'any' type.
-                .on('click', async (event) => {
-                    event.preventDefault();
-                    event.stopPropagation();
-                    setSelectedSwipe(index);
-                    branchActionSwipeId = index;
-                    // @ts-expect-error TS(7005) FIXME: Variable 'popup' implicitly has an 'any' type.
-                    await popup.completeCancelled();
-                });
+            branchButton[0]?.addEventListener('click', async (event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                setSelectedSwipe(index);
+                branchActionSwipeId = index;
+                await popup.completeCancelled();
+            });
             deleteButton
                 .removeAttr('file_name')
                 .attr('aria-disabled', String(!canDeleteSwipe))
@@ -232,10 +230,8 @@ async function openSwipePicker(messageId) {
                 }
             }
 
-            deleteButton
-                .off('click')
-                // @ts-expect-error TS(7006) FIXME: Parameter 'event' implicitly has an 'any' type.
-                .on('click', async (event) => {
+            for (const el of deleteButton) {
+                el.addEventListener('click', async (event) => {
                     event.preventDefault();
                     event.stopPropagation();
 
@@ -275,6 +271,7 @@ async function openSwipePicker(messageId) {
 
                     await renderSwipeList();
                 });
+            }
 
             // Add expand/collapse toggle
             const expandCheckboxId = `swipe_picker_expand_${messageId}_${index}`;
