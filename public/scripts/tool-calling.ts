@@ -818,9 +818,9 @@ export class ToolManager {
     // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
     static async invokeFunctionTools(data, { reasoningText = null } = {}) {
         const result = /** @type {ToolInvocationResult} */ ({
-            invocations: [],
-            errors: [],
-            stealthCalls: [],
+            invocations: /** @type {ToolInvocation[]} */ ([]),
+            errors: /** @type {Error[]} */ ([]),
+            stealthCalls: /** @type {string[]} */ ([]),
         });
         const toolCalls = ToolManager.#getToolCallsFromData(data);
 
@@ -855,6 +855,7 @@ export class ToolManager {
                     // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
                     result.stealthCalls.push(name);
                 } else {
+                    // @ts-expect-error TS(2345) invocations inferred as never[]
                     result.invocations.push({
                         id,
                         displayName,
