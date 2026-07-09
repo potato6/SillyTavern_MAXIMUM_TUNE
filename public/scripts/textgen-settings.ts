@@ -611,14 +611,15 @@ export async function loadTextGenSettings(data, loadedSettings) {
     }
 
     for (const [type, selector] of Object.entries(SERVER_INPUTS)) {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const control = $(selector);
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        control.val(textgenerationwebui_settings.server_urls[type] ?? '').on('input', function () {
-            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-            textgenerationwebui_settings.server_urls[type] = String($(this).val()).trim();
-            saveSettingsDebounced();
-        });
+        const control = document.querySelector(selector);
+        if (control) {
+            (control as HTMLInputElement).value = textgenerationwebui_settings.server_urls[type] ?? '';
+            control.addEventListener('input', function () {
+                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
+                textgenerationwebui_settings.server_urls[type] = String((this as HTMLInputElement).value).trim();
+                saveSettingsDebounced();
+            });
+        }
     }
 
     if (loadedSettings.api_use_mancer_webui) {
@@ -634,8 +635,7 @@ export async function loadTextGenSettings(data, loadedSettings) {
     }
 
     if (textgenerationwebui_settings.preset) {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#settings_preset_textgenerationwebui').val(textgenerationwebui_settings.preset);
+        (document.getElementById('settings_preset_textgenerationwebui') as HTMLSelectElement).value = textgenerationwebui_settings.preset;
     }
 
     for (const i of setting_names) {
@@ -645,12 +645,17 @@ export async function loadTextGenSettings(data, loadedSettings) {
         setSettingByName(i, value);
     }
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#textgen_type').val(textgenerationwebui_settings.type);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#openrouter_providers_text').val(textgenerationwebui_settings.openrouter_providers).trigger('change');
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#openrouter_quantizations_text').val(textgenerationwebui_settings.openrouter_quantizations).trigger('change');
+    (document.getElementById('textgen_type') as HTMLSelectElement).value = textgenerationwebui_settings.type;
+    const orProviders = document.getElementById('openrouter_providers_text');
+    if (orProviders) {
+        (orProviders as HTMLInputElement).value = textgenerationwebui_settings.openrouter_providers;
+        orProviders.dispatchEvent(new Event('change'));
+    }
+    const orQuant = document.getElementById('openrouter_quantizations_text');
+    if (orQuant) {
+        (orQuant as HTMLInputElement).value = textgenerationwebui_settings.openrouter_quantizations;
+        orQuant.dispatchEvent(new Event('change'));
+    }
     // @ts-expect-error TS(2345) FIXME: Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
     showSamplerControls(textgenerationwebui_settings.type);
     BIAS_CACHE.delete(BIAS_KEY);
@@ -1018,47 +1023,36 @@ export function initTextGenSettings() {
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#aphrodite_default_order').on('click', function () {
+    document.getElementById('aphrodite_default_order')?.addEventListener('click', function () {
         sortAphroditeItemsByOrder(APHRODITE_DEFAULT_ORDER);
         textgenerationwebui_settings.samplers_priorities = APHRODITE_DEFAULT_ORDER;
         console.log('Default samplers order loaded:', textgenerationwebui_settings.samplers_priorities);
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#textgen_type').on('change', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const type = String($(this).val());
+    document.getElementById('textgen_type')?.addEventListener('change', function () {
+        const type = String((this as HTMLSelectElement).value);
         textgenerationwebui_settings.type = type;
 
         if ([VLLM, APHRODITE, INFERMATICAI].includes(textgenerationwebui_settings.type)) {
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#mirostat_mode_textgenerationwebui').attr('step', 2); //Aphro disallows mode 1
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#do_sample_textgenerationwebui').prop('checked', true); //Aphro should always do sample; 'otherwise set temp to 0 to mimic no sample'
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#ban_eos_token_textgenerationwebui').prop('checked', false); //Aphro should not ban EOS, just ignore it; 'add token '2' to ban list do to this'
-            //special handling for vLLM/Aphrodite topK -1 disable state
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#top_k_textgenerationwebui').attr('min', -1);
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            if ($('#top_k_textgenerationwebui').val() === '0' || textgenerationwebui_settings.top_k === 0) {
+            document.getElementById('mirostat_mode_textgenerationwebui')?.setAttribute('step', '2');
+            (document.getElementById('do_sample_textgenerationwebui') as HTMLInputElement).checked = true;
+            (document.getElementById('ban_eos_token_textgenerationwebui') as HTMLInputElement).checked = false;
+            document.getElementById('top_k_textgenerationwebui')?.setAttribute('min', '-1');
+            const topK = document.getElementById('top_k_textgenerationwebui') as HTMLInputElement;
+            if (topK?.value === '0' || textgenerationwebui_settings.top_k === 0) {
                 textgenerationwebui_settings.top_k = -1;
-                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                $('#top_k_textgenerationwebui').val('-1').trigger('input');
+                topK.value = '-1';
+                topK.dispatchEvent(new Event('input'));
             }
         } else {
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#mirostat_mode_textgenerationwebui').attr('step', 1);
-            //undo special vLLM/Aphrodite setup for topK
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#top_k_textgenerationwebui').attr('min', 0);
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            if ($('#top_k_textgenerationwebui').val() === '-1' || textgenerationwebui_settings.top_k === -1) {
+            document.getElementById('mirostat_mode_textgenerationwebui')?.setAttribute('step', '1');
+            document.getElementById('top_k_textgenerationwebui')?.setAttribute('min', '0');
+            const topK = document.getElementById('top_k_textgenerationwebui') as HTMLInputElement;
+            if (topK?.value === '-1' || textgenerationwebui_settings.top_k === -1) {
                 textgenerationwebui_settings.top_k = 0;
-                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                $('#top_k_textgenerationwebui').val('0').trigger('input');
+                topK.value = '0';
+                topK.dispatchEvent(new Event('input'));
             }
         }
 
@@ -1067,13 +1061,11 @@ export function initTextGenSettings() {
         setOnlineStatus('no_connection');
         BIAS_CACHE.delete(BIAS_KEY);
 
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#main_api').trigger('change');
+        document.getElementById('main_api')?.dispatchEvent(new Event('change'));
 
         // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         if (!SERVER_INPUTS[type] || textgenerationwebui_settings.server_urls[type]) {
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#api_button_textgenerationwebui').trigger('click');
+            document.getElementById('api_button_textgenerationwebui')?.click();
         }
 
         saveSettingsDebounced();
