@@ -81,14 +81,8 @@ async function openSwipePicker(messageId) {
     listContainer.classList.add('swipe_picker_div', 'flex1', 'marginTop10');
     wrapper.appendChild(listContainer);
 
-    /** @type {Popup} */
-    // @ts-expect-error TS(7034) FIXME: Variable 'popup' implicitly has type 'any' in some... Remove this comment to see the full error message
-    // eslint-disable-next-line prefer-const
-    let popup;
-    /** @type {HTMLInputElement} */
-    // @ts-expect-error TS(7034) FIXME: Variable 'swipeIdInput' implicitly has type 'any' ... Remove this comment to see the full error message
-    // eslint-disable-next-line prefer-const
-    let swipeIdInput;
+    let popup!: Popup;
+    let swipeIdInput!: HTMLInputElement;
     /** @type {number|null} */
     let branchActionSwipeId = null;
 
@@ -96,7 +90,6 @@ async function openSwipePicker(messageId) {
      *
      */
     function syncSwipeIdInput() {
-        // @ts-expect-error TS(7005) FIXME: Variable 'swipeIdInput' implicitly has an 'any' ty... Remove this comment to see the full error message
         if (swipeIdInput) {
             swipeIdInput.value = String(selectedSwipeId + 1);
         }
@@ -202,7 +195,7 @@ async function openSwipePicker(messageId) {
                 })
                 .removeClass('exportRawChatButton fa-solid fa-file-export')
                 .addClass('swipe_picker_branch mes_button fa-fw fa-regular fa-code-branch')
-            branchButton[0]?.addEventListener('click', async (event) => {
+            branchButton[0]?.addEventListener('click', async (event: Event) => {
                 event.preventDefault();
                 event.stopPropagation();
                 setSelectedSwipe(index);
@@ -231,7 +224,7 @@ async function openSwipePicker(messageId) {
             }
 
             for (const el of deleteButton) {
-                el.addEventListener('click', async (event) => {
+                el.addEventListener('click', async (event: Event) => {
                     event.preventDefault();
                     event.stopPropagation();
 
@@ -264,7 +257,6 @@ async function openSwipePicker(messageId) {
 
                     selectedSwipeId = clamp(nextSelectedSwipeId, 0, message.swipes.length - 1);
 
-                    // @ts-expect-error TS(7005) FIXME: Variable 'swipeIdInput' implicitly has an 'any' ty... Remove this comment to see the full error message
                     if (swipeIdInput instanceof HTMLInputElement) {
                         swipeIdInput.max = String(message.swipes.length);
                     }
@@ -286,14 +278,14 @@ async function openSwipePicker(messageId) {
             expandLabel.classList.add('swipe_picker_expand_label', 'fa-solid', 'fa-fw', 'fa-chevron-down');
             expandLabel.title = t`Expand/Collapse`;
             expandLabel.setAttribute('data-i18n', '[title]Expand/Collapse');
-            expandLabel.addEventListener('click', (event) => event.stopPropagation());
+            expandLabel.addEventListener('click', (event: Event) => event.stopPropagation());
 
             // Add copy button
             const copyButton = document.createElement('div');
             copyButton.classList.add('swipe_picker_copy', 'fa-solid', 'fa-fw', 'fa-copy');
             copyButton.title = t`Copy`;
             copyButton.setAttribute('data-i18n', '[title]Copy');
-            copyButton.addEventListener('click', async (event) => {
+            copyButton.addEventListener('click', async (event: Event) => {
                 event.preventDefault();
                 event.stopPropagation();
                 await copyText(swipeText);
@@ -322,7 +314,6 @@ async function openSwipePicker(messageId) {
                 }
 
                 setSelectedSwipe(index);
-                // @ts-expect-error TS(7005) FIXME: Variable 'popup' implicitly has an 'any' type.
                 await popup.completeAffirmative();
             });
 
@@ -358,7 +349,6 @@ async function openSwipePicker(messageId) {
         // @ts-expect-error TS(2322) FIXME: Type '() => void' is not assignable to type 'null ... Remove this comment to see the full error message
         onOpen: function () {
             scrollToSelectedSwipe();
-            // @ts-expect-error TS(7005) FIXME: Variable 'swipeIdInput' implicitly has an 'any' ty... Remove this comment to see the full error message
             if (swipeIdInput instanceof HTMLInputElement) {
                 swipeIdInput.focus();
                 swipeIdInput.select();

@@ -1113,9 +1113,8 @@ export function setWorldInfoSettings(settings, data) {
 
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_info_sort_order').val(accountStorage.getItem(SORT_ORDER_KEY) || '0');
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('world_info').dispatchEvent(new Event('change'));
-    document.getElementById('world_editor_select').dispatchEvent(new Event('change'));
+    document.getElementById('world_info')!.dispatchEvent(new Event('change'));
+    document.getElementById('world_editor_select')!.dispatchEvent(new Event('change'));
 
     eventSource.on(event_types.CHAT_CHANGED, async () => {
         const hasWorldInfo = !!chat_metadata[METADATA_KEY] && world_names.includes(chat_metadata[METADATA_KEY]);
@@ -1154,11 +1153,11 @@ export function reloadEditor(file, loadIfNotSelected = false) {
     if (selectedIndex !== -1 && (loadIfNotSelected || currentIndex === selectedIndex)) {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#world_editor_select').val(selectedIndex);
-        document.getElementById('world_editor_select').dispatchEvent(new Event('change'));
+        document.getElementById('world_editor_select')!.dispatchEvent(new Event('change'));
     }
 }
 
-//MARK: regWISlashCommands
+
 /**
  * @returns {void}
  */
@@ -2647,11 +2646,11 @@ async function displayWorldEntries(name, data, navigation = navigation_option.no
     worldEntriesList.show();
 
     if (!data || !('entries' in data)) {
-        document.getElementById('world_popup_new').addEventListener('click', nullWorldInfo);
-        document.getElementById('world_popup_name_button').addEventListener('click', nullWorldInfo);
-        document.getElementById('world_popup_export').addEventListener('click', nullWorldInfo);
-        document.getElementById('world_popup_delete').addEventListener('click', nullWorldInfo);
-        document.getElementById('world_duplicate').addEventListener('click', nullWorldInfo);
+        document.getElementById('world_popup_new')!.addEventListener('click', nullWorldInfo);
+        document.getElementById('world_popup_name_button')!.addEventListener('click', nullWorldInfo);
+        document.getElementById('world_popup_export')!.addEventListener('click', nullWorldInfo);
+        document.getElementById('world_popup_delete')!.addEventListener('click', nullWorldInfo);
+        document.getElementById('world_duplicate')!.addEventListener('click', nullWorldInfo);
         worldEntriesList.hide();
 
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
@@ -2854,7 +2853,7 @@ async function displayWorldEntries(name, data, navigation = navigation_option.no
         }
     });
 
-    document.getElementById('world_apply_current_sorting').addEventListener('click', async () => {
+    document.getElementById('world_apply_current_sorting')!.addEventListener('click', async () => {
         const entryCount = Object.keys(data.entries).length;
         const moreThan100 = entryCount > 100;
 
@@ -2905,7 +2904,7 @@ async function displayWorldEntries(name, data, navigation = navigation_option.no
         }
     });
 
-    document.getElementById('world_popup_export').addEventListener('click', () => {
+    document.getElementById('world_popup_export')!.addEventListener('click', () => {
         if (name && data) {
             const jsonValue = JSON.stringify(data);
             const fileName = `${name}.json`;
@@ -2913,7 +2912,7 @@ async function displayWorldEntries(name, data, navigation = navigation_option.no
         }
     });
 
-    document.getElementById('world_duplicate').addEventListener('click', async () => {
+    document.getElementById('world_duplicate')!.addEventListener('click', async () => {
         // Find current name for the world selected
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         const selectedIndex = String(document.getElementById('world_editor_select').options[document.getElementById('world_editor_select').selectedIndex].value);
@@ -2928,9 +2927,9 @@ async function displayWorldEntries(name, data, navigation = navigation_option.no
             await updateWorldInfoList();
 
             const selectedIndex = world_names.indexOf(finalName);
-            if (selectedIndex !== -1) {
-                const worldEditorSelect = document.getElementById('world_editor_select');
-                worldEditorSelect.value = selectedIndex;
+            const worldEditorSelect = document.getElementById('world_editor_select') as HTMLSelectElement | null;
+            if (worldEditorSelect) {
+                worldEditorSelect.value = String(selectedIndex);
                 worldEditorSelect.dispatchEvent(new Event('change'));
             } else {
                 await hideWorldEditor();
@@ -3359,23 +3358,19 @@ function enableKeysInputHelper({ template, entry, entryPropName, originalDataVal
          * @param {Event} _event
          * @param {{ skipReset?: boolean, noSave?: boolean }} [arg]
          */
-        // @ts-expect-error TS(7006) FIXME: Parameter '_event' implicitly has an 'any' type.
-        input[0].addEventListener('input', async function (_event) {
+        input[0].addEventListener('input', async function (this: any, _event: Event) {
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const uid = $(this).data('uid');
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const value = String($(this).val());
-            // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
             const detail = _event instanceof CustomEvent ? _event.detail : {};
             const skipReset = detail.skipReset ?? false;
             const noSave = detail.noSave ?? false;
-            // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
             if (!skipReset) await resetScrollHeight(this);
             if (!noSave) {
                 data.entries[uid][entryPropName] = splitKeywordsAndRegexes(value);
                 setWIOriginalDataValue(data, uid, originalDataValueName, data.entries[uid][entryPropName]);
                 await saveWorldInfo(name, data);
-                // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
                 this.classList.toggle('empty', !data.entries[uid][entryPropName].length);
             }
             // Update the commentInput's placeholder for primary keys
@@ -3406,7 +3401,7 @@ function handleMatchCheckboxHelper({ template, entry, fieldName, data, name }) {
     const key = originalWIDataKeyMap[fieldName];
     const checkBoxElem = template.find(`input[type="checkbox"][name="${fieldName}"]`);
     checkBoxElem.data('uid', entry.uid);
-    checkBoxElem[0].addEventListener('input', async function (e) {
+    checkBoxElem[0].addEventListener('input', async function (this: any, e: Event) {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const uid = $(this).data('uid');
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
@@ -3496,14 +3491,13 @@ function fillCharacterAndTagOptionsHelper({ characterFilter, entry }) {
  */
 // @ts-expect-error TS(7031) FIXME: Binding element 'characterFilter' implicitly has a... Remove this comment to see the full error message
 function handleCharacterFilterChangeHelper({ characterFilter, data, entry, name }) {
-    characterFilter[0].addEventListener('mousedown', async function (e) {
+    characterFilter[0].addEventListener('mousedown', async function (this: any, e: Event) {
         if (world_names.length === 0) {
             e.preventDefault();
             return;
         }
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const uid = $(this).data('uid');
-        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
         const selectedOptions = this.selectedOptions;
         if ((!selectedOptions || selectedOptions?.length === 0) && !data.entries[uid].characterFilter?.isExclude) {
             delete data.entries[uid].characterFilter;
@@ -3526,13 +3520,12 @@ function handleCharacterFilterChangeHelper({ characterFilter, data, entry, name 
         setWIOriginalDataValue(data, uid, 'character_filter', data.entries[uid].characterFilter);
         await saveWorldInfo(name, data);
     });
-    characterFilter[0].addEventListener('change', async function () {
+    characterFilter[0].addEventListener('change', async function (this: any) {
         if (world_names.length === 0) {
             return;
         }
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const uid = $(this).data('uid');
-        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
         const selectedOptions = this.selectedOptions;
         if ((!selectedOptions || selectedOptions?.length === 0) && !data.entries[uid].characterFilter?.isExclude) {
             delete data.entries[uid].characterFilter;
@@ -3568,7 +3561,7 @@ function handleCharacterFilterChangeHelper({ characterFilter, data, entry, name 
 // @ts-expect-error TS(7031) FIXME: Binding element 'probabilityInput' implicitly has ... Remove this comment to see the full error message
 function handleProbabilityInputHelper({ probabilityInput, data, entry, name }) {
     probabilityInput[0].dataset.uid = String(entry.uid);
-    probabilityInput[0].addEventListener('input', async function (e) {
+    probabilityInput[0].addEventListener('input', async function (this: any, e: Event) {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const uid = $(this).data('uid');
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
@@ -3601,7 +3594,7 @@ function handleProbabilityInputHelper({ probabilityInput, data, entry, name }) {
 // @ts-expect-error TS(7031) FIXME: Binding element 'probabilityToggle' implicitly has... Remove this comment to see the full error message
 function handleProbabilityToggleHelper({ probabilityToggle, data, entry, name, probabilityInput }) {
     probabilityToggle[0].dataset.uid = String(entry.uid);
-    probabilityToggle[0].addEventListener('input', async function (e) {
+    probabilityToggle[0].addEventListener('input', async function (this: any, e: Event) {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const uid = $(this).data('uid');
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
@@ -3619,7 +3612,7 @@ function handleProbabilityToggleHelper({ probabilityToggle, data, entry, name, p
             data.entries[uid].probability = null;
         }
         probabilityInput[0].value = data.entries[uid].probability;
-        probabilityInput[0].dispatchEvent(new CustomEvent('input', { detail: { noSave } }));
+        probabilityInput[0].dispatchEvent(new CustomEvent('input', { detail: { noSave: data_noSave } }));
     });
     probabilityToggle[0].checked = true;
     probabilityToggle[0].dispatchEvent(new CustomEvent('input', { detail: { noSave: true } }));
@@ -3639,7 +3632,7 @@ function handleProbabilityToggleHelper({ probabilityToggle, data, entry, name, p
 // @ts-expect-error TS(7031) FIXME: Binding element 'selectElem' implicitly has an 'an... Remove this comment to see the full error message
 function handleBooleanSelectHelper({ selectElem, entry, entryKey, data, name }) {
     selectElem[0].dataset.uid = String(entry.uid);
-    selectElem[0].addEventListener('input', async function (e) {
+    selectElem[0].addEventListener('input', async function (this: any, e: Event) {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const uid = $(this).data('uid');
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
@@ -3669,7 +3662,7 @@ function handleBooleanSelectHelper({ selectElem, entry, entryKey, data, name }) 
 // @ts-expect-error TS(7031) FIXME: Binding element 'inputElem' implicitly has an 'any... Remove this comment to see the full error message
 function handleNumberInputHelper({ inputElem, entry, entryKey, data, name, min, max, clamp = false }) {
     inputElem[0].dataset.uid = String(entry.uid);
-    inputElem[0].addEventListener('input', async function (e) {
+    inputElem[0].addEventListener('input', async function (this: any, e: Event) {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const uid = $(this).data('uid');
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
@@ -3704,10 +3697,10 @@ function handleNumberInputHelper({ inputElem, entry, entryKey, data, name, min, 
 // @ts-expect-error TS(7031) FIXME: Binding element 'entryStateSelector' implicitly ha... Remove this comment to see the full error message
 function handleEntryStateSelectorHelper({ entryStateSelector, entry, data, name }) {
     entryStateSelector[0].dataset.uid = String(entry.uid);
-    entryStateSelector[0].addEventListener('click', function (event) {
+    entryStateSelector[0].addEventListener('click', function (this: any, event: Event) {
         event.stopPropagation();
     });
-    entryStateSelector[0].addEventListener('input', async function (e) {
+    entryStateSelector[0].addEventListener('input', async function (this: any, e: Event) {
         const uid = entry.uid;
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const value = $(this).val();
@@ -3805,7 +3798,7 @@ export async function getWorldEntry(name, data, entry) {
     setCommentPlaceholder(keys, commentInput);
 
     commentInput[0].dataset.uid = String(entry.uid);
-    commentInput[0].addEventListener('input', async function (e) {
+    commentInput[0].addEventListener('input', async function (this: any, e: Event) {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const uid = $(this).data('uid');
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
@@ -3813,7 +3806,6 @@ export async function getWorldEntry(name, data, entry) {
         const detail = e instanceof CustomEvent ? e.detail : {};
         const skipReset = detail.skipReset ?? false;
         const data_noSave = detail.noSave ?? false;
-        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
         if (!skipReset) await resetScrollHeight(this);
         data.entries[uid].comment = value;
         setWIOriginalDataValue(data, uid, 'comment', data.entries[uid].comment);
@@ -3855,8 +3847,8 @@ export async function getWorldEntry(name, data, entry) {
     if (entry.position === undefined) entry.position = 0;
     const positionInput = headerTemplate.find('select[name="position"]');
     positionInput[0].dataset.uid = String(entry.uid);
-    positionInput[0].addEventListener('click', e => e.stopPropagation());
-    positionInput[0].addEventListener('input', async function (e) {
+    positionInput[0].addEventListener('click', (e: Event) => e.stopPropagation());
+    positionInput[0].addEventListener('input', async function (this: any, e: Event) {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const uid = $(this).data('uid');
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
@@ -3867,7 +3859,6 @@ export async function getWorldEntry(name, data, entry) {
         if (value === world_info_position.atDepth) {
             depthInput.prop('disabled', false);
             depthInput.css('visibility', 'visible');
-            // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
             const role = Number(this.options[this.selectedIndex]?.getAttribute('data-role'));
             data.entries[uid].role = role;
         } else {
@@ -3909,10 +3900,9 @@ export async function getWorldEntry(name, data, entry) {
             updateEditor(entryDup.uid);
         }
     });
-    // @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
     const deleteBtn = headerTemplate.find('.delete_entry_button');
     deleteBtn[0].dataset.uid = String(entry.uid);
-    deleteBtn[0].addEventListener('click', async function (e) {
+    deleteBtn[0].addEventListener('click', async function (this: any, e: Event) {
         e.stopPropagation();
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const uid = $(this).data('uid');
@@ -3922,11 +3912,10 @@ export async function getWorldEntry(name, data, entry) {
         await saveWorldInfo(name, data);
         updateEditor(navigation_option.previous);
     });
-    // @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
     const moveBtn = headerTemplate.find('.move_entry_button');
     moveBtn[0].setAttribute('data-uid', String(entry.uid));
     moveBtn[0].setAttribute('data-current-world', name);
-    moveBtn[0].addEventListener('click', async function (e) {
+    moveBtn[0].addEventListener('click', async function (this: any, e: Event) {
         e.stopPropagation();
         const sourceUid = this.getAttribute('data-uid');
         const sourceWorld = this.getAttribute('data-current-world');
@@ -4058,7 +4047,7 @@ export async function getWorldEntry(name, data, entry) {
         // Comment toggle
         const commentToggle = editTemplate.find('input[name="addMemo"]');
         commentToggle[0].dataset.uid = String(entry.uid);
-        commentToggle[0].addEventListener('input', async function (e) {
+        commentToggle[0].addEventListener('input', async function (this: any, e: Event) {
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const uid = $(this).data('uid');
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
@@ -4078,8 +4067,8 @@ export async function getWorldEntry(name, data, entry) {
         // Logic AND/NOT
         const selectiveLogicDropdown = editTemplate.find('select[name="entryLogicType"]');
         selectiveLogicDropdown[0].dataset.uid = String(entry.uid);
-        selectiveLogicDropdown[0].addEventListener('click', e => e.stopPropagation());
-        selectiveLogicDropdown[0].addEventListener('input', async function (e) {
+        selectiveLogicDropdown[0].addEventListener('click', (e: Event) => e.stopPropagation());
+        selectiveLogicDropdown[0].addEventListener('input', async function (this: any, e: Event) {
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const uid = $(this).data('uid');
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
@@ -4095,7 +4084,7 @@ export async function getWorldEntry(name, data, entry) {
         // Selective
         const selectiveInput = editTemplate.find('input[name="selective"]');
         selectiveInput[0].dataset.uid = String(entry.uid);
-        selectiveInput[0].addEventListener('input', async function (e) {
+        selectiveInput[0].addEventListener('input', async function (this: any, e: Event) {
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const uid = $(this).data('uid');
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
@@ -4124,7 +4113,7 @@ export async function getWorldEntry(name, data, entry) {
         characterFilterLabel.text(entry.characterFilter?.isExclude ? 'Exclude Character(s)' : 'Filter to Character(s)');
         const characterExclusionInput = editTemplate.find('input[name="character_exclusion"]');
         characterExclusionInput[0].dataset.uid = String(entry.uid);
-        characterExclusionInput[0].addEventListener('input', async function (e) {
+        characterExclusionInput[0].addEventListener('input', async function (this: any, e: Event) {
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const uid = $(this).data('uid');
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
@@ -4816,7 +4805,7 @@ async function renameWorldInfo(name, data) {
     if (selectedIndex !== -1) {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#world_editor_select').val(selectedIndex);
-        document.getElementById('world_editor_select').dispatchEvent(new Event('change'));
+        document.getElementById('world_editor_select')!.dispatchEvent(new Event('change'));
     }
 }
 
@@ -6991,7 +6980,7 @@ function updateAuxBooks(fileName, computeNext) {
  *
  */
 export function initWorldInfo() {
-    document.getElementById('world_info').addEventListener('mousedown', async function (e) {
+    (document.getElementById('world_info') as HTMLSelectElement).addEventListener('mousedown', async function (e) {
         // If there's no world names, don't do anything
         if (world_names.length === 0) {
             e.preventDefault();
@@ -7001,7 +6990,7 @@ export function initWorldInfo() {
         // @ts-expect-error TS(2554) FIXME: Expected 2 arguments, but got 1.
         onWorldInfoChange('__notSlashCommand__');
     });
-    document.getElementById('world_info').addEventListener('change', async function () {
+    (document.getElementById('world_info') as HTMLSelectElement).addEventListener('change', async function () {
         // If there's no world names, don't do anything
         if (world_names.length === 0) {
             return;
@@ -7012,16 +7001,16 @@ export function initWorldInfo() {
     });
 
     //**************************WORLD INFO IMPORT EXPORT*************************//
-    document.getElementById('world_import_button').addEventListener('click', function () {
-        document.getElementById('world_import_file').dispatchEvent(new Event('click'));
+    (document.getElementById('world_import_button') as HTMLElement).addEventListener('click', function () {
+        (document.getElementById('world_import_file') as HTMLInputElement).dispatchEvent(new Event('click'));
     });
 
-    document.getElementById('world_import_file').addEventListener('change', async function (e) {
+    (document.getElementById('world_import_file') as HTMLInputElement).addEventListener('change', async function (e) {
         if (!(e.target instanceof HTMLInputElement)) {
             return;
         }
 
-        const file = e.target.files[0];
+        const file = e.target.files?.[0];
 
         await importWorldInfo(file);
 
@@ -7029,7 +7018,7 @@ export function initWorldInfo() {
         e.target.value = '';
     });
 
-    document.getElementById('world_create_button').addEventListener('click', async () => {
+    (document.getElementById('world_create_button') as HTMLElement).addEventListener('click', async () => {
         const tempName = getFreeWorldName();
         const finalName = await Popup.show.input(t`Create a new World Info`, t`Enter a name for the new file:`, tempName);
 
@@ -7038,9 +7027,9 @@ export function initWorldInfo() {
         }
     });
 
-    document.getElementById('world_editor_select').addEventListener('change', async () => {
+    (document.getElementById('world_editor_select') as HTMLSelectElement).addEventListener('change', async () => {
         const worldInfoSearchElement = document.getElementById('world_info_search');
-        if (worldInfoSearchElement) worldInfoSearchElement.value = '';
+        if (worldInfoSearchElement) (worldInfoSearchElement as HTMLInputElement).value = '';
         worldInfoFilter.setFilterData(FILTER_TYPES.WORLD_INFO_SEARCH, '', true);
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         const selectedIndex = String(document.getElementById('world_editor_select').options[document.getElementById('world_editor_select').selectedIndex].value);
@@ -7058,116 +7047,116 @@ export function initWorldInfo() {
         eventSource.emit(event_types.WORLDINFO_SETTINGS_UPDATED);
     };
 
-    document.getElementById('world_info_depth').addEventListener('input', function () {
+    (document.getElementById('world_info_depth') as HTMLInputElement).addEventListener('input', function () {
         world_info_depth = Number(this.value);
-        const counter = document.getElementById('world_info_depth_counter');
+        const counter = document.getElementById('world_info_depth_counter') as HTMLInputElement | null;
         if (counter) counter.value = this.value;
         saveSettings();
     });
 
-    document.getElementById('world_info_min_activations').addEventListener('input', function () {
+    (document.getElementById('world_info_min_activations') as HTMLInputElement).addEventListener('input', function () {
         world_info_min_activations = Number(this.value);
-        const counter = document.getElementById('world_info_min_activations_counter');
-        if (counter) counter.value = world_info_min_activations;
+        const counter = document.getElementById('world_info_min_activations_counter') as HTMLInputElement | null;
+        if (counter) counter.value = String(world_info_min_activations);
 
         if (world_info_min_activations !== 0 && world_info_max_recursion_steps !== 0) {
-            const maxRecursionEl = document.getElementById('world_info_max_recursion_steps');
+            const maxRecursionEl = document.getElementById('world_info_max_recursion_steps') as HTMLInputElement | null;
             if (maxRecursionEl) {
                 maxRecursionEl.value = '0';
                 maxRecursionEl.dispatchEvent(new Event('input'));
             }
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-            flashHighlight(document.getElementById('world_info_max_recursion_steps').parentElement); // flash the other control to show it has changed
+            const minActEl = document.getElementById('world_info_min_activations') as HTMLInputElement | null;
+            flashHighlight(minActEl?.parentElement);
             console.info('[WI] Max recursion steps set to 0, as min activations is set to', world_info_min_activations);
         } else {
             saveSettings();
         }
     });
 
-    document.getElementById('world_info_min_activations_depth_max').addEventListener('input', function () {
+    (document.getElementById('world_info_min_activations_depth_max') as HTMLInputElement).addEventListener('input', function () {
         world_info_min_activations_depth_max = Number(this.value);
-        const counter = document.getElementById('world_info_min_activations_depth_max_counter');
+        const counter = document.getElementById('world_info_min_activations_depth_max_counter') as HTMLInputElement | null;
         if (counter) counter.value = this.value;
         saveSettings();
     });
 
-    document.getElementById('world_info_budget').addEventListener('input', function () {
+    (document.getElementById('world_info_budget') as HTMLInputElement).addEventListener('input', function () {
         world_info_budget = Number(this.value);
-        const counter = document.getElementById('world_info_budget_counter');
+        const counter = document.getElementById('world_info_budget_counter') as HTMLInputElement | null;
         if (counter) counter.value = this.value;
         saveSettings();
     });
 
-    document.getElementById('world_info_include_names').addEventListener('input', function () {
+    (document.getElementById('world_info_include_names') as HTMLInputElement).addEventListener('input', function () {
         world_info_include_names = !!this.checked;
         saveSettings();
     });
 
-    document.getElementById('world_info_recursive').addEventListener('input', function () {
+    (document.getElementById('world_info_recursive') as HTMLInputElement).addEventListener('input', function () {
         world_info_recursive = !!this.checked;
         saveSettings();
     });
 
-    document.getElementById('world_info_case_sensitive').addEventListener('input', function () {
+    (document.getElementById('world_info_case_sensitive') as HTMLInputElement).addEventListener('input', function () {
         world_info_case_sensitive = !!this.checked;
         saveSettings();
     });
 
-    document.getElementById('world_info_match_whole_words').addEventListener('input', function () {
+    (document.getElementById('world_info_match_whole_words') as HTMLInputElement).addEventListener('input', function () {
         world_info_match_whole_words = !!this.checked;
         saveSettings();
     });
 
-    document.getElementById('world_info_character_strategy').addEventListener('change', function () {
+    (document.getElementById('world_info_character_strategy') as HTMLSelectElement).addEventListener('change', function () {
         world_info_character_strategy = Number(this.value);
         saveSettings();
     });
 
-    document.getElementById('world_info_overflow_alert').addEventListener('change', function () {
+    (document.getElementById('world_info_overflow_alert') as HTMLInputElement).addEventListener('change', function () {
         world_info_overflow_alert = !!this.checked;
         saveSettingsDebounced();
     });
 
-    document.getElementById('world_info_use_group_scoring').addEventListener('change', function () {
+    (document.getElementById('world_info_use_group_scoring') as HTMLInputElement).addEventListener('change', function () {
         world_info_use_group_scoring = !!this.checked;
         saveSettingsDebounced();
     });
 
-    document.getElementById('world_info_budget_cap').addEventListener('input', function () {
+    (document.getElementById('world_info_budget_cap') as HTMLInputElement).addEventListener('input', function () {
         world_info_budget_cap = Number(this.value);
-        const counter = document.getElementById('world_info_budget_cap_counter');
-        if (counter) counter.value = world_info_budget_cap;
+        const counter = document.getElementById('world_info_budget_cap_counter') as HTMLInputElement | null;
+        if (counter) counter.value = String(world_info_budget_cap);
         saveSettings();
     });
 
-    document.getElementById('world_info_max_recursion_steps').addEventListener('input', function () {
+    (document.getElementById('world_info_max_recursion_steps') as HTMLInputElement).addEventListener('input', function () {
         world_info_max_recursion_steps = Number(this.value);
-        const counter = document.getElementById('world_info_max_recursion_steps_counter');
-        if (counter) counter.value = world_info_max_recursion_steps;
+        const counter = document.getElementById('world_info_max_recursion_steps_counter') as HTMLInputElement | null;
+        if (counter) counter.value = String(world_info_max_recursion_steps);
         if (world_info_max_recursion_steps !== 0 && world_info_min_activations !== 0) {
-            const minActivationsEl = document.getElementById('world_info_min_activations');
+            const minActivationsEl = document.getElementById('world_info_min_activations') as HTMLInputElement | null;
             if (minActivationsEl) {
                 minActivationsEl.value = '0';
                 minActivationsEl.dispatchEvent(new Event('input'));
             }
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-            flashHighlight(document.getElementById('world_info_min_activations').parentElement); // flash the other control to show it has changed
+            const maxRecEl = document.getElementById('world_info_max_recursion_steps') as HTMLInputElement | null;
+            flashHighlight(maxRecEl?.parentElement); // flash the other control to show it has changed
             console.info('[WI] Min activations set to 0, as max recursion steps is set to', world_info_max_recursion_steps);
         } else {
             saveSettings();
         }
     });
 
-    document.getElementById('world_button').addEventListener('click', async function (event) {
+    (document.getElementById('world_button') as HTMLElement).addEventListener('click', async function (event) {
         const openSetWorldMenu = () => {
-            const charManagementDropdown = document.getElementById('char-management-dropdown');
-            const setCharWorld = document.getElementById('set_character_world');
+            const charManagementDropdown = document.getElementById('char-management-dropdown') as HTMLSelectElement | null;
+            const setCharWorld = document.getElementById('set_character_world') as HTMLSelectElement | null;
             if (charManagementDropdown && setCharWorld) {
                 charManagementDropdown.value = setCharWorld.value;
                 charManagementDropdown.dispatchEvent(new Event('change'));
             }
         };
-        const setCharWorld = document.getElementById('set_character_world');
+        const setCharWorld = document.getElementById('set_character_world') as HTMLSelectElement | null;
         const chid = setCharWorld ? Number(setCharWorld.getAttribute('data-chid')) : -1;
 
         if (chid === -1) {
@@ -7186,32 +7175,32 @@ export function initWorldInfo() {
             openSetWorldMenu();
         }
     });
-    addLongPressEvent('#world_button', function () {
+    addLongPressEvent('#world_button', function (this: HTMLElement) {
         const clickEvent = new MouseEvent('click', { shiftKey: true });
         this.dispatchEvent(clickEvent);
     });
 
-    // @ts-expect-error TS(7006) FIXME: Parameter 'searchQuery' implicitly has an 'any' ty... Remove this comment to see the full error message
-    const debouncedWorldInfoSearch = debounce((searchQuery) => {
+    const debouncedWorldInfoSearch = debounce((searchQuery: string) => {
         worldInfoFilter.setFilterData(FILTER_TYPES.WORLD_INFO_SEARCH, searchQuery);
     });
-    document.getElementById('world_info_search').addEventListener('input', function () {
+    (document.getElementById('world_info_search') as HTMLInputElement).addEventListener('input', function () {
         const searchQuery = this.value;
         debouncedWorldInfoSearch(searchQuery);
     });
 
-    document.getElementById('world_refresh').addEventListener('click', () => {
+    (document.getElementById('world_refresh') as HTMLElement).addEventListener('click', () => {
         updateEditor(navigation_option.previous);
     });
 
-    document.getElementById('world_info_sort_order').addEventListener('change', function () {
-        const value = String(this.options[this.selectedIndex].value);
+    (document.getElementById('world_info_sort_order') as HTMLSelectElement).addEventListener('change', function () {
+        const value = String(this.options[this.selectedIndex]?.value ?? '');
         // Save sort order, but do not save search sorting, as this is a temporary sorting option
         if (value !== 'search') accountStorage.setItem(SORT_ORDER_KEY, value);
         updateEditor(navigation_option.none);
     });
 
-    document.addEventListener('click', function (e) {
+    document.addEventListener('click', function (e: MouseEvent) {
+        if (!(e.target instanceof Element)) return;
         const el = e.target.closest('.chat_lorebook_button');
         if (el) assignLorebookToChat(e);
     });
@@ -7219,7 +7208,7 @@ export function initWorldInfo() {
         assignLorebookToChat({ shiftKey: true, altKey: false });
     });
 
-    document.getElementById('group-chat-lorebook-dropdown').addEventListener('change', async function () {
+    (document.getElementById('group-chat-lorebook-dropdown') as HTMLSelectElement).addEventListener('change', async function () {
         this.selectedIndex = 0;
         await assignLorebookToChat({ shiftKey: true, altKey: false });
     });
@@ -7261,7 +7250,7 @@ export function initWorldInfo() {
         }, { buttonStyle: true, closeDrawer: true });
     }
 
-    document.getElementById('WorldInfo').addEventListener('scroll', () => {
+    (document.getElementById('WorldInfo') as HTMLElement).addEventListener('scroll', () => {
         document.querySelectorAll('.world_entry input[name="group"], .world_entry input[name="automationId"]').forEach(el => {
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const instance = $(el).autocomplete('instance');

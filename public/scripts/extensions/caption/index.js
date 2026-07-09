@@ -388,7 +388,7 @@ async function getCaptionForFile(file, prompt, quiet) {
 }
 
 function onRefineModeInput() {
-    extension_settings.caption.refine_mode = $('#caption_refine_mode').prop('checked');
+    extension_settings.caption.refine_mode = document.getElementById('caption_refine_mode').checked;
     saveSettingsDebounced();
 }
 
@@ -466,7 +466,7 @@ export async function init() {
         </div>`);
 
         $('#caption_wand_container').append(sendButton);
-        $(sendButton).on('click', () => {
+        sendButton[0].addEventListener('click', () => {
             const hasCaptionModule = (() => {
                 const settings = extension_settings.caption;
 
@@ -544,7 +544,7 @@ export async function init() {
                 return;
             }
 
-            $('#img_file').trigger('click');
+            document.getElementById('img_file').click();
         });
     }
     function addPictureSendForm() {
@@ -642,72 +642,77 @@ export async function init() {
     $('#caption_source').val(extension_settings.caption.source);
     $('#caption_prompt').val(extension_settings.caption.prompt);
     $('#caption_template').val(extension_settings.caption.template);
-    $('#caption_refine_mode').on('input', onRefineModeInput);
-    $('#caption_source').on('change', async () => {
-        extension_settings.caption.source = String($('#caption_source').val());
+    document.getElementById('caption_refine_mode').addEventListener('input', onRefineModeInput);
+    document.getElementById('caption_source').addEventListener('change', async () => {
+        extension_settings.caption.source = String(document.getElementById('caption_source').value);
         await switchMultimodalBlocks();
         saveSettingsDebounced();
     });
-    $('#caption_prompt').on('input', () => {
-        extension_settings.caption.prompt = String($('#caption_prompt').val());
+    document.getElementById('caption_prompt').addEventListener('input', () => {
+        extension_settings.caption.prompt = String(document.getElementById('caption_prompt').value);
         saveSettingsDebounced();
     });
-    $('#caption_template').on('input', () => {
-        extension_settings.caption.template = String($('#caption_template').val());
+    document.getElementById('caption_template').addEventListener('input', () => {
+        extension_settings.caption.template = String(document.getElementById('caption_template').value);
         saveSettingsDebounced();
     });
-    $('#caption_allow_reverse_proxy').on('input', () => {
-        extension_settings.caption.allow_reverse_proxy = $('#caption_allow_reverse_proxy').prop('checked');
+    document.getElementById('caption_allow_reverse_proxy').addEventListener('input', () => {
+        extension_settings.caption.allow_reverse_proxy = document.getElementById('caption_allow_reverse_proxy').checked;
         saveSettingsDebounced();
     });
-    $('#caption_prompt_ask').on('input', () => {
-        extension_settings.caption.prompt_ask = $('#caption_prompt_ask').prop('checked');
+    document.getElementById('caption_prompt_ask').addEventListener('input', () => {
+        extension_settings.caption.prompt_ask = document.getElementById('caption_prompt_ask').checked;
         saveSettingsDebounced();
     });
-    $('#caption_auto_mode').on('input', () => {
-        extension_settings.caption.auto_mode = !!$('#caption_auto_mode').prop('checked');
+    document.getElementById('caption_auto_mode').addEventListener('input', () => {
+        extension_settings.caption.auto_mode = !!document.getElementById('caption_auto_mode').checked;
         saveSettingsDebounced();
     });
-    $('#caption_ollama_pull').on('click', (e) => {
+    document.getElementById('caption_ollama_pull').addEventListener('click', (e) => {
         const selectedModel = extension_settings.caption.multimodal_model;
         const staticModels = { 'ollama_current': textgenerationwebui_settings.ollama_model, 'ollama_custom': extension_settings.caption.ollama_custom_model };
         const presetModel = staticModels[selectedModel] || selectedModel;
         e.preventDefault();
-        $('#ollama_download_model').trigger('click');
-        $('.popup .popup-input').val(presetModel);
+        document.getElementById('ollama_download_model').click();
+        document.querySelector('.popup .popup-input').value = presetModel;
     });
-    $('#caption_multimodal_api').on('change', async () => {
-        const api = String($('#caption_multimodal_api').val());
+    document.getElementById('caption_multimodal_api').addEventListener('change', async () => {
+        const api = String(document.getElementById('caption_multimodal_api').value);
         extension_settings.caption.multimodal_api = api;
         extension_settings.caption.multimodal_model = '';
         await switchMultimodalBlocks();
         saveSettingsDebounced();
     });
-    $('#caption_multimodal_model').on('change', () => {
-        extension_settings.caption.multimodal_model = String($('#caption_multimodal_model').val());
+    document.getElementById('caption_multimodal_model').addEventListener('change', () => {
+        extension_settings.caption.multimodal_model = String(document.getElementById('caption_multimodal_model').value);
         saveSettingsDebounced();
     });
-    $('#caption_altEndpoint_url').val(extension_settings.caption.alt_endpoint_url).on('input', () => {
-        extension_settings.caption.alt_endpoint_url = String($('#caption_altEndpoint_url').val());
+    document.getElementById('caption_altEndpoint_url').value = extension_settings.caption.alt_endpoint_url ?? '';
+    document.getElementById('caption_altEndpoint_url').addEventListener('input', () => {
+        extension_settings.caption.alt_endpoint_url = String(document.getElementById('caption_altEndpoint_url').value);
         saveSettingsDebounced();
     });
-    $('#caption_altEndpoint_enabled').prop('checked', !!(extension_settings.caption.alt_endpoint_enabled)).on('input', () => {
-        extension_settings.caption.alt_endpoint_enabled = !!$('#caption_altEndpoint_enabled').prop('checked');
+    document.getElementById('caption_altEndpoint_enabled').checked = !!(extension_settings.caption.alt_endpoint_enabled);
+    document.getElementById('caption_altEndpoint_enabled').addEventListener('input', () => {
+        extension_settings.caption.alt_endpoint_enabled = !!document.getElementById('caption_altEndpoint_enabled').checked;
         saveSettingsDebounced();
     });
-    $('#caption_show_in_chat').prop('checked', !!(extension_settings.caption.show_in_chat)).on('input', () => {
-        extension_settings.caption.show_in_chat = !!$('#caption_show_in_chat').prop('checked');
+    document.getElementById('caption_show_in_chat').checked = !!(extension_settings.caption.show_in_chat);
+    document.getElementById('caption_show_in_chat').addEventListener('input', () => {
+        extension_settings.caption.show_in_chat = !!document.getElementById('caption_show_in_chat').checked;
         saveSettingsDebounced();
     });
-    $('#caption_ollama_custom_model').val(extension_settings.caption.ollama_custom_model || '').on('input', () => {
-        extension_settings.caption.ollama_custom_model = String($('#caption_ollama_custom_model').val()).trim();
+    document.getElementById('caption_ollama_custom_model').value = extension_settings.caption.ollama_custom_model || '';
+    document.getElementById('caption_ollama_custom_model').addEventListener('input', () => {
+        extension_settings.caption.ollama_custom_model = String(document.getElementById('caption_ollama_custom_model').value).trim();
         saveSettingsDebounced();
     });
-    $('#caption_custom_model').val(extension_settings.caption.custom_model || '').on('input', () => {
-        extension_settings.caption.custom_model = String($('#caption_custom_model').val()).trim();
+    document.getElementById('caption_custom_model').value = extension_settings.caption.custom_model || '';
+    document.getElementById('caption_custom_model').addEventListener('input', () => {
+        extension_settings.caption.custom_model = String(document.getElementById('caption_custom_model').value).trim();
         saveSettingsDebounced();
     });
-    $('#caption_refresh_models').on('click', async () => {
+    document.getElementById('caption_refresh_models').addEventListener('click', async () => {
         extension_settings.caption.multimodal_model = '';
         await switchMultimodalBlocks();
         saveSettingsDebounced();
@@ -745,10 +750,12 @@ export async function init() {
     eventSource.on(event_types.MESSAGE_SENT, onMessageEvent);
     eventSource.on(event_types.MESSAGE_FILE_EMBEDDED, onMessageEvent);
 
-    $(document).on('click', '.mes_img_caption', async function () {
+    document.addEventListener('click', async function (event) {
+        const captionElement = event.target.closest('.mes_img_caption');
+        if (!captionElement) return;
         const animationClass = 'fa-fade';
-        const messageBlock = $(this).closest('.mes');
-        const mediaContainer = $(this).closest('.mes_media_container');
+        const messageBlock = $(captionElement).closest('.mes');
+        const mediaContainer = $(captionElement).closest('.mes_media_container');
         const messageMedia = mediaContainer.find('.mes_img, .mes_video');
         if (messageMedia.hasClass(animationClass)) return;
         messageMedia.addClass(animationClass);
