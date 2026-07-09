@@ -502,15 +502,24 @@ async function loadSettings() {
     }
 
     $('#sd_source').val(extension_settings.sd.source);
-    $('#sd_scale').val(extension_settings.sd.scale).trigger('input');
-    $('#sd_steps').val(extension_settings.sd.steps).trigger('input');
-    $('#sd_prompt_prefix').val(extension_settings.sd.prompt_prefix).trigger('input');
-    $('#sd_negative_prompt').val(extension_settings.sd.negative_prompt).trigger('input');
-    $('#sd_width').val(extension_settings.sd.width).trigger('input');
-    $('#sd_height').val(extension_settings.sd.height).trigger('input');
-    $('#sd_hr_scale').val(extension_settings.sd.hr_scale).trigger('input');
-    $('#sd_denoising_strength').val(extension_settings.sd.denoising_strength).trigger('input');
-    $('#sd_hr_second_pass_steps').val(extension_settings.sd.hr_second_pass_steps).trigger('input');
+    $('#sd_scale').val(extension_settings.sd.scale);
+    document.getElementById('sd_scale')?.dispatchEvent(new Event('input'));
+    $('#sd_steps').val(extension_settings.sd.steps);
+    document.getElementById('sd_steps')?.dispatchEvent(new Event('input'));
+    $('#sd_prompt_prefix').val(extension_settings.sd.prompt_prefix);
+    document.getElementById('sd_prompt_prefix')?.dispatchEvent(new Event('input'));
+    $('#sd_negative_prompt').val(extension_settings.sd.negative_prompt);
+    document.getElementById('sd_negative_prompt')?.dispatchEvent(new Event('input'));
+    $('#sd_width').val(extension_settings.sd.width);
+    document.getElementById('sd_width')?.dispatchEvent(new Event('input'));
+    $('#sd_height').val(extension_settings.sd.height);
+    document.getElementById('sd_height')?.dispatchEvent(new Event('input'));
+    $('#sd_hr_scale').val(extension_settings.sd.hr_scale);
+    document.getElementById('sd_hr_scale')?.dispatchEvent(new Event('input'));
+    $('#sd_denoising_strength').val(extension_settings.sd.denoising_strength);
+    document.getElementById('sd_denoising_strength')?.dispatchEvent(new Event('input'));
+    $('#sd_hr_second_pass_steps').val(extension_settings.sd.hr_second_pass_steps);
+    document.getElementById('sd_hr_second_pass_steps')?.dispatchEvent(new Event('input'));
     $('#sd_novel_anlas_guard').prop('checked', extension_settings.sd.novel_anlas_guard);
     $('#sd_novel_sm').prop('checked', extension_settings.sd.novel_sm);
     $('#sd_novel_sm_dyn').prop('checked', extension_settings.sd.novel_sm_dyn);
@@ -627,15 +636,16 @@ function addPromptTemplates() {
             .addClass('textarea_compact text_pole')
             .attr('id', `sd_prompt_${name}`)
             .attr('rows', 3)
-            .val(prompt).on('input', () => {
-                extension_settings.sd.prompts[name] = textarea.val();
-                saveSettingsDebounced();
-            });
+            .val(prompt);
+        textarea[0].addEventListener('input', () => {
+            extension_settings.sd.prompts[name] = textarea.val();
+            saveSettingsDebounced();
+        });
         const button = $('<button></button>')
             .addClass('menu_button fa-solid fa-undo')
             .attr('title', 'Restore default')
-            .attr('data-i18n', 'Restore default')
-            .on('click', () => {
+            .attr('data-i18n', 'Restore default');
+        button[0].addEventListener('click', () => {
                 textarea.val(promptTemplates[name]);
                 extension_settings.sd.prompts[name] = promptTemplates[name];
                 if (String(name) === String(generationMode.TOOL)) {
@@ -681,8 +691,10 @@ function onStyleSelect() {
         return;
     }
 
-    $('#sd_prompt_prefix').val(styleObject.prefix).trigger('input');
-    $('#sd_negative_prompt').val(styleObject.negative).trigger('input');
+    $('#sd_prompt_prefix').val(styleObject.prefix);
+    document.getElementById('sd_prompt_prefix')?.dispatchEvent(new Event('input'));
+    $('#sd_negative_prompt').val(styleObject.negative);
+    document.getElementById('sd_negative_prompt')?.dispatchEvent(new Event('input'));
     extension_settings.sd.style = selectedStyle;
     saveSettingsDebounced();
 }
@@ -712,11 +724,14 @@ async function onDeleteStyleClick() {
 
     if (extension_settings.sd.styles.length > 0) {
         extension_settings.sd.style = extension_settings.sd.styles[0].name;
-        $('#sd_style').val(extension_settings.sd.style).trigger('change');
+        $('#sd_style').val(extension_settings.sd.style);
+        document.getElementById('sd_style')?.dispatchEvent(new Event('change'));
     } else {
         extension_settings.sd.style = '';
-        $('#sd_prompt_prefix').val('').trigger('input');
-        $('#sd_negative_prompt').val('').trigger('input');
+        $('#sd_prompt_prefix').val('');
+        document.getElementById('sd_prompt_prefix')?.dispatchEvent(new Event('input'));
+        $('#sd_negative_prompt').val('');
+        document.getElementById('sd_negative_prompt')?.dispatchEvent(new Event('input'));
         $('#sd_style').val('');
     }
 
@@ -1101,8 +1116,10 @@ function onResolutionChange() {
         return;
     }
 
-    $('#sd_height').val(selectedResolution.height).trigger('input');
-    $('#sd_width').val(selectedResolution.width).trigger('input');
+    $('#sd_height').val(selectedResolution.height);
+    document.getElementById('sd_height')?.dispatchEvent(new Event('input'));
+    $('#sd_width').val(selectedResolution.width);
+    document.getElementById('sd_width')?.dispatchEvent(new Event('input'));
 }
 
 function onSchedulerChange() {
@@ -1127,8 +1144,10 @@ function onSwapDimensionsClick() {
     const h = extension_settings.sd.width;
     extension_settings.sd.width = w;
     extension_settings.sd.height = h;
-    $('#sd_width').val(w).trigger('input');
-    $('#sd_height').val(h).trigger('input');
+    $('#sd_width').val(w);
+    document.getElementById('sd_width')?.dispatchEvent(new Event('input'));
+    $('#sd_height').val(h);
+    document.getElementById('sd_height')?.dispatchEvent(new Event('input'));
     saveSettingsDebounced();
 }
 
@@ -1193,7 +1212,8 @@ function onNovelSmInput() {
     saveSettingsDebounced();
 
     if (!extension_settings.sd.novel_sm) {
-        $('#sd_novel_sm_dyn').prop('checked', false).prop('disabled', true).trigger('input');
+        $('#sd_novel_sm_dyn').prop('checked', false).prop('disabled', true);
+        document.getElementById('sd_novel_sm_dyn')?.dispatchEvent(new Event('input'));
     } else {
         $('#sd_novel_sm_dyn').prop('disabled', false);
     }
@@ -1758,7 +1778,8 @@ async function loadSamplers() {
 
     if (!extension_settings.sd.sampler && samplers.length > 0) {
         extension_settings.sd.sampler = samplers[0];
-        $('#sd_sampler').val(extension_settings.sd.sampler).trigger('change');
+        $('#sd_sampler').val(extension_settings.sd.sampler);
+        document.getElementById('sd_sampler')?.dispatchEvent(new Event('change'));
     }
 }
 
@@ -2018,7 +2039,8 @@ async function loadModels() {
 
     if (!extension_settings.sd.model && models.length > 0) {
         extension_settings.sd.model = models[0].value;
-        $('#sd_model').val(extension_settings.sd.model).trigger('change');
+        $('#sd_model').val(extension_settings.sd.model);
+        document.getElementById('sd_model')?.dispatchEvent(new Event('change'));
     }
 }
 
@@ -2655,7 +2677,8 @@ async function loadSchedulers() {
 
     if (!extension_settings.sd.scheduler && schedulers.length > 0 && schedulers[0] !== 'N/A') {
         extension_settings.sd.scheduler = schedulers[0];
-        $('#sd_scheduler').val(extension_settings.sd.scheduler).trigger('change');
+        $('#sd_scheduler').val(extension_settings.sd.scheduler);
+        document.getElementById('sd_scheduler')?.dispatchEvent(new Event('change'));
     }
 }
 
@@ -2778,7 +2801,8 @@ async function loadVaes() {
 
     if (!extension_settings.sd.vae && vaes.length > 0 && vaes[0] !== 'N/A') {
         extension_settings.sd.vae = vaes[0];
-        $('#sd_vae').val(extension_settings.sd.vae).trigger('change');
+        $('#sd_vae').val(extension_settings.sd.vae);
+        document.getElementById('sd_vae')?.dispatchEvent(new Event('change'));
     }
 }
 
@@ -4797,7 +4821,7 @@ async function onComfyOpenWorkflowEditorClick() {
         `);
         $('#sd_comfy_workflow_editor_placeholder_list_custom').append(el);
         el.find('.sd_comfy_workflow_editor_custom_find').val(placeholder.find);
-        el.find('.sd_comfy_workflow_editor_custom_find').on('input', function () {
+        el[0].querySelector('.sd_comfy_workflow_editor_custom_find')?.addEventListener('input', function () {
             if (!(this instanceof HTMLInputElement)) {
                 return;
             }
@@ -4808,20 +4832,20 @@ async function onComfyOpenWorkflowEditorClick() {
             saveSettingsDebounced();
         });
         el.find('.sd_comfy_workflow_editor_custom_replace').val(placeholder.replace);
-        el.find('.sd_comfy_workflow_editor_custom_replace').on('input', function () {
+        el[0].querySelector('.sd_comfy_workflow_editor_custom_replace')?.addEventListener('input', function () {
             if (!(this instanceof HTMLInputElement)) {
                 return;
             }
             placeholder.replace = this.value;
             saveSettingsDebounced();
         });
-        el.find('.sd_comfy_workflow_editor_custom_remove').on('click', () => {
+        el[0].querySelector('.sd_comfy_workflow_editor_custom_remove')?.addEventListener('click', () => {
             el.remove();
             extension_settings.sd.comfy_placeholders.splice(extension_settings.sd.comfy_placeholders.indexOf(placeholder));
             saveSettingsDebounced();
         });
     };
-    $('#sd_comfy_workflow_editor_placeholder_add').on('click', () => {
+    document.getElementById('sd_comfy_workflow_editor_placeholder_add')?.addEventListener('click', () => {
         if (!extension_settings.sd.comfy_placeholders) {
             extension_settings.sd.comfy_placeholders = [];
         }
@@ -4837,7 +4861,7 @@ async function onComfyOpenWorkflowEditorClick() {
         addPlaceholderDom(placeholder);
     });
     checkPlaceholders();
-    $('#sd_comfy_workflow_editor_workflow').on('input', checkPlaceholders);
+    document.getElementById('sd_comfy_workflow_editor_workflow')?.addEventListener('input', checkPlaceholders);
     if (await popupResult) {
         const response = await fetch('/api/sd/comfy/save-workflow', {
             method: 'POST',
@@ -5028,20 +5052,31 @@ async function addSDGenButtons() {
     $('#sd_wand_container').append(buttonHtml);
     $(document.body).append(dropdownHtml);
 
-    const button = $('#sd_gen');
-    const dropdown = $('#sd_dropdown');
+    const button = document.getElementById('sd_gen');
+    const dropdown = document.getElementById('sd_dropdown');
 
-    $(document).on('click', '.sd_message_gen', (e) => sdMessageButton($(e.currentTarget), { animate: false }));
-
-    button.on('pointerdown mousedown', function (e) {
-        e.stopPropagation();
-    }).on('click', function () {
-        dropdown[0].togglePopover();
+    document.addEventListener('click', function (e) {
+        const target = e.target.closest('.sd_message_gen');
+        if (target) {
+            sdMessageButton($(target), { animate: false });
+        }
     });
 
-    $('#sd_dropdown [id]').on('click', function () {
-        dropdown[0].hidePopover();
-        const id = $(this).attr('id');
+    if (button) {
+        button.addEventListener('pointerdown', function (e) {
+            e.stopPropagation();
+        });
+        button.addEventListener('mousedown', function (e) {
+            e.stopPropagation();
+        });
+        button.addEventListener('click', function () {
+            if (dropdown) dropdown.togglePopover();
+        });
+    }
+
+    dropdown?.querySelectorAll('[id]').forEach(el => el.addEventListener('click', function () {
+        if (dropdown) dropdown.hidePopover();
+        const id = this.getAttribute('id');
         const idParamMap = {
             'sd_you': 'you',
             'sd_face': 'face',
@@ -5790,116 +5825,116 @@ export async function init() {
 
     const template = await renderExtensionTemplateAsync('stable-diffusion', 'settings', defaultSettings);
     $('#sd_container').append(template);
-    $('#sd_source').on('change', onSourceChange);
-    $('#sd_scale').on('input', onScaleInput);
-    $('#sd_steps').on('input', onStepsInput);
-    $('#sd_model').on('change', onModelChange);
-    $('#sd_vae').on('change', onVaeChange);
-    $('#sd_sampler').on('change', onSamplerChange);
-    $('#sd_resolution').on('change', onResolutionChange);
-    $('#sd_scheduler').on('change', onSchedulerChange);
-    $('#sd_prompt_prefix').on('input', onPromptPrefixInput);
-    $('#sd_negative_prompt').on('input', onNegativePromptInput);
-    $('#sd_width').on('input', onWidthInput);
-    $('#sd_height').on('input', onHeightInput);
-    $('#sd_horde_nsfw').on('input', onHordeNsfwInput);
-    $('#sd_horde_karras').on('input', onHordeKarrasInput);
-    $('#sd_horde_sanitize').on('input', onHordeSanitizeInput);
-    $('#sd_restore_faces').on('input', onRestoreFacesInput);
-    $('#sd_enable_hr').on('input', onHighResFixInput);
-    $('#sd_adetailer_face').on('change', onADetailerFaceChange);
-    $('#sd_refine_mode').on('input', onRefineModeInput);
-    $('#sd_character_prompt').on('input', onCharacterPromptInput);
-    $('#sd_character_negative_prompt').on('input', onCharacterNegativePromptInput);
-    $('#sd_auto_validate').on('click', validateAutoUrl);
-    $('#sd_auto_url').on('input', onAutoUrlInput);
-    $('#sd_auto_auth').on('input', onAutoAuthInput);
-    $('#sd_sdcpp_validate').on('click', validateSdcppUrl);
-    $('#sd_sdcpp_url').on('input', onSdcppUrlInput);
-    $('#sd_drawthings_validate').on('click', validateDrawthingsUrl);
-    $('#sd_drawthings_url').on('input', onDrawthingsUrlInput);
-    $('#sd_drawthings_auth').on('input', onDrawthingsAuthInput);
-    $('#sd_vlad_validate').on('click', validateVladUrl);
-    $('#sd_vlad_url').on('input', onVladUrlInput);
-    $('#sd_vlad_auth').on('input', onVladAuthInput);
-    $('#sd_hr_upscaler').on('change', onHrUpscalerChange);
-    $('#sd_hr_scale').on('input', onHrScaleInput);
-    $('#sd_denoising_strength').on('input', onDenoisingStrengthInput);
-    $('#sd_hr_second_pass_steps').on('input', onHrSecondPassStepsInput);
-    $('#sd_novel_anlas_guard').on('input', onNovelAnlasGuardInput);
-    $('#sd_novel_view_anlas').on('click', onViewAnlasClick);
-    $('#sd_novel_sm').on('input', onNovelSmInput);
-    $('#sd_novel_sm_dyn').on('input', onNovelSmDynInput);
-    $('#sd_novel_decrisper').on('input', onNovelDecrisperInput);
-    $('#sd_novel_variety_boost').on('input', onNovelVarietyBoostInput);
-    $('#sd_pollinations_enhance').on('input', onPollinationsEnhanceInput);
-    $('#sd_comfy_type').on('change', onComfyTypeChange);
-    $('#sd_comfy_validate').on('click', validateComfyUrl);
-    $('#sd_comfy_runpod_validate').on('click', validateComfyRunPodUrl);
-    $('#sd_comfy_url').on('input', onComfyUrlInput);
-    $('#sd_comfy_runpod_url').on('input', onComfyRunPodUrlInput);
-    $('#sd_comfy_workflow').on('change', onComfyWorkflowChange);
-    $('#sd_comfy_open_workflow_editor').on('click', onComfyOpenWorkflowEditorClick);
-    $('#sd_comfy_new_workflow').on('click', onComfyNewWorkflowClick);
-    $('#sd_comfy_rename_workflow').on('click', onComfyRenameWorkflowClick);
-    $('#sd_comfy_delete_workflow').on('click', onComfyDeleteWorkflowClick);
-    $('#sd_style').on('change', onStyleSelect);
-    $('#sd_save_style').on('click', onSaveStyleClick);
-    $('#sd_rename_style').on('click', onRenameStyleClick);
-    $('#sd_delete_style').on('click', onDeleteStyleClick);
+    document.getElementById('sd_source')?.addEventListener('change', onSourceChange);
+    document.getElementById('sd_scale')?.addEventListener('input', onScaleInput);
+    document.getElementById('sd_steps')?.addEventListener('input', onStepsInput);
+    document.getElementById('sd_model')?.addEventListener('change', onModelChange);
+    document.getElementById('sd_vae')?.addEventListener('change', onVaeChange);
+    document.getElementById('sd_sampler')?.addEventListener('change', onSamplerChange);
+    document.getElementById('sd_resolution')?.addEventListener('change', onResolutionChange);
+    document.getElementById('sd_scheduler')?.addEventListener('change', onSchedulerChange);
+    document.getElementById('sd_prompt_prefix')?.addEventListener('input', onPromptPrefixInput);
+    document.getElementById('sd_negative_prompt')?.addEventListener('input', onNegativePromptInput);
+    document.getElementById('sd_width')?.addEventListener('input', onWidthInput);
+    document.getElementById('sd_height')?.addEventListener('input', onHeightInput);
+    document.getElementById('sd_horde_nsfw')?.addEventListener('input', onHordeNsfwInput);
+    document.getElementById('sd_horde_karras')?.addEventListener('input', onHordeKarrasInput);
+    document.getElementById('sd_horde_sanitize')?.addEventListener('input', onHordeSanitizeInput);
+    document.getElementById('sd_restore_faces')?.addEventListener('input', onRestoreFacesInput);
+    document.getElementById('sd_enable_hr')?.addEventListener('input', onHighResFixInput);
+    document.getElementById('sd_adetailer_face')?.addEventListener('change', onADetailerFaceChange);
+    document.getElementById('sd_refine_mode')?.addEventListener('input', onRefineModeInput);
+    document.getElementById('sd_character_prompt')?.addEventListener('input', onCharacterPromptInput);
+    document.getElementById('sd_character_negative_prompt')?.addEventListener('input', onCharacterNegativePromptInput);
+    document.getElementById('sd_auto_validate')?.addEventListener('click', validateAutoUrl);
+    document.getElementById('sd_auto_url')?.addEventListener('input', onAutoUrlInput);
+    document.getElementById('sd_auto_auth')?.addEventListener('input', onAutoAuthInput);
+    document.getElementById('sd_sdcpp_validate')?.addEventListener('click', validateSdcppUrl);
+    document.getElementById('sd_sdcpp_url')?.addEventListener('input', onSdcppUrlInput);
+    document.getElementById('sd_drawthings_validate')?.addEventListener('click', validateDrawthingsUrl);
+    document.getElementById('sd_drawthings_url')?.addEventListener('input', onDrawthingsUrlInput);
+    document.getElementById('sd_drawthings_auth')?.addEventListener('input', onDrawthingsAuthInput);
+    document.getElementById('sd_vlad_validate')?.addEventListener('click', validateVladUrl);
+    document.getElementById('sd_vlad_url')?.addEventListener('input', onVladUrlInput);
+    document.getElementById('sd_vlad_auth')?.addEventListener('input', onVladAuthInput);
+    document.getElementById('sd_hr_upscaler')?.addEventListener('change', onHrUpscalerChange);
+    document.getElementById('sd_hr_scale')?.addEventListener('input', onHrScaleInput);
+    document.getElementById('sd_denoising_strength')?.addEventListener('input', onDenoisingStrengthInput);
+    document.getElementById('sd_hr_second_pass_steps')?.addEventListener('input', onHrSecondPassStepsInput);
+    document.getElementById('sd_novel_anlas_guard')?.addEventListener('input', onNovelAnlasGuardInput);
+    document.getElementById('sd_novel_view_anlas')?.addEventListener('click', onViewAnlasClick);
+    document.getElementById('sd_novel_sm')?.addEventListener('input', onNovelSmInput);
+    document.getElementById('sd_novel_sm_dyn')?.addEventListener('input', onNovelSmDynInput);
+    document.getElementById('sd_novel_decrisper')?.addEventListener('input', onNovelDecrisperInput);
+    document.getElementById('sd_novel_variety_boost')?.addEventListener('input', onNovelVarietyBoostInput);
+    document.getElementById('sd_pollinations_enhance')?.addEventListener('input', onPollinationsEnhanceInput);
+    document.getElementById('sd_comfy_type')?.addEventListener('change', onComfyTypeChange);
+    document.getElementById('sd_comfy_validate')?.addEventListener('click', validateComfyUrl);
+    document.getElementById('sd_comfy_runpod_validate')?.addEventListener('click', validateComfyRunPodUrl);
+    document.getElementById('sd_comfy_url')?.addEventListener('input', onComfyUrlInput);
+    document.getElementById('sd_comfy_runpod_url')?.addEventListener('input', onComfyRunPodUrlInput);
+    document.getElementById('sd_comfy_workflow')?.addEventListener('change', onComfyWorkflowChange);
+    document.getElementById('sd_comfy_open_workflow_editor')?.addEventListener('click', onComfyOpenWorkflowEditorClick);
+    document.getElementById('sd_comfy_new_workflow')?.addEventListener('click', onComfyNewWorkflowClick);
+    document.getElementById('sd_comfy_rename_workflow')?.addEventListener('click', onComfyRenameWorkflowClick);
+    document.getElementById('sd_comfy_delete_workflow')?.addEventListener('click', onComfyDeleteWorkflowClick);
+    document.getElementById('sd_style')?.addEventListener('change', onStyleSelect);
+    document.getElementById('sd_save_style')?.addEventListener('click', onSaveStyleClick);
+    document.getElementById('sd_rename_style')?.addEventListener('click', onRenameStyleClick);
+    document.getElementById('sd_delete_style')?.addEventListener('click', onDeleteStyleClick);
     $('#sd_character_prompt_block').hide();
-    $('#sd_interactive_mode').on('input', onInteractiveModeInput);
-    $('#sd_openai_style').on('change', onOpenAiStyleSelect);
-    $('#sd_openai_quality').on('change', onOpenAiQualitySelect);
-    $('#sd_openai_duration').on('input', onOpenAiDurationSelect);
-    $('#sd_multimodal_captioning').on('input', onMultimodalCaptioningInput);
-    $('#sd_snap').on('input', onSnapInput);
-    $('#sd_minimal_prompt_processing').on('input', onMinimalPromptProcessing);
-    $('#sd_clip_skip').on('input', onClipSkipInput);
-    $('#sd_seed').on('input', onSeedInput);
-    $('#sd_character_prompt_share').on('input', onCharacterPromptShareInput);
-    $('#sd_free_extend').on('input', onFreeExtendInput);
-    $('#sd_wand_visible').on('input', onWandVisibleInput);
-    $('#sd_command_visible').on('input', onCommandVisibleInput);
-    $('#sd_interactive_visible').on('input', onInteractiveVisibleInput);
-    $('#sd_tool_visible').on('input', onToolVisibleInput);
-    $('#sd_swap_dimensions').on('click', onSwapDimensionsClick);
-    $('#sd_stability_style_preset').on('change', onStabilityStylePresetChange);
-    $('#sd_huggingface_model_id').on('input', onHFModelInput);
-    $('#sd_function_tool').on('input', onFunctionToolInput);
-    $('#sd_bfl_upsampling').on('input', onBflUpsamplingInput);
+    document.getElementById('sd_interactive_mode')?.addEventListener('input', onInteractiveModeInput);
+    document.getElementById('sd_openai_style')?.addEventListener('change', onOpenAiStyleSelect);
+    document.getElementById('sd_openai_quality')?.addEventListener('change', onOpenAiQualitySelect);
+    document.getElementById('sd_openai_duration')?.addEventListener('input', onOpenAiDurationSelect);
+    document.getElementById('sd_multimodal_captioning')?.addEventListener('input', onMultimodalCaptioningInput);
+    document.getElementById('sd_snap')?.addEventListener('input', onSnapInput);
+    document.getElementById('sd_minimal_prompt_processing')?.addEventListener('input', onMinimalPromptProcessing);
+    document.getElementById('sd_clip_skip')?.addEventListener('input', onClipSkipInput);
+    document.getElementById('sd_seed')?.addEventListener('input', onSeedInput);
+    document.getElementById('sd_character_prompt_share')?.addEventListener('input', onCharacterPromptShareInput);
+    document.getElementById('sd_free_extend')?.addEventListener('input', onFreeExtendInput);
+    document.getElementById('sd_wand_visible')?.addEventListener('input', onWandVisibleInput);
+    document.getElementById('sd_command_visible')?.addEventListener('input', onCommandVisibleInput);
+    document.getElementById('sd_interactive_visible')?.addEventListener('input', onInteractiveVisibleInput);
+    document.getElementById('sd_tool_visible')?.addEventListener('input', onToolVisibleInput);
+    document.getElementById('sd_swap_dimensions')?.addEventListener('click', onSwapDimensionsClick);
+    document.getElementById('sd_stability_style_preset')?.addEventListener('change', onStabilityStylePresetChange);
+    document.getElementById('sd_huggingface_model_id')?.addEventListener('input', onHFModelInput);
+    document.getElementById('sd_function_tool')?.addEventListener('input', onFunctionToolInput);
+    document.getElementById('sd_bfl_upsampling')?.addEventListener('input', onBflUpsamplingInput);
 
-    $('#sd_google_api').on('input', function () {
-        extension_settings.sd.google_api = String($(this).val());
+    document.getElementById('sd_google_api')?.addEventListener('input', function () {
+        extension_settings.sd.google_api = String(this.value);
         saveSettingsDebounced();
     });
-    $('#sd_google_enhance').on('input', function () {
-        extension_settings.sd.google_enhance = $(this).prop('checked');
+    document.getElementById('sd_google_enhance')?.addEventListener('input', function () {
+        extension_settings.sd.google_enhance = this.checked;
         saveSettingsDebounced();
     });
-    $('#sd_google_duration').on('input', function () {
-        extension_settings.sd.google_duration = Number($(this).val());
+    document.getElementById('sd_google_duration')?.addEventListener('input', function () {
+        extension_settings.sd.google_duration = Number(this.value);
         saveSettingsDebounced();
     });
-    $('#sd_models_refresh').on('click', async () => {
+    document.getElementById('sd_models_refresh')?.addEventListener('click', async () => {
         await loadModels();
     });
-    $('#sd_electronhub_quality').on('change', function () {
-        extension_settings.sd.electronhub_quality = String($(this).val());
+    document.getElementById('sd_electronhub_quality')?.addEventListener('change', function () {
+        extension_settings.sd.electronhub_quality = String(this.value);
         saveSettingsDebounced();
     });
-    $('#sd_openai_quality_gpt').on('input', function () {
-        extension_settings.sd.openai_quality_gpt = String($(this).val());
+    document.getElementById('sd_openai_quality_gpt')?.addEventListener('input', function () {
+        extension_settings.sd.openai_quality_gpt = String(this.value);
         saveSettingsDebounced();
     });
 
     if (!CSS.supports('field-sizing', 'content')) {
-        $('.sd_settings .inline-drawer-toggle').on('click', function () {
+        document.querySelectorAll('.sd_settings .inline-drawer-toggle').forEach(el => el.addEventListener('click', function () {
             initScrollHeight($('#sd_prompt_prefix'));
             initScrollHeight($('#sd_negative_prompt'));
             initScrollHeight($('#sd_character_prompt'));
             initScrollHeight($('#sd_character_negative_prompt'));
-        });
+        }));
     }
 
     for (const [key, value] of Object.entries(resolutionOptions)) {
