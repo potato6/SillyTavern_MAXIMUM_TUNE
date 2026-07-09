@@ -38,9 +38,7 @@ export function addLocaleData(localeId, data) {
 
     for (const [key, value] of Object.entries(data)) {
         // Overrides for default locale data are not allowed
-        // @ts-expect-error TS(7005) FIXME: Variable 'localeData' implicitly has an 'any' type... Remove this comment to see the full error message
         if (!Object.hasOwn(localeData, key)) {
-            // @ts-expect-error TS(7005) FIXME: Variable 'localeData' implicitly has an 'any' type... Remove this comment to see the full error message
             localeData[key] = value;
         }
     }
@@ -115,7 +113,6 @@ export function translate(text, key = null) {
     }
     // @ts-expect-error TS(7005) FIXME: Variable 'trackMissingDynamicTranslate' implicitly... Remove this comment to see the full error message
     if (trackMissingDynamicTranslate && localeData && !Object.hasOwn(localeData, translationKey)) {
-        // @ts-expect-error TS(7005) FIXME: Variable 'trackMissingDynamicTranslate' implicitly... Remove this comment to see the full error message
         trackMissingDynamicTranslate.add(translationKey);
     }
     // @ts-expect-error TS(7005) FIXME: Variable 'localeData' implicitly has an 'any' type... Remove this comment to see the full error message
@@ -205,7 +202,6 @@ async function getMissingTranslations() {
 
     // @ts-expect-error TS(7005) FIXME: Variable 'trackMissingDynamicTranslate' implicitly... Remove this comment to see the full error message
     if (trackMissingDynamicTranslate) {
-        // @ts-expect-error TS(7005) FIXME: Variable 'trackMissingDynamicTranslate' implicitly... Remove this comment to see the full error message
         missingData.push(...Array.from(trackMissingDynamicTranslate).map(key => ({ key, language: localeFile, value: key })));
     }
 
@@ -231,8 +227,7 @@ async function getMissingTranslations() {
                     // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                     const localizedValue = localeData?.[key];
                     if (!localizedValue) {
-                        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-                        missingData.push({ key, language: language.lang, value: el.textContent.trim() });
+                        missingData.push({ key, language: language.lang, value: el.textContent?.trim() ?? '' });
                     }
                 }
             }
@@ -263,7 +258,6 @@ async function getMissingTranslations() {
 
     // @ts-expect-error TS(7005) FIXME: Variable 'trackMissingDynamicTranslate' implicitly... Remove this comment to see the full error message
     if (trackMissingDynamicTranslate) {
-        // @ts-expect-error TS(7005) FIXME: Variable 'trackMissingDynamicTranslate' implicitly... Remove this comment to see the full error message
         const trackMissingDynamicTranslateMap = Object.fromEntries(Array.from(trackMissingDynamicTranslate).map(key => [key, key]));
         console.log(`Dynamic translations missing (${Object.keys(trackMissingDynamicTranslateMap).length}):`);
         console.log(trackMissingDynamicTranslateMap);
