@@ -1494,7 +1494,7 @@ async function moveAttachment(attachment, source, callback) {
         return;
     }
 
-    const content = await getFileAttachment(attachment.url);
+    const content = (await getFileAttachment(attachment.url)) ?? '';
     const file = new File([content], attachment.name, { type: 'text/plain' });
     await deleteAttachment(attachment, source, () => { }, false);
     await uploadFileAttachmentToServer(file, selectedTarget);
