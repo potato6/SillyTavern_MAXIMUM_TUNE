@@ -87,12 +87,14 @@ PHASE 5 — Events (no plugin dependency) ✅
 ✅ public/scripts/power-user.ts — slider event patterns → native
 ✅ public/scripts/textgen-settings.ts — reset button event → native
 ✅ public/scripts/samplerSelect.ts — all event patterns → native
-⬜ public/scripts/user.ts — still has ~37 jQuery .on() patterns (subagent incomplete)
-⬜ public/scripts/world-info.ts — still has ~50 jQuery event patterns (subagent incomplete)
-⬜ public/scripts/extensions/memory/index.js
-⬜ public/scripts/extensions/expressions/index.js
-⬜ public/scripts/extensions/assets/index.js
-⬜ public/scripts/extensions/tts/coqui.js
+✅ public/scripts/user.ts — 37 .on() patterns → native
+✅ public/scripts/extensions/regex/index.js — all event patterns → native
+✅ public/scripts/extensions/caption/index.js — all event patterns → native
+✅ public/scripts/extensions/memory/index.js — all event patterns → native
+✅ public/scripts/extensions/vectors/index.js — all event patterns → native
+✅ public/scripts/extensions/stable-diffusion/index.js — all event patterns → native
+⬜ public/scripts/world-info.ts — ~64 patterns on jQuery object variables (inline-drawer, select2, input etc.)
+⬜ public/scripts/extensions/ — ~30 more TTS/translate/assets/etc extension .js files remaining
 
 PHASE 6 — Effects & animation (needs CSS transitions or JS fallback)
 ----------------------------------------------------------------------
