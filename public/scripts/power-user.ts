@@ -1290,14 +1290,21 @@ function applyChatWidth(type) {
         //document.documentElement.style.setProperty('--sheldWidth', power_user.chat_width);
     } else {
         //this is to prevent the slider from updating page in real time
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#chat_width_slider').off('mouseup touchend').on('mouseup touchend', async () => {
-            // This is a hack for Firefox to let it render before applying the block width.
-            // Otherwise it takes the incorrect slider position with the new value AFTER the resizing.
-            await delay(1);
-            document.documentElement.style.setProperty('--sheldWidth', `${power_user.chat_width}vw`);
-            await delay(1);
-        });
+        const chatWidthSlider = document.getElementById('chat_width_slider');
+        if (chatWidthSlider) {
+            chatWidthSlider.addEventListener('mouseup', async () => {
+                // This is a hack for Firefox to let it render before applying the block width.
+                // Otherwise it takes the incorrect slider position with the new value AFTER the resizing.
+                await delay(1);
+                document.documentElement.style.setProperty('--sheldWidth', `${power_user.chat_width}vw`);
+                await delay(1);
+            });
+            chatWidthSlider.addEventListener('touchend', async () => {
+                await delay(1);
+                document.documentElement.style.setProperty('--sheldWidth', `${power_user.chat_width}vw`);
+                await delay(1);
+            });
+        }
     }
 
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
@@ -1408,10 +1415,15 @@ function applyFontScale(type) {
         document.documentElement.style.setProperty('--fontScale', String(power_user.font_scale));
     } else {
         //this is to prevent the slider from updating page in real time
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#font_scale').off('mouseup touchend').on('mouseup touchend', () => {
-            document.documentElement.style.setProperty('--fontScale', String(power_user.font_scale));
-        });
+        const fontScaleSlider = document.getElementById('font_scale');
+        if (fontScaleSlider) {
+            fontScaleSlider.addEventListener('mouseup', () => {
+                document.documentElement.style.setProperty('--fontScale', String(power_user.font_scale));
+            });
+            fontScaleSlider.addEventListener('touchend', () => {
+                document.documentElement.style.setProperty('--fontScale', String(power_user.font_scale));
+            });
+        }
     }
 
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
