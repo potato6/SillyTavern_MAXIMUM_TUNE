@@ -45,7 +45,7 @@ async function showSamplerSelectPopup() {
 
     setSamplerListListeners();
 
-    document.getElementById('resetSelectedSamplers').addEventListener('click', async function () {
+    document.getElementById('resetSelectedSamplers')?.addEventListener('click', async function () {
         console.log('saw sampler select reset click');
 
         if (main_api === 'textgenerationwebui') {
@@ -63,7 +63,7 @@ async function showSamplerSelectPopup() {
         $('#prioritizeManuallySelectedSamplers').show();
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#prioritizeManuallySelectedSamplers').toggleClass('toggleEnabled', isSamplerManualPriorityEnabled());
-        document.getElementById('prioritizeManuallySelectedSamplers').addEventListener('click', function () {
+        document.getElementById('prioritizeManuallySelectedSamplers')?.addEventListener('click', function () {
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(this).toggleClass('toggleEnabled');
 
@@ -204,7 +204,6 @@ function setSamplerListListeners() {
     const listContainer = document.getElementById('apiSamplersList');
     // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     listContainer.querySelectorAll('input').forEach(el => el.addEventListener('change', async function () {
-        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
         const samplerName = this.name.replace('_checkbox', '');
         const { relatedDOMElement, targetDisplayType } = getRelatedDOMElement(samplerName);
 
@@ -514,7 +513,7 @@ export function isSamplerManualPriorityEnabled(tcApiType = '') {
  */
 export async function initCustomSelectedSamplers() {
     await saveSettingsDebounced();
-    document.getElementById('samplerSelectButton').addEventListener('click', showSamplerSelectPopup);
+    document.getElementById('samplerSelectButton')?.addEventListener('click', showSamplerSelectPopup);
 }
 
 // Goal 4: filter hidden samplers from API output
