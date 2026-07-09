@@ -111,11 +111,9 @@ let is_group_generating = false; // Group generation flag
 let is_group_automode_enabled = false;
 let hideMutedSprites = false;
 /** @type {Group[]} */
-// @ts-expect-error TS(7034) FIXME: Variable 'groups' implicitly has type 'any[]' in s... Remove this comment to see the full error message
-let groups = [];
+let groups: Group[] = [];
 /** @type {string|null} */
-// @ts-expect-error TS(7034) FIXME: Variable 'selected_group' implicitly has type 'any... Remove this comment to see the full error message
-let selected_group = null;
+let selected_group: string | null = null;
 let group_generation_id = null;
 let fav_grp_checked = false;
 // @ts-expect-error TS(7034) FIXME: Variable 'openGroupId' implicitly has type 'any' i... Remove this comment to see the full error message

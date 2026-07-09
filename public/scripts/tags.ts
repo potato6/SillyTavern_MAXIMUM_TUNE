@@ -3077,7 +3077,7 @@ function registerTagsSlashCommands() {
  * @returns {void}
  * @description This function iterates through the chat messages and applies character tags
  */
-export function applyCharacterTagsToMessageDivs({ mesIds = [] } = {}) {
+export function applyCharacterTagsToMessageDivs({ mesIds = [] as number[] } = {}) {
     try {
         const messagesFilter = buildMessagesFilter(mesIds);
         const chatEl = document.querySelector('#chat');

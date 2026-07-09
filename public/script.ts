@@ -50,9 +50,7 @@ import {
 } from './scripts/world-info.js';
 
 import {
-    // @ts-expect-error TS(7034) FIXME: Variable 'groups' implicitly has type 'any[]' in s... Remove this comment to see the full error message
     groups,
-    // @ts-expect-error TS(7034) FIXME: Variable 'selected_group' implicitly has type 'any... Remove this comment to see the full error message
     selected_group,
     saveGroupChat,
     getGroups,
@@ -292,7 +290,6 @@ import { addChatBackupsBrowser } from './scripts/chat-backups.js';
 import { onboardingExperimentalMacroEngine } from './scripts/macros/engine/MacroDiagnostics.js';
 import { compressRequest, setRequestCompressionConfig } from './scripts/request-compression.js';
 import { canJumpToSwipeForMessage, canOpenSwipePickerForMessage, initSwipePicker } from './scripts/swipe-picker.js';
-// @ts-expect-error TS(2792) FIXME: Cannot find module 'es-toolkit'. Did you mean to s... Remove this comment to see the full error message
 import { range } from 'es-toolkit';
 
 // API OBJECT FOR EXTERNAL WIRING
@@ -343,7 +340,6 @@ export {
 /**
  * Wait for page to load before continuing the app initialization.
  */
-// @ts-expect-error TS(1378) FIXME: Top-level 'await' expressions are only allowed whe... Remove this comment to see the full error message
 await new Promise((resolve) => {
     if (document.readyState === 'complete') {
         // @ts-expect-error TS(2794) FIXME: Expected 1 arguments, but got 0. Did you forget to... Remove this comment to see the full error message
@@ -440,7 +436,7 @@ export let displayVersion = 'SillyTavern';
 
 let generation_started = new Date();
 /** @type {Character[]} */
-export const characters = [];
+export const characters: Character[] = [];
 /**
  * Stringified index of a currently chosen entity in the characters array.
  * @type {string|undefined} Yes, we hate it as much as you do.
@@ -465,7 +461,7 @@ export const chatElement = $('#chat');
 let dialogueResolve = null;
 let dialogueCloseStop = false;
 /** @type {ChatMetadata} */
-export let chat_metadata = {};
+export let chat_metadata: ChatMetadata = {};
 /** @type {StreamingProcessor} */
 export let streamingProcessor = null;
 // @ts-expect-error TS(7034) FIXME: Variable 'crop_data' implicitly has type 'any' in ... Remove this comment to see the full error message
@@ -560,12 +556,9 @@ export function reloadMarkdownProcessor() {
  *
  */
 export function getCurrentChatId() {
-    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
     if (selected_group) {
-        // @ts-expect-error TS(7005) FIXME: Variable 'groups' implicitly has an 'any[]' type.
         return groups.find(x => x.id == selected_group)?.chat_id;
     } else if (this_chid !== undefined) {
-        // @ts-expect-error TS(2339) FIXME: Property 'chat' does not exist on type 'never'.
         return characters[this_chid]?.chat;
     }
 }
@@ -967,12 +960,10 @@ export async function selectCharacterById(id, { switchMenu = true } = {}) {
         return;
     }
 
-    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
     if (selected_group && is_group_generating) {
         return;
     }
 
-    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
     if (selected_group || String(this_chid) !== String(id)) {
         //if clicked on a different character from what was currently selected
         if (!is_send_press) {
@@ -1278,7 +1269,6 @@ export function tagToEntity(tag) {
 export function getEntitiesList({ doFilter = false, doSort = true } = {}) {
     let entities = [
         ...characters.map((item, index) => characterToEntity(item, index)),
-        // @ts-expect-error TS(7005) FIXME: Variable 'groups' implicitly has an 'any[]' type.
         ...groups.map(item => groupToEntity(item)),
         // @ts-expect-error TS(7005) FIXME: Variable 'tags' implicitly has an 'any[]' type.
         ...(power_user.bogus_folders ? tags.filter(isBogusFolder).sort(compareTagsForSort).map(item => tagToEntity(item)) : []),
@@ -1368,11 +1358,9 @@ export async function getOneCharacter(avatarUrl) {
         getData.name = DOMPurify.sanitize(getData.name);
         getData.chat = String(getData.chat);
 
-        // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
         const indexOf = characters.findIndex(x => x.avatar === avatarUrl);
 
         if (indexOf !== -1) {
-            // @ts-expect-error TS(2322) FIXME: Type 'any' is not assignable to type 'never'.
             characters[indexOf] = getData;
         } else {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
@@ -1392,35 +1380,30 @@ export function getCharacterSource(chId = this_chid) {
         return '';
     }
 
-    // @ts-expect-error TS(2339) FIXME: Property 'data' does not exist on type 'never'.
     const chubId = characters[chId]?.data?.extensions?.chub?.full_path;
 
     if (chubId) {
         return `https://chub.ai/characters/${chubId}`;
     }
 
-    // @ts-expect-error TS(2339) FIXME: Property 'data' does not exist on type 'never'.
     const pygmalionId = characters[chId]?.data?.extensions?.pygmalion_id;
 
     if (pygmalionId) {
         return `https://pygmalion.chat/${pygmalionId}`;
     }
 
-    // @ts-expect-error TS(2339) FIXME: Property 'data' does not exist on type 'never'.
     const githubRepo = characters[chId]?.data?.extensions?.github_repo;
 
     if (githubRepo) {
         return `https://github.com/${githubRepo}`;
     }
 
-    // @ts-expect-error TS(2339) FIXME: Property 'data' does not exist on type 'never'.
     const sourceUrl = characters[chId]?.data?.extensions?.source_url;
 
     if (sourceUrl) {
         return sourceUrl;
     }
 
-    // @ts-expect-error TS(2339) FIXME: Property 'data' does not exist on type 'never'.
     const risuId = characters[chId]?.data?.extensions?.risuai?.source;
 
     if (Array.isArray(risuId) && risuId.length && typeof risuId[0] === 'string' && risuId[0].startsWith('risurealm:')) {
@@ -1428,7 +1411,6 @@ export function getCharacterSource(chId = this_chid) {
         return `https://realm.risuai.net/character/${realmId}`;
     }
 
-    // @ts-expect-error TS(2339) FIXME: Property 'data' does not exist on type 'never'.
     const perchanceSlug = characters[chId]?.data?.extensions?.perchance_data?.slug;
 
     if (perchanceSlug) {
@@ -1448,29 +1430,22 @@ export async function getCharacters() {
         body: JSON.stringify({}),
     });
     if (response.ok) {
-        // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
         const previousAvatar = this_chid !== undefined ? characters[this_chid]?.avatar : null;
         characters.splice(0, characters.length);
         const getData = await response.json();
         for (let i = 0; i < getData.length; i++) {
-            // @ts-expect-error TS(2322) FIXME: Type 'any' is not assignable to type 'never'.
             characters[i] = getData[i];
-            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             characters[i].name = DOMPurify.sanitize(characters[i].name);
 
             // For dropped-in cards
-            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             if (!characters[i].chat) {
-                // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
                 characters[i].chat = `${characters[i].name} - ${humanizedDateTime()}`;
             }
 
-            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             characters[i].chat = String(characters[i].chat);
         }
 
         if (previousAvatar) {
-            // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
             const newCharacterId = characters.findIndex(x => x.avatar === previousAvatar);
             if (newCharacterId >= 0) {
                 setCharacterId(newCharacterId);
@@ -1503,14 +1478,12 @@ async function delChat(chatfile) {
         headers: getRequestHeaders(),
         body: JSON.stringify({
             chatfile: chatfile,
-            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             avatar_url: characters[this_chid].avatar,
         }),
     });
     if (response.ok === true) {
         // choose another chat if current was deleted
         const name = chatfile.replace('.jsonl', '');
-        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         if (name === characters[this_chid].chat) {
             chat_metadata = {};
             await replaceCurrentChat();
@@ -1542,7 +1515,6 @@ export async function deleteCharacterChatByName(characterId, fileName) {
         headers: getRequestHeaders(),
         body: JSON.stringify({
             chatfile: `${fileName}.jsonl`,
-            // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
             avatar_url: character.avatar,
         }),
     });
@@ -1552,12 +1524,10 @@ export async function deleteCharacterChatByName(characterId, fileName) {
         return;
     }
 
-    // @ts-expect-error TS(2339) FIXME: Property 'chat' does not exist on type 'never'.
     if (fileName === character.chat) {
         const chatsResponse = await fetch('/api/characters/chats', {
             method: 'POST',
             headers: getRequestHeaders(),
-            // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
             body: JSON.stringify({ avatar_url: character.avatar }),
         });
         const chats = Object.values(await chatsResponse.json());
@@ -1580,7 +1550,6 @@ export async function replaceCurrentChat() {
     const chatsResponse = await fetch('/api/characters/chats', {
         method: 'POST',
         headers: getRequestHeaders(),
-        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         body: JSON.stringify({ avatar_url: characters[this_chid].avatar }),
     });
 
@@ -1599,7 +1568,6 @@ export async function replaceCurrentChat() {
             await getChat();
         } else {
             // start new chat
-            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             characters[this_chid].chat = `${name2} - ${humanizedDateTime()}`;
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#selected_chat_pole').val(characters[this_chid].chat);
@@ -1712,7 +1680,7 @@ export async function redisplayChat({ targetChat = chat, startIndex = 0, fade = 
         //Append to chat in one DOM update.
         chatElement[0].append(...newMessageElements);
 
-        applyCharacterTagsToMessageDivs({ mesIds: range(startIndex, targetChat.length) });
+        applyCharacterTagsToMessageDivs({ mesIds: range(startIndex, targetChat.length) as number[] });
 
     }
 
@@ -1772,7 +1740,6 @@ export function cancelDebouncedChatSave() {
     // @ts-expect-error TS(7005) FIXME: Variable 'chatSaveTimeout' implicitly has an 'any'... Remove this comment to see the full error message
     if (chatSaveTimeout) {
         console.debug('Debounced chat save cancelled');
-        // @ts-expect-error TS(7005) FIXME: Variable 'chatSaveTimeout' implicitly has an 'any'... Remove this comment to see the full error message
         clearTimeout(chatSaveTimeout);
         chatSaveTimeout = null;
     }
@@ -1868,7 +1835,6 @@ export async function deleteMessage(id, swipeDeletionIndex = undefined, askConfi
     chat.splice(id, 1);
     messageElement[0]?.remove();
 
-    // @ts-expect-error TS(2339) FIXME: Property 'tainted' does not exist on type '{}'.
     chat_metadata.tainted = true;
 
     const startIndex = [0, minId].includes(id) ? id : null;
@@ -1898,9 +1864,7 @@ export async function reloadCurrentChatUnsafe() {
     preserveNeutralChat();
     await clearChat({ clearData: true });
 
-    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
     if (selected_group) {
-        // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
         await getGroupChat(selected_group, true);
     } else if (this_chid !== undefined) {
         await getChat();
@@ -1940,7 +1904,6 @@ export async function sendTextareaMessage() {
     if (power_user.continue_on_send &&
         !hasPendingFileAttachment() &&
         !textareaText &&
-        // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
         !selected_group &&
         chat.length &&
         // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
@@ -1951,7 +1914,6 @@ export async function sendTextareaMessage() {
         generateType = 'continue';
     }
 
-    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
     if (textareaText && !selected_group && this_chid === undefined && name2 !== neutralCharacterName) {
         await newAssistantChat({ temporary: false });
     }
@@ -2873,9 +2835,7 @@ export function updateMessageElement(mes, { messageId = chat.length - 1, message
             avatarImg = mes.force_avatar;
         } else if (this_chid === undefined) {
             avatarImg = system_avatar;
-        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         } else if (characters[this_chid] && characters[this_chid].avatar !== 'none') {
-            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             avatarImg = getThumbnailUrl('avatar', characters[this_chid].avatar);
         } else {
             avatarImg = default_avatar;
@@ -2965,7 +2925,6 @@ export function updateMessageElement(mes, { messageId = chat.length - 1, message
 // @ts-expect-error TS(7006) FIXME: Parameter 'characterId' implicitly has an 'any' ty... Remove this comment to see the full error message
 export function getCharacterAvatar(characterId) {
     const character = characters[characterId];
-    // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
     const avatarImg = character?.avatar;
 
     if (!avatarImg || avatarImg === 'none') {
@@ -3154,17 +3113,13 @@ export function substituteParamsLegacy(content, _name1, _name2, _original, _grou
             return _group;
         }
 
-        // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
         if (selected_group) {
-            // @ts-expect-error TS(7005) FIXME: Variable 'groups' implicitly has an 'any[]' type.
             const members = groups.find(x => x.id === selected_group)?.members;
             /** @type {string[]} */
-            // @ts-expect-error TS(7005) FIXME: Variable 'groups' implicitly has an 'any[]' type.
             const disabledMembers = groups.find(x => x.id === selected_group)?.disabled_members ?? [];
             // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
             const isMuted = x => includeMuted ? true : !disabledMembers.includes(x);
             const names = Array.isArray(members)
-                // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
                 ? members.filter(isMuted).map(m => characters.find(c => c.avatar === m)?.name).filter(Boolean).join(', ')
                 : '';
             return names;
@@ -3178,13 +3133,11 @@ export function substituteParamsLegacy(content, _name1, _name2, _original, _grou
         const currentSpeaker = _name2 ?? name2;
 
         // Single character chat
-        // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
         if (!selected_group) {
             return currentUser;
         }
 
         // Group chat
-        // @ts-expect-error TS(7005) FIXME: Variable 'groups' implicitly has an 'any[]' type.
         const members = groups.find(x => x.id === selected_group)?.members;
 
         if (!Array.isArray(members)) {
@@ -3192,7 +3145,6 @@ export function substituteParamsLegacy(content, _name1, _name2, _original, _grou
         }
 
         const memberNames = members
-            // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
             .map(m => characters.find(c => c.avatar === m)?.name)
             .filter(Boolean); // Filter out any null/undefined names
 
@@ -3353,18 +3305,13 @@ export function getStoppingStrings(isImpersonate, isContinue, api = main_api) {
         }
 
         // Add group members as stopping strings if generating for a specific group member or user. (Allow slash commands to work around name stopping string restrictions)
-        // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
         if (selected_group && (name2 || isImpersonate)) {
-            // @ts-expect-error TS(7005) FIXME: Variable 'groups' implicitly has an 'any[]' type.
             const group = groups.find(x => x.id === selected_group);
 
             if (group && Array.isArray(group.members)) {
                 const names = group.members
-                    // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
                     .map(x => characters.find(y => y.avatar == x))
-                    // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
                     .filter(x => x && x.name && x.name !== name2)
-                    // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
                     .map(x => `\n${x.name}:`);
                 result.push(...names);
             }
@@ -3467,7 +3414,6 @@ export function extractMessageBias(message) {
         const biasHandlebars = Handlebars.create();
         // @ts-expect-error TS(7034) FIXME: Variable 'biasMatches' implicitly has type 'any[]'... Remove this comment to see the full error message
         const biasMatches = [];
-        // @ts-expect-error TS(7006) FIXME: Parameter 'text' implicitly has an 'any' type.
         biasHandlebars.registerHelper('bias', function (text) {
             biasMatches.push(text);
             return '';
@@ -3499,19 +3445,16 @@ function cleanGroupMessage(getMessage) {
         return getMessage;
     }
 
-    // @ts-expect-error TS(7005) FIXME: Variable 'groups' implicitly has an 'any[]' type.
     const group = groups.find((x) => x.id == selected_group);
 
     if (group && Array.isArray(group.members) && group.members) {
         for (const member of group.members) {
-            // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
             const character = characters.find(x => x.avatar == member);
 
             if (!character) {
                 continue;
             }
 
-            // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
             const name = character.name;
 
             // Skip current speaker.
@@ -3656,7 +3599,7 @@ export async function getExtensionPrompt(position = extension_prompt_types.IN_PR
         .filter(filterByFunction);
     const prompts = await Promise.all(promptPromises);
 
-    let values = prompts.map(x => x.value.trim()).join(separator);
+    let values = prompts.map((x: any) => x.value.trim()).join(separator);
     if (wrap && values.length && !values.startsWith(separator)) {
         values = separator + values;
     }
@@ -3750,9 +3693,7 @@ export function getCharacterCardFieldsLazy({ chid = undefined } = {}) {
     const character = characters[currentChid];
 
     // For group chats, we need to check if group cards should be used
-    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
     const useGroupCards = selected_group && character;
-    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
     const groupCardsLazy = useGroupCards ? getGroupCharacterCardsLazy(selected_group, Number(currentChid)) : null;
 
     /** @type {Record<string, () => string|string[]>} */
@@ -3760,25 +3701,20 @@ export function getCharacterCardFieldsLazy({ chid = undefined } = {}) {
         persona: () => baseChatReplace(power_user.persona_description?.trim()),
         system: () => {
             if (!character) return '';
-            // @ts-expect-error TS(2339) FIXME: Property 'system_prompt' does not exist on type '{... Remove this comment to see the full error message
             const systemPrompt = chat_metadata.system_prompt || character.data?.system_prompt || '';
             return power_user.prefer_character_prompt ? baseChatReplace(systemPrompt.trim()) : '';
         },
         jailbreak: () => {
             if (!character) return '';
-            // @ts-expect-error TS(2339) FIXME: Property 'data' does not exist on type 'never'.
             return power_user.prefer_character_jailbreak ? baseChatReplace(character.data?.post_history_instructions?.trim()) : '';
         },
-        // @ts-expect-error TS(2339) FIXME: Property 'data' does not exist on type 'never'.
         version: () => character?.data?.character_version ?? '',
         charDepthPrompt: () => {
             if (!character) return '';
-            // @ts-expect-error TS(2339) FIXME: Property 'data' does not exist on type 'never'.
             return baseChatReplace(character.data?.extensions?.depth_prompt?.prompt?.trim());
         },
         creatorNotes: () => {
             if (!character) return '';
-            // @ts-expect-error TS(2339) FIXME: Property 'data' does not exist on type 'never'.
             return baseChatReplace(character.data?.creator_notes?.trim());
         },
         // These four fields may be overridden by group cards
@@ -3786,21 +3722,18 @@ export function getCharacterCardFieldsLazy({ chid = undefined } = {}) {
             // @ts-expect-error TS(2339) FIXME: Property 'description' does not exist on type '{}'... Remove this comment to see the full error message
             if (groupCardsLazy) return groupCardsLazy.description;
             if (!character) return '';
-            // @ts-expect-error TS(2339) FIXME: Property 'description' does not exist on type 'nev... Remove this comment to see the full error message
             return baseChatReplace(character.description?.trim());
         },
         personality: () => {
             // @ts-expect-error TS(2339) FIXME: Property 'personality' does not exist on type '{}'... Remove this comment to see the full error message
             if (groupCardsLazy) return groupCardsLazy.personality;
             if (!character) return '';
-            // @ts-expect-error TS(2339) FIXME: Property 'personality' does not exist on type 'nev... Remove this comment to see the full error message
             return baseChatReplace(character.personality?.trim());
         },
         scenario: () => {
             // @ts-expect-error TS(2339) FIXME: Property 'scenario' does not exist on type '{}'.
             if (groupCardsLazy) return groupCardsLazy.scenario;
             if (!character) return '';
-            // @ts-expect-error TS(2339) FIXME: Property 'scenario' does not exist on type '{}'.
             const scenarioText = chat_metadata.scenario || character.scenario || '';
             return baseChatReplace(scenarioText.trim());
         },
@@ -3808,19 +3741,16 @@ export function getCharacterCardFieldsLazy({ chid = undefined } = {}) {
             // @ts-expect-error TS(2339) FIXME: Property 'mesExamples' does not exist on type '{}'... Remove this comment to see the full error message
             if (groupCardsLazy) return groupCardsLazy.mesExamples;
             if (!character) return '';
-            // @ts-expect-error TS(2339) FIXME: Property 'mes_example' does not exist on type '{}'... Remove this comment to see the full error message
             const exampleDialog = chat_metadata.mes_example || character.mes_example || '';
             return baseChatReplace(exampleDialog.trim());
         },
         firstMessage: () => {
             if (!character) return '';
-            // @ts-expect-error TS(2339) FIXME: Property 'first_mes' does not exist on type 'never... Remove this comment to see the full error message
             const firstMes = character.first_mes?.trim() || '';
             return baseChatReplace(firstMes);
         },
         alternateGreetings: () => {
             if (!character) return [];
-            // @ts-expect-error TS(2339) FIXME: Property 'data' does not exist on type 'never'.
             const altGreetings = character.data?.alternate_greetings;
             if (!Array.isArray(altGreetings)) return [];
             return altGreetings.map(greeting => baseChatReplace(greeting?.trim()));
@@ -4858,34 +4788,28 @@ export async function Generate(type, {
         // Hide swipes if not in a dry run.
         hideSwipeButtons();
         // If generated any message, set the flag to indicate it can't be recreated again.
-        // @ts-expect-error TS(2339) FIXME: Property 'tainted' does not exist on type '{}'.
         chat_metadata.tainted = true;
     }
 
-    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
     if (selected_group && !is_group_generating) {
         if (!dryRun) {
             // Returns the promise that generateGroupWrapper returns; resolves when generation is done
             return generateGroupWrapper(false, type, { quiet_prompt, force_chid, signal: abortController.signal, quietImage, jsonSchema });
         }
 
-        // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
         const characterIndexMap = new Map(characters.map((char, index) => [char.avatar, index]));
-        // @ts-expect-error TS(7005) FIXME: Variable 'groups' implicitly has an 'any[]' type.
         const group = groups.find((x) => x.id === selected_group);
+        if (!group) return;
 
-        // @ts-expect-error TS(7006) FIXME: Parameter 'acc' implicitly has an 'any' type.
         const enabledMembers = group.members.reduce((acc, member) => {
             if (!group.disabled_members.includes(member) && !acc.includes(member)) {
                 acc.push(member);
             }
             return acc;
-        }, []);
+        }, [] as string[]);
 
         const memberIds = enabledMembers
-            // @ts-expect-error TS(7006) FIXME: Parameter 'member' implicitly has an 'any' type.
             .map((member) => characterIndexMap.get(member))
-            // @ts-expect-error TS(7006) FIXME: Parameter 'index' implicitly has an 'any' type.
             .filter((index) => index !== undefined && index !== null);
 
         if (memberIds.length > 0) {
@@ -4998,10 +4922,8 @@ export async function Generate(type, {
 
     // Depth prompt (character-specific A/N)
     removeDepthPrompts();
-    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
     const groupDepthPrompts = getGroupDepthPrompts(selected_group, Number(this_chid));
 
-    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
     if (selected_group && Array.isArray(groupDepthPrompts) && groupDepthPrompts.length > 0) {
         groupDepthPrompts.forEach((value, index) => {
             const role = getExtensionPromptRoleByName(value.role);
@@ -5010,9 +4932,7 @@ export async function Generate(type, {
         });
     } else {
         const depthPromptText = charDepthPrompt || '';
-        // @ts-expect-error TS(2339) FIXME: Property 'data' does not exist on type 'never'.
         const depthPromptDepth = characters[this_chid]?.data?.extensions?.depth_prompt?.depth ?? depth_prompt_depth_default;
-        // @ts-expect-error TS(2339) FIXME: Property 'data' does not exist on type 'never'.
         const depthPromptRole = getExtensionPromptRoleByName(characters[this_chid]?.data?.extensions?.depth_prompt?.role ?? depth_prompt_role_default);
         // @ts-expect-error TS(2339) FIXME: Property 'allowWIScan' does not exist on type '{ d... Remove this comment to see the full error message
         setExtensionPrompt(inject_ids.DEPTH_PROMPT, depthPromptText, extension_prompt_types.IN_CHAT, depthPromptDepth, extension_settings.note.allowWIScan, depthPromptRole);
@@ -5029,16 +4949,13 @@ export async function Generate(type, {
     // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
     const canPerformToolCalls = !dryRun && ToolManager.canPerformToolCalls(type) && depth < ToolManager.RECURSE_LIMIT;
     // @ts-expect-error TS(2339) FIXME: Property 'is_system' does not exist on type 'never... Remove this comment to see the full error message
-    let coreChat = chat.filter(x => !x.is_system || (canUseTools && Array.isArray(x.extra?.tool_invocations)));
+    let coreChat: any[] = chat.filter(x => !x.is_system || (canUseTools && Array.isArray(x.extra?.tool_invocations)));
     if (type === 'swipe') {
         coreChat.pop();
     }
 
-    // @ts-expect-error TS(2322) FIXME: Type 'any[]' is not assignable to type 'never[]'.
     coreChat = await Promise.all(coreChat.map(async (/** @type {ChatMessage} */ chatItem, index) => {
-        // @ts-expect-error TS(2339) FIXME: Property 'mes' does not exist on type 'never'.
         const message = chatItem.mes;
-        // @ts-expect-error TS(2339) FIXME: Property 'is_user' does not exist on type 'never'.
         const regexType = chatItem.is_user ? regex_placement.USER_INPUT : regex_placement.AI_OUTPUT;
         const options = { isPrompt: true, depth: (coreChat.length - index - (isContinue ? 2 : 1)) };
 
@@ -5046,14 +4963,10 @@ export async function Generate(type, {
         regexedMessage = await appendFileContent(chatItem, regexedMessage);
 
         const titles = [];
-        // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type 'never'.
         if (chatItem?.extra?.append_title && chatItem?.extra?.title) {
-            // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type 'never'.
             titles.push(chatItem.extra.title);
         }
-        // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type 'never'.
         if (Array.isArray(chatItem?.extra?.media)) {
-            // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type 'never'.
             for (const mediaItem of chatItem.extra.media) {
                 if (mediaItem?.title && mediaItem?.append_title) {
                     titles.push(mediaItem.title);
@@ -5065,7 +4978,6 @@ export async function Generate(type, {
         }
 
         return {
-            // @ts-expect-error TS(2698) FIXME: Spread types may only be created from object types... Remove this comment to see the full error message
             ...chatItem,
             mes: regexedMessage,
             index,
@@ -5078,27 +4990,20 @@ export async function Generate(type, {
         const isPrefix = isContinue && i === coreChat.length - 1;
 
         // In group chats, only include reasoning from the currently generating character
-        // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
         const isOtherGroupMember = selected_group && coreChat[i].name !== name2;
 
         coreChat[i] = {
-            // @ts-expect-error TS(2698) FIXME: Spread types may only be created from object types... Remove this comment to see the full error message
             ...coreChat[i],
-            // @ts-expect-error TS(2322) FIXME: Type 'any' is not assignable to type 'never'.
             mes: isOtherGroupMember
-                // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
                 ? coreChat[i].mes
                 : promptReasoning.addToMessage(
-                    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
                     coreChat[i].mes,
                     getRegexedString(
-                        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
                         String(coreChat[i].extra?.reasoning ?? ''),
                         regex_placement.REASONING,
                         { isPrompt: true, depth: depth },
                     ),
                     isPrefix,
-                    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
                     coreChat[i].extra?.reasoning_duration,
                 ),
         };
@@ -5172,7 +5077,6 @@ export async function Generate(type, {
     // Add WI to prompt (and also inject WI to AN value via hijack)
     // Make quiet prompt available for WIAN
     setExtensionPrompt(inject_ids.QUIET_PROMPT, quiet_prompt || '', extension_prompt_types.IN_PROMPT, 0, true);
-    // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
     const chatForWI = coreChat.map(x => world_info_include_names ? `${x.name}: ${x.mes}` : x.mes).reverse();
     /** @type {import('./scripts/world-info.js').WIGlobalScanData} */
     const globalScanData = {
@@ -5225,7 +5129,6 @@ export async function Generate(type, {
         }
         if (outletEntries && typeof outletEntries === 'object' && Object.keys(outletEntries).length > 0) {
             Object.entries(outletEntries).forEach(([key, value]) => {
-                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 setExtensionPrompt(inject_ids.CUSTOM_WI_OUTLET(key), value.join('\n'), extension_prompt_types.NONE, 0);
             });
         }
@@ -5308,11 +5211,9 @@ export async function Generate(type, {
         if (jailbreak) {
             // When continuing generation of previous output, last user message precedes the message to continue
             if (isContinue) {
-                // @ts-expect-error TS(2322) FIXME: Type 'any' is not assignable to type 'never'.
                 coreChat.splice(coreChat.length - 1, 0, { mes: jailbreak, is_user: true });
             } else {
                 // This operation will result in the injectedIndices indexes being off by one
-                // @ts-expect-error TS(2322) FIXME: Type 'any' is not assignable to type 'never'.
                 coreChat.push({ mes: jailbreak, is_user: true });
                 // Add +1 to the elements to correct for the new PHI/Jailbreak message.
                 injectedIndices.forEach(shiftUpByOne);
@@ -5320,20 +5221,17 @@ export async function Generate(type, {
         }
     }
 
-    const chat2 = [];
+    const chat2: string[] = [];
     let continue_mag = '';
-    let userMessageIndices = [];
-    // @ts-expect-error TS(2339) FIXME: Property 'findLastIndex' does not exist on type 'n... Remove this comment to see the full error message
+    let userMessageIndices: number[] = [];
     const lastUserMessageIndex = coreChat.findLastIndex(x => x.is_user);
 
     for (let i = coreChat.length - 1, j = 0; i >= 0; i--, j++) {
         if (main_api == 'openai') {
-            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             chat2[i] = coreChat[j].mes;
             if (i === 0 && isContinue) {
                 // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
                 chat2[i] = chat2[i].slice(0, chat2[i].lastIndexOf(coreChat[j].mes) + coreChat[j].mes.length);
-                // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
                 continue_mag = coreChat[j].mes;
             }
             continue;
@@ -5357,25 +5255,19 @@ export async function Generate(type, {
             const FORMAT_TOKEN = '\u0000\ufffc\u0000\ufffd';
 
             if (isInstruct) {
-                // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
                 const originalMessage = String(coreChat[j].mes ?? '');
-                // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
                 coreChat[j].mes = originalMessage.replaceAll(FORMAT_TOKEN, '') + FORMAT_TOKEN;
                 // Reformat with the last output sequence (if any)
                 chat2[i] = formatMessageHistoryItem(coreChat[j], isInstruct, force_output_sequence.LAST);
-                // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
                 coreChat[j].mes = originalMessage;
             }
 
-            chat2[i] = chat2[i].includes(FORMAT_TOKEN)
-                ? chat2[i].slice(0, chat2[i].lastIndexOf(FORMAT_TOKEN))
-                // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-                : chat2[i].slice(0, chat2[i].lastIndexOf(coreChat[j].mes) + coreChat[j].mes.length);
-            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-            continue_mag = coreChat[j].mes;
+            chat2[i] = (chat2[i]?.includes(FORMAT_TOKEN) ?? false)
+                ? chat2[i]?.slice(0, chat2[i]?.lastIndexOf(FORMAT_TOKEN) ?? 0) ?? ''
+                : chat2[i]?.slice(0, (chat2[i]?.lastIndexOf(coreChat[j]?.mes ?? '') ?? 0) + (coreChat[j]?.mes?.length ?? 0)) ?? '';
+            continue_mag = coreChat[j]?.mes;
         }
 
-        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         if (coreChat[j].is_user) {
             userMessageIndices.push(i);
         }
@@ -5437,7 +5329,7 @@ export async function Generate(type, {
 
     // Only add the chat in context if past the greeting message
     if (isContinue && (chat2.length > 1 || main_api === 'openai')) {
-        cyclePrompt = chat2.shift();
+        cyclePrompt = chat2.shift() ?? '';
         // Adjust indices to account for the shift
         injectedIndices = injectedIndices.map(shiftDownByOne).filter(x => x >= 0);
         userMessageIndices = userMessageIndices.map(shiftDownByOne).filter(x => x >= 0);
@@ -6442,7 +6334,6 @@ export function shouldAutoContinue(messageChunk, isImpersonate) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'messageChunk' implicitly has an 'any' t... Remove this comment to see the full error message
 export function triggerAutoContinue(messageChunk, isImpersonate) {
-    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
     if (selected_group) {
         console.debug('Auto-continue is disabled for group chat');
         return;
@@ -6580,7 +6471,6 @@ export async function sendMessageAsUser(messageText, messageBias, insertAt = nul
     await populateFileAttachment(message);
     statMesProcess(message, 'user', characters, this_chid, '');
 
-    // @ts-expect-error TS(2339) FIXME: Property 'tainted' does not exist on type '{}'.
     chat_metadata.tainted = true;
 
     if (typeof insertAt === 'number' && insertAt >= 0 && insertAt <= chat.length) {
@@ -6733,7 +6623,6 @@ export async function duplicateCharacter({ avatar = null, silent = false } = {})
     // Determine the character to duplicate
     let targetAvatar;
     if (avatar) {
-        // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
         const character = characters.find(c => c.avatar === avatar);
         if (!character) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
@@ -6747,7 +6636,6 @@ export async function duplicateCharacter({ avatar = null, silent = false } = {})
             toastr.warning(t`You must first select a character to duplicate!`);
             return '';
         }
-        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         targetAvatar = characters[this_chid].avatar;
     }
 
@@ -6808,7 +6696,6 @@ function setInContextMessages(msgInContextCount, type) {
 
     // Update last id to chat. No metadata save on purpose, gets hopefully saved via another call
     const lastMessageId = Math.max(0, chat.length - msgInContextCount);
-    // @ts-expect-error TS(2339) FIXME: Property 'lastInContextMessageId' does not exist o... Remove this comment to see the full error message
     chat_metadata.lastInContextMessageId = lastMessageId;
 }
 
@@ -7335,7 +7222,6 @@ export function cleanUpMessage({
     }
 
     // clean-up group message from excessive generations
-    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
     if (selected_group) {
         getMessage = cleanGroupMessage(getMessage);
     }
@@ -7630,13 +7516,10 @@ export async function saveReply({ type, getMessage, fromStreaming = false, title
             newMessage.extra.token_count = await getTokenCountAsync(tokenCountText, 0);
         }
 
-        // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
         if (selected_group) {
             console.debug('entering chat update for groups');
             let avatarImg = 'img/ai4.png';
-            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             if (characters[this_chid].avatar != 'none') {
-                // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
                 avatarImg = getThumbnailUrl('avatar', characters[this_chid].avatar);
             }
             // @ts-expect-error TS(2339) FIXME: Property 'force_avatar' does not exist on type '{}... Remove this comment to see the full error message
@@ -7833,7 +7716,6 @@ export function syncMesToSwipe(messageId = null) {
     }
 
     // Only sync swipes if the chat is not pristine, so that macros in the greeting can resolve again on swipe
-    // @ts-expect-error TS(2339) FIXME: Property 'tainted' does not exist on type '{}'.
     if (chat_metadata.tainted || chat.length > 1) {
         // @ts-expect-error TS(2339) FIXME: Property 'swipes' does not exist on type 'never'.
         targetMessage.swipes[targetMessage.swipe_id] = targetMessage.mes;
@@ -8074,7 +7956,6 @@ export function setCharacterId(value) {
             this_chid = !isNaN(parseInt(value)) ? value : undefined;
             break;
         case 'object':
-            // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
             this_chid = characters.indexOf(value) !== -1 ? String(characters.indexOf(value)) : undefined;
             break;
         case 'undefined':
@@ -8162,9 +8043,7 @@ export async function renameCharacter(name = null, { silent = false, renameChats
         return false;
     }
 
-    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
     const oldAvatar = characters[this_chid].avatar;
-    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
     const newValue = name || (await callGenericPopup('<h3>' + t`New name:` + '</h3>', POPUP_TYPE.INPUT, characters[this_chid].name));
 
     if (!newValue) {
@@ -8172,7 +8051,6 @@ export async function renameCharacter(name = null, { silent = false, renameChats
         toastr.warning(t`No character name provided.`, t`Rename Character`);
         return false;
     }
-    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
     if (newValue === characters[this_chid].name) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.info(t`Same character name provided, so name did not change.`, t`Rename Character`);
@@ -8229,7 +8107,6 @@ export async function renameCharacter(name = null, { silent = false, renameChats
             await getCharacters();
 
             // Find newly renamed character
-            // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
             const newChId = characters.findIndex(c => c.avatar == data.avatar);
 
             if (newChId !== -1) {
@@ -8354,13 +8231,11 @@ async function renamePastChats(oldAvatar, newAvatar, newName) {
  */
 export function saveChatDebounced() {
     const chid = this_chid;
-    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
     const selectedGroup = selected_group;
 
     cancelDebouncedChatSave();
 
     chatSaveTimeout = setTimeout(async () => {
-        // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
         if (selectedGroup !== selected_group) {
             console.warn('Chat save timeout triggered, but group changed. Aborting.');
             return;
@@ -8395,7 +8270,6 @@ export async function saveChat({
     force = false,
     chatData = undefined
 }: Record<string, unknown> = {}, ...args: unknown[]) {
-    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
     if (selected_group) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.error(t`Operation was aborted to prevent data corruption.`, t`saveChat called for a group chat`);
@@ -8407,9 +8281,7 @@ export async function saveChat({
         [chatName, withMetadata, mesId, force] = args;
     }
 
-    // @ts-expect-error TS(2698) FIXME: Spread types may only be created from object types... Remove this comment to see the full error message
     const metadata = { ...chat_metadata, ...(withMetadata || {}) };
-    // @ts-expect-error TS(2339) FIXME: Property 'chat' does not exist on type 'never'.
     const fileName = chatName ?? characters[this_chid]?.chat;
 
     if (!fileName && name2 === neutralCharacterName) {
@@ -8422,7 +8294,6 @@ export async function saveChat({
         return;
     }
 
-    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
     characters[this_chid].date_last_chat = Date.now();
 
     const trimmedChat = Array.isArray(chatData)
@@ -8445,11 +8316,9 @@ export async function saveChat({
             cache: 'no-cache',
             headers: getRequestHeaders(),
             body: JSON.stringify({
-                // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
                 ch_name: characters[this_chid].name,
                 file_name: fileName,
                 chat: [chatHeader, ...trimmedChat],
-                // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
                 avatar_url: characters[this_chid].avatar,
                 force: force,
             }),
@@ -8532,7 +8401,7 @@ async function read_avatar_load(input) {
 
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const formData = new FormData(/** @type {HTMLFormElement} */($('#form_create').get(0)));
-        const avatarKey = formData.get('avatar_url').toString();
+        const avatarKey = formData.get('avatar_url')?.toString() ?? '';
 
         // Bust cache for the avatar thumbnail and character image
         const thumbnailUrl = getThumbnailUrl('avatar', avatarKey);
@@ -8651,12 +8520,10 @@ export async function unshallowCharacter(characterId) {
     }
 
     // Character is not shallow
-    // @ts-expect-error TS(2339) FIXME: Property 'shallow' does not exist on type 'never'.
     if (!character.shallow) {
         return;
     }
 
-    // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
     const avatar = character.avatar;
     if (!avatar) {
         console.debug('Character has no avatar field:', characterId);
@@ -8678,11 +8545,8 @@ export async function getChat() {
             headers: getRequestHeaders(),
             cache: 'no-cache',
             body: JSON.stringify({
-                // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
                 ch_name: characters[this_chid].name,
-                // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
                 file_name: characters[this_chid].chat,
-                // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
                 avatar_url: characters[this_chid].avatar,
             }),
         });
@@ -8704,9 +8568,7 @@ export async function getChat() {
             chat.splice(0, chat.length);
             chat_metadata = {};
         }
-        // @ts-expect-error TS(2339) FIXME: Property 'integrity' does not exist on type '{}'.
         if (!chat_metadata.integrity) {
-            // @ts-expect-error TS(2339) FIXME: Property 'integrity' does not exist on type '{}'.
             chat_metadata.integrity = uuidv4();
         }
         await getChatResult();
@@ -8731,7 +8593,6 @@ export async function getChat() {
  *
  */
 async function getChatResult() {
-    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
     name2 = characters[this_chid].name;
     let freshChat = false;
     if (chat.length === 0) {
@@ -8762,9 +8623,7 @@ async function getChatResult() {
  *
  */
 function getFirstMessage() {
-    // @ts-expect-error TS(2339) FIXME: Property 'first_mes' does not exist on type 'never... Remove this comment to see the full error message
     const firstMes = characters[this_chid]?.first_mes || '';
-    // @ts-expect-error TS(2339) FIXME: Property 'data' does not exist on type 'never'.
     const alternateGreetings = characters[this_chid]?.data?.alternate_greetings;
 
     const message = {
@@ -8809,7 +8668,6 @@ function getFirstMessage() {
 export async function openCharacterChat(file_name) {
     await waitUntilCondition(() => !isChatSaving, debounce_timeout.extended, 10);
     await clearChat({ clearData: true });
-    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
     characters[this_chid].chat = file_name;
     chat_metadata = {};
     await getChat();
@@ -9370,7 +9228,6 @@ function updateMessage(div) {
         mes.extra.bias = null;
     }
 
-    // @ts-expect-error TS(2339) FIXME: Property 'tainted' does not exist on type '{}'.
     chat_metadata.tainted = true;
 
     return { mesBlock, text, mes, bias };
@@ -9384,7 +9241,6 @@ function updateMessage(div) {
 function openMessageDelete(fromSlashCommand) {
     closeMessageEditor();
     hideSwipeButtons();
-    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
     if (fromSlashCommand || (!is_send_press) || (selected_group && !is_group_generating)) {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#dialogue_del_mes').css('display', 'block');
@@ -9407,7 +9263,7 @@ function openMessageDelete(fromSlashCommand) {
             // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
             // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
             // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
-            selected_group: ${selected_group}
+            selected_group: ${selected_group as string | null}
             is_group_generating: ${is_group_generating}`);
     }
     this_del_mes = -1;
@@ -9693,10 +9549,8 @@ export async function getChatsFromFiles(data, isGroupChat) {
                 const requestBody = isGroupChat
                     ? JSON.stringify({ id: file_name })
                     : JSON.stringify({
-                        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
                         ch_name: characters[context.characterId].name,
                         file_name: file_name.replace('.jsonl', ''),
-                        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
                         avatar_url: characters[context.characterId].avatar,
                     });
 
@@ -9774,18 +9628,13 @@ export async function getPastCharacterChats(characterId = null) {
  * Helper for `displayPastChats`, to make the same info consistently available for other functions
  */
 export function getCurrentChatDetails() {
-    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
     if (!characters[this_chid] && !selected_group) {
         return { sessionName: '', group: null, characterName: '', avatarImgURL: '' };
     }
 
-    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
     const group = selected_group ? groups.find(x => x.id === selected_group) : null;
-    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
     const currentChat = selected_group ? group?.chat_id : characters[this_chid].chat;
-    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
     const displayName = selected_group ? group?.name : characters[this_chid].name;
-    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
     const avatarImg = selected_group ? group?.avatar_url : getThumbnailUrl('avatar', characters[this_chid].avatar);
     return { sessionName: currentChat, group: group, characterName: displayName, avatarImgURL: avatarImg };
 }
@@ -9808,12 +9657,10 @@ export async function displayPastChats(hightlightNames = []) {
     const displayName = chatDetails.characterName;
     const avatarImg = chatDetails.avatarImgURL;
 
-    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
     await displayChats('', currentChat, displayName, avatarImg, selected_group, hightlightNames);
 
     // @ts-expect-error TS(7006) FIXME: Parameter 'searchQuery' implicitly has an 'any' ty... Remove this comment to see the full error message
     const debouncedDisplay = debounce((searchQuery) => {
-        // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
         displayChats(searchQuery, currentChat, displayName, avatarImg, selected_group, []);
     });
 
@@ -9852,7 +9699,6 @@ async function displayChats(searchQuery, currentChat, displayName, avatarImg, se
             headers: getRequestHeaders(),
             body: JSON.stringify({
                 query: searchQuery,
-                // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
                 avatar_url: selected_group ? null : characters[this_chid].avatar,
                 group_id: selected_group || null,
             }),
@@ -10050,7 +9896,6 @@ export function select_rm_info(type, charId, previousCharId = null) {
     }, 250);
 
     if (previousCharId) {
-        // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
         const newId = characters.findIndex((x) => x.avatar == previousCharId);
         if (newId >= 0) {
             setCharacterId(newId);
@@ -10093,7 +9938,6 @@ export function select_selected_character(chid, { switchMenu = true } = {}) {
     $('#set_chat_character_settings').toggle(!selected_group);
 
     // Don't update the navbar name if we're peeking the group member defs
-    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
     if (!selected_group) {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#rm_button_selected_ch').children('h2').text(characters[chid].name);
@@ -10155,10 +9999,8 @@ export function select_selected_character(chid, { switchMenu = true } = {}) {
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#character_json_data').val(characters[chid].json_data);
 
-    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
     updateFavButtonState(characters[chid].fav || characters[chid].fav == 'true');
 
-    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
     const avatarUrl = characters[chid].avatar != 'none' ? getThumbnailUrl('avatar', characters[chid].avatar) : default_avatar;
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#avatar_load_preview').attr('src', avatarUrl);
@@ -10409,19 +10251,14 @@ function updateFavButtonState(state) {
  *
  */
 export async function setCharacterSettingsOverrides() {
-    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
     if (!selected_group && (this_chid === undefined || !characters[this_chid])) {
         console.warn('setCharacterSettingsOverrides() -- no selected group or character');
         return;
     }
 
-    // @ts-expect-error TS(2339) FIXME: Property 'scenario' does not exist on type '{}'.
     const scenarioOverrideValue = chat_metadata.scenario || '';
-    // @ts-expect-error TS(2339) FIXME: Property 'mes_example' does not exist on type '{}'... Remove this comment to see the full error message
     const exampleMessagesValue = chat_metadata.mes_example || '';
-    // @ts-expect-error TS(2339) FIXME: Property 'system_prompt' does not exist on type '{... Remove this comment to see the full error message
     const systemPromptValue = chat_metadata.system_prompt || '';
-    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
     const isGroup = !!selected_group;
 
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
@@ -10472,11 +10309,8 @@ export async function setCharacterSettingsOverrides() {
         allowVerticalScrolling: true,
     });
 
-    // @ts-expect-error TS(2339) FIXME: Property 'scenario' does not exist on type '{}'.
     chat_metadata.scenario = pendingChanges.scenario;
-    // @ts-expect-error TS(2339) FIXME: Property 'mes_example' does not exist on type '{}'... Remove this comment to see the full error message
     chat_metadata.mes_example = pendingChanges.examples;
-    // @ts-expect-error TS(2339) FIXME: Property 'system_prompt' does not exist on type '{... Remove this comment to see the full error message
     chat_metadata.system_prompt = pendingChanges.system_prompt;
     await saveMetadata();
 }
@@ -10693,7 +10527,6 @@ export function isMessageSwipeable(messageId, message = undefined) {
 export function getOverswipeBehavior(messageId, message = undefined) {
     message ??= chat[messageId];
 
-    // @ts-expect-error TS(2339) FIXME: Property 'tainted' does not exist on type '{}'.
     const isPristine = !chat_metadata?.tainted;
     const isGreeting = messageId === 0;
 
@@ -10879,7 +10712,6 @@ export async function deleteSwipe(swipeId = null, messageId = chat.length - 1) {
         newSwipeId = Math.min(swipeId, message.swipes.length - 1);
     }
 
-    // @ts-expect-error TS(2339) FIXME: Property 'tainted' does not exist on type '{}'.
     chat_metadata.tainted = true;
 
     messageId = Number(messageId);
@@ -10930,9 +10762,7 @@ export async function saveChatConditional() {
 
         isChatSaving = true;
 
-        // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
         if (selected_group) {
-            // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
             await saveGroupChat(selected_group, true);
         } else {
             await saveChat();
@@ -11109,9 +10939,7 @@ async function openCharacterWorldPopup() {
 
     // TODO: Maybe make this utility function not use the window context?
     const fileName = getCharaFilename(chid);
-    // @ts-expect-error TS(2339) FIXME: Property 'data' does not exist on type 'never'.
     const charName = (menu_type == 'create' ? create_save.name : characters[chid]?.data?.name) || 'Nameless';
-    // @ts-expect-error TS(2339) FIXME: Property 'data' does not exist on type 'never'.
     const worldId = (menu_type == 'create' ? create_save.world : characters[chid]?.data?.extensions?.world) || '';
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const template = $(document.querySelector('#character_world_template .character_world').cloneNode(true));
@@ -11202,16 +11030,13 @@ function openAlternateGreetings() {
         return;
     } else {
         // If the character does not have alternate greetings, create an empty array
-        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         if (characters[chid] && !Array.isArray(characters[chid].data.alternate_greetings)) {
-            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             characters[chid].data.alternate_greetings = [];
         }
     }
 
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const template = $(document.querySelector('#alternate_greetings_template .alternate_grettings').cloneNode(true));
-    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
     const getArray = () => menu_type == 'create' ? create_save.alternate_greetings : characters[chid].data.alternate_greetings;
     const popup = new Popup(template, POPUP_TYPE.TEXT, '', {
         wide: true,
@@ -11473,7 +11298,6 @@ export async function createOrEditCharacter(e) {
 
             let oldSelectedChar = null;
             if (this_chid !== undefined) {
-                // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
                 oldSelectedChar = characters[this_chid].avatar;
             }
 
@@ -11502,9 +11326,7 @@ export async function createOrEditCharacter(e) {
             formData.delete('alternate_greetings');
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const chid = $('.open_alternate_greetings').data('chid');
-            // @ts-expect-error TS(2339) FIXME: Property 'data' does not exist on type 'never'.
             if (characters[chid] && Array.isArray(characters[chid]?.data?.alternate_greetings)) {
-                // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
                 for (const value of characters[chid].data.alternate_greetings) {
                     formData.append('alternate_greetings', value);
                 }
@@ -11539,9 +11361,7 @@ export async function createOrEditCharacter(e) {
             const shouldRegenerateMessage =
                 !isNewChat &&
                 message.mes &&
-                // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
                 !selected_group &&
-                // @ts-expect-error TS(2339) FIXME: Property 'tainted' does not exist on type '{}'.
                 !chat_metadata.tainted &&
                 // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
                 (chat.length === 0 || (chat.length === 1 && !chat[0].is_user && !chat[0].is_system));
@@ -11697,7 +11517,6 @@ export async function swipe(event, direction, {
             // @ts-expect-error TS(7005) FIXME: Variable 'generation' implicitly has an 'any' type... Remove this comment to see the full error message
             if (generation) {
                 document.body.dataset.swiping = 'true';
-                // @ts-expect-error TS(7005) FIXME: Variable 'generation' implicitly has an 'any' type... Remove this comment to see the full error message
                 await generation;
             }
         } catch (error) {
@@ -12231,7 +12050,6 @@ async function importCharactersTags(avatarFileNames) {
     await getCharacters();
     for (let i = 0; i < avatarFileNames.length; i++) {
         if (power_user.tag_import_setting !== tag_import_setting.NONE) {
-            // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
             const importedCharacter = characters.find(character => character.avatar === avatarFileNames[i]);
             await importTags(importedCharacter);
         }
@@ -12246,7 +12064,6 @@ async function importCharactersTags(avatarFileNames) {
 function selectImportedChar(charId) {
     let oldSelectedChar = null;
     if (this_chid !== undefined) {
-        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         oldSelectedChar = characters[this_chid].avatar;
     }
     select_rm_info('char_import_no_toast', charId, oldSelectedChar);
@@ -12273,7 +12090,6 @@ async function importCharacter(file, { preserveFileName = '', importTags = false
         return;
     }
 
-    // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
     const exists = preserveFileName ? characters.find(character => character.avatar === preserveFileName) : undefined;
 
     const format = ext[1].toLowerCase();
@@ -12371,7 +12187,6 @@ async function importFromURL(items, files) {
  */
 export async function doNewChat({ deleteCurrentChat = false } = {}) {
     //Make a new chat for selected character
-    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
     if ((!selected_group && this_chid == undefined) || menu_type == 'create') {
         return;
     }
@@ -12387,16 +12202,12 @@ export async function doNewChat({ deleteCurrentChat = false } = {}) {
         await saveChatConditional();
     }
 
-    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
     if (selected_group) {
-        // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
         await createNewGroupChat(selected_group);
-        // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
         if (deleteCurrentChat) await deleteGroupChat(selected_group, chat_file_for_del, { jumpToNewChat: false }); // don't jump, new chat was already created and jumped to above
     } else {
         //RossAscends: added character name to new chat filenames and replaced Date.now() with humanizedDateTime;
         chat_metadata = {};
-        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         characters[this_chid].chat = `${name2} - ${humanizedDateTime()}`;
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#selected_chat_pole').val(characters[this_chid].chat);
@@ -12420,7 +12231,6 @@ export async function renameGroupOrCharacterChat({ characterId, groupId, oldFile
     const currentChatId = getCurrentChatId();
     const body = {
         is_group: !!groupId,
-        // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
         avatar_url: characters[characterId]?.avatar,
         original_file: `${oldFileName}.jsonl`,
         renamed_file: `${newFileName.trim()}.jsonl`,
@@ -12466,9 +12276,7 @@ export async function renameGroupOrCharacterChat({ characterId, groupId, oldFile
 
         if (groupId) {
             await renameGroupChat(groupId, oldFileName, newFileName);
-        // @ts-expect-error TS(2339) FIXME: Property 'chat' does not exist on type 'never'.
         } else if (characterId !== undefined && String(characterId) === String(this_chid) && characters[characterId]?.chat === oldFileName) {
-            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             characters[characterId].chat = newFileName;
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#selected_chat_pole').val(characters[characterId].chat);
@@ -12499,7 +12307,6 @@ export async function renameGroupOrCharacterChat({ characterId, groupId, oldFile
 export async function renameChat(oldFileName, newName) {
     return await renameGroupOrCharacterChat({
         characterId: this_chid,
-        // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
         groupId: selected_group,
         oldFileName: oldFileName,
         newFileName: newName,
@@ -12549,10 +12356,8 @@ export async function updateRemoteChatName(characterId, newName) {
         console.warn(`Character not found for ID: ${characterId}`);
         return;
     }
-    // @ts-expect-error TS(2339) FIXME: Property 'chat' does not exist on type 'never'.
     character.chat = newName;
     const mergeRequest = {
-        // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
         avatar: character.avatar,
         chat: newName,
     };
@@ -12591,7 +12396,6 @@ export async function handleDeleteCharacter(this_chid, delete_chats) {
         return;
     }
 
-    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
     await deleteCharacter(characters[this_chid].avatar, { deleteChats: delete_chats });
 }
 
@@ -12627,7 +12431,6 @@ export async function deleteCharacter(characterKey, { deleteChats = true } = {})
     let deleted = false;
 
     for (const key of characterKey) {
-        // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
         const character = characters.find(x => x.avatar == key);
         if (!character) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
@@ -12639,7 +12442,6 @@ export async function deleteCharacter(characterKey, { deleteChats = true } = {})
         // @ts-expect-error TS(2345) FIXME: Argument of type 'number' is not assignable to par... Remove this comment to see the full error message
         const pastChats = await getPastCharacterChats(chid);
 
-        // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
         const msg = { avatar_url: character.avatar, delete_chats: deleteChats };
 
         const response = await fetch('/api/characters/delete', {
@@ -12655,15 +12457,11 @@ export async function deleteCharacter(characterKey, { deleteChats = true } = {})
             continue;
         }
 
-        // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
         accountStorage.removeItem(`AlertWI_${character.avatar}`);
-        // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
         accountStorage.removeItem(`AlertRegex_${character.avatar}`);
-        // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
         accountStorage.removeItem(`mediaWarningShown:${character.avatar}`);
         // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         delete tag_map[character.avatar];
-        // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
         select_rm_info('char_delete', character.name);
 
         if (deleteChats) {
@@ -13031,9 +12829,7 @@ jQuery(async function () {
     });
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#rm_button_selected_ch').on('click', function () {
-        // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
         if (selected_group) {
-            // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
             select_group_chats(selected_group, false);
         } else {
             selected_button = 'character_edit';
@@ -13193,14 +12989,12 @@ jQuery(async function () {
 
         // Skip confirmation if called from a slash command.
         if (fromSlashCommand) {
-            // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
             await handleDeleteChat(deleteFileName, selected_group, true);
             return;
         }
 
         const result = await callGenericPopup('<h3>' + t`Delete the Chat File?` + '</h3>', POPUP_TYPE.CONFIRM);
         if (result === POPUP_RESULT.AFFIRMATIVE) {
-            // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
             await handleDeleteChat(deleteFileName, selected_group, false);
         }
     });
@@ -13271,7 +13065,6 @@ jQuery(async function () {
                 // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $('#dialogue_popup_input').val('');
             } else {
-                // @ts-expect-error TS(7005) FIXME: Variable 'dialogueResolve' implicitly has an 'any'... Remove this comment to see the full error message
                 dialogueResolve(true);
             }
 
@@ -13300,7 +13093,6 @@ jQuery(async function () {
 
         // @ts-expect-error TS(7005) FIXME: Variable 'dialogueResolve' implicitly has an 'any'... Remove this comment to see the full error message
         if (dialogueResolve) {
-            // @ts-expect-error TS(7005) FIXME: Variable 'dialogueResolve' implicitly has an 'any'... Remove this comment to see the full error message
             dialogueResolve(false);
             dialogueResolve = null;
         }
@@ -13332,7 +13124,6 @@ jQuery(async function () {
             return;
         }
 
-        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         await deleteCharacter(characters[this_chid].avatar, { deleteChats: deleteChats });
     });
 
@@ -13395,7 +13186,6 @@ jQuery(async function () {
     $('#creator_notes_textarea').on('input', function () {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const notes = String($('#creator_notes_textarea').val());
-        // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
         const avatar = menu_type === 'create' ? '' : characters[this_chid]?.avatar;
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#creator_notes_spoiler').html(formatCreatorNotes(notes, avatar));
@@ -13445,9 +13235,7 @@ jQuery(async function () {
         console.log(`exporting ${filename} in ${format} format`);
 
         const body = {
-            // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
             is_group: !!selected_group,
-            // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
             avatar_url: characters[this_chid]?.avatar,
             file: `${filename}.jsonl`,
             exportfilename: `${filename}.${format}`,
@@ -13517,7 +13305,6 @@ jQuery(async function () {
             // Close the other popover before opening this one
             const extensionsMenu = document.getElementById('extensionsMenu');
             if (extensionsMenu?.matches(':popover-open')) {
-                // @ts-expect-error TS(2339) FIXME: Property 'hidePopover' does not exist on type 'HTM... Remove this comment to see the full error message
                 extensionsMenu.hidePopover();
             }
             showMenu();
@@ -13531,13 +13318,11 @@ jQuery(async function () {
         const options = document.getElementById('options');
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         if (options?.matches(':popover-open') && !$(target).closest('#options, #options_button').length) {
-            // @ts-expect-error TS(2339) FIXME: Property 'hidePopover' does not exist on type 'HTM... Remove this comment to see the full error message
             options.hidePopover();
         }
         const extensionsMenu = document.getElementById('extensionsMenu');
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         if (extensionsMenu?.matches(':popover-open') && !$(target).closest('#extensionsMenu, #extensionsMenuButton').length) {
-            // @ts-expect-error TS(2339) FIXME: Property 'hidePopover' does not exist on type 'HTM... Remove this comment to see the full error message
             extensionsMenu.hidePopover();
         }
     });
@@ -13559,11 +13344,9 @@ jQuery(async function () {
         });
 
         if (id == 'option_select_chat') {
-            // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
             if (this_chid === undefined && !is_send_press && !selected_group) {
                 await openPermanentAssistantCard();
             }
-            // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
             if ((selected_group && !is_group_generating) || (this_chid !== undefined && !is_send_press) || fromSlashCommand) {
                 await displayPastChats();
                 //this is just to avoid the shadow for past chat view when using /delchat
@@ -13583,7 +13366,6 @@ jQuery(async function () {
                 }
             }
         } else if (id == 'option_start_new_chat') {
-            // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
             if ((selected_group || this_chid !== undefined) && !is_send_press) {
                 let deleteCurrentChat = false;
                 const result = await Popup.show.confirm(t`Start new chat?`, await renderTemplateAsync('newChatConfirm'), {
@@ -13596,7 +13378,6 @@ jQuery(async function () {
 
                 await doNewChat({ deleteCurrentChat: deleteCurrentChat });
             }
-            // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
             if (!selected_group && this_chid === undefined && !is_send_press) {
                 const alreadyInTempChat = this_chid === undefined && name2 === neutralCharacterName;
                 await newAssistantChat({ temporary: alreadyInTempChat });
@@ -13610,7 +13391,6 @@ jQuery(async function () {
                 return;
             }
             if (is_send_press == false) {
-                // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
                 if (selected_group) {
                     regenerateGroup();
                 } else {
@@ -13744,7 +13524,6 @@ jQuery(async function () {
                 mesEl.remove();
             }
             chat.length = this_del_mes;
-            // @ts-expect-error TS(2339) FIXME: Property 'tainted' does not exist on type '{}'.
             chat_metadata.tainted = true;
             await saveChatConditional();
             chatElement.scrollTop(chatElement[0].scrollHeight);
@@ -13771,7 +13550,6 @@ jQuery(async function () {
     ////////////////// OPTIMIZED RANGE SLIDER LISTENERS////////////////
 
     let sliderLocked = true;
-    // @ts-expect-error TS(7034) FIXME: Variable 'sliderTimer' implicitly has type 'any' i... Remove this comment to see the full error message
     let sliderTimer;
 
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
@@ -13787,7 +13565,6 @@ jQuery(async function () {
 
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('input[type=\'range\']').on('touchend', function () {
-        // @ts-expect-error TS(7005) FIXME: Variable 'sliderTimer' implicitly has an 'any' typ... Remove this comment to see the full error message
         clearTimeout(sliderTimer);
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(this).css('background-color', '');
@@ -13849,7 +13626,6 @@ jQuery(async function () {
 
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('pointerup', '.mes_copy', async function () {
-        // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
         if (this_chid !== undefined || selected_group || name2 === neutralCharacterName) {
             try {
                 // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
@@ -13872,7 +13648,6 @@ jQuery(async function () {
         if (is_delete_mode) {
             return;
         }
-        // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
         if (this_chid !== undefined || selected_group || name2 === neutralCharacterName) {
             // Previously system messages we're allowed to be edited
             /*const message = $(this).closest(".mes");
@@ -14140,7 +13915,6 @@ jQuery(async function () {
         // Save before exporting
         // @ts-expect-error TS(2554) FIXME: Expected 1 arguments, but got 0.
         await createOrEditCharacter();
-        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         const body = { format, avatar_url: characters[this_chid].avatar };
 
         const response = await fetch('/api/characters/export', {
@@ -14150,7 +13924,6 @@ jQuery(async function () {
         });
 
         if (response.ok) {
-            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             const filename = characters[this_chid].avatar.replace('.png', `.${format}`);
             const blob = await response.blob();
             const a = document.createElement('a');
@@ -14191,7 +13964,6 @@ jQuery(async function () {
                 continue;
             }
 
-            // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
             if (selected_group && format === 'json') {
                 // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                 toastr.warning(t`Only SillyTavern's own format is supported for group chat imports. Sorry!`);
@@ -14199,11 +13971,10 @@ jQuery(async function () {
             }
 
             const formData = new FormData(formElement);
-            formData.set('file_type', format);
+            formData.set('file_type', format as string);
             formData.set('avatar', file);
-            formData.set('user_name', name1);
+            formData.set('user_name', name1 as string);
 
-            // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
             const importFn = selected_group ? importGroupChat : importCharacterChat;
             const result = await importFn(formData, { refresh: false });
             importedFileNames.push(...result);
@@ -14359,7 +14130,6 @@ jQuery(async function () {
             }
         })();
         const charname = targetAvatarImg.replace('.png', '');
-        // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
         const isValidCharacter = characters.some(x => x.avatar === decodeURIComponent(targetAvatarImg));
 
         // Remove existing zoomed avatars for characters that are not the clicked character when moving UI is not enabled
@@ -14392,7 +14162,6 @@ jQuery(async function () {
         } else {
             console.debug('making new container from template');
             const templateElement = document.getElementById('zoomed_avatar_template');
-            // @ts-expect-error TS(7034) FIXME: Variable 'newElement' implicitly has type 'any' in... Remove this comment to see the full error message
             let newElement = null;
             if (templateElement instanceof HTMLTemplateElement) {
                 newElement = templateElement.content.firstElementChild?.cloneNode(true);
@@ -14450,15 +14219,12 @@ jQuery(async function () {
             const closeHandler = function (e) {
                 if (e.target.closest('.dragClose')) {
                     if (animation_duration > 0) {
-                        // @ts-expect-error TS(7005) FIXME: Variable 'newElement' implicitly has an 'any' type... Remove this comment to see the full error message
                         newElement.style.transition = `opacity ${animation_duration}ms ease`;
-                        // @ts-expect-error TS(7005) FIXME: Variable 'newElement' implicitly has an 'any' type... Remove this comment to see the full error message
                         newElement.style.opacity = '0';
                         setTimeout(() => {
                             document.querySelectorAll(zoomedAvatarSelector).forEach(el => el.remove());
                         }, animation_duration);
                     } else {
-                        // @ts-expect-error TS(7005) FIXME: Variable 'newElement' implicitly has an 'any' type... Remove this comment to see the full error message
                         newElement.remove();
                     }
                 }
@@ -14509,13 +14275,11 @@ jQuery(async function () {
             // Close manual popovers first
             const optionsEl = document.getElementById('options');
             if (optionsEl?.matches(':popover-open')) {
-                // @ts-expect-error TS(2339) FIXME: Property 'hidePopover' does not exist on type 'HTM... Remove this comment to see the full error message
                 optionsEl.hidePopover();
                 return;
             }
             const extensionsMenuEl = document.getElementById('extensionsMenu');
             if (extensionsMenuEl?.matches(':popover-open')) {
-                // @ts-expect-error TS(2339) FIXME: Property 'hidePopover' does not exist on type 'HTM... Remove this comment to see the full error message
                 extensionsMenuEl.hidePopover();
                 return;
             }
@@ -14605,7 +14369,6 @@ jQuery(async function () {
                     });
 
                 // Remember the chat currently selected, so we can reload it after the replacement
-                // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
                 const currentChatFile = characters[this_chid].chat;
                 /**
                  *
@@ -14629,7 +14392,6 @@ jQuery(async function () {
 
                             try {
                                 const data = new Map();
-                                // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
                                 data.set(file, characters[this_chid].avatar);
                                 await processDroppedFiles([file], data);
                                 await postReplace();
@@ -14651,7 +14413,6 @@ jQuery(async function () {
                             break;
                         }
                         onlineUrl = inputUrl;
-                        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
                         await importFromExternalUrl(onlineUrl, { preserveFileName: characters[this_chid].avatar });
                         await postReplace();
                         break;
