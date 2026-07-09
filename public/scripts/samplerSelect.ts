@@ -45,8 +45,7 @@ async function showSamplerSelectPopup() {
 
     setSamplerListListeners();
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#resetSelectedSamplers').off('click').on('click', async function () {
+    document.getElementById('resetSelectedSamplers').addEventListener('click', async function () {
         console.log('saw sampler select reset click');
 
         if (main_api === 'textgenerationwebui') {
@@ -64,8 +63,7 @@ async function showSamplerSelectPopup() {
         $('#prioritizeManuallySelectedSamplers').show();
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#prioritizeManuallySelectedSamplers').toggleClass('toggleEnabled', isSamplerManualPriorityEnabled());
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#prioritizeManuallySelectedSamplers').off('click').on('click', function () {
+        document.getElementById('prioritizeManuallySelectedSamplers').addEventListener('click', function () {
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(this).toggleClass('toggleEnabled');
 
@@ -77,8 +75,7 @@ async function showSamplerSelectPopup() {
     } else {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#prioritizeManuallySelectedSamplers').hide();
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#prioritizeManuallySelectedSamplers').off('click');
+
     }
 
     await showPromise;
@@ -206,7 +203,7 @@ function setSamplerListListeners() {
     // Goal 2: hide unchecked samplers from DOM
     const listContainer = document.getElementById('apiSamplersList');
     // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    listContainer.querySelectorAll('input').forEach(el => $(el).off('change').on('change', async function () {
+    listContainer.querySelectorAll('input').forEach(el => el.addEventListener('change', async function () {
         // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
         const samplerName = this.name.replace('_checkbox', '');
         const { relatedDOMElement, targetDisplayType } = getRelatedDOMElement(samplerName);
@@ -517,8 +514,7 @@ export function isSamplerManualPriorityEnabled(tcApiType = '') {
  */
 export async function initCustomSelectedSamplers() {
     await saveSettingsDebounced();
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#samplerSelectButton').off('click').on('click', showSamplerSelectPopup);
+    document.getElementById('samplerSelectButton').addEventListener('click', showSamplerSelectPopup);
 }
 
 // Goal 4: filter hidden samplers from API output
