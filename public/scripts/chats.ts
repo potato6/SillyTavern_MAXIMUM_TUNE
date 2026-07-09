@@ -2738,14 +2738,14 @@ export function initChatUtilities() {
         const mediaIndex = Number(mediaBlock?.getAttribute('data-index'));
         return { messageBlock, messageId, mediaBlock, mediaIndex };
     }
-    chatElement.addEventListener('click', async function (e) {
+    chatElement[0]?.addEventListener('click', async function (e) {
         const el = e.target.closest('.mes_img');
         if (el) {
             const { messageId, mediaIndex } = getMediaContainerInfo.call(el);
             expandMessageMedia(messageId, mediaIndex);
         }
     });
-    chatElement.addEventListener('click', async function (e) {
+    chatElement[0]?.addEventListener('click', async function (e) {
         const el = e.target.closest('.mes_media_enlarge');
         if (el) {
             const { messageId, mediaIndex } = getMediaContainerInfo.call(el);
@@ -2753,35 +2753,35 @@ export function initChatUtilities() {
             expandMessageMedia(messageId, mediaIndex)?.click();
         }
     });
-    chatElement.addEventListener('click', async function (e) {
+    chatElement[0]?.addEventListener('click', async function (e) {
         const el = e.target.closest('.mes_media_delete');
         if (el) {
             const { messageId, mediaIndex, messageBlock } = getMediaContainerInfo.call(el);
             await deleteMessageMedia(messageId, mediaIndex, messageBlock);
         }
     });
-    chatElement.addEventListener('click', async function (e) {
+    chatElement[0]?.addEventListener('click', async function (e) {
         const el = e.target.closest('.mes_media_list');
         if (el) {
             const { messageId, messageBlock } = getMediaContainerInfo.call(el);
             await switchMessageMediaDisplay(messageId, messageBlock, MEDIA_DISPLAY.GALLERY);
         }
     });
-    chatElement.addEventListener('click', async function (e) {
+    chatElement[0]?.addEventListener('click', async function (e) {
         const el = e.target.closest('.mes_media_gallery');
         if (el) {
             const { messageId, messageBlock } = getMediaContainerInfo.call(el);
             await switchMessageMediaDisplay(messageId, messageBlock, MEDIA_DISPLAY.LIST);
         }
     });
-    chatElement.addEventListener('click', async function (e) {
+    chatElement[0]?.addEventListener('click', async function (e) {
         const el = e.target.closest('.mes_img_swipe_left');
         if (el) {
             const { messageId, messageBlock } = getMediaContainerInfo.call(el);
             await onImageSwiped(messageId, messageBlock, SWIPE_DIRECTION.LEFT);
         }
     });
-    chatElement.addEventListener('click', async function (e) {
+    chatElement[0]?.addEventListener('click', async function (e) {
         const el = e.target.closest('.mes_img_swipe_right');
         if (el) {
             const { messageId, messageBlock } = getMediaContainerInfo.call(el);
