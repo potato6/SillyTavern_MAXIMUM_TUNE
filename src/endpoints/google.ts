@@ -21,7 +21,7 @@ const API_VERTEX_AI = 'https://us-central1-aiplatform.googleapis.com';
  * @param numChannels
  * @param bitsPerSample
  */
-function createWavHeader(dataSize: any, sampleRate: any, numChannels = 1, bitsPerSample = 16) {
+function createWavHeader(dataSize: number, sampleRate: number, numChannels = 1, bitsPerSample = 16) {
     const header = Buffer.alloc(44);
     header.write('RIFF', 0);
     header.writeUInt32LE(36 + dataSize, 4);
@@ -44,7 +44,7 @@ function createWavHeader(dataSize: any, sampleRate: any, numChannels = 1, bitsPe
  * @param pcmData
  * @param sampleRate
  */
-function createCompleteWavFile(pcmData: any, sampleRate: any) {
+function createCompleteWavFile(pcmData: Buffer, sampleRate: number) {
     const header = createWavHeader(pcmData.length, sampleRate);
     return Buffer.concat([header, pcmData]);
 }
@@ -54,7 +54,7 @@ function createCompleteWavFile(pcmData: any, sampleRate: any) {
  *
  * @param request
  */
-export async function getVertexAIAuth(request: any) {
+export async function getVertexAIAuth(request: express.Request) {
     const authMode = request.body.vertexai_auth_mode || 'express';
 
     if (request.body.reverse_proxy) {
@@ -102,7 +102,7 @@ export async function getVertexAIAuth(request: any) {
  * @param {object} serviceAccount Service account JSON object
  * @returns {Promise<string>} JWT token
  */
-export async function generateJWTToken(serviceAccount: any) {
+export async function generateJWTToken(serviceAccount: Record<string, string>) {
     const now = Math.floor(Date.now() / 1000);
     const expiry = now + 3600; // 1 hour
 
@@ -135,7 +135,7 @@ export async function generateJWTToken(serviceAccount: any) {
  *
  * @param jwtToken
  */
-export async function getAccessToken(jwtToken: any) {
+export async function getAccessToken(jwtToken: string) {
     const response = await fetch('https://oauth2.googleapis.com/token', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -161,7 +161,7 @@ export async function getAccessToken(jwtToken: any) {
  * @returns {string} Project ID
  * @throws {Error} If project ID is not found in the service account
  */
-export function getProjectIdFromServiceAccount(serviceAccount: any) {
+export function getProjectIdFromServiceAccount(serviceAccount: Record<string, unknown>) {
     if (!serviceAccount || typeof serviceAccount !== 'object') {
         throw new Error('Invalid service account object');
     }
@@ -181,7 +181,7 @@ export function getProjectIdFromServiceAccount(serviceAccount: any) {
  * @param {string} endpoint API endpoint (default: 'generateContent')
  * @returns {Promise<{url: string, headers: object, apiName: string, baseUrl: string, safetySettings: object[]}>} URL, headers, and API name
  */
-export async function getGoogleApiConfig(request: any, model: any, endpoint = 'generateContent') {
+export async function getGoogleApiConfig(request: express.Request, model: string, endpoint = 'generateContent') {
     const useVertexAi = request.body.api === 'vertexai';
     const region = request.body.vertexai_region || 'us-central1';
     const apiName = useVertexAi ? 'Google Vertex AI' : 'Google AI Studio';
@@ -220,7 +220,7 @@ export async function getGoogleApiConfig(request: any, model: any, endpoint = 'g
             try {
                 const serviceAccount = JSON.parse(serviceAccountJson);
                 projectId = getProjectIdFromServiceAccount(serviceAccount);
-            } catch (error) {
+            } catch {
                 throw new Error('Failed to extract project ID from Service Account JSON.');
             }
             // Handle global region differently - no region prefix in hostname

@@ -16,7 +16,7 @@ import { getImageBuffers } from '../util.js';
  * @param {boolean} isSubfolder - Whether the name contains a subfolder
  * @returns {string | null} The path to the sprites folder. Null if the name is invalid.
  */
-function getSpritesPath(directories: any, name: any, isSubfolder: any) {
+function getSpritesPath(directories: import('../users.js').UserDirectoryList, name: string, isSubfolder: boolean) {
     if (isSubfolder) {
         const nameParts = name.split('/');
         const characterName = sanitize(nameParts[0]);
@@ -46,7 +46,7 @@ function getSpritesPath(directories: any, name: any, isSubfolder: any) {
  * @param {object} data RisuAI character data
  * @returns {void}
  */
-export function importRisuSprites(directories: any, data: any) {
+export function importRisuSprites(directories: import('../users.js').UserDirectoryList, data: Record<string, unknown>) {
     try {
         const name = data?.data?.name;
         const risuData = data?.data?.extensions?.risuai;
@@ -56,7 +56,7 @@ export function importRisuSprites(directories: any, data: any) {
             return;
         }
 
-        let images: any = [];
+        let images: Array<[string, string]> = [];
 
         if (Array.isArray(risuData.additionalAssets)) {
             images = images.concat(risuData.additionalAssets);
@@ -121,7 +121,7 @@ router.get('/get', function (request, response) {
     const name = String(request.query.name);
     const isSubfolder = name.includes('/');
     const spritesPath = getSpritesPath(request.user.directories, name, isSubfolder);
-    let sprites: any = [];
+    let sprites: Array<{ label: string; path: string }> = [];
 
     try {
         if (spritesPath && fs.existsSync(spritesPath) && fs.statSync(spritesPath).isDirectory()) {

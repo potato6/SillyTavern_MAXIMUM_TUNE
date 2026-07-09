@@ -961,7 +961,7 @@ function countTokensFromServer(endpoint, str, resolve) {
                 tokenCount = apiFailureTokenCount(str);
             }
 
-            isAsync && resolve(tokenCount);
+            if (isAsync) resolve(tokenCount);
         },
     });
 
@@ -996,7 +996,7 @@ function countTokensFromKoboldAPI(str, resolve) {
                 tokenCount = apiFailureTokenCount(str);
             }
 
-            isAsync && resolve(tokenCount);
+            if (isAsync) resolve(tokenCount);
         },
     });
 
@@ -1041,7 +1041,7 @@ function countTokensFromTextgenAPI(str, resolve) {
                 tokenCount = apiFailureTokenCount(str);
             }
 
-            isAsync && resolve(tokenCount);
+            if (isAsync) resolve(tokenCount);
         },
     });
 
@@ -1099,8 +1099,7 @@ function getTextTokensFromServer(endpoint, str, resolve) {
                 Object.defineProperty(ids, 'chunks', { value: data.chunks });
             }
 
-            isAsync && resolve(ids);
-        },
+            if (isAsync) resolve(ids);        },
     });
     return ids;
 }
@@ -1124,8 +1123,7 @@ function getTextTokensFromTextgenAPI(str, resolve) {
         contentType: 'application/json',
         success: function (data) {
             ids = data.ids;
-            isAsync && resolve(ids);
-        },
+            if (isAsync) resolve(ids);        },
     });
     return ids;
 }
@@ -1153,8 +1151,7 @@ function getTextTokensFromKoboldAPI(str, resolve) {
         contentType: 'application/json',
         success: function (data) {
             ids = data.ids;
-            isAsync && resolve(ids);
-        },
+            if (isAsync) resolve(ids);        },
     });
 
     return ids;
@@ -1182,8 +1179,7 @@ function decodeTextTokensFromServer(endpoint, ids, resolve) {
         success: function (data) {
             text = data.text;
             chunks = data.chunks;
-            isAsync && resolve({ text, chunks });
-        },
+            if (isAsync) resolve({ text, chunks });        },
     });
     return { text, chunks };
 }

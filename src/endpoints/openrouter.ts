@@ -72,7 +72,7 @@ async function fetchModelsByModality(endpoint: string, inputModality: string, ou
 
 router.post('/models/multimodal', async (_req, res) => {
     try {
-        const models = await fetchModelsByModality('/models', 'image', 'text', (m: any) => m.id);
+        const models = await fetchModelsByModality('/models', 'image', 'text', (m: { id: string }) => m.id);
         return res.json(models);
     } catch (error) {
         console.error(error);
@@ -82,7 +82,7 @@ router.post('/models/multimodal', async (_req, res) => {
 
 router.post('/models/embedding', async (_req, res) => {
     try {
-        const models = await fetchModelsByModality('/models', 'text', 'embeddings', (m: any) => ({
+        const models = await fetchModelsByModality('/models', 'text', 'embeddings', (m: { id: string; name?: string }) => ({
             id: m.id,
             name: m.name
         }));
@@ -95,7 +95,7 @@ router.post('/models/embedding', async (_req, res) => {
 
 router.post('/models/image', async (_req, res) => {
     try {
-        const models = await fetchModelsByModality('/models', 'text', 'image', (m: any) => ({
+        const models = await fetchModelsByModality('/models', 'text', 'image', (m: { id: string; name?: string }) => ({
             value: m.id,
             text: m.name || m.id
         }));

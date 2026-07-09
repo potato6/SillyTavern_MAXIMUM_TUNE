@@ -26,22 +26,21 @@ export const router = express.Router();
  * @param {import('express').Response} response Express response
  * @returns {Promise<any>} Nothing valuable
  */
-async function parseOllamaStream(jsonStream: any, request: any, response: any) {
+async function parseOllamaStream(jsonStream: { body: import('node:stream').Readable | null }, request: import('express').Request, response: import('express').Response) {
     try {
         if (!jsonStream.body) {
             throw new Error('No body in the response');
         }
 
         let partialData = '';
-        jsonStream.body.on('data', (data: any) => {
+        jsonStream.body.on('data', (data: Buffer) => {
             const chunk = data.toString();
             partialData += chunk;
             while (true) {
                 let json;
                 try {
                     json = JSON.parse(partialData);
-                } catch (e) {
-                    break;
+                } catch {                    break;
                 }
                 const text = json.response || '';
                 const thinking = json.thinking || '';
@@ -77,7 +76,7 @@ async function parseOllamaStream(jsonStream: any, request: any, response: any) {
  * @param {string} url Server base URL
  * @returns {Promise<void>} Promise resolving when we are done
  */
-async function abortKoboldCppRequest(request: any, url: any) {
+async function abortKoboldCppRequest(request: import('express').Request, url: string) {
     try {
         console.info('Aborting Kobold generation...');
         const args = {
@@ -170,7 +169,7 @@ router.post('/status', async function (request, response) {
         }
 
         if (apiType === TEXTGEN_TYPES.OLLAMA && Array.isArray(data.models)) {
-            data = { data: data.models.map((x: any) => ({
+            data = { data: data.models.map((x: { name: string }) => ({
                 id: x.name,
                 ...x
             })) };
@@ -185,7 +184,7 @@ router.post('/status', async function (request, response) {
             return response.sendStatus(400);
         }
 
-        const modelIds = data.data.map((x: any) => x.id);
+        const modelIds = data.data.map((x: { id: string }) => x.id);
         console.info('Models available:', modelIds);
 
         // Set result to the first model ID
@@ -422,7 +421,7 @@ router.post('/generate', async function (request, response) {
 
                 // Map InfermaticAI response to OAI completions format
                 if (apiType === TEXTGEN_TYPES.INFERMATICAI) {
-                    data.choices = (data?.choices || []).map((choice: any) => ({
+                    data.choices = (data?.choices || []).map((choice: { message?: { content?: string }; text?: string; logprobs?: unknown; index?: unknown }) => ({
                         text: choice?.message?.content || choice.text,
                         logprobs: choice?.logprobs,
                         index: choice?.index
