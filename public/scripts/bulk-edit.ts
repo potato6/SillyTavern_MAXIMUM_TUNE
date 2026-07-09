@@ -104,7 +104,9 @@ function enableBulkSelect() {
     document.getElementById('rm_print_characters_block').classList.add('bulk_select');
     // We also need to disable the default click event for the character_select divs
     document.addEventListener('click', function (event) {
-        const target = event.target.closest('.bulk_select_checkbox');
+        const t = event.target;
+        if (!(t instanceof Element)) return;
+        const target = t.closest('.bulk_select_checkbox');
         if (target) {
             event.stopImmediatePropagation();
         }
