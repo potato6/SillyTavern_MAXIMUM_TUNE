@@ -487,6 +487,7 @@ export class SlashCommandParser {
                 ABORT,
                 IMPORT,
                 BREAK,
+                // @ts-expect-error hljs types don't support object className
                 RUN,
                 LET,
                 GETVAR,
