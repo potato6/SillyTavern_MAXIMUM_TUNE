@@ -67,8 +67,7 @@ const elementAutoCompleteMap = new WeakMap();
  * @param {MACRO_AUTOCOMPLETE_MODE} [options.autocompleteMode] - The autocomplete mode.
  * @returns {boolean}
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'text' implicitly has an 'any' type.
-function shouldActivateMacroAutocomplete(text, cursorPos, { isForced = false, autocompleteMode = MACRO_AUTOCOMPLETE_MODE.DEFAULT } = {}) {
+function shouldActivateMacroAutocomplete(text: string, cursorPos: number, { isForced = false, autocompleteMode = MACRO_AUTOCOMPLETE_MODE.DEFAULT }: { isForced?: boolean; autocompleteMode?: string } = {}) {
     // If mode is 'hide', never show autocomplete
     if (autocompleteMode === MACRO_AUTOCOMPLETE_MODE.HIDE) {
         return false;

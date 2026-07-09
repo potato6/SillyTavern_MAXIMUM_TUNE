@@ -64,8 +64,8 @@ export class AutoComplete {
     // @ts-expect-error TS(7008) FIXME: Member 'fuzzyRegex' implicitly has an 'any' type.
     /**@type {RegExp}*/ fuzzyRegex;
 
-    /**@type {AutoCompleteOption[]}*/ result = [];
-    /**@type {AutoCompleteOption}*/ selectedItem = null;
+    result: AutoCompleteOption[] = [];
+    selectedItem: AutoCompleteOption | null = null;
 
     // @ts-expect-error TS(7008) FIXME: Member 'clone' implicitly has an 'any' type.
     /**@type {HTMLElement}*/ clone;
@@ -401,37 +401,33 @@ export class AutoComplete {
             'fuzzy': (name) => this.fuzzyRegex.test(name),
         };
 
-        this.result = this.effectiveParserResult.optionList
+        let displayList = this.effectiveParserResult.optionList
             // filter the list of options by the partial name according to the matching type
             // @ts-expect-error TS(7006) FIXME: Parameter 'it' implicitly has an 'any' type.
             .filter(it => this.isReplaceable || it.name == '' ? (it.matchProvider ? it.matchProvider(this.name) : matchers[this.matchType](it.name)) : it.name.toLowerCase() == this.name)
             // remove aliases
             // @ts-expect-error TS(7006) FIXME: Parameter 'it' implicitly has an 'any' type.
-            .filter((it, idx, list) => list.findIndex(opt => opt.value == it.value) == idx);
+            .filter((it, idx, list) => list.findIndex(opt => opt.value == it.value) == idx) as AutoCompleteOption[];
 
-        if (this.result.length == 0 && this.effectiveParserResult != this.parserResult && isForced) {
+        if (displayList.length == 0 && this.effectiveParserResult != this.parserResult && isForced) {
             // no matching secondary results and forced trigger -> show current command details
             this.secondaryParserResult = null;
-            // @ts-expect-error TS(2322) FIXME: Type 'any' is not assignable to type 'never'.
-            this.result = [this.effectiveParserResult.optionList.find(it => it.name == this.effectiveParserResult.name)];
+            const forcedOption = this.effectiveParserResult.optionList.find((it: any) => it.name == this.effectiveParserResult.name);
+            if (forcedOption) displayList = [forcedOption];
             this.name = this.effectiveParserResult.name;
             this.fuzzyRegex = /(.*)(.*)(.*)/;
         }
 
-        this.result = this.result
+        this.result = displayList
             // update remaining options
             .map(option => {
                 // build element
-                // @ts-expect-error TS(2339) FIXME: Property 'dom' does not exist on type 'never'.
                 option.dom = this.makeItem(option);
                 // update replacer and add quotes if necessary
-                // @ts-expect-error TS(2339) FIXME: Property 'valueProvider' does not exist on type 'n... Remove this comment to see the full error message
                 const optionName = option.valueProvider ? option.valueProvider(this.name) : option.name;
                 if (this.effectiveParserResult.canBeQuoted) {
-                    // @ts-expect-error TS(2339) FIXME: Property 'replacer' does not exist on type 'never'... Remove this comment to see the full error message
                     option.replacer = optionName.includes(' ') || this.startQuote || this.endQuote ? `"${optionName.replace(/"/g, '\\"')}"` : `${optionName}`;
                 } else {
-                    // @ts-expect-error TS(2339) FIXME: Property 'replacer' does not exist on type 'never'... Remove this comment to see the full error message
                     option.replacer = optionName;
                 }
                 // calculate fuzzy score if matching is fuzzy
@@ -441,7 +437,6 @@ export class AutoComplete {
                 return option;
             })
             // sort by priority first, then by fuzzy score or alphabetical
-            // @ts-expect-error TS(2339) FIXME: Property 'toSorted' does not exist on type 'never[... Remove this comment to see the full error message
             .toSorted((a, b) => {
                 // First compare by sortPriority (lower = higher priority)
                 const priorityA = a.sortPriority ?? 100;
@@ -481,10 +476,8 @@ export class AutoComplete {
                     : this.effectiveParserResult.makeNoOptionsText()
                 ,
             );
-            // @ts-expect-error TS(2345) FIXME: Argument of type 'BlankAutoCompleteOption' is not ... Remove this comment to see the full error message
             this.result.push(option);
-        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-        } else if (this.result.length == 1 && this.effectiveParserResult && this.effectiveParserResult != this.secondaryParserResult && this.result[0].name == this.effectiveParserResult.name) {
+        } else if (this.result.length == 1 && this.effectiveParserResult && this.effectiveParserResult != this.secondaryParserResult && this.result[0]!.name == this.effectiveParserResult.name) {
             // only one result that is exactly the current value? just show hint, no autocomplete
             this.isReplaceable = false;
             this.isShowingDetails = false;
@@ -519,18 +512,13 @@ export class AutoComplete {
             const frag = document.createDocumentFragment();
             for (const item of this.result) {
                 if (item == this.selectedItem) {
-                    // @ts-expect-error TS(2339) FIXME: Property 'dom' does not exist on type 'never'.
                     item.dom.classList.add('selected');
                 } else {
-                    // @ts-expect-error TS(2339) FIXME: Property 'dom' does not exist on type 'never'.
                     item.dom.classList.remove('selected');
                 }
-                // @ts-expect-error TS(2339) FIXME: Property 'isSelectable' does not exist on type 'ne... Remove this comment to see the full error message
                 if (!item.isSelectable) {
-                    // @ts-expect-error TS(2339) FIXME: Property 'dom' does not exist on type 'never'.
                     item.dom.classList.add('not-selectable');
                 }
-                // @ts-expect-error TS(2339) FIXME: Property 'dom' does not exist on type 'never'.
                 frag.append(item.dom);
             }
             this.dom.append(frag);
@@ -549,7 +537,6 @@ export class AutoComplete {
         if (!this.isActive) return this.detailsWrap.remove();
         if (!this.isShowingDetails && this.isReplaceable) return this.detailsWrap.remove();
         this.detailsDom.innerHTML = '';
-        // @ts-expect-error TS(2339) FIXME: Property 'renderDetails' does not exist on type 'n... Remove this comment to see the full error message
         this.detailsDom.append(this.selectedItem?.renderDetails() ?? 'NO ITEM');
         this.getLayer().append(this.detailsWrap);
         this.updateDetailsPositionDebounced();
