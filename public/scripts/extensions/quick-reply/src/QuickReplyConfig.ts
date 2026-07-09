@@ -1,4 +1,5 @@
 import { getSortableDelay } from '../../../utils.js';
+declare const $: any; declare const toastr: any;
 import { QuickReplySetLink } from './QuickReplySetLink.js';
 import { QuickReplySet } from './QuickReplySet.js';
 

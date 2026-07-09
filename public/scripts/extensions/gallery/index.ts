@@ -7,6 +7,7 @@ import {
     animation_duration,
     animation_easing,
 } from '../../../script.js';
+declare const $: any; declare const toastr: any;
 import { groups, selected_group } from '../../group-chats.js';
 import { loadFileToDocument, delay, getBase64Async, getSanitizedFilename, saveBase64AsFile, getFileExtension, getVideoThumbnail, clamp } from '../../utils.js';
 import { loadMovingUIState } from '../../power-user.js';
@@ -92,6 +93,7 @@ function initSettings() {
         context.saveSettingsDebounced();
     }
 }
+declare const $: any; declare const toastr: any;
 
 /**
  * Retrieves the gallery folder for a given character.

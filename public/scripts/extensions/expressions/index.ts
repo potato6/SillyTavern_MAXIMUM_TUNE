@@ -1,4 +1,5 @@
 import { Fuse } from '../../../lib.js';
+declare const $: any; declare const toastr: any;
 
 import { characters, eventSource, event_types, generateQuietPrompt, generateRaw, getRequestHeaders, online_status, saveSettingsDebounced, substituteParams, substituteParamsExtended, system_message_types, this_chid } from '../../../script.js';
 import { dragElement, isMobile } from '../../RossAscends-mods.js';

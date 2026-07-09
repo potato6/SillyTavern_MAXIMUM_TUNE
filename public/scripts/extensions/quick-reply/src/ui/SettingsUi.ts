@@ -1,4 +1,5 @@
 import { Popup } from '../../../../popup.js';
+declare const $: any; declare const toastr: any;
 import { getSortableDelay } from '../../../../utils.js';
 import { log, warn } from '../../index.js';
 import { QuickReply } from '../QuickReply.js';

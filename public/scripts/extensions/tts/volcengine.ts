@@ -1,4 +1,5 @@
 import { event_types, eventSource, getRequestHeaders } from '../../../script.js';
+declare const $: any; declare const toastr: any;
 import { SECRET_KEYS, secret_state } from '../../secrets.js';
 import { saveTtsProviderSettings, initVoiceMap } from './index.js';
 import { Popup } from '../../popup.js';

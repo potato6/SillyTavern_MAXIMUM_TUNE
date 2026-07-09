@@ -1,4 +1,5 @@
 import { saveTtsProviderSettings } from './index.js';
+declare const $: any; declare const toastr: any;
 import { getCharacters, getPreviewString } from './index.js';
 
 export { GptSoVITSAdapterProvider };

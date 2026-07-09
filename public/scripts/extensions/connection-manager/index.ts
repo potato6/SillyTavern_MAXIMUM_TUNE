@@ -1,4 +1,5 @@
 import { DOMPurify, Fuse } from '../../../lib.js';
+declare const $: any; declare const toastr: any;
 
 import { activateSendButtons, deactivateSendButtons, event_types, eventSource, main_api, online_status, saveSettingsDebounced } from '../../../script.js';
 import { extension_settings, getContext, renderExtensionTemplateAsync } from '../../extensions.js';

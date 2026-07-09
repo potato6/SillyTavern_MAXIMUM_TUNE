@@ -1,4 +1,5 @@
 import { getStringHash, debounce, waitUntilCondition, extractAllWords, isTrueBoolean } from '../../utils.js';
+declare const $: any; declare const toastr: any;
 import { getContext, getApiUrl, extension_settings, doExtrasFetch, modules, renderExtensionTemplateAsync } from '../../extensions.js';
 import {
     activateSendButtons,

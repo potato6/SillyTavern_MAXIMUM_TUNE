@@ -1,4 +1,5 @@
 import { getRequestHeaders } from '../../../script.js';
+declare const $: any; declare const toastr: any;
 import { getApiUrl } from '../../extensions.js';
 import { doExtrasFetch, modules } from '../../extensions.js';
 import { getPreviewString } from './index.js';

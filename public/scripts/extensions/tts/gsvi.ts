@@ -1,4 +1,5 @@
 import { saveTtsProviderSettings } from './index.js';
+declare const $: any;
 
 export { GSVITtsProvider };
 

@@ -1,4 +1,5 @@
 import { saveTtsProviderSettings } from './index.js';
+declare const $: any; declare const toastr: any;
 import { event_types, eventSource, getRequestHeaders } from '/script.js';
 import { SECRET_KEYS, secret_state, writeSecret } from '/scripts/secrets.js';
 import { getBase64Async } from '/scripts/utils.js';

@@ -1,4 +1,5 @@
 import { getPreviewString, saveTtsProviderSettings } from './index.js';
+declare const $: any; declare const toastr: any;
 
 export { VITSTtsProvider };
 

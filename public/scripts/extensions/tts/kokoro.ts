@@ -1,4 +1,5 @@
 import { debounce_timeout } from '../../constants.js';
+declare const $: any;
 import { debounceAsync, splitRecursive } from '../../utils.js';
 import { getPreviewString, saveTtsProviderSettings } from './index.js';
 

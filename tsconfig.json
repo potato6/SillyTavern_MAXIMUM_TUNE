@@ -37,7 +37,7 @@
     "exclude": [
         "node_modules",
         "public/dist",
-        "public/scripts/extensions",
+        "public/scripts/extensions/**/*.js",
         "public/lib",
         "src/vectors"
     ]

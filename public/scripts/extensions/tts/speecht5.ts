@@ -1,4 +1,5 @@
 import { getPreviewString, saveTtsProviderSettings } from './index.js';
+declare const $: any; declare const toastr: any;
 import { getBase64Async } from '../../utils.js';
 import { getRequestHeaders } from '../../../script.js';
 

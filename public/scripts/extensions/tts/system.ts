@@ -1,4 +1,5 @@
 import { isMobile } from '../../RossAscends-mods.js';
+declare const $: any;
 import { getPreviewString } from './index.js';
 import { saveTtsProviderSettings } from './index.js';
 export { SystemTtsProvider };

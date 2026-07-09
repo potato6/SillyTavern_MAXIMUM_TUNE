@@ -1,9 +1,11 @@
 /*
+declare const $: any; declare const toastr: any;
 TODO:
 */
 //const DEBUG_TONY_SAMA_FORK_MODE = true
 
 import { DOMPurify } from '../../../lib.js';
+declare const $: any; declare const toastr: any;
 import { getRequestHeaders, processDroppedFiles, eventSource, event_types } from '../../../script.js';
 import { deleteExtension, EMPTY_AUTHOR, extensionNames, getAuthorFromUrl, getContext, installExtension, renderExtensionTemplateAsync, isOfficialExtension } from '../../extensions.js';
 import { POPUP_TYPE, Popup, callGenericPopup } from '../../popup.js';

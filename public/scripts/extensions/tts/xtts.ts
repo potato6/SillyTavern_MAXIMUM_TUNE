@@ -1,4 +1,5 @@
 import { doExtrasFetch, getApiUrl, modules } from '../../extensions.js';
+declare const $: any; declare const toastr: any;
 import { saveTtsProviderSettings } from './index.js';
 
 export { XTTSTtsProvider };

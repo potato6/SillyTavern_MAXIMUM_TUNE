@@ -1,4 +1,5 @@
 import { getRequestHeaders, substituteParams } from '../../../script.js';
+declare const $: any; declare const toastr: any;
 import { saveTtsProviderSettings, sanitizeId } from './index.js';
 
 export { OpenAITtsProvider };

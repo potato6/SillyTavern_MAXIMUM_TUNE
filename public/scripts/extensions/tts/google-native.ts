@@ -1,4 +1,5 @@
 import { getRequestHeaders } from '../../../script.js';
+declare const $: any; declare const toastr: any;
 import { oai_settings } from '../../openai.js';
 import { isValidUrl } from '../../utils.js';
 import { getPreviewString, saveTtsProviderSettings } from './index.js';

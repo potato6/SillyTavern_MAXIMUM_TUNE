@@ -1,4 +1,5 @@
 import { doExtrasFetch } from '../../extensions.js';
+declare const $: any;
 import { debounce } from '../../utils.js';
 import { saveTtsProviderSettings } from './index.js';
 

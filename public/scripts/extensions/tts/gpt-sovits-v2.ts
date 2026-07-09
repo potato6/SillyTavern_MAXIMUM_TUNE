@@ -1,4 +1,5 @@
 import { saveTtsProviderSettings } from './index.js';
+declare const $: any; declare const toastr: any;
 
 export { GptSovitsV2Provider };
 

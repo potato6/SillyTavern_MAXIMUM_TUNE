@@ -1,10 +1,12 @@
 /*
+declare const $: any; declare const toastr: any;
 TODO:
  - Hide voice map its just confusing
  - Delete useless call
 */
 
 import { doExtrasFetch, extension_settings, getApiUrl, modules } from '../../extensions.js';
+declare const $: any; declare const toastr: any;
 import { initVoiceMap } from './index.js';
 import { POPUP_TYPE, callGenericPopup } from '../../popup.js';
 

@@ -1,4 +1,5 @@
 import { SlashCommand } from '../../../slash-commands/SlashCommand.js';
+declare const toastr: any;
 import { SlashCommandAbortController } from '../../../slash-commands/SlashCommandAbortController.js';
 import { ARGUMENT_TYPE, SlashCommandArgument, SlashCommandNamedArgument } from '../../../slash-commands/SlashCommandArgument.js';
 import { SlashCommandClosure } from '../../../slash-commands/SlashCommandClosure.js';

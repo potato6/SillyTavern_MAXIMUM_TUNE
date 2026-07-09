@@ -1,4 +1,5 @@
 import { getRequestHeaders } from '../../../script.js';
+declare const toastr: any;
 import { splitRecursive } from '../../utils.js';
 import { getPreviewString, saveTtsProviderSettings } from './index.js';
 export { GoogleTranslateTtsProvider };

@@ -12,6 +12,7 @@ import {
     generateRaw,
     substituteParamsExtended,
 } from '../../../script.js';
+declare const $: any; declare const toastr: any;
 import {
     ModuleWorkerWrapper,
     extension_settings,
@@ -118,6 +119,7 @@ const settings = {
     enabled_for_all: false,
     max_entries: 5,
 };
+declare const $: any; declare const toastr: any;
 
 const moduleWorker = new ModuleWorkerWrapper(synchronizeChat);
 const webllmProvider = new WebLlmVectorProvider();

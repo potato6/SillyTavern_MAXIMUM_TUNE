@@ -1,4 +1,5 @@
 import { main_api } from '../../../script.js';
+declare const $: any; declare const toastr: any;
 import { getContext } from '../../extensions.js';
 import { SlashCommand } from '../../slash-commands/SlashCommand.js';
 import { SlashCommandParser } from '../../slash-commands/SlashCommandParser.js';

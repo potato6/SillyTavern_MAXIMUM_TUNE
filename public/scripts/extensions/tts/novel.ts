@@ -1,4 +1,5 @@
 import { getRequestHeaders } from '../../../script.js';
+declare const $: any; declare const toastr: any;
 import { POPUP_TYPE, callGenericPopup } from '../../popup.js';
 import { splitRecursive } from '../../utils.js';
 import { getPreviewString, saveTtsProviderSettings } from './index.js';

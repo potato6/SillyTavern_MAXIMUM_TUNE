@@ -1,4 +1,5 @@
 export { translate };
+declare const $: any; declare const toastr: any;
 
 import {
     eventSource,

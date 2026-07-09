@@ -1,4 +1,5 @@
 import { hljs, morphdom } from '../../../../lib.js';
+declare const $: any;
 import { POPUP_RESULT, POPUP_TYPE, Popup } from '../../../popup.js';
 import { setSlashCommandAutoComplete } from '../../../slash-commands.js';
 import { SlashCommandAbortController } from '../../../slash-commands/SlashCommandAbortController.js';
