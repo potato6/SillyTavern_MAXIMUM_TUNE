@@ -1087,7 +1087,9 @@ export function initTextGenSettings() {
         await eventSource.emit(event_types.PRESET_CHANGED, { apiId: 'textgenerationwebui', name: presetName });
     });
 
-    document.getElementById('samplerResetButton').addEventListener('click', function () {
+    const samplerResetButton = document.getElementById('samplerResetButton');
+    if (samplerResetButton) {
+        samplerResetButton.addEventListener('click', function () {
         const inputs = {
             'temp_textgenerationwebui': 1,
             'top_k_textgenerationwebui': [INFERMATICAI, APHRODITE, VLLM].includes(textgenerationwebui_settings.type) ? -1 : 0,
@@ -1162,7 +1164,8 @@ export function initTextGenSettings() {
                 }
             }
         }
-    });
+        });
+    }
 
     for (const i of setting_names) {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
