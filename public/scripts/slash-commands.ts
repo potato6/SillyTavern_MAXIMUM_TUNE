@@ -243,7 +243,12 @@ export function initDefaultSlashCommands() {
      */
     async function enableInstructCallback() {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#instruct_enabled').prop('checked', true).trigger('input').trigger('change');
+        const instructEnabled = document.getElementById('instruct_enabled');
+        if (instructEnabled instanceof HTMLInputElement) {
+            instructEnabled.checked = true;
+            instructEnabled.dispatchEvent(new Event('input'));
+            instructEnabled.dispatchEvent(new Event('change'));
+        }
         return '';
     }
 
@@ -252,7 +257,12 @@ export function initDefaultSlashCommands() {
      */
     async function disableInstructCallback() {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#instruct_enabled').prop('checked', false).trigger('input').trigger('change');
+        const instructEnabled = document.getElementById('instruct_enabled');
+        if (instructEnabled instanceof HTMLInputElement) {
+            instructEnabled.checked = false;
+            instructEnabled.dispatchEvent(new Event('input'));
+            instructEnabled.dispatchEvent(new Event('change'));
+        }
         return '';
     }
 
@@ -476,9 +486,10 @@ export function initDefaultSlashCommands() {
                     eventSource.on(eventType, setResolved);
                 });
 
-                const currentChatDeleteButton = document.querySelector('.select_chat_block[highlight=\'true\']')?.parentElement?.querySelector('.PastChat_cross');
-                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                $(currentChatDeleteButton).trigger('click', { fromSlashCommand: true });
+                const currentChatDeleteButton = document.querySelector('.select_chat_block[highlight="true"]')?.parentElement?.querySelector('.PastChat_cross');
+                if (currentChatDeleteButton instanceof HTMLElement) {
+                    currentChatDeleteButton.dispatchEvent(new CustomEvent('click', { detail: { fromSlashCommand: true } }));
+                }
             }));
         },
         helpString: t`Deletes the current chat.`,
@@ -525,7 +536,7 @@ export function initDefaultSlashCommands() {
         name: 'closechat',
         callback: function () {
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#option_close_chat').trigger('click');
+            document.getElementById('option_close_chat')?.click();
             return '';
         },
         helpString: t`Closes the current chat.`,
@@ -544,7 +555,7 @@ export function initDefaultSlashCommands() {
                 };
                 eventSource.once(event_types.CHAT_CHANGED, eventCallback);
                 // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                $('#option_close_chat').trigger('click');
+                document.getElementById('option_close_chat')?.click();
                 setTimeout(() => {
                     reject(t`Failed to open temporary chat`);
                     eventSource.removeListener(event_types.CHAT_CHANGED, eventCallback);
@@ -557,7 +568,7 @@ export function initDefaultSlashCommands() {
         name: 'panels',
         callback: function () {
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#option_settings').trigger('click');
+            document.getElementById('option_settings')?.click();
             return '';
         },
         aliases: ['togglepanels'],
@@ -722,7 +733,7 @@ export function initDefaultSlashCommands() {
         name: 'chat-manager',
         callback: () => {
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#option_select_chat').trigger('click');
+            document.getElementById('option_select_chat')?.click();
             return '';
         },
         aliases: ['chat-history', 'manage-chats'],
@@ -5203,7 +5214,12 @@ function performGroupMemberAction(chid, action) {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         pageValue = $(paginationSelector).pagination('getCurrentPageNum');
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(pageSizeSelector).val($(document.querySelector(pageSizeSelector)?.querySelector('option:last-of-type')).val()).trigger('change');
+        const pageSizeEl = document.querySelector(pageSizeSelector) as HTMLSelectElement;
+        const lastOption = pageSizeEl?.querySelector('option:last-of-type') as HTMLOptionElement;
+        if (pageSizeEl && lastOption) {
+            pageSizeEl.value = lastOption.value;
+            pageSizeEl.dispatchEvent(new Event('change'));
+        }
     }
 
     // @ts-expect-error TS(2339) FIXME: Property 'click' does not exist on type 'Element'.
@@ -5211,7 +5227,11 @@ function performGroupMemberAction(chid, action) {
 
     if (wasOffscreen) {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(pageSizeSelector).val(paginationValue).trigger('change');
+        const pageSizeEl = document.querySelector(pageSizeSelector) as HTMLSelectElement;
+        if (pageSizeEl) {
+            pageSizeEl.value = String(paginationValue);
+            pageSizeEl.dispatchEvent(new Event('change'));
+        }
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         if ($(paginationSelector).length) {
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
@@ -5427,7 +5447,7 @@ async function addGroupMemberCallback(_, name) {
 
     // Trigger to reload group UI
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#rm_button_selected_ch').trigger('click');
+    document.getElementById('rm_button_selected_ch')?.click();
     return character.name;
 }
 
@@ -6286,7 +6306,11 @@ export async function generateSystemMessage(args, prompt) {
  */
 function setStoryModeCallback() {
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#chat_display').val(chat_styles.DOCUMENT).trigger('change');
+    const chatDisplay = document.getElementById('chat_display');
+    if (chatDisplay instanceof HTMLSelectElement) {
+        chatDisplay.value = chat_styles.DOCUMENT;
+        chatDisplay.dispatchEvent(new Event('change'));
+    }
     return '';
 }
 
@@ -6295,7 +6319,11 @@ function setStoryModeCallback() {
  */
 function setBubbleModeCallback() {
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#chat_display').val(chat_styles.BUBBLES).trigger('change');
+    const chatDisplay = document.getElementById('chat_display');
+    if (chatDisplay instanceof HTMLSelectElement) {
+        chatDisplay.value = chat_styles.BUBBLES;
+        chatDisplay.dispatchEvent(new Event('change'));
+    }
     return '';
 }
 
@@ -6304,7 +6332,11 @@ function setBubbleModeCallback() {
  */
 function setFlatModeCallback() {
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#chat_display').val(chat_styles.DEFAULT).trigger('change');
+    const chatDisplay = document.getElementById('chat_display');
+    if (chatDisplay instanceof HTMLSelectElement) {
+        chatDisplay.value = chat_styles.DEFAULT;
+        chatDisplay.dispatchEvent(new Event('change'));
+    }
     return '';
 }
 
@@ -7021,7 +7053,9 @@ function modelCallback(args, model) {
     if (modelSelectControl instanceof HTMLInputElement) {
         modelSelectControl.value = model;
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(modelSelectControl).trigger('input');
+        if (modelSelectControl instanceof HTMLInputElement || modelSelectControl instanceof HTMLSelectElement) {
+            modelSelectControl.dispatchEvent(new Event('input'));
+        }
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         if (!quiet) toastr.success(t`Model set to "${model}"`);
         return model;
@@ -7052,7 +7086,9 @@ function modelCallback(args, model) {
     if (newSelectedOption) {
         modelSelectControl.value = newSelectedOption.value;
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(modelSelectControl).trigger('change');
+        if (modelSelectControl instanceof HTMLInputElement || modelSelectControl instanceof HTMLSelectElement) {
+            modelSelectControl.dispatchEvent(new Event('change'));
+        }
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         if (!quiet) toastr.success(t`Model set to "${newSelectedOption.text}"`);
         return newSelectedOption.value;
@@ -7272,11 +7308,15 @@ async function setApiUrlCallback({ api = null, connect = 'true', quiet = 'false'
         }
 
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#custom_api_url_text').val(url).trigger('input');
+        const customApiUrlText = document.getElementById('custom_api_url_text');
+        if (customApiUrlText instanceof HTMLInputElement) {
+            customApiUrlText.value = url;
+            customApiUrlText.dispatchEvent(new Event('input'));
+        }
 
         if (autoConnect) {
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#api_button_openai').trigger('click');
+            document.getElementById('api_button_openai')?.click();
         }
 
         return url;
@@ -7302,11 +7342,15 @@ async function setApiUrlCallback({ api = null, connect = 'true', quiet = 'false'
         }
 
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#zai_endpoint').val(url).trigger('input');
+        const zaiEndpoint = document.getElementById('zai_endpoint');
+        if (zaiEndpoint instanceof HTMLInputElement) {
+            zaiEndpoint.value = url;
+            zaiEndpoint.dispatchEvent(new Event('input'));
+        }
 
         if (autoConnect) {
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#api_button_openai').trigger('click');
+            document.getElementById('api_button_openai')?.click();
         }
 
         return oai_settings.zai_endpoint || ZAI_ENDPOINT.COMMON;
@@ -7332,11 +7376,15 @@ async function setApiUrlCallback({ api = null, connect = 'true', quiet = 'false'
         }
 
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#siliconflow_endpoint').val(url).trigger('input');
+        const siliconflowEndpoint = document.getElementById('siliconflow_endpoint');
+        if (siliconflowEndpoint instanceof HTMLInputElement) {
+            siliconflowEndpoint.value = url;
+            siliconflowEndpoint.dispatchEvent(new Event('input'));
+        }
 
         if (autoConnect) {
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#api_button_openai').trigger('click');
+            document.getElementById('api_button_openai')?.click();
         }
 
         return oai_settings.siliconflow_endpoint || SILICONFLOW_ENDPOINT.GLOBAL;
@@ -7362,11 +7410,15 @@ async function setApiUrlCallback({ api = null, connect = 'true', quiet = 'false'
         }
 
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#minimax_endpoint').val(url).trigger('input');
+        const minimaxEndpoint = document.getElementById('minimax_endpoint');
+        if (minimaxEndpoint instanceof HTMLInputElement) {
+            minimaxEndpoint.value = url;
+            minimaxEndpoint.dispatchEvent(new Event('input'));
+        }
 
         if (autoConnect) {
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#api_button_openai').trigger('click');
+            document.getElementById('api_button_openai')?.click();
         }
 
         return oai_settings.minimax_endpoint || MINIMAX_ENDPOINT.GLOBAL;
@@ -7396,11 +7448,15 @@ async function setApiUrlCallback({ api = null, connect = 'true', quiet = 'false'
         }
 
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#vertexai_region').val(url).trigger('input');
+        const vertexaiRegion = document.getElementById('vertexai_region');
+        if (vertexaiRegion instanceof HTMLInputElement) {
+            vertexaiRegion.value = url;
+            vertexaiRegion.dispatchEvent(new Event('input'));
+        }
 
         if (autoConnect) {
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#api_button_openai').trigger('click');
+            document.getElementById('api_button_openai')?.click();
         }
 
         return oai_settings.vertexai_region || defaultRegion;
@@ -7420,14 +7476,18 @@ async function setApiUrlCallback({ api = null, connect = 'true', quiet = 'false'
         }
 
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#api_url_text').val(url).trigger('input');
+        const apiUrlText = document.getElementById('api_url_text');
+        if (apiUrlText instanceof HTMLInputElement) {
+            apiUrlText.value = url;
+            apiUrlText.dispatchEvent(new Event('input'));
+        }
         // trigger blur debounced, so we hide the autocomplete menu
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        setTimeout(() => $('#api_url_text').trigger('blur'), 1);
+        setTimeout(() => document.getElementById('api_url_text')?.dispatchEvent(new Event('blur')), 1);
 
         if (autoConnect) {
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#api_button').trigger('click');
+            document.getElementById('api_button')?.click();
         }
 
         return kai_settings.api_server ?? '';
@@ -7471,15 +7531,19 @@ async function setApiUrlCallback({ api = null, connect = 'true', quiet = 'false'
 
     // else, we want to actually set the url
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(inputSelector).val(url).trigger('input');
+    const inputEl = document.querySelector(inputSelector);
+    if (inputEl instanceof HTMLInputElement) {
+        inputEl.value = url;
+        inputEl.dispatchEvent(new Event('input'));
+    }
     // trigger blur debounced, so we hide the autocomplete menu
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    setTimeout(() => $(inputSelector).trigger('blur'), 1);
+    setTimeout(() => document.querySelector(inputSelector)?.dispatchEvent(new Event('blur')), 1);
 
     // Trigger the auto connect via connect button, if requested
     if (autoConnect) {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#api_button_textgenerationwebui').trigger('click');
+        document.getElementById('api_button_textgenerationwebui')?.click();
     }
 
     // We still re-acquire the value, as it might have been modified by the validation on connect
