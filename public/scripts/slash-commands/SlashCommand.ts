@@ -449,7 +449,7 @@ export class SlashCommand {
                 help.innerHTML = helpString;
                 for (const code of help.querySelectorAll('pre > code')) {
                     code.classList.add('language-stscript');
-                    hljs.highlightElement(/**@type {HTMLElement}*/(code));
+                    hljs.highlightElement(code as HTMLElement);
                 }
                 frag.append(help);
             }

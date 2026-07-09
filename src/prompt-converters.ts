@@ -1,4 +1,3 @@
-// @ts-expect-error TS(1192) FIXME: Module '"node:crypto"' has no default export.
 import crypto from 'node:crypto';
 import { getConfigValue, tryParse } from './util.js';
 
@@ -837,7 +836,6 @@ export function convertMistralMessages(messages: Message[], names: PromptNames) 
                 }
                 // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
                 if (message.role === 'tool' && messages[i + 1].role === 'user') {
-                    // @ts-expect-error TS(2339) FIXME: Property 'findLastIndex' does not exist on type 'M... Remove this comment to see the full error message
                     const lastUserMessage = messages.slice(0, i).findLastIndex((m: Message) => m.role === 'user' && m.content);
                     if (lastUserMessage !== -1) {
                         // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.

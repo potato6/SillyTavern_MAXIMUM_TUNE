@@ -1,6 +1,4 @@
-// @ts-expect-error TS(1192) FIXME: Module '"fs"' has no default export.
 import fs from 'fs';
-// @ts-expect-error TS(1259) FIXME: Module '"path"' can only be default-imported using... Remove this comment to see the full error message
 import path from 'path';
 import { serverDirectory } from './server-directory.js';
 

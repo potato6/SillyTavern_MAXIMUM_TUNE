@@ -1,4 +1,3 @@
-// @ts-expect-error TS(1259) FIXME: Module '"node:process"' can only be default-import... Remove this comment to see the full error message
 import process from 'node:process';
 import { setConfigFilePath } from './src/util.js';
 
@@ -18,9 +17,8 @@ if (!userAccount) {
  */
 async function main() {
     setConfigFilePath(configPath);
-    // @ts-expect-error TS(1323) FIXME: Dynamic imports are only supported when the '--mod... Remove this comment to see the full error message
     const { recoverPassword } = await import('./src/recover-password.js');
-    await recoverPassword(configPath, userAccount, userPassword);
+    await recoverPassword(configPath, userAccount!, userPassword!);
 }
 
 main();

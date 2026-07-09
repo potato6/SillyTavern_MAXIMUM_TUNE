@@ -4,15 +4,10 @@
  */
 
 import * as fs from 'node:fs/promises';
-// @ts-expect-error TS(1259) FIXME: Module '"node:path"' can only be default-imported ... Remove this comment to see the full error message
 import path from 'node:path';
-// @ts-expect-error TS(1192) FIXME: Module '"node:crypto"' has no default export.
 import crypto from 'node:crypto';
-// @ts-expect-error TS(2792) FIXME: Cannot find module 'image-size'. Did you mean to s... Remove this comment to see the full error message
 import { imageSize } from 'image-size';
-// @ts-expect-error TS(1259) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import writeFileAtomic from 'write-file-atomic';
-// @ts-expect-error TS(1259) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import express from 'express';
 import { inflateSync } from 'node:zlib';
 import { getConfigValue, isPathUnderParent, uuidv4 } from '../util.js';
@@ -461,7 +456,6 @@ export async function assignImagesToFolder(userDataRoot: string, folderId: strin
 
         // Validate: must be a backgrounds/ path, and no path-traversal segments
         const normalized = path.posix.normalize(posixPath);
-        // @ts-expect-error TS(7006) FIXME: Parameter 'seg' implicitly has an 'any' type.
         if (!normalized.startsWith('backgrounds/') || normalized.split('/').some(seg => seg === '..')) {
             throw new Error(`Invalid background path: '${posixPath}'`);
         }
@@ -514,7 +508,6 @@ export const router = express.Router();
  * POST /api/image-metadata/folders/get
  * List all virtual folders.
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/folders/get', async function (request, response) {
     try {
         const index = await readMetadataIndex(request.user.directories.root);
@@ -529,7 +522,6 @@ router.post('/folders/get', async function (request, response) {
  * POST /api/image-metadata/folders/create
  * Create a new folder. Body: { name: string }
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/folders/create', async function (request, response) {
     try {
         const { name } = request.body;
@@ -548,7 +540,6 @@ router.post('/folders/create', async function (request, response) {
  * POST /api/image-metadata/folders/set-thumbnails
  * Batch-set thumbnail files for multiple folders in one write. Body: { updates: [{id, thumbnailFile}] }
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/folders/set-thumbnails', async function (request, response) {
     try {
         const { updates } = request.body;
@@ -567,7 +558,6 @@ router.post('/folders/set-thumbnails', async function (request, response) {
  * POST /api/image-metadata/folders/update
  * Update a folder. Body: { id: string, name?: string, thumbnailFile?: string }
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/folders/update', async function (request, response) {
     try {
         const { id, ...updates } = request.body;
@@ -591,7 +581,6 @@ router.post('/folders/update', async function (request, response) {
  * POST /api/image-metadata/folders/delete
  * Delete a folder and unassign all images. Body: { id: string }
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/folders/delete', async function (request, response) {
     try {
         const { id } = request.body;
@@ -615,7 +604,6 @@ router.post('/folders/delete', async function (request, response) {
  * POST /api/image-metadata/folders/assign
  * Assign images to a folder. Body: { id: string, paths: string[] }
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/folders/assign', async function (request, response) {
     try {
         const { id, paths } = request.body;
@@ -642,7 +630,6 @@ router.post('/folders/assign', async function (request, response) {
  * POST /api/image-metadata/folders/unassign
  * Unassign images from a folder. Body: { id: string, paths: string[] }
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/folders/unassign', async function (request, response) {
     try {
         const { id, paths } = request.body;
@@ -664,7 +651,6 @@ router.post('/folders/unassign', async function (request, response) {
  * POST /api/image-metadata
  * Get metadata for image(s) by path.
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/', async function (request, response) {
     try {
         const { path: singlePath, paths, type } = request.body;
@@ -752,7 +738,6 @@ router.post('/', async function (request, response) {
  * Get all metadata from the index.
  * @param {string} [prefix] - Optional path prefix to filter results
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/all', async function (request, response) {
     try {
         const userDataRoot = request.user.directories.root;
@@ -782,7 +767,6 @@ router.post('/all', async function (request, response) {
  * POST /api/image-metadata/cleanup
  * Clean up orphaned metadata entries (files that no longer exist).
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/cleanup', async function (request, response) {
     try {
         const userDataRoot = request.user.directories.root;

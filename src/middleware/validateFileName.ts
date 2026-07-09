@@ -1,4 +1,3 @@
-// @ts-expect-error TS(1259) FIXME: Module '"node:path"' can only be default-imported ... Remove this comment to see the full error message
 import path from 'node:path';
 
 export const forbiddenRegExp = path.sep === '/' ? /[/\x00]/ : /[/\x00\\]/;
@@ -9,7 +8,6 @@ export const forbiddenRegExp = path.sep === '/' ? /[/\x00]/ : /[/\x00\\]/;
  * @returns {boolean} True if the object has a toString method, false otherwise
  */
 function hasToString(o: unknown) {
-    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
     return o != null && typeof o.toString === 'function';
 }
 

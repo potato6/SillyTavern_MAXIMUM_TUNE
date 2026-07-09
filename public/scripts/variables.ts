@@ -26,9 +26,7 @@ const MAX_LOOPS = 100;
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
 export function getLocalVariable(name, args = {}) {
-    // @ts-expect-error TS(2339) FIXME: Property 'variables' does not exist on type '{}'.
     if (!chat_metadata.variables) {
-        // @ts-expect-error TS(2339) FIXME: Property 'variables' does not exist on type '{}'.
         chat_metadata.variables = {};
     }
 
@@ -70,16 +68,13 @@ export function setLocalVariable(name, value, args = {}) {
         throw new Error('Variable name cannot be empty or undefined.');
     }
 
-    // @ts-expect-error TS(2339) FIXME: Property 'variables' does not exist on type '{}'.
     if (!chat_metadata.variables) {
-        // @ts-expect-error TS(2339) FIXME: Property 'variables' does not exist on type '{}'.
         chat_metadata.variables = {};
     }
 
     // @ts-expect-error TS(2339) FIXME: Property 'index' does not exist on type '{}'.
     if (args.index !== undefined) {
         try {
-            // @ts-expect-error TS(2339) FIXME: Property 'variables' does not exist on type '{}'.
             let localVariable = JSON.parse(chat_metadata.variables[name] ?? 'null');
             // @ts-expect-error TS(2339) FIXME: Property 'index' does not exist on type '{}'.
             const numIndex = Number(args.index);
@@ -96,13 +91,11 @@ export function setLocalVariable(name, value, args = {}) {
                 // @ts-expect-error TS(2339) FIXME: Property 'as' does not exist on type '{}'.
                 localVariable[numIndex] = convertValueType(value, args.as);
             }
-            // @ts-expect-error TS(2339) FIXME: Property 'variables' does not exist on type '{}'.
             chat_metadata.variables[name] = JSON.stringify(localVariable);
         } catch {
             // that didn't work
         }
     } else {
-        // @ts-expect-error TS(2339) FIXME: Property 'variables' does not exist on type '{}'.
         chat_metadata.variables[name] = value;
     }
     saveMetadataDebounced();
@@ -370,16 +363,13 @@ async function listVariablesCallback(args) {
 
     // Now the actual new return type handling
     const scope = String(args?.scope || '').toLowerCase().trim() || 'all';
-    // @ts-expect-error TS(2339) FIXME: Property 'variables' does not exist on type '{}'.
     if (!chat_metadata.variables) {
-        // @ts-expect-error TS(2339) FIXME: Property 'variables' does not exist on type '{}'.
         chat_metadata.variables = {};
     }
 
     const includeLocalVariables = scope === 'all' || scope === 'local';
     const includeGlobalVariables = scope === 'all' || scope === 'global';
 
-    // @ts-expect-error TS(2339) FIXME: Property 'variables' does not exist on type '{}'.
     const localVariables = includeLocalVariables ? Object.entries(chat_metadata.variables).map(([name, value]) => `${name}: ${value}`) : [];
     const globalVariables = includeGlobalVariables ? Object.entries(extension_settings.variables.global).map(([name, value]) => `${name}: ${value}`) : [];
 
@@ -397,7 +387,6 @@ async function listVariablesCallback(args) {
     };
 
     const jsonVariables = [
-        // @ts-expect-error TS(2339) FIXME: Property 'variables' does not exist on type '{}'.
         ...Object.entries(chat_metadata.variables).map(x => ({ key: x[0], value: x[1], scope: 'local' })),
         ...Object.entries(extension_settings.variables.global).map(x => ({ key: x[0], value: x[1], scope: 'global' })),
     ];
@@ -537,7 +526,6 @@ async function ifCallback(args, value) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
 export function existsLocalVariable(name) {
-    // @ts-expect-error TS(2339) FIXME: Property 'variables' does not exist on type '{}'.
     return chat_metadata.variables && chat_metadata.variables[name] !== undefined;
 }
 
@@ -719,7 +707,6 @@ export function deleteLocalVariable(name) {
         return '';
     }
 
-    // @ts-expect-error TS(2339) FIXME: Property 'variables' does not exist on type '{}'.
     delete chat_metadata.variables[name];
     saveMetadataDebounced();
     return '';

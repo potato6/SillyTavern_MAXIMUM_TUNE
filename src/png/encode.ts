@@ -1,4 +1,3 @@
-// @ts-expect-error TS(2792) FIXME: Cannot find module 'crc'. Did you mean to set the ... Remove this comment to see the full error message
 import { crc32 } from 'crc';
 
 /**

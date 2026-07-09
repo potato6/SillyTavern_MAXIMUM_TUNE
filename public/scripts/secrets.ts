@@ -582,7 +582,7 @@ export async function checkOpenRouterAuth() {
     const params = new URLSearchParams(location.search);
     const source = params.get('source');
     if (source === 'openrouter') {
-        const query = new URLSearchParams(params.get('query'));
+        const query = new URLSearchParams(params.get('query') ?? '');
         try {
             const code = query.get('code');
             if (!code) {

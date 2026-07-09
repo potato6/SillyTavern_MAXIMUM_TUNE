@@ -1,13 +1,8 @@
-// @ts-expect-error TS(1192) FIXME: Module '"node:fs"' has no default export.
 import fs from 'node:fs';
-// @ts-expect-error TS(1259) FIXME: Module '"node:path"' can only be default-imported ... Remove this comment to see the full error message
 import path from 'node:path';
-// @ts-expect-error TS(1192) FIXME: Module '"node:crypto"' has no default export.
 import crypto from 'node:crypto';
 
-// @ts-expect-error TS(1259) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import express from 'express';
-// @ts-expect-error TS(1259) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import writeFileAtomic from 'write-file-atomic';
 
 const readFile = fs.promises.readFile;
@@ -129,10 +124,8 @@ function parseTimestamp(timestamp: string | number | Date) {
 async function collectAndCreateStats(chatsPath: string, charactersPath: string) {
     const files = await readdir(charactersPath);
 
-    // @ts-expect-error TS(7006) FIXME: Parameter 'file' implicitly has an 'any' type.
     const pngFiles = files.filter((file) => file.endsWith('.png'));
 
-    // @ts-expect-error TS(7006) FIXME: Parameter 'file' implicitly has an 'any' type.
     const processingPromises = pngFiles.map((file) =>
         calculateStats(chatsPath, file),
     );
@@ -457,7 +450,6 @@ export const router = express.Router();
 /**
  * Handle a POST request to get the stats object
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/get', function (request, response) {
     const stats = STATS.get(request.user.profile.handle) || {};
     response.send(stats);
@@ -466,7 +458,6 @@ router.post('/get', function (request, response) {
 /**
  * Triggers the recreation of statistics from chat files.
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/recreate', async function (request, response) {
     try {
         await recreateStats(request.user.profile.handle, request.user.directories.chats, request.user.directories.characters);
@@ -480,7 +471,6 @@ router.post('/recreate', async function (request, response) {
 /**
  * Handle a POST request to update the stats object
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/update', function (request, response) {
     if (!request.body) return response.sendStatus(400);
     setCharStats(request.user.profile.handle, request.body);

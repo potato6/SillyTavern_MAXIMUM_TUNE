@@ -1,13 +1,8 @@
-// @ts-expect-error TS(1259) FIXME: Module '"node:path"' can only be default-imported ... Remove this comment to see the full error message
 import path from 'node:path';
-// @ts-expect-error TS(1192) FIXME: Module '"node:fs"' has no default export.
 import fs from 'node:fs';
 
-// @ts-expect-error TS(1259) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import express from 'express';
-// @ts-expect-error TS(2792) FIXME: Cannot find module 'sanitize-filename'. Did you me... Remove this comment to see the full error message
 import sanitize from 'sanitize-filename';
-// @ts-expect-error TS(2792) FIXME: Cannot find module 'simple-git'. Did you mean to s... Remove this comment to see the full error message
 import { CheckRepoActions, default as simpleGit } from 'simple-git';
 
 import { PUBLIC_DIRECTORIES } from '../constants.js';
@@ -65,7 +60,7 @@ async function checkIfRepoIsUpToDate(extensionPath: string) {
 
     return {
         isUpToDate: log.total === 0,
-        remoteUrl: remotes[0].refs.fetch, // URL of the remote repository
+        remoteUrl: remotes[0]!.refs.fetch, // URL of the remote repository
     };
 }
 
@@ -94,7 +89,6 @@ router.use(extensionsEnabledFeatureGuard);
  * @param {object} response - HTTP Response object used to respond to the HTTP request.
  * @returns {void}
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/install', async (request, response) => {
     try {
         const { url, global, branch } = request.body;
@@ -171,7 +165,6 @@ router.post('/install', async (request, response) => {
  * @param {object} response - HTTP Response object used to respond to the HTTP request.
  * @returns {void}
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/update', async (request, response) => {
     try {
         if (typeof request.body.extensionName !== 'string') {
@@ -220,7 +213,6 @@ router.post('/update', async (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/branches', async (request, response) => {
     try {
         if (typeof request.body.extensionName !== 'string') {
@@ -261,7 +253,6 @@ router.post('/branches', async (request, response) => {
         const result = [
             ...Object.values(localBranches.branches),
             ...Object.values(remoteBranches.branches),
-        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         ].map(b => ({ current: b.current, commit: b.commit, name: b.name, label: b.label }));
 
         return response.send(result);
@@ -271,7 +262,6 @@ router.post('/branches', async (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/switch', async (request, response) => {
     try {
         if (typeof request.body.extensionName !== 'string') {
@@ -335,7 +325,6 @@ router.post('/switch', async (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/move', async (request, response) => {
     try {
         if (typeof request.body.extensionName !== 'string') {
@@ -392,7 +381,6 @@ router.post('/move', async (request, response) => {
  * @param {object} response - HTTP Response object used to respond to the HTTP request.
  * @returns {void}
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/version', async (request, response) => {
     try {
         if (typeof request.body.extensionName !== 'string') {
@@ -446,7 +434,6 @@ router.post('/version', async (request, response) => {
  * @param {object} response - HTTP Response object used to respond to the HTTP request.
  * @returns {void}
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/delete', async (request, response) => {
     try {
         if (typeof request.body.extensionName !== 'string') {
@@ -485,7 +472,6 @@ router.post('/delete', async (request, response) => {
  * Discover the extension folders
  * If the folder is called third-party, search for subfolders instead
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.get('/discover', function (request, response) {
     if (!fs.existsSync(path.join(request.user.directories.extensions))) {
         fs.mkdirSync(path.join(request.user.directories.extensions));
@@ -498,30 +484,22 @@ router.get('/discover', function (request, response) {
     // Get all folders in system extensions folder, excluding third-party
     const builtInExtensions = fs
         .readdirSync(PUBLIC_DIRECTORIES.extensions)
-        // @ts-expect-error TS(7006) FIXME: Parameter 'f' implicitly has an 'any' type.
         .filter(f => fs.statSync(path.join(PUBLIC_DIRECTORIES.extensions, f)).isDirectory())
-        // @ts-expect-error TS(7006) FIXME: Parameter 'f' implicitly has an 'any' type.
         .filter(f => f !== 'third-party')
-        // @ts-expect-error TS(7006) FIXME: Parameter 'f' implicitly has an 'any' type.
         .map(f => ({ type: 'system', name: f }));
 
     // Get all folders in local extensions folder
     const userExtensions = fs
         .readdirSync(path.join(request.user.directories.extensions))
-        // @ts-expect-error TS(7006) FIXME: Parameter 'f' implicitly has an 'any' type.
         .filter(f => fs.statSync(path.join(request.user.directories.extensions, f)).isDirectory())
-        // @ts-expect-error TS(7006) FIXME: Parameter 'f' implicitly has an 'any' type.
         .map(f => ({ type: 'local', name: `third-party/${f}` }));
 
     // Get all folders in global extensions folder
     // In case of a conflict, the extension will be loaded from the user folder
     const globalExtensions = fs
         .readdirSync(PUBLIC_DIRECTORIES.globalExtensions)
-        // @ts-expect-error TS(7006) FIXME: Parameter 'f' implicitly has an 'any' type.
         .filter(f => fs.statSync(path.join(PUBLIC_DIRECTORIES.globalExtensions, f)).isDirectory())
-        // @ts-expect-error TS(7006) FIXME: Parameter 'f' implicitly has an 'any' type.
         .map(f => ({ type: 'global', name: `third-party/${f}` }))
-        // @ts-expect-error TS(7006) FIXME: Parameter 'f' implicitly has an 'any' type.
         .filter(f => !userExtensions.some(e => e.name === f.name));
 
     // Combine all extensions

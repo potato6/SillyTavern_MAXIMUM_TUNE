@@ -1,11 +1,7 @@
-// @ts-expect-error TS(1192) FIXME: Module '"node:crypto"' has no default export.
 import crypto from 'node:crypto';
 
-// @ts-expect-error TS(1259) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import storage from 'node-persist';
-// @ts-expect-error TS(1259) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import express from 'express';
-// @ts-expect-error TS(2792) FIXME: Cannot find module 'rate-limiter-flexible'. Did yo... Remove this comment to see the full error message
 import { RateLimiterMemory, RateLimiterRes } from 'rate-limiter-flexible';
 import { getIpAddress, retryAfter } from '../express-common.js';
 import { color, Cache, getConfigValue } from '../util.js';
@@ -33,7 +29,6 @@ const recoverLimiter = new RateLimiterMemory({
     duration: 300,
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter '_request' implicitly has an 'any' type.
 router.post('/list', async (_request, response) => {
     try {
         if (DISCREET_LOGIN) {
@@ -41,14 +36,11 @@ router.post('/list', async (_request, response) => {
         }
 
         /** @type {import('../users.js').User[]} */
-        // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
         const users = await storage.values(x => x.key.startsWith(KEY_PREFIX));
 
         /** @type {Promise<import('../users.js').UserViewModel>[]} */
         const viewModelPromises = users
-            // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
             .filter(x => x.enabled)
-            // @ts-expect-error TS(7006) FIXME: Parameter 'user' implicitly has an 'any' type.
             .map(user => new Promise(async (resolve) => {
                 getUserAvatar(user.handle).then(avatar =>
                     resolve({
@@ -71,7 +63,6 @@ router.post('/list', async (_request, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/login', async (request, response) => {
     try {
         if (!request.body.handle) {
@@ -121,7 +112,6 @@ router.post('/login', async (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/recover-step1', async (request, response) => {
     try {
         if (!request.body.handle) {
@@ -162,7 +152,6 @@ router.post('/recover-step1', async (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/recover-step2', async (request, response) => {
     try {
         if (!request.body.handle || !request.body.code) {

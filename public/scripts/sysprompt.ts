@@ -30,9 +30,7 @@ const $contentBlock = $('#SystemPromptBlock');
  */
 async function migrateSystemPromptFromInstructMode() {
     if ('system_prompt' in power_user.instruct) {
-        // @ts-expect-error TS(2339) FIXME: Property 'system_prompt' does not exist on type '{... Remove this comment to see the full error message
         const prompt = String(power_user.instruct.system_prompt);
-        // @ts-expect-error TS(2339) FIXME: Property 'system_prompt' does not exist on type '{... Remove this comment to see the full error message
         delete power_user.instruct.system_prompt;
         power_user.sysprompt.enabled = power_user.instruct.enabled;
         power_user.sysprompt.content = prompt;
@@ -186,7 +184,7 @@ function selectSystemPromptCallback(args, name) {
             return '';
         }
 
-        foundName = result[0].item;
+        foundName = result[0]!.item;
     }
 
     $select.val(foundName).trigger('change');

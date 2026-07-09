@@ -1,12 +1,10 @@
 import fetch from 'node-fetch';
-// @ts-expect-error TS(1259) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import express from 'express';
 
 import { readSecret, SECRET_KEYS } from './secrets.js';
 
 export const router = express.Router();
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/caption-image', async (request, response) => {
     try {
         const mimeType = request.body.image.split(';')[0].split(':')[1];
@@ -52,7 +50,7 @@ router.post('/caption-image', async (request, response) => {
         }
 
         /** @type {any} */
-        const generateResponseJson = await result.json();
+        const generateResponseJson = await result.json() as any;
         const caption = generateResponseJson.content[0].text;
         console.debug('Claude response:', generateResponseJson);
 

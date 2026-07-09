@@ -1,14 +1,9 @@
-// @ts-expect-error TS(1192) FIXME: Module '"node:fs"' has no default export.
 import fs from 'node:fs';
 import { promises as fsPromises } from 'node:fs';
-// @ts-expect-error TS(1259) FIXME: Module '"node:path"' can only be default-imported ... Remove this comment to see the full error message
 import path from 'node:path';
 
-// @ts-expect-error TS(1259) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import express from 'express';
-// @ts-expect-error TS(2792) FIXME: Cannot find module 'sanitize-filename'. Did you me... Remove this comment to see the full error message
 import sanitize from 'sanitize-filename';
-// @ts-expect-error TS(2305) FIXME: Module '"write-file-atomic"' has no exported membe... Remove this comment to see the full error message
 import { sync as writeFileAtomicSync, default as writeFileAtomic } from 'write-file-atomic';
 
 import { color, tryParse } from '../util.js';
@@ -40,11 +35,9 @@ export async function migrateGroupChatsMetadataFormat(userDirectories: Record<st
     for (const userDirs of userDirectories) {
         try {
             let anyDataMigrated = false;
-            const backupPath = path.join(userDirs.backups, '_group_metadata_update');
-            // @ts-expect-error TS(2769) FIXME: No overload matches this call.
-            const groupFiles = await fsPromises.readdir(userDirs.groups, { withFileTypes: true });
-            // @ts-expect-error TS(2769) FIXME: No overload matches this call.
-            const groupChatFiles = await fsPromises.readdir(userDirs.groupChats, { withFileTypes: true });
+            const backupPath = path.join(userDirs.backups!, '_group_metadata_update');
+            const groupFiles = await fsPromises.readdir(userDirs.groups!, { withFileTypes: true });
+            const groupChatFiles = await fsPromises.readdir(userDirs.groupChats!, { withFileTypes: true });
             for (const groupFile of groupFiles) {
                 try {
                     const isJsonFile = groupFile.isFile() && path.extname(groupFile.name) === '.json';
@@ -73,13 +66,12 @@ export async function migrateGroupChatsMetadataFormat(userDirectories: Record<st
                     for (const chatId of groupData.chats) {
                         try {
                             const chatFileName = sanitize(`${chatId}.jsonl`);
-                            // @ts-expect-error TS(2339) FIXME: Property 'isFile' does not exist on type 'string'.
                             const chatFileDirent = groupChatFiles.find(f => f.isFile() && f.name === chatFileName);
                             if (!chatFileDirent) {
                                 console.warn(color.yellow(`Group chat file ${chatId} not found, skipping migration.`));
                                 continue;
                             }
-                            const chatFilePath = path.join(userDirs.groupChats, chatFileName);
+                            const chatFilePath = path.join(userDirs.groupChats!, chatFileName);
                             const chatMetadata = allMetadata[chatId] || {};
                             const chatDataRaw = await fsPromises.readFile(chatFilePath, 'utf8');
                             const chatData = chatDataRaw.split('\n').filter(line => line.trim()).map(line => tryParse(line)).filter(Boolean);
@@ -118,7 +110,6 @@ export async function migrateGroupChatsMetadataFormat(userDirectories: Record<st
     }
 }
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/all', (request, response) => {
     const groups: object[] = [];
 
@@ -126,12 +117,9 @@ router.post('/all', (request, response) => {
         fs.mkdirSync(request.user.directories.groups);
     }
 
-    // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
     const files = fs.readdirSync(request.user.directories.groups).filter(x => path.extname(x) === '.json');
-    // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
     const chats = fs.readdirSync(request.user.directories.groupChats).filter(x => path.extname(x) === '.jsonl');
 
-    // @ts-expect-error TS(7006) FIXME: Parameter 'file' implicitly has an 'any' type.
     files.forEach(function (file) {
         try {
             const filePath = path.join(request.user.directories.groups, file);
@@ -165,7 +153,6 @@ router.post('/all', (request, response) => {
     return response.send(groups);
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/create', (request, response) => {
     if (!request.body) {
         return response.sendStatus(400);
@@ -200,7 +187,6 @@ router.post('/create', (request, response) => {
     return response.send(groupMetadata);
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/edit', getFileNameValidationFunction('id'), (request, response) => {
     if (!request.body || !request.body.id) {
         return response.sendStatus(400);
@@ -214,7 +200,6 @@ router.post('/edit', getFileNameValidationFunction('id'), (request, response) =>
     return response.send({ ok: true });
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/delete', getFileNameValidationFunction('id'), async (request, response) => {
     if (!request.body || !request.body.id) {
         return response.sendStatus(400);

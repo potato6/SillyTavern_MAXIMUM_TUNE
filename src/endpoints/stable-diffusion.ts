@@ -1,17 +1,11 @@
-// @ts-expect-error TS(1192) FIXME: Module '"node:fs"' has no default export.
 import fs from 'node:fs';
-// @ts-expect-error TS(1259) FIXME: Module '"node:path"' can only be default-imported ... Remove this comment to see the full error message
 import path from 'node:path';
 
-// @ts-expect-error TS(1259) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import express from 'express';
 import fetch from 'node-fetch';
-// @ts-expect-error TS(2792) FIXME: Cannot find module 'sanitize-filename'. Did you me... Remove this comment to see the full error message
 import sanitize from 'sanitize-filename';
 import { sync as writeFileAtomicSync } from 'write-file-atomic';
-// @ts-expect-error TS(2792) FIXME: Cannot find module 'es-toolkit/compat'. Did you me... Remove this comment to see the full error message
 import { unset } from 'es-toolkit/compat';
-// @ts-expect-error TS(1192) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import mime from 'mime-types';
 
 import { delay, getBasicAuthHeader, isValidUrl, tryParse } from '../util.js';
@@ -24,18 +18,15 @@ import { AIMLAPI_HEADERS } from '../constants.js';
  * @param {import('../users.js').UserDirectoryList} directories - User directories
  * @returns {string[]} List of comfy workflows
  */
-// @ts-expect-error TS(2694) FIXME: Namespace '"/mnt/DISCO/downloads/some_git_projects... Remove this comment to see the full error message
 function getComfyWorkflows(directories: import('../users.js').UserDirectoryList) {
     return fs
         .readdirSync(directories.comfyWorkflows)
-        // @ts-expect-error TS(7006) FIXME: Parameter 'file' implicitly has an 'any' type.
         .filter(file => file[0] !== '.' && file.toLowerCase().endsWith('.json'))
         .sort(Intl.Collator().compare);
 }
 
 export const router = express.Router();
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/ping', async (request, response) => {
     try {
         const url = new URL(request.body.url);
@@ -59,7 +50,6 @@ router.post('/ping', async (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/upscalers', async (request, response) => {
     try {
         /**
@@ -118,7 +108,6 @@ router.post('/upscalers', async (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/vaes', async (request, response) => {
     try {
         const autoUrl = new URL(request.body.url);
@@ -137,7 +126,6 @@ router.post('/vaes', async (request, response) => {
             fetch(forgeUrl, requestInit).then(r => r.ok ? r.json() : Promise.reject(r.statusText)),
         ]);
 
-        // @ts-expect-error TS(2339) FIXME: Property 'value' does not exist on type 'PromiseSe... Remove this comment to see the full error message
         const data = results.find(r => r.status === 'fulfilled')?.value;
 
         if (!Array.isArray(data)) {
@@ -152,7 +140,6 @@ router.post('/vaes', async (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/samplers', async (request, response) => {
     try {
         const url = new URL(request.body.url);
@@ -178,7 +165,6 @@ router.post('/samplers', async (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/schedulers', async (request, response) => {
     try {
         const url = new URL(request.body.url);
@@ -204,7 +190,6 @@ router.post('/schedulers', async (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/models', async (request, response) => {
     try {
         const url = new URL(request.body.url);
@@ -233,7 +218,6 @@ router.post('/models', async (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/get-model', async (request, response) => {
     try {
         const url = new URL(request.body.url);
@@ -253,7 +237,6 @@ router.post('/get-model', async (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/set-model', async (request, response) => {
     try {
         /**
@@ -315,7 +298,6 @@ router.post('/set-model', async (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/generate', async (request, response) => {
     try {
         try {
@@ -360,7 +342,6 @@ router.post('/generate', async (request, response) => {
 
         if (!result.ok) {
             const text = await result.text();
-            // @ts-expect-error TS(2769) FIXME: No overload matches this call.
             throw new Error('SD WebUI returned an error.', { cause: text });
         }
 
@@ -372,7 +353,6 @@ router.post('/generate', async (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/sd-next/upscalers', async (request, response) => {
     try {
         const url = new URL(request.body.url);
@@ -407,7 +387,6 @@ router.post('/sd-next/upscalers', async (request, response) => {
 
 const comfy = express.Router();
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 comfy.post('/ping', async (request, response) => {
     try {
         const url = new URL(request.body.url.replace(/\/+$/, '') + '/system_stats');
@@ -424,7 +403,6 @@ comfy.post('/ping', async (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 comfy.post('/samplers', async (request, response) => {
     try {
         const url = new URL(request.body.url.replace(/\/+$/, '') + '/object_info');
@@ -442,7 +420,6 @@ comfy.post('/samplers', async (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 comfy.post('/models', async (request, response) => {
     try {
         const url = new URL(request.body.url.replace(/\/+$/, '') + '/object_info');
@@ -483,7 +460,6 @@ comfy.post('/models', async (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 comfy.post('/schedulers', async (request, response) => {
     try {
         const url = new URL(request.body.url.replace(/\/+$/, '') + '/object_info');
@@ -501,7 +477,6 @@ comfy.post('/schedulers', async (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 comfy.post('/vaes', async (request, response) => {
     try {
         const url = new URL(request.body.url.replace(/\/+$/, '') + '/object_info');
@@ -519,7 +494,6 @@ comfy.post('/vaes', async (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 comfy.post('/workflows', async (request, response) => {
     try {
         const data = getComfyWorkflows(request.user.directories);
@@ -530,7 +504,6 @@ comfy.post('/workflows', async (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 comfy.post('/workflow', async (request, response) => {
     try {
         let filePath = path.join(request.user.directories.comfyWorkflows, sanitize(String(request.body.file_name)));
@@ -545,7 +518,6 @@ comfy.post('/workflow', async (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 comfy.post('/save-workflow', async (request, response) => {
     try {
         const filePath = path.join(request.user.directories.comfyWorkflows, sanitize(String(request.body.file_name)));
@@ -558,7 +530,6 @@ comfy.post('/save-workflow', async (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 comfy.post('/delete-workflow', async (request, response) => {
     try {
         const filePath = path.join(request.user.directories.comfyWorkflows, sanitize(String(request.body.file_name)));
@@ -572,7 +543,6 @@ comfy.post('/delete-workflow', async (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 comfy.post('/rename-workflow', getFileNameValidationFunction('old_name'), getFileNameValidationFunction('new_name'), async (request, response) => {
     try {
         const oldName = sanitize(String(request.body.old_name));
@@ -617,7 +587,6 @@ interface ComfyHistoryItem {
     }>;
 }
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 comfy.post('/generate', async (request, response) => {
     try {
         let item: ComfyHistoryItem | undefined;
@@ -666,7 +635,6 @@ comfy.post('/generate', async (request, response) => {
                 .join('\n') || '';
             throw new Error(`ComfyUI generation did not succeed.\n\n${errorMessages}`.trim());
         }
-        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         const outputs = Object.keys(item.outputs).map(it => item.outputs[it]);
         console.debug('ComfyUI outputs:', outputs);
         // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
@@ -693,7 +661,6 @@ comfy.post('/generate', async (request, response) => {
 
 const comfyRunPod = express.Router();
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 comfyRunPod.post('/ping', async (request, response) => {
     try {
         const key = readSecret(request.user.directories, SECRET_KEYS.COMFY_RUNPOD);
@@ -724,7 +691,6 @@ comfyRunPod.post('/ping', async (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 comfyRunPod.post('/generate', async (request, response) => {
     try {
         const key = readSecret(request.user.directories, SECRET_KEYS.COMFY_RUNPOD);
@@ -796,7 +762,6 @@ comfyRunPod.post('/generate', async (request, response) => {
 
 const together = express.Router();
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 together.post('/models', async (request, response) => {
     try {
         const key = readSecret(request.user.directories, SECRET_KEYS.TOGETHERAI);
@@ -836,7 +801,6 @@ together.post('/models', async (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 together.post('/generate', async (request, response) => {
     try {
         const key = readSecret(request.user.directories, SECRET_KEYS.TOGETHERAI);
@@ -894,7 +858,6 @@ together.post('/generate', async (request, response) => {
 
 const sdcpp = express.Router();
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 sdcpp.post('/ping', async (request, response) => {
     try {
         const url = new URL(request.body.url.replace(/\/+$/, '') + '/v1/images/generations');
@@ -911,7 +874,6 @@ sdcpp.post('/ping', async (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 sdcpp.post('/models', async (request, response) => {
     try {
         const url = new URL(request.body.url.replace(/\/+$/, '') + '/v1/models');
@@ -929,7 +891,6 @@ sdcpp.post('/models', async (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 sdcpp.post('/generate', async (request, response) => {
     try {
         const url = new URL(request.body.url.replace(/\/+$/, '') + '/sdapi/v1/txt2img');
@@ -970,7 +931,6 @@ sdcpp.post('/generate', async (request, response) => {
 
         if (!result.ok) {
             const text = await result.text();
-            // @ts-expect-error TS(2769) FIXME: No overload matches this call.
             throw new Error('stable-diffusion.cpp server returned an error.', { cause: text });
         }
 
@@ -984,7 +944,6 @@ sdcpp.post('/generate', async (request, response) => {
 
 const drawthings = express.Router();
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 drawthings.post('/ping', async (request, response) => {
     try {
         const url = new URL(request.body.url);
@@ -1005,7 +964,6 @@ drawthings.post('/ping', async (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 drawthings.post('/get-model', async (request, response) => {
     try {
         const url = new URL(request.body.url);
@@ -1024,7 +982,6 @@ drawthings.post('/get-model', async (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 drawthings.post('/get-upscaler', async (request, response) => {
     try {
         const url = new URL(request.body.url);
@@ -1043,7 +1000,6 @@ drawthings.post('/get-upscaler', async (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 drawthings.post('/generate', async (request, response) => {
     try {
         console.debug('SD DrawThings API request:', request.body);
@@ -1067,7 +1023,6 @@ drawthings.post('/generate', async (request, response) => {
 
         if (!result.ok) {
             const text = await result.text();
-            // @ts-expect-error TS(2769) FIXME: No overload matches this call.
             throw new Error('SD DrawThings API returned an error.', { cause: text });
         }
 
@@ -1081,7 +1036,6 @@ drawthings.post('/generate', async (request, response) => {
 
 const pollinations = express.Router();
 
-// @ts-expect-error TS(7006) FIXME: Parameter '_request' implicitly has an 'any' type.
 pollinations.post('/models', async (_request, response) => {
     try {
         const modelsUrl = new URL('https://gen.pollinations.ai/image/models');
@@ -1107,7 +1061,6 @@ pollinations.post('/models', async (_request, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 pollinations.post('/generate', async (request, response) => {
     try {
         const key = readSecret(request.user.directories, SECRET_KEYS.POLLINATIONS);
@@ -1155,7 +1108,6 @@ pollinations.post('/generate', async (request, response) => {
 
 const stability = express.Router();
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 stability.post('/generate', async (request, response) => {
     try {
         const key = readSecret(request.user.directories, SECRET_KEYS.STABILITY);
@@ -1216,7 +1168,6 @@ stability.post('/generate', async (request, response) => {
 
 const huggingface = express.Router();
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 huggingface.post('/generate', async (request, response) => {
     try {
         const key = readSecret(request.user.directories, SECRET_KEYS.HUGGINGFACE);
@@ -1256,7 +1207,6 @@ huggingface.post('/generate', async (request, response) => {
 
 const electronhub = express.Router();
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 electronhub.post('/models', async (request, response) => {
     try {
         const key = readSecret(request.user.directories, SECRET_KEYS.ELECTRONHUB);
@@ -1300,7 +1250,6 @@ electronhub.post('/models', async (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 electronhub.post('/generate', async (request, response) => {
     try {
         const key = readSecret(request.user.directories, SECRET_KEYS.ELECTRONHUB);
@@ -1360,7 +1309,6 @@ electronhub.post('/generate', async (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 electronhub.post('/sizes', async (request, response) => {
     const result = await fetch(`https://api.electronhub.ai/v1/models/${request.body.model}`, {
         method: 'GET',
@@ -1387,7 +1335,6 @@ electronhub.post('/sizes', async (request, response) => {
 
 const chutes = express.Router();
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 chutes.post('/models', async (request, response) => {
     try {
         const key = readSecret(request.user.directories, SECRET_KEYS.CHUTES);
@@ -1422,7 +1369,6 @@ chutes.post('/models', async (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 chutes.post('/generate', async (request, response) => {
     try {
         const key = readSecret(request.user.directories, SECRET_KEYS.CHUTES);
@@ -1471,7 +1417,6 @@ chutes.post('/generate', async (request, response) => {
 
 const nanogpt = express.Router();
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 nanogpt.post('/models', async (request, response) => {
     try {
         const key = readSecret(request.user.directories, SECRET_KEYS.NANOGPT);
@@ -1510,7 +1455,6 @@ nanogpt.post('/models', async (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 nanogpt.post('/generate', async (request, response) => {
     try {
         const key = readSecret(request.user.directories, SECRET_KEYS.NANOGPT);
@@ -1553,7 +1497,6 @@ nanogpt.post('/generate', async (request, response) => {
 
 const bfl = express.Router();
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 bfl.post('/generate', async (request, response) => {
     try {
         const key = readSecret(request.user.directories, SECRET_KEYS.BFL);
@@ -1664,7 +1607,6 @@ bfl.post('/generate', async (request, response) => {
                 return response.send({ image: image });
             }
 
-            // @ts-expect-error TS(2769) FIXME: No overload matches this call.
             throw new Error('BFL failed to generate image.', { cause: statusData });
         }
     } catch (error) {
@@ -1675,7 +1617,6 @@ bfl.post('/generate', async (request, response) => {
 
 const falai = express.Router();
 
-// @ts-expect-error TS(7006) FIXME: Parameter '_request' implicitly has an 'any' type.
 falai.post('/models', async (_request, response) => {
     try {
         const modelsUrl = new URL('https://fal.ai/api/models?categories=text-to-image');
@@ -1723,7 +1664,6 @@ falai.post('/models', async (_request, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 falai.post('/generate', async (request, response) => {
     try {
         const key = readSecret(request.user.directories, SECRET_KEYS.FALAI);
@@ -1810,7 +1750,6 @@ falai.post('/generate', async (request, response) => {
                 return response.send({ image: image });
             }
 
-            // @ts-expect-error TS(2769) FIXME: No overload matches this call.
             throw new Error('FAL.AI failed to generate image.', { cause: statusData });
         }
     } catch (error) {
@@ -1822,7 +1761,6 @@ falai.post('/generate', async (request, response) => {
 
 const xai = express.Router();
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 xai.post('/generate', async (request, response) => {
     try {
         const key = readSecret(request.user.directories, SECRET_KEYS.XAI);
@@ -1880,7 +1818,6 @@ xai.post('/generate', async (request, response) => {
 
 const aimlapi = express.Router();
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 aimlapi.post('/models', async (request, response) => {
     try {
         const key = readSecret(request.user.directories, SECRET_KEYS.AIMLAPI);
@@ -1920,7 +1857,6 @@ aimlapi.post('/models', async (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
 aimlapi.post('/generate-image', async (req, res) => {
     try {
         const key = readSecret(req.user.directories, SECRET_KEYS.AIMLAPI);
@@ -1963,7 +1899,6 @@ aimlapi.post('/generate-image', async (req, res) => {
 
 const zai = express.Router();
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 zai.post('/generate', async (request, response) => {
     try {
         const key = readSecret(request.user.directories, SECRET_KEYS.ZAI);
@@ -2040,7 +1975,6 @@ zai.post('/generate', async (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 zai.post('/generate-video', async (request, response) => {
     try {
         const controller = new AbortController();
@@ -2144,7 +2078,6 @@ zai.post('/generate-video', async (request, response) => {
 
 const workersai = express.Router();
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 workersai.post('/models', async (request, response) => {
     try {
         const key = readSecret(request.user.directories, SECRET_KEYS.WORKERS_AI);
@@ -2193,7 +2126,6 @@ workersai.post('/models', async (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 workersai.post('/generate', async (request, response) => {
     try {
         const key = readSecret(request.user.directories, SECRET_KEYS.WORKERS_AI);

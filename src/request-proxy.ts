@@ -1,10 +1,6 @@
-// @ts-expect-error TS(1259) FIXME: Module '"node:process"' can only be default-import... Remove this comment to see the full error message
 import process from 'node:process';
-// @ts-expect-error TS(1192) FIXME: Module '"node:http"' has no default export.
 import http from 'node:http';
-// @ts-expect-error TS(1192) FIXME: Module '"node:https"' has no default export.
 import https from 'node:https';
-// @ts-expect-error TS(2792) FIXME: Cannot find module 'proxy-agent'. Did you mean to ... Remove this comment to see the full error message
 import { ProxyAgent } from 'proxy-agent';
 import { isValidUrl, color } from './util.js';
 

@@ -1,8 +1,6 @@
-// @ts-expect-error TS(1259) FIXME: Module '"node:path"' can only be default-imported ... Remove this comment to see the full error message
 import path from 'node:path';
 import type { Request, Response, NextFunction } from 'express';
 import { color, getConfigValue, safeReadFileSync } from '../util.js';
-// @ts-expect-error TS(2792) FIXME: Cannot find module 'host-validation-middleware'. D... Remove this comment to see the full error message
 import { isHostAllowed, hostValidationMiddleware } from 'host-validation-middleware';
 
 const knownHosts = new Set();

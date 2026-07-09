@@ -34,7 +34,6 @@ import {
 } from '../script.js';
 import { isMobile, initMovingUI, favsToHotswap } from './RossAscends-mods.js';
 import {
-    // @ts-expect-error TS(7034) FIXME: Variable 'groups' implicitly has type 'any[]' in s... Remove this comment to see the full error message
     groups,
     resetSelectedGroup,
 } from './group-chats.js';
@@ -449,7 +448,6 @@ export function fixMarkdown(text, forDisplay) {
     for (let i = matches.length - 1; i >= 0; i--) {
         // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         const matchText = matches[i][0];
-        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         const replacementText = matchText.replace(/(\*|_)([\t \u00a0\u1680\u2000-\u200a\u202f\u205f\u3000\ufeff]+)|([\t \u00a0\u1680\u2000-\u200a\u202f\u205f\u3000\ufeff]+)(\*|_)/g, '$1$4');
         // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         newText = newText.slice(0, matches[i].index) + replacementText + newText.slice(matches[i].index + matchText.length);
@@ -2737,7 +2735,6 @@ export function fuzzySearchGroups(searchValue, fuzzySearchCaches = null) {
         { name: 'id', weight: 1 },
     ];
 
-    // @ts-expect-error TS(7005) FIXME: Variable 'groups' implicitly has an 'any[]' type.
     return performFuzzySearch(fuzzySearchCategories.groups, groups, keys, searchValue, fuzzySearchCaches);
 }
 
@@ -3378,10 +3375,8 @@ async function doRandomChat(_, tagName) {
             // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             .filter(x => x[1].includes(tagId)) // Get only records that include the tag
             .map(x => x[0]) // Map the character avatar
-            // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
             .filter(x => characters.find(y => y.avatar === x)); // Filter out characters that don't exist
         const randomCharacter = taggedCharacters[Math.floor(Math.random() * taggedCharacters.length)];
-        // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
         const randomIndex = characters.findIndex(x => x.avatar === randomCharacter);
         if (randomIndex === -1) {
             return;

@@ -95,7 +95,6 @@ export class SlashCommandParser {
             // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             command.source = stack.find(it => it.includes('/scripts/extensions/')).replace(/^.*?\/scripts\/extensions\/([^/]+)\/.*$/, '$1');
         } else {
-            // @ts-expect-error TS(2339) FIXME: Property 'findLastIndex' does not exist on type 's... Remove this comment to see the full error message
             const idx = stack.findLastIndex(it => it.includes('at SlashCommandParser.')) + 1;
             // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             command.source = stack[idx].replace(/^.*?\/((?:scripts\/)?(?:[^/]+)\.js).*$/, '$1');
@@ -478,7 +477,7 @@ export class SlashCommandParser {
             PIPEBREAK,
             PIPE,
         );
-        hljs.registerLanguage('stscript', () => ({
+        hljs.registerLanguage('stscript', () => (/** @type {any} */ ({
             case_insensitive: false,
             keywords: [],
             contains: [
@@ -497,7 +496,7 @@ export class SlashCommandParser {
                 PIPEBREAK,
                 PIPE,
             ],
-        }));
+        })));
     }
 
     getHelpString() {
@@ -580,7 +579,6 @@ export class SlashCommandParser {
                         );
                     }
                 } catch { /* empty */ }
-                // @ts-expect-error TS(7022) FIXME: 'result' implicitly has type 'any' because it does... Remove this comment to see the full error message
                 const result = new AutoCompleteNameResult(
                     executor.unnamedArgumentList[0]?.value.toString(),
                     executor.start,

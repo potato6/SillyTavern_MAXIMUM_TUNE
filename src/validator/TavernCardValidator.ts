@@ -111,7 +111,6 @@ export class TavernCardValidator {
 
         const requiredFields = ['name', 'description', 'personality', 'scenario', 'first_mes', 'mes_example', 'creator_notes', 'system_prompt', 'post_history_instructions', 'alternate_greetings', 'tags', 'creator', 'character_version', 'extensions'];
         const isAllRequiredFieldsPresent = requiredFields.every(field => {
-            // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
             if (!Object.hasOwn(data, field)) {
                 // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'null'.
                 this.#lastValidationError = `data.${field}`;

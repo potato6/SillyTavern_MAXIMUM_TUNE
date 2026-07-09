@@ -1,11 +1,7 @@
-// @ts-expect-error TS(1259) FIXME: Module '"node:path"' can only be default-imported ... Remove this comment to see the full error message
 import path from 'node:path';
-// @ts-expect-error TS(1192) FIXME: Module '"node:fs"' has no default export.
 import fs from 'node:fs';
 
-// @ts-expect-error TS(1259) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import express from 'express';
-// @ts-expect-error TS(2792) FIXME: Cannot find module 'sanitize-filename'. Did you me... Remove this comment to see the full error message
 import sanitize from 'sanitize-filename';
 import { sync as writeFileSyncAtomic } from 'write-file-atomic';
 
@@ -14,7 +10,6 @@ import { clientRelativePath } from '../util.js';
 
 export const router = express.Router();
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/sanitize-filename', async (request, response) => {
     try {
         const fileName = String(request.body.fileName);
@@ -30,7 +25,6 @@ router.post('/sanitize-filename', async (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/upload', async (request, response) => {
     try {
         if (!request.body.name) {
@@ -58,7 +52,6 @@ router.post('/upload', async (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/delete', async (request, response) => {
     try {
         if (!request.body.path) {
@@ -83,7 +76,6 @@ router.post('/delete', async (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/verify', async (request, response) => {
     try {
         if (!Array.isArray(request.body.urls)) {

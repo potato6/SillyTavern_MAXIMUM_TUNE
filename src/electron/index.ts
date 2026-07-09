@@ -1,6 +1,5 @@
 // @ts-expect-error TS(2792) FIXME: Cannot find module 'electron'. Did you mean to set... Remove this comment to see the full error message
 import { app, BrowserWindow } from 'electron';
-// @ts-expect-error TS(1259) FIXME: Module '"path"' can only be default-imported using... Remove this comment to see the full error message
 import path from 'path';
 import { fileURLToPath } from 'url';
 import yargs from 'yargs';
@@ -42,16 +41,13 @@ function createSillyTavernWindow() {
  */
 function startServer() {
     return new Promise((_resolve, _reject) => {
-        // @ts-expect-error TS(7031) FIXME: Binding element 'url' implicitly has an 'any' type... Remove this comment to see the full error message
         serverEvents.addListener(EVENT_NAMES.SERVER_STARTED, ({ url }) => {
             appUrl = url.toString();
             createSillyTavernWindow();
         });
-        // @ts-expect-error TS(1343) FIXME: The 'import.meta' meta-property is only allowed wh... Remove this comment to see the full error message
         const sillyTavernRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
         process.chdir(sillyTavernRoot);
 
-        // @ts-expect-error TS(1323) FIXME: Dynamic imports are only supported when the '--mod... Remove this comment to see the full error message
         import('../server-global.js');
     });
 }

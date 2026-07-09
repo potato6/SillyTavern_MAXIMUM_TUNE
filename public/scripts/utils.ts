@@ -13,11 +13,9 @@ import { debounce_timeout } from './constants.js';
 import { Popup, POPUP_RESULT, POPUP_TYPE } from './popup.js';
 import { SlashCommandClosure } from './slash-commands/SlashCommandClosure.js';
 import { getTagsList } from './tags.js';
-// @ts-expect-error TS(7034) FIXME: Variable 'groups' implicitly has type 'any[]' in s... Remove this comment to see the full error message
 import { groups, selected_group } from './group-chats.js';
 import { getCurrentLocale, t } from './i18n.js';
 import { importWorldInfo } from './world-info.js';
-// @ts-expect-error TS(2792) FIXME: Cannot find module 'es-toolkit'. Did you mean to s... Remove this comment to see the full error message
 import { throttle as esThrottle } from 'es-toolkit';
 
 // @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
@@ -697,7 +695,6 @@ export function debounceAsync(func, timeout = debounce_timeout.standard) {
                 debouncePromise = null;
             }
         }, timeout);
-        // @ts-expect-error TS(7005) FIXME: Variable 'debouncePromise' implicitly has an 'any'... Remove this comment to see the full error message
         return debouncePromise;
     };
 }
@@ -1518,7 +1515,6 @@ export function getAudioDurationFromDataURL(dataUrl) {
  */
 export function getCharaFilename(chid = null, { manualAvatarKey = null } = {}) {
     const context = getContext();
-    // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
     const fileName = manualAvatarKey ?? context.characters[chid ?? context.characterId]?.avatar;
 
     return fileName?.replace(/\.[^/.]+$/, '') ?? null;
@@ -1975,7 +1971,6 @@ export async function promptForAvatarFile() {
                 resolve(null);
             }
         };
-        // @ts-expect-error TS(2339) FIXME: Property 'oncancel' does not exist on type 'HTMLIn... Remove this comment to see the full error message
         input.oncancel = () => resolve(null);
         input.click();
     });
@@ -2246,7 +2241,7 @@ export async function getReadableText(document, textSelector = 'body') {
     if (isProbablyReaderable(document)) {
         const parser = new Readability(document);
         const article = parser.parse();
-        return postProcessText(article.textContent, false);
+        return postProcessText(article?.textContent ?? '', false);
     }
 
     const elements = document.querySelectorAll(textSelector);
@@ -2264,9 +2259,7 @@ export async function getReadableText(document, textSelector = 'body') {
 // @ts-expect-error TS(7006) FIXME: Parameter 'blob' implicitly has an 'any' type.
 export async function extractTextFromPDF(blob) {
     if (!('pdfjsLib' in window)) {
-        // @ts-expect-error TS(1323) FIXME: Dynamic imports are only supported when the '--mod... Remove this comment to see the full error message
         await import('../lib/pdf.min.mjs');
-        // @ts-expect-error TS(1323) FIXME: Dynamic imports are only supported when the '--mod... Remove this comment to see the full error message
         await import('../lib/pdf.worker.min.mjs');
     }
 
@@ -2316,9 +2309,7 @@ export async function extractTextFromMarkdown(blob) {
 // @ts-expect-error TS(7006) FIXME: Parameter 'blob' implicitly has an 'any' type.
 export async function extractTextFromEpub(blob) {
     if (!('ePub' in window)) {
-        // @ts-expect-error TS(1343) FIXME: The 'import.meta' meta-property is only allowed wh... Remove this comment to see the full error message
         await loadFileToDocument(new URL('../lib/jszip.min.js', import.meta.url).href, 'js');
-        // @ts-expect-error TS(1343) FIXME: The 'import.meta' meta-property is only allowed wh... Remove this comment to see the full error message
         await loadFileToDocument(new URL('../lib/epub.min.js', import.meta.url).href, 'js');
     }
 
@@ -3024,7 +3015,6 @@ export function findChar({ name = null, allowAvatar = true, insensitive = true, 
     let filteredCharacters = characters;
     if (filteredByTags) {
         filteredCharacters = characters.filter(char => {
-            // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
             const charTags = getTagsList(char.avatar, false);
             // @ts-expect-error TS(2339) FIXME: Property 'every' does not exist on type 'never'.
             return filteredByTags.every(tagName => charTags.some(x => x.name == tagName));
@@ -3033,14 +3023,12 @@ export function findChar({ name = null, allowAvatar = true, insensitive = true, 
 
     // Get the current character(s)
     /** @type {any[]} */
-    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
     const currentChars = selected_group ? groups.find(group => group.id === selected_group)?.members.map(member => filteredCharacters.find(char => char.avatar === member))
-        // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
         : filteredCharacters.filter(char => characters[this_chid]?.avatar === char.avatar);
 
     // If we have a current char and prefer it, return that if it matches
     if (preferCurrentChar) {
-        const preferredCharSearch = currentChars.filter(matches);
+        const preferredCharSearch = (currentChars ?? []).filter(matches);
         if (preferredCharSearch.length > 1) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             if (!quiet) toastr.warning(t`Multiple characters found for given conditions.`);
@@ -3080,7 +3068,6 @@ export function findChar({ name = null, allowAvatar = true, insensitive = true, 
 // @ts-expect-error TS(7006) FIXME: Parameter 'char' implicitly has an 'any' type.
 export function getCharIndex(char) {
     if (!char) throw new Error('Character is undefined');
-    // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
     const index = characters.findIndex(c => c.avatar === char.avatar);
     if (index === -1) throw new Error(`Character not found: ${char.avatar}`);
     return index;
@@ -3267,7 +3254,7 @@ export function setupScrollToTop({ scrollContainerId, buttonId, drawerId, visibi
     }
 
     const updateButtonVisibility = () => btn.classList.toggle('visible', scrollContainer.scrollTop > visibilityThreshold);
-    const updateButtonVisibilityThrottled = esThrottle(updateButtonVisibility, 300, { leading: true, trailing: true });
+    const updateButtonVisibilityThrottled = esThrottle(updateButtonVisibility, 300, { edges: ['leading', 'trailing'] });
     const onScroll = () => updateButtonVisibilityThrottled();
     scrollContainer.addEventListener('scroll', onScroll, { passive: true });
 

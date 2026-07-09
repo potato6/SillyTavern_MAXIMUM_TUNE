@@ -1,5 +1,4 @@
 import fetch from 'node-fetch';
-// @ts-expect-error TS(1259) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import express from 'express';
 // @ts-expect-error TS(2792) FIXME: Cannot find module '@zeldafan0225/ai_horde'. Did y... Remove this comment to see the full error message
 import { AIHorde, ModelGenerationInputStableSamplers, ModelInterrogationFormTypes, HordeAsyncRequestStates } from '@zeldafan0225/ai_horde';
@@ -57,7 +56,6 @@ function sanitizeHordeImagePrompt(prompt: string) {
     return prompt;
 }
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/text-workers', async (request, response) => {
     try {
         const cachedWorkers = cache.get('workers');
@@ -72,7 +70,7 @@ router.post('/text-workers', async (request, response) => {
                 'Client-Agent': agent,
             },
         });
-        const data = await fetchResult.json();
+        const data = await fetchResult.json() as any;
         cache.set('workers', data);
         return response.send(data);
     } catch (error) {
@@ -86,7 +84,7 @@ router.post('/text-workers', async (request, response) => {
  */
 async function getHordeTextModelMetadata() {
     const response = await fetch(HORDE_TEXT_MODEL_METADATA_URL);
-    return await response.json();
+    return await response.json() as any;
 }
 
 /**
@@ -105,7 +103,6 @@ async function mergeModelsAndMetadata(models: Record<string, unknown>[], metadat
     });
 }
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/text-models', async (request, response) => {
     try {
         const cachedModels = cache.get('models');
@@ -120,7 +117,7 @@ router.post('/text-models', async (request, response) => {
             },
         });
 
-        let data = await fetchResult.json();
+        let data = await fetchResult.json() as any;
 
         // attempt to fetch and merge models metadata
         try {
@@ -138,7 +135,6 @@ router.post('/text-models', async (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
 router.post('/status', async (_, response) => {
     try {
         const agent = await getClientAgent();
@@ -155,7 +151,6 @@ router.post('/status', async (_, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/cancel-task', async (request, response) => {
     try {
         const taskId = request.body.taskId;
@@ -167,7 +162,7 @@ router.post('/cancel-task', async (request, response) => {
             },
         });
 
-        const data = await fetchResult.json();
+        const data = await fetchResult.json() as any;
         console.info(`Cancelled Horde task ${taskId}`);
         return response.send(data);
     } catch (error) {
@@ -176,7 +171,6 @@ router.post('/cancel-task', async (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/task-status', async (request, response) => {
     try {
         const taskId = request.body.taskId;
@@ -187,7 +181,7 @@ router.post('/task-status', async (request, response) => {
             },
         });
 
-        const data = await fetchResult.json();
+        const data = await fetchResult.json() as any;
         console.info(`Horde task ${taskId} status:`, data);
         return response.send(data);
     } catch (error) {
@@ -196,7 +190,6 @@ router.post('/task-status', async (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/generate-text', async (request, response) => {
     const apiKey = readSecret(request.user.directories, SECRET_KEYS.HORDE) || ANONYMOUS_KEY;
     const url = 'https://aihorde.net/api/v2/generate/text/async';
@@ -220,7 +213,7 @@ router.post('/generate-text', async (request, response) => {
             return response.send({ error: { message } });
         }
 
-        const data = await result.json();
+        const data = await result.json() as any;
         return response.send(data);
     } catch (error) {
         console.error(error);
@@ -228,7 +221,6 @@ router.post('/generate-text', async (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
 router.post('/sd-samplers', async (_, response) => {
     try {
         const samplers = Object.values(ModelGenerationInputStableSamplers);
@@ -239,7 +231,6 @@ router.post('/sd-samplers', async (_, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
 router.post('/sd-models', async (_, response) => {
     try {
         const ai_horde = await getHordeClient();
@@ -251,7 +242,6 @@ router.post('/sd-models', async (_, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/caption-image', async (request, response) => {
     try {
         const api_key_horde = readSecret(request.user.directories, SECRET_KEYS.HORDE) || ANONYMOUS_KEY;
@@ -302,7 +292,6 @@ router.post('/caption-image', async (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/user-info', async (request, response) => {
     const api_key_horde = readSecret(request.user.directories, SECRET_KEYS.HORDE);
 
@@ -327,7 +316,6 @@ router.post('/user-info', async (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/generate-image', async (request, response) => {
     if (!request.body.prompt) {
         return response.sendStatus(400);

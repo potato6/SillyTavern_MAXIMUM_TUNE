@@ -1,22 +1,16 @@
-// @ts-expect-error TS(1192) FIXME: Module '"node:fs"' has no default export.
 import fs from 'node:fs';
-// @ts-expect-error TS(1259) FIXME: Module '"node:path"' can only be default-imported ... Remove this comment to see the full error message
 import path from 'node:path';
 import { Buffer } from 'node:buffer';
-// @ts-expect-error TS(1192) FIXME: Module '"node:zlib"' has no default export.
 import zlib from 'node:zlib';
 import { promisify } from 'node:util';
 
-// @ts-expect-error TS(1259) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import express from 'express';
 import fetch from 'node-fetch';
 import { sync as writeFileAtomicSync } from 'write-file-atomic';
 
-// @ts-expect-error TS(2792) FIXME: Cannot find module '@agnai/web-tokenizers'. Did yo... Remove this comment to see the full error message
 import { Tokenizer } from '@agnai/web-tokenizers';
 // @ts-expect-error TS(2792) FIXME: Cannot find module '@agnai/sentencepiece-js'. Did ... Remove this comment to see the full error message
 import { SentencePieceProcessor } from '@agnai/sentencepiece-js';
-// @ts-expect-error TS(2792) FIXME: Cannot find module 'tiktoken'. Did you mean to set... Remove this comment to see the full error message
 import tiktoken from 'tiktoken';
 
 import { convertClaudePrompt } from '../prompt-converters.js';
@@ -420,7 +414,6 @@ async function countSentencepieceArrayTokens(tokenizer: SentencePieceTokenizer, 
  * @param {number[]} ids Token IDs
  * @returns {Promise<string[]>} Token chunks
  */
-// @ts-expect-error TS(2792) FIXME: Cannot find module 'tiktoken'. Did you mean to set... Remove this comment to see the full error message
 async function getTiktokenChunks(tokenizer: import('tiktoken').Tiktoken, ids: number[]) {
     const decoder = new TextDecoder();
     const chunks = [];
@@ -816,7 +809,6 @@ router.post('/command-a/decode', createWebTokenizerDecodingHandler(commandAToken
 router.post('/nemo/decode', createWebTokenizerDecodingHandler(nemoTokenizer));
 router.post('/deepseek/decode', createWebTokenizerDecodingHandler(deepseekTokenizer));
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
 router.post('/openai/encode', async function (req, res) {
     try {
         const queryModel = String(req.query.model || '');
@@ -890,7 +882,6 @@ router.post('/openai/encode', async function (req, res) {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
 router.post('/openai/decode', async function (req, res) {
     try {
         const queryModel = String(req.query.model || '');
@@ -964,7 +955,6 @@ router.post('/openai/decode', async function (req, res) {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
 router.post('/openai/count', async function (req, res) {
     try {
         if (!req.body) return res.sendStatus(400);
@@ -1086,7 +1076,6 @@ router.post('/openai/count', async function (req, res) {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/remote/kobold/count', async function (request, response) {
     if (!request.body) {
         return response.sendStatus(400);
@@ -1121,7 +1110,6 @@ router.post('/remote/kobold/count', async function (request, response) {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/remote/textgenerationwebui/encode', async function (request, response) {
     if (!request.body) {
         return response.sendStatus(400);

@@ -1,8 +1,6 @@
 import { Readable } from 'node:stream';
 import fetch from 'node-fetch';
-// @ts-expect-error TS(1259) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import express from 'express';
-// @ts-expect-error TS(2792) FIXME: Cannot find module 'es-toolkit/compat'. Did you me... Remove this comment to see the full error message
 import { pickBy } from 'es-toolkit/compat';
 
 import {
@@ -99,7 +97,6 @@ async function abortKoboldCppRequest(request: import('express').Request, url: st
 }
 
 //************** Ooba/OpenAI text completions API
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/status', async function (request, response) {
     if (!request.body) return response.sendStatus(400);
 
@@ -165,7 +162,7 @@ router.post('/status', async function (request, response) {
                 }
 
         /** @type {any} */
-        let data = await modelsReply.json();
+        let data = await modelsReply.json() as any;
 
         // Rewrap to OAI-like response
         if (apiType === TEXTGEN_TYPES.TOGETHERAI && Array.isArray(data)) {
@@ -201,7 +198,7 @@ router.post('/status', async function (request, response) {
 
                 if (modelInfoReply.ok) {
                     /** @type {any} */
-                    const modelInfo = await modelInfoReply.json();
+                    const modelInfo = await modelInfoReply.json() as any;
                     console.debug('Ooba model info:', modelInfo);
 
                     const modelName = modelInfo?.model_name;
@@ -218,7 +215,7 @@ router.post('/status', async function (request, response) {
 
                 if (modelInfoReply.ok) {
                     /** @type {any} */
-                    const modelInfo = await modelInfoReply.json();
+                    const modelInfo = await modelInfoReply.json() as any;
                     console.debug('Tabby model info:', modelInfo);
 
                     const modelName = modelInfo?.id;
@@ -240,7 +237,6 @@ router.post('/status', async function (request, response) {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/props', async function (request, response) {
     if (!request.body.api_server) return response.sendStatus(400);
 
@@ -265,7 +261,7 @@ router.post('/props', async function (request, response) {
         }
 
         /** @type {any} */
-        const props = await propsReply.json();
+        const props = await propsReply.json() as any;
         // TEMPORARY: llama.cpp's /props endpoint has a bug which replaces the last newline with a \0
         if (apiType === TEXTGEN_TYPES.LLAMACPP && props.chat_template && props.chat_template.endsWith('\u0000')) {
             props.chat_template = props.chat_template.slice(0, -1) + '\n';
@@ -279,7 +275,6 @@ router.post('/props', async function (request, response) {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/generate', async function (request, response) {
     if (!request.body) return response.sendStatus(400);
 
@@ -345,19 +340,16 @@ router.post('/generate', async function (request, response) {
         setAdditionalHeaders(request, args, baseUrl);
 
         if (request.body.api_type === TEXTGEN_TYPES.TOGETHERAI) {
-            // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
             request.body = pickBy(request.body, (_, key) => TOGETHERAI_KEYS.includes(key));
             args.body = JSON.stringify(request.body);
         }
 
         if (request.body.api_type === TEXTGEN_TYPES.INFERMATICAI) {
-            // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
             request.body = pickBy(request.body, (_, key) => INFERMATICAI_KEYS.includes(key));
             args.body = JSON.stringify(request.body);
         }
 
         if (request.body.api_type === TEXTGEN_TYPES.FEATHERLESS) {
-            // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
             request.body = pickBy(request.body, (_, key) => FEATHERLESS_KEYS.includes(key));
             args.body = JSON.stringify(request.body);
         }
@@ -367,7 +359,6 @@ router.post('/generate', async function (request, response) {
         }
 
         if (request.body.api_type === TEXTGEN_TYPES.GENERIC) {
-            // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
             request.body = pickBy(request.body, (_, key) => OPENAI_KEYS.includes(key));
             if (Array.isArray(request.body.stop)) { request.body.stop = request.body.stop.slice(0, 4); }
             args.body = JSON.stringify(request.body);
@@ -388,13 +379,11 @@ router.post('/generate', async function (request, response) {
                 request.body.provider.quantizations = request.body.quantizations;
             }
 
-            // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
             request.body = pickBy(request.body, (_, key) => OPENROUTER_KEYS.includes(key));
             args.body = JSON.stringify(request.body);
         }
 
         if (request.body.api_type === TEXTGEN_TYPES.VLLM) {
-            // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
             request.body = pickBy(request.body, (_, key) => VLLM_KEYS.includes(key));
             args.body = JSON.stringify(request.body);
         }
@@ -413,7 +402,6 @@ router.post('/generate', async function (request, response) {
                 stream: request.body.stream ?? false,
                 keep_alive: keepAlive,
                 raw: true,
-                // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
                 options: pickBy(request.body, (_, key) => OLLAMA_KEYS.includes(key)),
             });
         }
@@ -431,7 +419,7 @@ router.post('/generate', async function (request, response) {
 
             if (completionsReply.ok) {
                 /** @type {any} */
-                const data = await completionsReply.json();
+                const data = await completionsReply.json() as any;
                 console.debug('Endpoint response:', data);
 
                 // Map InfermaticAI response to OAI completions format
@@ -469,7 +457,6 @@ router.post('/generate', async function (request, response) {
 
 const ollama = express.Router();
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 ollama.post('/download', async function (request, response) {
     try {
         if (!request.body.name || !request.body.api_server) return response.sendStatus(400);
@@ -492,7 +479,7 @@ ollama.post('/download', async function (request, response) {
             return response.status(500).send({ error: true });
         }
 
-        console.debug('Ollama pull response:', await fetchResponse.json());
+        console.debug('Ollama pull response:', await fetchResponse.json() as any);
         return response.send({ ok: true });
     } catch (error) {
         console.error(error);
@@ -500,7 +487,6 @@ ollama.post('/download', async function (request, response) {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 ollama.post('/caption-image', async function (request, response) {
     try {
         if (!request.body.server_url || !request.body.model) {
@@ -528,7 +514,7 @@ ollama.post('/caption-image', async function (request, response) {
         }
 
         /** @type {any} */
-        const data = await fetchResponse.json();
+        const data = await fetchResponse.json() as any;
         console.debug('Ollama caption response:', data);
 
         const caption = data?.response || '';
@@ -547,7 +533,6 @@ ollama.post('/caption-image', async function (request, response) {
 
 const llamacpp = express.Router();
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 llamacpp.post('/props', async function (request, response) {
     try {
         if (!request.body.server_url) {
@@ -566,7 +551,7 @@ llamacpp.post('/props', async function (request, response) {
             return response.status(500).send({ error: true });
         }
 
-        const data = await fetchResponse.json();
+        const data = await fetchResponse.json() as any;
         console.debug('LlamaCpp props response:', data);
 
         return response.send(data);
@@ -576,7 +561,6 @@ llamacpp.post('/props', async function (request, response) {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 llamacpp.post('/slots', async function (request, response) {
     try {
         if (!request.body.server_url) {
@@ -616,7 +600,7 @@ llamacpp.post('/slots', async function (request, response) {
             return response.status(500).send({ error: true });
         }
 
-        const data = await fetchResponse.json();
+        const data = await fetchResponse.json() as any;
         console.debug('LlamaCpp slots response:', data);
 
         return response.send(data);
@@ -628,7 +612,6 @@ llamacpp.post('/slots', async function (request, response) {
 
 const tabby = express.Router();
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 tabby.post('/download', async function (request, response) {
     try {
         const baseUrl = String(request.body.api_server).replace(/\/$/, '');
@@ -649,7 +632,7 @@ tabby.post('/download', async function (request, response) {
 
         if (permissionResponse.ok) {
             /** @type {any} */
-            const permissionJson = await permissionResponse.json();
+            const permissionJson = await permissionResponse.json() as any;
 
             if (permissionJson.permission !== 'admin') {
                 return response.status(403).send({ error: true });

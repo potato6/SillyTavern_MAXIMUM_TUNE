@@ -1,5 +1,4 @@
 import { name1, name2, characters, getCharacterCardFieldsLazy, getGeneratingModel } from '../../../script.js';
-// @ts-expect-error TS(7034) FIXME: Variable 'groups' implicitly has type 'any[]' in s... Remove this comment to see the full error message
 import { groups, selected_group } from '../../../scripts/group-chats.js';
 import { logMacroGeneralError } from './MacroDiagnostics.js';
 // @ts-expect-error TS(2792) FIXME: Cannot find module '/scripts/utils.js'. Did you me... Remove this comment to see the full error message
@@ -201,10 +200,8 @@ function getGroupValue(ctx, { currentChar = null, includeMuted = false, filterOu
         return ctx.groupOverride;
     }
 
-    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
     if (!selected_group) return filterOutChar ? (includeUser || '') : (currentChar ?? '');
 
-    // @ts-expect-error TS(7005) FIXME: Variable 'groups' implicitly has an 'any[]' type.
     const groupEntry = Array.isArray(groups) ? groups.find(x => x && x.id === selected_group) : null;
     const members = /** @type {string[]} */ (groupEntry?.members ?? []);
     const disabledMembers = /** @type {string[]} */ (groupEntry?.disabled_members ?? []);
@@ -212,13 +209,9 @@ function getGroupValue(ctx, { currentChar = null, includeMuted = false, filterOu
     const names = Array.isArray(members)
         ? members
             .filter(((id) => includeMuted ? true : !disabledMembers.includes(id)))
-            // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
             .map(m => Array.isArray(characters) ? characters.find(c => c && c.avatar === m) : null)
-            // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
             .filter(c => !!c && typeof c.name === 'string')
-            // @ts-expect-error TS(2533) FIXME: Object is possibly 'null' or 'undefined'.
             .filter(c => !filterOutChar || c.name !== currentChar)
-            // @ts-expect-error TS(2533) FIXME: Object is possibly 'null' or 'undefined'.
             .map(c => c.name)
             .join(', ')
         : '';

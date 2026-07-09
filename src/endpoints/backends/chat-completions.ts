@@ -1,9 +1,6 @@
 /* eslint-disable dot-notation */
-// @ts-expect-error TS(1259) FIXME: Module '"node:process"' can only be default-import... Remove this comment to see the full error message
 import process from 'node:process';
-// @ts-expect-error TS(1192) FIXME: Module '"node:util"' has no default export.
 import util from 'node:util';
-// @ts-expect-error TS(1259) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import express from 'express';
 import fetch from 'node-fetch';
 
@@ -143,7 +140,7 @@ async function isOpenRouterModelCacheable(modelId: string) {
         }
 
         /** @type {Record<string, unknown>} */
-        const data = await response.json();
+        const data = await response.json() as any;
 
         if (!Array.isArray(data?.data)) {
             console.warn('OpenRouter API response format unexpected');
@@ -434,7 +431,7 @@ async function sendClaudeRequest(request: express.Request, response: express.Res
             }
 
             /** @type {Record<string, unknown>} */
-            const generateResponseJson = await generateResponse.json();
+            const generateResponseJson = await generateResponse.json() as any;
             const responseText = generateResponseJson?.content?.[0]?.text || '';
             console.debug('Claude response:', generateResponseJson);
 
@@ -770,7 +767,7 @@ async function sendMakerSuiteRequest(request: express.Request, response: express
             }
 
             /** @type {Record<string, unknown>} */
-            const generateResponseJson = await generateResponse.json();
+            const generateResponseJson = await generateResponse.json() as any;
 
             const candidates = generateResponseJson?.candidates;
             if (!candidates || candidates.length === 0) {
@@ -875,7 +872,7 @@ async function sendAI21Request(request: express.Request, response: express.Respo
                 const errorJson = tryParse(errorText) ?? { error: true };
                 return response.status(500).send(errorJson);
             }
-            const generateResponseJson = await generateResponse.json();
+            const generateResponseJson = await generateResponse.json() as any;
             console.debug('AI21 response:', generateResponseJson);
             return response.send(generateResponseJson);
         }
@@ -969,7 +966,7 @@ async function sendMistralAIRequest(request: express.Request, response: express.
                 const errorJson = tryParse(errorText) ?? { error: true };
                 return response.status(500).send(errorJson);
             }
-            const generateResponseJson = await generateResponse.json();
+            const generateResponseJson = await generateResponse.json() as any;
             console.debug('MistralAI response:', generateResponseJson);
             return response.send(generateResponseJson);
         }
@@ -1072,7 +1069,7 @@ async function sendCohereRequest(request: express.Request, response: express.Res
                 const errorJson = tryParse(errorText) ?? { error: true };
                 return response.status(500).send(errorJson);
             }
-            const generateResponseJson = await generateResponse.json();
+            const generateResponseJson = await generateResponse.json() as any;
             console.debug('Cohere response:', generateResponseJson);
             return response.send(generateResponseJson);
         }
@@ -1194,7 +1191,7 @@ async function sendDeepSeekRequest(request: express.Request, response: express.R
                 const errorJson = tryParse(errorText) ?? { error: true };
                 return response.status(500).send(errorJson);
             }
-            const generateResponseJson = await generateResponse.json();
+            const generateResponseJson = await generateResponse.json() as any;
             console.debug('DeepSeek response:', generateResponseJson);
             return response.send(generateResponseJson);
         }
@@ -1308,7 +1305,7 @@ async function sendXaiRequest(request: express.Request, response: express.Respon
                 const errorJson = tryParse(errorText) ?? { error: true };
                 return response.status(500).send(errorJson);
             }
-            const generateResponseJson = await generateResponse.json();
+            const generateResponseJson = await generateResponse.json() as any;
             console.debug('xAI response:', generateResponseJson);
             return response.send(generateResponseJson);
         }
@@ -1421,7 +1418,7 @@ async function sendAimlapiRequest(request: express.Request, response: express.Re
                 const errorJson = tryParse(errorText) ?? { error: true };
                 return response.status(500).send(errorJson);
             }
-            const generateResponseJson = await generateResponse.json();
+            const generateResponseJson = await generateResponse.json() as any;
             console.debug('AI/ML API response:', generateResponseJson);
             return response.send(generateResponseJson);
         }
@@ -1539,7 +1536,7 @@ async function sendElectronHubRequest(request: express.Request, response: expres
                 const errorJson = tryParse(errorText) ?? { error: true };
                 return response.status(500).send(errorJson);
             }
-            const generateResponseJson = await generateResponse.json();
+            const generateResponseJson = await generateResponse.json() as any;
             console.debug('Electron Hub response:', generateResponseJson);
             return response.send(generateResponseJson);
         }
@@ -1646,7 +1643,7 @@ async function sendChutesRequest(request: express.Request, response: express.Res
                 const errorJson = tryParse(errorText) ?? { error: true };
                 return response.status(500).send(errorJson);
             }
-            const generateResponseJson = await generateResponse.json();
+            const generateResponseJson = await generateResponse.json() as any;
             console.debug('Chutes response:', generateResponseJson);
             return response.send(generateResponseJson);
         }
@@ -1730,7 +1727,7 @@ async function sendMinimaxRequest(request: express.Request, response: express.Re
                 const errorJson = tryParse(errorText) ?? { error: true };
                 return response.status(500).send(errorJson);
             }
-            const generateResponseJson = await generateResponse.json();
+            const generateResponseJson = await generateResponse.json() as any;
             console.debug('MiniMax response:', generateResponseJson);
             return response.send(generateResponseJson);
         }
@@ -1829,7 +1826,7 @@ async function sendAzureOpenAIRequest(request: express.Request, response: expres
 
         if (fetchResponse.ok) {
             /** @type {Record<string, unknown>} */
-            const json = await fetchResponse.json();
+            const json = await fetchResponse.json() as any;
             console.debug('Azure OpenAI response:', json);
             return response.send(json);
         }
@@ -1850,7 +1847,6 @@ async function sendAzureOpenAIRequest(request: express.Request, response: expres
 
 export const router = express.Router();
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/status', async function (request, statusResponse) {
     try {
         if (!request.body) return statusResponse.sendStatus(400);
@@ -1947,7 +1943,7 @@ router.post('/status', async function (request, statusResponse) {
 
                 if (response.ok) {
                 /** @type {Record<string, unknown>} */
-                const data = await response.json();
+                const data = await response.json() as any;
                 // Transform Google AI Studio models to OpenAI format
                 const models = (data.models as Array<Record<string, unknown>>)
                     ?.filter((model) => (model.supportedGenerationMethods as string[])?.includes('generateContent'))
@@ -2026,7 +2022,7 @@ router.post('/status', async function (request, statusResponse) {
 
                 let modelResponse;
                 try {
-                    modelResponse = await modelRequest.json();
+                    modelResponse = await modelRequest.json() as any;
                 } catch {
                     modelResponse = { raw: 'Failed to parse JSON response from chat completions probe.' };
                 }
@@ -2081,7 +2077,7 @@ router.post('/status', async function (request, statusResponse) {
 
                 if (response.ok) {
                 /** @type {Record<string, unknown>} */
-                const data = await response.json();
+                const data = await response.json() as any;
                 const models = Array.isArray(data?.result)
                     ? (data.result as Array<Record<string, unknown>>).map((model) => ({
                     ...model,
@@ -2125,7 +2121,7 @@ router.post('/status', async function (request, statusResponse) {
 
         if (response.ok) {
             /** @type {Record<string, unknown>} */
-            let data = await response.json();
+            let data = await response.json() as any;
 
             if (request.body.chat_completion_source === CHAT_COMPLETION_SOURCES.POLLINATIONS && Array.isArray(data)) {
                 data = { data: data.map(model => ({ id: model.name, ...model })) };
@@ -2140,7 +2136,6 @@ router.post('/status', async function (request, statusResponse) {
                             return {
                                 ...model,
                                 pricing: {
-                                    // @ts-expect-error TS(2698) FIXME: Spread types may only be created from object types... Remove this comment to see the full error message
                                     ...model.pricing,
                                     // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                                     input: model.pricing.prompt,
@@ -2206,7 +2201,6 @@ router.post('/status', async function (request, statusResponse) {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/bias', async function (request, response) {
     if (!request.body || !Array.isArray(request.body))
         return response.sendStatus(400);
@@ -2292,7 +2286,6 @@ router.post('/bias', async function (request, response) {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/generate', async function (request, response) {
     try {
         if (!request.body) return response.status(400).send({ error: true });
@@ -2775,7 +2768,7 @@ router.post('/generate', async function (request, response) {
 
         if (fetchResponse.ok) {
             /** @type {Record<string, unknown>} */
-            const json = await fetchResponse.json();
+            const json = await fetchResponse.json() as any;
             console.debug('Chat Completion response:', json);
             return response.send(json);
         } else {
@@ -2814,7 +2807,6 @@ router.post('/generate', async function (request, response) {
 
 const multimodalModels = express.Router();
 
-// @ts-expect-error TS(7006) FIXME: Parameter '_req' implicitly has an 'any' type.
 multimodalModels.post('/pollinations', async (_req, res) => {
     try {
         const response = await fetch('https://gen.pollinations.ai/models');
@@ -2824,7 +2816,7 @@ multimodalModels.post('/pollinations', async (_req, res) => {
         }
 
         /** @type {Record<string, unknown>} */
-        const data = await response.json();
+        const data = await response.json() as any;
 
         if (!Array.isArray(data)) {
             return res.json([]);
@@ -2841,7 +2833,6 @@ multimodalModels.post('/pollinations', async (_req, res) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter '_req' implicitly has an 'any' type.
 multimodalModels.post('/aimlapi', async (_req, res) => {
     try {
         const response = await fetch('https://api.aimlapi.com/v1/models');
@@ -2851,7 +2842,7 @@ multimodalModels.post('/aimlapi', async (_req, res) => {
         }
 
         /** @type {Record<string, unknown>} */
-        const data = await response.json();
+        const data = await response.json() as any;
 
         if (!Array.isArray(data?.data)) {
             return res.json([]);
@@ -2865,7 +2856,6 @@ multimodalModels.post('/aimlapi', async (_req, res) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter '_req' implicitly has an 'any' type.
 multimodalModels.post('/nanogpt', async (_req, res) => {
     try {
         const response = await fetch('https://nano-gpt.com/api/v1/models?detailed=true');
@@ -2875,7 +2865,7 @@ multimodalModels.post('/nanogpt', async (_req, res) => {
         }
 
         /** @type {Record<string, unknown>} */
-        const data = await response.json();
+        const data = await response.json() as any;
 
         if (!Array.isArray(data?.data)) {
             return res.json([]);
@@ -2889,7 +2879,6 @@ multimodalModels.post('/nanogpt', async (_req, res) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter '_req' implicitly has an 'any' type.
 multimodalModels.post('/electronhub', async (_req, res) => {
     try {
         const response = await fetch('https://api.electronhub.ai/v1/models');
@@ -2899,7 +2888,7 @@ multimodalModels.post('/electronhub', async (_req, res) => {
         }
 
         /** @type {Record<string, unknown>} */
-        const data = await response.json();
+        const data = await response.json() as any;
         const multimodalModels = (data.data as Array<Record<string, unknown>>).filter((m) => (m.metadata as Record<string, unknown>)?.vision).map((m) => m.id);
         return res.json(multimodalModels);
     } catch (error) {
@@ -2908,7 +2897,6 @@ multimodalModels.post('/electronhub', async (_req, res) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
 multimodalModels.post('/chutes', async (req, res) => {
     try {
         const key = readSecret(req.user.directories, SECRET_KEYS.CHUTES);
@@ -2927,7 +2915,7 @@ multimodalModels.post('/chutes', async (req, res) => {
             return res.json([]);
         }
 
-        const data = await response.json();
+        const data = await response.json() as any;
 
         const modelsData = /** @type {{object: string, data: Array<{id: string, input_modalities?: string[]}>}} */ (data);
         const multimodalModels = modelsData.data
@@ -2940,7 +2928,6 @@ multimodalModels.post('/chutes', async (req, res) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
 multimodalModels.post('/mistral', async (req, res) => {
     try {
         const key = readSecret(req.user.directories, SECRET_KEYS.MISTRALAI);
@@ -2960,7 +2947,7 @@ multimodalModels.post('/mistral', async (req, res) => {
         }
 
         /** @type {Record<string, unknown>} */
-        const data = await response.json();
+        const data = await response.json() as any;
         const multimodalModels = (data.data as Array<Record<string, unknown>>).filter((m) => (m.capabilities as Record<string, unknown>)?.vision).map((m) => m.id);
         return res.json(multimodalModels);
     } catch (error) {
@@ -2969,7 +2956,6 @@ multimodalModels.post('/mistral', async (req, res) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
 multimodalModels.post('/xai', async (req, res) => {
     try {
         const key = readSecret(req.user.directories, SECRET_KEYS.XAI);
@@ -2990,7 +2976,7 @@ multimodalModels.post('/xai', async (req, res) => {
         }
 
         /** @type {Record<string, unknown>} */
-        const data = await response.json();
+        const data = await response.json() as any;
         const multimodalModels = (data.models as Array<Record<string, unknown>>).filter((m) => (m.input_modalities as string[])?.includes('image')).map((m) => m.id);
         if (!multimodalModels.includes('grok-4-0709')) {
             // The endpoint says it doesn't support images, but it does
@@ -3003,7 +2989,6 @@ multimodalModels.post('/xai', async (req, res) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
 multimodalModels.post('/moonshot', async (req, res) => {
     try {
         const key = readSecret(req.user.directories, SECRET_KEYS.MOONSHOT);
@@ -3023,7 +3008,7 @@ multimodalModels.post('/moonshot', async (req, res) => {
         }
 
         /** @type {Record<string, unknown>} */
-        const data = await response.json();
+        const data = await response.json() as any;
 
         const multimodalModels = (data.data as Array<Record<string, unknown>>).filter((m) => m.supports_image_in).map((m) => m.id);
         return res.json(multimodalModels);
@@ -3033,7 +3018,6 @@ multimodalModels.post('/moonshot', async (req, res) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
 multimodalModels.post('/workers_ai', async (req, res) => {
     try {
         const key = readSecret(req.user.directories, SECRET_KEYS.WORKERS_AI);
@@ -3054,7 +3038,7 @@ multimodalModels.post('/workers_ai', async (req, res) => {
         }
 
         /** @type {Record<string, unknown>} */
-        const data = await response.json();
+        const data = await response.json() as any;
         const models = Array.isArray(data?.result)
             ? (data.result as Array<Record<string, unknown>>)
                 .filter((m) => Array.isArray(m.properties) && (m.properties as Array<Record<string, unknown>>).some((p) => p.property_id === 'vision' && p.value === 'true'))
@@ -3069,7 +3053,6 @@ multimodalModels.post('/workers_ai', async (req, res) => {
 
 router.use('/multimodal-models', multimodalModels);
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/process', async function (request, response) {
     try {
         if (!Array.isArray(request.body.messages)) {

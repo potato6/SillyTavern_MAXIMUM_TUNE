@@ -1,5 +1,4 @@
 import { promises as fsPromises } from 'node:fs';
-// @ts-expect-error TS(1259) FIXME: Module '"node:path"' can only be default-imported ... Remove this comment to see the full error message
 import path from 'node:path';
 import { DEFAULT_AVATAR_PATH } from './constants.js';
 import { extractFileFromZipBuffer } from './util.js';
@@ -111,15 +110,10 @@ export class ByafParser {
                 return;
             }
             book.entries.push({
-                // @ts-expect-error TS(2322) FIXME: Type 'string[]' is not assignable to type 'never'.
                 keys: ByafParser.replaceMacros(item?.key).split(',').map(key => key.trim()).filter(Boolean),
-                // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'never'.
                 content: ByafParser.replaceMacros(item?.value),
-                // @ts-expect-error TS(2322) FIXME: Type '{}' is not assignable to type 'never'.
                 extensions: {},
-                // @ts-expect-error TS(2322) FIXME: Type 'boolean' is not assignable to type 'never'.
                 enabled: true,
-                // @ts-expect-error TS(2322) FIXME: Type 'number' is not assignable to type 'never'.
                 insertion_order: index,
             });
         });

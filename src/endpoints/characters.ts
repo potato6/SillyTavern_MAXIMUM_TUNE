@@ -1,23 +1,15 @@
-// @ts-expect-error TS(1259) FIXME: Module '"node:path"' can only be default-imported ... Remove this comment to see the full error message
 import path from 'node:path';
-// @ts-expect-error TS(1192) FIXME: Module '"node:fs"' has no default export.
 import fs from 'node:fs';
 import { promises as fsPromises } from 'node:fs';
 import { Buffer } from 'node:buffer';
 
-// @ts-expect-error TS(1259) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import express from 'express';
-// @ts-expect-error TS(2792) FIXME: Cannot find module 'sanitize-filename'. Did you me... Remove this comment to see the full error message
 import sanitize from 'sanitize-filename';
 import { sync as writeFileAtomicSync } from 'write-file-atomic';
-// @ts-expect-error TS(2792) FIXME: Cannot find module 'yaml'. Did you mean to set the... Remove this comment to see the full error message
 import yaml from 'yaml';
-// @ts-expect-error TS(2792) FIXME: Cannot find module 'es-toolkit/compat'. Did you me... Remove this comment to see the full error message
 import { get, set, unset, isUndefined, forEach, isPlainObject, cloneDeep } from 'es-toolkit/compat';
-// @ts-expect-error TS(1192) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import mime from 'mime-types';
 
-// @ts-expect-error TS(1259) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import storage from 'node-persist';
 
 import { AVATAR_WIDTH, AVATAR_HEIGHT, DEFAULT_AVATAR_PATH } from '../constants.js';
@@ -125,7 +117,7 @@ class DiskCache {
             forgiveParseErrors: true,
             expiredInterval: 0,
             maxFileDescriptors: 100,
-        });
+        } as any);
         await this.#instance.init();
         this.#syncInterval = setInterval(this.#syncCacheEntries.bind(this), DiskCache.SYNC_INTERVAL);
         return this.#instance;
@@ -136,7 +128,6 @@ class DiskCache {
      * @param {import('../users.js').UserDirectoryList[]} directoriesList List of user directories
      * @returns {Promise<void>}
      */
-    // @ts-expect-error TS(2694) FIXME: Namespace '"/mnt/DISCO/downloads/some_git_projects... Remove this comment to see the full error message
     async verify(directoriesList: import('../users.js').UserDirectoryList[]) {
         try {
             if (!useDiskCache) {
@@ -147,7 +138,6 @@ class DiskCache {
             const validKeys = new Set();
             for (const dir of directoriesList) {
                 const files = fs.readdirSync(dir.characters, { withFileTypes: true });
-                // @ts-expect-error TS(7006) FIXME: Parameter 'f' implicitly has an 'any' type.
                 for (const file of files.filter(f => f.isFile() && path.extname(f.name) === '.png')) {
                     const filePath = path.join(dir.characters, file.name);
                     const cacheKey = getCacheKey(filePath);
@@ -423,7 +413,6 @@ const toShallow = (character: Record<string, unknown>) => {
  * @param  {boolean} options.shallow If true, only return the core character's metadata
  * @returns {Promise<object>}     A Promise that resolves when the character processing is done.
  */
-// @ts-expect-error TS(2694) FIXME: Namespace '"/mnt/DISCO/downloads/some_git_projects... Remove this comment to see the full error message
 const processCharacter = async (item: string, directories: import('../users.js').UserDirectoryList, {
     shallow
 }: { shallow: boolean }) => {
@@ -470,7 +459,6 @@ const processCharacter = async (item: string, directories: import('../users.js')
  * @param {boolean} hoistDate Will set the chat and create_date fields to the current date if they are missing
  * @returns {object} Character object in Spec V2 format
  */
-// @ts-expect-error TS(2694) FIXME: Namespace '"/mnt/DISCO/downloads/some_git_projects... Remove this comment to see the full error message
 function getCharaCardV2(jsonObject: Record<string, unknown>, directories: import('../users.js').UserDirectoryList, hoistDate = true) {
     if (jsonObject.spec === undefined) {
         jsonObject = convertToV2(jsonObject, directories);
@@ -490,7 +478,6 @@ function getCharaCardV2(jsonObject: Record<string, unknown>, directories: import
  * @param {import('../users.js').UserDirectoryList} directories User directories
  * @returns {object} Character object in Spec V2 format
  */
-// @ts-expect-error TS(2694) FIXME: Namespace '"/mnt/DISCO/downloads/some_git_projects... Remove this comment to see the full error message
 function convertToV2(char: Record<string, unknown>, directories: import('../users.js').UserDirectoryList) {
     // Simulate incoming data from frontend form
     const result = charaFormatData({
@@ -553,7 +540,6 @@ function readFromV2(char: Record<string, unknown>) {
         tags: 'tags',
     };
 
-    // @ts-expect-error TS(7006) FIXME: Parameter 'v2Path' implicitly has an 'any' type.
     forEach(fieldMappings, (v2Path, charField) => {
         //console.info(`Migrating field: ${charField} from ${v2Path}`);
         const v2Value = get(char.data, v2Path);
@@ -594,7 +580,6 @@ function readFromV2(char: Record<string, unknown>) {
  * @param {import('../users.js').UserDirectoryList} directories User directories
  * @returns {Record<string, unknown>} Formatted character object
  */
-// @ts-expect-error TS(2694) FIXME: Namespace '"/mnt/DISCO/downloads/some_git_projects... Remove this comment to see the full error message
 function charaFormatData(data: Record<string, unknown>, directories: import('../users.js').UserDirectoryList) {
     // This is supposed to save all the foreign keys that ST doesn't care about
     // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
@@ -926,9 +911,9 @@ async function importFromByaf(uploadPath: string, {
 
         // Upload backgrounds
         for (const bg of byafData.chatBackgrounds) {
-            const extension = path.extname(bg.paths?.[0]) || '.png';
+            const extension = path.extname(bg.paths?.[0] ?? '') || '.png';
             const baseName = `${path.basename(fileName)}_bg`;
-            const filePath = path.join(request.user.directories.userImages, fileName);
+            const filePath = path.join(request.user.directories.userImages!, fileName);
             if (!fs.existsSync(filePath)) fs.mkdirSync(filePath, { recursive: true });
             const file = getUniqueName(baseName, (name: string) => fs.existsSync(path.join(filePath, `${name}${extension}`)));
             if (Buffer.isBuffer(bg.data)) {
@@ -949,7 +934,8 @@ async function importFromByaf(uploadPath: string, {
 
         // Update the default chat if there are any so we open to an existing chat instead of creating a new one and opening that.
         if (chats.length > 0) {
-            card.chat = path.basename(chats[0], path.extname(chats[0]));
+            const chat = chats[0]!;
+            card.chat = path.basename(chat, path.extname(chat));
         }
 
         // Save alternate icons for the character.
@@ -957,7 +943,7 @@ async function importFromByaf(uploadPath: string, {
             // BYAF does not support character expressions, so using the same structure will not result in conflicts,
             // even if the expression system did not tolerate additional icons that are not mapped to expressions.
             // This will not yet allow changing icons within the UI but at least the icons will be available for manual selection, rather than being lost.
-            const altImagesFolder = path.join(request.user.directories.characters, sanitize(card.name));
+            const altImagesFolder = path.join(request.user.directories.characters!, sanitize(card.name as string));
             if (!fs.existsSync(altImagesFolder)) fs.mkdirSync(altImagesFolder, { recursive: true });
             const extension = path.extname(icon.filename) || '.png';
             const file = getUniqueName(`${sanitize(icon.label, { replacement: sanitizeSafeCharacterReplacements }) || 'alt'}`, (name: string) => fs.existsSync(path.join(altImagesFolder, `${name}${extension}`)));
@@ -1126,7 +1112,6 @@ async function importFromPng(uploadPath: string, {
 
 export const router = express.Router();
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/create', getFileNameValidationFunction('file_name'), async function (request, response) {
     try {
         if (!request.body) return response.sendStatus(400);
@@ -1144,7 +1129,7 @@ router.post('/create', getFileNameValidationFunction('file_name'), async functio
             await writeCharacterData(DEFAULT_AVATAR_PATH, char, internalName, request);
             return response.send(avatarName);
         } else {
-            const crop = tryParse(request.query.crop);
+            const crop = tryParse(request.query.crop as string);
             const uploadPath = path.join(request.file.destination, request.file.filename);
             await writeCharacterData(uploadPath, char, internalName, request, crop);
             fs.unlinkSync(uploadPath);
@@ -1156,7 +1141,6 @@ router.post('/create', getFileNameValidationFunction('file_name'), async functio
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/rename', validateAvatarUrlMiddleware, async function (request, response) {
     if (!request.body.avatar_url || !request.body.new_name) {
         return response.sendStatus(400);
@@ -1203,7 +1187,6 @@ router.post('/rename', validateAvatarUrlMiddleware, async function (request, res
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/edit', validateAvatarUrlMiddleware, async function (request, response) {
     if (!request.body) {
         console.warn('Error: no response body detected');
@@ -1228,7 +1211,7 @@ router.post('/edit', validateAvatarUrlMiddleware, async function (request, respo
             const avatarPath = path.join(request.user.directories.characters, request.body.avatar_url);
             await writeCharacterData(avatarPath, char, targetFile, request);
         } else {
-            const crop = tryParse(request.query.crop);
+            const crop = tryParse(request.query.crop as string);
             const newAvatarPath = path.join(request.file.destination, request.file.filename);
             invalidateThumbnail(request.user.directories, 'avatar', request.body.avatar_url);
             await writeCharacterData(newAvatarPath, char, targetFile, request, crop);
@@ -1245,7 +1228,6 @@ router.post('/edit', validateAvatarUrlMiddleware, async function (request, respo
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/edit-avatar', validateAvatarUrlMiddleware, async function (request, response) {
     try {
         if (!request.file) {
@@ -1269,7 +1251,7 @@ router.post('/edit-avatar', validateAvatarUrlMiddleware, async function (request
             return response.status(400).send('Error: failed to read character data');
         }
 
-        const crop = tryParse(request.query.crop);
+        const crop = tryParse(request.query.crop as string);
         const fileName = request.body.avatar_url.replace('.png', '');
         await writeCharacterData(uploadPath, data, fileName, request, crop);
 
@@ -1296,7 +1278,6 @@ router.post('/edit-avatar', validateAvatarUrlMiddleware, async function (request
  * @param {object} response - The HTTP response object.
  * @returns {void}
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/edit-attribute', validateAvatarUrlMiddleware, async function (request, response) {
     console.debug(request.body);
     if (!request.body) {
@@ -1432,7 +1413,6 @@ async function mergeCharacterUpdate(avatarPath: string, avatar: string, updateDa
  * @param {import("express").Response} response - The HTTP response object
  * @returns {void}
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/merge-attributes', getFileNameValidationFunction('avatar'), async function (request, response) {
     try {
         // ── Bulk mode: avatars array is present ──────────────────
@@ -1455,7 +1435,6 @@ router.post('/merge-attributes', getFileNameValidationFunction('avatar'), async 
             } else {
                 // Empty array → scan all characters in the directory
                 const files = fs.readdirSync(request.user.directories.characters);
-                // @ts-expect-error TS(7006) FIXME: Parameter 'file' implicitly has an 'any' type.
                 targetAvatars = files.filter(file => path.extname(file).toLowerCase() === '.png');
             }
 
@@ -1524,7 +1503,6 @@ router.post('/merge-attributes', getFileNameValidationFunction('avatar'), async 
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/delete', validateAvatarUrlMiddleware, async function (request, response) {
     if (!request.body || !request.body.avatar_url) {
         return response.sendStatus(400);
@@ -1574,15 +1552,11 @@ router.post('/delete', validateAvatarUrlMiddleware, async function (request, res
  * @param  {import("express").Response} response The HTTP response object.
  * @returns {void}
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/all', async function (request, response) {
     try {
         const files = fs.readdirSync(request.user.directories.characters);
-        // @ts-expect-error TS(7006) FIXME: Parameter 'file' implicitly has an 'any' type.
         const pngFiles = files.filter(file => file.endsWith('.png'));
-        // @ts-expect-error TS(7006) FIXME: Parameter 'file' implicitly has an 'any' type.
         const processingPromises = pngFiles.map(file => processCharacter(file, request.user.directories, { shallow: useShallowCharacters }));
-        // @ts-expect-error TS(7006) FIXME: Parameter 'c' implicitly has an 'any' type.
         const data = (await Promise.all(processingPromises)).filter(c => c.name);
         return response.send(data);
     } catch (err) {
@@ -1592,7 +1566,6 @@ router.post('/all', async function (request, response) {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/get', validateAvatarUrlMiddleware, async function (request, response) {
     try {
         if (!request.body) return response.sendStatus(400);
@@ -1612,7 +1585,6 @@ router.post('/get', validateAvatarUrlMiddleware, async function (request, respon
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/chats', validateAvatarUrlMiddleware, async function (request, response) {
     try {
         if (!request.body) return response.sendStatus(400);
@@ -1625,7 +1597,6 @@ router.post('/chats', validateAvatarUrlMiddleware, async function (request, resp
         }
 
         const files = fs.readdirSync(chatsDirectory, { withFileTypes: true });
-        // @ts-expect-error TS(7006) FIXME: Parameter 'file' implicitly has an 'any' type.
         const jsonFiles = files.filter(file => file.isFile() && path.extname(file.name) === '.jsonl').map(file => file.name);
 
         if (jsonFiles.length === 0) {
@@ -1633,18 +1604,15 @@ router.post('/chats', validateAvatarUrlMiddleware, async function (request, resp
         }
 
         if (request.body.simple) {
-            // @ts-expect-error TS(7006) FIXME: Parameter 'file' implicitly has an 'any' type.
             return response.send(jsonFiles.map(file => ({ file_name: file, file_id: path.parse(file).name })));
         }
 
-        // @ts-expect-error TS(7006) FIXME: Parameter 'file' implicitly has an 'any' type.
         const jsonFilesPromise = jsonFiles.map((file) => {
             const withMetadata = !!request.body.metadata;
             const pathToFile = path.join(request.user.directories.chats, characterDirectory, file);
             return getChatInfo(pathToFile, {}, withMetadata);
         });
 
-        // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
         const chatData = (await Promise.allSettled(jsonFilesPromise)).filter(x => x.status === 'fulfilled').map(x => x.value);
         // @ts-expect-error TS(7006) FIXME: Parameter 'i' implicitly has an 'any' type.
         const validFiles = chatData.filter(i => i.file_name);
@@ -1662,7 +1630,6 @@ router.post('/chats', validateAvatarUrlMiddleware, async function (request, resp
  * @param {import('../users.js').UserDirectoryList} directories User directories
  * @returns {string} - The name for the uploaded PNG file
  */
-// @ts-expect-error TS(2694) FIXME: Namespace '"/mnt/DISCO/downloads/some_git_projects... Remove this comment to see the full error message
 function getPngName(file: string, directories: import('../users.js').UserDirectoryList) {
     file = sanitize(file);
     return getUniqueName(file, (name: string) => fs.existsSync(path.join(directories.characters, `${name}.png`)),
@@ -1681,7 +1648,6 @@ function getPreservedName(request: import('express').Request) {
         : undefined;
 }
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/import', async function (request, response) {
     if (!request.body || !request.file) return response.sendStatus(400);
 
@@ -1724,7 +1690,6 @@ router.post('/import', async function (request, response) {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/duplicate', validateAvatarUrlMiddleware, async function (request, response) {
     try {
         if (!request.body.avatar_url) {
@@ -1742,7 +1707,7 @@ router.post('/duplicate', validateAvatarUrlMiddleware, async function (request, 
 
         // If filename ends with a _number, increment the number
         const nameParts = path.basename(filename, path.extname(filename)).split('_');
-        const lastPart = nameParts[nameParts.length - 1];
+        const lastPart = nameParts[nameParts.length - 1]!;
 
         let baseName;
 
@@ -1770,7 +1735,6 @@ router.post('/duplicate', validateAvatarUrlMiddleware, async function (request, 
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/export', validateAvatarUrlMiddleware, async function (request, response) {
     try {
         if (!request.body.format || !request.body.avatar_url) {

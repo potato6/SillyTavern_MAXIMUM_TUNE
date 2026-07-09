@@ -1,14 +1,9 @@
 import { Buffer } from 'node:buffer';
 import fetch from 'node-fetch';
-// @ts-expect-error TS(1259) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import express from 'express';
-// @ts-expect-error TS(2792) FIXME: Cannot find module 'google-translate-api-x'. Did y... Remove this comment to see the full error message
 import { speak, languages } from 'google-translate-api-x';
-// @ts-expect-error TS(1192) FIXME: Module '"node:crypto"' has no default export.
 import crypto from 'node:crypto';
-// @ts-expect-error TS(1192) FIXME: Module '"node:util"' has no default export.
 import util from 'node:util';
-// @ts-expect-error TS(2792) FIXME: Cannot find module 'es-toolkit/compat'. Did you me... Remove this comment to see the full error message
 import { clamp } from 'es-toolkit/compat';
 
 import { readSecret, SECRET_KEYS } from './secrets.js';
@@ -131,7 +126,7 @@ export async function generateJWTToken(serviceAccount: Record<string, string>) {
     // Create signature using private key
     const sign = crypto.createSign('RSA-SHA256');
     sign.update(signatureInput);
-    const signature = sign.sign(serviceAccount.private_key, 'base64url');
+    const signature = sign.sign(serviceAccount.private_key!, 'base64url');
 
     return `${signatureInput}.${signature}`;
 }
@@ -156,7 +151,7 @@ export async function getAccessToken(jwtToken: string) {
     }
 
     /** @type {any} */
-    const data = await response.json();
+    const data = await response.json() as any;
     return data.access_token;
 }
 
@@ -261,7 +256,6 @@ export async function getGoogleApiConfig(request: express.Request, model: string
 
 export const router = express.Router();
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/caption-image', async (request, response) => {
     try {
         const mimeType = request.body.image.split(';')[0].split(':')[1];
@@ -293,13 +287,13 @@ router.post('/caption-image', async (request, response) => {
         });
 
         if (!result.ok) {
-            const error = await result.json();
+            const error = await result.json() as any;
             console.error(`${apiName} API returned error: ${result.status} ${result.statusText}`, error);
             return response.status(500).send({ error: true });
         }
 
         /** @type {any} */
-        const data = await result.json();
+        const data = await result.json() as any;
         console.info(`${apiName} captioning response`, data);
 
         const candidates = data?.candidates;
@@ -319,12 +313,10 @@ router.post('/caption-image', async (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
 router.post('/list-voices', (_, response) => {
     return response.json(languages);
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/generate-voice', async (request, response) => {
     try {
         const text = request.body.text;
@@ -343,7 +335,6 @@ router.post('/generate-voice', async (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
 router.post('/list-native-voices', async (_, response) => {
     try {
         // Hardcoded Gemini native TTS voices from official documentation
@@ -387,7 +378,6 @@ router.post('/list-native-voices', async (_, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/generate-native-tts', async (request, response) => {
     try {
         const { text, voice, model } = request.body;
@@ -427,7 +417,7 @@ router.post('/generate-native-tts', async (request, response) => {
         }
 
         /** @type {any} */
-        const data = await result.json();
+        const data = await result.json() as any;
         const audioPart = data?.candidates?.[0]?.content?.parts?.[0];
         const audioData = audioPart?.inlineData?.data;
         const mimeType = audioPart?.inlineData?.mimeType;
@@ -464,7 +454,6 @@ router.post('/generate-native-tts', async (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/generate-image', async (request, response) => {
     try {
         const model = request.body.model || 'imagen-3.0-generate-002';
@@ -514,7 +503,7 @@ router.post('/generate-image', async (request, response) => {
         }
 
         /** @type {any} */
-        const data = await result.json();
+        const data = await result.json() as any;
         const imagePart = data?.predictions?.[0]?.bytesBase64Encoded;
 
         if (!imagePart) {
@@ -532,7 +521,6 @@ router.post('/generate-image', async (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/generate-video', async (request, response) => {
     try {
         const controller = new AbortController();
@@ -576,7 +564,7 @@ router.post('/generate-video', async (request, response) => {
         }
 
         /** @type {any} */
-        const videoJobData = await videoJobResponse.json();
+        const videoJobData = await videoJobResponse.json() as any;
         const videoJobName = videoJobData?.name;
 
         if (!videoJobName) {
@@ -610,7 +598,7 @@ router.post('/generate-video', async (request, response) => {
                 }
 
                 /** @type {any} */
-                const pollData = await pollResponse.json();
+                const pollData = await pollResponse.json() as any;
                 const jobDone = pollData?.done;
                 console.debug(`${apiName} video job status attempt ${attempt + 1}: ${jobDone ? 'done' : 'running'}`);
 
@@ -638,7 +626,7 @@ router.post('/generate-video', async (request, response) => {
                 }
 
                 /** @type {any} */
-                const pollData = await pollResponse.json();
+                const pollData = await pollResponse.json() as any;
                 const jobDone = pollData?.done;
                 console.debug(`${apiName} video job status attempt ${attempt + 1}: ${jobDone ? 'done' : 'running'}`);
 

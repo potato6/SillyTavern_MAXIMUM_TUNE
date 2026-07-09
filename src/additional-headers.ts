@@ -8,7 +8,6 @@ import { getConfigValue } from './util.js';
  * @param {string|null} secretId Secret ID for the request (optional, used to determine which secret to use)
  * @returns {object} Headers for the request
  */
-// @ts-expect-error TS(2694) FIXME: Namespace '"/mnt/DISCO/downloads/some_git_projects... Remove this comment to see the full error message
 function getMancerHeaders(directories: import('./users.js').UserDirectoryList, secretId = null) {
     const apiKey = readSecret(directories, SECRET_KEYS.MANCER, secretId);
 
@@ -24,7 +23,6 @@ function getMancerHeaders(directories: import('./users.js').UserDirectoryList, s
  * @param {string|null} secretId Secret ID for the request (optional, used to determine which secret to use)
  * @returns {object} Headers for the request
  */
-// @ts-expect-error TS(2694) FIXME: Namespace '"/mnt/DISCO/downloads/some_git_projects... Remove this comment to see the full error message
 function getTogetherAIHeaders(directories: import('./users.js').UserDirectoryList, secretId = null) {
     const apiKey = readSecret(directories, SECRET_KEYS.TOGETHERAI, secretId);
 
@@ -39,7 +37,6 @@ function getTogetherAIHeaders(directories: import('./users.js').UserDirectoryLis
  * @param {string|null} secretId Secret ID for the request (optional, used to determine which secret to use)
  * @returns {object} Headers for the request
  */
-// @ts-expect-error TS(2694) FIXME: Namespace '"/mnt/DISCO/downloads/some_git_projects... Remove this comment to see the full error message
 function getInfermaticAIHeaders(directories: import('./users.js').UserDirectoryList, secretId = null) {
     const apiKey = readSecret(directories, SECRET_KEYS.INFERMATICAI, secretId);
 
@@ -54,7 +51,6 @@ function getInfermaticAIHeaders(directories: import('./users.js').UserDirectoryL
  * @param {string|null} secretId Secret ID for the request (optional, used to determine which secret to use)
  * @returns {object} Headers for the request
  */
-// @ts-expect-error TS(2694) FIXME: Namespace '"/mnt/DISCO/downloads/some_git_projects... Remove this comment to see the full error message
 function getDreamGenHeaders(directories: import('./users.js').UserDirectoryList, secretId = null) {
     const apiKey = readSecret(directories, SECRET_KEYS.DREAMGEN, secretId);
 
@@ -69,7 +65,6 @@ function getDreamGenHeaders(directories: import('./users.js').UserDirectoryList,
  * @param {string|null} secretId Secret ID for the request (optional, used to determine which secret to use)
  * @returns {object} Headers for the request
  */
-// @ts-expect-error TS(2694) FIXME: Namespace '"/mnt/DISCO/downloads/some_git_projects... Remove this comment to see the full error message
 function getOpenRouterHeaders(directories: import('./users.js').UserDirectoryList, secretId = null) {
     const apiKey = readSecret(directories, SECRET_KEYS.OPENROUTER, secretId);
     const baseHeaders = { ...OPENROUTER_HEADERS };
@@ -83,7 +78,6 @@ function getOpenRouterHeaders(directories: import('./users.js').UserDirectoryLis
  * @param {string|null} secretId Secret ID for the request (optional, used to determine which secret to use)
  * @returns {object} Headers for the request
  */
-// @ts-expect-error TS(2694) FIXME: Namespace '"/mnt/DISCO/downloads/some_git_projects... Remove this comment to see the full error message
 function getVllmHeaders(directories: import('./users.js').UserDirectoryList, secretId = null) {
     const apiKey = readSecret(directories, SECRET_KEYS.VLLM, secretId);
 
@@ -98,7 +92,6 @@ function getVllmHeaders(directories: import('./users.js').UserDirectoryList, sec
  * @param {string|null} secretId Secret ID for the request (optional, used to determine which secret to use)
  * @returns {object} Headers for the request
  */
-// @ts-expect-error TS(2694) FIXME: Namespace '"/mnt/DISCO/downloads/some_git_projects... Remove this comment to see the full error message
 function getAphroditeHeaders(directories: import('./users.js').UserDirectoryList, secretId = null) {
     const apiKey = readSecret(directories, SECRET_KEYS.APHRODITE, secretId);
 
@@ -114,7 +107,6 @@ function getAphroditeHeaders(directories: import('./users.js').UserDirectoryList
  * @param {string|null} secretId Secret ID for the request (optional, used to determine which secret to use)
  * @returns {object} Headers for the request
  */
-// @ts-expect-error TS(2694) FIXME: Namespace '"/mnt/DISCO/downloads/some_git_projects... Remove this comment to see the full error message
 function getTabbyHeaders(directories: import('./users.js').UserDirectoryList, secretId = null) {
     const apiKey = readSecret(directories, SECRET_KEYS.TABBY, secretId);
 
@@ -130,7 +122,6 @@ function getTabbyHeaders(directories: import('./users.js').UserDirectoryList, se
  * @param {string|null} secretId Secret ID for the request (optional, used to determine which secret to use)
  * @returns {object} Headers for the request
  */
-// @ts-expect-error TS(2694) FIXME: Namespace '"/mnt/DISCO/downloads/some_git_projects... Remove this comment to see the full error message
 function getLlamaCppHeaders(directories: import('./users.js').UserDirectoryList, secretId = null) {
     const apiKey = readSecret(directories, SECRET_KEYS.LLAMACPP, secretId);
 
@@ -145,7 +136,6 @@ function getLlamaCppHeaders(directories: import('./users.js').UserDirectoryList,
  * @param {string|null} secretId Secret ID for the request (optional, used to determine which secret to use)
  * @returns {object} Headers for the request
  */
-// @ts-expect-error TS(2694) FIXME: Namespace '"/mnt/DISCO/downloads/some_git_projects... Remove this comment to see the full error message
 function getOobaHeaders(directories: import('./users.js').UserDirectoryList, secretId = null) {
     const apiKey = readSecret(directories, SECRET_KEYS.OOBA, secretId);
 
@@ -160,7 +150,6 @@ function getOobaHeaders(directories: import('./users.js').UserDirectoryList, sec
  * @param {string|null} secretId Secret ID for the request (optional, used to determine which secret to use)
  * @returns {object} Headers for the request
  */
-// @ts-expect-error TS(2694) FIXME: Namespace '"/mnt/DISCO/downloads/some_git_projects... Remove this comment to see the full error message
 function getKoboldCppHeaders(directories: import('./users.js').UserDirectoryList, secretId = null) {
     const apiKey = readSecret(directories, SECRET_KEYS.KOBOLDCPP, secretId);
 
@@ -175,7 +164,6 @@ function getKoboldCppHeaders(directories: import('./users.js').UserDirectoryList
  * @param {string|null} secretId Secret ID for the request (optional, used to determine which secret to use)
  * @returns {object} Headers for the request
  */
-// @ts-expect-error TS(2694) FIXME: Namespace '"/mnt/DISCO/downloads/some_git_projects... Remove this comment to see the full error message
 function getFeatherlessHeaders(directories: import('./users.js').UserDirectoryList, secretId = null) {
     const apiKey = readSecret(directories, SECRET_KEYS.FEATHERLESS, secretId);
     const baseHeaders = { ...FEATHERLESS_HEADERS };
@@ -189,7 +177,6 @@ function getFeatherlessHeaders(directories: import('./users.js').UserDirectoryLi
  * @param {string|null} secretId Secret ID for the request (optional, used to determine which secret to use)
  * @returns {object} Headers for the request
  */
-// @ts-expect-error TS(2694) FIXME: Namespace '"/mnt/DISCO/downloads/some_git_projects... Remove this comment to see the full error message
 function getHuggingFaceHeaders(directories: import('./users.js').UserDirectoryList, secretId = null) {
     const apiKey = readSecret(directories, SECRET_KEYS.HUGGINGFACE, secretId);
 
@@ -204,7 +191,6 @@ function getHuggingFaceHeaders(directories: import('./users.js').UserDirectoryLi
  * @param {string|null} secretId Secret ID for the request (optional, used to determine which secret to use)
  * @returns {object} Headers for the request
  */
-// @ts-expect-error TS(2694) FIXME: Namespace '"/mnt/DISCO/downloads/some_git_projects... Remove this comment to see the full error message
 function getGenericHeaders(directories: import('./users.js').UserDirectoryList, secretId = null) {
     const apiKey = readSecret(directories, SECRET_KEYS.GENERIC, secretId);
 
@@ -247,7 +233,6 @@ export function setAdditionalHeaders(request: import('express').Request, args: R
  * @param {import('./users.js').UserDirectoryList} directories User directories
  * @param {string|null} secretId Secret ID for the request (optional, used for some API types to determine which secret to use)
  */
-// @ts-expect-error TS(2694) FIXME: Namespace '"/mnt/DISCO/downloads/some_git_projects... Remove this comment to see the full error message
 export function setAdditionalHeadersByType(requestHeaders: Record<string, unknown>, type: string, server: string | null, directories: import('./users.js').UserDirectoryList, secretId = null) {
     const headerGetters = {
         [TEXTGEN_TYPES.MANCER]: getMancerHeaders,

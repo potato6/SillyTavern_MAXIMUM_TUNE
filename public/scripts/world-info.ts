@@ -554,7 +554,6 @@ class WorldInfoTimedEffects {
 
             const key = this.#getEntryKey(entry);
             const effect = this.#getEntryTimedEffect('cooldown', entry, true);
-            // @ts-expect-error TS(2339) FIXME: Property 'timedWorldInfo' does not exist on type '... Remove this comment to see the full error message
             chat_metadata.timedWorldInfo.cooldown[key] = effect;
             console.log(`[WI] Adding cooldown entry ${key} on ended sticky: start=${effect.start}, end=${effect.end}, protected=${effect.protected}`);
             // Set the cooldown immediately for this evaluation
@@ -593,25 +592,19 @@ class WorldInfoTimedEffects {
      * Verify correct structure of chat metadata.
      */
     #ensureChatMetadata() {
-        // @ts-expect-error TS(2339) FIXME: Property 'timedWorldInfo' does not exist on type '... Remove this comment to see the full error message
         if (!chat_metadata.timedWorldInfo) {
-            // @ts-expect-error TS(2339) FIXME: Property 'timedWorldInfo' does not exist on type '... Remove this comment to see the full error message
             chat_metadata.timedWorldInfo = {};
         }
 
         ['sticky', 'cooldown'].forEach(type => {
             // Ensure the property exists and is an object
-            // @ts-expect-error TS(2339) FIXME: Property 'timedWorldInfo' does not exist on type '... Remove this comment to see the full error message
             if (!chat_metadata.timedWorldInfo[type] || typeof chat_metadata.timedWorldInfo[type] !== 'object') {
-                // @ts-expect-error TS(2339) FIXME: Property 'timedWorldInfo' does not exist on type '... Remove this comment to see the full error message
                 chat_metadata.timedWorldInfo[type] = {};
             }
 
             // Clean up invalid entries
-            // @ts-expect-error TS(2339) FIXME: Property 'timedWorldInfo' does not exist on type '... Remove this comment to see the full error message
             Object.entries(chat_metadata.timedWorldInfo[type]).forEach(([key, value]) => {
                 if (!value || typeof value !== 'object') {
-                    // @ts-expect-error TS(2339) FIXME: Property 'timedWorldInfo' does not exist on type '... Remove this comment to see the full error message
                     delete chat_metadata.timedWorldInfo[type][key];
                 }
             });
@@ -664,7 +657,6 @@ class WorldInfoTimedEffects {
     // @ts-expect-error TS(7006) FIXME: Parameter 'type' implicitly has an 'any' type.
     #checkTimedEffectOfType(type, buffer, onEnded) {
         /** @type {[string, WITimedEffect][]} */
-        // @ts-expect-error TS(2339) FIXME: Property 'timedWorldInfo' does not exist on type '... Remove this comment to see the full error message
         const effects = Object.entries(chat_metadata.timedWorldInfo[type]);
         for (const [key, value] of effects) {
             console.log(`[WI] Processing ${type} entry ${key}`, value);
@@ -674,7 +666,6 @@ class WorldInfoTimedEffects {
             // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             if (this.#chat.length <= Number(value.start) && !value.protected) {
                 console.log(`[WI] Removing ${type} entry ${key} from timedWorldInfo: chat not advanced`, value);
-                // @ts-expect-error TS(2339) FIXME: Property 'timedWorldInfo' does not exist on type '... Remove this comment to see the full error message
                 delete chat_metadata.timedWorldInfo[type][key];
                 continue;
             }
@@ -684,7 +675,6 @@ class WorldInfoTimedEffects {
                 // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 if (this.#chat.length >= Number(value.end)) {
                     console.log(`[WI] Removing ${type} entry from timedWorldInfo: entry not found and interval passed`, entry);
-                    // @ts-expect-error TS(2339) FIXME: Property 'timedWorldInfo' does not exist on type '... Remove this comment to see the full error message
                     delete chat_metadata.timedWorldInfo[type][key];
                 }
                 continue;
@@ -693,7 +683,6 @@ class WorldInfoTimedEffects {
             // Ignore invalid entries (not configured for timed effects)
             if (!entry[type]) {
                 console.log(`[WI] Removing ${type} entry from timedWorldInfo: entry not ${type}`, entry);
-                // @ts-expect-error TS(2339) FIXME: Property 'timedWorldInfo' does not exist on type '... Remove this comment to see the full error message
                 delete chat_metadata.timedWorldInfo[type][key];
                 continue;
             }
@@ -701,7 +690,6 @@ class WorldInfoTimedEffects {
             // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             if (this.#chat.length >= Number(value.end)) {
                 console.log(`[WI] Removing ${type} entry from timedWorldInfo: ${type} interval passed`, entry);
-                // @ts-expect-error TS(2339) FIXME: Property 'timedWorldInfo' does not exist on type '... Remove this comment to see the full error message
                 delete chat_metadata.timedWorldInfo[type][key];
                 if (typeof onEnded === 'function') {
                     onEnded(entry);
@@ -758,7 +746,6 @@ class WorldInfoTimedEffects {
         }
 
         const key = this.#getEntryKey(entry);
-        // @ts-expect-error TS(2339) FIXME: Property 'timedWorldInfo' does not exist on type '... Remove this comment to see the full error message
         return chat_metadata.timedWorldInfo[type][key];
     }
 
@@ -776,10 +763,8 @@ class WorldInfoTimedEffects {
 
         const key = this.#getEntryKey(entry);
 
-        // @ts-expect-error TS(2339) FIXME: Property 'timedWorldInfo' does not exist on type '... Remove this comment to see the full error message
         if (!chat_metadata.timedWorldInfo[type][key]) {
             const effect = this.#getEntryTimedEffect(type, entry, false);
-            // @ts-expect-error TS(2339) FIXME: Property 'timedWorldInfo' does not exist on type '... Remove this comment to see the full error message
             chat_metadata.timedWorldInfo[type][key] = effect;
 
             console.log(`[WI] Adding ${type} entry ${key}: start=${effect.start}, end=${effect.end}, protected=${effect.protected}`);
@@ -815,12 +800,10 @@ class WorldInfoTimedEffects {
         }
 
         const key = this.#getEntryKey(entry);
-        // @ts-expect-error TS(2339) FIXME: Property 'timedWorldInfo' does not exist on type '... Remove this comment to see the full error message
         delete chat_metadata.timedWorldInfo[type][key];
 
         if (newState) {
             const effect = this.#getEntryTimedEffect(type, entry, false);
-            // @ts-expect-error TS(2339) FIXME: Property 'timedWorldInfo' does not exist on type '... Remove this comment to see the full error message
             chat_metadata.timedWorldInfo[type][key] = effect;
             console.log(`[WI] Adding ${type} entry ${key}: start=${effect.start}, end=${effect.end}, protected=${effect.protected}`);
         }
@@ -1136,7 +1119,6 @@ export function setWorldInfoSettings(settings, data) {
     $('#world_editor_select').trigger('change');
 
     eventSource.on(event_types.CHAT_CHANGED, async () => {
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         const hasWorldInfo = !!chat_metadata[METADATA_KEY] && world_names.includes(chat_metadata[METADATA_KEY]);
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         document.querySelector('.chat_lorebook_button').classList.toggle('world_set', hasWorldInfo);
@@ -1266,7 +1248,6 @@ function registerWorldInfoSlashCommands() {
         const context = getContext();
         if (context.groupId && !characterIdentifier) throw new Error('This command is not available in groups without providing a character name');
         type = String(type ?? '').trim().toLowerCase() || 'primary';
-        // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
         characterIdentifier = String(characterIdentifier ?? '') || context.characters[context.characterId]?.avatar || null;
         const character = findChar({ name: characterIdentifier });
         if (!character) {
@@ -1323,9 +1304,7 @@ function registerWorldInfoSlashCommands() {
             return '';
         }
 
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         if (chat_metadata[METADATA_KEY] && world_names.includes(chat_metadata[METADATA_KEY])) {
-            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             return chat_metadata[METADATA_KEY];
         }
 
@@ -1336,7 +1315,6 @@ function registerWorldInfoSlashCommands() {
         // @ts-expect-error TS(2345) FIXME: Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
         const name = await createWorldWithName(args.name, `Chat Book ${getCurrentChatId()}`.replace(/[^a-z0-9 -]/gi, '_').replace(/_{2,}/g, '_').substring(0, 64));
 
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         chat_metadata[METADATA_KEY] = name;
         await saveMetadata();
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
@@ -1413,7 +1391,7 @@ function registerWorldInfoSlashCommands() {
             return '';
         }
 
-        const result = results[0]?.item?.uid;
+        const result = /** @type {{ uid?: string }} */ (results[0]?.item)?.uid;
 
         if (result === undefined) {
             return '';
@@ -2394,7 +2372,6 @@ async function hideWorldEditor() {
 function getWIElement(name) {
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const wiElement = $(Array.from(document.getElementById('world_info').children).filter(function (child) {
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         return child.textContent.toLowerCase() === name.toLowerCase();
     }));
 
@@ -2465,7 +2442,6 @@ export function sortWorldInfoEntries(data, { customSort = null } = {}) {
     if (!data.length) return data;
 
     /** @type {(a: object, b: object) => number} */
-    // @ts-expect-error TS(7034) FIXME: Variable 'primarySort' implicitly has type 'any' i... Remove this comment to see the full error message
     let primarySort;
 
     // Secondary and tertiary it will always be sorted by Order descending, and last UID ascending
@@ -2523,7 +2499,6 @@ export function sortWorldInfoEntries(data, { customSort = null } = {}) {
 
     // @ts-expect-error TS(7006) FIXME: Parameter 'a' implicitly has an 'any' type.
     data.sort((a, b) => {
-        // @ts-expect-error TS(7005) FIXME: Variable 'primarySort' implicitly has an 'any' typ... Remove this comment to see the full error message
         return primarySort(a, b) || secondarySort(a, b) || tertiarySort(a, b);
     });
 
@@ -3493,7 +3468,6 @@ function fillCharacterAndTagOptionsHelper({ characterFilter, entry }) {
     const characters = getContext().characters;
     characters.forEach((character) => {
         const option = document.createElement('option');
-        // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
         const name = character.avatar.replace(/\.[^/.]+$/, '') ?? character.name;
         option.innerText = name;
         option.selected = entry.characterFilter?.names?.includes(name);
@@ -3979,7 +3953,6 @@ export async function getWorldEntry(name, data, entry) {
     headerTemplate.find('.inline-drawer').on('inline-drawer-toggle', function () {
         // @ts-expect-error TS(7005) FIXME: Variable 'drawerDestroyTimeout' implicitly has an ... Remove this comment to see the full error message
         if (drawerDestroyTimeout) {
-            // @ts-expect-error TS(7005) FIXME: Variable 'drawerDestroyTimeout' implicitly has an ... Remove this comment to see the full error message
             clearTimeout(drawerDestroyTimeout);
             drawerDestroyTimeout = null;
         }
@@ -4126,7 +4099,6 @@ export async function getWorldEntry(name, data, entry) {
             }
             if (data.entries[uid]?.characterFilter?.names?.length > 0) {
                 for (const name of [...data.entries[uid].characterFilter.names]) {
-                    // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
                     if (!getContext().characters.find(x => x.avatar.replace(/\.[^/.]+$/, '') === name)) {
                         // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
                         data.entries[uid].characterFilter.names = data.entries[uid].characterFilter.names.filter(x => x !== name);
@@ -4828,7 +4800,6 @@ async function updateWorldInfoLinks(oldName, newName) {
     // @ts-expect-error TS(7034) FIXME: Variable 'linkedChIDs' implicitly has type 'any[]'... Remove this comment to see the full error message
     const linkedChIDs = [];
     characters.forEach((character, chid) => {
-        // @ts-expect-error TS(2339) FIXME: Property 'data' does not exist on type 'never'.
         if (character.data?.extensions?.world === oldName) {
             linkedChIDs.push(chid);
         }
@@ -4857,7 +4828,6 @@ async function updateWorldInfoLinks(oldName, newName) {
                     method: 'POST',
                     headers: getRequestHeaders(),
                     body: JSON.stringify({
-                        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
                         avatar: character.avatar,
                         data: {
                             extensions: {
@@ -4872,7 +4842,6 @@ async function updateWorldInfoLinks(oldName, newName) {
                 }
 
                 // used to update the data in the browser's memory
-                // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
                 await getOneCharacter(character.avatar);
 
                 // Flag if the currently open character was affected
@@ -4885,7 +4854,6 @@ async function updateWorldInfoLinks(oldName, newName) {
             } catch (e) {
                 // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                 toastr.error(`Failed to update link for ${character.name}.`);
-                // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
                 console.error(`Backend update for character ${character.name} failed:`, e);
             }
         }
@@ -5053,12 +5021,10 @@ export async function createNewWorldInfo(worldName, { interactive = false } = {}
  */
 async function getCharacterLore() {
     const character = characters[this_chid];
-    // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
     const name = character?.name;
     /** @type {Set<string>} */
     let worldsToSearch = new Set();
 
-    // @ts-expect-error TS(2339) FIXME: Property 'data' does not exist on type 'never'.
     const baseWorldName = character?.data?.extensions?.world;
     if (baseWorldName) {
         worldsToSearch.add(baseWorldName);
@@ -5085,7 +5051,6 @@ async function getCharacterLore() {
             continue;
         }
 
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         if (chat_metadata[METADATA_KEY] === worldName) {
             console.debug(`[WI] Character ${name}'s world ${worldName} is already activated in chat lore! Skipping...`);
             continue;
@@ -5136,7 +5101,6 @@ async function getGlobalLore() {
  * @returns {Promise<object[]>} Array of chat lore entries
  */
 async function getChatLore() {
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     const chatWorld = chat_metadata[METADATA_KEY];
 
     if (!chatWorld) {
@@ -5161,7 +5125,6 @@ async function getChatLore() {
  * @returns {Promise<object[]>} Array of persona lore entries
  */
 async function getPersonaLore() {
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     const chatWorld = chat_metadata[METADATA_KEY];
     const personaWorld = power_user.persona_description_lorebook;
 
@@ -6396,7 +6359,6 @@ export function setWorldInfoButtonClass(chid, forceValue = undefined) {
         return;
     }
 
-    // @ts-expect-error TS(2339) FIXME: Property 'data' does not exist on type 'never'.
     const world = characters[chid]?.data?.extensions?.world;
     const worldSet = Boolean(world && world_names.includes(world));
     document.querySelectorAll('#set_character_world, #world_button').forEach(el => el.classList.toggle('world_set', worldSet));
@@ -6415,15 +6377,12 @@ export function checkEmbeddedWorld(chid) {
         return false;
     }
 
-    // @ts-expect-error TS(2339) FIXME: Property 'data' does not exist on type 'never'.
     if (characters[chid]?.data?.character_book) {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#import_character_info').data('chid', chid).show();
 
         // Only show the alert once per character
-        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         const checkKey = `AlertWI_${characters[chid].avatar}`;
-        // @ts-expect-error TS(2339) FIXME: Property 'data' does not exist on type 'never'.
         const worldName = characters[chid]?.data?.extensions?.world;
         if (!accountStorage.getItem(checkKey) && (!worldName || !world_names.includes(worldName))) {
             accountStorage.setItem(checkKey, 'true');
@@ -6443,7 +6402,6 @@ export function checkEmbeddedWorld(chid) {
                 // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                 toastr.info(
                     'To import and use it, select "Import Card Lore" in the "More..." dropdown menu on the character panel.',
-                    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
                     `${characters[chid].name} has an embedded World/Lorebook`,
                     { timeOut: 5000, extendedTimeOut: 10000 },
                 );
@@ -6473,7 +6431,6 @@ export async function importEmbeddedWorldInfo(skipPopup = false) {
         return;
     }
 
-    // @ts-expect-error TS(2339) FIXME: Property 'data' does not exist on type 'never'.
     const bookName = characters[chid]?.data?.character_book?.name || `${characters[chid]?.name}'s Lorebook`;
 
     if (!skipPopup) {
@@ -6483,7 +6440,6 @@ export async function importEmbeddedWorldInfo(skipPopup = false) {
         }
     }
 
-    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
     const convertedBook = convertCharacterBook(characters[chid].data.character_book);
 
     await saveWorldInfo(bookName, convertedBook, true);
@@ -6728,7 +6684,6 @@ export function openWorldInfoEditor(worldName) {
  */
 // @ts-expect-error TS(7031) FIXME: Binding element 'shiftKey' implicitly has an 'any'... Remove this comment to see the full error message
 export async function assignLorebookToChat({ shiftKey, altKey }) {
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     const selectedName = chat_metadata[METADATA_KEY];
 
     if (selectedName && !shiftKey && !altKey) {
@@ -6756,12 +6711,10 @@ export async function assignLorebookToChat({ shiftKey, altKey }) {
         const worldName = $(this).val();
 
         if (worldName) {
-            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             chat_metadata[METADATA_KEY] = worldName;
             // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             document.querySelector('.chat_lorebook_button').classList.add('world_set');
         } else {
-            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             delete chat_metadata[METADATA_KEY];
             // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             document.querySelector('.chat_lorebook_button').classList.remove('world_set');
@@ -7189,7 +7142,6 @@ export function initWorldInfo() {
             return;
         }
 
-        // @ts-expect-error TS(2339) FIXME: Property 'data' does not exist on type 'never'.
         const worldName = characters[chid]?.data?.extensions?.world;
         const hasEmbed = checkEmbeddedWorld(chid);
         if (worldName && world_names.includes(worldName) && !event.shiftKey && !event.altKey) {

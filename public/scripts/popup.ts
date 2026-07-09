@@ -328,7 +328,6 @@ export class Popup {
                 buttonElement.appendChild(textSpan);
             } else {
                 buttonElement.textContent = button.text;
-                // @ts-expect-error TS(2322) FIXME: Type 'string | null' is not assignable to type 'st... Remove this comment to see the full error message
                 buttonElement.dataset.i18n = buttonElement.textContent;
             }
             setTitleFromTooltip(buttonElement, button.tooltip);

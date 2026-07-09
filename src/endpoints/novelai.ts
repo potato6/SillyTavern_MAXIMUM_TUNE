@@ -1,9 +1,7 @@
-// @ts-expect-error TS(1192) FIXME: Module '"node:util"' has no default export.
 import util from 'node:util';
 import { Buffer } from 'node:buffer';
 
 import fetch from 'node-fetch';
-// @ts-expect-error TS(1259) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import express from 'express';
 
 import { readSecret, SECRET_KEYS } from './secrets.js';
@@ -149,7 +147,6 @@ function calculateSkipCfgAboveSigma(width: number, height: number, modelName: st
 
 export const router = express.Router();
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
 router.post('/status', async function (req, res) {
     if (!req.body) return res.sendStatus(400);
     const api_key_novel = readSecret(req.user.directories, SECRET_KEYS.NOVEL);
@@ -169,7 +166,7 @@ router.post('/status', async function (req, res) {
         });
 
         if (response.ok) {
-            const data = await response.json();
+            const data = await response.json() as any;
             return res.send(data);
         } else if (response.status == 401) {
             console.error('NovelAI Access Token is incorrect.');
@@ -184,7 +181,6 @@ router.post('/status', async function (req, res) {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
 router.post('/generate', async function (req, res) {
     if (!req.body) return res.sendStatus(400);
 
@@ -311,7 +307,7 @@ router.post('/generate', async function (req, res) {
             }
 
             /** @type {object} */
-            const data = await response.json();
+            const data = await response.json() as any;
             console.info('NovelAI Output', data?.output);
             return res.send(data);
         }
@@ -320,7 +316,6 @@ router.post('/generate', async function (req, res) {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/generate-image', async (request, response) => {
     if (!request.body) {
         return response.sendStatus(400);
@@ -440,7 +435,6 @@ router.post('/generate-image', async (request, response) => {
 
             if (!upscaleResult.ok) {
                 const text = await upscaleResult.text();
-                // @ts-expect-error TS(2769) FIXME: No overload matches this call.
                 throw new Error('NovelAI returned an error.', { cause: text });
             }
 
@@ -464,7 +458,6 @@ router.post('/generate-image', async (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/generate-voice', async (request, response) => {
     const token = readSecret(request.user.directories, SECRET_KEYS.NOVEL);
 

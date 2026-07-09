@@ -1,9 +1,6 @@
-// @ts-expect-error TS(1192) FIXME: Module '"node:fs"' has no default export.
 import fs from 'node:fs';
-// @ts-expect-error TS(1259) FIXME: Module '"node:path"' can only be default-imported ... Remove this comment to see the full error message
 import path from 'node:path';
 
-// @ts-expect-error TS(1259) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import express from 'express';
 import { sync as writeFileAtomicSync } from 'write-file-atomic';
 import { color, getConfigValue, uuidv4 } from '../util.js';
@@ -116,13 +113,11 @@ export const allowKeysExposure = !!getConfigValue('allowKeysExposure', false, 'b
  */
 export class SecretManager {
     defaultSecrets: Record<string, never>;
-    // @ts-expect-error TS(2694) FIXME: Namespace '"/mnt/DISCO/downloads/some_git_projects... Remove this comment to see the full error message
     directories: import('../users.js').UserDirectoryList;
     filePath: string;
     /**
      * @param {import('../users.js').UserDirectoryList} directories User directories
      */
-    // @ts-expect-error TS(2694) FIXME: Namespace '"/mnt/DISCO/downloads/some_git_projects... Remove this comment to see the full error message
     constructor(directories: import('../users.js').UserDirectoryList) {
         this.directories = directories;
         this.filePath = path.join(directories.root, SECRETS_FILE);
@@ -447,7 +442,6 @@ export class SecretManager {
  * @param {string} value Secret value
  * @returns {string} The ID of the newly created secret
  */
-// @ts-expect-error TS(2694) FIXME: Namespace '"/mnt/DISCO/downloads/some_git_projects... Remove this comment to see the full error message
 export function writeSecret(directories: import('../users.js').UserDirectoryList, key: string, value: string) {
     return new SecretManager(directories).writeSecret(key, value);
 }
@@ -458,7 +452,6 @@ export function writeSecret(directories: import('../users.js').UserDirectoryList
  * @param {string} key Secret key
  * @returns {void}
  */
-// @ts-expect-error TS(2694) FIXME: Namespace '"/mnt/DISCO/downloads/some_git_projects... Remove this comment to see the full error message
 export function deleteSecret(directories: import('../users.js').UserDirectoryList, key: string) {
     return new SecretManager(directories).deleteSecret(key, null);
 }
@@ -470,7 +463,6 @@ export function deleteSecret(directories: import('../users.js').UserDirectoryLis
  * @param {string?} id Secret ID (optional)
  * @returns {string} Secret value
  */
-// @ts-expect-error TS(2694) FIXME: Namespace '"/mnt/DISCO/downloads/some_git_projects... Remove this comment to see the full error message
 export function readSecret(directories: import('../users.js').UserDirectoryList, key: string, id: string | null = null) {
     return new SecretManager(directories).readSecret(key, id);
 }
@@ -480,7 +472,6 @@ export function readSecret(directories: import('../users.js').UserDirectoryList,
  * @param {import('../users.js').UserDirectoryList} directories User directories
  * @returns {Record<string, boolean>} Secret state
  */
-// @ts-expect-error TS(2694) FIXME: Namespace '"/mnt/DISCO/downloads/some_git_projects... Remove this comment to see the full error message
 export function readSecretState(directories: import('../users.js').UserDirectoryList) {
     const state = new SecretManager(directories).getSecretState();
     const result = /** @type {Record<string, boolean>} */ ({});
@@ -500,7 +491,6 @@ export function readSecretState(directories: import('../users.js').UserDirectory
  * @param {import('../users.js').UserDirectoryList} directories User directories
  * @returns {Record<string, string>} Secrets
  */
-// @ts-expect-error TS(2694) FIXME: Namespace '"/mnt/DISCO/downloads/some_git_projects... Remove this comment to see the full error message
 export function getAllSecrets(directories: import('../users.js').UserDirectoryList) {
     const secrets = new SecretManager(directories).getAllSecrets();
     const result = /** @type {Record<string, string>} */ ({});
@@ -525,7 +515,6 @@ export function getAllSecrets(directories: import('../users.js').UserDirectoryLi
  * Migrates legacy flat secrets format to the new format for all user directories
  * @param {import('../users.js').UserDirectoryList[]} directoriesList User directories
  */
-// @ts-expect-error TS(2694) FIXME: Namespace '"/mnt/DISCO/downloads/some_git_projects... Remove this comment to see the full error message
 export function migrateFlatSecrets(directoriesList: import('../users.js').UserDirectoryList[]) {
     for (const directories of directoriesList) {
         try {
@@ -539,7 +528,6 @@ export function migrateFlatSecrets(directoriesList: import('../users.js').UserDi
 
 export const router = express.Router();
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/write', (request, response) => {
     try {
         const { key, value, label } = request.body;
@@ -558,7 +546,6 @@ router.post('/write', (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/read', (request, response) => {
     try {
         const manager = new SecretManager(request.user.directories);
@@ -570,7 +557,6 @@ router.post('/read', (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/view', (request, response) => {
     try {
         if (!allowKeysExposure) {
@@ -591,7 +577,6 @@ router.post('/view', (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/find', (request, response) => {
     try {
         const { key, id } = request.body;
@@ -621,7 +606,6 @@ router.post('/find', (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/delete', (request, response) => {
     try {
         const { key, id } = request.body;
@@ -640,7 +624,6 @@ router.post('/delete', (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/rotate', (request, response) => {
     try {
         const { key, id } = request.body;
@@ -659,7 +642,6 @@ router.post('/rotate', (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/rename', (request, response) => {
     try {
         const { key, id, label } = request.body;
@@ -678,7 +660,6 @@ router.post('/rename', (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter '_request' implicitly has an 'any' type.
 router.post('/settings', async (_request, response) => {
     return response.send({ allowKeysExposure });
 });

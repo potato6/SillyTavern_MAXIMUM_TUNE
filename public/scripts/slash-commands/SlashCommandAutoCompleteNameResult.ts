@@ -158,7 +158,6 @@ export class SlashCommandAutoCompleteNameResult extends AutoCompleteNameResult {
         }
         const lastArgIsBlank = this.executor.unnamedArgumentList.slice(-1)[0]?.value == '';
         const notProvidedArguments = this.executor.command.unnamedArgumentList.slice(this.executor.unnamedArgumentList.length - (lastArgIsBlank ? 1 : 0));
-        // @ts-expect-error TS(7034) FIXME: Variable 'value' implicitly has type 'any' in some... Remove this comment to see the full error message
         let value;
         let start;
         let cmdArg;

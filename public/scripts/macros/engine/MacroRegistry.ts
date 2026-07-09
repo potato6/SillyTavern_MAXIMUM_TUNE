@@ -529,7 +529,7 @@ class MacroRegistry {
         /** @type {MacroCategory|string} */
         let category = MacroCategory.UNCATEGORIZED;
         if (typeof rawCategory === 'string' && rawCategory.trim()) {
-            category = rawCategory.trim();
+            category = rawCategory.trim() as typeof MacroCategory;
         }
 
         let minArgs = 0;

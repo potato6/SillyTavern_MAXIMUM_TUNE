@@ -1,4 +1,3 @@
-// @ts-expect-error TS(1259) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import express from 'express';
 import fetch from 'node-fetch';
 import { readSecret, SECRET_KEYS } from './secrets.js';
@@ -34,7 +33,6 @@ function normalizeUsage(usage: Record<string, unknown>) {
     };
 }
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
 router.post('/credits', async (req, res) => {
     try {
         const key = readSecret(req.user.directories, SECRET_KEYS.NANOGPT);
@@ -60,9 +58,7 @@ router.post('/credits', async (req, res) => {
             return res.sendStatus(500);
         }
 
-        /** @type {any} */
-        const balanceData = await balanceReq.value.json();
-        /** @type {any} */
+        const balanceData = await balanceReq.value.json() as any;
         const result = {
             usd_balance: parseNumber(balanceData.usd_balance),
             nano_balance: parseNumber(balanceData.nano_balance),
@@ -70,8 +66,7 @@ router.post('/credits', async (req, res) => {
         };
 
         if (subReq.status === 'fulfilled' && subReq.value.ok) {
-            /** @type {any} */
-            const subData = await subReq.value.json();
+            const subData = await subReq.value.json() as any;
             if (subData.active) {
                 // @ts-expect-error TS(2322) FIXME: Type '{ active: boolean; state: string; allowOvera... Remove this comment to see the full error message
                 result.subscription = {
@@ -104,7 +99,6 @@ router.post('/credits', async (req, res) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
 router.post('/models/providers', async (req, res) => {
     try {
         const { model } = req.body;
@@ -126,7 +120,7 @@ router.post('/models/providers', async (req, res) => {
         }
 
         /** @type {any} */
-        const data = await response.json();
+        const data = await response.json() as any;
         const providers = Array.isArray(data?.providers)
             ? data.providers.filter((p: Record<string, unknown>) => p?.available !== false).map((p: Record<string, unknown>) => p.provider).filter(Boolean)
             : [];

@@ -32,7 +32,6 @@ import {
     system_message_types,
     this_chid,
 } from '../script.js';
-// @ts-expect-error TS(7034) FIXME: Variable 'selected_group' implicitly has type 'any... Remove this comment to see the full error message
 import { getGroupNames, selected_group } from './group-chats.js';
 
 import {
@@ -172,7 +171,7 @@ const textCompletionModels = [
 
 // @ts-expect-error TS(7034) FIXME: Variable 'biasCache' implicitly has type 'any' in ... Remove this comment to see the full error message
 let biasCache = undefined;
-export let model_list = [];
+export let model_list: any[] = [];
 
 export const chat_completion_sources = {
     OPENAI: 'openai',
@@ -597,7 +596,6 @@ function setOpenAIMessages(chat) {
             case character_names_behavior.NONE:
                 break;
             case character_names_behavior.DEFAULT:
-                // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
                 if ((selected_group && chat[j].name !== name1) || (chat[j].force_avatar && chat[j].name !== name1 && chat[j].extra?.type !== system_message_types.NARRATOR)) {
                     content = `${chat[j].name}: ${content}`;
                 }
@@ -627,7 +625,6 @@ function setOpenAIMessages(chat) {
         const originModel = chat[j]?.extra?.model;
         const isSameModel = originApi === currentApi && originModel === currentModel;
         // In group chats, only include reasoning from the currently generating character
-        // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
         const isOtherGroupMember = selected_group && chat[j].name !== name2;
         const signature = isSameModel && !isOtherGroupMember ? chat[j]?.extra?.reasoning_signature : null;
         const reasoning = isSameModel && !isOtherGroupMember ? String(chat[j]?.extra?.reasoning ?? '') : '';
@@ -765,7 +762,6 @@ export function parseExampleIntoIndividual(messageExampleString, appendNamesForG
         // @ts-expect-error TS(7005) FIXME: Variable 'cur_msg_lines' implicitly has an 'any[]'... Remove this comment to see the full error message
         let parsed_msg = cur_msg_lines.join('\n').replace(name + ':', '').trim();
 
-        // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
         if (appendNamesForGroup && selected_group && ['example_user', 'example_assistant'].includes(system_name)) {
             parsed_msg = `${name}: ${parsed_msg}`;
         }
@@ -930,7 +926,6 @@ async function populateChatHistory(messages, prompts, chatCompletion, type = nul
     chatCompletion.add(new MessageCollection('chatHistory'), prompts.index('chatHistory'));
 
     // Reserve budget for new chat message
-    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
     const newChat = selected_group ? oai_settings.new_group_chat_prompt : oai_settings.new_chat_prompt;
     const newChatMessage = await Message.createAsync('system', substituteParams(newChat), 'newMainChat');
     chatCompletion.reserveBudget(newChatMessage);
@@ -1131,7 +1126,6 @@ async function populateChatHistory(messages, prompts, chatCompletion, type = nul
     chatCompletion.insertAtStart(newChatMessage, 'chatHistory');
 
     // Reserve budget for group nudge
-    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
     if (selected_group && groupNudgeMessage) {
         chatCompletion.freeBudget(groupNudgeMessage);
         chatCompletion.insertAtEnd(groupNudgeMessage, 'chatHistory');
@@ -1919,34 +1913,21 @@ export function getChatCompletionModel(settings = null) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'option' implicitly has an 'any' type.
 function getOpenRouterModelTemplate(option) {
-    // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
     const model = model_list.find(x => x.id === option?.element?.value);
 
     if (!option.id || !model) {
         return option.text;
     }
 
-    // @ts-expect-error TS(2339) FIXME: Property 'pricing' does not exist on type 'never'.
     const tokens_dollar = Number(1 / (1000 * model.pricing?.prompt));
     const tokens_rounded = (Math.round(tokens_dollar * 1000) / 1000).toFixed(0);
 
-    // @ts-expect-error TS(2339) FIXME: Property 'pricing' does not exist on type 'never'.
     const price = 0 === Number(model.pricing?.prompt) ? 'Free' : `${tokens_rounded}k t/$ `;
 
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     return $((`
-        // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
-        // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
-        // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
-        // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
-        // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
-        <div class="flex-container flexFlowColumn" title="${DOMPurify.sanitize(model.id)}">
-            // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
-            // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
-            // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
-            // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
-            // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
-            <div><strong>${DOMPurify.sanitize(model.name)}</strong> | ${model.context_length} ctx | <small>${price}</small></div>
+        <div class="flex-container flexFlowColumn" title="${DOMPurify.sanitize((model as any).id)}">
+            <div><strong>${DOMPurify.sanitize((model as any).name)}</strong> | ${(model as any).context_length} ctx | <small>${price}</small></div>
         </div>
     `));
 }
@@ -1960,14 +1941,10 @@ function calculateOpenRouterCost() {
     }
 
     let cost = 'Unknown';
-    // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
     const model = model_list.find(x => x.id === oai_settings.openrouter_model);
 
-    // @ts-expect-error TS(2339) FIXME: Property 'pricing' does not exist on type 'never'.
     if (model?.pricing) {
-        // @ts-expect-error TS(2339) FIXME: Property 'pricing' does not exist on type 'never'.
         const completionCost = Number(model.pricing.completion);
-        // @ts-expect-error TS(2339) FIXME: Property 'pricing' does not exist on type 'never'.
         const promptCost = Number(model.pricing.prompt);
         const completionTokens = oai_settings.openai_max_tokens;
         const promptTokens = (oai_settings.openai_max_context - completionTokens);
@@ -1992,26 +1969,19 @@ function calculateOpenRouterCost() {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'option' implicitly has an 'any' type.
 function getElectronHubModelTemplate(option) {
-    // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
     const model = model_list.find(x => x.id === option?.element?.value);
 
     if (!option.id || !model) {
         return option.text;
     }
 
-    // @ts-expect-error TS(2339) FIXME: Property 'pricing' does not exist on type 'never'.
     const inputPrice = model.pricing?.input;
-    // @ts-expect-error TS(2339) FIXME: Property 'pricing' does not exist on type 'never'.
     const outputPrice = model.pricing?.output;
     const price = inputPrice && outputPrice ? `$${inputPrice}/$${outputPrice} in/out Mtoken` : 'Unknown';
 
-    // @ts-expect-error TS(2339) FIXME: Property 'metadata' does not exist on type 'never'... Remove this comment to see the full error message
     const visionIcon = model.metadata?.vision ? '<i class="fa-solid fa-eye fa-sm" title="This model supports vision"></i>' : '';
-    // @ts-expect-error TS(2339) FIXME: Property 'metadata' does not exist on type 'never'... Remove this comment to see the full error message
     const reasoningIcon = model.metadata?.reasoning ? '<i class="fa-solid fa-brain fa-sm" title="This model supports reasoning"></i>' : '';
-    // @ts-expect-error TS(2339) FIXME: Property 'metadata' does not exist on type 'never'... Remove this comment to see the full error message
     const toolCallsIcon = model.metadata?.function_call ? '<i class="fa-solid fa-wrench fa-sm" title="This model supports function tools"></i>' : '';
-    // @ts-expect-error TS(2339) FIXME: Property 'premium_model' does not exist on type 'n... Remove this comment to see the full error message
     const premiumIcon = model?.premium_model ? '<i class="fa-solid fa-crown fa-sm" title="This model requires a subscription"></i>' : '';
 
     const iconsContainer = document.createElement('span');
@@ -2049,14 +2019,10 @@ function calculateElectronHubCost() {
     }
 
     let cost = 'Unknown';
-    // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
     const model = model_list.find(x => x.id === oai_settings.electronhub_model);
 
-    // @ts-expect-error TS(2339) FIXME: Property 'pricing' does not exist on type 'never'.
     if (model?.pricing) {
-        // @ts-expect-error TS(2339) FIXME: Property 'pricing' does not exist on type 'never'.
         const outputCost = Number(model.pricing.output / 1000000);
-        // @ts-expect-error TS(2339) FIXME: Property 'pricing' does not exist on type 'never'.
         const inputCost = Number(model.pricing.input / 1000000);
         const outputTokens = oai_settings.openai_max_tokens;
         const inputTokens = (oai_settings.openai_max_context - outputTokens);
@@ -2076,16 +2042,13 @@ function calculateElectronHubCost() {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'option' implicitly has an 'any' type.
 function getChutesModelTemplate(option) {
-    // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
     const model = model_list.find(x => x.id === option?.element?.value);
 
     if (!option.id || !model) {
         return option.text;
     }
 
-    // @ts-expect-error TS(2339) FIXME: Property 'pricing' does not exist on type 'never'.
     const inputPrice = model.pricing?.input;
-    // @ts-expect-error TS(2339) FIXME: Property 'pricing' does not exist on type 'never'.
     const outputPrice = model.pricing?.output;
 
     let price = 'Unknown';
@@ -2098,13 +2061,9 @@ function getChutesModelTemplate(option) {
         }
     }
 
-    // @ts-expect-error TS(2339) FIXME: Property 'context_length' does not exist on type '... Remove this comment to see the full error message
     const contextLength = model.context_length || model.max_model_len || 'Unknown';
-    // @ts-expect-error TS(2339) FIXME: Property 'input_modalities' does not exist on type... Remove this comment to see the full error message
     const visionIcon = model.input_modalities?.includes('image') ? '<i class="fa-solid fa-eye fa-sm" title="This model supports vision"></i>' : '';
-    // @ts-expect-error TS(2339) FIXME: Property 'supported_features' does not exist on ty... Remove this comment to see the full error message
     const reasoningIcon = model.supported_features?.includes('reasoning') ? '<i class="fa-solid fa-brain fa-sm" title="This model supports reasoning"></i>' : '';
-    // @ts-expect-error TS(2339) FIXME: Property 'supported_features' does not exist on ty... Remove this comment to see the full error message
     const toolCallsIcon = model.supported_features?.includes('structured_outputs') ? '<i class="fa-solid fa-wrench fa-sm" title="This model supports function tools"></i>' : '';
 
     const iconsContainer = document.createElement('span');
@@ -2141,14 +2100,10 @@ function calculateChutesCost() {
     }
 
     let cost = 'Unknown';
-    // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
     const model = model_list.find(x => x.id === oai_settings.chutes_model);
 
-    // @ts-expect-error TS(2339) FIXME: Property 'pricing' does not exist on type 'never'.
     if (model?.pricing) {
-        // @ts-expect-error TS(2339) FIXME: Property 'pricing' does not exist on type 'never'.
         const outputPrice = model.pricing?.output;
-        // @ts-expect-error TS(2339) FIXME: Property 'pricing' does not exist on type 'never'.
         const inputPrice = model.pricing?.input;
 
         if (outputPrice !== undefined && inputPrice !== undefined) {
@@ -2173,16 +2128,13 @@ function calculateChutesCost() {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'option' implicitly has an 'any' type.
 function getNanoGptModelTemplate(option) {
-    // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
     const model = model_list.find(x => x.id === option?.element?.value);
 
     if (!option.id || !model) {
         return option.text;
     }
 
-    // @ts-expect-error TS(2339) FIXME: Property 'pricing' does not exist on type 'never'.
     const inputPrice = model.pricing?.prompt;
-    // @ts-expect-error TS(2339) FIXME: Property 'pricing' does not exist on type 'never'.
     const outputPrice = model.pricing?.completion;
     let price = 'Unknown';
 
@@ -2194,15 +2146,11 @@ function getNanoGptModelTemplate(option) {
         }
     }
 
-    // @ts-expect-error TS(2339) FIXME: Property 'capabilities' does not exist on type 'ne... Remove this comment to see the full error message
     const visionIcon = model.capabilities?.vision ? '<i class="fa-solid fa-eye fa-sm" title="This model supports vision"></i>' : '';
-    // @ts-expect-error TS(2339) FIXME: Property 'capabilities' does not exist on type 'ne... Remove this comment to see the full error message
     const reasoningIcon = model.capabilities?.reasoning ? '<i class="fa-solid fa-brain fa-sm" title="This model supports reasoning"></i>' : '';
-    // @ts-expect-error TS(2339) FIXME: Property 'capabilities' does not exist on type 'ne... Remove this comment to see the full error message
     const toolCallsIcon = model.capabilities?.tool_calling ? '<i class="fa-solid fa-wrench fa-sm" title="This model supports tool calling"></i>' : '';
 
     let subHtml = '';
-    // @ts-expect-error TS(2339) FIXME: Property 'subscription' does not exist on type 'ne... Remove this comment to see the full error message
     const sub = model.subscription;
 
     if (sub) {
@@ -2229,9 +2177,7 @@ function getNanoGptModelTemplate(option) {
 
     const capabilities = (iconsContainer.children.length) ? ` | ${iconsContainer.innerHTML}` : '';
 
-    // @ts-expect-error TS(2339) FIXME: Property 'context_length' does not exist on type '... Remove this comment to see the full error message
     const contextLength = model.context_length || 'Unknown';
-    // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
     const modelName = model.name || model.id;
 
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
@@ -2253,14 +2199,12 @@ function getNanoGptModelTemplate(option) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'option' implicitly has an 'any' type.
 function getAimlapiModelTemplate(option) {
-    // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
     const model = model_list.find(x => x.id === option?.element?.value);
 
     if (!option.id || !model) {
         return option.text;
     }
 
-    // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
     const vendor = model.id.split('/')[0];
 
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
@@ -2289,7 +2233,6 @@ function getAimlapiModelTemplate(option) {
 function saveModelList(data) {
     // @ts-expect-error TS(7006) FIXME: Parameter 'model' implicitly has an 'any' type.
     model_list = data.map((model) => ({ ...model }));
-    // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
     model_list.sort((a, b) => a?.id && b?.id && a.id.localeCompare(b.id));
 
     if (oai_settings.chat_completion_source == chat_completion_sources.OPENROUTER) {
@@ -2318,9 +2261,7 @@ function saveModelList(data) {
         } else {
                 model_list.forEach((model) => {
                     const option = document.createElement('option');
-                    // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
                     option.value = model.id;
-                    // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
                     option.textContent = model.name;
                     document.getElementById('model_openrouter_select')?.appendChild(option);
                 });
@@ -2335,15 +2276,12 @@ function saveModelList(data) {
         if (externalCategory) externalCategory.innerHTML = '';
         model_list.forEach((model) => {
             const option = document.createElement('option');
-            // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
             option.value = model.id;
-            // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
             option.textContent = model.id;
             externalCategory?.appendChild(option);
         });
         // If the selected model is not in the list, revert to default
         if (oai_settings.show_external_models) {
-            // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
             const model = model_list.findIndex((model) => model.id == oai_settings.openai_model) !== -1 ? oai_settings.openai_model : default_settings.openai_model;
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#model_openai_select').val(model).trigger('change');
@@ -2361,11 +2299,8 @@ function saveModelList(data) {
         model_list.forEach((model) => {
             document.querySelectorAll('.model_custom_select').forEach(el => {
                 const option = document.createElement('option');
-                // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
                 option.value = model.id;
-                // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
                 option.textContent = model.id;
-                // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
                 option.selected = model.id == oai_settings.custom_model;
                 el.appendChild(option);
             });
@@ -2378,7 +2313,6 @@ function saveModelList(data) {
     }
 
     if (oai_settings.chat_completion_source == chat_completion_sources.AIMLAPI) {
-        // @ts-expect-error TS(2339) FIXME: Property 'type' does not exist on type 'never'.
         model_list = model_list.filter(m => m.type === 'chat-completion');
         model_list = sortModelsBy(model_list, oai_settings.sort_models, chat_completion_sources.AIMLAPI);
         const aimlapiSelect = document.getElementById('model_aimlapi_select');
@@ -2401,16 +2335,13 @@ function saveModelList(data) {
         } else {
             model_list.forEach((model) => {
                 const option = document.createElement('option');
-                // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
                 option.value = model.id;
-                // @ts-expect-error TS(2339) FIXME: Property 'info' does not exist on type 'never'.
                 option.textContent = model.info?.name || model.id;
                 aimlapiSelect?.appendChild(option);
             });
         }
 
         if (!oai_settings.aimlapi_model && model_list.length > 0) {
-            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             oai_settings.aimlapi_model = model_list[0].id;
         }
 
@@ -2422,17 +2353,13 @@ function saveModelList(data) {
         const mistralSelect = document.getElementById('model_mistralai_select');
         if (mistralSelect) mistralSelect.innerHTML = '';
 
-        // @ts-expect-error TS(2339) FIXME: Property 'capabilities' does not exist on type 'ne... Remove this comment to see the full error message
         for (const model of model_list.filter(model => model?.capabilities?.completion_chat)) {
-            // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
             const option = new Option(model.id, model.id);
             mistralSelect?.appendChild(option);
         }
 
-        // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
         const selectedModel = model_list.find(model => model.id === oai_settings.mistralai_model);
         if (!selectedModel) {
-            // @ts-expect-error TS(2339) FIXME: Property 'capabilities' does not exist on type 'ne... Remove this comment to see the full error message
             oai_settings.mistralai_model = model_list.find(model => model?.capabilities?.completion_chat)?.id;
         }
 
@@ -2441,7 +2368,6 @@ function saveModelList(data) {
     }
 
     if (oai_settings.chat_completion_source == chat_completion_sources.ELECTRONHUB) {
-        // @ts-expect-error TS(2339) FIXME: Property 'endpoints' does not exist on type 'never... Remove this comment to see the full error message
         model_list = model_list.filter(model => model?.endpoints?.includes('/v1/chat/completions'));
         model_list = sortModelsBy(model_list, oai_settings.sort_models, chat_completion_sources.ELECTRONHUB);
         const electronHubSelect = document.getElementById('model_electronhub_select');
@@ -2464,18 +2390,14 @@ function saveModelList(data) {
         } else {
             model_list.forEach((model) => {
                 const option = document.createElement('option');
-                // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
                 option.value = model.id;
-                // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
                 option.textContent = model.name;
                 electronHubSelect?.appendChild(option);
             });
         }
 
-        // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
         const selectedModel = model_list.find(model => model.id === oai_settings.electronhub_model);
         if (model_list.length > 0 && (!selectedModel || !oai_settings.electronhub_model)) {
-            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             oai_settings.electronhub_model = model_list[0].id;
         }
 
@@ -2484,7 +2406,6 @@ function saveModelList(data) {
     }
 
     if (oai_settings.chat_completion_source == chat_completion_sources.CHUTES) {
-        // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
         model_list = model_list.filter(model => typeof model.id === 'string' && !model.id.toLowerCase().includes('affine'));
         model_list = sortModelsBy(model_list, oai_settings.sort_models, chat_completion_sources.CHUTES);
         const chutesSelect = document.getElementById('model_chutes_select');
@@ -2504,16 +2425,13 @@ function saveModelList(data) {
             });
         } else {
             model_list.forEach((model) => {
-                // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
                 const option = new Option(model.id, model.id);
                 chutesSelect?.appendChild(option);
             });
         }
 
-        // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
         const selectedModel = model_list.find(model => model.id === oai_settings.chutes_model);
         if (model_list.length > 0 && (!selectedModel || !oai_settings.chutes_model)) {
-            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             oai_settings.chutes_model = model_list[0].id;
         }
 
@@ -2540,16 +2458,13 @@ function saveModelList(data) {
             });
         } else {
             model_list.forEach((model) => {
-                // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
                 const option = new Option(model.name || model.id, model.id);
                 nanogptSelect?.appendChild(option);
             });
         }
 
-        // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
         const selectedModel = model_list.find(model => model.id === oai_settings.nanogpt_model);
         if (model_list.length > 0 && (!selectedModel || !oai_settings.nanogpt_model)) {
-            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             oai_settings.nanogpt_model = model_list[0].id;
         }
 
@@ -2564,15 +2479,12 @@ function saveModelList(data) {
         const deepseekSelect = document.getElementById('model_deepseek_select');
         if (deepseekSelect) deepseekSelect.innerHTML = '';
         model_list.forEach((model) => {
-            // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
             const option = new Option(model.id, model.id);
             deepseekSelect?.appendChild(option);
         });
 
-        // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
         const selectedModel = model_list.find(model => model.id === oai_settings.deepseek_model);
         if (model_list.length > 0 && (!selectedModel || !oai_settings.deepseek_model)) {
-            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             oai_settings.deepseek_model = model_list[0].id;
         }
 
@@ -2587,15 +2499,12 @@ function saveModelList(data) {
         const pollinationsSelect = document.getElementById('model_pollinations_select');
         if (pollinationsSelect) pollinationsSelect.innerHTML = '';
         model_list.forEach((model) => {
-            // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
             const option = new Option(model.id, model.id);
             pollinationsSelect?.appendChild(option);
         });
 
-        // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
         const selectedModel = model_list.find(model => model.id === oai_settings.pollinations_model);
         if (model_list.length > 0 && (!selectedModel || !oai_settings.pollinations_model)) {
-            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             oai_settings.pollinations_model = model_list[0].id;
         }
 
@@ -2623,24 +2532,19 @@ function saveModelList(data) {
         model_list.forEach((model) => {
             // @ts-expect-error TS(7005) FIXME: Variable 'staticModels' implicitly has an 'any[]' ... Remove this comment to see the full error message
             if (!staticModels.includes(model.id)) {
-                // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
                 const option = new Option(model.id, model.id);
                 googleOtherModels?.appendChild(option);
             }
         });
 
         staticModels.forEach(modelId => {
-            // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
             if (!model_list.some(model => model.id === modelId)) {
-                // @ts-expect-error TS(2322) FIXME: Type 'any' is not assignable to type 'never'.
                 model_list.push({ id: modelId });
             }
         });
 
-        // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
         const selectedModel = model_list.find(model => model.id === oai_settings.google_model);
         if (model_list.length > 0 && (!selectedModel || !oai_settings.google_model)) {
-            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             oai_settings.google_model = model_list[0].id;
         }
 
@@ -2655,15 +2559,12 @@ function saveModelList(data) {
         const groqSelect = document.getElementById('model_groq_select');
         if (groqSelect) groqSelect.innerHTML = '';
         model_list.forEach((model) => {
-            // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
             const option = new Option(model.id, model.id);
             groqSelect?.appendChild(option);
         });
 
-        // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
         const selectedModel = model_list.find(model => model.id === oai_settings.groq_model);
         if (model_list.length > 0 && (!selectedModel || !oai_settings.groq_model)) {
-            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             oai_settings.groq_model = model_list[0].id;
         }
 
@@ -2678,15 +2579,12 @@ function saveModelList(data) {
         const siliconflowSelect = document.getElementById('model_siliconflow_select');
         if (siliconflowSelect) siliconflowSelect.innerHTML = '';
         model_list.forEach((model) => {
-            // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
             const option = new Option(model.id, model.id);
             siliconflowSelect?.appendChild(option);
         });
 
-        // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
         const selectedModel = model_list.find(model => model.id === oai_settings.siliconflow_model);
         if (model_list.length > 0 && (!selectedModel || !oai_settings.siliconflow_model)) {
-            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             oai_settings.siliconflow_model = model_list[0].id;
         }
 
@@ -2701,19 +2599,15 @@ function saveModelList(data) {
         const fireworksSelect = document.getElementById('model_fireworks_select');
         if (fireworksSelect) fireworksSelect.innerHTML = '';
         model_list.forEach((model) => {
-            // @ts-expect-error TS(2339) FIXME: Property 'supports_chat' does not exist on type 'n... Remove this comment to see the full error message
             if (!model?.supports_chat) {
                 return;
             }
-            // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
             const option = new Option(model.id, model.id);
             fireworksSelect?.appendChild(option);
         });
 
-        // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
         const selectedModel = model_list.find(model => model.id === oai_settings.fireworks_model);
         if (model_list.length > 0 && (!selectedModel || !oai_settings.fireworks_model)) {
-            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             oai_settings.fireworks_model = model_list[0].id;
         }
 
@@ -2728,15 +2622,12 @@ function saveModelList(data) {
         const workersAiSelect = document.getElementById('model_workers_ai_select');
         if (workersAiSelect) workersAiSelect.innerHTML = '';
         model_list.forEach((model) => {
-            // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
             const option = new Option(model.id, model.id);
             workersAiSelect?.appendChild(option);
         });
 
-        // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
         const selectedModel = model_list.find(model => model.id === oai_settings.workers_ai_model);
         if (model_list.length > 0 && (!selectedModel || !oai_settings.workers_ai_model)) {
-            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             oai_settings.workers_ai_model = model_list[0].id;
         }
 
@@ -2752,7 +2643,6 @@ function saveModelList(data) {
         if (cometapiSelect) cometapiSelect.innerHTML = '';
 
         model_list.forEach((model) => {
-            // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
             const modelId = model.id.toLowerCase();
             const isIgnoredModel = COMETAPI_IGNORE_PATTERNS.some(pattern => modelId.includes(pattern));
 
@@ -2760,15 +2650,12 @@ function saveModelList(data) {
                 return;
             }
 
-            // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
             const option = new Option(model.id, model.id);
             cometapiSelect?.appendChild(option);
         });
 
-        // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
         const selectedModel = model_list.find(model => model.id === oai_settings.cometapi_model);
         if (model_list.length > 0 && (!selectedModel || !oai_settings.cometapi_model)) {
-            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             oai_settings.cometapi_model = model_list[0].id;
             saveSettingsDebounced();
         }
@@ -2781,7 +2668,6 @@ function saveModelList(data) {
     }
 
     if (oai_settings.chat_completion_source == chat_completion_sources.AZURE_OPENAI) {
-        // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
         const modelId = model_list?.[0]?.id || '';
         oai_settings.azure_openai_model = modelId;
 
@@ -2797,15 +2683,12 @@ function saveModelList(data) {
         const xaiSelect = document.getElementById('model_xai_select');
         if (xaiSelect) xaiSelect.innerHTML = '';
         model_list.forEach((model) => {
-            // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
             const option = new Option(model.id, model.id);
             xaiSelect?.appendChild(option);
         });
 
-        // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
         const selectedModel = model_list.find(model => model.id === oai_settings.xai_model);
         if (model_list.length > 0 && (!selectedModel || !oai_settings.xai_model)) {
-            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             oai_settings.xai_model = model_list[0].id;
         }
 
@@ -2820,15 +2703,12 @@ function saveModelList(data) {
         const moonshotSelect = document.getElementById('model_moonshot_select');
         if (moonshotSelect) moonshotSelect.innerHTML = '';
         model_list.forEach((model) => {
-            // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
             const option = new Option(model.id, model.id);
             moonshotSelect?.appendChild(option);
         });
 
-        // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
         const selectedModel = model_list.find(model => model.id === oai_settings.moonshot_model);
         if (model_list.length > 0 && (!selectedModel || !oai_settings.moonshot_model)) {
-            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             oai_settings.moonshot_model = model_list[0].id;
         }
 
@@ -3092,9 +2972,7 @@ function getReasoningEffort(settings = null, model = null) {
     // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     if (settings.chat_completion_source === chat_completion_sources.ELECTRONHUB) {
         if (Array.isArray(model_list) && reasoningEffort) {
-            // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
             const currentModel = model_list.find(m => m.id === model);
-            // @ts-expect-error TS(2339) FIXME: Property 'metadata' does not exist on type 'never'... Remove this comment to see the full error message
             const supportedEfforts = currentModel?.metadata?.supported_reasoning_efforts;
             if (Array.isArray(supportedEfforts) && supportedEfforts.includes(reasoningEffort)) {
                 return reasoningEffort;
@@ -3990,7 +3868,7 @@ class TokenHandler {
 
     // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
     uncount(value, type) {
-        this.counts[type] -= value;
+        this.counts[type]! -= value;
     }
 
     /**
@@ -4003,7 +3881,7 @@ class TokenHandler {
     // @ts-expect-error TS(7006) FIXME: Parameter 'messages' implicitly has an 'any' type.
     async countAsync(messages, full, type) {
         const token_count = await this.countTokenAsyncFn(messages, full);
-        this.counts[type] += token_count;
+        this.counts[type]! += token_count;
 
         return token_count;
     }
@@ -4376,7 +4254,7 @@ class Message {
  * @class MessageCollection
  */
 class MessageCollection {
-    collection = [];
+    collection: any[] = [];
     identifier;
 
     /**
@@ -4392,7 +4270,6 @@ class MessageCollection {
             }
         }
 
-        // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
         this.collection.push(...items);
         this.identifier = identifier;
     }
@@ -4403,22 +4280,14 @@ class MessageCollection {
      */
     getChat() {
         return this.collection.reduce((acc, message) => {
-            // @ts-expect-error TS(2339) FIXME: Property 'content' does not exist on type 'never'.
             if (message.content || message.tool_calls) {
                 acc.push({
-                    // @ts-expect-error TS(2322) FIXME: Type 'any' is not assignable to type 'never'.
                     role: message.role,
-                    // @ts-expect-error TS(2322) FIXME: Type 'any' is not assignable to type 'never'.
                     content: message.content,
-                    // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
                     ...(message.name && { name: message.name }),
-                    // @ts-expect-error TS(2339) FIXME: Property 'tool_calls' does not exist on type 'neve... Remove this comment to see the full error message
                     ...(message.tool_calls && { tool_calls: message.tool_calls }),
-                    // @ts-expect-error TS(2339) FIXME: Property 'role' does not exist on type 'never'.
                     ...(message.role === 'tool' && { tool_call_id: message.identifier }),
-                    // @ts-expect-error TS(2339) FIXME: Property 'signature' does not exist on type 'never... Remove this comment to see the full error message
                     ...(message.signature && { signature: message.signature }),
-                    // @ts-expect-error TS(2339) FIXME: Property 'reasoning' does not exist on type 'never... Remove this comment to see the full error message
                     ...(message.reasoning && { reasoning: message.reasoning }),
                 });
             }
@@ -4438,9 +4307,7 @@ class MessageCollection {
      * Add a new item to the collection.
      * @param {object} item - The Message or MessageCollection instance to be added.
      */
-    // @ts-expect-error TS(7006) FIXME: Parameter 'item' implicitly has an 'any' type.
     add(item) {
-        // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
         this.collection.push(item);
     }
 
@@ -4449,9 +4316,7 @@ class MessageCollection {
      * @param {string} identifier - The identifier of the item to be found.
      * @returns {object} The found item, or undefined if no item was found.
      */
-    // @ts-expect-error TS(7006) FIXME: Parameter 'identifier' implicitly has an 'any' typ... Remove this comment to see the full error message
     getItemByIdentifier(identifier) {
-        // @ts-expect-error TS(2339) FIXME: Property 'identifier' does not exist on type 'neve... Remove this comment to see the full error message
         return this.collection.find(item => item?.identifier === identifier);
     }
 
@@ -4460,9 +4325,7 @@ class MessageCollection {
      * @param {string} identifier - The identifier to check.
      * @returns {boolean} True if an item with the given identifier exists, false otherwise.
      */
-    // @ts-expect-error TS(7006) FIXME: Parameter 'identifier' implicitly has an 'any' typ... Remove this comment to see the full error message
     hasItemWithIdentifier(identifier) {
-        // @ts-expect-error TS(2339) FIXME: Property 'identifier' does not exist on type 'neve... Remove this comment to see the full error message
         return this.collection.some(message => message.identifier === identifier);
     }
 
@@ -4471,7 +4334,6 @@ class MessageCollection {
      * @returns {number} The total number of tokens.
      */
     getTokens() {
-        // @ts-expect-error TS(2339) FIXME: Property 'getTokens' does not exist on type 'never... Remove this comment to see the full error message
         return this.collection.reduce((tokens, message) => tokens + message.getTokens(), 0);
     }
 
@@ -4481,9 +4343,7 @@ class MessageCollection {
      */
     flatten() {
         return this.collection.reduce((acc, message) => {
-            // @ts-expect-error TS(2358) FIXME: The left-hand side of an 'instanceof' expression m... Remove this comment to see the full error message
             if (message instanceof MessageCollection) {
-                // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
                 acc.push(...message.flatten());
             } else {
                 acc.push(message);
@@ -4515,12 +4375,10 @@ export class ChatCompletion {
         this.messages.collection = this.messages.flatten();
 
         let lastMessage = null;
-        // @ts-expect-error TS(7034) FIXME: Variable 'squashedMessages' implicitly has type 'a... Remove this comment to see the full error message
         const squashedMessages = [];
 
         for (const message of this.messages.collection) {
             // Force exclude empty messages
-            // @ts-expect-error TS(2339) FIXME: Property 'role' does not exist on type 'never'.
             if (message.role === 'system' && !message.content) {
                 continue;
             }
@@ -4532,7 +4390,6 @@ export class ChatCompletion {
 
             if (shouldSquash(message)) {
                 if (lastMessage && shouldSquash(lastMessage)) {
-                    // @ts-expect-error TS(2339) FIXME: Property 'content' does not exist on type 'never'.
                     lastMessage.content += '\n' + message.content;
                     // @ts-expect-error TS(2339) FIXME: Property 'tokens' does not exist on type 'never'.
                     lastMessage.tokens = await tokenHandler.countAsync({ role: lastMessage.role, content: lastMessage.content });
@@ -4546,7 +4403,6 @@ export class ChatCompletion {
             }
         }
 
-        // @ts-expect-error TS(2322) FIXME: Type 'any[]' is not assignable to type 'never[]'.
         this.messages.collection = squashedMessages;
     }
 
@@ -4596,10 +4452,8 @@ export class ChatCompletion {
         this.checkTokenBudget(collection, collection.identifier);
 
         if (null !== position && -1 !== position) {
-            // @ts-expect-error TS(2322) FIXME: Type 'any' is not assignable to type 'never'.
             this.messages.collection[position] = collection;
         } else {
-            // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
             this.messages.collection.push(collection);
         }
 
@@ -4643,11 +4497,8 @@ export class ChatCompletion {
 
         const index = this.findMessageIndex(identifier);
         if (message.content || message.tool_calls) {
-            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             if ('start' === position) this.messages.collection[index].collection.unshift(message);
-            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             else if ('end' === position) this.messages.collection[index].collection.push(message);
-            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             else if (typeof position === 'number') this.messages.collection[index].collection.splice(position, 0, message);
 
             this.decreaseTokenBudgetBy(message.getTokens());
@@ -4663,7 +4514,6 @@ export class ChatCompletion {
     // @ts-expect-error TS(7006) FIXME: Parameter 'identifier' implicitly has an 'any' typ... Remove this comment to see the full error message
     removeLastFrom(identifier) {
         const index = this.findMessageIndex(identifier);
-        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         const message = this.messages.collection[index].collection.pop();
 
         if (!message) {
@@ -4722,26 +4572,16 @@ export class ChatCompletion {
     getChat() {
         const chat = [];
         for (const item of this.messages.collection) {
-            // @ts-expect-error TS(2358) FIXME: The left-hand side of an 'instanceof' expression m... Remove this comment to see the full error message
             if (item instanceof MessageCollection) {
-                // @ts-expect-error TS(2339) FIXME: Property 'getChat' does not exist on type 'never'.
                 chat.push(...item.getChat());
-            // @ts-expect-error TS(2358) FIXME: The left-hand side of an 'instanceof' expression m... Remove this comment to see the full error message
             } else if (item instanceof Message && (item.content || item.tool_calls)) {
                 const message = {
-                    // @ts-expect-error TS(2339) FIXME: Property 'role' does not exist on type 'never'.
                     role: item.role,
-                    // @ts-expect-error TS(2339) FIXME: Property 'content' does not exist on type 'never'.
                     content: item.content,
-                    // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
                     ...(item.name ? { name: item.name } : {}),
-                    // @ts-expect-error TS(2339) FIXME: Property 'tool_calls' does not exist on type 'neve... Remove this comment to see the full error message
                     ...(item.tool_calls ? { tool_calls: item.tool_calls } : {}),
-                    // @ts-expect-error TS(2339) FIXME: Property 'role' does not exist on type 'never'.
                     ...(item.role === 'tool' ? { tool_call_id: item.identifier } : {}),
-                    // @ts-expect-error TS(2339) FIXME: Property 'signature' does not exist on type 'never... Remove this comment to see the full error message
                     ...(item.signature ? { signature: item.signature } : {}),
-                    // @ts-expect-error TS(2339) FIXME: Property 'reasoning' does not exist on type 'never... Remove this comment to see the full error message
                     ...(item.reasoning ? { reasoning: item.reasoning } : {}),
                 };
                 chat.push(message);
@@ -4857,9 +4697,7 @@ export class ChatCompletion {
      * @param {string} identifier - The identifier of the message to find.
      * @returns {number} The index of the message in the collection.
      */
-    // @ts-expect-error TS(7006) FIXME: Parameter 'identifier' implicitly has an 'any' typ... Remove this comment to see the full error message
     findMessageIndex(identifier) {
-        // @ts-expect-error TS(2339) FIXME: Property 'identifier' does not exist on type 'neve... Remove this comment to see the full error message
         const index = this.messages.collection.findIndex(item => item?.identifier === identifier);
         if (index < 0) {
             throw new IdentifierNotFoundError(identifier);
@@ -5502,7 +5340,6 @@ async function onPresetImportFileChange(e) {
 
     const name = file.name.replace(/\.[^/.]+$/, '');
     const importedFile = await getFileText(file);
-    // @ts-expect-error TS(7034) FIXME: Variable 'presetBody' implicitly has type 'any' in... Remove this comment to see the full error message
     let presetBody;
     e.target.value = '';
 
@@ -5515,7 +5352,6 @@ async function onPresetImportFileChange(e) {
         return;
     }
 
-    // @ts-expect-error TS(7005) FIXME: Variable 'presetBody' implicitly has an 'any' type... Remove this comment to see the full error message
     const fields = sensitiveFields.filter(field => presetBody[field]).map(field => `<b>${field}</b>`);
     const shouldConfirm = fields.length > 0;
 
@@ -5532,7 +5368,6 @@ async function onPresetImportFileChange(e) {
         }
 
         if (popupResult === POPUP_RESULT.AFFIRMATIVE) {
-            // @ts-expect-error TS(7005) FIXME: Variable 'presetBody' implicitly has an 'any' type... Remove this comment to see the full error message
             sensitiveFields.forEach(field => delete presetBody[field]);
         }
     }
@@ -5906,7 +5741,6 @@ function getGeminiMaxContext(model, isUnlocked) {
     }
 
     if (Array.isArray(model_list) && model_list.length > 0) {
-        // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
         const contextLength = model_list.find((record) => record.id === model)?.inputTokenLimit;
         if (Number.isFinite(contextLength) && contextLength > 0) {
             return contextLength;
@@ -5943,7 +5777,6 @@ function getGeminiMaxContext(model, isUnlocked) {
 // @ts-expect-error TS(7006) FIXME: Parameter 'model' implicitly has an 'any' type.
 function getGeminiMaxTemp(model) {
     if (Array.isArray(model_list) && model_list.length > 0) {
-        // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
         const temp = model_list.find((record) => record.id === model)?.maxTemperature;
         if (Number.isFinite(temp) && temp > 0) {
             return temp;
@@ -5970,7 +5803,6 @@ function getMistralMaxContext(model, isUnlocked) {
     }
 
     if (Array.isArray(model_list) && model_list.length > 0) {
-        // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
         const contextLength = model_list.find((record) => record.id === model)?.max_context_length;
         if (contextLength) {
             return contextLength;
@@ -5994,7 +5826,6 @@ function getGroqMaxContext(model, isUnlocked) {
     }
 
     if (Array.isArray(model_list) && model_list.length > 0) {
-        // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
         const contextLength = model_list.find((record) => record.id === model)?.context_window;
         if (contextLength) {
             return contextLength;
@@ -6137,11 +5968,8 @@ function getMoonshotMaxContext(model, isUnlocked) {
     }
 
     if (Array.isArray(model_list) && model_list.length > 0) {
-        // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
         const modelInfo = model_list.find((record) => record.id === model);
-        // @ts-expect-error TS(2339) FIXME: Property 'context_length' does not exist on type '... Remove this comment to see the full error message
         if (modelInfo?.context_length) {
-            // @ts-expect-error TS(2339) FIXME: Property 'context_length' does not exist on type '... Remove this comment to see the full error message
             return modelInfo.context_length;
         }
     }
@@ -6182,16 +6010,11 @@ function getFireworksMaxContext(model, isUnlocked) {
 
     // First check if model info is available from model_list
     if (Array.isArray(model_list) && model_list.length > 0) {
-        // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
         const modelInfo = model_list.find((record) => record.id === model);
-        // @ts-expect-error TS(2339) FIXME: Property 'context_length' does not exist on type '... Remove this comment to see the full error message
         if (modelInfo?.context_length) {
-            // @ts-expect-error TS(2339) FIXME: Property 'context_length' does not exist on type '... Remove this comment to see the full error message
             return modelInfo.context_length;
         }
-        // @ts-expect-error TS(2339) FIXME: Property 'context_window' does not exist on type '... Remove this comment to see the full error message
         if (modelInfo?.context_window) {
-            // @ts-expect-error TS(2339) FIXME: Property 'context_window' does not exist on type '... Remove this comment to see the full error message
             return modelInfo.context_window;
         }
     }
@@ -6212,11 +6035,8 @@ function getChutesMaxContext(model, isUnlocked) {
     }
 
     if (Array.isArray(model_list)) {
-        // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
         const modelInfo = model_list.find(m => m.id === model);
-        // @ts-expect-error TS(2339) FIXME: Property 'context_length' does not exist on type '... Remove this comment to see the full error message
         if (modelInfo?.context_length) {
-            // @ts-expect-error TS(2339) FIXME: Property 'context_length' does not exist on type '... Remove this comment to see the full error message
             return modelInfo.context_length;
         }
     }
@@ -6236,11 +6056,8 @@ function getElectronHubMaxContext(model, isUnlocked) {
     }
 
     if (Array.isArray(model_list)) {
-        // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
         const modelInfo = model_list.find(m => m.id === model);
-        // @ts-expect-error TS(2339) FIXME: Property 'tokens' does not exist on type 'never'.
         if (modelInfo?.tokens) {
-            // @ts-expect-error TS(2339) FIXME: Property 'tokens' does not exist on type 'never'.
             return modelInfo.tokens;
         }
     }
@@ -6260,11 +6077,8 @@ function getNanoGptMaxContext(model, isUnlocked) {
     }
 
     if (Array.isArray(model_list)) {
-        // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
         const modelInfo = model_list.find(m => m.id === model);
-        // @ts-expect-error TS(2339) FIXME: Property 'context_length' does not exist on type '... Remove this comment to see the full error message
         if (modelInfo?.context_length) {
-            // @ts-expect-error TS(2339) FIXME: Property 'context_length' does not exist on type '... Remove this comment to see the full error message
             return modelInfo.context_length;
         }
     }
@@ -6548,9 +6362,7 @@ async function onModelChange() {
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#openai_max_context').attr('max', unlocked_max);
         } else {
-            // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
             const model = model_list.find(m => m.id == oai_settings.openrouter_model);
-            // @ts-expect-error TS(2339) FIXME: Property 'context_length' does not exist on type '... Remove this comment to see the full error message
             if (model?.context_length) {
                 // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $('#openai_max_context').attr('max', model.context_length);
@@ -6811,7 +6623,6 @@ async function onModelChange() {
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#openai_max_context').attr('max', unlocked_max);
         } else {
-            // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
             const model = model_list.find(m => m.id === oai_settings.workers_ai_model);
             // @ts-expect-error TS(2339) FIXME: Property 'properties' does not exist on type 'neve... Remove this comment to see the full error message
             const ctxProp = Array.isArray(model?.properties) && model.properties.find(p => p.property_id === 'context_window');
@@ -6875,11 +6686,8 @@ async function onModelChange() {
         if (oai_settings.max_context_unlocked) {
             maxContext = unlocked_max;
         } else {
-            // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
             const model = model_list.find(m => m.id === oai_settings.aimlapi_model);
-            // @ts-expect-error TS(2339) FIXME: Property 'info' does not exist on type 'never'.
             maxContext = (model?.info?.contextLength ?? model?.context_length) || max_32k;
-            // @ts-expect-error TS(2339) FIXME: Property 'info' does not exist on type 'never'.
             console.log('[AI/ML API] Model CTX:', model?.info?.contextLength);
         }
 
@@ -7359,12 +7167,10 @@ export function isImageInliningSupported() {
         case chat_completion_sources.CLAUDE:
             return visionSupportedModels.some(model => oai_settings.claude_model.includes(model));
         case chat_completion_sources.OPENROUTER:
-            // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
             return (Array.isArray(model_list) && model_list.find(m => m.id === oai_settings.openrouter_model)?.architecture?.input_modalities?.includes('image'));
         case chat_completion_sources.CUSTOM:
             return true;
         case chat_completion_sources.MISTRALAI:
-            // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
             return (Array.isArray(model_list) && model_list.find(m => m.id === oai_settings.mistralai_model)?.capabilities?.vision);
         case chat_completion_sources.COHERE:
             return visionSupportedModels.some(model => oai_settings.cohere_model.includes(model));
@@ -7372,31 +7178,24 @@ export function isImageInliningSupported() {
             // TODO: xAI's /models endpoint doesn't return modality info
             return visionSupportedModels.some(model => oai_settings.xai_model.includes(model));
         case chat_completion_sources.AIMLAPI:
-            // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
             return (Array.isArray(model_list) && model_list.find(m => m.id === oai_settings.aimlapi_model)?.features?.includes('openai/chat-completion.vision'));
         case chat_completion_sources.CHUTES:
-            // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
             return (Array.isArray(model_list) && model_list.find(m => m.id === oai_settings.chutes_model)?.input_modalities?.includes('image'));
         case chat_completion_sources.ELECTRONHUB:
-            // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
             return (Array.isArray(model_list) && model_list.find(m => m.id === oai_settings.electronhub_model)?.metadata?.vision);
         case chat_completion_sources.POLLINATIONS:
-            // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
             return (Array.isArray(model_list) && model_list.find(m => m.id === oai_settings.pollinations_model)?.input_modalities?.includes('image'));
         case chat_completion_sources.COMETAPI:
             return true;
         case chat_completion_sources.MOONSHOT:
-            // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
             return (Array.isArray(model_list) && model_list.find(m => m.id === oai_settings.moonshot_model)?.supports_image_in);
         case chat_completion_sources.NANOGPT:
-            // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
             return (Array.isArray(model_list) && model_list.find(m => m.id === oai_settings.nanogpt_model)?.capabilities?.vision);
         case chat_completion_sources.ZAI:
             return visionSupportedModels.some(model => oai_settings.zai_model.includes(model));
         case chat_completion_sources.SILICONFLOW:
             return visionSupportedModels.some(model => oai_settings.siliconflow_model.includes(model));
         case chat_completion_sources.WORKERS_AI: {
-            // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
             const waiModel = Array.isArray(model_list) && model_list.find(m => m.id === oai_settings.workers_ai_model);
             // @ts-expect-error TS(2339) FIXME: Property 'properties' does not exist on type 'neve... Remove this comment to see the full error message
             return Boolean(waiModel && Array.isArray(waiModel.properties) && waiModel.properties.some(p => p.property_id === 'vision' && p.value === 'true'));
@@ -7438,7 +7237,6 @@ export function isVideoInliningSupported() {
         case chat_completion_sources.VERTEXAI:
             return videoSupportedModels.some(model => oai_settings.vertexai_model.includes(model));
         case chat_completion_sources.OPENROUTER:
-            // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
             return (Array.isArray(model_list) && model_list.find(m => m.id === oai_settings.openrouter_model)?.architecture?.input_modalities?.includes('video'));
         case chat_completion_sources.ZAI:
             return videoSupportedModels.some(model => oai_settings.zai_model.includes(model));
@@ -7481,7 +7279,6 @@ export function isAudioInliningSupported() {
         case chat_completion_sources.VERTEXAI:
             return audioSupportedModels.some(model => oai_settings.vertexai_model.includes(model));
         case chat_completion_sources.OPENROUTER:
-            // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
             return (Array.isArray(model_list) && model_list.find(m => m.id === oai_settings.openrouter_model)?.architecture?.input_modalities?.includes('audio'));
         case chat_completion_sources.CUSTOM:
             return true;
@@ -7694,7 +7491,7 @@ function runProxyCallback(_, value) {
         return '';
     }
 
-    const foundName = result[0].item;
+    const foundName = result[0]!.item;
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#openai_proxy_preset').val(foundName).trigger('change');
     return foundName;

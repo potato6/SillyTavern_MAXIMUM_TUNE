@@ -211,7 +211,6 @@ class MacroParser extends CstParser {
             });
         });
 
-        // @ts-expect-error TS(2339) FIXME: Property 'performSelfAnalysis' does not exist on t... Remove this comment to see the full error message
         this.performSelfAnalysis();
     }
 
@@ -249,17 +248,14 @@ class MacroParser extends CstParser {
 
         const lexingResult = this.tokenizeInput(input);
 
-        // @ts-expect-error TS(2339) FIXME: Property 'input' does not exist on type 'MacroPars... Remove this comment to see the full error message
         this.input = lexingResult.tokens;
         const cst = this.document();
 
         const errors = [
             ...lexingResult.errors,
-            // @ts-expect-error TS(2339) FIXME: Property 'errors' does not exist on type 'MacroPar... Remove this comment to see the full error message
             ...this.errors,
         ];
 
-        // @ts-expect-error TS(2339) FIXME: Property 'errors' does not exist on type 'MacroPar... Remove this comment to see the full error message
         return { cst, errors, lexingErrors: lexingResult.errors, parserErrors: this.errors };
     }
 
@@ -267,7 +263,6 @@ class MacroParser extends CstParser {
         const lexingResult = this.tokenizeInput(input);
 
         // "input" is a setter which will reset the parser's state.
-        // @ts-expect-error TS(2339) FIXME: Property 'input' does not exist on type 'MacroPars... Remove this comment to see the full error message
         this.input = lexingResult.tokens;
         return this.macro();
 

@@ -1,10 +1,7 @@
 import { promises as fsPromises } from 'node:fs';
 
-// @ts-expect-error TS(1259) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import storage from 'node-persist';
-// @ts-expect-error TS(1259) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import express from 'express';
-// @ts-expect-error TS(2792) FIXME: Cannot find module 'es-toolkit/compat'. Did you me... Remove this comment to see the full error message
 import { deburr } from 'es-toolkit/compat';
 import { checkForNewContent, CONTENT_TYPES } from './content-manager.js';
 import {
@@ -36,16 +33,13 @@ function slugify(text: string) {
     return deburr(String(text ?? '').toLowerCase().trim()).replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
 }
 
-// @ts-expect-error TS(7006) FIXME: Parameter '_request' implicitly has an 'any' type.
 router.post('/get', requireAdminMiddleware, async (_request, response) => {
     try {
         /** @type {import('../users.js').User[]} */
-        // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
         const users = await storage.values(x => x.key.startsWith(KEY_PREFIX));
 
         /** @type {Promise<import('../users.js').UserViewModel>[]} */
         const viewModelPromises = users
-            // @ts-expect-error TS(7006) FIXME: Parameter 'user' implicitly has an 'any' type.
             .map(user => new Promise(resolve => {
                 getUserAvatar(user.handle).then(avatar =>
                     resolve({
@@ -70,7 +64,6 @@ router.post('/get', requireAdminMiddleware, async (_request, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/disable', requireAdminMiddleware, async (request, response) => {
     try {
         if (!request.body.handle) {
@@ -100,7 +93,6 @@ router.post('/disable', requireAdminMiddleware, async (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/enable', requireAdminMiddleware, async (request, response) => {
     try {
         if (!request.body.handle) {
@@ -125,7 +117,6 @@ router.post('/enable', requireAdminMiddleware, async (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/promote', requireAdminMiddleware, async (request, response) => {
     try {
         if (!request.body.handle) {
@@ -150,7 +141,6 @@ router.post('/promote', requireAdminMiddleware, async (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/demote', requireAdminMiddleware, async (request, response) => {
     try {
         if (!request.body.handle) {
@@ -180,7 +170,6 @@ router.post('/demote', requireAdminMiddleware, async (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/create', requireAdminMiddleware, async (request, response) => {
     try {
         if (!request.body.handle || !request.body.name) {
@@ -196,7 +185,6 @@ router.post('/create', requireAdminMiddleware, async (request, response) => {
             return response.status(400).json({ error: 'Invalid handle' });
         }
 
-        // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
         if (handles.some(x => x === handle)) {
             console.warn('Create user failed: User with that handle already exists');
             return response.status(409).json({ error: 'User already exists' });
@@ -229,7 +217,6 @@ router.post('/create', requireAdminMiddleware, async (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/delete', requireAdminMiddleware, async (request, response) => {
     try {
         if (!request.body.handle) {
@@ -262,7 +249,6 @@ router.post('/delete', requireAdminMiddleware, async (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/slugify', requireAdminMiddleware, async (request, response) => {
     try {
         if (!request.body.text) {

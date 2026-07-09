@@ -211,7 +211,6 @@ async function* parseStreamData(json) {
         // llama.cpp?
         const isNotPrimary = json?.index > 0;
         if (isNotPrimary) {
-            // @ts-expect-error TS(2769) FIXME: No overload matches this call.
             throw new Error('Not a primary swipe', { cause: NOT_PRIMARY });
         }
         for (let i = 0; i < json.content.length; i++) {
@@ -226,7 +225,6 @@ async function* parseStreamData(json) {
         // OpenAI-likes and friends
         const isNotPrimary = json?.choices?.[0]?.index > 0;
         if (isNotPrimary || json.choices.length === 0) {
-            // @ts-expect-error TS(2769) FIXME: No overload matches this call.
             throw new Error('Not a primary swipe', { cause: NOT_PRIMARY });
         }
 
@@ -384,7 +382,6 @@ export class SmoothEventSourceStream extends EventSourceStream {
                         lastStr = parsed.chunk;
                     }
                 } catch (error) {
-                    // @ts-expect-error TS(2367) FIXME: This condition will always return 'true' since the... Remove this comment to see the full error message
                     if (error instanceof Error && error.cause !== NOT_PRIMARY) {
                         console.debug('Smooth Streaming parsing error', error);
                     }

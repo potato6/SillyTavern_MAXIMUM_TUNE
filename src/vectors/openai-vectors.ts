@@ -164,5 +164,5 @@ export async function getBatchVector(texts: string[], source: string, directorie
  */
 export async function getVector(text: string, source: string, directories: import('../users.js').UserDirectoryList, model = '', urlOverride: string | null = null): Promise<number[]> {
     const vectors = await getBatchVector([text], source, directories, model, urlOverride);
-    return vectors[0];
+    return vectors[0]!;
 }

@@ -1,4 +1,3 @@
-// @ts-expect-error TS(1259) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import express from 'express';
 import fetch from 'node-fetch';
 import { readSecret, SECRET_KEYS } from './secrets.js';
@@ -18,7 +17,6 @@ const getAudioMimeType = (format: string) => {
     return mimeTypes[format] || 'audio/mpeg';
 };
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/generate-voice', async (request, response) => {
     try {
         const {
@@ -91,7 +89,7 @@ router.post('/generate-voice', async (request, response) => {
             try {
                 // Try to parse JSON error response
                 /** @type {any} */
-                const errorData = await apiResponse.json();
+                const errorData = await apiResponse.json() as any;
                 console.error('MiniMax TTS API error (JSON):', errorData);
 
                 // Check for MiniMax specific error format
@@ -129,7 +127,7 @@ router.post('/generate-voice', async (request, response) => {
         /** @type {any} */
         let responseData;
         try {
-            responseData = await apiResponse.json();
+            responseData = await apiResponse.json() as any;
             console.debug('MiniMax TTS Response received');
         } catch (jsonError) {
             console.error('MiniMax TTS: Failed to parse response as JSON:', jsonError);

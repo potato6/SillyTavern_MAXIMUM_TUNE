@@ -1,6 +1,4 @@
-// @ts-expect-error TS(1192) FIXME: Module '"node:fs"' has no default export.
 import fs from 'node:fs';
-// @ts-expect-error TS(1259) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import express from 'express';
 import fetch from 'node-fetch';
 
@@ -10,7 +8,6 @@ import { TEXTGEN_TYPES } from '../../constants.js';
 
 export const router = express.Router();
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/generate', async function (request, response_generate) {
     if (!request.body) return response_generate.sendStatus(400);
 
@@ -120,7 +117,7 @@ router.post('/generate', async function (request, response_generate) {
                     }
                 }
 
-                const data = await response.json();
+                const data = await response.json() as any;
                 console.debug('Endpoint response:', data);
                 return response_generate.send(data);
             }
@@ -136,7 +133,6 @@ router.post('/generate', async function (request, response_generate) {
                 default:
                     // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                     if ('status' in error) {
-                        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                         console.error('Status Code from Kobold:', error.status);
                     }
                     return response_generate.send({ error: true });
@@ -148,7 +144,6 @@ router.post('/generate', async function (request, response_generate) {
     return response_generate.send({ error: true });
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/status', async function (request, response) {
     if (!request.body) return response.sendStatus(400);
     let api_server = request.body.api_server;
@@ -199,7 +194,6 @@ router.post('/status', async function (request, response) {
     response.send(result);
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/transcribe-audio', async function (request, response) {
     try {
         const server = request.body.server;
@@ -242,7 +236,7 @@ router.post('/transcribe-audio', async function (request, response) {
             return response.status(500).send(text);
         }
 
-        const data = await result.json();
+        const data = await result.json() as any;
         console.debug('KoboldCpp transcription response', data);
         return response.json(data);
     } catch (error) {
@@ -251,7 +245,6 @@ router.post('/transcribe-audio', async function (request, response) {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/embed', async function (request, response) {
     try {
         const { server, items } = request.body;
@@ -278,7 +271,7 @@ router.post('/embed', async function (request, response) {
         });
 
         /** @type {any} */
-        const data = await embeddingsResult.json();
+        const data = await embeddingsResult.json() as any;
 
         if (!Array.isArray(data?.data)) {
             console.warn('KoboldCpp API response was not an array');

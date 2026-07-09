@@ -647,31 +647,23 @@ export class ToolManager {
             return false;
         }
 
-        // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
         const currentModel = Array.isArray(model_list) ? model_list.find(m => m.id === model) : null;
         if (currentModel) {
             // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             switch (settings.chat_completion_source) {
                 case chat_completion_sources.POLLINATIONS:
-                    // @ts-expect-error TS(2339) FIXME: Property 'tools' does not exist on type 'never'.
                     return currentModel.tools;
                 case chat_completion_sources.FIREWORKS:
-                    // @ts-expect-error TS(2339) FIXME: Property 'supports_tools' does not exist on type '... Remove this comment to see the full error message
                     return currentModel.supports_tools;
                 case chat_completion_sources.OPENROUTER:
-                    // @ts-expect-error TS(2339) FIXME: Property 'supported_parameters' does not exist on ... Remove this comment to see the full error message
                     return currentModel.supported_parameters?.includes('tools');
                 case chat_completion_sources.MISTRALAI:
-                    // @ts-expect-error TS(2339) FIXME: Property 'capabilities' does not exist on type 'ne... Remove this comment to see the full error message
                     return currentModel.capabilities?.function_calling;
                 case chat_completion_sources.AIMLAPI:
-                    // @ts-expect-error TS(2339) FIXME: Property 'features' does not exist on type 'never'... Remove this comment to see the full error message
                     return currentModel.features?.includes('openai/chat-completion.function');
                 case chat_completion_sources.CHUTES:
-                    // @ts-expect-error TS(2339) FIXME: Property 'supported_features' does not exist on ty... Remove this comment to see the full error message
                     return currentModel.supported_features?.includes('tools');
                 case chat_completion_sources.ELECTRONHUB:
-                    // @ts-expect-error TS(2339) FIXME: Property 'metadata' does not exist on type 'never'... Remove this comment to see the full error message
                     return currentModel.metadata?.function_call;
                 case chat_completion_sources.WORKERS_AI:
                     // @ts-expect-error TS(2339) FIXME: Property 'properties' does not exist on type 'neve... Remove this comment to see the full error message
@@ -825,12 +817,11 @@ export class ToolManager {
      */
     // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
     static async invokeFunctionTools(data, { reasoningText = null } = {}) {
-        /** @type {ToolInvocationResult} */
-        const result = {
+        const result = /** @type {ToolInvocationResult} */ ({
             invocations: [],
             errors: [],
             stealthCalls: [],
-        };
+        });
         const toolCalls = ToolManager.#getToolCallsFromData(data);
 
         if (!Array.isArray(toolCalls)) {
@@ -865,21 +856,13 @@ export class ToolManager {
                     result.stealthCalls.push(name);
                 } else {
                     result.invocations.push({
-                        // @ts-expect-error TS(2322) FIXME: Type 'any' is not assignable to type 'never'.
                         id,
-                        // @ts-expect-error TS(2322) FIXME: Type 'any' is not assignable to type 'never'.
                         displayName,
-                        // @ts-expect-error TS(2322) FIXME: Type 'any' is not assignable to type 'never'.
                         name,
-                        // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'never'.
                         parameters: stringify(parameters),
-                        // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'never'.
                         result: toolResult.toString(),
-                        // @ts-expect-error TS(2322) FIXME: Type 'boolean' is not assignable to type 'never'.
                         error: true,
-                        // @ts-expect-error TS(2322) FIXME: Type 'any' is not assignable to type 'never'.
                         signature: toolCall.signature || null,
-                        // @ts-expect-error TS(2322) FIXME: Type 'null' is not assignable to type 'never'.
                         reasoning: reasoningText || null,
                     });
                 }

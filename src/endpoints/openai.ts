@@ -1,11 +1,8 @@
-// @ts-expect-error TS(1192) FIXME: Module '"node:fs"' has no default export.
 import fs from 'node:fs';
 import { Buffer } from 'node:buffer';
 
 import fetch from 'node-fetch';
-// @ts-expect-error TS(2792) FIXME: Cannot find module 'form-data'. Did you mean to se... Remove this comment to see the full error message
 import FormData from 'form-data';
-// @ts-expect-error TS(1259) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import express from 'express';
 
 import { getConfigValue, mergeObjectWithYaml, excludeKeysByYaml, trimV1, delay } from '../util.js';
@@ -15,7 +12,6 @@ import { AIMLAPI_HEADERS, OPENROUTER_HEADERS, SILICONFLOW_ENDPOINT, ZAI_ENDPOINT
 
 export const router = express.Router();
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/caption-image', async (request, response) => {
     try {
         let key = '';
@@ -274,7 +270,7 @@ router.post('/caption-image', async (request, response) => {
         }
 
         /** @type {any} */
-        const data = await result.json();
+        const data = await result.json() as any;
         console.info('Multimodal captioning response', data);
         const caption = data?.choices?.[0]?.message?.content ?? data?.message?.content?.[0]?.text;
 
@@ -289,7 +285,6 @@ router.post('/caption-image', async (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/generate-voice', async (request, response) => {
     try {
         const key = readSecret(request.user.directories, SECRET_KEYS.OPENAI);
@@ -339,7 +334,6 @@ router.post('/generate-voice', async (request, response) => {
 });
 
 // ElectronHub TTS proxy
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/electronhub/generate-voice', async (request, response) => {
     try {
         const key = readSecret(request.user.directories, SECRET_KEYS.ELECTRONHUB);
@@ -415,7 +409,6 @@ router.post('/electronhub/generate-voice', async (request, response) => {
 });
 
 // ElectronHub model list
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/electronhub/models', async (request, response) => {
     try {
         const key = readSecret(request.user.directories, SECRET_KEYS.ELECTRONHUB);
@@ -438,7 +431,7 @@ router.post('/electronhub/models', async (request, response) => {
             return response.status(500).send(text);
         }
         /** @type {any} */
-        const data = await result.json();
+        const data = await result.json() as any;
         const models = data && Array.isArray(data.data) ? data.data : [];
         return response.json(models);
     } catch (error) {
@@ -448,7 +441,6 @@ router.post('/electronhub/models', async (request, response) => {
 });
 
 // Chutes TTS
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/chutes/generate-voice', async (request, response) => {
     try {
         const key = readSecret(request.user.directories, SECRET_KEYS.CHUTES);
@@ -491,7 +483,6 @@ router.post('/chutes/generate-voice', async (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/chutes/models/embedding', async (request, response) => {
     try {
         const key = readSecret(request.user.directories, SECRET_KEYS.CHUTES);
@@ -515,7 +506,7 @@ router.post('/chutes/models/embedding', async (request, response) => {
         }
 
         /** @type {any} */
-        const data = await result.json();
+        const data = await result.json() as any;
 
         if (!Array.isArray(data?.items)) {
             console.warn('Chutes embedding models response invalid', data);
@@ -528,7 +519,6 @@ router.post('/chutes/models/embedding', async (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/nanogpt/models/embedding', async (request, response) => {
     try {
         const key = readSecret(request.user.directories, SECRET_KEYS.NANOGPT);
@@ -553,7 +543,7 @@ router.post('/nanogpt/models/embedding', async (request, response) => {
         }
 
         /** @type {any} */
-        const data = await result.json();
+        const data = await result.json() as any;
 
         if (!Array.isArray(data?.data)) {
             console.warn('NanoGPT embedding models response invalid', data);
@@ -566,7 +556,6 @@ router.post('/nanogpt/models/embedding', async (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/siliconflow/models/embedding', async (request, response) => {
     try {
         const key = readSecret(request.user.directories, SECRET_KEYS.SILICONFLOW);
@@ -594,7 +583,7 @@ router.post('/siliconflow/models/embedding', async (request, response) => {
         }
 
         /** @type {any} */
-        const data = await result.json();
+        const data = await result.json() as any;
 
         if (!Array.isArray(data?.data)) {
             console.warn('SiliconFlow embedding models response invalid', data);
@@ -608,7 +597,6 @@ router.post('/siliconflow/models/embedding', async (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/workers-ai/models/embedding', async (request, response) => {
     try {
         const key = readSecret(request.user.directories, SECRET_KEYS.WORKERS_AI);
@@ -639,7 +627,7 @@ router.post('/workers-ai/models/embedding', async (request, response) => {
         }
 
         /** @type {any} */
-        const data = await result.json();
+        const data = await result.json() as any;
 
         if (!Array.isArray(data?.result)) {
             console.warn('Workers AI embedding models response invalid', data);
@@ -656,7 +644,6 @@ router.post('/workers-ai/models/embedding', async (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/generate-image', async (request, response) => {
     try {
         const key = readSecret(request.user.directories, SECRET_KEYS.OPENAI);
@@ -683,7 +670,7 @@ router.post('/generate-image', async (request, response) => {
             return response.status(500).send(text);
         }
 
-        const data = await result.json();
+        const data = await result.json() as any;
         return response.json(data);
     } catch (error) {
         console.error(error);
@@ -691,7 +678,6 @@ router.post('/generate-image', async (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/generate-video', async (request, response) => {
     try {
         const controller = new AbortController();
@@ -730,7 +716,7 @@ router.post('/generate-video', async (request, response) => {
         }
 
         /** @type {any} */
-        const videoJob = await videoJobResponse.json();
+        const videoJob = await videoJobResponse.json() as any;
 
         if (!videoJob || !videoJob.id) {
             console.warn('OpenAI video generation returned no job ID', videoJob);
@@ -761,7 +747,7 @@ router.post('/generate-video', async (request, response) => {
             }
 
             /** @type {any} */
-            const pollResult = await pollResponse.json();
+            const pollResult = await pollResponse.json() as any;
             console.debug(`OpenAI video job status: ${pollResult.status}, progress: ${pollResult.progress}`);
 
             if (pollResult.status === 'failed') {
@@ -795,7 +781,6 @@ router.post('/generate-video', async (request, response) => {
 
 const custom = express.Router();
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 custom.post('/generate-voice', async (request, response) => {
     try {
         const key = readSecret(request.user.directories, SECRET_KEYS.CUSTOM_OPENAI_TTS);
@@ -894,7 +879,7 @@ function createTranscribeHandler({
             }
 
             fs.unlinkSync(request.file.path);
-            const data = await result.json();
+            const data = await result.json() as any;
             console.debug(`${providerName} transcription response`, data);
             return response.json(data);
         } catch (error) {
@@ -928,7 +913,6 @@ router.post('/zai/transcribe-audio', createTranscribeHandler({
     providerName: 'Z.AI',
 }));
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/chutes/transcribe-audio', async (request, response) => {
     try {
         const key = readSecret(request.user.directories, SECRET_KEYS.CHUTES);
@@ -964,7 +948,7 @@ router.post('/chutes/transcribe-audio', async (request, response) => {
         }
 
         fs.unlinkSync(request.file.path);
-        const data = await result.json();
+        const data = await result.json() as any;
         console.debug('Chutes transcription response', data);
 
         if (!Array.isArray(data)) {

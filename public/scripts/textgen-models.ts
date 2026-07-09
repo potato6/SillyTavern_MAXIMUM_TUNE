@@ -1409,18 +1409,8 @@ function getOpenRouterModelTemplate(option) {
 
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     return $((`
-        // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
-        // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
-        // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
-        // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
-        // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
-        <div class="flex-container flexFlowColumn" title="${DOMPurify.sanitize(model.id)}">
-            // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
-            // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
-            // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
-            // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
-            // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
-            <div><strong>${DOMPurify.sanitize(model.name)}</strong> | ${model.context_length} ctx | <small>${price}</small></div>
+        <div class="flex-container flexFlowColumn" title="${DOMPurify.sanitize((model as any).id)}">
+            <div><strong>${DOMPurify.sanitize((model as any).name)}</strong> | ${(model as any).context_length} ctx | <small>${price}</small></div>
         </div>
     `));
 }

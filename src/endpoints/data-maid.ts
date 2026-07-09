@@ -1,12 +1,7 @@
-// @ts-expect-error TS(1192) FIXME: Module '"node:crypto"' has no default export.
 import crypto from 'node:crypto';
-// @ts-expect-error TS(1192) FIXME: Module '"node:fs"' has no default export.
 import fs from 'node:fs';
-// @ts-expect-error TS(1259) FIXME: Module '"node:path"' can only be default-imported ... Remove this comment to see the full error message
 import path from 'node:path';
-// @ts-expect-error TS(1259) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import express from 'express';
-// @ts-expect-error TS(1192) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import mime from 'mime-types';
 import { getSettingsBackupFilePrefix } from './settings.js';
 import { CHAT_BACKUPS_PREFIX } from './chats.js';
@@ -89,7 +84,6 @@ export class DataMaidService {
      */
     static TOKENS = new Map();
 
-    // @ts-expect-error TS(2694) FIXME: Namespace '"/mnt/DISCO/downloads/some_git_projects... Remove this comment to see the full error message
     directories: import('../users.js').UserDirectoryList;
     handle: string;
 
@@ -98,7 +92,6 @@ export class DataMaidService {
      * @param {string} handle - The user's handle.
      * @param {import('../users.js').UserDirectoryList} directories - List of user directories to scan for loose data.
      */
-    // @ts-expect-error TS(2694) FIXME: Namespace '"/mnt/DISCO/downloads/some_git_projects... Remove this comment to see the full error message
     constructor(handle: string, directories: import('../users.js').UserDirectoryList) {
         this.handle = handle;
         this.directories = directories;
@@ -248,7 +241,6 @@ export class DataMaidService {
         const result = [];
 
         try {
-            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             const messages = await this.#parseAllChats((x: DataMaidMessage) => !!x?.extra?.file?.url || (Array.isArray(x?.extra?.files) && x.extra.files.length > 0));
             const knownFiles = new Set();
             for (const message of messages) {
@@ -674,7 +666,6 @@ export class DataMaidService {
 
 export const router = express.Router();
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
 router.post('/report', async (req, res) => {
     try {
         if (!req.user || !req.user.directories) {
@@ -694,7 +685,6 @@ router.post('/report', async (req, res) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
 router.post('/finalize', async (req, res) => {
     try {
         if (!req.user || !req.user.directories) {
@@ -724,7 +714,6 @@ router.post('/finalize', async (req, res) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
 router.get('/view', async (req, res) => {
     try {
         if (!req.user || !req.user.directories) {
@@ -774,7 +763,6 @@ router.get('/view', async (req, res) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
 router.post('/delete', async (req, res) => {
     try {
         if (!req.user || !req.user.directories) {

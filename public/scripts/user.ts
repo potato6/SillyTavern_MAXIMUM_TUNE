@@ -239,7 +239,6 @@ async function createUser(form, callback) {
     }
 
     const body = {};
-    // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
     formData.forEach(function (value, key) {
         if (key === 'confirm') {
             return;
@@ -1086,7 +1085,6 @@ async function extendUserSession() {
         });
 
         if (!response.ok) {
-            // @ts-expect-error TS(2769) FIXME: No overload matches this call.
             throw new Error('Ping did not succeed', { cause: response.status });
         }
     } catch (error) {

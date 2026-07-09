@@ -977,7 +977,7 @@ function selectReasoningTemplateCallback(args, name) {
             return '';
         }
 
-        foundName = result[0].item;
+        foundName = result[0]!.item;
     }
 
     UI.$select.val(foundName).trigger('change');

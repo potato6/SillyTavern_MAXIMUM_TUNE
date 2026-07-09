@@ -1,15 +1,10 @@
-// @ts-expect-error TS(1192) FIXME: Module '"node:fs"' has no default export.
 import fs from 'node:fs';
-// @ts-expect-error TS(1259) FIXME: Module '"node:path"' can only be default-imported ... Remove this comment to see the full error message
 import path from 'node:path';
-// @ts-expect-error TS(1192) FIXME: Module '"node:zlib"' has no default export.
 import zlib from 'node:zlib';
 import { Buffer } from 'node:buffer';
 
-// @ts-expect-error TS(1259) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import express from 'express';
 import fetch from 'node-fetch';
-// @ts-expect-error TS(2792) FIXME: Cannot find module 'sanitize-filename'. Did you me... Remove this comment to see the full error message
 import sanitize from 'sanitize-filename';
 import { sync as writeFileAtomicSync } from 'write-file-atomic';
 
@@ -88,7 +83,6 @@ function getScopeByType(type: string) {
  * @param {import('../users.js').UserDirectoryList} directories User directories
  * @returns {object[]} Array of default presets
  */
-// @ts-expect-error TS(2694) FIXME: Namespace '"/mnt/DISCO/downloads/some_git_projects... Remove this comment to see the full error message
 export function getDefaultPresets(directories: import('../users.js').UserDirectoryList) {
     try {
         const contentIndex = getContentIndex(CONTENT_SCOPE.USER);
@@ -221,7 +215,6 @@ async function seedGlobalContent(contentIndex: ContentItem[]) {
  * @param {string[]} forceCategories List of categories to force check (even if content check is skipped)
  * @returns {Promise<void>}
  */
-// @ts-expect-error TS(2694) FIXME: Namespace '"/mnt/DISCO/downloads/some_git_projects... Remove this comment to see the full error message
 export async function checkForNewContent(directoriesList: import('../users.js').UserDirectoryList[], forceCategories: string[] = []) {
     try {
         // @ts-expect-error TS(2345) FIXME: Argument of type 'false' is not assignable to para... Remove this comment to see the full error message
@@ -334,7 +327,6 @@ export function getContentOfType(type: string, format: 'json' | 'string' | 'raw'
  * @param {import('../users.js').UserDirectoryList} directories User directories
  * @returns {string | null} Target directory
  */
-// @ts-expect-error TS(2694) FIXME: Namespace '"/mnt/DISCO/downloads/some_git_projects... Remove this comment to see the full error message
 export function getUserTargetByType(type: string, directories: import('../users.js').UserDirectoryList) {
     switch (type) {
         case CONTENT_TYPES.SETTINGS:
@@ -414,7 +406,7 @@ function getContentLog(contentLogPath: string) {
  * @returns {Promise<{buffer: Buffer, fileName: string, fileType: string}>}
  */
 async function downloadChubLorebook(id: string) {
-    const [lorebooks, creatorName, projectName] = id.split('/');
+    const [lorebooks, creatorName, projectName] = id.split('/') as [string, string, string];
     const result = await fetch(`https://api.chub.ai/api/${lorebooks}/${creatorName}/${projectName}`, {
         method: 'GET',
         headers: { 'Accept': 'application/json', 'User-Agent': USER_AGENT },
@@ -426,8 +418,7 @@ async function downloadChubLorebook(id: string) {
         throw new Error('Failed to fetch lorebook metadata');
     }
 
-    /** @type {{ node?: { id: string } }} */
-    const metadata = await result.json();
+    const metadata = await result.json() as any;
     const projectId = metadata.node?.id;
 
     if (!projectId) {
@@ -472,8 +463,7 @@ async function downloadChubCharacter(id: string) {
         throw new Error('Failed to fetch character metadata');
     }
 
-    /** @type {{ node: { definition: Record<string, unknown>; topics: string[]; max_res_url?: string } }} */
-    const metadata = await result.json();
+    const metadata = await result.json() as { node: { definition: Record<string, unknown>; topics: string[]; max_res_url?: string } };
     const { definition, topics } = metadata.node;
 
     /** @type {TavernCardV2} */
@@ -534,8 +524,7 @@ async function downloadPygmalionCharacter(id: string) {
         throw new Error('Failed to download character');
     }
 
-    /** @type {{ character?: Record<string, unknown> }} */
-    const jsonData = await result.json();
+    const jsonData = await result.json() as { character?: Record<string, unknown> };
     const characterData = jsonData?.character;
 
     if (!characterData || typeof characterData !== 'object') {
@@ -633,7 +622,7 @@ async function downloadJannyCharacter(uuid: string) {
 
     if (result.ok) {
         /** @type {{ status: string; downloadUrl: string }} */
-        const downloadResult = await result.json();
+        const downloadResult = await result.json() as any;
         if (downloadResult.status === 'ok') {
             const imageResult = await fetch(downloadResult.downloadUrl);
             const buffer = Buffer.from(await imageResult.arrayBuffer());
@@ -1011,7 +1000,6 @@ export function isHostWhitelisted(host: string) {
 
 export const router = express.Router();
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/importURL', async (request, response) => {
     if (!request.body.url) {
         return response.sendStatus(400);
@@ -1105,7 +1093,6 @@ router.post('/importURL', async (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/importUUID', async (request, response) => {
     if (!request.body.url) {
         return response.sendStatus(400);

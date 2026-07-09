@@ -1,12 +1,8 @@
-// @ts-expect-error TS(1192) FIXME: Module '"node:fs"' has no default export.
 import fs from 'node:fs';
-// @ts-expect-error TS(1259) FIXME: Module '"node:path"' can only be default-imported ... Remove this comment to see the full error message
 import path from 'node:path';
 import { Buffer } from 'node:buffer';
 
-// @ts-expect-error TS(1259) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import express from 'express';
-// @ts-expect-error TS(2792) FIXME: Cannot find module 'sanitize-filename'. Did you me... Remove this comment to see the full error message
 import sanitize from 'sanitize-filename';
 
 import { clientRelativePath, removeFileExtension, getImages, isPathUnderParent } from '../util.js';
@@ -38,7 +34,6 @@ export const router = express.Router();
  * @param {string} [request.body.ch_name] - Optional character name to determine the sub-directory.
  * @returns {object} response - The response object containing the path where the image was saved.
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/upload', async (request, response) => {
     try {
         if (!request.body) {
@@ -80,7 +75,6 @@ router.post('/upload', async (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/list{/:folder}', (request, response) => {
     try {
         if (request.params.folder) {
@@ -116,7 +110,6 @@ router.post('/list{/:folder}', (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/folders', (request, response) => {
     try {
         const directoryPath = request.user.directories.userImages;
@@ -125,9 +118,7 @@ router.post('/folders', (request, response) => {
         }
 
         const folders = fs.readdirSync(directoryPath, { withFileTypes: true })
-            // @ts-expect-error TS(7006) FIXME: Parameter 'dirent' implicitly has an 'any' type.
             .filter(dirent => dirent.isDirectory())
-            // @ts-expect-error TS(7006) FIXME: Parameter 'dirent' implicitly has an 'any' type.
             .map(dirent => dirent.name);
 
         return response.send(folders);
@@ -137,7 +128,6 @@ router.post('/folders', (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/delete', async (request, response) => {
     try {
         if (!request.body.path) {

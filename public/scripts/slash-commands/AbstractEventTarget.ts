@@ -13,7 +13,6 @@ export class AbstractEventTarget {
         if (!this.listeners[type]) {
             this.listeners[type] = [];
         }
-        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         this.listeners[type].push(callback);
     }
 
@@ -35,10 +34,8 @@ export class AbstractEventTarget {
         if (!this.listeners[type]) {
             return;
         }
-        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         const index = this.listeners[type].indexOf(callback);
         if (index !== -1) {
-            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             this.listeners[type].splice(index, 1);
         }
     }

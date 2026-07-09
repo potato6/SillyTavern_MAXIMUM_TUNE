@@ -53,7 +53,6 @@ import {
 } from './utils.js';
 import { debounce_timeout } from './constants.js';
 import { FILTER_TYPES, FilterHelper } from './filters.js';
-// @ts-expect-error TS(7034) FIXME: Variable 'groups' implicitly has type 'any[]' in s... Remove this comment to see the full error message
 import { groups, selected_group } from './group-chats.js';
 import { POPUP_RESULT, POPUP_TYPE, Popup, callGenericPopup } from './popup.js';
 import { t } from './i18n.js';
@@ -785,12 +784,10 @@ export function updatePersonaConnectionsAvatarList() {
     // @ts-expect-error TS(7006) FIXME: Parameter 'connection' implicitly has an 'any' typ... Remove this comment to see the full error message
     const entities = connections.map(connection => {
         if (connection.type === 'character') {
-            // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
             const character = characters.find(c => c.avatar === connection.id);
             if (character) return characterToEntity(character, getCharIndex(character));
         }
         if (connection.type === 'group') {
-            // @ts-expect-error TS(7005) FIXME: Variable 'groups' implicitly has an 'any[]' type.
             const group = groups.find(g => g.id === connection.id);
             if (group) return groupToEntity(group);
         }
@@ -1054,7 +1051,6 @@ async function selectCurrentPersona({ toastPersonaNameChange = true } = {}) {
 
         // Update the locked persona if setting is enabled
         if (shouldAutoLock) {
-            // @ts-expect-error TS(2339) FIXME: Property 'persona' does not exist on type '{}'.
             chat_metadata.persona = user_avatar;
             console.log(`Auto locked persona to ${user_avatar}`);
             if (toastPersonaNameChange && power_user.persona_show_notifications) {
@@ -1089,9 +1085,7 @@ async function selectCurrentPersona({ toastPersonaNameChange = true } = {}) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'connection' implicitly has an 'any' typ... Remove this comment to see the full error message
 export function isPersonaConnectionLocked(connection) {
-    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
     return (!selected_group && connection.type === 'character' && connection.id === characters[this_chid]?.avatar)
-        // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
         || (selected_group && connection.type === 'group' && connection.id === selected_group);
 }
 
@@ -1105,7 +1099,6 @@ export function isPersonaLocked(type = 'chat') {
         case 'default':
             return power_user.default_persona === user_avatar;
         case 'chat':
-            // @ts-expect-error TS(2339) FIXME: Property 'persona' does not exist on type '{}'.
             return chat_metadata.persona == user_avatar;
         case 'character': {
             // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
@@ -1154,10 +1147,8 @@ async function unlockPersona(type = 'chat') {
             break;
         }
         case 'chat': {
-            // @ts-expect-error TS(2339) FIXME: Property 'persona' does not exist on type '{}'.
             if (chat_metadata.persona) {
                 console.log(`Unlocking persona ${user_avatar} from this chat`);
-                // @ts-expect-error TS(2339) FIXME: Property 'persona' does not exist on type '{}'.
                 delete chat_metadata.persona;
                 await saveMetadata();
                 if (power_user.persona_show_notifications && !isPersonaPanelOpen()) {
@@ -1225,7 +1216,6 @@ async function lockPersona(type = 'chat') {
         }
         case 'chat': {
             console.log(`Locking persona ${user_avatar} to this chat`);
-            // @ts-expect-error TS(2339) FIXME: Property 'persona' does not exist on type '{}'.
             chat_metadata.persona = user_avatar;
             saveMetadataDebounced();
             if (power_user.persona_show_notifications && !isPersonaPanelOpen()) {
@@ -1340,11 +1330,9 @@ async function deletePersona(avatarId, { silent = false } = {}) {
             power_user.default_persona = null;
         }
 
-        // @ts-expect-error TS(2339) FIXME: Property 'persona' does not exist on type '{}'.
         if (avatarId === chat_metadata.persona) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             if (!silent) toastr.warning(t`The locked persona was deleted. You will need to set a new persona for this chat.`, t`Persona Deleted`);
-            // @ts-expect-error TS(2339) FIXME: Property 'persona' does not exist on type '{}'.
             delete chat_metadata.persona;
             await saveMetadata();
         }
@@ -1632,7 +1620,6 @@ async function toggleDefaultPersona(avatarId, { quiet = false } = {}) {
 // @ts-expect-error TS(7006) FIXME: Parameter 'avatarId' implicitly has an 'any' type.
 function getPersonaStates(avatarId) {
     const isDefaultPersona = power_user.default_persona === avatarId;
-    // @ts-expect-error TS(2339) FIXME: Property 'persona' does not exist on type '{}'.
     const hasChatLock = chat_metadata.persona == avatarId;
 
     /** @type {PersonaConnection[]} */
@@ -1640,9 +1627,7 @@ function getPersonaStates(avatarId) {
     const connections = power_user.persona_descriptions[avatarId]?.connections;
     // @ts-expect-error TS(7006) FIXME: Parameter 'c' implicitly has an 'any' type.
     const hasCharLock = !!connections?.some(c =>
-        // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
         (!selected_group && c.type === 'character' && c.id === characters[Number(this_chid)]?.avatar)
-        // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
         || (selected_group && c.type === 'group' && c.id === selected_group));
 
     return {
@@ -1745,10 +1730,8 @@ function updatePersonaUIStates({ navigateToCurrent = false } = {}) {
  * @returns {PersonaLockInfo} An object containing flags and a message describing the persona lock status.
  */
 function getPersonaTemporaryLockInfo() {
-    // @ts-expect-error TS(2339) FIXME: Property 'persona' does not exist on type '{}'.
     const hasDifferentChatLock = !!chat_metadata.persona && chat_metadata.persona !== user_avatar;
     const hasDifferentDefaultLock = power_user.default_persona && power_user.default_persona !== user_avatar;
-    // @ts-expect-error TS(2339) FIXME: Property 'persona' does not exist on type '{}'.
     const isTemporary = hasDifferentChatLock || (!chat_metadata.persona && hasDifferentDefaultLock);
     const info = isTemporary ? t`A different persona is locked to this chat, or you have a different default persona set. The currently selected persona will only be temporary, and resets on reload. Consider locking this persona to the chat if you want to permanently use it.`
         + '\n\n'
@@ -1797,18 +1780,14 @@ async function loadPersonaForCurrentChat({ doRender = false } = {}) {
     let connectType = null;
 
     // If persona is locked in chat metadata, select it
-    // @ts-expect-error TS(2339) FIXME: Property 'persona' does not exist on type '{}'.
     if (chat_metadata.persona) {
-        // @ts-expect-error TS(2339) FIXME: Property 'persona' does not exist on type '{}'.
         console.log(`Using locked persona ${chat_metadata.persona}`);
-        // @ts-expect-error TS(2339) FIXME: Property 'persona' does not exist on type '{}'.
         chatPersona = chat_metadata.persona;
 
         // Verify it exists
         // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         if (!userAvatars.includes(chatPersona)) {
             console.warn('Chat-locked persona avatar not found, unlocking persona');
-            // @ts-expect-error TS(2339) FIXME: Property 'persona' does not exist on type '{}'.
             delete chat_metadata.persona;
             saveSettingsDebounced();
             chatPersona = '';
@@ -1879,7 +1858,6 @@ async function loadPersonaForCurrentChat({ doRender = false } = {}) {
     // @ts-expect-error TS(2339) FIXME: Property 'persona' does not exist on type '{}'.
     if (chat_metadata.persona && !userAvatars.includes(chat_metadata.persona)) {
         console.warn('Persona avatar not found, unlocking persona');
-        // @ts-expect-error TS(2339) FIXME: Property 'persona' does not exist on type '{}'.
         delete chat_metadata.persona;
     }
 
@@ -1924,7 +1902,6 @@ async function loadPersonaForCurrentChat({ doRender = false } = {}) {
  * @returns {string[]} - An array of persona keys that are connected to the given character key
  */
 export function getConnectedPersonas(characterKey = undefined) {
-    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
     characterKey ??= selected_group || characters[Number(this_chid)]?.avatar;
     const connectedPersonas = Object.entries(power_user.persona_descriptions)
         // @ts-expect-error TS(2339) FIXME: Property 'connections' does not exist on type 'unk... Remove this comment to see the full error message
@@ -1961,9 +1938,7 @@ export async function showCharConnections() {
                 console.log(`Unlocking persona ${personaId} from current character ${name2}`);
                 // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 power_user.persona_descriptions[personaId].connections = connections.filter(c => {
-                    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
                     if (menu_type == 'group_edit' && c.type == 'group' && c.id == selected_group) return false;
-                    // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
                     else if (c.type == 'character' && c.id == characters[Number(this_chid)]?.avatar) return false;
                     return true;
                 });
@@ -1996,13 +1971,9 @@ export async function showCharConnections() {
  * @returns {PersonaConnection} An object representing the current connection
  */
 export function getCurrentConnectionObj() {
-    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
     if (selected_group)
-        // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
         return { type: 'group', id: selected_group };
-    // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
     if (characters[Number(this_chid)]?.avatar)
-        // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
         return { type: 'character', id: characters[Number(this_chid)]?.avatar };
     return null;
 }
@@ -2169,15 +2140,12 @@ async function syncUserNameToPersona({ start = 0, end = chat.length - 1, quiet =
  * Retriggers the first message to reload it from the char definition.
  */
 export async function retriggerFirstMessageOnEmptyChat() {
-    // @ts-expect-error TS(2339) FIXME: Property 'tainted' does not exist on type '{}'.
     if (chat_metadata.tainted) {
         return;
     }
-    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
     if (selected_group) {
         await reloadCurrentChat();
     }
-    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
     if (!selected_group && Number(this_chid) >= 0 && chat.length === 1) {
         // @ts-expect-error TS(2554) FIXME: Expected 1 arguments, but got 0.
         await createOrEditCharacter();

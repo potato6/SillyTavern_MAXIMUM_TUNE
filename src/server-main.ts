@@ -1,38 +1,21 @@
 // native node modules
-// @ts-expect-error TS(1192) FIXME: Module '"node:fs"' has no default export.
 import fs from 'node:fs';
-// @ts-expect-error TS(1259) FIXME: Module '"node:path"' can only be default-imported ... Remove this comment to see the full error message
 import path from 'node:path';
-// @ts-expect-error TS(1192) FIXME: Module '"node:util"' has no default export.
 import util from 'node:util';
-// @ts-expect-error TS(1192) FIXME: Module '"node:net"' has no default export.
 import net from 'node:net';
-// @ts-expect-error TS(1192) FIXME: Module '"node:dns"' has no default export.
 import dns from 'node:dns';
-// @ts-expect-error TS(1259) FIXME: Module '"node:process"' can only be default-import... Remove this comment to see the full error message
 import process from 'node:process';
-// @ts-expect-error TS(1192) FIXME: Module '"node:http"' has no default export.
 import http from 'node:http';
-// @ts-expect-error TS(1192) FIXME: Module '"node:https"' has no default export.
 import https from 'node:https';
 
-// @ts-expect-error TS(1259) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import cors from 'cors';
-// @ts-expect-error TS(2792) FIXME: Cannot find module 'csrf-sync'. Did you mean to se... Remove this comment to see the full error message
 import { csrfSync } from 'csrf-sync';
-// @ts-expect-error TS(1259) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import express from 'express';
-// @ts-expect-error TS(1259) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import compression from 'compression';
-// @ts-expect-error TS(1259) FIXME: Module '"cookie-session"' can only be default-impo... Remove this comment to see the full error message
 import cookieSession from 'cookie-session';
-// @ts-expect-error TS(1259) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import multer from 'multer';
-// @ts-expect-error TS(1259) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import responseTime from 'response-time';
-// @ts-expect-error TS(2792) FIXME: Cannot find module 'helmet'. Did you mean to set t... Remove this comment to see the full error message
 import helmet from 'helmet';
-// @ts-expect-error TS(1259) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import bodyParser from 'body-parser';
 
 // local library imports
@@ -120,6 +103,7 @@ const app = express();
 app.use(helmet({
     contentSecurityPolicy: false,
 }));
+// @ts-expect-error TS(2769) Bun/Express type mismatch
 app.use(compression());
 app.use(responseTime());
 
@@ -176,6 +160,7 @@ if (cliArgs.listen) {
     app.use(accessLoggerMiddleware());
 }
 
+// @ts-expect-error TS(2769) Bun/Express cookie-session type mismatch
 app.use(cookieSession({
     name: getCookieSessionName(),
     sameSite: 'lax',
@@ -189,7 +174,6 @@ app.use(setUserDataMiddleware);
 // CSRF Protection //
 if (!cliArgs.disableCsrf) {
     const csrfSyncProtection = csrfSync({
-        // @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
         getTokenFromState: (req) => {
             if (!req.session) {
                 console.error('(CSRF error) getTokenFromState: Session object not initialized');
@@ -197,11 +181,9 @@ if (!cliArgs.disableCsrf) {
             }
             return req.session.csrfToken;
         },
-        // @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
         getTokenFromRequest: (req) => {
             return req.headers['x-csrf-token']?.toString();
         },
-        // @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
         storeTokenInState: (req, token) => {
             if (!req.session) {
                 console.error('(CSRF error) storeTokenInState: Session object not initialized');
@@ -209,14 +191,12 @@ if (!cliArgs.disableCsrf) {
             }
             req.session.csrfToken = token;
         },
-        // @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
         skipCsrfProtection: (req) => {
             return cliArgs.enableCorsProxy ? /^\/proxy\//.test(req.path) : false;
         },
         size: 32,
     });
 
-    // @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
     app.get('/csrf-token', (req, res) => {
         res.json({
             'token': csrfSyncProtection.generateToken(req),
@@ -230,7 +210,6 @@ if (!cliArgs.disableCsrf) {
     app.use(csrfSyncProtection.csrfSynchronisedProtection);
 } else {
     console.warn('\nCSRF protection is disabled. This will make your server vulnerable to CSRF attacks.\n');
-    // @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
     app.get('/csrf-token', (req, res) => {
         res.json({
             'token': 'disabled',
@@ -240,7 +219,6 @@ if (!cliArgs.disableCsrf) {
 
 // Static files
 // Host index page
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 app.get('/', cacheBuster.middleware, (request, response) => {
     if (shouldRedirectToLogin(request)) {
         const query = request.url.split('?')[1];
@@ -252,7 +230,6 @@ app.get('/', cacheBuster.middleware, (request, response) => {
 });
 
 // Callback endpoint for OAuth PKCE flows (e.g. OpenRouter)
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 app.get('/callback{/:source}', (request, response) => {
     const source = request.params.source;
     const query = request.url.split('?')[1];
@@ -280,7 +257,6 @@ app.use('/api/users', usersPublicRouter);
 
 // Everything below this line requires authentication
 app.use(requireLoginMiddleware);
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 app.post('/api/ping', (request, response) => {
     if (request.query.extend && request.session) {
         request.session.touch = Date.now();
@@ -292,7 +268,6 @@ app.post('/api/ping', (request, response) => {
 if (cliArgs.enableCorsProxy) {
     app.use('/proxy', corsProxyMiddleware);
 } else {
-    // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
     app.use('/proxy', async (_, res) => {
         const message = 'CORS proxy is disabled. Enable it in config.yaml or use the --corsProxy flag.';
         console.log(message);
@@ -302,10 +277,10 @@ if (cliArgs.enableCorsProxy) {
 
 // File uploads
 const uploadsPath = path.join(cliArgs.dataRoot, UPLOADS_DIRECTORY);
+// @ts-expect-error TS(2769) Bun/Express multer type mismatch
 app.use(multer({ dest: uploadsPath, limits: { fieldSize: 500 * 1024 * 1024 } }).single('avatar'));
 app.use(multerMonkeyPatch);
 
-// @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
 app.get('/version', async function (_, response) {
     const data = await getVersion();
     response.send(data);
@@ -370,7 +345,6 @@ async function preSetupTasks() {
     // Set up event listeners for a graceful shutdown
     process.on('SIGINT', exitProcess);
     process.on('SIGTERM', exitProcess);
-    // @ts-expect-error TS(7006) FIXME: Parameter 'err' implicitly has an 'any' type.
     process.on('uncaughtException', (err) => {
         console.error('Uncaught exception:', err);
         exitProcess();
@@ -416,7 +390,6 @@ async function postSetupTasks(result: import('./server-startup.js').ServerStartu
     if (cliArgs.browserLaunchEnabled) {
         try {
             // TODO: This should be converted to a regular import when support for Node 18 is dropped
-            // @ts-expect-error TS(1323) FIXME: Dynamic imports are only supported when the '--mod... Remove this comment to see the full error message
             const openModule = await import('open');
             const { default: open, apps } = openModule;
 
@@ -510,7 +483,6 @@ async function postSetupTasks(result: import('./server-startup.js').ServerStartu
  */
 function apply404Middleware() {
     const notFoundWebpage = safeReadFileSync(path.join(globalThis.DATA_ROOT, '_errors', 'url-not-found.html')) ?? '';
-    // @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
     app.use((req, res) => {
         res.status(404).send(notFoundWebpage);
     });

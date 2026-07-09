@@ -1,11 +1,7 @@
-// @ts-expect-error TS(1192) FIXME: Module '"node:fs"' has no default export.
 import fs from 'node:fs';
-// @ts-expect-error TS(1259) FIXME: Module '"node:path"' can only be default-imported ... Remove this comment to see the full error message
 import path from 'node:path';
 
-// @ts-expect-error TS(1259) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import express from 'express';
-// @ts-expect-error TS(2792) FIXME: Cannot find module 'sanitize-filename'. Did you me... Remove this comment to see the full error message
 import sanitize from 'sanitize-filename';
 
 import { invalidateThumbnail } from './thumbnails.js';
@@ -15,19 +11,16 @@ import { getFileNameValidationFunction } from '../middleware/validateFileName.js
 
 export const router = express.Router();
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/all', async function (request, response) {
     try {
         const images = getImages(request.user.directories.backgrounds);
         const config = { width: thumbnailDimensions.bg[0], height: thumbnailDimensions.bg[1] };
 
         // Get metadata for all images to provide isAnimated flag to client
-        // @ts-expect-error TS(7006) FIXME: Parameter 'img' implicitly has an 'any' type.
         const relativePaths = images.map(img => path.join('backgrounds', img));
         const { results: metadataMap } = await getOrGenerateMetadataBatch(request.user.directories.root, relativePaths, 'bg');
 
         // Build response with metadata for each image
-        // @ts-expect-error TS(7006) FIXME: Parameter 'img' implicitly has an 'any' type.
         const imagesWithMetadata = images.map(img => {
             const relativePath = path.join('backgrounds', img);
             // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
@@ -50,7 +43,6 @@ router.post('/all', async function (request, response) {
  * Returns folders and per-image folderIds from the metadata index.
  * Loaded separately from /all to avoid blocking image rendering.
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/folders', async function (request, response) {
     try {
         const index = await readMetadataIndex(request.user.directories.root);
@@ -76,7 +68,6 @@ router.post('/folders', async function (request, response) {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/delete', getFileNameValidationFunction('bg'), async function (request, response) {
     try {
         if (!request.body) return response.sendStatus(400);
@@ -109,7 +100,6 @@ router.post('/delete', getFileNameValidationFunction('bg'), async function (requ
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/rename', async function (request, response) {
     try {
         if (!request.body) return response.sendStatus(400);
@@ -145,7 +135,6 @@ router.post('/rename', async function (request, response) {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/upload', async function (request, response) {
     try {
         if (!request.body || !request.file) return response.sendStatus(400);

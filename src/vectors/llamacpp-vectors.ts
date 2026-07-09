@@ -59,5 +59,5 @@ export async function getBatchVector(texts: string[], apiUrl: string, directorie
  */
 export async function getVector(text: string, apiUrl: string, directories: import('../users.js').UserDirectoryList): Promise<number[]> {
     const vectors = await getBatchVector([text], apiUrl, directories);
-    return vectors[0];
+    return vectors[0]!;
 }

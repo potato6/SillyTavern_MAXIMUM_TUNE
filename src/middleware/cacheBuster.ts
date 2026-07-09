@@ -1,4 +1,3 @@
-// @ts-expect-error TS(1192) FIXME: Module '"node:crypto"' has no default export.
 import crypto from 'node:crypto';
 import type { Request, Response, NextFunction } from 'express';
 import { DEFAULT_USER } from '../constants.js';

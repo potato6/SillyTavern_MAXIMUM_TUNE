@@ -1,8 +1,5 @@
-// @ts-expect-error TS(1192) FIXME: Module '"node:fs"' has no default export.
 import fs from 'node:fs';
-// @ts-expect-error TS(1259) FIXME: Module '"node:path"' can only be default-imported ... Remove this comment to see the full error message
 import path from 'node:path';
-// @ts-expect-error TS(2792) FIXME: Cannot find module 'sanitize-filename'. Did you me... Remove this comment to see the full error message
 import sanitize from 'sanitize-filename';
 import { sync as writeFileAtomicSync } from 'write-file-atomic';
 import { extractFileFromZipBuffer, extractFilesFromZipBuffer, normalizeZipEntryPath, ensureDirectory } from './util.js';
@@ -296,7 +293,6 @@ export class CharXParser {
  */
 function deleteExistingByBaseName(dirPath: string, baseName: string) {
     try {
-        // @ts-expect-error TS(7006) FIXME: Parameter 'f' implicitly has an 'any' type.
         const files = fs.readdirSync(dirPath, { withFileTypes: true }).filter(f => f.isFile()).map(f => f.name);
         for (const file of files) {
             if (path.parse(file).name === baseName) {
@@ -332,7 +328,7 @@ export function persistCharXAssets(assets: Array<CharXAsset>, bufferMap: Map<str
         if (spritesPath) {
             return spritesPath;
         }
-        const candidate = path.join(directories.characters, characterFolder);
+        const candidate = path.join(directories.characters!, characterFolder);
         if (!ensureDirectory(candidate)) {
             return null;
         }
@@ -345,7 +341,7 @@ export function persistCharXAssets(assets: Array<CharXAsset>, bufferMap: Map<str
             return miscPath;
         }
         // Use the image gallery path: user/images/{characterName}/
-        const candidate = path.join(directories.userImages, characterFolder);
+        const candidate = path.join(directories.userImages!, characterFolder);
         if (!ensureDirectory(candidate)) {
             return null;
         }
@@ -379,7 +375,7 @@ export function persistCharXAssets(assets: Array<CharXAsset>, bufferMap: Map<str
 
             if (asset.storageCategory === 'background') {
                 // Store in character-specific backgrounds folder: characters/{charName}/backgrounds/
-                const backgroundDir = path.join(directories.characters, characterFolder, 'backgrounds');
+                const backgroundDir = path.join(directories.characters!, characterFolder, 'backgrounds');
                 if (!ensureDirectory(backgroundDir)) {
                     continue;
                 }

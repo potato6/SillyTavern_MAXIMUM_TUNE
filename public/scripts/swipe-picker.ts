@@ -98,7 +98,6 @@ async function openSwipePicker(messageId) {
     function syncSwipeIdInput() {
         // @ts-expect-error TS(7005) FIXME: Variable 'swipeIdInput' implicitly has an 'any' ty... Remove this comment to see the full error message
         if (swipeIdInput) {
-            // @ts-expect-error TS(7005) FIXME: Variable 'swipeIdInput' implicitly has an 'any' ty... Remove this comment to see the full error message
             swipeIdInput.value = String(selectedSwipeId + 1);
         }
     }

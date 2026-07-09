@@ -233,7 +233,6 @@ class MacroCstWalker {
             if (info.isClosing) {
                 // Find matching opener in stack (case-insensitive)
                 // When closing an outer scope, all inner unclosed scopes are implicitly closed
-                // @ts-expect-error TS(2339) FIXME: Property 'findLastIndex' does not exist on type '{... Remove this comment to see the full error message
                 const matchIndex = unclosedStack.findLastIndex(s => s.name.toLowerCase() === info.name.toLowerCase());
                 if (matchIndex !== -1) {
                     // Pop everything from matchIndex to end (inclusive) - closes the matched scope and all nested ones

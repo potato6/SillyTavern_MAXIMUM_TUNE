@@ -99,7 +99,7 @@ export async function getVertexBatchVector(texts: string[], model: string, reque
  */
 export async function getMakerSuiteVector(text: string, model: string, request: import('express').Request): Promise<number[]> {
     const [embedding] = await getMakerSuiteBatchVector([text], model, request);
-    return embedding;
+    return embedding!;
 }
 
 /**
@@ -111,5 +111,5 @@ export async function getMakerSuiteVector(text: string, model: string, request: 
  */
 export async function getVertexVector(text: string, model: string, request: import('express').Request): Promise<number[]> {
     const [embedding] = await getVertexBatchVector([text], model, request);
-    return embedding;
+    return embedding!;
 }

@@ -1,8 +1,5 @@
-// @ts-expect-error TS(1192) FIXME: Module '"node:https"' has no default export.
 import https from 'node:https';
-// @ts-expect-error TS(1192) FIXME: Module '"node:http"' has no default export.
 import http from 'node:http';
-// @ts-expect-error TS(1192) FIXME: Module '"node:fs"' has no default export.
 import fs from 'node:fs';
 import { color, urlHostnameToIPv6, getHasIP } from './util.js';
 
@@ -219,7 +216,6 @@ export class ServerStartup {
      * @returns {error is NodeJS.ErrnoException} True if the error is an EADDRINUSE error
      */
     #isAddressInUseError(error: unknown) {
-        // @ts-expect-error TS(2339) FIXME: Property 'code' does not exist on type 'object'.
         return typeof error === 'object' && error !== null && 'code' in error && error.code === 'EADDRINUSE';
     }
 

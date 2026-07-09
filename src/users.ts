@@ -1,28 +1,18 @@
 // Native Node Modules
-// @ts-expect-error TS(1259) FIXME: Module '"node:path"' can only be default-imported ... Remove this comment to see the full error message
 import path from 'node:path';
-// @ts-expect-error TS(1192) FIXME: Module '"node:fs"' has no default export.
 import fs from 'node:fs';
-// @ts-expect-error TS(1192) FIXME: Module '"node:crypto"' has no default export.
 import crypto from 'node:crypto';
-// @ts-expect-error TS(1192) FIXME: Module '"node:os"' has no default export.
 import os from 'node:os';
-// @ts-expect-error TS(1259) FIXME: Module '"node:process"' can only be default-import... Remove this comment to see the full error message
 import process from 'node:process';
 import { Buffer } from 'node:buffer';
 
 // Express and other dependencies
-// @ts-expect-error TS(1259) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import storage from 'node-persist';
-// @ts-expect-error TS(1259) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import express from 'express';
-// @ts-expect-error TS(1192) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import mime from 'mime-types';
 import { Archiver } from 'archiver';
 import { sync as writeFileAtomicSync } from 'write-file-atomic';
-// @ts-expect-error TS(2792) FIXME: Cannot find module 'sanitize-filename'. Did you me... Remove this comment to see the full error message
 import sanitize from 'sanitize-filename';
-// @ts-expect-error TS(2792) FIXME: Cannot find module 'ip-matching'. Did you mean to ... Remove this comment to see the full error message
 import ipMatching from 'ip-matching';
 
 import { USER_DIRECTORY_TEMPLATE, DEFAULT_USER, PUBLIC_DIRECTORIES, SETTINGS_FILE, UPLOADS_DIRECTORY } from './constants.js';
@@ -32,7 +22,6 @@ import { getContentOfType } from './endpoints/content-manager.js';
 import { serverDirectory } from './server-directory.js';
 import { filterValidIpPatterns, getIpFromRequest } from './express-common.js';
 import { extensionsEnabledFeatureGuard } from './endpoints/extensions.js';
-// @ts-expect-error TS(2792) FIXME: Cannot find module 'es-toolkit'. Did you mean to s... Remove this comment to see the full error message
 import { uniqBy } from 'es-toolkit';
 
 export const KEY_PREFIX = 'user:';
@@ -87,41 +76,40 @@ const STORAGE_KEYS = {
  * @property {number} [created] - The timestamp when the user was created
  */
 
-/**
- * @typedef {object} UserDirectoryList
- * @property {string} root - The root directory for the user
- * @property {string} thumbnails - The directory where the thumbnails are stored
- * @property {string} thumbnailsBg - The directory where the background thumbnails are stored
- * @property {string} thumbnailsAvatar - The directory where the avatar thumbnails are stored
- * @property {string} thumbnailsPersona - The directory where the persona thumbnails are stored
- * @property {string} worlds - The directory where the WI are stored
- * @property {string} user - The directory where the user's public data is stored
- * @property {string} avatars - The directory where the avatars are stored
- * @property {string} userImages - The directory where the images are stored
- * @property {string} groups - The directory where the groups are stored
- * @property {string} groupChats - The directory where the group chats are stored
- * @property {string} chats - The directory where the chats are stored
- * @property {string} characters - The directory where the characters are stored
- * @property {string} backgrounds - The directory where the backgrounds are stored
- * @property {string} novelAI_Settings - The directory where the NovelAI settings are stored
- * @property {string} koboldAI_Settings - The directory where the KoboldAI settings are stored
- * @property {string} openAI_Settings - The directory where the OpenAI settings are stored
- * @property {string} textGen_Settings - The directory where the TextGen settings are stored
- * @property {string} themes - The directory where the themes are stored
- * @property {string} movingUI - The directory where the moving UI data is stored
- * @property {string} extensions - The directory where the extensions are stored
- * @property {string} instruct - The directory where the instruct templates is stored
- * @property {string} context - The directory where the context templates is stored
- * @property {string} quickreplies - The directory where the quick replies are stored
- * @property {string} assets - The directory where the assets are stored
- * @property {string} comfyWorkflows - The directory where the ComfyUI workflows are stored
- * @property {string} files - The directory where the uploaded files are stored
- * @property {string} vectors - The directory where the vectors are stored
- * @property {string} backups - The directory where the backups are stored
- * @property {string} sysprompt - The directory where the system prompt data is stored
- * @property {string} reasoning - The directory where the reasoning templates are stored
- */
-
+export interface UserDirectoryList {
+    [key: string]: string;
+    root: string;
+    thumbnails: string;
+    thumbnailsBg: string;
+    thumbnailsAvatar: string;
+    thumbnailsPersona: string;
+    worlds: string;
+    user: string;
+    avatars: string;
+    userImages: string;
+    groups: string;
+    groupChats: string;
+    chats: string;
+    characters: string;
+    backgrounds: string;
+    novelAI_Settings: string;
+    koboldAI_Settings: string;
+    openAI_Settings: string;
+    textGen_Settings: string;
+    themes: string;
+    movingUI: string;
+    extensions: string;
+    instruct: string;
+    context: string;
+    quickreplies: string;
+    assets: string;
+    comfyWorkflows: string;
+    files: string;
+    vectors: string;
+    backups: string;
+    sysprompt: string;
+    reasoning: string;
+}
 /**
  * Ensures that the content directories exist.
  * @returns {Promise<import('./users.js').UserDirectoryList[]>} - The list of user directories
@@ -134,10 +122,9 @@ export async function ensurePublicDirectoriesExist() {
     }
 
     const userHandles = await getAllUserHandles();
-    // @ts-expect-error TS(7006) FIXME: Parameter 'handle' implicitly has an 'any' type.
     const directoriesList = userHandles.map(handle => getUserDirectories(handle));
     for (const userDirectories of directoriesList) {
-        for (const dir of Object.values(userDirectories)) {
+        for (const dir of Object.values(userDirectories) as string[]) {
             if (!fs.existsSync(dir)) {
                 fs.mkdirSync(dir, { recursive: true });
             }
@@ -180,14 +167,11 @@ export async function verifySecuritySettings() {
     }
 
     const users = await getAllEnabledUsers();
-    // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
     const unprotectedUsers = users.filter(x => !x.password);
-    // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
     const unprotectedAdminUsers = unprotectedUsers.filter(x => x.admin);
 
     if (unprotectedUsers.length > 0) {
         console.warn(color.blue('A friendly reminder that the following users are not password protected:'));
-        // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
         unprotectedUsers.map(x => `${color.yellow(x.handle)} ${color.red(x.admin ? '(admin)' : '')}`).forEach(x => console.warn(x));
         console.log();
         console.warn(`Consider setting a password in the admin panel or by using the ${color.blue('recover.js')} script.`);
@@ -233,7 +217,6 @@ export function cleanUploads() {
             }
 
             console.debug(`Cleaning uploads folder (${uploads.length} files)`);
-            // @ts-expect-error TS(7006) FIXME: Parameter 'file' implicitly has an 'any' type.
             uploads.forEach(file => {
                 const pathToFile = path.join(uploadsPath, file);
                 fs.unlinkSync(pathToFile);
@@ -250,7 +233,6 @@ export function cleanUploads() {
  */
 export async function getUserDirectoriesList() {
     const userHandles = await getAllUserHandles();
-    // @ts-expect-error TS(7006) FIXME: Parameter 'handle' implicitly has an 'any' type.
     const directoriesList = userHandles.map(handle => getUserDirectories(handle));
     return directoriesList;
 }
@@ -407,7 +389,7 @@ export async function migrateUserData() {
         },
     ];
 
-    const currentDate = new Date().toISOString().split('T')[0];
+    const currentDate = new Date().toISOString().split('T')[0]!;
     const backupDirectory = path.join(process.cwd(), PUBLIC_DIRECTORIES.backups, '_migration', currentDate);
 
     if (!fs.existsSync(backupDirectory)) {
@@ -505,10 +487,8 @@ export async function migrateSystemPrompts() {
                 }
             }
             // Only leave unique contents
-            // @ts-expect-error TS(7006) FIXME: Parameter 'item' implicitly has an 'any' type.
             migratedPrompts = uniqBy(migratedPrompts, item => item.content);
             // Only leave contents that are not in the default prompts
-            // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
             migratedPrompts = migratedPrompts.filter(x => !defaultPrompts.some(y => y.content === x.content));
             for (const sysPromptData of migratedPrompts) {
                 sysPromptData.name = `[Migrated] ${sysPromptData.name}`;
@@ -713,9 +693,7 @@ export function getCsrfSecret(request: import('express').Request) {
  * @returns {Promise<string[]>} - The list of user handles
  */
 export async function getAllUserHandles() {
-    // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
     const keys = await storage.keys(x => x.key.startsWith(KEY_PREFIX));
-    // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
     const handles = keys.map(x => x.replace(KEY_PREFIX, ''));
     return handles;
 }
@@ -832,9 +810,10 @@ async function singleUserLogin(request: import('express').Request) {
 
     const userHandles = await getAllUserHandles();
     if (userHandles.length === 1) {
-        const user = await storage.getItem(toKey(userHandles[0]));
+        const handle = userHandles[0]!;
+        const user = await storage.getItem(toKey(handle));
         if (user && !user.password) {
-            request.session.handle = userHandles[0];
+            request.session.handle = handle;
             request.session.version = getAccountVersion(user);
             return true;
         }
@@ -1253,7 +1232,6 @@ async function getAllUsers() {
  */
 export async function getAllEnabledUsers() {
     const users = await getAllUsers();
-    // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
     return users.filter(x => x.enabled);
 }
 

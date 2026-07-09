@@ -1,18 +1,11 @@
-// @ts-expect-error TS(1192) FIXME: Module '"node:fs"' has no default export.
 import fs from 'node:fs';
-// @ts-expect-error TS(1259) FIXME: Module '"node:path"' can only be default-imported ... Remove this comment to see the full error message
 import path from 'node:path';
-// @ts-expect-error TS(1192) FIXME: Module '"node:readline"' has no default export.
 import readline from 'node:readline';
-// @ts-expect-error TS(1259) FIXME: Module '"node:process"' can only be default-import... Remove this comment to see the full error message
 import process from 'node:process';
 
-// @ts-expect-error TS(1259) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import express from 'express';
-// @ts-expect-error TS(2792) FIXME: Cannot find module 'sanitize-filename'. Did you me... Remove this comment to see the full error message
 import sanitize from 'sanitize-filename';
 import { sync as writeFileAtomicSync } from 'write-file-atomic';
-// @ts-expect-error TS(2792) FIXME: Cannot find module 'es-toolkit/compat'. Did you me... Remove this comment to see the full error message
 import { throttle, isObjectLike } from 'es-toolkit/compat';
 
 import validateAvatarUrlMiddleware from '../middleware/validateFileName.js';
@@ -424,7 +417,6 @@ export async function getChatInfo(pathToFile: string, additionalData: Record<str
         let itemCounter = 0;
         let hasAnyMatch = false;
         let matchBuffer: string[] = [];
-        // @ts-expect-error TS(7006) FIXME: Parameter 'line' implicitly has an 'any' type.
         rl.on('line', (line) => {
             if (withMetadata && itemCounter === 0) {
                 const jsonData = tryParse(line);
@@ -507,7 +499,6 @@ export async function trySaveChat(chatData: { chat_metadata?: { integrity?: stri
     getBackupFunction(handle)(backupDirectory, cardName, jsonlData);
 }
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/save', validateAvatarUrlMiddleware, async function (request, response) {
     try {
         const handle = request.user.profile.handle;
@@ -547,7 +538,6 @@ export function getChatData(chatFilePath: string): object[] {
     if (chatJSON.length > 0) {
         const lines = chatJSON.split('\n');
         // Iterate through the array of strings and parse each line as JSON
-        // @ts-expect-error TS(7006) FIXME: Parameter 'line' implicitly has an 'any' type.
         chatData = lines.map(line => tryParse(line)).filter(x => x);
     } else {
         console.warn(`File not found: ${chatFilePath}. The chat does not exist or is empty.`);
@@ -556,7 +546,6 @@ export function getChatData(chatFilePath: string): object[] {
     return chatData;
 }
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/get', validateAvatarUrlMiddleware, function (request, response) {
     try {
         const dirName = String(request.body.avatar_url).replace('.png', '');
@@ -586,7 +575,6 @@ router.post('/get', validateAvatarUrlMiddleware, function (request, response) {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/rename', validateAvatarUrlMiddleware, async function (request, response) {
     try {
         if (!request.body || !request.body.original_file || !request.body.renamed_file) {
@@ -620,7 +608,6 @@ router.post('/rename', validateAvatarUrlMiddleware, async function (request, res
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/delete', validateAvatarUrlMiddleware, function (request, response) {
     try {
         if (!path.extname(request.body.chatfile)) {
@@ -646,7 +633,6 @@ router.post('/delete', validateAvatarUrlMiddleware, function (request, response)
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/export', validateAvatarUrlMiddleware, async function (request, response) {
     if (!request.body.file || (!request.body.avatar_url && request.body.is_group === false)) {
         return response.sendStatus(400);
@@ -693,7 +679,6 @@ router.post('/export', validateAvatarUrlMiddleware, async function (request, res
             input: readStream,
         });
         let buffer = '';
-        // @ts-expect-error TS(7006) FIXME: Parameter 'line' implicitly has an 'any' type.
         rl.on('line', (line) => {
             const data = JSON.parse(line);
             // Skip non-printable/prompt-hidden messages
@@ -720,7 +705,6 @@ router.post('/export', validateAvatarUrlMiddleware, async function (request, res
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/group/import', function (request, response) {
     try {
         const filedata = request.file;
@@ -741,7 +725,6 @@ router.post('/group/import', function (request, response) {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/import', validateAvatarUrlMiddleware, function (request, response) {
     if (!request.body) return response.sendStatus(400);
 
@@ -808,7 +791,7 @@ router.post('/import', validateAvatarUrlMiddleware, function (request, response)
             const lines = data.split('\n');
             const header = lines[0];
 
-            const jsonData = JSON.parse(header);
+            const jsonData: any = JSON.parse(header!);
 
             if (!(jsonData.user_name !== undefined || jsonData.name !== undefined || jsonData.chat_metadata !== undefined)) {
                 console.error('Incorrect chat format .jsonl');
@@ -843,7 +826,6 @@ router.post('/import', validateAvatarUrlMiddleware, function (request, response)
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/group/get', (request, response) => {
     if (!request.body || !request.body.id) {
         return response.sendStatus(400);
@@ -855,7 +837,6 @@ router.post('/group/get', (request, response) => {
     return response.send(getChatData(chatFilePath));
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/group/info', async (request, response) => {
     try {
         if (!request.body || !request.body.id) {
@@ -873,7 +854,6 @@ router.post('/group/info', async (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/group/delete', (request, response) => {
     try {
         if (!request.body || !request.body.id) {
@@ -896,7 +876,6 @@ router.post('/group/delete', (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/group/save', async function (request, response) {
     try {
         if (!request.body || !request.body.id) {
@@ -924,7 +903,6 @@ router.post('/group/save', async function (request, response) {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/search', validateAvatarUrlMiddleware, async function (request, response) {
     try {
         const { query, avatar_url, group_id } = request.body;
@@ -936,7 +914,6 @@ router.post('/search', validateAvatarUrlMiddleware, async function (request, res
             // Find group's chat IDs first
             const groupDir = path.join(request.user.directories.groups);
             const groupFiles = fs.readdirSync(groupDir)
-                // @ts-expect-error TS(7006) FIXME: Parameter 'file' implicitly has an 'any' type.
                 .filter(file => path.extname(file) === '.json');
 
             let targetGroup;
@@ -971,9 +948,7 @@ router.post('/search', validateAvatarUrlMiddleware, async function (request, res
             }
 
             chatFiles = fs.readdirSync(directoryPath)
-                // @ts-expect-error TS(7006) FIXME: Parameter 'file' implicitly has an 'any' type.
                 .filter(file => path.extname(file) === '.jsonl')
-                // @ts-expect-error TS(7006) FIXME: Parameter 'fileName' implicitly has an 'any' type.
                 .map(fileName => path.join(directoryPath, fileName));
         }
 
@@ -1041,7 +1016,6 @@ router.post('/search', validateAvatarUrlMiddleware, async function (request, res
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/recent', async function (request, response) {
     try {
         /** @typedef {{pngFile?: string, groupId?: string, filePath: string, mtime: number}} ChatFile */
@@ -1052,7 +1026,6 @@ router.post('/recent', async function (request, response) {
 
         const getCharacterChatFiles = async () => {
             const pngDirents = await fs.promises.readdir(request.user.directories.characters, { withFileTypes: true });
-            // @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
             const pngFiles = pngDirents.filter(e => e.isFile() && path.extname(e.name) === '.png').map(e => e.name);
 
             for (const pngFile of pngFiles) {
@@ -1064,7 +1037,6 @@ router.post('/recent', async function (request, response) {
                 const pathStats = await fs.promises.stat(pathToChats);
                 if (pathStats.isDirectory()) {
                     const chatFiles = await fs.promises.readdir(pathToChats);
-                    // @ts-expect-error TS(7006) FIXME: Parameter 'file' implicitly has an 'any' type.
                     const jsonlFiles = chatFiles.filter(file => path.extname(file) === '.jsonl');
 
                     for (const file of jsonlFiles) {
@@ -1079,7 +1051,6 @@ router.post('/recent', async function (request, response) {
 
         const getGroupChatFiles = async () => {
             const groupDirents = await fs.promises.readdir(request.user.directories.groups, { withFileTypes: true });
-            // @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
             const groups = groupDirents.filter(e => e.isFile() && path.extname(e.name) === '.json').map(e => e.name);
 
             for (const group of groups) {
@@ -1108,7 +1079,6 @@ router.post('/recent', async function (request, response) {
 
         const getRootChatFiles = async () => {
             const dirents = await fs.promises.readdir(request.user.directories.chats, { withFileTypes: true });
-            // @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
             const chatFiles = dirents.filter(e => e.isFile() && path.extname(e.name) === '.jsonl').map(e => e.name);
 
             for (const file of chatFiles) {
@@ -1144,7 +1114,6 @@ router.post('/recent', async function (request, response) {
                 : getChatInfo(file.filePath, { avatar: file.pngFile }, withMetadata);
         });
 
-        // @ts-expect-error TS(2339) FIXME: Property 'value' does not exist on type 'PromiseSe... Remove this comment to see the full error message
         const chatData = (await Promise.allSettled(jsonFilesPromise)).filter(x => x.status === 'fulfilled').map(x => x.value);
         const validFiles = chatData.filter(i => i.file_name);
 

@@ -1,18 +1,10 @@
-// @ts-expect-error TS(1192) FIXME: Module '"node:net"' has no default export.
 import net from 'node:net';
-// @ts-expect-error TS(1192) FIXME: Module '"node:tls"' has no default export.
 import tls from 'node:tls';
-// @ts-expect-error TS(1192) FIXME: Module '"node:http"' has no default export.
 import http from 'node:http';
-// @ts-expect-error TS(1192) FIXME: Module '"node:https"' has no default export.
 import https from 'node:https';
-// @ts-expect-error TS(1192) FIXME: Module '"node:dns"' has no default export.
 import dns from 'node:dns';
-// @ts-expect-error TS(2792) FIXME: Cannot find module 'ip-matching'. Did you mean to ... Remove this comment to see the full error message
 import ipMatch from 'ip-matching';
-// @ts-expect-error TS(2792) FIXME: Cannot find module 'ip-regex'. Did you mean to set... Remove this comment to see the full error message
 import ipRegex from 'ip-regex';
-// @ts-expect-error TS(2792) FIXME: Cannot find module 'agent-base'. Did you mean to s... Remove this comment to see the full error message
 import { Agent } from 'agent-base';
 import { color } from './util.js';
 import { filterValidIpPatterns } from './express-common.js';
@@ -117,7 +109,6 @@ class PrivateRequestAgent extends Agent {
      * @param {import('agent-base').AgentConnectOpts} options Agent connection options.
      * @returns {Promise<net.Socket | tls.TLSSocket>} A socket connected to the target host.
      */
-    // @ts-expect-error TS(2792) FIXME: Cannot find module 'agent-base'. Did you mean to s... Remove this comment to see the full error message
     async connect(_req: http.ClientRequest, options: import('agent-base').AgentConnectOpts) {
         /**
          * Raise an error and log it if necessary.

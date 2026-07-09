@@ -50,7 +50,6 @@ export class SlashCommandBrowser {
                                     } else if (match[2] !== undefined) {
                                         quotedList.push(match[2]);
                                     }
-                                    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
                                     query = query.slice(match.index + match[0].length);
                                 }
                                 for (const cmd of this.cmdList) {
@@ -120,22 +119,17 @@ export class SlashCommandBrowser {
                                         }
                                     }
                                 }
-                                // @ts-expect-error TS(7005) FIXME: Variable 'details' implicitly has an 'any' type.
                                 if (this.details !== details) {
                                     Array.from(list.querySelectorAll('.selected')).forEach(it => it.classList.remove('selected'));
                                     item.classList.add('selected');
                                     this.details?.remove();
-                                    // @ts-expect-error TS(7005) FIXME: Variable 'details' implicitly has an 'any' type.
                                     container.append(details);
-                                    // @ts-expect-error TS(7005) FIXME: Variable 'details' implicitly has an 'any' type.
                                     this.details = details;
                                     const pRect = list.getBoundingClientRect();
                                     const rect = item.children[0].getBoundingClientRect();
-                                    // @ts-expect-error TS(7005) FIXME: Variable 'details' implicitly has an 'any' type.
                                     details.style.setProperty('--targetOffset', rect.top - pRect.top);
                                 } else {
                                     item.classList.remove('selected');
-                                    // @ts-expect-error TS(7005) FIXME: Variable 'details' implicitly has an 'any' type.
                                     details.remove();
                                     this.details = null;
                                 }

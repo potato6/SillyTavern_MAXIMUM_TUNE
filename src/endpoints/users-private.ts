@@ -1,12 +1,8 @@
-// @ts-expect-error TS(1259) FIXME: Module '"node:path"' can only be default-imported ... Remove this comment to see the full error message
 import path from 'node:path';
 import { promises as fsPromises } from 'node:fs';
-// @ts-expect-error TS(1192) FIXME: Module '"node:crypto"' has no default export.
 import crypto from 'node:crypto';
 
-// @ts-expect-error TS(1259) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import storage from 'node-persist';
-// @ts-expect-error TS(1259) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import express from 'express';
 
 import { getUserAvatar, toKey, getPasswordHash, getPasswordSalt, createBackupArchive, ensurePublicDirectoriesExist, toAvatarKey, getAccountVersion } from '../users.js';
@@ -18,7 +14,6 @@ const RESET_CACHE = new Cache(5 * 60 * 1000);
 
 export const router = express.Router();
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/logout', async (request, response) => {
     try {
         if (!request.session) {
@@ -37,7 +32,6 @@ router.post('/logout', async (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.get('/me', async (request, response) => {
     try {
         if (!request.user) {
@@ -61,7 +55,6 @@ router.get('/me', async (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/change-avatar', async (request, response) => {
     try {
         if (!request.body.handle) {
@@ -97,7 +90,6 @@ router.post('/change-avatar', async (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/change-password', async (request, response) => {
     try {
         if (!request.body.handle) {
@@ -151,7 +143,6 @@ router.post('/change-password', async (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/backup', async (request, response) => {
     try {
         // @ts-expect-error TS(2345) FIXME: Argument of type 'true' is not assignable to param... Remove this comment to see the full error message
@@ -181,7 +172,6 @@ router.post('/backup', async (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/reset-settings', async (request, response) => {
     try {
         const password = request.body.password;
@@ -202,7 +192,6 @@ router.post('/reset-settings', async (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/change-name', async (request, response) => {
     try {
         if (!request.body.name || !request.body.handle) {
@@ -233,7 +222,6 @@ router.post('/change-name', async (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/reset-step1', async (request, response) => {
     try {
         const resetCode = String(crypto.randomInt(1000, 9999));
@@ -248,7 +236,6 @@ router.post('/reset-step1', async (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/reset-step2', async (request, response) => {
     try {
         if (!request.body.code) {

@@ -1,18 +1,12 @@
-// @ts-expect-error TS(1192) FIXME: Module '"node:fs"' has no default export.
 import fs from 'node:fs';
-// @ts-expect-error TS(1259) FIXME: Module '"node:path"' can only be default-imported ... Remove this comment to see the full error message
 import path from 'node:path';
-// @ts-expect-error TS(2792) FIXME: Cannot find module 'yaml'. Did you mean to set the... Remove this comment to see the full error message
 import yaml from 'yaml';
-// @ts-expect-error TS(2792) FIXME: Cannot find module 'chalk'. Did you mean to set th... Remove this comment to see the full error message
 import color from 'chalk';
 import { serverDirectory } from './server-directory.js';
 import { keyToEnv, setConfigFilePath } from './util.js';
 
 // Import from es-toolkit
-// @ts-expect-error TS(2792) FIXME: Cannot find module 'es-toolkit/array'. Did you mea... Remove this comment to see the full error message
 import { difference } from 'es-toolkit/array';
-// @ts-expect-error TS(2792) FIXME: Cannot find module 'es-toolkit/compat'. Did you me... Remove this comment to see the full error message
 import { get, set, has, unset, defaultsDeep } from 'es-toolkit/compat';
 
 type MigrationMap = {

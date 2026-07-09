@@ -18,7 +18,6 @@ import {
     saveSettingsDebounced,
     this_chid,
 } from '../script.js';
-// @ts-expect-error TS(7034) FIXME: Variable 'groups' implicitly has type 'any[]' in s... Remove this comment to see the full error message
 import { groups, selected_group } from './group-chats.js';
 import { t } from './i18n.js';
 import { instruct_presets } from './instruct-mode.js';
@@ -42,7 +41,6 @@ import {
 } from './textgen-settings.js';
 import { download, ensurePlainObject, equalsIgnoreCaseAndAccents, getSanitizedFilename, parseJsonFile, waitUntilCondition } from './utils.js';
 
-// @ts-expect-error TS(2792) FIXME: Cannot find module 'es-toolkit/compat'. Did you me... Remove this comment to see the full error message
 import { get, set } from 'es-toolkit/compat'
 
 const presetManagers = {};
@@ -58,7 +56,6 @@ function autoSelectPreset() {
         return;
     }
 
-    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
     const name = selected_group ? groups.find(x => x.id == selected_group)?.name : characters[this_chid]?.name;
 
     if (!name) {
@@ -1090,7 +1087,7 @@ async function presetCommandCallback(_, name) {
             return currentPreset;
         }
 
-        const fuzzyPresetName = fuzzyMatch[0].item;
+        const fuzzyPresetName = fuzzyMatch[0]!.item;
         const fuzzyPresetValue = presetManager.findPreset(fuzzyPresetName);
 
         if (fuzzyPresetValue) {

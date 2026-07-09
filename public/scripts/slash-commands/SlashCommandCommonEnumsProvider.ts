@@ -1,6 +1,5 @@
 import { chat_metadata, characters, substituteParams, chat, extension_prompt_roles, extension_prompt_types, name2, neutralCharacterName } from '../../script.js';
 import { extension_settings } from '../extensions.js';
-// @ts-expect-error TS(7034) FIXME: Variable 'groups' implicitly has type 'any[]' in s... Remove this comment to see the full error message
 import { getGroupMembers, groups } from '../group-chats.js';
 import { power_user } from '../power-user.js';
 // @ts-expect-error TS(7034) FIXME: Variable 'tags' implicitly has type 'any[]' in som... Remove this comment to see the full error message
@@ -158,7 +157,6 @@ export const commonEnumProviders = {
         return [
             // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
             ...(isAll || types.includes('scope') ? scope.allVariableNames.map(name => new SlashCommandEnumValue(name, null, enumTypes.variable, enumIcons.scopeVariable)) : []),
-            // @ts-expect-error TS(2339) FIXME: Property 'variables' does not exist on type '{}'.
             ...(isAll || types.includes('local') ? Object.keys(chat_metadata.variables ?? []).map(name => new SlashCommandEnumValue(name, null, enumTypes.name, enumIcons.localVariable)) : []),
             ...(isAll || types.includes('global') ? Object.keys(extension_settings.variables.global ?? []).map(name => new SlashCommandEnumValue(name, null, enumTypes.macro, enumIcons.globalVariable)) : []),
         ].filter((item, idx, list) => idx == list.findIndex(it => it.value == item.value));
@@ -204,9 +202,7 @@ export const commonEnumProviders = {
      */
     characters: (mode = 'all') => () => {
         return [
-            // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
             ...(['all', 'character'].includes(mode) ? characters.map(char => new SlashCommandEnumValue(char.name, null, enumTypes.name, enumIcons.character)) : []),
-            // @ts-expect-error TS(7005) FIXME: Variable 'groups' implicitly has an 'any[]' type.
             ...(['all', 'group'].includes(mode) ? groups.map(group => new SlashCommandEnumValue(group.name, null, enumTypes.qr, enumIcons.group)) : []),
             ...(name2 === neutralCharacterName ? [new SlashCommandEnumValue(neutralCharacterName, null, enumTypes.name, '🥸')] : []),
         ];
@@ -217,7 +213,6 @@ export const commonEnumProviders = {
      * @param {string?} groupId - The id of the group - pass in `undefined` to use the current active group
      * @returns {() =>SlashCommandEnumValue[]}
      */
-    // @ts-expect-error TS(7006) FIXME: Parameter 'character' implicitly has an 'any' type... Remove this comment to see the full error message
     groupMembers: (groupId = undefined) => () => getGroupMembers(groupId).map((character, index) => new SlashCommandEnumValue(String(index), character.name, enumTypes.enum, enumIcons.character)),
 
     /**
@@ -333,9 +328,7 @@ export const commonEnumProviders = {
      * @returns {SlashCommandEnumValue[]}
      */
     injects: () => {
-        // @ts-expect-error TS(2339) FIXME: Property 'script_injects' does not exist on type '... Remove this comment to see the full error message
         if (!chat_metadata.script_injects || !Object.keys(chat_metadata.script_injects).length) return [];
-        // @ts-expect-error TS(2339) FIXME: Property 'script_injects' does not exist on type '... Remove this comment to see the full error message
         return Object.entries(chat_metadata.script_injects)
             .map(([id, inject]) => {
                 // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.

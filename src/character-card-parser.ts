@@ -1,11 +1,8 @@
-// @ts-expect-error TS(1192) FIXME: Module '"node:fs"' has no default export.
 import fs from 'node:fs';
 import { Buffer } from 'node:buffer';
 
 import encode from './png/encode.js';
-// @ts-expect-error TS(1259) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import extract from 'png-chunks-extract';
-// @ts-expect-error TS(1192) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import PNGtext from 'png-chunk-text';
 
 /**
@@ -17,7 +14,6 @@ import PNGtext from 'png-chunk-text';
  */
 export const write = (image: Buffer | Uint8Array, data: string) => {
     const chunks = extract(new Uint8Array(image));
-    // @ts-expect-error TS(7006) FIXME: Parameter 'chunk' implicitly has an 'any' type.
     const tEXtChunks = chunks.filter(chunk => chunk.name === 'tEXt');
 
     // Remove existing tEXt chunks
@@ -58,7 +54,6 @@ export const write = (image: Buffer | Uint8Array, data: string) => {
 export const read = (image: Buffer | Uint8Array) => {
     const chunks = extract(new Uint8Array(image));
 
-    // @ts-expect-error TS(7006) FIXME: Parameter 'chunk' implicitly has an 'any' type.
     const textChunks = chunks.filter((chunk) => chunk.name === 'tEXt').map((chunk) => PNGtext.decode(chunk.data));
 
     if (textChunks.length === 0) {
@@ -66,18 +61,16 @@ export const read = (image: Buffer | Uint8Array) => {
         throw new Error('No PNG metadata.');
     }
 
-    // @ts-expect-error TS(7006) FIXME: Parameter 'chunk' implicitly has an 'any' type.
     const ccv3Index = textChunks.findIndex((chunk) => chunk.keyword.toLowerCase() === 'ccv3');
 
     if (ccv3Index > -1) {
-        return Buffer.from(textChunks[ccv3Index].text, 'base64').toString('utf8');
+        return Buffer.from(textChunks[ccv3Index]!.text, 'base64').toString('utf8');
     }
 
-    // @ts-expect-error TS(7006) FIXME: Parameter 'chunk' implicitly has an 'any' type.
     const charaIndex = textChunks.findIndex((chunk) => chunk.keyword.toLowerCase() === 'chara');
 
     if (charaIndex > -1) {
-        return Buffer.from(textChunks[charaIndex].text, 'base64').toString('utf8');
+        return Buffer.from(textChunks[charaIndex]!.text, 'base64').toString('utf8');
     }
 
     console.error('PNG metadata does not contain any character data.');

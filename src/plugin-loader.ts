@@ -1,13 +1,8 @@
-// @ts-expect-error TS(1192) FIXME: Module '"node:fs"' has no default export.
 import fs from 'node:fs';
-// @ts-expect-error TS(1259) FIXME: Module '"node:path"' can only be default-imported ... Remove this comment to see the full error message
 import path from 'node:path';
-// @ts-expect-error TS(1192) FIXME: Module '"node:url"' has no default export.
 import url from 'node:url';
 
-// @ts-expect-error TS(1259) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import express from 'express';
-// @ts-expect-error TS(2792) FIXME: Cannot find module 'simple-git'. Did you mean to s... Remove this comment to see the full error message
 import { default as git, CheckRepoActions } from 'simple-git';
 import { sync as commandExistsSync } from 'command-exists';
 import { getConfigValue, color } from './util.js';
@@ -176,7 +171,6 @@ async function loadFromPackage(app: express.Express, packageJsonPath: string, ex
 async function loadFromFile(app: express.Express, pluginFilePath: string, exitHooks: Array<() => unknown>) {
     try {
         const fileUrl = url.pathToFileURL(pluginFilePath).toString();
-        // @ts-expect-error TS(1323) FIXME: Dynamic imports are only supported when the '--mod... Remove this comment to see the full error message
         const plugin = await import(fileUrl);
         console.log(`Initializing plugin from ${pluginFilePath}`);
         return await initPlugin(app, plugin, exitHooks);
@@ -268,9 +262,7 @@ async function updatePlugins(pluginsPath: string) {
     }
 
     const directories = fs.readdirSync(pluginsPath)
-        // @ts-expect-error TS(7006) FIXME: Parameter 'file' implicitly has an 'any' type.
         .filter(file => !file.startsWith('.'))
-        // @ts-expect-error TS(7006) FIXME: Parameter 'file' implicitly has an 'any' type.
         .filter(file => fs.statSync(path.join(pluginsPath, file)).isDirectory());
 
     if (directories.length === 0) {

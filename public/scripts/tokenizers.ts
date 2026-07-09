@@ -2,7 +2,6 @@ import { localspace } from '../lib.js';
 import { characters, event_types, eventSource, main_api, nai_settings, online_status, this_chid } from '../script.js';
 import { power_user, registerDebugFunction } from './power-user.js';
 import { chat_completion_sources, model_list, oai_settings } from './openai.js';
-// @ts-expect-error TS(7034) FIXME: Variable 'groups' implicitly has type 'any[]' in s... Remove this comment to see the full error message
 import { groups, selected_group } from './group-chats.js';
 import { getStringHash } from './utils.js';
 import { kai_flags, kai_settings } from './kai-settings.js';
@@ -513,7 +512,7 @@ export async function getTokenCountAsync(str, padding = undefined) {
         return cacheObject[cacheKey];
     }
 
-    const result = (await callTokenizerAsync(tokenizerType, str)) + padding;
+    const result = (await callTokenizerAsync(tokenizerType, str) as number) + (padding ?? 0);
 
     if (isNaN(result)) {
         console.warn('Token count calculation returned NaN');
@@ -644,32 +643,23 @@ export function getTokenizerModel() {
     if (main_api == 'openai' && oai_settings.chat_completion_source == chat_completion_sources.OPENROUTER && oai_settings.openrouter_model ||
         main_api == 'textgenerationwebui' && textgen_settings.type === textgen_types.OPENROUTER && textgen_settings.openrouter_model) {
         const model = main_api == 'openai'
-            // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
             ? model_list.find(x => x.id === oai_settings.openrouter_model)
             // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
             : openRouterModels.find(x => x.id === textgen_settings.openrouter_model);
 
-        // @ts-expect-error TS(2339) FIXME: Property 'architecture' does not exist on type 'ne... Remove this comment to see the full error message
         if (model?.architecture?.tokenizer === 'Llama2') {
             return llamaTokenizer;
-        // @ts-expect-error TS(2339) FIXME: Property 'architecture' does not exist on type 'ne... Remove this comment to see the full error message
         } else if (model?.architecture?.tokenizer === 'Llama3') {
             return llama3Tokenizer;
-        // @ts-expect-error TS(2339) FIXME: Property 'architecture' does not exist on type 'ne... Remove this comment to see the full error message
         } else if (model?.architecture?.tokenizer === 'Mistral') {
             return mistralTokenizer;
-        // @ts-expect-error TS(2339) FIXME: Property 'architecture' does not exist on type 'ne... Remove this comment to see the full error message
         } else if (model?.architecture?.tokenizer === 'Yi') {
             return yiTokenizer;
-        // @ts-expect-error TS(2339) FIXME: Property 'architecture' does not exist on type 'ne... Remove this comment to see the full error message
         } else if (model?.architecture?.tokenizer === 'Gemini') {
             return gemmaTokenizer;
-        // @ts-expect-error TS(2339) FIXME: Property 'architecture' does not exist on type 'ne... Remove this comment to see the full error message
         } else if (model?.architecture?.tokenizer === 'Qwen') {
             return qwen2Tokenizer;
-        // @ts-expect-error TS(2339) FIXME: Property 'architecture' does not exist on type 'ne... Remove this comment to see the full error message
         } else if (model?.architecture?.tokenizer === 'Cohere') {
-            // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
             if (model?.id && model?.id.includes('command-a')) {
                 return commandATokenizer;
             }
@@ -953,12 +943,10 @@ function getTokenCacheObject() {
     let chatId = 'undefined';
 
     try {
-        // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
         if (selected_group) {
             // @ts-expect-error TS(7005) FIXME: Variable 'groups' implicitly has an 'any[]' type.
             chatId = groups.find(x => x.id == selected_group)?.chat_id;
         } else if (this_chid !== undefined) {
-            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             chatId = characters[this_chid].chat;
         }
     } catch {

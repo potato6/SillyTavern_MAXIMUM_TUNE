@@ -1,14 +1,9 @@
-// @ts-expect-error TS(1259) FIXME: Module '"node:path"' can only be default-imported ... Remove this comment to see the full error message
 import path from 'node:path';
-// @ts-expect-error TS(1192) FIXME: Module '"node:fs"' has no default export.
 import fs from 'node:fs';
 import { finished } from 'node:stream/promises';
 
-// @ts-expect-error TS(1192) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import mime from 'mime-types';
-// @ts-expect-error TS(1259) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import express from 'express';
-// @ts-expect-error TS(2792) FIXME: Cannot find module 'sanitize-filename'. Did you me... Remove this comment to see the full error message
 import sanitize from 'sanitize-filename';
 import fetch from 'node-fetch';
 
@@ -87,7 +82,7 @@ function getFiles(dir: string, files: string[] = []) {
  * @param {import('../users.js').UserDirectoryList} directories - The user's directories
  */
 function ensureFoldersExist(directories: Record<string, string>) {
-    const folderPath = path.join(directories.assets);
+    const folderPath = path.join(directories.assets!);
 
     for (const category of VALID_CATEGORIES) {
         const assetCategoryPath = path.join(folderPath, category);
@@ -108,7 +103,6 @@ export const router = express.Router();
  * @param {object} response - HTTP Response object will contain a list of file path.
  * @returns {void}
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/get', async (request, response) => {
     const folderPath = path.join(request.user.directories.assets);
     const output = {};
@@ -118,7 +112,6 @@ router.post('/get', async (request, response) => {
             ensureFoldersExist(request.user.directories);
 
             const folders = fs.readdirSync(folderPath, { withFileTypes: true })
-                // @ts-expect-error TS(7006) FIXME: Parameter 'file' implicitly has an 'any' type.
                 .filter(file => file.isDirectory());
 
             for (const { name: folder } of folders) {
@@ -174,7 +167,6 @@ router.post('/get', async (request, response) => {
 
                 // Other assets (bgm/ambient/blip)
                 const files = fs.readdirSync(path.join(folderPath, folder))
-                    // @ts-expect-error TS(7006) FIXME: Parameter 'filename' implicitly has an 'any' type.
                     .filter(filename => {
                         return filename != '.placeholder';
                     });
@@ -198,7 +190,6 @@ router.post('/get', async (request, response) => {
  * @param {object} response - HTTP Response only gives status.
  * @returns {void}
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/download', async (request, response) => {
     try {
         if (!isValidUrl(request.body.url)) {
@@ -275,7 +266,6 @@ router.post('/download', async (request, response) => {
  * @param {object} response - HTTP Response only gives stats.
  * @returns {void}
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/delete', async (request, response) => {
     const inputCategory = request.body.category;
 
@@ -320,7 +310,6 @@ router.post('/delete', async (request, response) => {
  * @param {object} response - HTTP Response object will contain a list of audio file path.
  * @returns {void}
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/character', async (request, response) => {
     if (request.query.name === undefined) return response.sendStatus(400);
 
@@ -363,7 +352,6 @@ router.post('/character', async (request, response) => {
 
             // Other assets
             const files = fs.readdirSync(folderPath)
-                // @ts-expect-error TS(7006) FIXME: Parameter 'filename' implicitly has an 'any' type.
                 .filter(filename => {
                     return filename != '.placeholder';
                 });

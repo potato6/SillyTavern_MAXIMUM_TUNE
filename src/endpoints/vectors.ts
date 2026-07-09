@@ -1,55 +1,33 @@
-// @ts-expect-error TS(1259) FIXME: Module '"node:path"' can only be default-imported ... Remove this comment to see the full error message
 import path from 'node:path';
-// @ts-expect-error TS(1192) FIXME: Module '"node:fs"' has no default export.
 import fs from 'node:fs';
 
-// @ts-expect-error TS(2792) FIXME: Cannot find module 'vectra'. Did you mean to set t... Remove this comment to see the full error message
 import vectra from 'vectra';
-// @ts-expect-error TS(1259) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import express from 'express';
-// @ts-expect-error TS(2792) FIXME: Cannot find module 'sanitize-filename'. Did you me... Remove this comment to see the full error message
 import sanitize from 'sanitize-filename';
 
 const registry: Record<string, () => Promise<unknown>> = {
-    // @ts-expect-error TS(1323) FIXME: Dynamic imports are only supported when the '--mod... Remove this comment to see the full error message
     nomicai: () => import('../vectors/nomicai-vectors.js'),
-    // @ts-expect-error TS(1323) FIXME: Dynamic imports are only supported when the '--mod... Remove this comment to see the full error message
     openai: () => import('../vectors/openai-vectors.js'),
-    // @ts-expect-error TS(1323) FIXME: Dynamic imports are only supported when the '--mod... Remove this comment to see the full error message
     mistral: () => import('../vectors/openai-vectors.js'),
-    // @ts-expect-error TS(1323) FIXME: Dynamic imports are only supported when the '--mod... Remove this comment to see the full error message
     togetherai: () => import('../vectors/openai-vectors.js'),
-    // @ts-expect-error TS(1323) FIXME: Dynamic imports are only supported when the '--mod... Remove this comment to see the full error message
     electronhub: () => import('../vectors/openai-vectors.js'),
-    // @ts-expect-error TS(1323) FIXME: Dynamic imports are only supported when the '--mod... Remove this comment to see the full error message
     openrouter: () => import('../vectors/openai-vectors.js'),
-    // @ts-expect-error TS(1323) FIXME: Dynamic imports are only supported when the '--mod... Remove this comment to see the full error message
     chutes: () => import('../vectors/openai-vectors.js'),
-    // @ts-expect-error TS(1323) FIXME: Dynamic imports are only supported when the '--mod... Remove this comment to see the full error message
     nanogpt: () => import('../vectors/openai-vectors.js'),
-    // @ts-expect-error TS(1323) FIXME: Dynamic imports are only supported when the '--mod... Remove this comment to see the full error message
     siliconflow: () => import('../vectors/openai-vectors.js'),
-    // @ts-expect-error TS(1323) FIXME: Dynamic imports are only supported when the '--mod... Remove this comment to see the full error message
     workers_ai: () => import('../vectors/openai-vectors.js'),
-    // @ts-expect-error TS(1323) FIXME: Dynamic imports are only supported when the '--mod... Remove this comment to see the full error message
     extras: () => import('../vectors/extras-vectors.js'),
-    // @ts-expect-error TS(1323) FIXME: Dynamic imports are only supported when the '--mod... Remove this comment to see the full error message
     palm: () => import('../vectors/google-vectors.js').then(m => ({
         getVector: m.getMakerSuiteVector,
         getBatchVector: m.getMakerSuiteBatchVector,
     })),
-    // @ts-expect-error TS(1323) FIXME: Dynamic imports are only supported when the '--mod... Remove this comment to see the full error message
     vertexai: () => import('../vectors/google-vectors.js').then(m => ({
         getVector: m.getVertexVector,
         getBatchVector: m.getVertexBatchVector,
     })),
-    // @ts-expect-error TS(1323) FIXME: Dynamic imports are only supported when the '--mod... Remove this comment to see the full error message
     cohere: () => import('../vectors/cohere-vectors.js'),
-    // @ts-expect-error TS(1323) FIXME: Dynamic imports are only supported when the '--mod... Remove this comment to see the full error message
     llamacpp: () => import('../vectors/llamacpp-vectors.js'),
-    // @ts-expect-error TS(1323) FIXME: Dynamic imports are only supported when the '--mod... Remove this comment to see the full error message
     vllm: () => import('../vectors/vllm-vectors.js'),
-    // @ts-expect-error TS(1323) FIXME: Dynamic imports are only supported when the '--mod... Remove this comment to see the full error message
     ollama: () => import('../vectors/ollama-vectors.js'),
 };
 
@@ -96,7 +74,6 @@ interface SourceSettings {
  * @param {import('../users.js').UserDirectoryList} directories - The directories object for the user
  * @returns {Promise<number[]>} - The vector for the text
  */
-// @ts-expect-error TS(2694) FIXME: Namespace '"/mnt/DISCO/downloads/some_git_projects... Remove this comment to see the full error message
 async function getVector(source: string, sourceSettings: SourceSettings, text: string, isQuery: boolean, directories: import('../users.js').UserDirectoryList) {
     if (source === 'webllm' || source === 'koboldcpp') {
         // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
@@ -160,7 +137,6 @@ async function getVector(source: string, sourceSettings: SourceSettings, text: s
  * @param {import('../users.js').UserDirectoryList} directories - The directories object for the user
  * @returns {Promise<number[][]>} - The array of vectors for the texts
  */
-// @ts-expect-error TS(2694) FIXME: Namespace '"/mnt/DISCO/downloads/some_git_projects... Remove this comment to see the full error message
 async function getBatchVector(source: string, sourceSettings: SourceSettings, texts: string[], isQuery: boolean, directories: import('../users.js').UserDirectoryList) {
     const batchSize = 10;
     const batches = Array(Math.ceil(texts.length / batchSize)).fill(undefined).map((_, i) => texts.slice(i * batchSize, i * batchSize + batchSize));
@@ -351,7 +327,6 @@ function getModelScope(sourceSettings: SourceSettings) {
  * @param {object} sourceSettings - The model for the source
  * @returns {Promise<vectra.LocalIndex>} - The index for the collection
  */
-// @ts-expect-error TS(2694) FIXME: Namespace '"/mnt/DISCO/downloads/some_git_projects... Remove this comment to see the full error message
 async function getIndex(directories: import('../users.js').UserDirectoryList, collectionId: string, source: string, sourceSettings: SourceSettings) {
     const model = getModelScope(sourceSettings);
     const pathToFile = path.join(directories.vectors, sanitize(source), sanitize(collectionId), sanitize(model));
@@ -372,7 +347,6 @@ async function getIndex(directories: import('../users.js').UserDirectoryList, co
  * @param {object} sourceSettings - Settings for the source, if it needs any
  * @param {{ hash: number; text: string; index: number; }[]} items - The items to insert
  */
-// @ts-expect-error TS(2694) FIXME: Namespace '"/mnt/DISCO/downloads/some_git_projects... Remove this comment to see the full error message
 async function insertVectorItems(directories: import('../users.js').UserDirectoryList, collectionId: string, source: string, sourceSettings: SourceSettings, items: { hash: number; text: string; index: number }[]) {
     const store = await getIndex(directories, collectionId, source, sourceSettings);
 
@@ -398,12 +372,10 @@ async function insertVectorItems(directories: import('../users.js').UserDirector
  * @param {object} sourceSettings - Settings for the source, if it needs any
  * @returns {Promise<number[]>} - The hashes of the items in the collection
  */
-// @ts-expect-error TS(2694) FIXME: Namespace '"/mnt/DISCO/downloads/some_git_projects... Remove this comment to see the full error message
 async function getSavedHashes(directories: import('../users.js').UserDirectoryList, collectionId: string, source: string, sourceSettings: SourceSettings) {
     const store = await getIndex(directories, collectionId, source, sourceSettings);
 
     const items = await store.listItems();
-    // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
     const hashes = items.map(x => Number(x.metadata.hash));
 
     return hashes;
@@ -417,7 +389,6 @@ async function getSavedHashes(directories: import('../users.js').UserDirectoryLi
  * @param {object} sourceSettings - Settings for the source, if it needs any
  * @param {number[]} hashes - The hashes of the items to delete
  */
-// @ts-expect-error TS(2694) FIXME: Namespace '"/mnt/DISCO/downloads/some_git_projects... Remove this comment to see the full error message
 async function deleteVectorItems(directories: import('../users.js').UserDirectoryList, collectionId: string, source: string, sourceSettings: SourceSettings, hashes: number[]) {
     const store = await getIndex(directories, collectionId, source, sourceSettings);
     const items = await store.listItemsByMetadata({ hash: { '$in': hashes } });
@@ -442,15 +413,12 @@ async function deleteVectorItems(directories: import('../users.js').UserDirector
  * @param {number} threshold - The threshold for the search
  * @returns {Promise<{hashes: number[], metadata: object[]}>} - The metadata of the items that match the search text
  */
-// @ts-expect-error TS(2694) FIXME: Namespace '"/mnt/DISCO/downloads/some_git_projects... Remove this comment to see the full error message
 async function queryCollection(directories: import('../users.js').UserDirectoryList, collectionId: string, source: string, sourceSettings: SourceSettings, searchText: string, topK: number, threshold: number) {
     const store = await getIndex(directories, collectionId, source, sourceSettings);
     const vector = await getVector(source, sourceSettings, searchText, true, directories);
 
-    const result = await store.queryItems(vector, topK);
-    // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
+    const result = await store.queryItems(vector, '', topK);
     const metadata = result.filter(x => x.score >= threshold).map(x => x.item.metadata);
-    // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
     const hashes = result.map(x => Number(x.item.metadata.hash));
     return { metadata, hashes };
 }
@@ -466,15 +434,13 @@ async function queryCollection(directories: import('../users.js').UserDirectoryL
  * @param {number} threshold - The threshold for the search
  * @returns {Promise<Record<string, { hashes: number[], metadata: object[] }>>} - The top K results from each collection
  */
-// @ts-expect-error TS(2694) FIXME: Namespace '"/mnt/DISCO/downloads/some_git_projects... Remove this comment to see the full error message
 async function multiQueryCollection(directories: import('../users.js').UserDirectoryList, collectionIds: string[], source: string, sourceSettings: SourceSettings, searchText: string, topK: number, threshold: number) {
     const vector = await getVector(source, sourceSettings, searchText, true, directories);
     const results = [];
 
     for (const collectionId of collectionIds) {
         const store = await getIndex(directories, collectionId, source, sourceSettings);
-        const result = await store.queryItems(vector, topK);
-        // @ts-expect-error TS(7006) FIXME: Parameter 'result' implicitly has an 'any' type.
+        const result = await store.queryItems(vector, '', topK);
         results.push(...result.map(result => ({ collectionId, result })));
     }
 
@@ -537,7 +503,6 @@ async function regenerateCorruptedIndexErrorHandler(req: express.Request, res: e
 
 export const router = express.Router();
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
 router.post('/query', async (req, res) => {
     try {
         if (!req.body.collectionId || !req.body.searchText) {
@@ -558,7 +523,6 @@ router.post('/query', async (req, res) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
 router.post('/query-multi', async (req, res) => {
     try {
         if (!Array.isArray(req.body.collectionIds) || !req.body.searchText) {
@@ -579,7 +543,6 @@ router.post('/query-multi', async (req, res) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
 router.post('/insert', async (req, res) => {
     try {
         if (!Array.isArray(req.body.items) || !req.body.collectionId) {
@@ -602,7 +565,6 @@ router.post('/insert', async (req, res) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
 router.post('/list', async (req, res) => {
     try {
         if (!req.body.collectionId) {
@@ -620,7 +582,6 @@ router.post('/list', async (req, res) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
 router.post('/delete', async (req, res) => {
     try {
         if (!Array.isArray(req.body.hashes) || !req.body.collectionId) {
@@ -639,7 +600,6 @@ router.post('/delete', async (req, res) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
 router.post('/purge-all', async (req, res) => {
     try {
         for (const source of SOURCES) {
@@ -658,7 +618,6 @@ router.post('/purge-all', async (req, res) => {
     }
 });
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
 router.post('/purge', async (req, res) => {
     try {
         if (!req.body.collectionId) {
