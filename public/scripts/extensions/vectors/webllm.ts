@@ -11,15 +11,15 @@ export class WebLlmVectorProvider {
      * @throws {Error} If WebLLM is not available or not up-to-date
      */
     #checkWebLlm() {
-        // @ts-expect-error TS(2304): Cannot find name 'SillyTavern'.
+
         if (!Object.hasOwn(SillyTavern, 'llm')) {
-            // @ts-expect-error TS(2769): No overload matches this call.
+
             throw new Error('WebLLM is not available', { cause: 'webllm-not-available' });
         }
 
-        // @ts-expect-error TS(2304): Cannot find name 'SillyTavern'.
+
         if (typeof SillyTavern.llm.generateEmbedding !== 'function') {
-            // @ts-expect-error TS(2769): No overload matches this call.
+
             throw new Error('WebLLM is not updated', { cause: 'webllm-not-updated' });
         }
     }
@@ -32,7 +32,7 @@ export class WebLlmVectorProvider {
     #initEngine(modelId: any) {
         this.#checkWebLlm();
         if (!this.#engine) {
-            // @ts-expect-error TS(2304): Cannot find name 'SillyTavern'.
+
             this.#engine = SillyTavern.llm.getEngine();
         }
 
@@ -46,7 +46,7 @@ export class WebLlmVectorProvider {
      */
     getModels() {
         this.#checkWebLlm();
-        // @ts-expect-error TS(2304): Cannot find name 'SillyTavern'.
+
         return SillyTavern.llm.getEmbeddingModels();
     }
 

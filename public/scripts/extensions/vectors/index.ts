@@ -393,7 +393,7 @@ async function summarizeOne(element: any, endpoint: any) {
         case 'webllm':
             return await summarizeWebLLM(element);
         default:
-            // @ts-expect-error TS(2769): No overload matches this call.
+
             throw new Error(`Unsupported summary endpoint: ${endpoint}`, { cause: 'summary_endpoint_invalid' });
     }
 }
@@ -436,7 +436,7 @@ async function summarize(hashedMessages: any, endpoint = 'main', { skipOnFailure
                 continue;
             }
 
-            // @ts-expect-error TS(2769): No overload matches this call.
+
             throw new Error(`Summarization failed after ${maxAttempts} attempt(s)`, { cause: 'summary_failed' });
         }
         cachedSummaries.set(element.hash, element.text);
@@ -742,10 +742,10 @@ async function vectorizeFile(fileText: any, fileName: any, collectionId: any, ch
     let toast = jQuery();
 
     try {
-        // @ts-expect-error TS(7017): Element implicitly has an 'any' type because type ... Remove this comment to see the full error message
+
         if (settings.translate_files && typeof globalThis.translate === 'function') {
             console.log(`Vectors: Translating file ${fileName} to English...`);
-            // @ts-expect-error TS(7017): Element implicitly has an 'any' type because type ... Remove this comment to see the full error message
+
             const translatedText = await globalThis.translate(fileText, 'en');
             fileText = translatedText;
         }
@@ -1154,13 +1154,13 @@ function throwIfSourceInvalid() {
         settings.source === 'workers_ai' && !secret_state[SECRET_KEYS.WORKERS_AI] ||
         // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         settings.source === 'siliconflow' && !secret_state[SECRET_KEYS.SILICONFLOW]) {
-        // @ts-expect-error TS(2769): No overload matches this call.
+
         throw new Error('Vectors: API key missing', { cause: 'api_key_missing' });
     }
 
     if (vectorApiRequiresUrl.includes(settings.source) && settings.use_alt_endpoint) {
         if (!settings.alt_endpoint_url) {
-            // @ts-expect-error TS(2769): No overload matches this call.
+
             throw new Error('Vectors: API URL missing', { cause: 'api_url_missing' });
         }
     } else {
@@ -1172,29 +1172,29 @@ function throwIfSourceInvalid() {
             settings.source === 'koboldcpp' && !textgenerationwebui_settings.server_urls[textgen_types.KOBOLDCPP] ||
             // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             settings.source === 'llamacpp' && !textgenerationwebui_settings.server_urls[textgen_types.LLAMACPP]) {
-            // @ts-expect-error TS(2769): No overload matches this call.
+
             throw new Error('Vectors: API URL missing', { cause: 'api_url_missing' });
         }
     }
 
     if (settings.source === 'ollama' && !settings.ollama_model || settings.source === 'vllm' && !settings.vllm_model) {
-        // @ts-expect-error TS(2769): No overload matches this call.
+
         throw new Error('Vectors: API model missing', { cause: 'api_model_missing' });
     }
 
     // @ts-expect-error TS(2345): Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
     if (settings.source === 'extras' && !modules.includes('embeddings')) {
-        // @ts-expect-error TS(2769): No overload matches this call.
+
         throw new Error('Vectors: Embeddings module missing', { cause: 'extras_module_missing' });
     }
 
     if (settings.source === 'webllm' && (!isWebLlmSupported() || !settings.webllm_model)) {
-        // @ts-expect-error TS(2769): No overload matches this call.
+
         throw new Error('Vectors: WebLLM is not supported', { cause: 'webllm_not_supported' });
     }
 
     if (settings.source === 'workers_ai' && !oai_settings.workers_ai_account_id) {
-        // @ts-expect-error TS(2769): No overload matches this call.
+
         throw new Error('Vectors: Workers AI account ID missing', { cause: 'account_id_missing' });
     }
 }
@@ -1481,11 +1481,11 @@ async function executeWithWebLlmErrorHandling(func: any) {
             return;
         }
         switch (error.cause) {
-            // @ts-expect-error TS(2678): Type 'string' is not comparable to type 'Error'.
+
             case 'webllm-not-available':
                 toastr.warning('WebLLM is not available. Please install the extension.', 'WebLLM not installed');
                 break;
-            // @ts-expect-error TS(2678): Type 'string' is not comparable to type 'Error'.
+
             case 'webllm-not-updated':
                 toastr.warning('The installed extension version does not support embeddings.', 'WebLLM update required');
                 break;
@@ -2427,7 +2427,7 @@ export async function init() {
     document.getElementById('vectors_webllm_install')?.addEventListener('click', (e) => {
         e.preventDefault();
         e.stopPropagation();
-        // @ts-expect-error TS(2304): Cannot find name 'SillyTavern'.
+
         if (Object.hasOwn(SillyTavern, 'llm')) {
             toastr.info('WebLLM is already installed');
             return;

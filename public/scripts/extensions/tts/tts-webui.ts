@@ -441,7 +441,7 @@ class TtsWebuiProvider {
         let headerParsed = false;
         let wavInfo = null;
 
-        // @ts-expect-error TS(7023): 'processStream' implicitly has return type 'any' b... Remove this comment to see the full error message
+
         const processStream = async ({
             done,
             value

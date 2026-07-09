@@ -165,7 +165,7 @@ export class SettingsUi {
         this.qrList = this.dom.querySelector('#qr--set-qrList');
         this.currentSet = this.dom.querySelector('#qr--set');
         this.currentSet.addEventListener('change', () => this.onQrSetChange());
-        // @ts-expect-error TS(2339): Property 'toSorted' does not exist on type 'never[... Remove this comment to see the full error message
+
         QuickReplySet.list.toSorted((a: any, b: any) => a.name.toLowerCase().localeCompare(b.name.toLowerCase())).forEach((qrs: any) => {
             const opt = document.createElement('option'); {
                 opt.value = qrs.name;

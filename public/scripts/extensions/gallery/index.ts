@@ -79,7 +79,7 @@ const defaultSettings = Object.freeze({
  */
 function initSettings() {
     let shouldSave = false;
-    // @ts-expect-error TS(2304): Cannot find name 'SillyTavern'.
+
     const context = SillyTavern.getContext();
     if (!context.extensionSettings.gallery) {
         context.extensionSettings.gallery = structuredClone(defaultSettings);
@@ -197,7 +197,7 @@ async function deleteGalleryItem(url: any) {
  * @param {string} order Sort order
  */
 function setSortOrder(order: any) {
-    // @ts-expect-error TS(2304): Cannot find name 'SillyTavern'.
+
     const context = SillyTavern.getContext();
     context.extensionSettings.gallery.sort = order;
     context.saveSettingsDebounced();
@@ -586,7 +586,7 @@ function updateGalleryFolder(newUrl: any) {
     if (!newUrl) {
         throw new Error('Folder name cannot be empty');
     }
-    // @ts-expect-error TS(2304): Cannot find name 'SillyTavern'.
+
     const context = SillyTavern.getContext();
     if (context.groupId) {
         throw new Error('Cannot change gallery folder in group chat');
@@ -613,7 +613,7 @@ function updateGalleryFolder(newUrl: any) {
  * Restores the gallery folder to the default value.
  */
 function restoreGalleryFolder() {
-    // @ts-expect-error TS(2304): Cannot find name 'SillyTavern'.
+
     const context = SillyTavern.getContext();
     if (context.groupId) {
         throw new Error('Cannot change gallery folder in group chat');
@@ -842,7 +842,7 @@ function addGalleryWandButton() {
 export async function init() {
     initSettings();
     eventSource.on(event_types.CHARACTER_RENAMED, (oldAvatar: any, newAvatar: any) => {
-        // @ts-expect-error TS(2304): Cannot find name 'SillyTavern'.
+
         const context = SillyTavern.getContext();
         const galleryFolder = context.extensionSettings.gallery.folders[oldAvatar];
         if (galleryFolder) {
@@ -854,7 +854,7 @@ export async function init() {
     eventSource.on(event_types.CHARACTER_DELETED, (data: any) => {
         const avatar = data?.character?.avatar;
         if (!avatar) return;
-        // @ts-expect-error TS(2304): Cannot find name 'SillyTavern'.
+
         const context = SillyTavern.getContext();
         delete context.extensionSettings.gallery.folders[avatar];
         context.saveSettingsDebounced();

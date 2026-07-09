@@ -1101,9 +1101,9 @@ export async function getExpressionLabel(text: any, expressionsApi = extension_s
         return extension_settings.expressions.fallback_expression;
     }
 
-    // @ts-expect-error TS(7017): Element implicitly has an 'any' type because type ... Remove this comment to see the full error message
+
     if (extension_settings.expressions.translate && typeof globalThis.translate === 'function') {
-        // @ts-expect-error TS(7017): Element implicitly has an 'any' type because type ... Remove this comment to see the full error message
+
         text = await globalThis.translate(text, 'en');
     }
 
@@ -1776,7 +1776,7 @@ async function onClickExpressionAddCustom() {
         toastr.warning('Invalid custom expression name provided', 'Add Custom Expression');
         return;
     }
-    // @ts-expect-error TS(2531): Object is possibly 'null'.
+
     if (DEFAULT_EXPRESSIONS.includes(expressionName) || DEFAULT_EXPRESSIONS.some(x => expressionName.startsWith(x))) {
         toastr.warning('Expression name already exists', 'Add Custom Expression');
         return;

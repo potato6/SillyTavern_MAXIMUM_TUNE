@@ -586,12 +586,12 @@ function parseMessageSegments(text: any) {
         if (match[1]) {
             // Asterisk content (*action*)
             segmentType = 'action';
-            // @ts-expect-error TS(2532): Object is possibly 'undefined'.
+
             content = matchedText.slice(1, -1);
         } else if (match[2] || match[3] || match[4] || match[5] || match[6] || match[7]) {
             // Various quote types ("dialogue")
             segmentType = 'dialogue';
-            // @ts-expect-error TS(2532): Object is possibly 'undefined'.
+
             content = matchedText.slice(1, -1);
         }
 
@@ -604,7 +604,7 @@ function parseMessageSegments(text: any) {
             });
         }
 
-        // @ts-expect-error TS(2532): Object is possibly 'undefined'.
+
         lastIndex = match.index + matchedText.length;
     }
 

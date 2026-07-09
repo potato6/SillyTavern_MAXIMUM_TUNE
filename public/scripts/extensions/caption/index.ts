@@ -472,7 +472,7 @@ async function captionCommandCallback(args: any, prompt: any) {
             const caption = await onSelectImage(e, prompt, quiet);
             resolve(caption);
         };
-        // @ts-expect-error TS(2339): Property 'oncancel' does not exist on type 'HTMLIn... Remove this comment to see the full error message
+
         input.oncancel = () => resolve('');
         input.click();
     });

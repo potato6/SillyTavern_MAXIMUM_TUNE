@@ -980,7 +980,7 @@ function buildReplacementHtml(match: any, pattern: any) {
                 // Not a valid group index, treat it as a literal.
                 const mark = document.createElement('mark');
                 mark.className = 'green_hl';
-                // @ts-expect-error TS(2322): Type 'string | undefined' is not assignable to typ... Remove this comment to see the full error message
+
                 mark.innerText = backref;
                 container.appendChild(mark);
             }

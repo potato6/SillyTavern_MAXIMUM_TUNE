@@ -965,7 +965,7 @@ export class QuickReply {
             const tpl = dom.querySelector('#qr--ctxItem');
             const linkList = dom.querySelector('#qr--ctxEditor');
             const fillQrSetSelect = (/**@type {HTMLSelectElement}*/select: any, /**@type {QuickReplyContextLink}*/ link: any) => {
-                // @ts-expect-error TS(2339): Property 'toSorted' does not exist on type 'never[... Remove this comment to see the full error message
+
                 [{ name: 'Select a QR set' }, ...QuickReplySet.list.toSorted((a: any, b: any) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()))].forEach(qrs => {
                     const opt = document.createElement('option'); {
                         opt.value = qrs.name;
