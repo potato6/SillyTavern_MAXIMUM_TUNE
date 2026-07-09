@@ -1046,13 +1046,15 @@ export function initRossMods() {
 
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(SelectedCharacterTab).on('click', function () { accountStorage.setItem('SelectedNavTab', 'rm_button_selected_ch'); });
-    document.getElementById('rm_button_characters').addEventListener('click', function () { accountStorage.setItem('SelectedNavTab', 'rm_button_characters'); });
+    document.getElementById('rm_button_characters')?.addEventListener('click', function () { accountStorage.setItem('SelectedNavTab', 'rm_button_characters'); });
 
     // when a char is selected from the list, save them as the auto-load character for next page load
 
     // when a char is selected from the list, save their name as the auto-load character for next page load
     document.addEventListener('click', function (event) {
-        const el = event.target.closest('.character_select');
+        const target = event.target;
+        if (!(target instanceof Element)) return;
+        const el = target.closest('.character_select');
         if (!el) return;
         const characterId = el.getAttribute('data-chid');
         setActiveCharacter(characterId);
@@ -1061,7 +1063,9 @@ export function initRossMods() {
     });
 
     document.addEventListener('click', function (event) {
-        const el = event.target.closest('.group_select');
+        const target = event.target;
+        if (!(target instanceof Element)) return;
+        const el = target.closest('.group_select');
         if (!el) return;
         const groupId = el.getAttribute('data-chid') || el.getAttribute('data-grid');
         setActiveCharacter(null);
