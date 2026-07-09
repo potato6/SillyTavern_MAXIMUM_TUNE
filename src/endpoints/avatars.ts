@@ -42,7 +42,7 @@ router.post('/upload', getFileNameValidationFunction('overwrite_name'), async (r
 
     try {
         const pathToUpload = path.join(request.file.destination, request.file.filename);
-        const crop = tryParse(request.query.crop);
+        const crop = tryParse(request.query.crop as string);
         const fileBuffer = fs.readFileSync(pathToUpload);
         const image = await applyAvatarCropResize(fileBuffer, crop);
 

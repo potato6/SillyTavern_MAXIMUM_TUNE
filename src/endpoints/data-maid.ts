@@ -206,7 +206,7 @@ export class DataMaidService {
                 if (image.startsWith('http') || image.startsWith('data:')) {
                     return; // Skip URLs and data URIs
                 }
-                knownImageFullPaths.add(path.normalize(path.join(this.directories.root, image)));
+                knownImageFullPaths.add(path.normalize(path.join(this.directories.root, image as string)));
             });
             const images = await fs.promises.readdir(this.directories.userImages, { withFileTypes: true });
             for (const dirent of images) {
@@ -295,7 +295,7 @@ export class DataMaidService {
             }
             const knownFileFullPaths = new Set();
             knownFiles.forEach(file => {
-                knownFileFullPaths.add(path.normalize(path.join(this.directories.root, file)));
+                knownFileFullPaths.add(path.normalize(path.join(this.directories.root, file as string)));
             });
             const files = await fs.promises.readdir(this.directories.files, { withFileTypes: true });
             for (const file of files) {

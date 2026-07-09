@@ -44,7 +44,7 @@ export async function migrateGroupChatsMetadataFormat(userDirectories: Record<st
                     if (!isJsonFile) {
                         continue;
                     }
-                    const groupFilePath = path.join(userDirs.groups, groupFile.name);
+                    const groupFilePath = path.join(userDirs.groups ?? '', groupFile.name);
                     const groupDataRaw = await fsPromises.readFile(groupFilePath, 'utf8');
                     const groupData = tryParse(groupDataRaw) || {};
                     const needsMigration = ['chat_metadata', 'past_metadata'].some(key => Object.hasOwn(groupData, key));

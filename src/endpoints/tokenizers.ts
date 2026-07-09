@@ -11,7 +11,7 @@ import { sync as writeFileAtomicSync } from 'write-file-atomic';
 import { Tokenizer } from '@agnai/web-tokenizers';
 // @ts-expect-error TS(2792) FIXME: Cannot find module '@agnai/sentencepiece-js'. Did ... Remove this comment to see the full error message
 import { SentencePieceProcessor } from '@agnai/sentencepiece-js';
-import tiktoken from 'tiktoken';
+import tiktoken, { type TiktokenModel } from 'tiktoken';
 
 import { convertClaudePrompt } from '../prompt-converters.js';
 import { TEXTGEN_TYPES } from '../constants.js';
@@ -245,7 +245,7 @@ class WebTokenizer {
         try {
             const pathToModel = await getPathToTokenizer(this.#model, this.#fallbackModel);
             const fileBuffer = await fs.promises.readFile(pathToModel);
-            this.#instance = await Tokenizer.fromJSON(fileBuffer);
+            this.#instance = await Tokenizer.fromJSON(fileBuffer.buffer.slice(fileBuffer.byteOffset, fileBuffer.byteOffset + fileBuffer.byteLength));
             console.info('Instantiated the tokenizer for', path.parse(pathToModel).name);
             return this.#instance;
         } catch (error) {
@@ -557,7 +557,7 @@ export function getTiktokenTokenizer(model: string) {
         return tokenizersCache[model];
     }
 
-    const tokenizer = tiktoken.encoding_for_model(model);
+    const tokenizer = tiktoken.encoding_for_model(model as TiktokenModel);
     console.info('Instantiated the tokenizer for', model);
     // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     tokenizersCache[model] = tokenizer;

@@ -1370,8 +1370,7 @@ export function flattenSchema(schema: Record<string, unknown>, api: string) {
      * @param {string[]} parents List of parents to prevent recursion
      * @returns {unknown} The resolved object
      */
-    // @ts-expect-error TS(7023) FIXME: 'resolve' implicitly has return type 'any' because... Remove this comment to see the full error message
-    function resolve(obj: unknown, parents: string[] = []) {
+    function resolve(obj: unknown, parents: string[] = []): unknown {
         if (!obj || typeof obj !== 'object') {
             return obj;
         }
@@ -1411,7 +1410,7 @@ export function flattenSchema(schema: Record<string, unknown>, api: string) {
     }
 
     const flattenedSchema = resolve(schemaCopy);
-    delete flattenedSchema.$schema;
+    delete (flattenedSchema as any).$schema;
     return flattenedSchema;
 }
 

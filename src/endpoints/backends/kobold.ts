@@ -186,10 +186,10 @@ router.post('/status', async function (request, response) {
     result.koboldUnitedVersion = koboldUnitedResponse.result;
     // @ts-expect-error TS(2339) FIXME: Property 'koboldCppVersion' does not exist on type... Remove this comment to see the full error message
     result.koboldCppVersion = koboldExtraResponse.result;
-    // @ts-expect-error TS(2339) FIXME: Property 'model' does not exist on type '{}'.
-    result.model = !koboldModelResponse || koboldModelResponse.result === 'ReadOnly' ?
+    // @ts-expect-error TS(2339) FIXME: Property 'result' does not exist on type '{}'.
+    result.model = !koboldModelResponse || (koboldModelResponse as any).result === 'ReadOnly' ?
         'no_connection' :
-        koboldModelResponse.result;
+        (koboldModelResponse as any).result;
 
     response.send(result);
 });

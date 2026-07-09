@@ -1114,7 +1114,7 @@ router.post('/recent', async function (request, response) {
                 : getChatInfo(file.filePath, { avatar: file.pngFile }, withMetadata);
         });
 
-        const chatData = (await Promise.allSettled(jsonFilesPromise)).filter(x => x.status === 'fulfilled').map(x => x.value);
+        const chatData = (await Promise.allSettled(jsonFilesPromise)).filter(x => x.status === 'fulfilled').map(x => x.value as { file_name?: string });
         const validFiles = chatData.filter(i => i.file_name);
 
         return response.send(validFiles);

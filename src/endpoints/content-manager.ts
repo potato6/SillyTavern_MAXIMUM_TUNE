@@ -504,7 +504,7 @@ async function downloadChubCharacter(id: string) {
     }
 
     const buffer = write(imageBuffer, JSON.stringify(characterCard));
-    const fileName = `${sanitize(characterCard.data.name)}.png`;
+    const fileName = `${sanitize(String(characterCard.data.name))}.png`;
     const fileType = 'image/png';
 
     return { buffer, fileName, fileType };
@@ -533,7 +533,7 @@ async function downloadPygmalionCharacter(id: string) {
     }
 
     try {
-        const avatarUrl = characterData?.data?.avatar;
+        const avatarUrl = (characterData as Record<string, any>)?.data?.avatar;
 
         if (!avatarUrl) {
             console.error('Pygsite character does not have an avatar', characterData);

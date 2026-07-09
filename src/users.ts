@@ -1095,7 +1095,7 @@ function createRouteHandler(directoryFn: (req: express.Request) => string) {
     return async (req: express.Request, res: express.Response) => {
         try {
             const directory = directoryFn(req);
-            const filePath = path.join(...req.params.filePath);
+            const filePath = path.join(...(Array.isArray(req.params.filePath) ? req.params.filePath : [req.params.filePath ?? '']));
             const fullPath = path.join(directory, filePath);
             if (!isPathUnderParent(directory, path.resolve(fullPath))) {
                 return res.sendStatus(403);
@@ -1122,7 +1122,7 @@ function createExtensionsRouteHandler(directoryFn: (req: express.Request) => str
     return async (req: express.Request, res: express.Response) => {
         try {
             const directory = directoryFn(req);
-            const filePath = path.join(...req.params.filePath);
+            const filePath = path.join(...(Array.isArray(req.params.filePath) ? req.params.filePath : [req.params.filePath ?? '']));
             const localPath = path.join(directory, filePath);
             if (!isPathUnderParent(directory, path.resolve(localPath))) {
                 return res.sendStatus(403);

@@ -38,7 +38,7 @@ export async function getBatchVector(texts: string[], isQuery: boolean, director
         throw new Error('API request failed');
     }
 
-    const data: { embeddings: { float: number[][] } } = await response.json();
+    const data: { embeddings: { float: number[][] } } = await response.json() as { embeddings: { float: number[][] } };
     if (!Array.isArray(data?.embeddings?.float)) {
         console.warn('API response was not an array');
         throw new Error('API response was not an array');
