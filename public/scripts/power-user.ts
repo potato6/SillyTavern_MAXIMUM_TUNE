@@ -3648,8 +3648,8 @@ jQuery(() => {
         return zoomLevel;
     });
 
-    const coreTruthWinWidth = window.innerWidth;
-    const coreTruthWinHeight = window.innerHeight;
+    let coreTruthWinWidth = window.innerWidth;
+    let coreTruthWinHeight = window.innerHeight;
 
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(window).on('resize', async () => {

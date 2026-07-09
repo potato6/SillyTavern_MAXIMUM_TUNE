@@ -174,8 +174,6 @@ class MacroEnvBuilder {
     }
 }
 
-instance = MacroEnvBuilder.instance;
-
 /**
  * @param {MacroEnvRawContext} ctx
  * @param {object} options

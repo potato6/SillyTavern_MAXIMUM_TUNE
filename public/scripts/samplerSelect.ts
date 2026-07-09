@@ -282,7 +282,8 @@ async function listSamplers(main_api, arrayOnly = false) {
 
     const samplersListHTML = availableSamplers.reduce((html, sampler) => {
         let customColor;
-        const { relatedDOMElement, displayname } = getRelatedDOMElement(sampler);
+        const { relatedDOMElement } = getRelatedDOMElement(sampler);
+        let { displayname } = getRelatedDOMElement(sampler);
 
         const isManuallyActivated = samplersActivatedManually.includes(sampler);
         const displayModified = relatedDOMElement.data(SELECT_SAMPLER.DATA);
