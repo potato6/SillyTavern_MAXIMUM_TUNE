@@ -392,8 +392,11 @@ export async function writeSecret(key, value, label, {
 
         const { id } = await response.json();
         // Clear the input field
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(INPUT_MAP[key]).val('').trigger('input');
+        const inputEl = document.querySelector(INPUT_MAP[key]);
+        if (inputEl instanceof HTMLInputElement) {
+            inputEl.value = '';
+            inputEl.dispatchEvent(new Event('input'));
+        }
         await readSecretState();
         await eventSource.emit(event_types.SECRET_WRITTEN, key);
         return id;
@@ -420,8 +423,7 @@ export async function deleteSecret(key, id) {
         if (response.ok) {
             await readSecretState();
             // Force reconnection to the API with the new key
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#main_api').trigger('change');
+            document.getElementById('main_api')?.dispatchEvent(new Event('change'));
             await eventSource.emit(event_types.SECRET_DELETED, key);
         }
     } catch (error) {
@@ -494,8 +496,7 @@ export async function rotateSecret(key, id) {
         if (response.ok) {
             await readSecretState();
             // Force reconnection to the API with the new key
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#main_api').trigger('change');
+            document.getElementById('main_api')?.dispatchEvent(new Event('change'));
             await eventSource.emit(event_types.SECRET_ROTATED, key);
         }
     } catch (error) {
