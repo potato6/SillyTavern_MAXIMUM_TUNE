@@ -1741,338 +1741,514 @@ export async function init() {
     settings.source = settings.source !== 'local' ? settings.source : 'transformers';
     const template = await renderExtensionTemplateAsync(MODULE_NAME, 'settings');
     $('#vectors_container').append(template);
-    $('#vectors_enabled_chats').prop('checked', settings.enabled_chats).on('input', () => {
-        settings.enabled_chats = $('#vectors_enabled_chats').prop('checked');
+    const elEnabledChats = document.getElementById('vectors_enabled_chats');
+    if (elEnabledChats) {
+        elEnabledChats.checked = settings.enabled_chats;
+        elEnabledChats.addEventListener('input', () => {
+            settings.enabled_chats = elEnabledChats.checked;
+            Object.assign(extension_settings.vectors, settings);
+            saveSettingsDebounced();
+            toggleSettings();
+        });
+    }
+    const elKeepHidden = document.getElementById('vectors_keep_hidden');
+    if (elKeepHidden) {
+        elKeepHidden.checked = settings.keep_hidden;
+        elKeepHidden.addEventListener('input', () => {
+            settings.keep_hidden = !!elKeepHidden.checked;
+            Object.assign(extension_settings.vectors, settings);
+            saveSettingsDebounced();
+        });
+    }
+    const elEnabledFiles = document.getElementById('vectors_enabled_files');
+    if (elEnabledFiles) {
+        elEnabledFiles.checked = settings.enabled_files;
+        elEnabledFiles.addEventListener('input', () => {
+            settings.enabled_files = elEnabledFiles.checked;
+            Object.assign(extension_settings.vectors, settings);
+            saveSettingsDebounced();
+            toggleSettings();
+        });
+    }
+    const elSource = document.getElementById('vectors_source');
+    if (elSource) {
+        elSource.value = settings.source;
+        elSource.addEventListener('change', () => {
+            settings.source = String(elSource.value);
+            Object.assign(extension_settings.vectors, settings);
+            saveSettingsDebounced();
+            toggleSettings();
+        });
+    }
+    const elAltEndpoint = document.getElementById('vector_altEndpointUrl_enabled');
+    if (elAltEndpoint) {
+        elAltEndpoint.checked = settings.use_alt_endpoint;
+        elAltEndpoint.addEventListener('input', () => {
+            settings.use_alt_endpoint = elAltEndpoint.checked;
+            Object.assign(extension_settings.vectors, settings);
+            saveSettingsDebounced();
+        });
+    }
+    const elAltAddress = document.getElementById('vector_altEndpoint_address');
+    if (elAltAddress) {
+        elAltAddress.value = settings.alt_endpoint_url;
+        elAltAddress.addEventListener('change', () => {
+            settings.alt_endpoint_url = String(elAltAddress.value);
+            Object.assign(extension_settings.vectors, settings);
+            saveSettingsDebounced();
+        });
+    }
+    const elTogether = document.getElementById('vectors_togetherai_model');
+    if (elTogether) {
+        elTogether.value = settings.togetherai_model;
+        elTogether.addEventListener('change', () => {
+            settings.togetherai_model = String(elTogether.value);
+            Object.assign(extension_settings.vectors, settings);
+            saveSettingsDebounced();
+        });
+    }
+    const elOpenAI = document.getElementById('vectors_openai_model');
+    if (elOpenAI) {
+        elOpenAI.value = settings.openai_model;
+        elOpenAI.addEventListener('change', () => {
+            settings.openai_model = String(elOpenAI.value);
+            Object.assign(extension_settings.vectors, settings);
+            saveSettingsDebounced();
+        });
+    }
+    const elElectronHub = document.getElementById('vectors_electronhub_model');
+    if (elElectronHub) {
+        elElectronHub.value = settings.electronhub_model;
+        elElectronHub.addEventListener('change', () => {
+            settings.electronhub_model = String(elElectronHub.value);
+            Object.assign(extension_settings.vectors, settings);
+            saveSettingsDebounced();
+        });
+    }
+    const elChutes = document.getElementById('vectors_chutes_model');
+    if (elChutes) {
+        elChutes.value = settings.chutes_model;
+        elChutes.addEventListener('change', () => {
+            settings.chutes_model = String(elChutes.value);
+            Object.assign(extension_settings.vectors, settings);
+            saveSettingsDebounced();
+        });
+    }
+    const elNanoGPT = document.getElementById('vectors_nanogpt_model');
+    if (elNanoGPT) {
+        elNanoGPT.value = settings.nanogpt_model;
+        elNanoGPT.addEventListener('change', () => {
+            settings.nanogpt_model = String(elNanoGPT.value);
+            Object.assign(extension_settings.vectors, settings);
+            saveSettingsDebounced();
+        });
+    }
+    const elSilicon = document.getElementById('vectors_siliconflow_model');
+    if (elSilicon) {
+        elSilicon.value = settings.siliconflow_model;
+        elSilicon.addEventListener('change', () => {
+            settings.siliconflow_model = String(elSilicon.value);
+            Object.assign(extension_settings.vectors, settings);
+            saveSettingsDebounced();
+        });
+    }
+    const elWorkers = document.getElementById('vectors_workers_ai_model');
+    if (elWorkers) {
+        elWorkers.value = settings.workers_ai_model;
+        elWorkers.addEventListener('change', () => {
+            settings.workers_ai_model = String(elWorkers.value);
+            Object.assign(extension_settings.vectors, settings);
+            saveSettingsDebounced();
+        });
+    }
+    const elOpenRouter = document.getElementById('vectors_openrouter_model');
+    if (elOpenRouter) {
+        elOpenRouter.value = settings.openrouter_model;
+        elOpenRouter.addEventListener('change', () => {
+            settings.openrouter_model = String(elOpenRouter.value);
+            Object.assign(extension_settings.vectors, settings);
+            saveSettingsDebounced();
+        });
+    }
+    const elCohere = document.getElementById('vectors_cohere_model');
+    if (elCohere) {
+        elCohere.value = settings.cohere_model;
+        elCohere.addEventListener('change', () => {
+            settings.cohere_model = String(elCohere.value);
+            Object.assign(extension_settings.vectors, settings);
+            saveSettingsDebounced();
+        });
+    }
+    const elOllamaModel = document.getElementById('vectors_ollama_model');
+    if (elOllamaModel) {
+        elOllamaModel.value = settings.ollama_model;
+        elOllamaModel.addEventListener('input', () => {
+            settings.ollama_model = String(elOllamaModel.value);
+            Object.assign(extension_settings.vectors, settings);
+            saveSettingsDebounced();
+        });
+    }
+    const elVllm = document.getElementById('vectors_vllm_model');
+    if (elVllm) {
+        elVllm.value = settings.vllm_model;
+        elVllm.addEventListener('input', () => {
+            settings.vllm_model = String(elVllm.value);
+            Object.assign(extension_settings.vectors, settings);
+            saveSettingsDebounced();
+        });
+    }
+    const elOllamaKeep = document.getElementById('vectors_ollama_keep');
+    if (elOllamaKeep) {
+        elOllamaKeep.checked = settings.ollama_keep;
+        elOllamaKeep.addEventListener('input', () => {
+            settings.ollama_keep = elOllamaKeep.checked;
+            Object.assign(extension_settings.vectors, settings);
+            saveSettingsDebounced();
+        });
+    }
+    const elTemplate = document.getElementById('vectors_template');
+    if (elTemplate) {
+        elTemplate.value = settings.template;
+        elTemplate.addEventListener('input', () => {
+            settings.template = String(elTemplate.value);
+            Object.assign(extension_settings.vectors, settings);
+            saveSettingsDebounced();
+        });
+    }
+    const elDepth = document.getElementById('vectors_depth');
+    if (elDepth) {
+        elDepth.value = settings.depth;
+        elDepth.addEventListener('input', () => {
+            settings.depth = Number(elDepth.value);
+            Object.assign(extension_settings.vectors, settings);
+            saveSettingsDebounced();
+        });
+    }
+    const elProtect = document.getElementById('vectors_protect');
+    if (elProtect) {
+        elProtect.value = settings.protect;
+        elProtect.addEventListener('input', () => {
+            settings.protect = Number(elProtect.value);
+            Object.assign(extension_settings.vectors, settings);
+            saveSettingsDebounced();
+        });
+    }
+    const elInsert = document.getElementById('vectors_insert');
+    if (elInsert) {
+        elInsert.value = settings.insert;
+        elInsert.addEventListener('input', () => {
+            settings.insert = Number(elInsert.value);
+            Object.assign(extension_settings.vectors, settings);
+            saveSettingsDebounced();
+        });
+    }
+    const elQuery = document.getElementById('vectors_query');
+    if (elQuery) {
+        elQuery.value = settings.query;
+        elQuery.addEventListener('input', () => {
+            settings.query = Number(elQuery.value);
+            Object.assign(extension_settings.vectors, settings);
+            saveSettingsDebounced();
+        });
+    }
+    const positionInputs = document.querySelectorAll('input[name="vectors_position"]');
+    positionInputs.forEach(input => { if (String(input.value) === String(settings.position)) input.checked = true; });
+    positionInputs.forEach(input => input.addEventListener('change', () => {
+        const checked = document.querySelector('input[name="vectors_position"]:checked');
+        settings.position = Number(checked?.value ?? settings.position);
         Object.assign(extension_settings.vectors, settings);
         saveSettingsDebounced();
-        toggleSettings();
-    });
-    $('#vectors_keep_hidden').prop('checked', settings.keep_hidden).on('input', () => {
-        settings.keep_hidden = !!$('#vectors_keep_hidden').prop('checked');
+    }));
+    document.getElementById('vectors_vectorize_all')?.addEventListener('click', onVectorizeAllClick);
+    document.getElementById('vectors_purge')?.addEventListener('click', onPurgeClick);
+    document.getElementById('vectors_view_stats')?.addEventListener('click', onViewStatsClick);
+    document.getElementById('vectors_files_vectorize_all')?.addEventListener('click', onVectorizeAllFilesClick);
+    document.getElementById('vectors_files_purge')?.addEventListener('click', onPurgeFilesClick);
+    const elSizeThreshold = document.getElementById('vectors_size_threshold');
+    if (elSizeThreshold) {
+        elSizeThreshold.value = settings.size_threshold;
+        elSizeThreshold.addEventListener('input', () => {
+            settings.size_threshold = Number(elSizeThreshold.value);
+            Object.assign(extension_settings.vectors, settings);
+            saveSettingsDebounced();
+        });
+    }
+    const elChunkSize = document.getElementById('vectors_chunk_size');
+    if (elChunkSize) {
+        elChunkSize.value = settings.chunk_size;
+        elChunkSize.addEventListener('input', () => {
+            settings.chunk_size = Number(elChunkSize.value);
+            Object.assign(extension_settings.vectors, settings);
+            saveSettingsDebounced();
+        });
+    }
+    const elChunkCount = document.getElementById('vectors_chunk_count');
+    if (elChunkCount) {
+        elChunkCount.value = settings.chunk_count;
+        elChunkCount.addEventListener('input', () => {
+            settings.chunk_count = Number(elChunkCount.value);
+            Object.assign(extension_settings.vectors, settings);
+            saveSettingsDebounced();
+        });
+    }
+    const elIncludeWi = document.getElementById('vectors_include_wi');
+    if (elIncludeWi) {
+        elIncludeWi.checked = settings.include_wi;
+        elIncludeWi.addEventListener('input', () => {
+            settings.include_wi = !!elIncludeWi.checked;
+            Object.assign(extension_settings.vectors, settings);
+            saveSettingsDebounced();
+        });
+    }
+    const elSummarize = document.getElementById('vectors_summarize');
+    if (elSummarize) {
+        elSummarize.checked = settings.summarize;
+        elSummarize.addEventListener('input', () => {
+            settings.summarize = !!elSummarize.checked;
+            Object.assign(extension_settings.vectors, settings);
+            saveSettingsDebounced();
+        });
+    }
+    const elSummarizeUser = document.getElementById('vectors_summarize_user');
+    if (elSummarizeUser) {
+        elSummarizeUser.checked = settings.summarize_sent;
+        elSummarizeUser.addEventListener('input', () => {
+            settings.summarize_sent = !!elSummarizeUser.checked;
+            Object.assign(extension_settings.vectors, settings);
+            saveSettingsDebounced();
+        });
+    }
+    const elSummarySource = document.getElementById('vectors_summary_source');
+    if (elSummarySource) {
+        elSummarySource.value = settings.summary_source;
+        elSummarySource.addEventListener('change', () => {
+            settings.summary_source = String(elSummarySource.value);
+            Object.assign(extension_settings.vectors, settings);
+            saveSettingsDebounced();
+        });
+    }
+    const elSummaryPrompt = document.getElementById('vectors_summary_prompt');
+    if (elSummaryPrompt) {
+        elSummaryPrompt.value = settings.summary_prompt;
+        elSummaryPrompt.addEventListener('input', () => {
+            settings.summary_prompt = String(elSummaryPrompt.value);
+            Object.assign(extension_settings.vectors, settings);
+            saveSettingsDebounced();
+        });
+    }
+    const elSummaryRetries = document.getElementById('vectors_summary_retries');
+    if (elSummaryRetries) {
+        elSummaryRetries.value = settings.summary_retries;
+        elSummaryRetries.addEventListener('input', () => {
+            const parsed = Number(elSummaryRetries.value);
+            settings.summary_retries = Number.isFinite(parsed) && parsed >= 1 ? Math.floor(parsed) : 1;
+            Object.assign(extension_settings.vectors, settings);
+            saveSettingsDebounced();
+        });
+    }
+    const elSummaryThreshold = document.getElementById('vectors_summary_threshold');
+    if (elSummaryThreshold) {
+        elSummaryThreshold.value = settings.summary_threshold;
+        elSummaryThreshold.addEventListener('input', () => {
+            const parsed = Number(elSummaryThreshold.value);
+            settings.summary_threshold = Number.isFinite(parsed) && parsed >= 0 ? Math.floor(parsed) : 0;
+            Object.assign(extension_settings.vectors, settings);
+            saveSettingsDebounced();
+        });
+    }
+    const elMsgChunkSize = document.getElementById('vectors_message_chunk_size');
+    if (elMsgChunkSize) {
+        elMsgChunkSize.value = settings.message_chunk_size;
+        elMsgChunkSize.addEventListener('input', () => {
+            settings.message_chunk_size = Number(elMsgChunkSize.value);
+            Object.assign(extension_settings.vectors, settings);
+            saveSettingsDebounced();
+        });
+    }
+    const elSizeThresholdDb = document.getElementById('vectors_size_threshold_db');
+    if (elSizeThresholdDb) {
+        elSizeThresholdDb.value = settings.size_threshold_db;
+        elSizeThresholdDb.addEventListener('input', () => {
+            settings.size_threshold_db = Number(elSizeThresholdDb.value);
+            Object.assign(extension_settings.vectors, settings);
+            saveSettingsDebounced();
+        });
+    }
+    const elChunkSizeDb = document.getElementById('vectors_chunk_size_db');
+    if (elChunkSizeDb) {
+        elChunkSizeDb.value = settings.chunk_size_db;
+        elChunkSizeDb.addEventListener('input', () => {
+            settings.chunk_size_db = Number(elChunkSizeDb.value);
+            Object.assign(extension_settings.vectors, settings);
+            saveSettingsDebounced();
+        });
+    }
+    const elChunkCountDb = document.getElementById('vectors_chunk_count_db');
+    if (elChunkCountDb) {
+        elChunkCountDb.value = settings.chunk_count_db;
+        elChunkCountDb.addEventListener('input', () => {
+            settings.chunk_count_db = Number(elChunkCountDb.value);
+            Object.assign(extension_settings.vectors, settings);
+            saveSettingsDebounced();
+        });
+    }
+    const elOverlapPercent = document.getElementById('vectors_overlap_percent');
+    if (elOverlapPercent) {
+        elOverlapPercent.value = settings.overlap_percent;
+        elOverlapPercent.addEventListener('input', () => {
+            settings.overlap_percent = Number(elOverlapPercent.value);
+            Object.assign(extension_settings.vectors, settings);
+            saveSettingsDebounced();
+        });
+    }
+    const elOverlapPercentDb = document.getElementById('vectors_overlap_percent_db');
+    if (elOverlapPercentDb) {
+        elOverlapPercentDb.value = settings.overlap_percent_db;
+        elOverlapPercentDb.addEventListener('input', () => {
+            settings.overlap_percent_db = Number(elOverlapPercentDb.value);
+            Object.assign(extension_settings.vectors, settings);
+            saveSettingsDebounced();
+        });
+    }
+    const elFileTemplateDb = document.getElementById('vectors_file_template_db');
+    if (elFileTemplateDb) {
+        elFileTemplateDb.value = settings.file_template_db;
+        elFileTemplateDb.addEventListener('input', () => {
+            settings.file_template_db = String(elFileTemplateDb.value);
+            Object.assign(extension_settings.vectors, settings);
+            saveSettingsDebounced();
+        });
+    }
+    const filePosInputs = document.querySelectorAll('input[name="vectors_file_position_db"]');
+    filePosInputs.forEach(input => { if (String(input.value) === String(settings.file_position_db)) input.checked = true; });
+    filePosInputs.forEach(input => input.addEventListener('change', () => {
+        const checked = document.querySelector('input[name="vectors_file_position_db"]:checked');
+        settings.file_position_db = Number(checked?.value ?? settings.file_position_db);
         Object.assign(extension_settings.vectors, settings);
         saveSettingsDebounced();
-    });
-    $('#vectors_enabled_files').prop('checked', settings.enabled_files).on('input', () => {
-        settings.enabled_files = $('#vectors_enabled_files').prop('checked');
-        Object.assign(extension_settings.vectors, settings);
-        saveSettingsDebounced();
-        toggleSettings();
-    });
-    $('#vectors_source').val(settings.source).on('change', () => {
-        settings.source = String($('#vectors_source').val());
-        Object.assign(extension_settings.vectors, settings);
-        saveSettingsDebounced();
-        toggleSettings();
-    });
-    $('#vector_altEndpointUrl_enabled').prop('checked', settings.use_alt_endpoint).on('input', () => {
-        settings.use_alt_endpoint = $('#vector_altEndpointUrl_enabled').prop('checked');
-        Object.assign(extension_settings.vectors, settings);
-        saveSettingsDebounced();
-    });
-    $('#vector_altEndpoint_address').val(settings.alt_endpoint_url).on('change', () => {
-        settings.alt_endpoint_url = String($('#vector_altEndpoint_address').val());
-        Object.assign(extension_settings.vectors, settings);
-        saveSettingsDebounced();
-    });
-    $('#vectors_togetherai_model').val(settings.togetherai_model).on('change', () => {
-        settings.togetherai_model = String($('#vectors_togetherai_model').val());
-        Object.assign(extension_settings.vectors, settings);
-        saveSettingsDebounced();
-    });
-    $('#vectors_openai_model').val(settings.openai_model).on('change', () => {
-        settings.openai_model = String($('#vectors_openai_model').val());
-        Object.assign(extension_settings.vectors, settings);
-        saveSettingsDebounced();
-    });
-    $('#vectors_electronhub_model').val(settings.electronhub_model).on('change', () => {
-        settings.electronhub_model = String($('#vectors_electronhub_model').val());
-        Object.assign(extension_settings.vectors, settings);
-        saveSettingsDebounced();
-    });
-    $('#vectors_chutes_model').val(settings.chutes_model).on('change', () => {
-        settings.chutes_model = String($('#vectors_chutes_model').val());
-        Object.assign(extension_settings.vectors, settings);
-        saveSettingsDebounced();
-    });
-    $('#vectors_nanogpt_model').val(settings.nanogpt_model).on('change', () => {
-        settings.nanogpt_model = String($('#vectors_nanogpt_model').val());
-        Object.assign(extension_settings.vectors, settings);
-        saveSettingsDebounced();
-    });
-    $('#vectors_siliconflow_model').val(settings.siliconflow_model).on('change', () => {
-        settings.siliconflow_model = String($('#vectors_siliconflow_model').val());
-        Object.assign(extension_settings.vectors, settings);
-        saveSettingsDebounced();
-    });
-    $('#vectors_workers_ai_model').val(settings.workers_ai_model).on('change', () => {
-        settings.workers_ai_model = String($('#vectors_workers_ai_model').val());
-        Object.assign(extension_settings.vectors, settings);
-        saveSettingsDebounced();
-    });
-    $('#vectors_openrouter_model').val(settings.openrouter_model).on('change', () => {
-        settings.openrouter_model = String($('#vectors_openrouter_model').val());
-        Object.assign(extension_settings.vectors, settings);
-        saveSettingsDebounced();
-    });
-    $('#vectors_cohere_model').val(settings.cohere_model).on('change', () => {
-        settings.cohere_model = String($('#vectors_cohere_model').val());
-        Object.assign(extension_settings.vectors, settings);
-        saveSettingsDebounced();
-    });
-    $('#vectors_ollama_model').val(settings.ollama_model).on('input', () => {
-        settings.ollama_model = String($('#vectors_ollama_model').val());
-        Object.assign(extension_settings.vectors, settings);
-        saveSettingsDebounced();
-    });
-    $('#vectors_vllm_model').val(settings.vllm_model).on('input', () => {
-        settings.vllm_model = String($('#vectors_vllm_model').val());
-        Object.assign(extension_settings.vectors, settings);
-        saveSettingsDebounced();
-    });
-    $('#vectors_ollama_keep').prop('checked', settings.ollama_keep).on('input', () => {
-        settings.ollama_keep = $('#vectors_ollama_keep').prop('checked');
-        Object.assign(extension_settings.vectors, settings);
-        saveSettingsDebounced();
-    });
-    $('#vectors_template').val(settings.template).on('input', () => {
-        settings.template = String($('#vectors_template').val());
-        Object.assign(extension_settings.vectors, settings);
-        saveSettingsDebounced();
-    });
-    $('#vectors_depth').val(settings.depth).on('input', () => {
-        settings.depth = Number($('#vectors_depth').val());
-        Object.assign(extension_settings.vectors, settings);
-        saveSettingsDebounced();
-    });
-    $('#vectors_protect').val(settings.protect).on('input', () => {
-        settings.protect = Number($('#vectors_protect').val());
-        Object.assign(extension_settings.vectors, settings);
-        saveSettingsDebounced();
-    });
-    $('#vectors_insert').val(settings.insert).on('input', () => {
-        settings.insert = Number($('#vectors_insert').val());
-        Object.assign(extension_settings.vectors, settings);
-        saveSettingsDebounced();
-    });
-    $('#vectors_query').val(settings.query).on('input', () => {
-        settings.query = Number($('#vectors_query').val());
-        Object.assign(extension_settings.vectors, settings);
-        saveSettingsDebounced();
-    });
-    $(`input[name="vectors_position"][value="${settings.position}"]`).prop('checked', true);
-    $('input[name="vectors_position"]').on('change', () => {
-        settings.position = Number($('input[name="vectors_position"]:checked').val());
-        Object.assign(extension_settings.vectors, settings);
-        saveSettingsDebounced();
-    });
-    $('#vectors_vectorize_all').on('click', onVectorizeAllClick);
-    $('#vectors_purge').on('click', onPurgeClick);
-    $('#vectors_view_stats').on('click', onViewStatsClick);
-    $('#vectors_files_vectorize_all').on('click', onVectorizeAllFilesClick);
-    $('#vectors_files_purge').on('click', onPurgeFilesClick);
-
-    $('#vectors_size_threshold').val(settings.size_threshold).on('input', () => {
-        settings.size_threshold = Number($('#vectors_size_threshold').val());
-        Object.assign(extension_settings.vectors, settings);
-        saveSettingsDebounced();
-    });
-
-    $('#vectors_chunk_size').val(settings.chunk_size).on('input', () => {
-        settings.chunk_size = Number($('#vectors_chunk_size').val());
-        Object.assign(extension_settings.vectors, settings);
-        saveSettingsDebounced();
-    });
-
-    $('#vectors_chunk_count').val(settings.chunk_count).on('input', () => {
-        settings.chunk_count = Number($('#vectors_chunk_count').val());
-        Object.assign(extension_settings.vectors, settings);
-        saveSettingsDebounced();
-    });
-
-    $('#vectors_include_wi').prop('checked', settings.include_wi).on('input', () => {
-        settings.include_wi = !!$('#vectors_include_wi').prop('checked');
-        Object.assign(extension_settings.vectors, settings);
-        saveSettingsDebounced();
-    });
-
-    $('#vectors_summarize').prop('checked', settings.summarize).on('input', () => {
-        settings.summarize = !!$('#vectors_summarize').prop('checked');
-        Object.assign(extension_settings.vectors, settings);
-        saveSettingsDebounced();
-    });
-
-    $('#vectors_summarize_user').prop('checked', settings.summarize_sent).on('input', () => {
-        settings.summarize_sent = !!$('#vectors_summarize_user').prop('checked');
-        Object.assign(extension_settings.vectors, settings);
-        saveSettingsDebounced();
-    });
-
-    $('#vectors_summary_source').val(settings.summary_source).on('change', () => {
-        settings.summary_source = String($('#vectors_summary_source').val());
-        Object.assign(extension_settings.vectors, settings);
-        saveSettingsDebounced();
-    });
-
-    $('#vectors_summary_prompt').val(settings.summary_prompt).on('input', () => {
-        settings.summary_prompt = String($('#vectors_summary_prompt').val());
-        Object.assign(extension_settings.vectors, settings);
-        saveSettingsDebounced();
-    });
-
-    $('#vectors_summary_retries').val(settings.summary_retries).on('input', () => {
-        const parsed = Number($('#vectors_summary_retries').val());
-        settings.summary_retries = Number.isFinite(parsed) && parsed >= 1 ? Math.floor(parsed) : 1;
-        Object.assign(extension_settings.vectors, settings);
-        saveSettingsDebounced();
-    });
-
-    $('#vectors_summary_threshold').val(settings.summary_threshold).on('input', () => {
-        const parsed = Number($('#vectors_summary_threshold').val());
-        settings.summary_threshold = Number.isFinite(parsed) && parsed >= 0 ? Math.floor(parsed) : 0;
-        Object.assign(extension_settings.vectors, settings);
-        saveSettingsDebounced();
-    });
-
-    $('#vectors_message_chunk_size').val(settings.message_chunk_size).on('input', () => {
-        settings.message_chunk_size = Number($('#vectors_message_chunk_size').val());
-        Object.assign(extension_settings.vectors, settings);
-        saveSettingsDebounced();
-    });
-
-    $('#vectors_size_threshold_db').val(settings.size_threshold_db).on('input', () => {
-        settings.size_threshold_db = Number($('#vectors_size_threshold_db').val());
-        Object.assign(extension_settings.vectors, settings);
-        saveSettingsDebounced();
-    });
-
-    $('#vectors_chunk_size_db').val(settings.chunk_size_db).on('input', () => {
-        settings.chunk_size_db = Number($('#vectors_chunk_size_db').val());
-        Object.assign(extension_settings.vectors, settings);
-        saveSettingsDebounced();
-    });
-
-    $('#vectors_chunk_count_db').val(settings.chunk_count_db).on('input', () => {
-        settings.chunk_count_db = Number($('#vectors_chunk_count_db').val());
-        Object.assign(extension_settings.vectors, settings);
-        saveSettingsDebounced();
-    });
-
-    $('#vectors_overlap_percent').val(settings.overlap_percent).on('input', () => {
-        settings.overlap_percent = Number($('#vectors_overlap_percent').val());
-        Object.assign(extension_settings.vectors, settings);
-        saveSettingsDebounced();
-    });
-
-    $('#vectors_overlap_percent_db').val(settings.overlap_percent_db).on('input', () => {
-        settings.overlap_percent_db = Number($('#vectors_overlap_percent_db').val());
-        Object.assign(extension_settings.vectors, settings);
-        saveSettingsDebounced();
-    });
-
-    $('#vectors_file_template_db').val(settings.file_template_db).on('input', () => {
-        settings.file_template_db = String($('#vectors_file_template_db').val());
-        Object.assign(extension_settings.vectors, settings);
-        saveSettingsDebounced();
-    });
-
-    $(`input[name="vectors_file_position_db"][value="${settings.file_position_db}"]`).prop('checked', true);
-    $('input[name="vectors_file_position_db"]').on('change', () => {
-        settings.file_position_db = Number($('input[name="vectors_file_position_db"]:checked').val());
-        Object.assign(extension_settings.vectors, settings);
-        saveSettingsDebounced();
-    });
-
-    $('#vectors_file_depth_db').val(settings.file_depth_db).on('input', () => {
-        settings.file_depth_db = Number($('#vectors_file_depth_db').val());
-        Object.assign(extension_settings.vectors, settings);
-        saveSettingsDebounced();
-    });
-
-    $('#vectors_file_depth_role_db').val(settings.file_depth_role_db).on('input', () => {
-        settings.file_depth_role_db = Number($('#vectors_file_depth_role_db').val());
-        Object.assign(extension_settings.vectors, settings);
-        saveSettingsDebounced();
-    });
-
-    $('#vectors_translate_files').prop('checked', settings.translate_files).on('input', () => {
-        settings.translate_files = !!$('#vectors_translate_files').prop('checked');
-        Object.assign(extension_settings.vectors, settings);
-        saveSettingsDebounced();
-    });
-
-    $('#vectors_enabled_world_info').prop('checked', settings.enabled_world_info).on('input', () => {
-        settings.enabled_world_info = !!$('#vectors_enabled_world_info').prop('checked');
-        Object.assign(extension_settings.vectors, settings);
-        saveSettingsDebounced();
-        toggleSettings();
-    });
-
-    $('#vectors_enabled_for_all').prop('checked', settings.enabled_for_all).on('input', () => {
-        settings.enabled_for_all = !!$('#vectors_enabled_for_all').prop('checked');
-        Object.assign(extension_settings.vectors, settings);
-        saveSettingsDebounced();
-    });
-
-    $('#vectors_max_entries').val(settings.max_entries).on('input', () => {
-        settings.max_entries = Number($('#vectors_max_entries').val());
-        Object.assign(extension_settings.vectors, settings);
-        saveSettingsDebounced();
-    });
-
-    $('#vectors_score_threshold').val(settings.score_threshold).on('input', () => {
-        settings.score_threshold = Number($('#vectors_score_threshold').val());
-        Object.assign(extension_settings.vectors, settings);
-        saveSettingsDebounced();
-    });
-
-    $('#vectors_force_chunk_delimiter').val(settings.force_chunk_delimiter).on('input', () => {
-        settings.force_chunk_delimiter = String($('#vectors_force_chunk_delimiter').val());
-        Object.assign(extension_settings.vectors, settings);
-        saveSettingsDebounced();
-    });
-
-    $('#vectors_only_custom_boundary').prop('checked', settings.only_custom_boundary).on('input', () => {
-        settings.only_custom_boundary = !!$('#vectors_only_custom_boundary').prop('checked');
-        Object.assign(extension_settings.vectors, settings);
-        saveSettingsDebounced();
-    });
-
-    $('#vectors_ollama_pull').on('click', (e) => {
+    }));
+    const elFileDepthDb = document.getElementById('vectors_file_depth_db');
+    if (elFileDepthDb) {
+        elFileDepthDb.value = settings.file_depth_db;
+        elFileDepthDb.addEventListener('input', () => {
+            settings.file_depth_db = Number(elFileDepthDb.value);
+            Object.assign(extension_settings.vectors, settings);
+            saveSettingsDebounced();
+        });
+    }
+    const elFileDepthRoleDb = document.getElementById('vectors_file_depth_role_db');
+    if (elFileDepthRoleDb) {
+        elFileDepthRoleDb.value = settings.file_depth_role_db;
+        elFileDepthRoleDb.addEventListener('input', () => {
+            settings.file_depth_role_db = Number(elFileDepthRoleDb.value);
+            Object.assign(extension_settings.vectors, settings);
+            saveSettingsDebounced();
+        });
+    }
+    const elTranslate = document.getElementById('vectors_translate_files');
+    if (elTranslate) {
+        elTranslate.checked = settings.translate_files;
+        elTranslate.addEventListener('input', () => {
+            settings.translate_files = !!elTranslate.checked;
+            Object.assign(extension_settings.vectors, settings);
+            saveSettingsDebounced();
+        });
+    }
+    const elWorldInfo = document.getElementById('vectors_enabled_world_info');
+    if (elWorldInfo) {
+        elWorldInfo.checked = settings.enabled_world_info;
+        elWorldInfo.addEventListener('input', () => {
+            settings.enabled_world_info = !!elWorldInfo.checked;
+            Object.assign(extension_settings.vectors, settings);
+            saveSettingsDebounced();
+            toggleSettings();
+        });
+    }
+    const elEnabledForAll = document.getElementById('vectors_enabled_for_all');
+    if (elEnabledForAll) {
+        elEnabledForAll.checked = settings.enabled_for_all;
+        elEnabledForAll.addEventListener('input', () => {
+            settings.enabled_for_all = !!elEnabledForAll.checked;
+            Object.assign(extension_settings.vectors, settings);
+            saveSettingsDebounced();
+        });
+    }
+    const elMaxEntries = document.getElementById('vectors_max_entries');
+    if (elMaxEntries) {
+        elMaxEntries.value = settings.max_entries;
+        elMaxEntries.addEventListener('input', () => {
+            settings.max_entries = Number(elMaxEntries.value);
+            Object.assign(extension_settings.vectors, settings);
+            saveSettingsDebounced();
+        });
+    }
+    const elScoreThreshold = document.getElementById('vectors_score_threshold');
+    if (elScoreThreshold) {
+        elScoreThreshold.value = settings.score_threshold;
+        elScoreThreshold.addEventListener('input', () => {
+            settings.score_threshold = Number(elScoreThreshold.value);
+            Object.assign(extension_settings.vectors, settings);
+            saveSettingsDebounced();
+        });
+    }
+    const elForceDelim = document.getElementById('vectors_force_chunk_delimiter');
+    if (elForceDelim) {
+        elForceDelim.value = settings.force_chunk_delimiter;
+        elForceDelim.addEventListener('input', () => {
+            settings.force_chunk_delimiter = String(elForceDelim.value);
+            Object.assign(extension_settings.vectors, settings);
+            saveSettingsDebounced();
+        });
+    }
+    const elCustomBoundary = document.getElementById('vectors_only_custom_boundary');
+    if (elCustomBoundary) {
+        elCustomBoundary.checked = settings.only_custom_boundary;
+        elCustomBoundary.addEventListener('input', () => {
+            settings.only_custom_boundary = !!elCustomBoundary.checked;
+            Object.assign(extension_settings.vectors, settings);
+            saveSettingsDebounced();
+        });
+    }
+    document.getElementById('vectors_ollama_pull')?.addEventListener('click', (e) => {
         const presetModel = extension_settings.vectors.ollama_model || '';
         e.preventDefault();
-        $('#ollama_download_model').trigger('click');
-        $('#dialogue_popup_input').val(presetModel);
+        const ollamaBtn = document.getElementById('ollama_download_model');
+        if (ollamaBtn) ollamaBtn.click();
+        const dialogueInput = document.getElementById('dialogue_popup_input');
+        if (dialogueInput) dialogueInput.value = presetModel;
     });
-
-    $('#vectors_webllm_install').on('click', (e) => {
+    document.getElementById('vectors_webllm_install')?.addEventListener('click', (e) => {
         e.preventDefault();
         e.stopPropagation();
-
         if (Object.hasOwn(SillyTavern, 'llm')) {
             toastr.info('WebLLM is already installed');
             return;
         }
-
         openThirdPartyExtensionMenu('https://github.com/SillyTavern/Extension-WebLLM');
     });
-
-    $('#vectors_webllm_model').on('input', () => {
-        settings.webllm_model = String($('#vectors_webllm_model').val());
-        Object.assign(extension_settings.vectors, settings);
-        saveSettingsDebounced();
-    });
-
-    $('#vectors_webllm_load').on('click', async () => {
+    const elWebllmModel = document.getElementById('vectors_webllm_model');
+    if (elWebllmModel) {
+        elWebllmModel.value = settings.webllm_model;
+        elWebllmModel.addEventListener('input', () => {
+            settings.webllm_model = String(elWebllmModel.value);
+            Object.assign(extension_settings.vectors, settings);
+            saveSettingsDebounced();
+        });
+    }
+    document.getElementById('vectors_webllm_load')?.addEventListener('click', async () => {
         if (!settings.webllm_model) return;
         await webllmProvider.loadModel(settings.webllm_model);
         toastr.success('WebLLM model loaded');
     });
-
-    $('#vectors_google_model').val(settings.google_model).on('input', () => {
-        settings.google_model = String($('#vectors_google_model').val());
-        Object.assign(extension_settings.vectors, settings);
-        saveSettingsDebounced();
-    });
+    const elGoogleModel = document.getElementById('vectors_google_model');
+    if (elGoogleModel) {
+        elGoogleModel.value = settings.google_model;
+        elGoogleModel.addEventListener('input', () => {
+            settings.google_model = String(elGoogleModel.value);
+            Object.assign(extension_settings.vectors, settings);
+            saveSettingsDebounced();
+        });
+    }
 
     $('#api_key_nomicai').toggleClass('success', !!secret_state[SECRET_KEYS.NOMICAI]);
     [event_types.SECRET_WRITTEN, event_types.SECRET_DELETED, event_types.SECRET_ROTATED].forEach(event => {
@@ -2204,8 +2380,8 @@ export async function init() {
             }
 
             $('#vectors_score_threshold')
-                .val(parsed)
-                .trigger('input');
+                .val(parsed);
+            document.getElementById('vectors_score_threshold')?.dispatchEvent(new Event('input'));
 
             return String(settings.score_threshold);
         },
@@ -2234,8 +2410,8 @@ export async function init() {
             }
 
             $('#vectors_query')
-                .val(parsed)
-                .trigger('input');
+                .val(parsed);
+            document.getElementById('vectors_query')?.dispatchEvent(new Event('input'));
 
             return String(settings.query);
         },
@@ -2264,8 +2440,8 @@ export async function init() {
             }
 
             $('#vectors_max_entries')
-                .val(parsed)
-                .trigger('input');
+                .val(parsed);
+            document.getElementById('vectors_max_entries')?.dispatchEvent(new Event('input'));
 
             return String(settings.max_entries);
         },
@@ -2290,8 +2466,8 @@ export async function init() {
 
             const parsed = isTrueBoolean(raw);
             $('#vectors_enabled_chats')
-                .prop('checked', parsed)
-                .trigger('input');
+                .prop('checked', parsed);
+            document.getElementById('vectors_enabled_chats')?.dispatchEvent(new Event('input'));
 
             return String(settings.enabled_chats);
         },
@@ -2316,8 +2492,8 @@ export async function init() {
 
             const parsed = isTrueBoolean(raw) ;
             $('#vectors_enabled_files')
-                .prop('checked', parsed)
-                .trigger('input');
+                .prop('checked', parsed);
+            document.getElementById('vectors_enabled_files')?.dispatchEvent(new Event('input'));
 
             return String(settings.enabled_files);
         },
@@ -2342,8 +2518,8 @@ export async function init() {
 
             const parsed = isTrueBoolean(raw);
             $('#vectors_enabled_world_info')
-                .prop('checked', parsed)
-                .trigger('input');
+                .prop('checked', parsed);
+            document.getElementById('vectors_enabled_world_info')?.dispatchEvent(new Event('input'));
 
             return String(settings.enabled_world_info);
         },

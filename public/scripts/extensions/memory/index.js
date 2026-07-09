@@ -149,21 +149,37 @@ function loadSettings() {
         }
     }
 
-    $('#summary_source').val(extension_settings.memory.source).trigger('change');
-    $('#memory_frozen').prop('checked', extension_settings.memory.memoryFrozen).trigger('input');
-    $('#memory_skipWIAN').prop('checked', extension_settings.memory.SkipWIAN).trigger('input');
-    $('#memory_prompt').val(extension_settings.memory.prompt).trigger('input');
-    $('#memory_prompt_words').val(extension_settings.memory.promptWords).trigger('input');
-    $('#memory_prompt_interval').val(extension_settings.memory.promptInterval).trigger('input');
-    $('#memory_template').val(extension_settings.memory.template).trigger('input');
-    $('#memory_depth').val(extension_settings.memory.depth).trigger('input');
-    $('#memory_role').val(extension_settings.memory.role).trigger('input');
-    $(`input[name="memory_position"][value="${extension_settings.memory.position}"]`).prop('checked', true).trigger('input');
-    $('#memory_prompt_words_force').val(extension_settings.memory.promptForceWords).trigger('input');
-    $(`input[name="memory_prompt_builder"][value="${extension_settings.memory.prompt_builder}"]`).prop('checked', true).trigger('input');
-    $('#memory_override_response_length').val(extension_settings.memory.overrideResponseLength).trigger('input');
-    $('#memory_max_messages_per_request').val(extension_settings.memory.maxMessagesPerRequest).trigger('input');
-    $('#memory_include_wi_scan').prop('checked', extension_settings.memory.scan).trigger('input');
+    $('#summary_source').val(extension_settings.memory.source);
+    document.getElementById('summary_source')?.dispatchEvent(new Event('change'));
+    $('#memory_frozen').prop('checked', extension_settings.memory.memoryFrozen);
+    document.getElementById('memory_frozen')?.dispatchEvent(new Event('input'));
+    $('#memory_skipWIAN').prop('checked', extension_settings.memory.SkipWIAN);
+    document.getElementById('memory_skipWIAN')?.dispatchEvent(new Event('input'));
+    $('#memory_prompt').val(extension_settings.memory.prompt);
+    document.getElementById('memory_prompt')?.dispatchEvent(new Event('input'));
+    $('#memory_prompt_words').val(extension_settings.memory.promptWords);
+    document.getElementById('memory_prompt_words')?.dispatchEvent(new Event('input'));
+    $('#memory_prompt_interval').val(extension_settings.memory.promptInterval);
+    document.getElementById('memory_prompt_interval')?.dispatchEvent(new Event('input'));
+    $('#memory_template').val(extension_settings.memory.template);
+    document.getElementById('memory_template')?.dispatchEvent(new Event('input'));
+    $('#memory_depth').val(extension_settings.memory.depth);
+    document.getElementById('memory_depth')?.dispatchEvent(new Event('input'));
+    $('#memory_role').val(extension_settings.memory.role);
+    document.getElementById('memory_role')?.dispatchEvent(new Event('input'));
+    $(`input[name="memory_position"][value="${extension_settings.memory.position}"]`).prop('checked', true);
+    const memoryPositionInput = document.querySelector(`input[name="memory_position"][value="${extension_settings.memory.position}"]`);
+    memoryPositionInput?.dispatchEvent(new Event('input'));
+    $('#memory_prompt_words_force').val(extension_settings.memory.promptForceWords);
+    document.getElementById('memory_prompt_words_force')?.dispatchEvent(new Event('input'));
+    $(`input[name="memory_prompt_builder"][value="${extension_settings.memory.prompt_builder}"]`).prop('checked', true);
+    document.querySelector(`input[name="memory_prompt_builder"][value="${extension_settings.memory.prompt_builder}"]`)?.dispatchEvent(new Event('input'));
+    $('#memory_override_response_length').val(extension_settings.memory.overrideResponseLength);
+    document.getElementById('memory_override_response_length')?.dispatchEvent(new Event('input'));
+    $('#memory_max_messages_per_request').val(extension_settings.memory.maxMessagesPerRequest);
+    document.getElementById('memory_max_messages_per_request')?.dispatchEvent(new Event('input'));
+    $('#memory_include_wi_scan').prop('checked', extension_settings.memory.scan);
+    document.getElementById('memory_include_wi_scan')?.dispatchEvent(new Event('input'));
     switchSourceControls(extension_settings.memory.source);
 }
 
@@ -202,7 +218,8 @@ async function onPromptForceWordsAutoClick() {
 
     const ROUNDING = 100;
     extension_settings.memory.promptForceWords = Math.max(1, Math.floor(targetSummaryWords / ROUNDING) * ROUNDING);
-    $('#memory_prompt_words_force').val(extension_settings.memory.promptForceWords).trigger('input');
+    $('#memory_prompt_words_force').val(extension_settings.memory.promptForceWords);
+    document.getElementById('memory_prompt_words_force')?.dispatchEvent(new Event('input'));
 }
 
 async function onPromptIntervalAutoClick() {
@@ -240,7 +257,8 @@ async function onPromptIntervalAutoClick() {
     const ROUNDING = 5;
     extension_settings.memory.promptInterval = Math.max(1, Math.floor(adjustedAverageMessagesPerPrompt / ROUNDING) * ROUNDING);
 
-    $('#memory_prompt_interval').val(extension_settings.memory.promptInterval).trigger('input');
+    $('#memory_prompt_interval').val(extension_settings.memory.promptInterval);
+    document.getElementById('memory_prompt_interval')?.dispatchEvent(new Event('input'));
 }
 
 function onSummarySourceChange(event) {
@@ -251,64 +269,66 @@ function onSummarySourceChange(event) {
 }
 
 function switchSourceControls(value) {
-    $('#summaryExtensionDrawerContents [data-summary-source], #memory_settings [data-summary-source]').each((_, element) => {
+    const elements = document.querySelectorAll('#summaryExtensionDrawerContents [data-summary-source], #memory_settings [data-summary-source]');
+    elements.forEach(element => {
         const source = element.dataset.summarySource.split(',').map(s => s.trim());
         $(element).toggle(source.includes(value));
     });
 }
 
 function onMemoryFrozenInput() {
-    const value = Boolean($(this).prop('checked'));
+    const value = Boolean(this.checked);
     extension_settings.memory.memoryFrozen = value;
     saveSettingsDebounced();
 }
 
 function onMemorySkipWIANInput() {
-    const value = Boolean($(this).prop('checked'));
+    const value = Boolean(this.checked);
     extension_settings.memory.SkipWIAN = value;
     saveSettingsDebounced();
 }
 
 function onMemoryPromptWordsInput() {
-    const value = $(this).val();
+    const value = this.value;
     extension_settings.memory.promptWords = Number(value);
     $('#memory_prompt_words_value').text(extension_settings.memory.promptWords);
     saveSettingsDebounced();
 }
 
 function onMemoryPromptIntervalInput() {
-    const value = $(this).val();
+    const value = this.value;
     extension_settings.memory.promptInterval = Number(value);
     $('#memory_prompt_interval_value').text(extension_settings.memory.promptInterval);
     saveSettingsDebounced();
 }
 
 function onMemoryPromptRestoreClick() {
-    $('#memory_prompt').val(defaultPrompt).trigger('input');
+    $('#memory_prompt').val(defaultPrompt);
+    document.getElementById('memory_prompt')?.dispatchEvent(new Event('input'));
 }
 
 function onMemoryPromptInput() {
-    const value = $(this).val();
+    const value = this.value;
     extension_settings.memory.prompt = value;
     saveSettingsDebounced();
 }
 
 function onMemoryTemplateInput() {
-    const value = $(this).val();
+    const value = this.value;
     extension_settings.memory.template = value;
     reinsertMemory();
     saveSettingsDebounced();
 }
 
 function onMemoryDepthInput() {
-    const value = $(this).val();
+    const value = this.value;
     extension_settings.memory.depth = Number(value);
     reinsertMemory();
     saveSettingsDebounced();
 }
 
 function onMemoryRoleInput() {
-    const value = $(this).val();
+    const value = this.value;
     extension_settings.memory.role = Number(value);
     reinsertMemory();
     saveSettingsDebounced();
@@ -322,28 +342,28 @@ function onMemoryPositionChange(e) {
 }
 
 function onMemoryIncludeWIScanInput() {
-    const value = !!$(this).prop('checked');
+    const value = !!this.checked;
     extension_settings.memory.scan = value;
     reinsertMemory();
     saveSettingsDebounced();
 }
 
 function onMemoryPromptWordsForceInput() {
-    const value = $(this).val();
+    const value = this.value;
     extension_settings.memory.promptForceWords = Number(value);
     $('#memory_prompt_words_force_value').text(extension_settings.memory.promptForceWords);
     saveSettingsDebounced();
 }
 
 function onOverrideResponseLengthInput() {
-    const value = $(this).val();
+    const value = this.value;
     extension_settings.memory.overrideResponseLength = Number(value);
     $('#memory_override_response_length_value').text(extension_settings.memory.overrideResponseLength);
     saveSettingsDebounced();
 }
 
 function onMaxMessagesPerRequestInput() {
-    const value = $(this).val();
+    const value = this.value;
     extension_settings.memory.maxMessagesPerRequest = Number(value);
     $('#memory_max_messages_per_request_value').text(extension_settings.memory.maxMessagesPerRequest);
     saveSettingsDebounced();
@@ -940,7 +960,7 @@ function onMemoryRestoreClick() {
 }
 
 function onMemoryContentInput() {
-    const value = $(this).val();
+    const value = this.value;
     setMemoryContext(value, true);
 }
 
@@ -951,7 +971,7 @@ function onMemoryPromptBuilderInput(e) {
 }
 
 function reinsertMemory() {
-    const existingValue = String($('#memory_contents').val());
+    const existingValue = String(document.getElementById('memory_contents')?.value || '');
     setMemoryContext(existingValue, false);
 }
 
@@ -1067,37 +1087,43 @@ function doPopout(e) {
         }
     } else {
         console.debug('saw existing popout, removing');
-        $('#summaryExtensionPopout').fadeOut(animation_duration, () => { $('#summaryExtensionPopoutClose').trigger('click'); });
+        $('#summaryExtensionPopout').fadeOut(animation_duration, () => {
+            const closeBtn = document.getElementById('summaryExtensionPopoutClose');
+            if (closeBtn) closeBtn.click();
+        });
     }
 }
 
 function setupListeners() {
     //setup shared listeners for popout and regular ext menu
-    $('#memory_restore').off('click').on('click', onMemoryRestoreClick);
-    $('#memory_contents').off('input').on('input', onMemoryContentInput);
-    $('#memory_frozen').off('input').on('input', onMemoryFrozenInput);
-    $('#memory_skipWIAN').off('input').on('input', onMemorySkipWIANInput);
-    $('#summary_source').off('change').on('change', onSummarySourceChange);
-    $('#memory_prompt_words').off('input').on('input', onMemoryPromptWordsInput);
-    $('#memory_prompt_interval').off('input').on('input', onMemoryPromptIntervalInput);
-    $('#memory_prompt').off('input').on('input', onMemoryPromptInput);
-    $('#memory_force_summarize').off('click').on('click', () => forceSummarizeChat(false));
-    $('#memory_template').off('input').on('input', onMemoryTemplateInput);
-    $('#memory_depth').off('input').on('input', onMemoryDepthInput);
-    $('#memory_role').off('input').on('input', onMemoryRoleInput);
-    $('input[name="memory_position"]').off('change').on('change', onMemoryPositionChange);
-    $('#memory_prompt_words_force').off('input').on('input', onMemoryPromptWordsForceInput);
-    $('#memory_prompt_builder_default').off('input').on('input', onMemoryPromptBuilderInput);
-    $('#memory_prompt_builder_raw_blocking').off('input').on('input', onMemoryPromptBuilderInput);
-    $('#memory_prompt_builder_raw_non_blocking').off('input').on('input', onMemoryPromptBuilderInput);
-    $('#memory_prompt_restore').off('click').on('click', onMemoryPromptRestoreClick);
-    $('#memory_prompt_interval_auto').off('click').on('click', onPromptIntervalAutoClick);
-    $('#memory_prompt_words_auto').off('click').on('click', onPromptForceWordsAutoClick);
-    $('#memory_override_response_length').off('input').on('input', onOverrideResponseLengthInput);
-    $('#memory_max_messages_per_request').off('input').on('input', onMaxMessagesPerRequestInput);
-    $('#memory_include_wi_scan').off('input').on('input', onMemoryIncludeWIScanInput);
-    $('#summarySettingsBlockToggle').off('click').on('click', function () {
-        $('#summarySettingsBlock').slideToggle(200, 'swing');
+    document.getElementById('memory_restore')?.addEventListener('click', onMemoryRestoreClick);
+    document.getElementById('memory_contents')?.addEventListener('input', onMemoryContentInput);
+    document.getElementById('memory_frozen')?.addEventListener('input', onMemoryFrozenInput);
+    document.getElementById('memory_skipWIAN')?.addEventListener('input', onMemorySkipWIANInput);
+    document.getElementById('summary_source')?.addEventListener('change', onSummarySourceChange);
+    document.getElementById('memory_prompt_words')?.addEventListener('input', onMemoryPromptWordsInput);
+    document.getElementById('memory_prompt_interval')?.addEventListener('input', onMemoryPromptIntervalInput);
+    document.getElementById('memory_prompt')?.addEventListener('input', onMemoryPromptInput);
+    document.getElementById('memory_force_summarize')?.addEventListener('click', () => forceSummarizeChat(false));
+    document.getElementById('memory_template')?.addEventListener('input', onMemoryTemplateInput);
+    document.getElementById('memory_depth')?.addEventListener('input', onMemoryDepthInput);
+    document.getElementById('memory_role')?.addEventListener('input', onMemoryRoleInput);
+    document.querySelectorAll('input[name="memory_position"]').forEach(el => el.addEventListener('change', onMemoryPositionChange));
+    document.getElementById('memory_prompt_words_force')?.addEventListener('input', onMemoryPromptWordsForceInput);
+    document.getElementById('memory_prompt_builder_default')?.addEventListener('input', onMemoryPromptBuilderInput);
+    document.getElementById('memory_prompt_builder_raw_blocking')?.addEventListener('input', onMemoryPromptBuilderInput);
+    document.getElementById('memory_prompt_builder_raw_non_blocking')?.addEventListener('input', onMemoryPromptBuilderInput);
+    document.getElementById('memory_prompt_restore')?.addEventListener('click', onMemoryPromptRestoreClick);
+    document.getElementById('memory_prompt_interval_auto')?.addEventListener('click', onPromptIntervalAutoClick);
+    document.getElementById('memory_prompt_words_auto')?.addEventListener('click', onPromptForceWordsAutoClick);
+    document.getElementById('memory_override_response_length')?.addEventListener('input', onOverrideResponseLengthInput);
+    document.getElementById('memory_max_messages_per_request')?.addEventListener('input', onMaxMessagesPerRequestInput);
+    document.getElementById('memory_include_wi_scan')?.addEventListener('input', onMemoryIncludeWIScanInput);
+    document.getElementById('summarySettingsBlockToggle')?.addEventListener('click', function () {
+        const block = document.getElementById('summarySettingsBlock');
+        if (block) {
+            $('#summarySettingsBlock').slideToggle(200, 'swing');
+        }
     });
 }
 
@@ -1106,7 +1132,7 @@ export async function init() {
         const settingsHtml = await renderExtensionTemplateAsync('memory', 'settings', { defaultSettings });
         $('#summarize_container').append(settingsHtml);
         setupListeners();
-        $('#summaryExtensionPopoutButton').off('click').on('click', function (e) {
+        document.getElementById('summaryExtensionPopoutButton')?.addEventListener('click', function (e) {
             doPopout(e);
             e.stopPropagation();
         });
