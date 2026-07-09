@@ -2249,11 +2249,9 @@ async function onTagRestoreFileSelect(e) {
  *
  */
 function onBackupRestoreClick() {
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#tag_view_restore_input')
-        .off('change')
-        .on('change', onTagRestoreFileSelect)
-        .trigger('click');
+    const input = document.getElementById('tag_view_restore_input');
+    input.addEventListener('change', onTagRestoreFileSelect);
+    input.dispatchEvent(new Event('click'));
 }
 
 /**
@@ -3265,58 +3263,74 @@ export function initTags() {
     createTagInput('#tagInput', '#tagList', { tagOptions: { removable: true } });
     createTagInput('#groupTagInput', '#groupTagList', { tagOptions: { removable: true } });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document).on('click', '#rm_button_create', onCharacterCreateClick);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document).on('click', '#rm_button_group_chats', onGroupCreateClick);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document).on('click', '.tag_remove', onTagRemoveClick);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document).on('input', '.tag_input', onTagInput);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document).on('click', '.tags_view', function (event) {
-        // 1. Prevent the label from toggling the checkbox
-        event.preventDefault();
-        // 2. Open the tag view list dialog
-        onViewTagsListClick();
+    document.getElementById('rm_button_create').addEventListener('click', onCharacterCreateClick);
+    document.getElementById('rm_button_group_chats').addEventListener('click', onGroupCreateClick);
+    document.addEventListener('click', function (event) {
+        const el = event.target.closest('.tag_remove');
+        if (el) onTagRemoveClick.call(el, event);
     });
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document).on('click', '.tag_delete', onTagDeleteClick);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document).on('click', '.tag_as_folder', onTagAsFolderClick);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document).on('input', '.tag_view_name', onTagRenameInput);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document).on('click', '.tag_view_create', onTagCreateClick);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document).on('click', '.tag_view_backup', onTagsBackupClick);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document).on('click', '.tag_view_restore', onBackupRestoreClick);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document).on('click', '.tag_view_prune', onTagsPruneClick);
+    document.addEventListener('input', function (event) {
+        const el = event.target.closest('.tag_input');
+        if (el) onTagInput.call(el, event);
+    });
+    document.addEventListener('click', function (event) {
+        const el = event.target.closest('.tags_view');
+        if (el) {
+            // 1. Prevent the label from toggling the checkbox
+            event.preventDefault();
+            // 2. Open the tag view list dialog
+            onViewTagsListClick();
+        }
+    });
+    document.addEventListener('click', function (event) {
+        const el = event.target.closest('.tag_delete');
+        if (el) onTagDeleteClick.call(el, event);
+    });
+    document.addEventListener('click', function (event) {
+        const el = event.target.closest('.tag_as_folder');
+        if (el) onTagAsFolderClick.call(el, event);
+    });
+    document.addEventListener('input', function (event) {
+        const el = event.target.closest('.tag_view_name');
+        if (el) onTagRenameInput.call(el, event);
+    });
+    document.addEventListener('click', function (event) {
+        const el = event.target.closest('.tag_view_create');
+        if (el) onTagCreateClick.call(el, event);
+    });
+    document.addEventListener('click', function (event) {
+        const el = event.target.closest('.tag_view_backup');
+        if (el) onTagsBackupClick.call(el, event);
+    });
+    document.addEventListener('click', function (event) {
+        const el = event.target.closest('.tag_view_restore');
+        if (el) onBackupRestoreClick.call(el, event);
+    });
+    document.addEventListener('click', function (event) {
+        const el = event.target.closest('.tag_view_prune');
+        if (el) onTagsPruneClick.call(el, event);
+    });
     eventSource.on(event_types.CHARACTER_DUPLICATED, copyTags);
 
     eventSource.makeFirst(event_types.CHAT_CHANGED, () => selected_group ? applyTagsOnGroupSelect() : applyTagsOnCharacterSelect());
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document).on('focusout', '#tag_view_list .tag_view_name', (evt) => {
+    document.addEventListener('focusout', function (event) {
+        const el = event.target.closest('#tag_view_list .tag_view_name');
+        if (!el) return;
         // Reorder/reprint tags, but only if the name actually has changed
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        if (!$(evt.target).is('[dirty]')) return;
+        if (!el.hasAttribute('dirty')) return;
 
         // Remember the order, so we can flash highlight if it changed after reprinting
-        const tagId = evt.target.closest('.tag_view_item')?.getAttribute('id');
+        const tagId = el.closest('.tag_view_item')?.getAttribute('id');
         const tagViewItems = document.querySelectorAll('#tag_view_list .tag_view_item');
         const oldOrder = Array.from(tagViewItems, el => el.id);
 
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         printViewTagList($('#tag_view_list .tag_view_list_tags'));
 
         // If the new focus would've been inside the now redrawn tag list, we should at least move back the focus to the current name
         // Otherwise tab-navigation gets a bit weird
-        if (evt.relatedTarget instanceof HTMLElement && evt.relatedTarget.closest('#tag_view_list')) {
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(`#tag_view_list .tag_view_item[id="${tagId}"] .tag_view_name`)[0]?.focus();
+        if (event.relatedTarget instanceof HTMLElement && event.relatedTarget.closest('#tag_view_list')) {
+            document.querySelector(`#tag_view_list .tag_view_item[id="${tagId}"] .tag_view_name`)?.focus();
         }
 
         const newTagViewItems = document.querySelectorAll('#tag_view_list .tag_view_item');
