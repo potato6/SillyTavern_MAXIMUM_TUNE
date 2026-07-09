@@ -2250,6 +2250,7 @@ async function onTagRestoreFileSelect(e) {
  */
 function onBackupRestoreClick() {
     const input = document.getElementById('tag_view_restore_input');
+    if (!input) return;
     input.addEventListener('change', onTagRestoreFileSelect);
     input.dispatchEvent(new Event('click'));
 }
@@ -3263,17 +3264,20 @@ export function initTags() {
     createTagInput('#tagInput', '#tagList', { tagOptions: { removable: true } });
     createTagInput('#groupTagInput', '#groupTagList', { tagOptions: { removable: true } });
 
-    document.getElementById('rm_button_create').addEventListener('click', onCharacterCreateClick);
-    document.getElementById('rm_button_group_chats').addEventListener('click', onGroupCreateClick);
+    document.getElementById('rm_button_create')?.addEventListener('click', onCharacterCreateClick);
+    document.getElementById('rm_button_group_chats')?.addEventListener('click', onGroupCreateClick);
     document.addEventListener('click', function (event) {
+        if (!(event.target instanceof Element)) return;
         const el = event.target.closest('.tag_remove');
         if (el) onTagRemoveClick.call(el, event);
     });
     document.addEventListener('input', function (event) {
+        if (!(event.target instanceof Element)) return;
         const el = event.target.closest('.tag_input');
         if (el) onTagInput.call(el, event);
     });
     document.addEventListener('click', function (event) {
+        if (!(event.target instanceof Element)) return;
         const el = event.target.closest('.tags_view');
         if (el) {
             // 1. Prevent the label from toggling the checkbox
@@ -3283,38 +3287,46 @@ export function initTags() {
         }
     });
     document.addEventListener('click', function (event) {
+        if (!(event.target instanceof Element)) return;
         const el = event.target.closest('.tag_delete');
-        if (el) onTagDeleteClick.call(el, event);
+        if (el) onTagDeleteClick.call(el);
     });
     document.addEventListener('click', function (event) {
+        if (!(event.target instanceof Element)) return;
         const el = event.target.closest('.tag_as_folder');
-        if (el) onTagAsFolderClick.call(el, event);
+        if (el) onTagAsFolderClick.call(el);
     });
     document.addEventListener('input', function (event) {
+        if (!(event.target instanceof Element)) return;
         const el = event.target.closest('.tag_view_name');
-        if (el) onTagRenameInput.call(el, event);
+        if (el) onTagRenameInput.call(el);
     });
     document.addEventListener('click', function (event) {
+        if (!(event.target instanceof Element)) return;
         const el = event.target.closest('.tag_view_create');
-        if (el) onTagCreateClick.call(el, event);
+        if (el) onTagCreateClick.call(el);
     });
     document.addEventListener('click', function (event) {
+        if (!(event.target instanceof Element)) return;
         const el = event.target.closest('.tag_view_backup');
-        if (el) onTagsBackupClick.call(el, event);
+        if (el) onTagsBackupClick.call(el);
     });
     document.addEventListener('click', function (event) {
+        if (!(event.target instanceof Element)) return;
         const el = event.target.closest('.tag_view_restore');
-        if (el) onBackupRestoreClick.call(el, event);
+        if (el) onBackupRestoreClick.call(el);
     });
     document.addEventListener('click', function (event) {
+        if (!(event.target instanceof Element)) return;
         const el = event.target.closest('.tag_view_prune');
-        if (el) onTagsPruneClick.call(el, event);
+        if (el) onTagsPruneClick.call(el);
     });
     eventSource.on(event_types.CHARACTER_DUPLICATED, copyTags);
 
     eventSource.makeFirst(event_types.CHAT_CHANGED, () => selected_group ? applyTagsOnGroupSelect() : applyTagsOnCharacterSelect());
 
     document.addEventListener('focusout', function (event) {
+        if (!(event.target instanceof Element)) return;
         const el = event.target.closest('#tag_view_list .tag_view_name');
         if (!el) return;
         // Reorder/reprint tags, but only if the name actually has changed
@@ -3325,12 +3337,13 @@ export function initTags() {
         const tagViewItems = document.querySelectorAll('#tag_view_list .tag_view_item');
         const oldOrder = Array.from(tagViewItems, el => el.id);
 
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type definitions for jQuery?
         printViewTagList($('#tag_view_list .tag_view_list_tags'));
 
         // If the new focus would've been inside the now redrawn tag list, we should at least move back the focus to the current name
         // Otherwise tab-navigation gets a bit weird
         if (event.relatedTarget instanceof HTMLElement && event.relatedTarget.closest('#tag_view_list')) {
-            document.querySelector(`#tag_view_list .tag_view_item[id="${tagId}"] .tag_view_name`)?.focus();
+            (document.querySelector(`#tag_view_list .tag_view_item[id="${tagId}"] .tag_view_name`) as HTMLElement)?.focus();
         }
 
         const newTagViewItems = document.querySelectorAll('#tag_view_list .tag_view_item');

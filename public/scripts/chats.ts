@@ -2456,16 +2456,19 @@ async function onImageSwiped(messageId, element, direction) {
  */
 export function initChatUtilities() {
     document.addEventListener('click', function (e) {
+        if (!(e.target instanceof Element)) return;
         const el = e.target.closest('.mes_hide');
         if (el) hideChatMessageRange(Number(el.closest('.mes')?.getAttribute('mesid')), null, false);
     });
 
     document.addEventListener('click', function (e) {
+        if (!(e.target instanceof Element)) return;
         const el = e.target.closest('.mes_unhide');
         if (el) hideChatMessageRange(Number(el.closest('.mes')?.getAttribute('mesid')), null, true);
     });
 
     document.addEventListener('click', function (e) {
+        if (!(e.target instanceof Element)) return;
         const el = e.target.closest('.mes_file_delete');
         if (el) {
             const messageBlock = el.closest('.mes');
@@ -2477,6 +2480,7 @@ export function initChatUtilities() {
     });
 
     document.addEventListener('click', function (e) {
+        if (!(e.target instanceof Element)) return;
         const el = e.target.closest('.mes_file_open');
         if (el) {
             const messageBlock = el.closest('.mes');
@@ -2488,6 +2492,7 @@ export function initChatUtilities() {
     });
 
     document.addEventListener('click', function (e) {
+        if (!(e.target instanceof Element)) return;
         const el = e.target.closest('.assistant_note_export');
         if (el) {
             /** @type {ChatHeader} */
@@ -2507,6 +2512,7 @@ export function initChatUtilities() {
     });
 
     document.addEventListener('click', function (e) {
+        if (!(e.target instanceof Element)) return;
         const el = e.target.closest('.assistant_note_import');
         if (el) {
             const importFile = async () => {
@@ -2548,6 +2554,7 @@ export function initChatUtilities() {
 
     // Do not change. #attachFile is added by extension.
     document.addEventListener('click', function (e) {
+        if (!(e.target instanceof Element)) return;
         const el = e.target.closest('#attachFile');
         if (!el) return;
         if (!(fileInput instanceof HTMLInputElement)) return;
@@ -2578,11 +2585,13 @@ export function initChatUtilities() {
 
     // Do not change. #manageAttachments is added by extension.
     document.addEventListener('click', function (e) {
+        if (!(e.target instanceof Element)) return;
         const el = e.target.closest('#manageAttachments');
         if (el) openAttachmentManager();
     });
 
     document.addEventListener('click', function (e) {
+        if (!(e.target instanceof Element)) return;
         const el = e.target.closest('.mes_embed');
         if (el) {
             const messageBlock = el.closest('.mes');
@@ -2592,12 +2601,14 @@ export function initChatUtilities() {
     });
 
     document.addEventListener('click', async function (e) {
+        if (!(e.target instanceof Element)) return;
         const el = e.target.closest('.editor_maximize');
         if (!el) return;
         e.preventDefault();
         e.stopPropagation();
 
         const broId = el.getAttribute('data-for');
+        if (!broId) return;
         const broEl = document.getElementById(broId);
 
         if (!broEl) {
@@ -2618,7 +2629,7 @@ export function initChatUtilities() {
             textarea.dataset.macrosAutocomplete = 'always'; // Always show autocomplete in expanded editor
             textarea.dataset.macrosAutocompleteStyle = 'expanded'; // Use expanded autocomplete style
         }
-        textarea.value = String(contentEditable ? broEl.innerText : broEl.value);
+        textarea.value = String(contentEditable ? broEl.innerText : (broEl as HTMLInputElement).value);
         textarea.classList.add('height100p', 'wide100p', 'maximized_textarea');
         if (broEl.classList.contains('monospace')) textarea.classList.add('monospace');
         if (broEl.classList.contains('mdHotkeys')) textarea.classList.add('mdHotkeys');
@@ -2627,7 +2638,7 @@ export function initChatUtilities() {
                 broEl.innerText = textarea.value;
                 broEl.dispatchEvent(new Event('input', { bubbles: true }));
             } else {
-                broEl.value = textarea.value;
+                (broEl as HTMLInputElement).value = textarea.value;
                 broEl.dispatchEvent(new Event('input', { bubbles: true }));
             }
         });
@@ -2667,45 +2678,49 @@ export function initChatUtilities() {
     });
 
     document.addEventListener('click', function (event) {
+        if (!(event.target instanceof Element)) return;
         const el = event.target.closest('body .mes .mes_text, body .mes .mes_reasoning');
         if (!el) return;
         if (!power_user.click_to_edit) return;
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        if (window.getSelection().toString()) return;
+        if (window.getSelection()?.toString()) return;
         if (document.querySelector('.edit_textarea')) return;
-        el.closest('.mes')?.querySelector('.mes_edit')?.click();
+        (el.closest('.mes')?.querySelector('.mes_edit') as HTMLElement)?.click();
         if (event.target.closest('.mes_reasoning')) {
-            document.querySelector('.reasoning_edit_textarea')?.focus();
+            (document.querySelector('.reasoning_edit_textarea') as HTMLElement)?.focus();
         }
     });
 
     document.addEventListener('click', function (e) {
+        if (!(e.target instanceof Element)) return;
         const el = e.target.closest('.open_media_overrides');
         if (el) openExternalMediaOverridesDialog();
     });
     document.addEventListener('input', function (e) {
+        if (!(e.target instanceof Element)) return;
         const el = e.target.closest('#forbid_media_override_allowed');
         if (!el) return;
         const entityId = getCurrentEntityId();
         if (!entityId) return;
-        // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame...
+        // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parameter of type 'never'.
         power_user.external_media_allowed_overrides.push(entityId);
         power_user.external_media_forbidden_overrides = power_user.external_media_forbidden_overrides.filter((v) => v !== entityId);
         saveSettingsDebounced();
         reloadCurrentChat();
     });
     document.addEventListener('input', function (e) {
+        if (!(e.target instanceof Element)) return;
         const el = e.target.closest('#forbid_media_override_forbidden');
         if (!el) return;
         const entityId = getCurrentEntityId();
         if (!entityId) return;
-        // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame...
+        // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parameter of type 'never'.
         power_user.external_media_forbidden_overrides.push(entityId);
         power_user.external_media_allowed_overrides = power_user.external_media_allowed_overrides.filter((v) => v !== entityId);
         saveSettingsDebounced();
         reloadCurrentChat();
     });
     document.addEventListener('input', function (e) {
+        if (!(e.target instanceof Element)) return;
         const el = e.target.closest('#forbid_media_override_global');
         if (!el) return;
         const entityId = getCurrentEntityId();
@@ -2731,57 +2746,63 @@ export function initChatUtilities() {
      * @property {HTMLElement} mediaBlock The closest media container block
      * @property {number} mediaIndex The media index within the message
      */
-    function getMediaContainerInfo(containerClass = '.mes_media_container') {
+    function getMediaContainerInfo(this: Element, containerClass = '.mes_media_container') {
         const messageBlock = this.closest('.mes');
         const messageId = Number(messageBlock?.getAttribute('mesid'));
         const mediaBlock = this.closest(containerClass);
         const mediaIndex = Number(mediaBlock?.getAttribute('data-index'));
         return { messageBlock, messageId, mediaBlock, mediaIndex };
     }
-    chatElement[0]?.addEventListener('click', async function (e) {
+    chatElement[0]?.addEventListener('click', async function (this: Element, e: Event) {
+        if (!(e.target instanceof Element)) return;
         const el = e.target.closest('.mes_img');
         if (el) {
             const { messageId, mediaIndex } = getMediaContainerInfo.call(el);
             expandMessageMedia(messageId, mediaIndex);
         }
     });
-    chatElement[0]?.addEventListener('click', async function (e) {
+    chatElement[0]?.addEventListener('click', async function (this: Element, e: Event) {
+        if (!(e.target instanceof Element)) return;
         const el = e.target.closest('.mes_media_enlarge');
         if (el) {
             const { messageId, mediaIndex } = getMediaContainerInfo.call(el);
-            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             expandMessageMedia(messageId, mediaIndex)?.click();
         }
     });
-    chatElement[0]?.addEventListener('click', async function (e) {
+    chatElement[0]?.addEventListener('click', async function (this: Element, e: Event) {
+        if (!(e.target instanceof Element)) return;
         const el = e.target.closest('.mes_media_delete');
         if (el) {
             const { messageId, mediaIndex, messageBlock } = getMediaContainerInfo.call(el);
             await deleteMessageMedia(messageId, mediaIndex, messageBlock);
         }
     });
-    chatElement[0]?.addEventListener('click', async function (e) {
+    chatElement[0]?.addEventListener('click', async function (this: Element, e: Event) {
+        if (!(e.target instanceof Element)) return;
         const el = e.target.closest('.mes_media_list');
         if (el) {
             const { messageId, messageBlock } = getMediaContainerInfo.call(el);
             await switchMessageMediaDisplay(messageId, messageBlock, MEDIA_DISPLAY.GALLERY);
         }
     });
-    chatElement[0]?.addEventListener('click', async function (e) {
+    chatElement[0]?.addEventListener('click', async function (this: Element, e: Event) {
+        if (!(e.target instanceof Element)) return;
         const el = e.target.closest('.mes_media_gallery');
         if (el) {
             const { messageId, messageBlock } = getMediaContainerInfo.call(el);
             await switchMessageMediaDisplay(messageId, messageBlock, MEDIA_DISPLAY.LIST);
         }
     });
-    chatElement[0]?.addEventListener('click', async function (e) {
+    chatElement[0]?.addEventListener('click', async function (this: Element, e: Event) {
+        if (!(e.target instanceof Element)) return;
         const el = e.target.closest('.mes_img_swipe_left');
         if (el) {
             const { messageId, messageBlock } = getMediaContainerInfo.call(el);
             await onImageSwiped(messageId, messageBlock, SWIPE_DIRECTION.LEFT);
         }
     });
-    chatElement[0]?.addEventListener('click', async function (e) {
+    chatElement[0]?.addEventListener('click', async function (this: Element, e: Event) {
+        if (!(e.target instanceof Element)) return;
         const el = e.target.closest('.mes_img_swipe_right');
         if (el) {
             const { messageId, messageBlock } = getMediaContainerInfo.call(el);
@@ -2793,18 +2814,16 @@ export function initChatUtilities() {
         document.getElementById('file_form')?.classList.add('displayNone');
     });
 
-    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    document.getElementById('send_textarea').addEventListener('paste', async function (event) {
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        if (event.clipboardData.files.length === 0) {
+    document.getElementById('send_textarea')?.addEventListener('paste', async function (this: HTMLElement, event: Event) {
+        const clipboardEvent = event as ClipboardEvent;
+        if (!clipboardEvent.clipboardData || clipboardEvent.clipboardData.files.length === 0) {
             return;
         }
 
         event.preventDefault();
         event.stopPropagation();
 
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        await handleFileAttach(Array.from(event.clipboardData.files));
+        await handleFileAttach(Array.from(clipboardEvent.clipboardData.files));
     });
 
     // @ts-expect-error TS(7006) FIXME: Parameter 'files' implicitly has an 'any' type.
