@@ -323,16 +323,13 @@ export class MacrosParser {
  * @returns {number} The hashed chat id
  */
 function getChatIdHash() {
-    // @ts-expect-error TS(2339) FIXME: Property 'chat_id_hash' does not exist on type '{}... Remove this comment to see the full error message
     const cachedIdHash = chat_metadata.chat_id_hash;
 
     // If chat_id_hash is not already set, calculate it
     if (!cachedIdHash) {
         // Use the main_chat if it's available, otherwise get the current chat ID
-        // @ts-expect-error TS(2339) FIXME: Property 'main_chat' does not exist on type '{}'.
         const chatId = chat_metadata.main_chat ?? getCurrentChatId();
         const chatIdHash = getStringHash(chatId);
-        // @ts-expect-error TS(2339) FIXME: Property 'chat_id_hash' does not exist on type '{}... Remove this comment to see the full error message
         chat_metadata.chat_id_hash = chatIdHash;
         return chatIdHash;
     }
@@ -375,7 +372,6 @@ export function getLastMessageId({ exclude_swipe_in_propress = true, filter = nu
  * @returns {number|null} The ID of the first message in the context
  */
 function getFirstIncludedMessageId() {
-    // @ts-expect-error TS(2339) FIXME: Property 'lastInContextMessageId' does not exist o... Remove this comment to see the full error message
     return chat_metadata.lastInContextMessageId;
 }
 

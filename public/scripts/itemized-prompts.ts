@@ -29,7 +29,7 @@ export async function loadItemizedPrompts(chatId) {
             return;
         }
 
-        itemizedPrompts = await promptStorage.getItem(chatId);
+        itemizedPrompts = (await promptStorage.getItem(chatId)) ?? [];
 
         if (!itemizedPrompts) {
             itemizedPrompts = [];

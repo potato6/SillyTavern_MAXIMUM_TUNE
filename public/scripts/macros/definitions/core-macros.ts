@@ -405,7 +405,6 @@ export function registerCoreMacros() {
             const offset = globalOffset;
 
             // Reroll seed allows users to reset all picks in the chat via /reroll-pick command
-            // @ts-expect-error TS(2339) FIXME: Property 'pick_reroll_seed' does not exist on type... Remove this comment to see the full error message
             const rerollSeed = chat_metadata.pick_reroll_seed || null;
 
             const combinedSeedString = [chatIdHash, rawContentHash, offset, rerollSeed].filter(it => it !== null).join('-');
@@ -489,16 +488,13 @@ export function registerCoreMacros() {
  *
  */
 function getChatIdHash() {
-    // @ts-expect-error TS(2339) FIXME: Property 'chat_id_hash' does not exist on type '{}... Remove this comment to see the full error message
     const cachedIdHash = chat_metadata.chat_id_hash;
     if (typeof cachedIdHash === 'number') {
         return cachedIdHash;
     }
 
-    // @ts-expect-error TS(2339) FIXME: Property 'main_chat' does not exist on type '{}'.
     const chatId = chat_metadata.main_chat ?? getCurrentChatId();
     const chatIdHash = getStringHash(chatId);
-    // @ts-expect-error TS(2339) FIXME: Property 'chat_id_hash' does not exist on type '{}... Remove this comment to see the full error message
     chat_metadata.chat_id_hash = chatIdHash;
     return chatIdHash;
 }

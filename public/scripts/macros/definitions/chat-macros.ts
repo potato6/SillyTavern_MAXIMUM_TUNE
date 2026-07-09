@@ -141,7 +141,6 @@ function getLastCharMessage() {
  *
  */
 function getFirstIncludedMessageId() {
-    // @ts-expect-error TS(2339) FIXME: Property 'lastInContextMessageId' does not exist o... Remove this comment to see the full error message
     const value = chat_metadata.lastInContextMessageId;
     return typeof value === 'number' ? value : null;
 }

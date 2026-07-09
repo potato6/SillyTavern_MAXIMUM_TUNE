@@ -23,7 +23,6 @@ export function showLoader() {
     // Hide any existing legacy loader first to maintain old behavior
     // @ts-expect-error TS(7005) FIXME: Variable 'legacyLoaderHandle' implicitly has an 'a... Remove this comment to see the full error message
     if (legacyLoaderHandle && legacyLoaderHandle.isActive) {
-        // @ts-expect-error TS(7005) FIXME: Variable 'legacyLoaderHandle' implicitly has an 'a... Remove this comment to see the full error message
         legacyLoaderHandle.hide();
     }
 
@@ -54,7 +53,6 @@ export async function hideLoader() {
         return Promise.resolve();
     }
 
-    // @ts-expect-error TS(7005) FIXME: Variable 'legacyLoaderHandle' implicitly has an 'a... Remove this comment to see the full error message
     await legacyLoaderHandle.hide();
     legacyLoaderHandle = null;
 }

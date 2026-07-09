@@ -1,7 +1,6 @@
 'use strict';
 
 import { extension_prompt_types, name1, name2, online_status, saveSettingsDebounced, substituteParams } from '../script.js';
-// @ts-expect-error TS(7034) FIXME: Variable 'selected_group' implicitly has type 'any... Remove this comment to see the full error message
 import { selected_group } from './group-chats.js';
 import { parseExampleIntoIndividual } from './openai.js';
 import {
@@ -430,7 +429,6 @@ export function formatInstructModeChat(name, mes, isUser, isNarrator, forceAvata
     const instruct = structuredClone(customInstruct ?? power_user.instruct);
     let includeNames = isNarrator ? false : instruct.names_behavior === names_behavior_types.ALWAYS;
 
-    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
     if (!isNarrator && instruct.names_behavior === names_behavior_types.FORCE && ((selected_group && name !== name1) || (forceAvatar && name !== name1))) {
         includeNames = true;
     }
@@ -570,7 +568,6 @@ export function formatInstructModeExamples(mesExamplesArray, name1, name2) {
     }
 
     const includeNames = power_user.instruct.names_behavior === names_behavior_types.ALWAYS;
-    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
     const includeGroupNames = selected_group && [names_behavior_types.ALWAYS, names_behavior_types.FORCE].includes(power_user.instruct.names_behavior);
 
     let inputPrefix = power_user.instruct.input_sequence || '';
@@ -603,7 +600,7 @@ export function formatInstructModeExamples(mesExamplesArray, name1, name2) {
 
     for (const item of mesExamplesArray) {
         const cleanedItem = item.replace(/<START>/i, '{Example Dialogue:}').replace(/\r/gm, '');
-        const blockExamples = parseExampleIntoIndividual(cleanedItem, includeGroupNames);
+        const blockExamples = parseExampleIntoIndividual(cleanedItem, includeGroupNames as boolean | undefined);
 
         if (blockExamples.length === 0) {
             continue;
@@ -649,7 +646,6 @@ export function formatInstructModeExamples(mesExamplesArray, name1, name2) {
 // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
 export function formatInstructModePrompt(name, isImpersonate, promptBias, name1, name2, isQuiet, isQuietToLoud, customInstruct = null) {
     const instruct = structuredClone(customInstruct ?? power_user.instruct);
-    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
     const includeNames = name && (instruct.names_behavior === names_behavior_types.ALWAYS || (!!selected_group && instruct.names_behavior === names_behavior_types.FORCE)) && !(isQuiet && !isQuietToLoud);
 
     /**
