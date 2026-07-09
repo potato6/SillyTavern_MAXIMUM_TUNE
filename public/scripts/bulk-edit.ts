@@ -100,12 +100,14 @@ function enableBulkSelect() {
     $('#rm_print_characters_block.group_overlay_mode_select .bogus_folder_select, #rm_print_characters_block.group_overlay_mode_select .group_select')
         .addClass('disabled');
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#rm_print_characters_block').addClass('bulk_select');
+    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
+    document.getElementById('rm_print_characters_block').classList.add('bulk_select');
     // We also need to disable the default click event for the character_select divs
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document).on('click', '.bulk_select_checkbox', function (event) {
-        event.stopImmediatePropagation();
+    document.addEventListener('click', function (event) {
+        const target = event.target.closest('.bulk_select_checkbox');
+        if (target) {
+            event.stopImmediatePropagation();
+        }
     });
 }
 
