@@ -49,7 +49,7 @@ router.post('/caption-image', async (request, response) => {
             return response.status(result.status).send({ error: true });
         }
 
-        /** @type {any} */
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- API response shape unknown
         const generateResponseJson = await result.json() as any;
         const caption = generateResponseJson.content[0].text;
         console.debug('Claude response:', generateResponseJson);

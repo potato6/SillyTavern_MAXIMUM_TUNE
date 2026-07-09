@@ -61,8 +61,7 @@ router.post('/libre', async (request, response) => {
             return response.sendStatus(500);
         }
 
-        /** @type {any} */
-        const json = await result.json() as any;
+        const json = await result.json() as Record<string, unknown>;
         console.debug('Translated text: ' + json.translatedText);
 
         return response.send(json.translatedText);
@@ -144,9 +143,9 @@ router.post('/yandex', async (request, response) => {
             return response.sendStatus(500);
         }
 
-        /** @type {any} */
-        const json = await result.json() as any;
-        const translated = json.text.join();
+        const json = await result.json() as Record<string, unknown>;
+        const text = json.text as string[];
+        const translated = text.join();
         console.debug('Translated text: ' + translated);
 
         return response.send(translated);
@@ -191,8 +190,7 @@ router.post('/lingva', async (request, response) => {
             console.warn('Lingva error: ', result.statusText, error);
         }
 
-        /** @type {any} */
-        const data = await result.json() as any;
+        const data = await result.json() as Record<string, unknown>;
         console.debug('Translated text: ' + data.translation);
         return response.send(data.translation);
     } catch (error) {
@@ -253,11 +251,11 @@ router.post('/deepl', async (request, response) => {
             return response.sendStatus(500);
         }
 
-        /** @type {any} */
-        const json = await result.json() as any;
-        console.debug('Translated text: ' + json.translations[0].text);
+        const json = await result.json() as Record<string, unknown>;
+        const translations = json.translations as Array<Record<string, string>>;
+        console.debug('Translated text: ' + translations[0]!.text);
 
-        return response.send(json.translations[0].text);
+        return response.send(translations[0]!.text);
     } catch (error) {
         // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         console.error('Translation error: ' + error.message);
@@ -311,8 +309,7 @@ router.post('/onering', async (request, response) => {
             return response.sendStatus(500);
         }
 
-        /** @type {any} */
-        const data = await result.json() as any;
+        const data = await result.json() as Record<string, unknown>;
         console.debug('Translated text: ' + data.result);
 
         return response.send(data.result);
@@ -368,8 +365,7 @@ router.post('/deeplx', async (request, response) => {
             return response.sendStatus(500);
         }
 
-        /** @type {any} */
-        const json = await result.json() as any;
+        const json = await result.json() as Record<string, unknown>;
         console.debug('Translated text: ' + json.data);
 
         return response.send(json.data);

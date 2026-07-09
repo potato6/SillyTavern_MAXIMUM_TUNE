@@ -3599,7 +3599,7 @@ export async function getExtensionPrompt(position = extension_prompt_types.IN_PR
         .filter(filterByFunction);
     const prompts = await Promise.all(promptPromises);
 
-    let values = prompts.map((x: any) => x.value.trim()).join(separator);
+    let values = prompts.map((x: { value: string }) => x.value.trim()).join(separator);
     if (wrap && values.length && !values.startsWith(separator)) {
         values = separator + values;
     }
@@ -4949,7 +4949,7 @@ export async function Generate(type, {
     // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
     const canPerformToolCalls = !dryRun && ToolManager.canPerformToolCalls(type) && depth < ToolManager.RECURSE_LIMIT;
     // @ts-expect-error TS(2339) FIXME: Property 'is_system' does not exist on type 'never... Remove this comment to see the full error message
-    let coreChat: any[] = chat.filter(x => !x.is_system || (canUseTools && Array.isArray(x.extra?.tool_invocations)));
+    let coreChat: SillyTavern.ChatMessage[] = chat.filter(x => !x.is_system || (canUseTools && Array.isArray(x.extra?.tool_invocations)));
     if (type === 'swipe') {
         coreChat.pop();
     }

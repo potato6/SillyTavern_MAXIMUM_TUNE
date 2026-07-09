@@ -117,7 +117,7 @@ class DiskCache {
             forgiveParseErrors: true,
             expiredInterval: 0,
             maxFileDescriptors: 100,
-        } as any);
+        } as Record<string, unknown>);
         await this.#instance.init();
         this.#syncInterval = setInterval(this.#syncCacheEntries.bind(this), DiskCache.SYNC_INTERVAL);
         return this.#instance;

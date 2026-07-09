@@ -21,7 +21,7 @@ pollinations.post('/voices', async (req, res) => {
             throw new Error('Failed to fetch Pollinations models');
         }
 
-        const data = await response.json() as any;
+        const data = await response.json() as Record<string, unknown>;
 
         if (!Array.isArray(data)) {
             throw new Error('Invalid data format received from Pollinations');
@@ -81,8 +81,8 @@ pollinations.post('/generate', async (req, res) => {
             throw new Error(`Failed to generate audio from Pollinations: ${text}`);
         }
 
-        /** @type {any} */
-        const data = await response.json() as any;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic Pollinations API response shape
+        const data: any = await response.json();
         const audioData = data?.choices?.[0]?.message?.audio?.data;
 
         if (!audioData) {
@@ -122,7 +122,7 @@ elevenlabs.post('/voices', async (req, res) => {
             return res.sendStatus(500);
         }
 
-        const responseJson = await response.json() as any;
+        const responseJson = await response.json() as Record<string, unknown>;
         return res.json(responseJson);
     } catch (error) {
         console.error(error);
@@ -149,7 +149,7 @@ elevenlabs.post('/voice-settings', async (req, res) => {
             console.warn(`ElevenLabs voice settings fetch failed: HTTP ${response.status} - ${text}`);
             return res.sendStatus(500);
         }
-        const responseJson = await response.json() as any;
+        const responseJson = await response.json() as Record<string, unknown>;
         return res.json(responseJson);
     } catch (error) {
         console.error(error);
@@ -217,7 +217,7 @@ elevenlabs.post('/history', async (req, res) => {
             return res.sendStatus(500);
         }
 
-        const responseJson = await response.json() as any;
+        const responseJson = await response.json() as Record<string, unknown>;
         return res.json(responseJson);
     } catch (error) {
         console.error(error);
@@ -305,7 +305,7 @@ elevenlabs.post('/voices/add', async (req, res) => {
             return res.sendStatus(500);
         }
 
-        const responseJson = await response.json() as any;
+        const responseJson = await response.json() as Record<string, unknown>;
         return res.json(responseJson);
     } catch (error) {
         console.error(error);
@@ -346,7 +346,7 @@ elevenlabs.post('/recognize', async (req, res) => {
         }
 
         fs.unlinkSync(req.file.path);
-        const responseJson = await response.json() as any;
+        const responseJson = await response.json() as Record<string, unknown>;
         console.debug('ElevenLabs speech recognition response:', responseJson);
         return res.json(responseJson);
     } catch (error) {

@@ -1,5 +1,3 @@
-import { AutoCompleteOption } from './AutoCompleteOption.js';
-
 
 export class AutoCompleteNameResultBase {
     /**@type {string} */ name;

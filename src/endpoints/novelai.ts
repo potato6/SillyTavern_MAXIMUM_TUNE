@@ -166,7 +166,7 @@ router.post('/status', async function (req, res) {
         });
 
         if (response.ok) {
-            const data = await response.json() as any;
+            const data = await response.json() as Record<string, unknown>;
             return res.send(data);
         } else if (response.status == 401) {
             console.error('NovelAI Access Token is incorrect.');
@@ -306,8 +306,7 @@ router.post('/generate', async function (req, res) {
                 return res.status(500).send({ error: { message } });
             }
 
-            /** @type {object} */
-            const data = await response.json() as any;
+            const data = await response.json() as Record<string, unknown>;
             console.info('NovelAI Output', data?.output);
             return res.send(data);
         }

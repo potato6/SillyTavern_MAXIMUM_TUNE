@@ -3,7 +3,6 @@ import { debounce, escapeRegex } from '../utils.js';
 import { AutoCompleteOption } from './AutoCompleteOption.js';
 import { AutoCompleteFuzzyScore } from './AutoCompleteFuzzyScore.js';
 import { BlankAutoCompleteOption } from './BlankAutoCompleteOption.js';
-import { AutoCompleteNameResult } from './AutoCompleteNameResult.js';
 import { AutoCompleteSecondaryNameResult } from './AutoCompleteSecondaryNameResult.js';
 
 /**@readonly*/
@@ -412,7 +411,7 @@ export class AutoComplete {
         if (displayList.length == 0 && this.effectiveParserResult != this.parserResult && isForced) {
             // no matching secondary results and forced trigger -> show current command details
             this.secondaryParserResult = null;
-            const forcedOption = this.effectiveParserResult.optionList.find((it: any) => it.name == this.effectiveParserResult.name);
+            const forcedOption = this.effectiveParserResult.optionList.find((it: AutoCompleteOption) => it.name == this.effectiveParserResult.name);
             if (forcedOption) displayList = [forcedOption];
             this.name = this.effectiveParserResult.name;
             this.fuzzyRegex = /(.*)(.*)(.*)/;

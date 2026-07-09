@@ -269,8 +269,8 @@ router.post('/caption-image', async (request, response) => {
             return response.status(500).send(text);
         }
 
-        /** @type {any} */
-        const data = await result.json() as any;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic OpenAI API response
+        const data: any = await result.json();
         console.info('Multimodal captioning response', data);
         const caption = data?.choices?.[0]?.message?.content ?? data?.message?.content?.[0]?.text;
 
@@ -430,8 +430,7 @@ router.post('/electronhub/models', async (request, response) => {
             console.warn('ElectronHub models request failed', result.statusText, text);
             return response.status(500).send(text);
         }
-        /** @type {any} */
-        const data = await result.json() as any;
+        const data = await result.json() as Record<string, unknown>;
         const models = data && Array.isArray(data.data) ? data.data : [];
         return response.json(models);
     } catch (error) {
@@ -505,8 +504,7 @@ router.post('/chutes/models/embedding', async (request, response) => {
             return response.status(500).send(text);
         }
 
-        /** @type {any} */
-        const data = await result.json() as any;
+        const data = await result.json() as Record<string, unknown>;
 
         if (!Array.isArray(data?.items)) {
             console.warn('Chutes embedding models response invalid', data);
@@ -542,8 +540,7 @@ router.post('/nanogpt/models/embedding', async (request, response) => {
             return response.status(500).send(text);
         }
 
-        /** @type {any} */
-        const data = await result.json() as any;
+        const data = await result.json() as Record<string, unknown>;
 
         if (!Array.isArray(data?.data)) {
             console.warn('NanoGPT embedding models response invalid', data);
@@ -582,8 +579,7 @@ router.post('/siliconflow/models/embedding', async (request, response) => {
             return response.status(500).send(text);
         }
 
-        /** @type {any} */
-        const data = await result.json() as any;
+        const data = await result.json() as Record<string, unknown>;
 
         if (!Array.isArray(data?.data)) {
             console.warn('SiliconFlow embedding models response invalid', data);
@@ -626,8 +622,7 @@ router.post('/workers-ai/models/embedding', async (request, response) => {
             return response.status(500).send(text);
         }
 
-        /** @type {any} */
-        const data = await result.json() as any;
+        const data = await result.json() as Record<string, unknown>;
 
         if (!Array.isArray(data?.result)) {
             console.warn('Workers AI embedding models response invalid', data);
@@ -670,7 +665,7 @@ router.post('/generate-image', async (request, response) => {
             return response.status(500).send(text);
         }
 
-        const data = await result.json() as any;
+        const data = await result.json() as Record<string, unknown>;
         return response.json(data);
     } catch (error) {
         console.error(error);
@@ -715,8 +710,7 @@ router.post('/generate-video', async (request, response) => {
             return response.status(500).send(text);
         }
 
-        /** @type {any} */
-        const videoJob = await videoJobResponse.json() as any;
+        const videoJob = await videoJobResponse.json() as Record<string, unknown>;
 
         if (!videoJob || !videoJob.id) {
             console.warn('OpenAI video generation returned no job ID', videoJob);
@@ -746,8 +740,7 @@ router.post('/generate-video', async (request, response) => {
                 return response.status(500).send(text);
             }
 
-            /** @type {any} */
-            const pollResult = await pollResponse.json() as any;
+            const pollResult = await pollResponse.json() as Record<string, unknown>;
             console.debug(`OpenAI video job status: ${pollResult.status}, progress: ${pollResult.progress}`);
 
             if (pollResult.status === 'failed') {
@@ -879,7 +872,7 @@ function createTranscribeHandler({
             }
 
             fs.unlinkSync(request.file.path);
-            const data = await result.json() as any;
+            const data = await result.json() as Record<string, unknown>;
             console.debug(`${providerName} transcription response`, data);
             return response.json(data);
         } catch (error) {
@@ -948,7 +941,7 @@ router.post('/chutes/transcribe-audio', async (request, response) => {
         }
 
         fs.unlinkSync(request.file.path);
-        const data = await result.json() as any;
+        const data = await result.json() as Record<string, unknown>;
         console.debug('Chutes transcription response', data);
 
         if (!Array.isArray(data)) {

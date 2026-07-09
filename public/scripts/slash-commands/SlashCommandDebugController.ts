@@ -1,5 +1,4 @@
-import { SlashCommandClosure } from './SlashCommandClosure.js';
-import { SlashCommandExecutor } from './SlashCommandExecutor.js';
+
 
 export class SlashCommandDebugController {
     /** @type {SlashCommandClosure[]} */ stack = [];

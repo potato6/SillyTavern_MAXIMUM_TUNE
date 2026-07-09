@@ -21,8 +21,8 @@ router.post('/models/providers', async (req, res) => {
             return res.json([]);
         }
 
-        /** @type {any} */
-        const data = await response.json() as any;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic OpenRouter API
+        const data: any = await response.json();
         const endpoints = data?.data?.endpoints || [];
         const providerNames = endpoints.map((e: { provider_name: string }) => e.provider_name);
 
@@ -52,8 +52,7 @@ async function fetchModelsByModality(endpoint: string, inputModality: string, ou
         return [];
     }
 
-    /** @type {any} */
-    const data = await response.json() as any;
+    const data = await response.json() as Record<string, unknown>;
 
     if (!Array.isArray(data?.data)) {
         console.warn('OpenRouter API response was not an array');
@@ -131,8 +130,8 @@ router.post('/credits', async (req, res) => {
             return res.sendStatus(500);
         }
 
-        /** @type {any} */
-        const data = await response.json() as any;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic OpenRouter API
+        const data: any = await response.json();
         const totalCredits = data.data?.total_credits ?? 0;
         const totalUsage = data.data?.total_usage ?? 0;
         const remaining = totalCredits - totalUsage;
@@ -188,8 +187,8 @@ router.post('/image/generate', async (req, res) => {
             return res.sendStatus(500);
         }
 
-        /** @type {any} */
-        const data = await response.json() as any;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic OpenRouter API
+        const data: any = await response.json();
 
         const imageUrl = data?.choices?.[0]?.message?.images?.[0]?.image_url?.url;
 

@@ -354,6 +354,10 @@ export async function getGroupChat(groupId, reload = false) {
  * @returns {Character[]} An array of character objects representing the members of the group. If the group is not found, an empty array is returned.
  */
 
+/**
+ *
+ * @param groupId
+ */
 export function getGroupMembers(groupId = selected_group) {
 
     const group = groups.find((x) => x.id === groupId);
@@ -1764,6 +1768,7 @@ async function onGroupAutoModeDelayInput(e) {
         // @ts-expect-error TS(7005) FIXME: Variable 'groups' implicitly has an 'any[]' type.
         const _thisGroup = groups.find((x) => x.id == openGroupId);
         const prop = e.target.getAttribute('setting');
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic group property access
         (_thisGroup as any)[prop] = String(e.target.value);
 
         await editGroup(openGroupId, false, false);

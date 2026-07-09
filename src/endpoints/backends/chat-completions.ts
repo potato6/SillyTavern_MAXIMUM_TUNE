@@ -140,7 +140,7 @@ async function isOpenRouterModelCacheable(modelId: string) {
         }
 
         /** @type {Record<string, unknown>} */
-        const data = await response.json() as any;
+        const data = await response.json() as Record<string, unknown>;
 
         if (!Array.isArray(data?.data)) {
             console.warn('OpenRouter API response format unexpected');
@@ -430,7 +430,7 @@ async function sendClaudeRequest(request: express.Request, response: express.Res
                 return response.status(500).send({ error: true });
             }
 
-            /** @type {Record<string, unknown>} */
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const generateResponseJson = await generateResponse.json() as any;
             const responseText = generateResponseJson?.content?.[0]?.text || '';
             console.debug('Claude response:', generateResponseJson);
@@ -766,7 +766,7 @@ async function sendMakerSuiteRequest(request: express.Request, response: express
                 return response.status(500).send(errorJson);
             }
 
-            /** @type {Record<string, unknown>} */
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const generateResponseJson = await generateResponse.json() as any;
 
             const candidates = generateResponseJson?.candidates;
@@ -872,7 +872,7 @@ async function sendAI21Request(request: express.Request, response: express.Respo
                 const errorJson = tryParse(errorText) ?? { error: true };
                 return response.status(500).send(errorJson);
             }
-            const generateResponseJson = await generateResponse.json() as any;
+            const generateResponseJson = await generateResponse.json() as Record<string, unknown>;
             console.debug('AI21 response:', generateResponseJson);
             return response.send(generateResponseJson);
         }
@@ -966,7 +966,7 @@ async function sendMistralAIRequest(request: express.Request, response: express.
                 const errorJson = tryParse(errorText) ?? { error: true };
                 return response.status(500).send(errorJson);
             }
-            const generateResponseJson = await generateResponse.json() as any;
+            const generateResponseJson = await generateResponse.json() as Record<string, unknown>;
             console.debug('MistralAI response:', generateResponseJson);
             return response.send(generateResponseJson);
         }
@@ -1069,7 +1069,7 @@ async function sendCohereRequest(request: express.Request, response: express.Res
                 const errorJson = tryParse(errorText) ?? { error: true };
                 return response.status(500).send(errorJson);
             }
-            const generateResponseJson = await generateResponse.json() as any;
+            const generateResponseJson = await generateResponse.json() as Record<string, unknown>;
             console.debug('Cohere response:', generateResponseJson);
             return response.send(generateResponseJson);
         }
@@ -1191,7 +1191,7 @@ async function sendDeepSeekRequest(request: express.Request, response: express.R
                 const errorJson = tryParse(errorText) ?? { error: true };
                 return response.status(500).send(errorJson);
             }
-            const generateResponseJson = await generateResponse.json() as any;
+            const generateResponseJson = await generateResponse.json() as Record<string, unknown>;
             console.debug('DeepSeek response:', generateResponseJson);
             return response.send(generateResponseJson);
         }
@@ -1305,7 +1305,7 @@ async function sendXaiRequest(request: express.Request, response: express.Respon
                 const errorJson = tryParse(errorText) ?? { error: true };
                 return response.status(500).send(errorJson);
             }
-            const generateResponseJson = await generateResponse.json() as any;
+            const generateResponseJson = await generateResponse.json() as Record<string, unknown>;
             console.debug('xAI response:', generateResponseJson);
             return response.send(generateResponseJson);
         }
@@ -1418,7 +1418,7 @@ async function sendAimlapiRequest(request: express.Request, response: express.Re
                 const errorJson = tryParse(errorText) ?? { error: true };
                 return response.status(500).send(errorJson);
             }
-            const generateResponseJson = await generateResponse.json() as any;
+            const generateResponseJson = await generateResponse.json() as Record<string, unknown>;
             console.debug('AI/ML API response:', generateResponseJson);
             return response.send(generateResponseJson);
         }
@@ -1536,7 +1536,7 @@ async function sendElectronHubRequest(request: express.Request, response: expres
                 const errorJson = tryParse(errorText) ?? { error: true };
                 return response.status(500).send(errorJson);
             }
-            const generateResponseJson = await generateResponse.json() as any;
+            const generateResponseJson = await generateResponse.json() as Record<string, unknown>;
             console.debug('Electron Hub response:', generateResponseJson);
             return response.send(generateResponseJson);
         }
@@ -1643,7 +1643,7 @@ async function sendChutesRequest(request: express.Request, response: express.Res
                 const errorJson = tryParse(errorText) ?? { error: true };
                 return response.status(500).send(errorJson);
             }
-            const generateResponseJson = await generateResponse.json() as any;
+            const generateResponseJson = await generateResponse.json() as Record<string, unknown>;
             console.debug('Chutes response:', generateResponseJson);
             return response.send(generateResponseJson);
         }
@@ -1727,7 +1727,7 @@ async function sendMinimaxRequest(request: express.Request, response: express.Re
                 const errorJson = tryParse(errorText) ?? { error: true };
                 return response.status(500).send(errorJson);
             }
-            const generateResponseJson = await generateResponse.json() as any;
+            const generateResponseJson = await generateResponse.json() as Record<string, unknown>;
             console.debug('MiniMax response:', generateResponseJson);
             return response.send(generateResponseJson);
         }
@@ -1826,7 +1826,7 @@ async function sendAzureOpenAIRequest(request: express.Request, response: expres
 
         if (fetchResponse.ok) {
             /** @type {Record<string, unknown>} */
-            const json = await fetchResponse.json() as any;
+            const json = await fetchResponse.json() as Record<string, unknown>;
             console.debug('Azure OpenAI response:', json);
             return response.send(json);
         }
@@ -1943,7 +1943,7 @@ router.post('/status', async function (request, statusResponse) {
 
                 if (response.ok) {
                 /** @type {Record<string, unknown>} */
-                const data = await response.json() as any;
+                const data = await response.json() as Record<string, unknown>;
                 // Transform Google AI Studio models to OpenAI format
                 const models = (data.models as Array<Record<string, unknown>>)
                     ?.filter((model) => (model.supportedGenerationMethods as string[])?.includes('generateContent'))
@@ -2022,7 +2022,7 @@ router.post('/status', async function (request, statusResponse) {
 
                 let modelResponse;
                 try {
-                    modelResponse = await modelRequest.json() as any;
+                    modelResponse = await modelRequest.json() as Record<string, unknown>;
                 } catch {
                     modelResponse = { raw: 'Failed to parse JSON response from chat completions probe.' };
                 }
@@ -2077,7 +2077,7 @@ router.post('/status', async function (request, statusResponse) {
 
                 if (response.ok) {
                 /** @type {Record<string, unknown>} */
-                const data = await response.json() as any;
+                const data = await response.json() as Record<string, unknown>;
                 const models = Array.isArray(data?.result)
                     ? (data.result as Array<Record<string, unknown>>).map((model) => ({
                     ...model,
@@ -2121,7 +2121,7 @@ router.post('/status', async function (request, statusResponse) {
 
         if (response.ok) {
             /** @type {Record<string, unknown>} */
-            let data = await response.json() as any;
+            let data = await response.json() as Record<string, unknown>;
 
             if (request.body.chat_completion_source === CHAT_COMPLETION_SOURCES.POLLINATIONS && Array.isArray(data)) {
                 data = { data: data.map(model => ({ id: model.name, ...model })) };
@@ -2768,7 +2768,7 @@ router.post('/generate', async function (request, response) {
 
         if (fetchResponse.ok) {
             /** @type {Record<string, unknown>} */
-            const json = await fetchResponse.json() as any;
+            const json = await fetchResponse.json() as Record<string, unknown>;
             console.debug('Chat Completion response:', json);
             return response.send(json);
         } else {
@@ -2816,7 +2816,7 @@ multimodalModels.post('/pollinations', async (_req, res) => {
         }
 
         /** @type {Record<string, unknown>} */
-        const data = await response.json() as any;
+        const data = await response.json() as Record<string, unknown>;
 
         if (!Array.isArray(data)) {
             return res.json([]);
@@ -2842,7 +2842,7 @@ multimodalModels.post('/aimlapi', async (_req, res) => {
         }
 
         /** @type {Record<string, unknown>} */
-        const data = await response.json() as any;
+        const data = await response.json() as Record<string, unknown>;
 
         if (!Array.isArray(data?.data)) {
             return res.json([]);
@@ -2865,7 +2865,7 @@ multimodalModels.post('/nanogpt', async (_req, res) => {
         }
 
         /** @type {Record<string, unknown>} */
-        const data = await response.json() as any;
+        const data = await response.json() as Record<string, unknown>;
 
         if (!Array.isArray(data?.data)) {
             return res.json([]);
@@ -2888,7 +2888,7 @@ multimodalModels.post('/electronhub', async (_req, res) => {
         }
 
         /** @type {Record<string, unknown>} */
-        const data = await response.json() as any;
+        const data = await response.json() as Record<string, unknown>;
         const multimodalModels = (data.data as Array<Record<string, unknown>>).filter((m) => (m.metadata as Record<string, unknown>)?.vision).map((m) => m.id);
         return res.json(multimodalModels);
     } catch (error) {
@@ -2915,6 +2915,7 @@ multimodalModels.post('/chutes', async (req, res) => {
             return res.json([]);
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const data = await response.json() as any;
 
         const modelsData = /** @type {{object: string, data: Array<{id: string, input_modalities?: string[]}>}} */ (data);
@@ -2947,7 +2948,7 @@ multimodalModels.post('/mistral', async (req, res) => {
         }
 
         /** @type {Record<string, unknown>} */
-        const data = await response.json() as any;
+        const data = await response.json() as Record<string, unknown>;
         const multimodalModels = (data.data as Array<Record<string, unknown>>).filter((m) => (m.capabilities as Record<string, unknown>)?.vision).map((m) => m.id);
         return res.json(multimodalModels);
     } catch (error) {
@@ -2976,7 +2977,7 @@ multimodalModels.post('/xai', async (req, res) => {
         }
 
         /** @type {Record<string, unknown>} */
-        const data = await response.json() as any;
+        const data = await response.json() as Record<string, unknown>;
         const multimodalModels = (data.models as Array<Record<string, unknown>>).filter((m) => (m.input_modalities as string[])?.includes('image')).map((m) => m.id);
         if (!multimodalModels.includes('grok-4-0709')) {
             // The endpoint says it doesn't support images, but it does
@@ -3008,7 +3009,7 @@ multimodalModels.post('/moonshot', async (req, res) => {
         }
 
         /** @type {Record<string, unknown>} */
-        const data = await response.json() as any;
+        const data = await response.json() as Record<string, unknown>;
 
         const multimodalModels = (data.data as Array<Record<string, unknown>>).filter((m) => m.supports_image_in).map((m) => m.id);
         return res.json(multimodalModels);
@@ -3038,7 +3039,7 @@ multimodalModels.post('/workers_ai', async (req, res) => {
         }
 
         /** @type {Record<string, unknown>} */
-        const data = await response.json() as any;
+        const data = await response.json() as Record<string, unknown>;
         const models = Array.isArray(data?.result)
             ? (data.result as Array<Record<string, unknown>>)
                 .filter((m) => Array.isArray(m.properties) && (m.properties as Array<Record<string, unknown>>).some((p) => p.property_id === 'vision' && p.value === 'true'))

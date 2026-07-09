@@ -70,7 +70,7 @@ router.post('/text-workers', async (request, response) => {
                 'Client-Agent': agent,
             },
         });
-        const data = await fetchResult.json() as any;
+        const data = await fetchResult.json() as Record<string, unknown>;
         cache.set('workers', data);
         return response.send(data);
     } catch (error) {
@@ -84,7 +84,7 @@ router.post('/text-workers', async (request, response) => {
  */
 async function getHordeTextModelMetadata() {
     const response = await fetch(HORDE_TEXT_MODEL_METADATA_URL);
-    return await response.json() as any;
+    return await response.json() as Record<string, unknown>;
 }
 
 /**
@@ -117,7 +117,7 @@ router.post('/text-models', async (request, response) => {
             },
         });
 
-        let data = await fetchResult.json() as any;
+        let data = await fetchResult.json() as Record<string, unknown>[];
 
         // attempt to fetch and merge models metadata
         try {
@@ -162,7 +162,7 @@ router.post('/cancel-task', async (request, response) => {
             },
         });
 
-        const data = await fetchResult.json() as any;
+        const data = await fetchResult.json() as Record<string, unknown>;
         console.info(`Cancelled Horde task ${taskId}`);
         return response.send(data);
     } catch (error) {
@@ -181,7 +181,7 @@ router.post('/task-status', async (request, response) => {
             },
         });
 
-        const data = await fetchResult.json() as any;
+        const data = await fetchResult.json() as Record<string, unknown>;
         console.info(`Horde task ${taskId} status:`, data);
         return response.send(data);
     } catch (error) {
@@ -213,7 +213,7 @@ router.post('/generate-text', async (request, response) => {
             return response.send({ error: { message } });
         }
 
-        const data = await result.json() as any;
+        const data = await result.json() as Record<string, unknown>;
         return response.send(data);
     } catch (error) {
         console.error(error);

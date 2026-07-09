@@ -1,11 +1,8 @@
 import { AutoCompleteNameResult } from '../autocomplete/AutoCompleteNameResult.js';
 import { AutoCompleteSecondaryNameResult } from '../autocomplete/AutoCompleteSecondaryNameResult.js';
-import { SlashCommand } from './SlashCommand.js';
 import { SlashCommandCommandAutoCompleteOption } from './SlashCommandCommandAutoCompleteOption.js';
 import { SlashCommandEnumAutoCompleteOption } from './SlashCommandEnumAutoCompleteOption.js';
-import { SlashCommandExecutor } from './SlashCommandExecutor.js';
 import { SlashCommandNamedArgumentAutoCompleteOption } from './SlashCommandNamedArgumentAutoCompleteOption.js';
-import { SlashCommandScope } from './SlashCommandScope.js';
 
 export class SlashCommandAutoCompleteNameResult extends AutoCompleteNameResult {
     /**@type {SlashCommandExecutor}*/ executor;

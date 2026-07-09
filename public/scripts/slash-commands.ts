@@ -95,7 +95,6 @@ import { slashCommandReturnHelper } from './slash-commands/SlashCommandReturnHel
 import { accountStorage } from './util/AccountStorage.js';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { SlashCommandDebugController } from './slash-commands/SlashCommandDebugController.js';
-import { SlashCommandScope } from './slash-commands/SlashCommandScope.js';
 import { t } from './i18n.js';
 import { kai_settings } from './kai-settings.js';
 import { instruct_presets, selectContextPreset, selectInstructPreset } from './instruct-mode.js';
@@ -2020,6 +2019,7 @@ export function initDefaultSlashCommands() {
                 toastr.warning(t`No group member found using ${isId ? 'id' : 'string'} ${arg}`);
                 return '';
             }
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic group member field access
             return (groupMember as any)[field];
         }),
         namedArgumentList: [
@@ -4464,7 +4464,7 @@ async function getMessagesCallback(args, value) {
 
     const messages = await Promise.all(messagePromises);
 
-    return messages.filter((m: any) => m !== null).join('\n\n');
+    return messages.filter((m: string | null) => m !== null).join('\n\n');
 }
 
 /**

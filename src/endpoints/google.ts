@@ -151,7 +151,7 @@ export async function getAccessToken(jwtToken: string) {
     }
 
     /** @type {any} */
-    const data = await response.json() as any;
+    const data = await response.json() as Record<string, unknown>;
     return data.access_token;
 }
 
@@ -287,13 +287,13 @@ router.post('/caption-image', async (request, response) => {
         });
 
         if (!result.ok) {
-            const error = await result.json() as any;
+            const error = await result.json() as Record<string, unknown>;
             console.error(`${apiName} API returned error: ${result.status} ${result.statusText}`, error);
             return response.status(500).send({ error: true });
         }
 
-        /** @type {any} */
-        const data = await result.json() as any;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic Gemini API response
+        const data: any = await result.json();
         console.info(`${apiName} captioning response`, data);
 
         const candidates = data?.candidates;
@@ -416,8 +416,8 @@ router.post('/generate-native-tts', async (request, response) => {
             return response.status(result.status).json({ error: errorMessage });
         }
 
-        /** @type {any} */
-        const data = await result.json() as any;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic Gemini API response
+        const data: any = await result.json();
         const audioPart = data?.candidates?.[0]?.content?.parts?.[0];
         const audioData = audioPart?.inlineData?.data;
         const mimeType = audioPart?.inlineData?.mimeType;
@@ -502,8 +502,8 @@ router.post('/generate-image', async (request, response) => {
             return response.status(500).send('Image generation request failed');
         }
 
-        /** @type {any} */
-        const data = await result.json() as any;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic Vertex AI response
+        const data: any = await result.json();
         const imagePart = data?.predictions?.[0]?.bytesBase64Encoded;
 
         if (!imagePart) {
@@ -563,8 +563,8 @@ router.post('/generate-video', async (request, response) => {
             return response.status(500).send('Video generation request failed');
         }
 
-        /** @type {any} */
-        const videoJobData = await videoJobResponse.json() as any;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic AI Studio API
+        const videoJobData: any = await videoJobResponse.json();
         const videoJobName = videoJobData?.name;
 
         if (!videoJobName) {
@@ -597,8 +597,8 @@ router.post('/generate-video', async (request, response) => {
                     return response.status(500).send('Video job status request failed');
                 }
 
-                /** @type {any} */
-                const pollData = await pollResponse.json() as any;
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic Vertex AI response
+                const pollData: any = await pollResponse.json();
                 const jobDone = pollData?.done;
                 console.debug(`${apiName} video job status attempt ${attempt + 1}: ${jobDone ? 'done' : 'running'}`);
 
@@ -625,8 +625,8 @@ router.post('/generate-video', async (request, response) => {
                     return response.status(500).send('Video job status request failed');
                 }
 
-                /** @type {any} */
-                const pollData = await pollResponse.json() as any;
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic Vertex AI response
+                const pollData: any = await pollResponse.json();
                 const jobDone = pollData?.done;
                 console.debug(`${apiName} video job status attempt ${attempt + 1}: ${jobDone ? 'done' : 'running'}`);
 

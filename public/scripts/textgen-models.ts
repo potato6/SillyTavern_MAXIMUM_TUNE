@@ -1409,8 +1409,8 @@ function getOpenRouterModelTemplate(option) {
 
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     return $((`
-        <div class="flex-container flexFlowColumn" title="${DOMPurify.sanitize((model as any).id)}">
-            <div><strong>${DOMPurify.sanitize((model as any).name)}</strong> | ${(model as any).context_length} ctx | <small>${price}</small></div>
+        <div class="flex-container flexFlowColumn" title="${DOMPurify.sanitize((model as Record<string, unknown>).id as string)}">
+            <div><strong>${DOMPurify.sanitize((model as Record<string, unknown>).name as string)}</strong> | ${String((model as Record<string, unknown>).context_length ?? '')} ctx | <small>${price}</small></div>
         </div>
     `));
 }

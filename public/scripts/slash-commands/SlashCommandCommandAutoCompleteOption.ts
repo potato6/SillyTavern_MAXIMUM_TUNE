@@ -1,4 +1,3 @@
-import { SlashCommand } from './SlashCommand.js';
 import { AutoCompleteOption } from '../autocomplete/AutoCompleteOption.js';
 
 export class SlashCommandCommandAutoCompleteOption extends AutoCompleteOption {

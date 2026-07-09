@@ -10,16 +10,16 @@ import localspace from 'localspace';
 import Handlebars from 'handlebars';
 import css from '@adobe/css-tools';
 import Bowser from 'bowser';
-// @ts-expect-error
+// @ts-expect-error no types
 import DiffMatchPatch from 'diff-match-patch';
 import { isProbablyReaderable, Readability } from '@mozilla/readability';
 import SVGInject from '@iconfu/svg-inject';
-// @ts-expect-error
+// @ts-expect-error no types
 import MarkdownIt from 'markdown-it';
 import moment from 'moment';
-// @ts-expect-error
+// @ts-expect-error no types
 import seedrandom from 'seedrandom';
-// @ts-expect-error
+// @ts-expect-error no types
 import droll from 'droll';
 import morphdom from 'morphdom';
 import { toggle as slideToggle } from 'slidetoggle';

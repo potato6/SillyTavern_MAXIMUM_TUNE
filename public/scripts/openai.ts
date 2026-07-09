@@ -171,6 +171,7 @@ const textCompletionModels = [
 
 // @ts-expect-error TS(7034) FIXME: Variable 'biasCache' implicitly has type 'any' in ... Remove this comment to see the full error message
 let biasCache = undefined;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic model data from API response
 export let model_list: any[] = [];
 
 export const chat_completion_sources = {
@@ -1926,8 +1927,8 @@ function getOpenRouterModelTemplate(option) {
 
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     return $((`
-        <div class="flex-container flexFlowColumn" title="${DOMPurify.sanitize((model as any).id)}">
-            <div><strong>${DOMPurify.sanitize((model as any).name)}</strong> | ${(model as any).context_length} ctx | <small>${price}</small></div>
+        <div class="flex-container flexFlowColumn" title="${DOMPurify.sanitize((model as Record<string, unknown>).id as string)}">
+            <div><strong>${DOMPurify.sanitize((model as Record<string, unknown>).name as string)}</strong> | ${String((model as Record<string, unknown>).context_length ?? '')} ctx | <small>${price}</small></div>
         </div>
     `));
 }
@@ -4254,6 +4255,7 @@ class Message {
  * @class MessageCollection
  */
 class MessageCollection {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- heterogeneous collection of Message and MessageCollection
     collection: any[] = [];
     identifier;
 
@@ -4307,7 +4309,7 @@ class MessageCollection {
      * Add a new item to the collection.
      * @param {object} item - The Message or MessageCollection instance to be added.
      */
-    add(item: any) {
+    add(item: Message | MessageCollection) {
         this.collection.push(item);
     }
 

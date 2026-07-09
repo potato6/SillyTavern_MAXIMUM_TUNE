@@ -791,7 +791,7 @@ router.post('/import', validateAvatarUrlMiddleware, function (request, response)
             const lines = data.split('\n');
             const header = lines[0];
 
-            const jsonData: any = JSON.parse(header!);
+            const jsonData: Record<string, unknown> = JSON.parse(header!);
 
             if (!(jsonData.user_name !== undefined || jsonData.name !== undefined || jsonData.chat_metadata !== undefined)) {
                 console.error('Incorrect chat format .jsonl');

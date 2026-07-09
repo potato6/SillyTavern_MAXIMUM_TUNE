@@ -117,7 +117,7 @@ router.post('/generate', async function (request, response_generate) {
                     }
                 }
 
-                const data = await response.json() as any;
+                const data = await response.json() as Record<string, unknown>;
                 console.debug('Endpoint response:', data);
                 return response_generate.send(data);
             }
@@ -187,9 +187,9 @@ router.post('/status', async function (request, response) {
     // @ts-expect-error TS(2339) FIXME: Property 'koboldCppVersion' does not exist on type... Remove this comment to see the full error message
     result.koboldCppVersion = koboldExtraResponse.result;
     // @ts-expect-error TS(2339) FIXME: Property 'result' does not exist on type '{}'.
-    result.model = !koboldModelResponse || (koboldModelResponse as any).result === 'ReadOnly' ?
+    result.model = !koboldModelResponse || (koboldModelResponse as Record<string, unknown>).result === 'ReadOnly' ?
         'no_connection' :
-        (koboldModelResponse as any).result;
+        (koboldModelResponse as Record<string, unknown>).result;
 
     response.send(result);
 });
@@ -236,7 +236,7 @@ router.post('/transcribe-audio', async function (request, response) {
             return response.status(500).send(text);
         }
 
-        const data = await result.json() as any;
+        const data = await result.json() as Record<string, unknown>;
         console.debug('KoboldCpp transcription response', data);
         return response.json(data);
     } catch (error) {
@@ -270,7 +270,7 @@ router.post('/embed', async function (request, response) {
             }),
         });
 
-        /** @type {any} */
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- API response shape unknown, needs dynamic access
         const data = await embeddingsResult.json() as any;
 
         if (!Array.isArray(data?.data)) {

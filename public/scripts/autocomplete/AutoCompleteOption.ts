@@ -1,5 +1,3 @@
-import { AutoCompleteFuzzyScore } from './AutoCompleteFuzzyScore.js';
-
 
 export class AutoCompleteOption {
     /** @type {string} */ name;

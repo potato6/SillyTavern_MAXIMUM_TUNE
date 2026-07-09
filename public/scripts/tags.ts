@@ -13,7 +13,7 @@ import {
     DEFAULT_PRINT_TIMEOUT,
     printCharacters,
 } from '../script.js';
-import { FILTER_TYPES, FILTER_STATES, DEFAULT_FILTER_STATE, isFilterState, FilterHelper } from './filters.js';
+import { FILTER_TYPES, FILTER_STATES, DEFAULT_FILTER_STATE, isFilterState } from './filters.js';
 
 
 import { groupCandidatesFilter, groupMembersFilter, groups, selected_group } from './group-chats.js';

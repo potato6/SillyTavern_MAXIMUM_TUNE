@@ -1,4 +1,3 @@
-import { SlashCommandClosure } from './SlashCommandClosure.js';
 import { convertValueType } from '../utils.js';
 
 export class SlashCommandScope {

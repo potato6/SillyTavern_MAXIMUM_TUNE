@@ -58,7 +58,7 @@ router.post('/credits', async (req, res) => {
             return res.sendStatus(500);
         }
 
-        const balanceData = await balanceReq.value.json() as any;
+        const balanceData = await balanceReq.value.json() as Record<string, unknown>;
         const result = {
             usd_balance: parseNumber(balanceData.usd_balance),
             nano_balance: parseNumber(balanceData.nano_balance),
@@ -66,7 +66,8 @@ router.post('/credits', async (req, res) => {
         };
 
         if (subReq.status === 'fulfilled' && subReq.value.ok) {
-            const subData = await subReq.value.json() as any;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic NanoGPT subscription API
+            const subData: any = await subReq.value.json();
             if (subData.active) {
                 // @ts-expect-error TS(2322) FIXME: Type '{ active: boolean; state: string; allowOvera... Remove this comment to see the full error message
                 result.subscription = {
@@ -119,8 +120,7 @@ router.post('/models/providers', async (req, res) => {
             return res.json({ supportsProviderSelection: false, providers: [] });
         }
 
-        /** @type {any} */
-        const data = await response.json() as any;
+        const data = await response.json() as Record<string, unknown>;
         const providers = Array.isArray(data?.providers)
             ? data.providers.filter((p: Record<string, unknown>) => p?.available !== false).map((p: Record<string, unknown>) => p.provider).filter(Boolean)
             : [];

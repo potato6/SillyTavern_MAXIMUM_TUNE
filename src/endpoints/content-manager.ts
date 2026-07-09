@@ -418,6 +418,7 @@ async function downloadChubLorebook(id: string) {
         throw new Error('Failed to fetch lorebook metadata');
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- API response shape unknown
     const metadata = await result.json() as any;
     const projectId = metadata.node?.id;
 
@@ -533,6 +534,7 @@ async function downloadPygmalionCharacter(id: string) {
     }
 
     try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic nested API response access
         const avatarUrl = (characterData as Record<string, any>)?.data?.avatar;
 
         if (!avatarUrl) {
@@ -622,7 +624,7 @@ async function downloadJannyCharacter(uuid: string) {
 
     if (result.ok) {
         /** @type {{ status: string; downloadUrl: string }} */
-        const downloadResult = await result.json() as any;
+        const downloadResult = await result.json() as { status: string; downloadUrl: string };
         if (downloadResult.status === 'ok') {
             const imageResult = await fetch(downloadResult.downloadUrl);
             const buffer = Buffer.from(await imageResult.arrayBuffer());

@@ -1,4 +1,3 @@
-import { SlashCommandClosure } from './SlashCommandClosure.js';
 
 export class SlashCommandNamedArgumentAssignment {
     // @ts-expect-error TS(7008) FIXME: Member 'start' implicitly has an 'any' type.

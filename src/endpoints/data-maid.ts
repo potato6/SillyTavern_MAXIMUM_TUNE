@@ -22,26 +22,6 @@ interface DataMaidRawReport {
     settingsBackups: string[];
 }
 
-interface DataMaidSanitizedRecord {
-    name: string;
-    hash: string;
-    parent?: string;
-    size?: number;
-    mtime?: number;
-}
-
-interface DataMaidSanitizedReport {
-    images: DataMaidSanitizedRecord[];
-    files: DataMaidSanitizedRecord[];
-    chats: DataMaidSanitizedRecord[];
-    groupChats: DataMaidSanitizedRecord[];
-    avatarThumbnails: DataMaidSanitizedRecord[];
-    backgroundThumbnails: DataMaidSanitizedRecord[];
-    personaThumbnails: DataMaidSanitizedRecord[];
-    chatBackups: DataMaidSanitizedRecord[];
-    settingsBackups: DataMaidSanitizedRecord[];
-}
-
 interface DataMaidFile {
     url: string;
 }
@@ -67,11 +47,6 @@ interface DataMaidChatMetadata {
 interface DataMaidMessage {
     extra?: DataMaidMessageExtra;
     chat_metadata?: DataMaidChatMetadata;
-}
-
-interface DataMaidTokenEntry {
-    handle: string;
-    paths: { path: string; hash: string }[];
 }
 
 /**

@@ -88,8 +88,8 @@ router.post('/generate-voice', async (request, response) => {
 
             try {
                 // Try to parse JSON error response
-                /** @type {any} */
-                const errorData = await apiResponse.json() as any;
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic MiniMax API error
+                const errorData: any = await apiResponse.json();
                 console.error('MiniMax TTS API error (JSON):', errorData);
 
                 // Check for MiniMax specific error format
@@ -124,10 +124,10 @@ router.post('/generate-voice', async (request, response) => {
         }
 
         // Parse the response
-        /** @type {any} */
-        let responseData;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic MiniMax API response
+        let responseData: any;
         try {
-            responseData = await apiResponse.json() as any;
+            responseData = await apiResponse.json();
             console.debug('MiniMax TTS Response received');
         } catch (jsonError) {
             console.error('MiniMax TTS: Failed to parse response as JSON:', jsonError);

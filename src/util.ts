@@ -1410,7 +1410,7 @@ export function flattenSchema(schema: Record<string, unknown>, api: string) {
     }
 
     const flattenedSchema = resolve(schemaCopy);
-    delete (flattenedSchema as any).$schema;
+    delete (flattenedSchema as Record<string, unknown>).$schema;
     return flattenedSchema;
 }
 

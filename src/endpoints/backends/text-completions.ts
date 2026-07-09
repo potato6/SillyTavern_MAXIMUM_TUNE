@@ -161,7 +161,7 @@ router.post('/status', async function (request, response) {
                     });
                 }
 
-        /** @type {any} */
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- API response shape is dynamic and heavily manipulated
         let data = await modelsReply.json() as any;
 
         // Rewrap to OAI-like response
@@ -197,7 +197,7 @@ router.post('/status', async function (request, response) {
                 const modelInfoReply = await fetch(modelInfoUrl, args);
 
                 if (modelInfoReply.ok) {
-                    /** @type {any} */
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- API response shape unknown
                     const modelInfo = await modelInfoReply.json() as any;
                     console.debug('Ooba model info:', modelInfo);
 
@@ -214,7 +214,7 @@ router.post('/status', async function (request, response) {
                 const modelInfoReply = await fetch(modelInfoUrl, args);
 
                 if (modelInfoReply.ok) {
-                    /** @type {any} */
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- API response shape unknown
                     const modelInfo = await modelInfoReply.json() as any;
                     console.debug('Tabby model info:', modelInfo);
 
@@ -260,7 +260,7 @@ router.post('/props', async function (request, response) {
             return response.sendStatus(400);
         }
 
-        /** @type {any} */
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- API response shape unknown, needs dynamic property access
         const props = await propsReply.json() as any;
         // TEMPORARY: llama.cpp's /props endpoint has a bug which replaces the last newline with a \0
         if (apiType === TEXTGEN_TYPES.LLAMACPP && props.chat_template && props.chat_template.endsWith('\u0000')) {
@@ -418,7 +418,7 @@ router.post('/generate', async function (request, response) {
             const completionsReply = await fetch(url, args);
 
             if (completionsReply.ok) {
-                /** @type {any} */
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any -- API response shape unknown, needs dynamic property access
                 const data = await completionsReply.json() as any;
                 console.debug('Endpoint response:', data);
 
@@ -479,6 +479,7 @@ ollama.post('/download', async function (request, response) {
             return response.status(500).send({ error: true });
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- API response shape unknown
         console.debug('Ollama pull response:', await fetchResponse.json() as any);
         return response.send({ ok: true });
     } catch (error) {
@@ -513,7 +514,7 @@ ollama.post('/caption-image', async function (request, response) {
             return response.status(500).send({ error: true });
         }
 
-        /** @type {any} */
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- API response shape unknown
         const data = await fetchResponse.json() as any;
         console.debug('Ollama caption response:', data);
 
@@ -551,7 +552,7 @@ llamacpp.post('/props', async function (request, response) {
             return response.status(500).send({ error: true });
         }
 
-        const data = await fetchResponse.json() as any;
+        const data = await fetchResponse.json() as Record<string, unknown>;
         console.debug('LlamaCpp props response:', data);
 
         return response.send(data);
@@ -600,7 +601,7 @@ llamacpp.post('/slots', async function (request, response) {
             return response.status(500).send({ error: true });
         }
 
-        const data = await fetchResponse.json() as any;
+        const data = await fetchResponse.json() as Record<string, unknown>;
         console.debug('LlamaCpp slots response:', data);
 
         return response.send(data);
@@ -631,7 +632,7 @@ tabby.post('/download', async function (request, response) {
         });
 
         if (permissionResponse.ok) {
-            /** @type {any} */
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any -- API response shape unknown
             const permissionJson = await permissionResponse.json() as any;
 
             if (permissionJson.permission !== 'admin') {
