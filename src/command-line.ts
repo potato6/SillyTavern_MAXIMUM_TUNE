@@ -288,6 +288,7 @@ export class CommandLineParser {
 
         const dataRoot = isGlobal
             ? defaultConfig.dataRoot
+            // @ts-expect-error getConfigValue defaultValue type is null
             : (cliArguments.dataRoot ?? getConfigValue('dataRoot', defaultConfig.dataRoot));
         try {
             if (!fs.existsSync(dataRoot)) {
