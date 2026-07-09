@@ -53,6 +53,7 @@ export class TavernCardValidator {
         const requiredFields = ['name', 'description', 'personality', 'scenario', 'first_mes', 'mes_example'];
         return requiredFields.every(field => {
             if (!Object.hasOwn(this.card, field)) {
+                // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'null'.
                 this.#lastValidationError = field;
                 return false;
             }
@@ -83,6 +84,7 @@ export class TavernCardValidator {
 
     #validateSpecV2() {
         if (this.card.spec !== 'chara_card_v2') {
+            // @ts-expect-error TS(2322) FIXME: Type '"spec"' is not assignable to type 'null'.
             this.#lastValidationError = 'spec';
             return false;
         }
@@ -91,6 +93,7 @@ export class TavernCardValidator {
 
     #validateSpecVersionV2() {
         if (this.card.spec_version !== '2.0') {
+            // @ts-expect-error TS(2322) FIXME: Type '"spec_version"' is not assignable to type 'n... Remove this comment to see the full error message
             this.#lastValidationError = 'spec_version';
             return false;
         }
@@ -101,23 +104,28 @@ export class TavernCardValidator {
         const data = this.card.data;
 
         if (!data) {
+            // @ts-expect-error TS(2322) FIXME: Type '"No tavern card data found"' is not assignab... Remove this comment to see the full error message
             this.#lastValidationError = 'No tavern card data found';
             return false;
         }
 
         const requiredFields = ['name', 'description', 'personality', 'scenario', 'first_mes', 'mes_example', 'creator_notes', 'system_prompt', 'post_history_instructions', 'alternate_greetings', 'tags', 'creator', 'character_version', 'extensions'];
         const isAllRequiredFieldsPresent = requiredFields.every(field => {
+            // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
             if (!Object.hasOwn(data, field)) {
+                // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'null'.
                 this.#lastValidationError = `data.${field}`;
                 return false;
             }
             return true;
         });
 
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         return isAllRequiredFieldsPresent && Array.isArray(data.alternate_greetings) && Array.isArray(data.tags) && typeof data.extensions === 'object';
     }
 
     #validateCharacterBookV2() {
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         const characterBook = this.card.data.character_book;
 
         if (!characterBook) {
@@ -127,6 +135,7 @@ export class TavernCardValidator {
         const requiredFields = ['extensions', 'entries'];
         const isAllRequiredFieldsPresent = requiredFields.every(field => {
             if (!Object.hasOwn(characterBook, field)) {
+                // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'null'.
                 this.#lastValidationError = `data.character_book.${field}`;
                 return false;
             }
@@ -138,6 +147,7 @@ export class TavernCardValidator {
 
     #validateSpecV3() {
         if (this.card.spec !== 'chara_card_v3') {
+            // @ts-expect-error TS(2322) FIXME: Type '"spec"' is not assignable to type 'null'.
             this.#lastValidationError = 'spec';
             return false;
         }
@@ -146,6 +156,7 @@ export class TavernCardValidator {
 
     #validateSpecVersionV3() {
         if (Number(this.card.spec_version) < 3.0 || Number(this.card.spec_version) >= 4.0) {
+            // @ts-expect-error TS(2322) FIXME: Type '"spec_version"' is not assignable to type 'n... Remove this comment to see the full error message
             this.#lastValidationError = 'spec_version';
             return false;
         }
@@ -156,6 +167,7 @@ export class TavernCardValidator {
         const data = this.card.data;
 
         if (!data || typeof data !== 'object') {
+            // @ts-expect-error TS(2322) FIXME: Type '"No tavern card data found"' is not assignab... Remove this comment to see the full error message
             this.#lastValidationError = 'No tavern card data found';
             return false;
         }

@@ -1,9 +1,12 @@
 import { Buffer } from 'node:buffer';
+// @ts-expect-error TS(1192) FIXME: Module '"node:fs"' has no default export.
 import fs from 'node:fs';
+// @ts-expect-error TS(1259) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import express from 'express';
 import fetch from 'node-fetch';
-// @ts-expect-error TS(2792): Cannot find module 'form-data'. Did you mean to se... Remove this comment to see the full error message
+// @ts-expect-error TS(2792) FIXME: Cannot find module 'form-data'. Did you mean to se... Remove this comment to see the full error message
 import FormData from 'form-data';
+// @ts-expect-error TS(1192) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import mime from 'mime-types';
 import { forwardFetchResponse } from '../util.js';
 import { readSecret, SECRET_KEYS } from './secrets.js';
@@ -12,6 +15,7 @@ export const router = express.Router();
 
 const pollinations = express.Router();
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
 pollinations.post('/voices', async (req, res) => {
     try {
         const model = req.body.model || 'openai-audio';
@@ -41,6 +45,7 @@ pollinations.post('/voices', async (req, res) => {
     }
 });
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
 pollinations.post('/generate', async (req, res) => {
     try {
         const key = readSecret(req.user.directories, SECRET_KEYS.POLLINATIONS);
@@ -103,6 +108,7 @@ router.use('/pollinations', pollinations);
 
 const elevenlabs = express.Router();
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
 elevenlabs.post('/voices', async (req, res) => {
     try {
         const apiKey = readSecret(req.user.directories, SECRET_KEYS.ELEVENLABS);
@@ -131,6 +137,7 @@ elevenlabs.post('/voices', async (req, res) => {
     }
 });
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
 elevenlabs.post('/voice-settings', async (req, res) => {
     try {
         const apiKey = readSecret(req.user.directories, SECRET_KEYS.ELEVENLABS);
@@ -158,7 +165,7 @@ elevenlabs.post('/voice-settings', async (req, res) => {
     }
 });
 
-// @ts-expect-error TS(7030): Not all code paths return a value.
+// @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
 elevenlabs.post('/synthesize', async (req, res) => {
     try {
         const apiKey = readSecret(req.user.directories, SECRET_KEYS.ELEVENLABS);
@@ -199,6 +206,7 @@ elevenlabs.post('/synthesize', async (req, res) => {
     }
 });
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
 elevenlabs.post('/history', async (req, res) => {
     try {
         const apiKey = readSecret(req.user.directories, SECRET_KEYS.ELEVENLABS);
@@ -227,7 +235,7 @@ elevenlabs.post('/history', async (req, res) => {
     }
 });
 
-// @ts-expect-error TS(7030): Not all code paths return a value.
+// @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
 elevenlabs.post('/history-audio', async (req, res) => {
     try {
         const apiKey = readSecret(req.user.directories, SECRET_KEYS.ELEVENLABS);
@@ -264,6 +272,7 @@ elevenlabs.post('/history-audio', async (req, res) => {
     }
 });
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
 elevenlabs.post('/voices/add', async (req, res) => {
     try {
         const apiKey = readSecret(req.user.directories, SECRET_KEYS.ELEVENLABS);
@@ -316,6 +325,7 @@ elevenlabs.post('/voices/add', async (req, res) => {
     }
 });
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
 elevenlabs.post('/recognize', async (req, res) => {
     try {
         const apiKey = readSecret(req.user.directories, SECRET_KEYS.ELEVENLABS);

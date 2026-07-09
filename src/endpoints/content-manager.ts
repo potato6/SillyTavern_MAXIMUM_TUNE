@@ -1,11 +1,15 @@
+// @ts-expect-error TS(1192) FIXME: Module '"node:fs"' has no default export.
 import fs from 'node:fs';
+// @ts-expect-error TS(1259) FIXME: Module '"node:path"' can only be default-imported ... Remove this comment to see the full error message
 import path from 'node:path';
+// @ts-expect-error TS(1192) FIXME: Module '"node:zlib"' has no default export.
 import zlib from 'node:zlib';
 import { Buffer } from 'node:buffer';
 
+// @ts-expect-error TS(1259) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import express from 'express';
 import fetch from 'node-fetch';
-// @ts-expect-error TS(2792): Cannot find module 'sanitize-filename'. Did you me... Remove this comment to see the full error message
+// @ts-expect-error TS(2792) FIXME: Cannot find module 'sanitize-filename'. Did you me... Remove this comment to see the full error message
 import sanitize from 'sanitize-filename';
 import { sync as writeFileAtomicSync } from 'write-file-atomic';
 
@@ -19,6 +23,7 @@ const scaffoldDirectory = path.join(serverDirectory, 'default/scaffold');
 const contentIndexPath = path.join(contentDirectory, 'index.json');
 const scaffoldIndexPath = path.join(scaffoldDirectory, 'index.json');
 
+// @ts-expect-error TS(2345) FIXME: Argument of type 'never[]' is not assignable to pa... Remove this comment to see the full error message
 const WHITELIST_GENERIC_URL_DOWNLOAD_SOURCES = getConfigValue('whitelistImportDomains', []);
 const USER_AGENT = 'SillyTavern';
 
@@ -83,6 +88,7 @@ function getScopeByType(type: string) {
  * @param {import('../users.js').UserDirectoryList} directories User directories
  * @returns {object[]} Array of default presets
  */
+// @ts-expect-error TS(2694) FIXME: Namespace '"/mnt/DISCO/downloads/some_git_projects... Remove this comment to see the full error message
 export function getDefaultPresets(directories: import('../users.js').UserDirectoryList) {
     try {
         const contentIndex = getContentIndex(CONTENT_SCOPE.USER);
@@ -132,6 +138,7 @@ export function getDefaultPresetFile(filename: string) {
  * @param {string[]} [forceCategories] List of categories to force check (even if content check is skipped)
  * @returns {boolean} Whether any content was added
  */
+// @ts-expect-error TS(2304) FIXME: Cannot find name 'ContentItem'.
 function seedContent(contentIndex: ContentItem[], contentLogPath: string, resolveTarget: (type: string) => string | null, forceCategories?: string[]) {
     let anyContentAdded = false;
     const contentLog = getContentLog(contentLogPath);
@@ -187,6 +194,7 @@ function seedContent(contentIndex: ContentItem[], contentLogPath: string, resolv
  * @param {string[]} forceCategories List of categories to force check (even if content check is skipped)
  * @returns {Promise<boolean>} Whether any content was added
  */
+// @ts-expect-error TS(2304) FIXME: Cannot find name 'ContentItem'.
 async function seedContentForUser(contentIndex: ContentItem[], directories: import('../users.js').UserDirectoryList, forceCategories: string[]) {
     if (!fs.existsSync(directories.root)) {
         fs.mkdirSync(directories.root, { recursive: true });
@@ -201,9 +209,9 @@ async function seedContentForUser(contentIndex: ContentItem[], directories: impo
  * @param {ContentItem[]} contentIndex Content index
  * @returns {Promise<boolean>} Whether any content was added
  */
+// @ts-expect-error TS(2304) FIXME: Cannot find name 'ContentItem'.
 async function seedGlobalContent(contentIndex: ContentItem[]) {
     const contentLogPath = path.join(globalThis.DATA_ROOT, 'content.log');
-    // @ts-expect-error TS(2554): Expected 4 arguments, but got 3.
     return seedContent(contentIndex, contentLogPath, getGlobalTargetByType);
 }
 
@@ -213,8 +221,10 @@ async function seedGlobalContent(contentIndex: ContentItem[]) {
  * @param {string[]} forceCategories List of categories to force check (even if content check is skipped)
  * @returns {Promise<void>}
  */
+// @ts-expect-error TS(2694) FIXME: Namespace '"/mnt/DISCO/downloads/some_git_projects... Remove this comment to see the full error message
 export async function checkForNewContent(directoriesList: import('../users.js').UserDirectoryList[], forceCategories: string[] = []) {
     try {
+        // @ts-expect-error TS(2345) FIXME: Argument of type 'false' is not assignable to para... Remove this comment to see the full error message
         const contentCheckSkip = getConfigValue('skipContentCheck', false, 'boolean');
         if (contentCheckSkip && forceCategories?.length === 0) {
             return;
@@ -324,6 +334,7 @@ export function getContentOfType(type: string, format: 'json' | 'string' | 'raw'
  * @param {import('../users.js').UserDirectoryList} directories User directories
  * @returns {string | null} Target directory
  */
+// @ts-expect-error TS(2694) FIXME: Namespace '"/mnt/DISCO/downloads/some_git_projects... Remove this comment to see the full error message
 export function getUserTargetByType(type: string, directories: import('../users.js').UserDirectoryList) {
     switch (type) {
         case CONTENT_TYPES.SETTINGS:
@@ -583,6 +594,7 @@ function parseChubUrl(str: string) {
 
     const lastTwo = domainIndex !== -1 ? splitStr.slice(domainIndex + 1) : splitStr;
 
+    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
     const firstPart = lastTwo[0].toLowerCase();
 
     if (firstPart === 'characters' || firstPart === 'lorebooks') {
@@ -706,6 +718,7 @@ async function downloadGenericPng(url: string) {
 
         if (result.ok) {
             const buffer = Buffer.from(await result.arrayBuffer());
+            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             let fileName = sanitize(result.url.split('?')[0].split('/').reverse()[0]);
             const contentType = result.headers.get('content-type') || 'image/png'; //yoink it from AICC function lol
 
@@ -917,6 +930,7 @@ async function fetchPerchanceAvatar(avatarUrl: string, isAvatarBase64: boolean) 
         // check if avatarUrl is a png
         const isPng = avatarUrl.startsWith('data:image/png;base64,');
         const base64 = avatarUrl.split(',')[1];
+        // @ts-expect-error TS(2769) FIXME: No overload matches this call.
         const buffer = Buffer.from(base64, 'base64');
 
         if (isPng) {
@@ -997,6 +1011,7 @@ export function isHostWhitelisted(host: string) {
 
 export const router = express.Router();
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/importURL', async (request, response) => {
     if (!request.body.url) {
         return response.sendStatus(400);
@@ -1090,6 +1105,7 @@ router.post('/importURL', async (request, response) => {
     }
 });
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/importUUID', async (request, response) => {
     if (!request.body.url) {
         return response.sendStatus(400);

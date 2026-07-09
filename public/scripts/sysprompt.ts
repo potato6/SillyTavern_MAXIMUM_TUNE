@@ -14,15 +14,15 @@ import { isTrueBoolean, resetScrollHeight } from './utils.js';
 
 export let system_prompts = [];
 
-// @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+// @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
 const $enabled = $('#sysprompt_enabled');
-// @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+// @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
 const $select = $('#sysprompt_select');
-// @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+// @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
 const $content = $('#sysprompt_content');
-// @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+// @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
 const $postHistory = $('#sysprompt_post_history');
-// @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+// @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
 const $contentBlock = $('#SystemPromptBlock');
 
 /**
@@ -30,14 +30,15 @@ const $contentBlock = $('#SystemPromptBlock');
  */
 async function migrateSystemPromptFromInstructMode() {
     if ('system_prompt' in power_user.instruct) {
-        // @ts-expect-error TS(2339): Property 'system_prompt' does not exist on type '{... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'system_prompt' does not exist on type '{... Remove this comment to see the full error message
         const prompt = String(power_user.instruct.system_prompt);
-        // @ts-expect-error TS(2339): Property 'system_prompt' does not exist on type '{... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'system_prompt' does not exist on type '{... Remove this comment to see the full error message
         delete power_user.instruct.system_prompt;
         power_user.sysprompt.enabled = power_user.instruct.enabled;
         power_user.sysprompt.content = prompt;
         power_user.sysprompt.post_history = '';
 
+        // @ts-expect-error TS(2339) FIXME: Property 'content' does not exist on type 'never'.
         const existingPromptName = system_prompts.find(x => x.content === prompt)?.name;
 
         if (existingPromptName) {
@@ -49,7 +50,7 @@ async function migrateSystemPromptFromInstructMode() {
         }
 
         saveSettingsDebounced();
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.info('System prompt settings have been moved from the Instruct Mode.', 'Migration notice', { timeOut: 5000 });
     }
 }
@@ -58,6 +59,7 @@ async function migrateSystemPromptFromInstructMode() {
  * Loads sysprompt settings from the given data object.
  * @param {object} data Settings data object.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
 export async function loadSystemPrompts(data) {
     if (data.sysprompt !== undefined) {
         system_prompts = data.sysprompt;
@@ -67,9 +69,10 @@ export async function loadSystemPrompts(data) {
     toggleSystemPromptDisabledControls();
 
     for (const prompt of system_prompts) {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const option = document.createElement('option');
+        // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
         option.value = prompt.name;
+        // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
         option.textContent = prompt.name;
         $select.append(option);
     }
@@ -88,11 +91,13 @@ export async function loadSystemPrompts(data) {
  * @param {string} name Name of the instruct template
  * @param {object} template Instruct template object
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
 export async function checkForSystemPromptInInstructTemplate(name, template) {
     if (!template || !name || typeof name !== 'string' || typeof template !== 'object') {
         return;
     }
     if ('system_prompt' in template && template.system_prompt) {
+        // @ts-expect-error TS(2339) FIXME: Property 'content' does not exist on type 'never'.
         const existingName = system_prompts.find(x => x.content === template.system_prompt)?.name;
         const html = await renderTemplateAsync('migrateInstructPrompt', { prompt: template.system_prompt, existing: existingName });
         const confirm = await callGenericPopup(html, POPUP_TYPE.CONFIRM);
@@ -101,10 +106,10 @@ export async function checkForSystemPromptInInstructTemplate(name, template) {
             const prompt = { name: migratedName, content: template.system_prompt };
             const presetManager = getPresetManager('sysprompt');
             await presetManager.savePreset(migratedName, prompt);
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.success(`System prompt "${migratedName}" has been saved.`);
         } else {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.info('System prompt has been discarded.');
         }
 
@@ -116,6 +121,7 @@ export async function checkForSystemPromptInInstructTemplate(name, template) {
  *
  */
 function toggleSystemPromptDisabledControls() {
+    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     document.getElementById('sysprompt_enabled').parentElement.querySelector('i').classList.toggle('toggleEnabled', !!power_user.sysprompt.enabled);
     $contentBlock.toggleClass('disabled', !power_user.sysprompt.enabled);
 }
@@ -125,6 +131,7 @@ function toggleSystemPromptDisabledControls() {
  * @param {boolean} state System prompt state
  * @returns {string} Empty string
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'state' implicitly has an 'any' type.
 function setSystemPromptStateCallback(state) {
     power_user.sysprompt.enabled = state;
     $enabled.prop('checked', state);
@@ -138,6 +145,7 @@ function setSystemPromptStateCallback(state) {
  * @param _args
  * @param state
  */
+// @ts-expect-error TS(7006) FIXME: Parameter '_args' implicitly has an 'any' type.
 function toggleSystemPromptCallback(_args, state) {
     if (!state || typeof state !== 'string') {
         return String(power_user.sysprompt.enabled);
@@ -153,6 +161,7 @@ function toggleSystemPromptCallback(_args, state) {
  * @param args
  * @param name
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
 function selectSystemPromptCallback(args, name) {
     if (!power_user.sysprompt.enabled && !isTrueBoolean(args.forceGet)) {
         return '';
@@ -163,6 +172,7 @@ function selectSystemPromptCallback(args, name) {
     }
 
     const quiet = isTrueBoolean(args?.quiet);
+    // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
     const systemPromptNames = system_prompts.map(preset => preset.name);
     let foundName = systemPromptNames.find(x => x.toLowerCase() === name.toLowerCase());
 
@@ -171,7 +181,7 @@ function selectSystemPromptCallback(args, name) {
         const result = fuse.search(name);
 
         if (result.length === 0) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             if (!quiet) toastr.warning(`System prompt "${name}" not found`);
             return '';
         }
@@ -180,7 +190,7 @@ function selectSystemPromptCallback(args, name) {
     }
 
     $select.val(foundName).trigger('change');
-    // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+    // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
     if (!quiet) toastr.success(`System prompt "${foundName}" selected`);
     return foundName;
 }
@@ -190,7 +200,7 @@ function selectSystemPromptCallback(args, name) {
  */
 export function initSystemPrompts() {
     $enabled.on('input', function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         power_user.sysprompt.enabled = !!$(this).prop('checked');
         toggleSystemPromptDisabledControls();
         saveSettingsDebounced();
@@ -201,11 +211,14 @@ export function initSystemPrompts() {
             $enabled.prop('checked', true).trigger('input');
         }
 
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const name = String($(this).val());
+        // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
         const prompt = system_prompts.find(p => p.name === name);
         if (prompt) {
+            // @ts-expect-error TS(2339) FIXME: Property 'content' does not exist on type 'never'.
             $content.val(prompt.content || '');
+            // @ts-expect-error TS(2339) FIXME: Property 'post_history' does not exist on type 'ne... Remove this comment to see the full error message
             $postHistory.val(prompt.post_history || '');
 
             if (!CSS.supports('field-sizing', 'content')) {
@@ -214,20 +227,22 @@ export function initSystemPrompts() {
             }
 
             power_user.sysprompt.name = name;
+            // @ts-expect-error TS(2339) FIXME: Property 'content' does not exist on type 'never'.
             power_user.sysprompt.content = prompt.content || '';
+            // @ts-expect-error TS(2339) FIXME: Property 'post_history' does not exist on type 'ne... Remove this comment to see the full error message
             power_user.sysprompt.post_history = prompt.post_history || '';
         }
         saveSettingsDebounced();
     });
 
     $content.on('input', function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         power_user.sysprompt.content = String($(this).val());
         saveSettingsDebounced();
     });
 
     $postHistory.on('input', function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         power_user.sysprompt.post_history = String($(this).val());
         saveSettingsDebounced();
     });
@@ -257,6 +272,7 @@ export function initSystemPrompts() {
             SlashCommandArgument.fromProps({
                 description: 'system prompt name',
                 typeList: [ARGUMENT_TYPE.STRING],
+                // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
                 enumProvider: () => system_prompts.map(x => new SlashCommandEnumValue(x.name, null, enumTypes.enum, enumIcons.preset)),
             }),
         ],

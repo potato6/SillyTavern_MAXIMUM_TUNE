@@ -42,6 +42,7 @@ export class SlashCommandParserError extends Error {
         return hint.join('\n');
     }
 
+    // @ts-expect-error TS(7006) FIXME: Parameter 'message' implicitly has an 'any' type.
     constructor(message, text, index) {
         super(message);
         this.text = text;

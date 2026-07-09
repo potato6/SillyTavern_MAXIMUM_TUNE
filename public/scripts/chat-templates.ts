@@ -110,6 +110,7 @@ const substr_derivations = [
     ['ChatML', ['<|im_start|>user', '<|im_start|>assistant', '<|im_end|>']],
 ];
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'derivation' implicitly has an 'any' typ... Remove this comment to see the full error message
 const parse_derivation = derivation => (typeof derivation === 'string') ? {
     'context': derivation,
     'instruct': derivation,
@@ -122,6 +123,7 @@ const not_found = { context: null, instruct: null };
  * @param chat_template
  * @param hash
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'chat_template' implicitly has an 'any' ... Remove this comment to see the full error message
 export async function deriveTemplatesFromChatTemplate(chat_template, hash) {
     if (chat_template.trim() === '') {
         console.log('Missing chat template.');
@@ -129,6 +131,7 @@ export async function deriveTemplatesFromChatTemplate(chat_template, hash) {
     }
 
     if (hash in hash_derivations) {
+        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         return parse_derivation(hash_derivations[hash]);
     }
 
@@ -148,6 +151,7 @@ export async function deriveTemplatesFromChatTemplate(chat_template, hash) {
  * @param power_user
  * @param online_status
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'power_user' implicitly has an 'any' typ... Remove this comment to see the full error message
 export async function bindModelTemplates(power_user, online_status) {
     if (online_status === 'no_connection') {
         return false;
@@ -167,7 +171,7 @@ export async function bindModelTemplates(power_user, online_status) {
         // unmap current preset
         delete power_user.model_templates_mappings[chatTemplateHash];
         delete power_user.model_templates_mappings[online_status];
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.info(t`Context preset for ${online_status} will use defaults when loaded the next time.`);
     } else {
         if (power_user.context_derived) {
@@ -179,7 +183,7 @@ export async function bindModelTemplates(power_user, online_status) {
                 bindModelTemplates.context = power_user.context.preset;
             }
         } else {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.warning(t`Note: Context derivation is disabled. Not including context preset.`);
         }
         if (power_user.instruct.enabled) {
@@ -189,17 +193,17 @@ export async function bindModelTemplates(power_user, online_status) {
                     bindModelTemplates.instruct = power_user.instruct.preset;
                 }
             } else {
-                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                 toastr.warning(t`Note: Instruct derivation is disabled. Not including instruct preset.`);
             }
         }
         if (bound.length == 0) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.warning(t`No applicable presets available.`);
             return false;
         }
 
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.info(t`Bound ${online_status} to ${bound.join(', ')}.`);
         if (!online_status.startsWith('koboldcpp/ggml-model-')) {
             power_user.model_templates_mappings[online_status] = bindModelTemplates;

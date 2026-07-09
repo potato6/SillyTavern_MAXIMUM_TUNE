@@ -160,6 +160,7 @@ export function createEmptyFlags() {
  * @param {string[]} flagSymbols - Array of flag symbol strings (e.g., ['!', '?']).
  * @returns {MacroFlags}
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'flagSymbols' implicitly has an 'any' ty... Remove this comment to see the full error message
 export function parseFlags(flagSymbols) {
     const flags = createEmptyFlags();
 
@@ -186,6 +187,7 @@ export function parseFlags(flagSymbols) {
             default:
                 console.warn(`Can't parse unknown macro flag: ${symbol}`);
         }
+        // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
         flags.raw.push(symbol);
     }
 
@@ -197,6 +199,7 @@ export function parseFlags(flagSymbols) {
  * @param {MacroFlags} flags - The flags object to check.
  * @returns {boolean} True if at least one flag is set.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'flags' implicitly has an 'any' type.
 export function hasAnyFlag(flags) {
     return flags.raw.length > 0;
 }
@@ -206,6 +209,7 @@ export function hasAnyFlag(flags) {
  * @param {string} symbol - The flag symbol (e.g., '!').
  * @returns {MacroFlagDefinition|undefined}
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'symbol' implicitly has an 'any' type.
 export function getFlagDefinition(symbol) {
     return MacroFlagDefinitions.get(symbol);
 }
@@ -215,6 +219,7 @@ export function getFlagDefinition(symbol) {
  * @param {string} symbol - The symbol to check.
  * @returns {boolean}
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'symbol' implicitly has an 'any' type.
 export function isValidFlag(symbol) {
     return ValidFlagSymbols.has(symbol);
 }

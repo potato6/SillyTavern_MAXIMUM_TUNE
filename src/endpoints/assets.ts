@@ -1,10 +1,14 @@
+// @ts-expect-error TS(1259) FIXME: Module '"node:path"' can only be default-imported ... Remove this comment to see the full error message
 import path from 'node:path';
+// @ts-expect-error TS(1192) FIXME: Module '"node:fs"' has no default export.
 import fs from 'node:fs';
 import { finished } from 'node:stream/promises';
 
+// @ts-expect-error TS(1192) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import mime from 'mime-types';
+// @ts-expect-error TS(1259) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import express from 'express';
-// @ts-expect-error TS(2792): Cannot find module 'sanitize-filename'. Did you me... Remove this comment to see the full error message
+// @ts-expect-error TS(2792) FIXME: Cannot find module 'sanitize-filename'. Did you me... Remove this comment to see the full error message
 import sanitize from 'sanitize-filename';
 import fetch from 'node-fetch';
 
@@ -104,6 +108,7 @@ export const router = express.Router();
  * @param {object} response - HTTP Response object will contain a list of file path.
  * @returns {void}
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/get', async (request, response) => {
     const folderPath = path.join(request.user.directories.assets);
     const output = {};
@@ -113,6 +118,7 @@ router.post('/get', async (request, response) => {
             ensureFoldersExist(request.user.directories);
 
             const folders = fs.readdirSync(folderPath, { withFileTypes: true })
+                // @ts-expect-error TS(7006) FIXME: Parameter 'file' implicitly has an 'any' type.
                 .filter(file => file.isDirectory());
 
             for (const { name: folder } of folders) {
@@ -121,6 +127,7 @@ router.post('/get', async (request, response) => {
 
                 // Live2d assets
                 if (folder == 'live2d') {
+                    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                     output[folder] = [];
                     const live2d_folder = path.normalize(path.join(folderPath, folder));
                     const files = getFiles(live2d_folder);
@@ -128,6 +135,7 @@ router.post('/get', async (request, response) => {
                     for (const file of files) {
                         if (file.includes('model') && file.endsWith('.json')) {
                             //console.debug("Asset live2d model found:",file)
+                            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                             output[folder].push(clientRelativePath(request.user.directories.root, file));
                         }
                     }
@@ -136,6 +144,7 @@ router.post('/get', async (request, response) => {
 
                 // VRM assets
                 if (folder == 'vrm') {
+                    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                     output[folder] = { 'model': [], 'animation': [] };
                     // Extract models
                     const vrm_model_folder = path.normalize(path.join(folderPath, 'vrm', 'model'));
@@ -144,7 +153,7 @@ router.post('/get', async (request, response) => {
                     for (const file of files) {
                         if (!file.endsWith('.placeholder')) {
                             //console.debug("Asset VRM model found:",file)
-                            // @ts-expect-error TS(2339): Property 'vrm' does not exist on type '{}'.
+                            // @ts-expect-error TS(2339) FIXME: Property 'vrm' does not exist on type '{}'.
                             output.vrm.model.push(clientRelativePath(request.user.directories.root, file));
                         }
                     }
@@ -156,7 +165,7 @@ router.post('/get', async (request, response) => {
                     for (const file of files) {
                         if (!file.endsWith('.placeholder')) {
                             //console.debug("Asset VRM animation found:",file)
-                            // @ts-expect-error TS(2339): Property 'vrm' does not exist on type '{}'.
+                            // @ts-expect-error TS(2339) FIXME: Property 'vrm' does not exist on type '{}'.
                             output.vrm.animation.push(clientRelativePath(request.user.directories.root, file));
                         }
                     }
@@ -165,11 +174,14 @@ router.post('/get', async (request, response) => {
 
                 // Other assets (bgm/ambient/blip)
                 const files = fs.readdirSync(path.join(folderPath, folder))
+                    // @ts-expect-error TS(7006) FIXME: Parameter 'filename' implicitly has an 'any' type.
                     .filter(filename => {
                         return filename != '.placeholder';
                     });
+                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 output[folder] = [];
                 for (const file of files) {
+                    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                     output[folder].push(`assets/${folder}/${file}`);
                 }
             }
@@ -186,7 +198,7 @@ router.post('/get', async (request, response) => {
  * @param {object} response - HTTP Response only gives status.
  * @returns {void}
  */
-// @ts-expect-error TS(7030): Not all code paths return a value.
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/download', async (request, response) => {
     try {
         if (!isValidUrl(request.body.url)) {
@@ -243,7 +255,6 @@ router.post('/download', async (request, response) => {
             response.setHeader('Content-Type', contentType);
             response.send(fileContent);
             fs.unlinkSync(temp_path);
-            // @ts-expect-error TS(7030): Not all code paths return a value.
             return;
         }
 
@@ -264,6 +275,7 @@ router.post('/download', async (request, response) => {
  * @param {object} response - HTTP Response only gives stats.
  * @returns {void}
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/delete', async (request, response) => {
     const inputCategory = request.body.category;
 
@@ -308,14 +320,12 @@ router.post('/delete', async (request, response) => {
  * @param {object} response - HTTP Response object will contain a list of audio file path.
  * @returns {void}
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/character', async (request, response) => {
-    // @ts-expect-error TS(4111): Property 'name' comes from an index signature, so ... Remove this comment to see the full error message
     if (request.query.name === undefined) return response.sendStatus(400);
 
     // For backwards compatibility, don't reject invalid character names, just sanitize them
-    // @ts-expect-error TS(4111): Property 'name' comes from an index signature, so ... Remove this comment to see the full error message
     const name = sanitize(request.query.name.toString());
-    // @ts-expect-error TS(4111): Property 'category' comes from an index signature,... Remove this comment to see the full error message
     const inputCategory = request.query.category;
 
     // Check category
@@ -353,6 +363,7 @@ router.post('/character', async (request, response) => {
 
             // Other assets
             const files = fs.readdirSync(folderPath)
+                // @ts-expect-error TS(7006) FIXME: Parameter 'filename' implicitly has an 'any' type.
                 .filter(filename => {
                     return filename != '.placeholder';
                 });

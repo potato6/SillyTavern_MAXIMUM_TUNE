@@ -21,6 +21,7 @@ function handleInputWheel() {
      * @param {HTMLInputElement|null} slider The associated range input element, if any
      * @param {number} deltaY The wheel deltaY value
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'input' implicitly has an 'any' type.
     function updateValue(input, slider, deltaY) {
         const currentValue = parseFloat(input.value);
         const step = parseFloat(input.step);

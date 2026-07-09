@@ -334,13 +334,13 @@ export function validateTextGenUrl() {
         return;
     }
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const control = $(selector);
     const url = String(control.val()).trim();
     const formattedUrl = formatTextGenURL(url);
 
     if (!formattedUrl) {
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.error(t`Enter a valid API URL`, 'Text Completion API');
         return;
     }
@@ -369,6 +369,7 @@ export function getTextGenServer(type = null) {
         case OPENROUTER:
             return OPENROUTER_SERVER;
         default:
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             return textgenerationwebui_settings.server_urls[selectedType] ?? '';
     }
 }
@@ -377,7 +378,9 @@ export function getTextGenServer(type = null) {
  *
  * @param name
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
 async function selectPreset(name) {
+    // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
     const preset = textgenerationwebui_presets[textgenerationwebui_preset_names.indexOf(name)];
 
     if (!preset) {
@@ -391,6 +394,7 @@ async function selectPreset(name) {
     }
     setGenerationParamsFromPreset(preset);
     BIAS_CACHE.delete(BIAS_KEY);
+    // @ts-expect-error TS(2339) FIXME: Property 'logit_bias' does not exist on type 'neve... Remove this comment to see the full error message
     displayLogitBias(preset.logit_bias, BIAS_KEY);
     saveSettingsDebounced();
 }
@@ -399,6 +403,7 @@ async function selectPreset(name) {
  *
  * @param value
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
 export function formatTextGenURL(value) {
     try {
         const noFormatTypes = [MANCER, TOGETHERAI, INFERMATICAI, DREAMGEN, OPENROUTER];
@@ -418,6 +423,7 @@ export function formatTextGenURL(value) {
  *
  * @param presets
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'presets' implicitly has an 'any' type.
 function convertPresets(presets) {
     return Array.isArray(presets) ? presets.map((p) => JSON.parse(p)) : [];
 }
@@ -431,6 +437,7 @@ function getTokenizerForTokenIds() {
         return tokenizers.API_CURRENT;
     }
 
+    // @ts-expect-error TS(2345) FIXME: Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
     if (power_user.tokenizer === tokenizers.API_CURRENT && TEXTGEN_TOKENIZERS.includes(textgenerationwebui_settings.type)) {
         return tokenizers.API_CURRENT;
     }
@@ -457,7 +464,9 @@ function getTokenizerForTokenIds() {
  * @returns {TokenBanResult} String with comma-separated banned token IDs
  */
 function getCustomTokenBans(settings = null) {
+    // @ts-expect-error TS(2322) FIXME: Type '{ temp: number; temperature_last: boolean; t... Remove this comment to see the full error message
     settings = settings ?? textgenerationwebui_settings;
+    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     if (!settings.send_banned_tokens || (!settings.banned_tokens && !settings.global_banned_tokens && !textgenerationwebui_banned_in_macros.length)) {
         return {
             banned_tokens: '',
@@ -469,9 +478,12 @@ function getCustomTokenBans(settings = null) {
     const banned_tokens = [];
     const banned_strings = [];
     const sequences = []
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         .concat(settings.banned_tokens.split('\n'))
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         .concat(settings.global_banned_tokens.split('\n'))
         .concat(textgenerationwebui_banned_in_macros)
+        // @ts-expect-error TS(2339) FIXME: Property 'length' does not exist on type 'never'.
         .filter(x => x.length > 0)
         .filter(onlyUnique)
         .map(x => substituteParams(x));
@@ -523,10 +535,11 @@ function getCustomTokenBans(settings = null) {
  * @param {boolean} isEnabled Kill switch state
  * @param {string} title Label title
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'isEnabled' implicitly has an 'any' type... Remove this comment to see the full error message
 function toggleBannedStringsKillSwitch(isEnabled, title) {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#send_banned_tokens_textgenerationwebui').prop('checked', isEnabled);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document.querySelector('#send_banned_tokens_label .menu_button')).toggleClass('toggleEnabled', isEnabled).prop('title', title);
     textgenerationwebui_settings.send_banned_tokens = isEnabled;
     saveSettingsDebounced();
@@ -538,8 +551,10 @@ function toggleBannedStringsKillSwitch(isEnabled, title) {
  * @returns {object} Logit bias object
  */
 function calculateLogitBias(settings = null) {
+    // @ts-expect-error TS(2322) FIXME: Type '{ temp: number; temperature_last: boolean; t... Remove this comment to see the full error message
     settings = settings ?? textgenerationwebui_settings;
 
+    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     if (!Array.isArray(settings.logit_bias) || settings.logit_bias.length === 0) {
         return {};
     }
@@ -553,20 +568,22 @@ function calculateLogitBias(settings = null) {
      * @param {number[]} sequence
      * @returns {object} Accumulated logit bias object
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'bias' implicitly has an 'any' type.
     function addBias(bias, sequence) {
         if (sequence.length === 0) {
-            // @ts-expect-error TS(7030): Not all code paths return a value.
             return;
         }
 
         for (const logit of sequence) {
             const key = String(logit);
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             result[key] = bias;
         }
 
         return result;
     }
 
+    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     getLogitBiasListResult(settings.logit_bias, tokenizer, addBias);
 
     return result;
@@ -577,24 +594,28 @@ function calculateLogitBias(settings = null) {
  * @param data
  * @param loadedSettings
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
 export async function loadTextGenSettings(data, loadedSettings) {
     await loadApiSelectedSamplers();
+    // @ts-expect-error TS(2322) FIXME: Type 'any[]' is not assignable to type 'never[]'.
     textgenerationwebui_presets = convertPresets(data.textgenerationwebui_presets);
     textgenerationwebui_preset_names = data.textgenerationwebui_preset_names ?? [];
     Object.assign(textgenerationwebui_settings, loadedSettings.textgenerationwebui_settings ?? {});
 
     if (loadedSettings.api_server_textgenerationwebui) {
         for (const type of Object.keys(SERVER_INPUTS)) {
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             textgenerationwebui_settings.server_urls[type] = loadedSettings.api_server_textgenerationwebui;
         }
         delete loadedSettings.api_server_textgenerationwebui;
     }
 
     for (const [type, selector] of Object.entries(SERVER_INPUTS)) {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const control = $(selector);
+        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         control.val(textgenerationwebui_settings.server_urls[type] ?? '').on('input', function () {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             textgenerationwebui_settings.server_urls[type] = String($(this).val()).trim();
             saveSettingsDebounced();
         });
@@ -608,27 +629,29 @@ export async function loadTextGenSettings(data, loadedSettings) {
         const option = document.createElement('option');
         option.value = name;
         option.innerText = name;
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         document.getElementById('settings_preset_textgenerationwebui').append(option);
     }
 
     if (textgenerationwebui_settings.preset) {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#settings_preset_textgenerationwebui').val(textgenerationwebui_settings.preset);
     }
 
     for (const i of setting_names) {
+        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         const value = textgenerationwebui_settings[i];
-        // @ts-expect-error TS(2554): Expected 3 arguments, but got 2.
+        // @ts-expect-error TS(2554) FIXME: Expected 3 arguments, but got 2.
         setSettingByName(i, value);
     }
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#textgen_type').val(textgenerationwebui_settings.type);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#openrouter_providers_text').val(textgenerationwebui_settings.openrouter_providers).trigger('change');
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#openrouter_quantizations_text').val(textgenerationwebui_settings.openrouter_quantizations).trigger('change');
+    // @ts-expect-error TS(2345) FIXME: Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
     showSamplerControls(textgenerationwebui_settings.type);
     BIAS_CACHE.delete(BIAS_KEY);
     displayLogitBias(textgenerationwebui_settings.logit_bias, BIAS_KEY);
@@ -647,13 +670,15 @@ export async function loadTextGenSettings(data, loadedSettings) {
  * Sorts the sampler items by the given order.
  * @param {any[]} orderArray Sampler order array.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'orderArray' implicitly has an 'any' typ... Remove this comment to see the full error message
 function sortKoboldItemsByOrder(orderArray) {
     console.debug('Preset samplers order: ' + orderArray);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const $draggableItems = $('#koboldcpp_order');
 
     for (let i = 0; i < orderArray.length; i++) {
         const index = orderArray[i];
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const $item = $($draggableItems[0].querySelector(`[data-id="${index}"]`)).detach();
             $draggableItems[0].append($item[0]);
     }
@@ -663,12 +688,15 @@ function sortKoboldItemsByOrder(orderArray) {
  *
  * @param orderArray
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'orderArray' implicitly has an 'any' typ... Remove this comment to see the full error message
 function sortLlamacppItemsByOrder(orderArray) {
     console.debug('Preset samplers order: ', orderArray);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const $container = $('#llamacpp_samplers_sortable');
 
+    // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
     orderArray.forEach((name) => {
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const $item = $($container[0].querySelector(`[data-name="${name}"]`)).detach();
             $container[0].append($item[0]);
     });
@@ -678,12 +706,15 @@ function sortLlamacppItemsByOrder(orderArray) {
  *
  * @param orderArray
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'orderArray' implicitly has an 'any' typ... Remove this comment to see the full error message
 function sortOobaItemsByOrder(orderArray) {
     console.debug('Preset samplers order: ', orderArray);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const $container = $('#sampler_priority_container');
 
+    // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
     orderArray.forEach((name) => {
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const $item = $($container[0].querySelector(`[data-name="${name}"]`)).detach();
             $container[0].append($item[0]);
     });
@@ -693,12 +724,15 @@ function sortOobaItemsByOrder(orderArray) {
  * Sorts the Aphrodite sampler items by the given order.
  * @param {string[]} orderArray Sampler order array.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'orderArray' implicitly has an 'any' typ... Remove this comment to see the full error message
 function sortAphroditeItemsByOrder(orderArray) {
     console.debug('Preset samplers order: ', orderArray);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const $container = $('#sampler_priority_container_aphrodite');
 
+    // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
     orderArray.forEach((name) => {
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const $item = $($container[0].querySelector(`[data-name="${name}"]`)).detach();
             $container[0].append($item[0]);
     });
@@ -831,12 +865,13 @@ async function getStatusTextgen() {
                             }
                             if (old_value !== max_context) {
                                 console.log(`Auto-switched max context from ${old_value} to ${max_context}`);
-                                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+                                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                                 toastr.info(`${old_value} ⇒ ${max_context}`, 'Context Size Changed');
                             }
                         }
                     }
                     console.log(`We have chat template ${chat_template.split('\n')[0]}...`);
+                    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                     const savedTemplate = power_user.model_templates_mappings[chat_template_hash];
                     const derivedTemplate = await deriveTemplatesFromChatTemplate(chat_template, chat_template_hash);
                     const { context, instruct } = savedTemplate ?? derivedTemplate;
@@ -853,7 +888,7 @@ async function getStatusTextgen() {
 
         // We didn't get a 200 status code, but the endpoint has an explanation. Which means it DID connect, but I digress.
         if (online_status === 'no_connection' && data.response) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.error(data.response, t`API Error`, { timeOut: 5000, preventDuplicates: true });
         }
     } catch (err) {
@@ -872,9 +907,9 @@ async function getStatusTextgen() {
  *
  */
 export function initTextGenSettings() {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#send_banned_tokens_textgenerationwebui').on('change', function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const checked = !!$(this).prop('checked');
         toggleBannedStringsKillSwitch(checked,
             checked
@@ -882,38 +917,44 @@ export function initTextGenSettings() {
                 : t`Banned tokens/strings are NOT being sent in the request.`);
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#koboldcpp_order').sortable({
         delay: getSortableDelay(),
         stop: function () {
+            // @ts-expect-error TS(7034) FIXME: Variable 'order' implicitly has type 'any[]' in so... Remove this comment to see the full error message
             const order = [];
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             document.querySelectorAll('#koboldcpp_order > *').forEach(el => order.push($(el).data('id')));
+            // @ts-expect-error TS(7005) FIXME: Variable 'order' implicitly has an 'any[]' type.
             textgenerationwebui_settings.sampler_order = order;
             console.log('Samplers reordered:', textgenerationwebui_settings.sampler_order);
             saveSettingsDebounced();
         },
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#koboldcpp_default_order').on('click', function () {
         textgenerationwebui_settings.sampler_order = KOBOLDCPP_ORDER;
         sortKoboldItemsByOrder(textgenerationwebui_settings.sampler_order);
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#llamacpp_samplers_sortable').sortable({
         delay: getSortableDelay(),
         stop: function () {
+            // @ts-expect-error TS(7034) FIXME: Variable 'order' implicitly has type 'any[]' in so... Remove this comment to see the full error message
             const order = [];
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             document.querySelectorAll('#llamacpp_samplers_sortable > *').forEach(el => order.push($(el).data('name')));
+            // @ts-expect-error TS(7005) FIXME: Variable 'order' implicitly has an 'any[]' type.
             textgenerationwebui_settings.samplers = order;
             console.log('Samplers reordered:', textgenerationwebui_settings.samplers);
             saveSettingsDebounced();
         },
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#llamacpp_samplers_default_order').on('click', function () {
         sortLlamacppItemsByOrder(LLAMACPP_DEFAULT_ORDER);
         textgenerationwebui_settings.samplers = LLAMACPP_DEFAULT_ORDER;
@@ -921,33 +962,39 @@ export function initTextGenSettings() {
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#sampler_priority_container').sortable({
         delay: getSortableDelay(),
         stop: function () {
+            // @ts-expect-error TS(7034) FIXME: Variable 'order' implicitly has type 'any[]' in so... Remove this comment to see the full error message
             const order = [];
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             document.querySelectorAll('#sampler_priority_container > *').forEach(el => order.push($(el).data('name')));
+            // @ts-expect-error TS(7005) FIXME: Variable 'order' implicitly has an 'any[]' type.
             textgenerationwebui_settings.sampler_priority = order;
             console.log('Samplers reordered:', textgenerationwebui_settings.sampler_priority);
             saveSettingsDebounced();
         },
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#sampler_priority_container_aphrodite').sortable({
         delay: getSortableDelay(),
         stop: function () {
+            // @ts-expect-error TS(7034) FIXME: Variable 'order' implicitly has type 'any[]' in so... Remove this comment to see the full error message
             const order = [];
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             document.querySelectorAll('#sampler_priority_container_aphrodite > *').forEach(el => order.push($(el).data('name')));
+            // @ts-expect-error TS(7005) FIXME: Variable 'order' implicitly has an 'any[]' type.
             textgenerationwebui_settings.samplers_priorities = order;
             console.log('Samplers reordered:', textgenerationwebui_settings.samplers_priorities);
             saveSettingsDebounced();
         },
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#tabby_json_schema').on('input', function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const json_schema_string = String($(this).val());
 
         if (json_schema_string) {
@@ -963,7 +1010,7 @@ export function initTextGenSettings() {
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#textgenerationwebui_default_order').on('click', function () {
         sortOobaItemsByOrder(OOBA_DEFAULT_ORDER);
         textgenerationwebui_settings.sampler_priority = OOBA_DEFAULT_ORDER;
@@ -971,7 +1018,7 @@ export function initTextGenSettings() {
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#aphrodite_default_order').on('click', function () {
         sortAphroditeItemsByOrder(APHRODITE_DEFAULT_ORDER);
         textgenerationwebui_settings.samplers_priorities = APHRODITE_DEFAULT_ORDER;
@@ -979,66 +1026,68 @@ export function initTextGenSettings() {
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#textgen_type').on('change', function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const type = String($(this).val());
         textgenerationwebui_settings.type = type;
 
         if ([VLLM, APHRODITE, INFERMATICAI].includes(textgenerationwebui_settings.type)) {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#mirostat_mode_textgenerationwebui').attr('step', 2); //Aphro disallows mode 1
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#do_sample_textgenerationwebui').prop('checked', true); //Aphro should always do sample; 'otherwise set temp to 0 to mimic no sample'
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#ban_eos_token_textgenerationwebui').prop('checked', false); //Aphro should not ban EOS, just ignore it; 'add token '2' to ban list do to this'
             //special handling for vLLM/Aphrodite topK -1 disable state
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#top_k_textgenerationwebui').attr('min', -1);
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             if ($('#top_k_textgenerationwebui').val() === '0' || textgenerationwebui_settings.top_k === 0) {
                 textgenerationwebui_settings.top_k = -1;
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $('#top_k_textgenerationwebui').val('-1').trigger('input');
             }
         } else {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#mirostat_mode_textgenerationwebui').attr('step', 1);
             //undo special vLLM/Aphrodite setup for topK
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#top_k_textgenerationwebui').attr('min', 0);
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             if ($('#top_k_textgenerationwebui').val() === '-1' || textgenerationwebui_settings.top_k === -1) {
                 textgenerationwebui_settings.top_k = 0;
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $('#top_k_textgenerationwebui').val('0').trigger('input');
             }
         }
 
+        // @ts-expect-error TS(2345) FIXME: Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
         showSamplerControls(type);
         setOnlineStatus('no_connection');
         BIAS_CACHE.delete(BIAS_KEY);
 
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#main_api').trigger('change');
 
+        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         if (!SERVER_INPUTS[type] || textgenerationwebui_settings.server_urls[type]) {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#api_button_textgenerationwebui').trigger('click');
         }
 
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#settings_preset_textgenerationwebui').on('change', async function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const presetName = $(this).val();
         await selectPreset(presetName);
         await eventSource.emit(event_types.PRESET_CHANGED, { apiId: 'textgenerationwebui', name: presetName });
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#samplerResetButton').off('click').on('click', function () {
         const inputs = {
             'temp_textgenerationwebui': 1,
@@ -1091,7 +1140,7 @@ export function initTextGenSettings() {
         };
 
         for (const [id, value] of Object.entries(inputs)) {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const inputElement = $(`#${id}`);
             const valueToSet = typeof value === 'boolean' ? String(value) : value;
             if (inputElement.prop('type') === 'checkbox') {
@@ -1103,12 +1152,12 @@ export function initTextGenSettings() {
                 if (power_user.enableZenSliders) {
                     const masterElementID = inputElement.prop('id');
                     console.log(masterElementID);
-                    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+                    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                     const zenSlider = $(`#${masterElementID}_zenslider`).slider();
                     zenSlider.slider('option', 'value', value);
                     zenSlider.slider('option', 'slide')
                         .call(zenSlider, null, {
-                            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+                            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                             handle: $('.ui-slider-handle', zenSlider), value: value,
                         });
                 }
@@ -1117,36 +1166,40 @@ export function initTextGenSettings() {
     });
 
     for (const i of setting_names) {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(`#${i}_textgenerationwebui`).attr('x-setting-id', i);
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(document).on('input', `#${i}_textgenerationwebui`, function () {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const isCheckbox = $(this).attr('type') == 'checkbox';
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const isText = $(this).attr('type') == 'text' || $(this).is('textarea');
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const id = $(this).attr('x-setting-id');
 
             if (isCheckbox) {
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 const value = $(this).prop('checked');
+                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 textgenerationwebui_settings[id] = value;
             } else if (isText) {
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 const value = $(this).val();
+                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 textgenerationwebui_settings[id] = value;
             } else {
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 const value = Number($(this).val());
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $(`#${id}_counter_textgenerationwebui`).val(value);
+                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 textgenerationwebui_settings[id] = value;
                 //special handling for vLLM/Aphrodite using -1 as disabled instead of 0
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 if ($(this).attr('id') === 'top_k_textgenerationwebui' && [INFERMATICAI, APHRODITE, VLLM].includes(textgenerationwebui_settings.type) && value === 0) {
+                    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                     textgenerationwebui_settings[id] = -1;
-                    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+                    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                     $(this).val(-1);
                 }
             }
@@ -1154,12 +1207,12 @@ export function initTextGenSettings() {
         });
     }
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#textgen_logit_bias_new_entry').on('click', () => createNewLogitBiasEntry(textgenerationwebui_settings.logit_bias, BIAS_KEY));
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#openrouter_providers_text').on('change', function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const selectedProviders = $(this).val();
 
         // Not a multiple select?
@@ -1167,20 +1220,21 @@ export function initTextGenSettings() {
             return;
         }
 
+        // @ts-expect-error TS(2322) FIXME: Type 'any[]' is not assignable to type 'never[]'.
         textgenerationwebui_settings.openrouter_providers = selectedProviders;
 
         updateOpenRouterProvidersWarning('#openrouter_providers_text');
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#openrouter_allow_fallbacks_textgenerationwebui').on('input', function () {
         updateOpenRouterProvidersWarning('#openrouter_providers_text');
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#openrouter_quantizations_text').on('change', function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const selectedQuantizations = $(this).val();
 
         // Not a multiple select?
@@ -1188,12 +1242,13 @@ export function initTextGenSettings() {
             return;
         }
 
+        // @ts-expect-error TS(2322) FIXME: Type 'any[]' is not assignable to type 'never[]'.
         textgenerationwebui_settings.openrouter_quantizations = selectedQuantizations;
 
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#api_button_textgenerationwebui').on('click', async function (e) {
         const keys = [
             { id: 'api_key_mancer', secret: SECRET_KEYS.MANCER },
@@ -1213,10 +1268,10 @@ export function initTextGenSettings() {
         ];
 
         for (const key of keys) {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const keyValue = String($(`#${key.id}`).val()).trim();
             if (keyValue.length) {
-                // @ts-expect-error TS(2554): Expected 3-4 arguments, but got 2.
+                // @ts-expect-error TS(2554) FIXME: Expected 3-4 arguments, but got 2.
                 await writeSecret(key.secret, keyValue);
             }
         }
@@ -1234,11 +1289,10 @@ export function initTextGenSettings() {
  * @returns void
  */
 function showSamplerControls(apiType = null) {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     document.querySelectorAll('#textgenerationwebui_api-settings [data-tg-samplers], #textgenerationwebui_api [data-tg-samplers]').forEach(el => {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const typeSpecificControlled = $(el).data('tg-type') !== undefined;
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         if (!typeSpecificControlled) $(el).show();
     });
 
@@ -1249,17 +1303,17 @@ function showSamplerControls(apiType = null) {
 
     if (!samplersActivatedManually?.length || !prioritizeManualSamplerSelect) return;
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     document.querySelectorAll('#textgenerationwebui_api-settings [data-tg-samplers], #textgenerationwebui_api [data-tg-samplers]').forEach(el => {
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         const tgSamplers = el.getAttribute('data-tg-samplers').split(',').map(x => x.trim()).filter(str => str !== '');
 
         for (const tgSampler of tgSamplers) {
             if (samplersActivatedManually.includes(tgSampler)) {
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $(el).show();
                 return;
             } else {
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $(el).hide();
             }
         }
@@ -1270,25 +1324,26 @@ function showSamplerControls(apiType = null) {
  *
  * @param apiType
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'apiType' implicitly has an 'any' type.
 function showTypeSpecificControls(apiType) {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     document.querySelectorAll('[data-tg-type]').forEach(el => {
         const mode = String(el.getAttribute('data-tg-type-mode') ?? '').toLowerCase().trim();
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         const tgTypes = el.getAttribute('data-tg-type').split(',').map(x => x.trim());
 
         if (mode === 'except') {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(el)[tgTypes.includes(apiType) ? 'hide' : 'show']();
             return;
         }
 
         for (const tgType of tgTypes) {
             if (tgType === apiType || tgType == 'all') {
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $(el).show();
                 return;
             } else {
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $(el).hide();
             }
         }
@@ -1301,6 +1356,7 @@ function showTypeSpecificControls(apiType) {
  * @param {any[]} target - Target array
  * @returns {void}
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'source' implicitly has an 'any' type.
 function insertMissingArrayItems(source, target) {
     if (source === target || !Array.isArray(source) || !Array.isArray(target)) {
         return;
@@ -1320,6 +1376,7 @@ function insertMissingArrayItems(source, target) {
  * @param value
  * @param trigger
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'setting' implicitly has an 'any' type.
 function setSettingByName(setting, value, trigger) {
     if ('extensions' === setting) {
         value = value || {};
@@ -1329,7 +1386,7 @@ function setSettingByName(setting, value, trigger) {
 
     if ('json_schema' === setting) {
         textgenerationwebui_settings.json_schema = value ?? null;
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#tabby_json_schema').val(value ? JSON.stringify(textgenerationwebui_settings.json_schema, null, 2) : '');
         return;
     }
@@ -1370,46 +1427,47 @@ function setSettingByName(setting, value, trigger) {
     }
 
     if ('logit_bias' === setting) {
+        // @ts-expect-error TS(2322) FIXME: Type 'any[]' is not assignable to type 'never[]'.
         textgenerationwebui_settings.logit_bias = Array.isArray(value) ? value : [];
         return;
     }
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const isCheckbox = $(`#${setting}_textgenerationwebui`).attr('type') == 'checkbox';
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const isText = $(`#${setting}_textgenerationwebui`).attr('type') == 'text' || $(`#${setting}_textgenerationwebui`).is('textarea');
     if (isCheckbox) {
         const val = Boolean(value);
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(`#${setting}_textgenerationwebui`).prop('checked', val);
 
         if ('send_banned_tokens' === setting) {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(`#${setting}_textgenerationwebui`).trigger('change');
         }
     } else if (isText) {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(`#${setting}_textgenerationwebui`).val(value);
     } else {
         const val = parseFloat(value);
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(`#${setting}_textgenerationwebui`).val(val);
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(`#${setting}_counter_textgenerationwebui`).val(val);
         if (power_user.enableZenSliders) {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const zenSlider = $(`#${setting}_textgenerationwebui_zenslider`).slider();
             zenSlider.slider('option', 'value', val);
             zenSlider.slider('option', 'slide')
                 .call(zenSlider, null, {
-                    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+                    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                     handle: $('.ui-slider-handle', zenSlider), value: val,
                 });
         }
     }
 
     if (trigger) {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(`#${setting}_textgenerationwebui`).trigger('input');
     }
 }
@@ -1421,6 +1479,7 @@ function setSettingByName(setting, value, trigger) {
  * @returns {Promise<(function(): AsyncGenerator<{swipes: [], text: string, toolCalls: [], logprobs: {token: string, topLogprobs: Candidate[]}|null}, void, *>)|*>}
  * @throws {Error} - If the response status is not OK, or from within the generator
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'generate_data' implicitly has an 'any' ... Remove this comment to see the full error message
 export async function generateTextGenWithStreaming(generate_data, signal) {
     generate_data.stream = true;
 
@@ -1439,14 +1498,18 @@ export async function generateTextGenWithStreaming(generate_data, signal) {
     }
 
     const eventStream = getEventSourceStream();
+    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     response.body.pipeThrough(eventStream);
+    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     const reader = eventStream.readable.getReader();
 
     return async function* streamData() {
         let text = '';
         /** @type {import('./logprobs.js').TokenLogprobs | null} */
         let logprobs = null;
+        // @ts-expect-error TS(7034) FIXME: Variable 'swipes' implicitly has type 'any[]' in s... Remove this comment to see the full error message
         const swipes = [];
+        // @ts-expect-error TS(7034) FIXME: Variable 'toolCalls' implicitly has type 'any[]' i... Remove this comment to see the full error message
         const toolCalls = [];
         const state = { reasoning: '' };
         while (true) {
@@ -1460,10 +1523,12 @@ export async function generateTextGenWithStreaming(generate_data, signal) {
 
             if (data?.choices?.[0]?.index > 0) {
                 const swipeIndex = data.choices[0].index - 1;
+                // @ts-expect-error TS(7005) FIXME: Variable 'swipes' implicitly has an 'any[]' type.
                 swipes[swipeIndex] = (swipes[swipeIndex] || '') + data.choices[0].text;
             } else if (data?.index > 0) {
                 // llama.cpp streaming swipe
                 const swipeIndex = data.index - 1;
+                // @ts-expect-error TS(7005) FIXME: Variable 'swipes' implicitly has an 'any[]' type.
                 swipes[swipeIndex] = (swipes[swipeIndex] || '') + data.content;
             } else {
                 const newText = data?.choices?.[0]?.text || data?.content || '';
@@ -1472,6 +1537,7 @@ export async function generateTextGenWithStreaming(generate_data, signal) {
                 state.reasoning += data?.choices?.[0]?.reasoning ?? data?.choices?.[0]?.thinking ?? '';
             }
 
+            // @ts-expect-error TS(7005) FIXME: Variable 'toolCalls' implicitly has an 'any[]' typ... Remove this comment to see the full error message
             yield { text, swipes, logprobs, toolCalls, state };
         }
     };
@@ -1485,6 +1551,7 @@ export async function generateTextGenWithStreaming(generate_data, signal) {
  * @param {object} logprobs - logprobs object returned from the API
  * @returns {import('./logprobs.js').TokenLogprobs | null} - converted logprobs
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'token' implicitly has an 'any' type.
 export function parseTextgenLogprobs(token, logprobs) {
     if (!logprobs) {
         return null;
@@ -1518,12 +1585,14 @@ export function parseTextgenLogprobs(token, logprobs) {
             // 3. After commit 89d604f uses OpenAI-compatible format with "completion_probabilities" and "token"/"logprob" keys.
             //    Note that it is also the *actual* logprob (negative number), so we need to convert to [0, 1].
             if (logprobs?.[0]?.probs) {
+                // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
                 const candidates = logprobs?.[0]?.probs?.map(x => [x.tok_str, x.prob]);
                 if (!candidates) {
                     return null;
                 }
                 return { token, topLogprobs: candidates };
             } else if (logprobs?.[0].top_logprobs) {
+                // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
                 const candidates = logprobs?.[0]?.top_logprobs?.map(x => [x.token, Math.exp(x.logprob)]);
                 if (!candidates) {
                     return null;
@@ -1541,6 +1610,7 @@ export function parseTextgenLogprobs(token, logprobs) {
  *
  * @param data
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
 export function parseTabbyLogprobs(data) {
     const text = data?.choices?.[0]?.text;
     const offsets = data?.choices?.[0]?.logprobs?.text_offset;
@@ -1550,12 +1620,15 @@ export function parseTabbyLogprobs(data) {
     }
 
     // Convert string offsets list to tokens
+    // @ts-expect-error TS(7006) FIXME: Parameter 'offset' implicitly has an 'any' type.
     const tokens = offsets?.map((offset, index) => {
         const nextOffset = offsets[index + 1] || text.length;
         return text.substring(offset, nextOffset);
     });
 
+    // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
     const topLogprobs = data?.choices?.[0]?.logprobs?.top_logprobs?.map(x => ({ top_logprobs: [x] }));
+    // @ts-expect-error TS(7006) FIXME: Parameter 'token' implicitly has an 'any' type.
     return tokens?.map((token, index) => parseTextgenLogprobs(token, topLogprobs[index])) || null;
 }
 
@@ -1566,7 +1639,7 @@ export function parseTabbyLogprobs(data) {
  * @returns {void} Nothing.
  * @throws {Error} If the response contains an error message, throws Error with the message.
  */
-// @ts-expect-error TS(6133): 'response' is declared but its value is never read... Remove this comment to see the full error message
+// @ts-expect-error TS(7006) FIXME: Parameter 'response' implicitly has an 'any' type.
 function tryParseStreamingError(response, decoded) {
     let data = {};
 
@@ -1576,11 +1649,11 @@ function tryParseStreamingError(response, decoded) {
         // No JSON. Do nothing.
     }
 
-    // @ts-expect-error TS(2339): Property 'error' does not exist on type '{}'.
+    // @ts-expect-error TS(2339) FIXME: Property 'error' does not exist on type '{}'.
     const message = data?.error?.message || data?.error || data?.message || data?.detail;
 
     if (message) {
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.error(message, 'Text Completion API');
         throw new Error(message);
     }
@@ -1591,11 +1664,13 @@ function tryParseStreamingError(response, decoded) {
  * @param {string} string Input string
  * @returns {number[]} Array of integers
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'string' implicitly has an 'any' type.
 function toIntArray(string) {
     if (!string) {
         return [];
     }
 
+    // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
     return string.split(',').map(x => parseInt(x)).filter(x => !isNaN(x));
 }
 
@@ -1605,50 +1680,70 @@ function toIntArray(string) {
  * @returns {string} model name
  */
 export function getTextGenModel(settings = null) {
+    // @ts-expect-error TS(2322) FIXME: Type '{ temp: number; temperature_last: boolean; t... Remove this comment to see the full error message
     settings = settings ?? textgenerationwebui_settings;
+    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     switch (settings.type) {
         case OOBA:
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             if (settings.custom_model) {
+                // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
                 return settings.custom_model;
             }
             break;
         case GENERIC:
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             if (settings.generic_model) {
+                // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
                 return settings.generic_model;
             }
             break;
         case MANCER:
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             return settings.mancer_model;
         case TOGETHERAI:
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             return settings.togetherai_model;
         case INFERMATICAI:
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             return settings.infermaticai_model;
         case DREAMGEN:
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             return settings.dreamgen_model;
         case OPENROUTER:
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             return settings.openrouter_model;
         case VLLM:
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             return settings.vllm_model;
         case APHRODITE:
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             return settings.aphrodite_model;
         case OLLAMA:
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             if (!settings.ollama_model) {
-                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                 toastr.error(t`No Ollama model selected.`, 'Text Completion API');
                 throw new Error('No Ollama model selected');
             }
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             return settings.ollama_model;
         case FEATHERLESS:
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             return settings.featherless_model;
         case HUGGINGFACE:
             return 'tgi';
         case TABBY:
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             if (settings.tabby_model) {
+                // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
                 return settings.tabby_model;
             }
             break;
         case LLAMACPP:
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             if (settings.llamacpp_model) {
+                // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
                 return settings.llamacpp_model;
             }
             break;
@@ -1672,8 +1767,9 @@ export function isJsonSchemaSupported() {
  * @returns {boolean} Whether dynamic temperature supported
  */
 function isDynamicTemperatureSupported(settings = null) {
+    // @ts-expect-error TS(2322) FIXME: Type '{ temp: number; temperature_last: boolean; t... Remove this comment to see the full error message
     settings = settings ?? textgenerationwebui_settings;
-    // @ts-expect-error TS(4111): Property 'tgType' comes from an index signature, s... Remove this comment to see the full error message
+    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     return settings.dynatemp && DYNATEMP_BLOCK?.dataset?.tgType?.includes(settings.type);
 }
 
@@ -1696,6 +1792,7 @@ export function getLogprobsNumber(type = null) {
  * @param {string} str Input string
  * @returns {string} Output string
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'str' implicitly has an 'any' type.
 export function replaceMacrosInList(str) {
     if (!str || typeof str !== 'string') {
         return str;
@@ -1731,6 +1828,7 @@ export function replaceMacrosInList(str) {
  * @param {string} type Request type (impersonate, quiet, continue, etc)
  * @returns {object} Final generation parameters object appropriate for the text completion source
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'settings' implicitly has an 'any' type.
 export function createTextGenGenerationData(settings, model, finalPrompt = null, maxTokens = null, isImpersonate = false, isContinue = false, cfgValues = null, type = 'quiet') {
     settings = settings ?? textgenerationwebui_settings;
     model = model ?? getTextGenModel(settings);
@@ -1833,7 +1931,9 @@ export function createTextGenGenerationData(settings, model, finalPrompt = null,
         'speculative_ngram': settings.type === TABBY ? settings.speculative_ngram : undefined,
         'do_sample': settings.type === OOBA ? settings.do_sample : undefined,
         'seed': settings.seed >= 0 ? settings.seed : undefined,
+        // @ts-expect-error TS(2339) FIXME: Property 'guidanceScale' does not exist on type 'n... Remove this comment to see the full error message
         'guidance_scale': cfgValues?.guidanceScale?.value ?? settings.guidance_scale ?? 1,
+        // @ts-expect-error TS(2339) FIXME: Property 'negativePrompt' does not exist on type '... Remove this comment to see the full error message
         'negative_prompt': cfgValues?.negativePrompt ?? substituteParams(settings.negative_prompt) ?? '',
         'grammar_string': settings.grammar_string || undefined,
         'json_schema': [TABBY, LLAMACPP].includes(settings.type) ? jsonSchema : undefined,
@@ -1897,20 +1997,20 @@ export function createTextGenGenerationData(settings, model, finalPrompt = null,
     };
 
     if (settings.type === OPENROUTER) {
-        // @ts-expect-error TS(2339): Property 'provider' does not exist on type '{ prom... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'provider' does not exist on type '{ prom... Remove this comment to see the full error message
         params.provider = settings.openrouter_providers;
-        // @ts-expect-error TS(2339): Property 'quantizations' does not exist on type '{... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'quantizations' does not exist on type '{... Remove this comment to see the full error message
         params.quantizations = settings.openrouter_quantizations;
-        // @ts-expect-error TS(2339): Property 'allow_fallbacks' does not exist on type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'allow_fallbacks' does not exist on type ... Remove this comment to see the full error message
         params.allow_fallbacks = settings.openrouter_allow_fallbacks;
     }
 
     if (settings.type === KOBOLDCPP) {
-        // @ts-expect-error TS(2339): Property 'grammar' does not exist on type '{ promp... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'grammar' does not exist on type '{ promp... Remove this comment to see the full error message
         params.grammar = settings.grammar_string || undefined;
-        // @ts-expect-error TS(2339): Property 'grammar_retain_state' does not exist on ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'grammar_retain_state' does not exist on ... Remove this comment to see the full error message
         params.grammar_retain_state = (settings.grammar_string && !!isContinue) ? true : undefined;
-        // @ts-expect-error TS(2339): Property 'trim_stop' does not exist on type '{ pro... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'trim_stop' does not exist on type '{ pro... Remove this comment to see the full error message
         params.trim_stop = true;
         params.dry_sequence_breakers = params.parseSequenceBreakers();
     }
@@ -1922,15 +2022,15 @@ export function createTextGenGenerationData(settings, model, finalPrompt = null,
     }
 
     if (settings.type === MANCER) {
-        // @ts-expect-error TS(2339): Property 'n' does not exist on type '{ prompt: any... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'n' does not exist on type '{ prompt: nul... Remove this comment to see the full error message
         params.n = canMultiSwipe ? settings.n : 1;
         params.epsilon_cutoff /= 1000;
         params.eta_cutoff /= 1000;
-        // @ts-expect-error TS(2551): Property 'dynatemp_mode' does not exist on type '{... Remove this comment to see the full error message
+        // @ts-expect-error TS(2551) FIXME: Property 'dynatemp_mode' does not exist on type '{... Remove this comment to see the full error message
         params.dynatemp_mode = params.dynamic_temperature ? 1 : 0;
-        // @ts-expect-error TS(2339): Property 'dynatemp_min' does not exist on type '{ ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'dynatemp_min' does not exist on type '{ ... Remove this comment to see the full error message
         params.dynatemp_min = params.dynatemp_low;
-        // @ts-expect-error TS(2339): Property 'dynatemp_max' does not exist on type '{ ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'dynatemp_max' does not exist on type '{ ... Remove this comment to see the full error message
         params.dynatemp_max = params.dynatemp_high;
         delete params.dynatemp_low;
         delete params.dynatemp_high;
@@ -1938,7 +2038,7 @@ export function createTextGenGenerationData(settings, model, finalPrompt = null,
     }
 
     if (settings.type === TABBY || settings.type === LLAMACPP) {
-        // @ts-expect-error TS(2339): Property 'n' does not exist on type '{ prompt: any... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'n' does not exist on type '{ prompt: nul... Remove this comment to see the full error message
         params.n = canMultiSwipe ? settings.n : 1;
     }
 
@@ -1961,18 +2061,19 @@ export function createTextGenGenerationData(settings, model, finalPrompt = null,
     if (Array.isArray(settings.logit_bias) && settings.logit_bias.length) {
         const logitBias = BIAS_CACHE.get(BIAS_KEY) || calculateLogitBias(settings);
         BIAS_CACHE.set(BIAS_KEY, logitBias);
-        // @ts-expect-error TS(2339): Property 'logit_bias' does not exist on type '{ pr... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'logit_bias' does not exist on type '{ pr... Remove this comment to see the full error message
         params.logit_bias = logitBias;
     }
 
     if (settings.type === LLAMACPP || settings.type === OLLAMA) {
         // Convert bias and token bans to array of arrays
-        // @ts-expect-error TS(2339): Property 'logit_bias' does not exist on type '{ pr... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'logit_bias' does not exist on type '{ pr... Remove this comment to see the full error message
         const logitBiasArray = (params.logit_bias && typeof params.logit_bias === 'object' && Object.keys(params.logit_bias).length > 0)
-            // @ts-expect-error TS(2339): Property 'logit_bias' does not exist on type '{ pr... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'logit_bias' does not exist on type '{ pr... Remove this comment to see the full error message
             ? Object.entries(params.logit_bias).map(([key, value]) => [Number(key), value])
             : [];
         const tokenBans = toIntArray(banned_tokens);
+        // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
         logitBiasArray.push(...tokenBans.map(x => [Number(x), false]));
         const sequenceBreakers = params.parseSequenceBreakers();
         const llamaCppParams = {
@@ -1991,16 +2092,16 @@ export function createTextGenGenerationData(settings, model, finalPrompt = null,
     // Grammar conflicts with with json_schema
     if ([LLAMACPP, APHRODITE].includes(settings.type)) {
         if (jsonSchema) {
-            // @ts-expect-error TS(2339): Property 'grammar_string' does not exist on type '... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'grammar_string' does not exist on type '... Remove this comment to see the full error message
             delete params.grammar_string;
-            // @ts-expect-error TS(2339): Property 'grammar' does not exist on type '{ promp... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'grammar' does not exist on type '{ promp... Remove this comment to see the full error message
             delete params.grammar;
-            // @ts-expect-error TS(2339): Property 'guided_grammar' does not exist on type '... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'guided_grammar' does not exist on type '... Remove this comment to see the full error message
             delete params.guided_grammar;
         } else {
-            // @ts-expect-error TS(2339): Property 'json_schema' does not exist on type '{ p... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'json_schema' does not exist on type '{ p... Remove this comment to see the full error message
             delete params.json_schema;
-            // @ts-expect-error TS(2339): Property 'guided_json' does not exist on type '{ p... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'guided_json' does not exist on type '{ p... Remove this comment to see the full error message
             delete params.guided_json;
         }
     }
@@ -2016,7 +2117,9 @@ export function createTextGenGenerationData(settings, model, finalPrompt = null,
  * @param cfgValues
  * @param type
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'finalPrompt' implicitly has an 'any' ty... Remove this comment to see the full error message
 export async function getTextGenGenerationData(finalPrompt, maxTokens, isImpersonate, isContinue, cfgValues, type) {
+    // @ts-expect-error TS(2345) FIXME: Argument of type '{ temp: number; temperature_last... Remove this comment to see the full error message
     const model = getTextGenModel(textgenerationwebui_settings);
     const params = createTextGenGenerationData(textgenerationwebui_settings, model, finalPrompt, maxTokens, isImpersonate, isContinue, cfgValues, type);
     await eventSource.emit(event_types.TEXT_COMPLETION_SETTINGS_READY, params);

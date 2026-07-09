@@ -1,4 +1,5 @@
 import { promises as fsPromises } from 'node:fs';
+// @ts-expect-error TS(1259) FIXME: Module '"node:path"' can only be default-imported ... Remove this comment to see the full error message
 import path from 'node:path';
 import { DEFAULT_AVATAR_PATH } from './constants.js';
 import { extractFileFromZipBuffer } from './util.js';
@@ -110,10 +111,15 @@ export class ByafParser {
                 return;
             }
             book.entries.push({
+                // @ts-expect-error TS(2322) FIXME: Type 'string[]' is not assignable to type 'never'.
                 keys: ByafParser.replaceMacros(item?.key).split(',').map(key => key.trim()).filter(Boolean),
+                // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'never'.
                 content: ByafParser.replaceMacros(item?.value),
+                // @ts-expect-error TS(2322) FIXME: Type '{}' is not assignable to type 'never'.
                 extensions: {},
+                // @ts-expect-error TS(2322) FIXME: Type 'boolean' is not assignable to type 'never'.
                 enabled: true,
+                // @ts-expect-error TS(2322) FIXME: Type 'number' is not assignable to type 'never'.
                 insertion_order: index,
             });
         });
@@ -255,10 +261,14 @@ export class ByafParser {
                 name: character?.name || character?.displayName || '',
                 description: ByafParser.replaceMacros(character?.persona),
                 personality: '',
+                // @ts-expect-error TS(2345) FIXME: Argument of type 'string | undefined' is not assig... Remove this comment to see the full error message
                 scenario: ByafParser.replaceMacros(scenarios[0]?.narrative),
+                // @ts-expect-error TS(2345) FIXME: Argument of type 'string | undefined' is not assig... Remove this comment to see the full error message
                 first_mes: ByafParser.replaceMacros(scenarios[0]?.firstMessages?.[0]?.text),
+                // @ts-expect-error TS(2345) FIXME: Argument of type 'ByafExampleMessage[] | undefined... Remove this comment to see the full error message
                 mes_example: ByafParser.formatExampleMessages(scenarios[0]?.exampleMessages),
                 creator_notes: manifest?.author?.backyardURL || '', // To preserve the link to the author from BYAF manifest, this is a good place.
+                // @ts-expect-error TS(2345) FIXME: Argument of type 'string | undefined' is not assig... Remove this comment to see the full error message
                 system_prompt: ByafParser.replaceMacros(scenarios[0]?.formattingInstructions),
                 post_history_instructions: '',
                 alternate_greetings: this.formatAlternateGreetings(scenarios),
@@ -289,6 +299,7 @@ export class ByafParser {
                 if (data) {
                     const existingIndex = backgrounds.findIndex(bg => bg.data.compare(data) === 0);
                     if (existingIndex !== -1) {
+                        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
                         backgrounds[existingIndex].paths.push(bgImagePath);
                         continue; // Skip adding a new background since it already exists
                     }
@@ -331,6 +342,7 @@ export class ByafParser {
      * @returns {string} Chat data
      */
     static getChatFromScenario(scenario: Partial<ByafScenario>, userName: string, characterName: string, chatBackgrounds: Array<ByafChatBackground>) {
+        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         const chatStartDate = scenario?.messages?.length == 0 ? new Date().toISOString() : scenario?.messages?.filter((m: ByafHumanMessage | ByafAiMessage) => 'createdAt' in m)[0].createdAt;
         const chatBackground = chatBackgrounds.find((bg: ByafChatBackground) => bg.paths.includes(scenario?.backgroundImage || ''))?.name || '';
         /** @type {object[]} */
@@ -339,7 +351,9 @@ export class ByafParser {
             character_name: 'unused',
             chat_metadata: {
                 scenario: scenario?.narrative ?? '',
+                // @ts-expect-error TS(2345) FIXME: Argument of type 'ByafExampleMessage[] | undefined... Remove this comment to see the full error message
                 mes_example: ByafParser.formatExampleMessages(scenario?.exampleMessages),
+                // @ts-expect-error TS(2345) FIXME: Argument of type 'string | undefined' is not assig... Remove this comment to see the full error message
                 system_prompt: ByafParser.replaceMacros(scenario?.formattingInstructions),
                 mes_examples_optional: scenario?.canDeleteExampleMessages ?? false,
                 byaf_model_settings: {
@@ -361,7 +375,7 @@ export class ByafParser {
         // Add the first message IF it exists.
         if (scenario?.firstMessages?.length && scenario?.firstMessages?.length > 0 && scenario?.firstMessages?.[0]?.text) {
             chat.push({
-                // @ts-expect-error TS(2345): Argument of type '{ name: any; is_user: boolean; s... Remove this comment to see the full error message
+                // @ts-expect-error TS(2345) FIXME: Argument of type '{ name: string; is_user: boolean... Remove this comment to see the full error message
                 name: characterName,
                 is_user: false,
                 send_date: chatStartDate,
@@ -393,16 +407,18 @@ export class ByafParser {
         if (userMessages && characterMessages && userMessages.length === characterMessages.length) { // Only do the reordering if there are equal numbers of user and character messages, otherwise just import in existing order, because it's probably correct already.
             for (let i = 0; i < userMessages.length; i++) {
                 chat.push({
-                    // @ts-expect-error TS(2345): Argument of type '{ name: any; is_user: boolean; s... Remove this comment to see the full error message
+                    // @ts-expect-error TS(2345) FIXME: Argument of type '{ name: string; is_user: boolean... Remove this comment to see the full error message
                     name: userName,
                     is_user: true,
                     send_date: Number(userMessages[i]?.createdAt),
                     mes: userMessages[i]?.text,
                 });
+                // @ts-expect-error TS(2345) FIXME: Argument of type 'ByafAiMessage | undefined' is no... Remove this comment to see the full error message
                 const aiMessage = getNewestAiMessage(characterMessages[i]);
+                // @ts-expect-error TS(2345) FIXME: Argument of type 'ByafAiMessage | undefined' is no... Remove this comment to see the full error message
                 const aiSwipes = getSwipesForAiMessage(characterMessages[i]);
                 chat.push({
-                    // @ts-expect-error TS(2345): Argument of type '{ name: any; is_user: boolean; s... Remove this comment to see the full error message
+                    // @ts-expect-error TS(2345) FIXME: Argument of type '{ name: string; is_user: boolean... Remove this comment to see the full error message
                     name: characterName,
                     is_user: false,
                     send_date: Number(aiMessage.createdAt),
@@ -418,17 +434,19 @@ export class ByafParser {
                 const chatMessage = {
                     name: isUser ? userName : characterName,
                     is_user: isUser,
+                    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
                     send_date: Number(isUser ? message.createdAt : aiMessage.createdAt),
+                    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
                     mes: isUser ? message.text : aiMessage.text,
                 };
                 if (!isUser) {
                     const aiSwipes = getSwipesForAiMessage(message);
-                    // @ts-expect-error TS(2339): Property 'swipes' does not exist on type '{ name: ... Remove this comment to see the full error message
+                    // @ts-expect-error TS(2339) FIXME: Property 'swipes' does not exist on type '{ name: ... Remove this comment to see the full error message
                     chatMessage.swipes = aiSwipes;
-                    // @ts-expect-error TS(2339): Property 'swipe_id' does not exist on type '{ name... Remove this comment to see the full error message
+                    // @ts-expect-error TS(2339) FIXME: Property 'swipe_id' does not exist on type '{ name... Remove this comment to see the full error message
                     chatMessage.swipe_id = aiSwipes.findIndex((s: string) => s === aiMessage.text);
                 }
-                // @ts-expect-error TS(2345): Argument of type '{ name: any; is_user: boolean; s... Remove this comment to see the full error message
+                // @ts-expect-error TS(2345) FIXME: Argument of type '{ name: string; is_user: boolean... Remove this comment to see the full error message
                 chat.push(chatMessage);
             }
         } else {

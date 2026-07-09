@@ -1,4 +1,4 @@
-// @ts-expect-error TS(2792): Cannot find module 'crc'. Did you mean to set the ... Remove this comment to see the full error message
+// @ts-expect-error TS(2792) FIXME: Cannot find module 'crc'. Did you mean to set the ... Remove this comment to see the full error message
 import { crc32 } from 'crc';
 
 /**
@@ -16,6 +16,7 @@ export default function encode(chunks: { name: string; data: Uint8Array }[]) {
     let idx = totalSize;
 
     for (let i = 0; i < chunks.length; i++) {
+        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         totalSize += chunks[i].data.length;
         totalSize += 12;
     }
@@ -32,6 +33,7 @@ export default function encode(chunks: { name: string; data: Uint8Array }[]) {
     output[7] = 0x0A;
 
     for (let i = 0; i < chunks.length; i++) {
+        // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type '{ name: st... Remove this comment to see the full error message
         const { name, data } = chunks[i];
         const size = data.length;
         const nameChars = [
@@ -42,9 +44,13 @@ export default function encode(chunks: { name: string; data: Uint8Array }[]) {
         ];
 
         uint32[0] = size;
+        // @ts-expect-error TS(2322) FIXME: Type 'number | undefined' is not assignable to typ... Remove this comment to see the full error message
         output[idx++] = uint8[3];
+        // @ts-expect-error TS(2322) FIXME: Type 'number | undefined' is not assignable to typ... Remove this comment to see the full error message
         output[idx++] = uint8[2];
+        // @ts-expect-error TS(2322) FIXME: Type 'number | undefined' is not assignable to typ... Remove this comment to see the full error message
         output[idx++] = uint8[1];
+        // @ts-expect-error TS(2322) FIXME: Type 'number | undefined' is not assignable to typ... Remove this comment to see the full error message
         output[idx++] = uint8[0];
 
         output[idx++] = nameChars[0];
@@ -59,9 +65,13 @@ export default function encode(chunks: { name: string; data: Uint8Array }[]) {
         const crc = crc32(data, crc32(new Uint8Array(nameChars)));
 
         int32[0] = crc;
+        // @ts-expect-error TS(2322) FIXME: Type 'number | undefined' is not assignable to typ... Remove this comment to see the full error message
         output[idx++] = uint8[3];
+        // @ts-expect-error TS(2322) FIXME: Type 'number | undefined' is not assignable to typ... Remove this comment to see the full error message
         output[idx++] = uint8[2];
+        // @ts-expect-error TS(2322) FIXME: Type 'number | undefined' is not assignable to typ... Remove this comment to see the full error message
         output[idx++] = uint8[1];
+        // @ts-expect-error TS(2322) FIXME: Type 'number | undefined' is not assignable to typ... Remove this comment to see the full error message
         output[idx++] = uint8[0];
     }
 

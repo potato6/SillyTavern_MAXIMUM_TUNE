@@ -14,6 +14,7 @@ export function isSegmenterSupported() {
  * @param {string} htmlContent HTML content to segment
  * @param {'word'|'grapheme'|'sentence'} [granularity] Text split granularity
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'htmlElement' implicitly has an 'any' ty... Remove this comment to see the full error message
 export function segmentTextInElement(htmlElement, htmlContent, granularity = 'word') {
     htmlElement.innerHTML = htmlContent;
 
@@ -22,7 +23,7 @@ export function segmentTextInElement(htmlElement, htmlContent, granularity = 'wo
     }
 
     // TODO: Support more locales, make granularity configurable.
-    // @ts-expect-error TS(2322): Type 'string' is not assignable to type '"word" | ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type '"word" | ... Remove this comment to see the full error message
     const segmenter = new Intl.Segmenter('en-US', { granularity });
     const textNodes = [];
     const walker = document.createTreeWalker(htmlElement, NodeFilter.SHOW_TEXT);
@@ -35,7 +36,7 @@ export function segmentTextInElement(htmlElement, htmlContent, granularity = 'wo
         }
 
         // Skip text nodes that are empty or only whitespace
-        // @ts-expect-error TS(2339): Property 'data' does not exist on type 'Node'.
+        // @ts-expect-error TS(2339) FIXME: Property 'data' does not exist on type 'Node'.
         if (/^\s*$/.test(textNode.data)) {
             continue;
         }
@@ -46,6 +47,7 @@ export function segmentTextInElement(htmlElement, htmlContent, granularity = 'wo
     // Split every text node into segments using spans
     for (const textNode of textNodes) {
         const fragment = document.createDocumentFragment();
+        // @ts-expect-error TS(2339) FIXME: Property 'data' does not exist on type 'Node'.
         const segments = segmenter.segment(textNode.data);
         for (const segment of segments) {
             // TODO: Apply a different class for different segment length/content?
@@ -55,6 +57,7 @@ export function segmentTextInElement(htmlElement, htmlContent, granularity = 'wo
             span.className = 'text_segment';
             fragment.appendChild(span);
         }
+        // @ts-expect-error TS(2339) FIXME: Property 'replaceWith' does not exist on type 'Nod... Remove this comment to see the full error message
         textNode.replaceWith(fragment);
     }
 }
@@ -64,6 +67,7 @@ export function segmentTextInElement(htmlElement, htmlContent, granularity = 'wo
  * @param {HTMLElement} messageTextElement Message text element
  * @param {string} htmlContent New HTML content to apply
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'messageTextElement' implicitly has an '... Remove this comment to see the full error message
 export function applyStreamFadeIn(messageTextElement, htmlContent) {
     const targetElement = /** @type {HTMLElement} */ (messageTextElement.cloneNode());
     segmentTextInElement(targetElement, htmlContent);

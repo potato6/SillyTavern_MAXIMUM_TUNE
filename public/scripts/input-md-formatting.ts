@@ -4,7 +4,7 @@ import { power_user } from './power-user.js';
  *
  */
 export function initInputMarkdown() {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('keydown', 'textarea.mdHotkeys', function (this: HTMLTextAreaElement, e) {
         if (!power_user.enable_md_hotkeys) { return; }
 

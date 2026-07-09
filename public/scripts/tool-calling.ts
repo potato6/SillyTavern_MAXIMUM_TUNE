@@ -59,6 +59,7 @@ import { isTrueBoolean } from './utils.js';
  * @param {object} arg Object to assign variables from.
  * @param {string} prefix Prefix for the variable names.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'scope' implicitly has an 'any' type.
 function assignNestedVariables(scope, arg, prefix) {
     Object.entries(arg).forEach(([key, value]) => {
         const newPrefix = `${prefix}.${key}`;
@@ -78,6 +79,7 @@ function assignNestedVariables(scope, arg, prefix) {
  * @param {string} str The string to check
  * @returns {boolean} If the string is a valid JSON string
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'str' implicitly has an 'any' type.
 function isJson(str) {
     try {
         JSON.parse(str);
@@ -92,6 +94,7 @@ function isJson(str) {
  * @param {string} str The string to try to parse
  * @returns {object|string} Parsed JSON or the original string
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'str' implicitly has an 'any' type.
 function tryParse(str) {
     try {
         return JSON.parse(str);
@@ -105,6 +108,7 @@ function tryParse(str) {
  * @param {any} obj The object to stringify
  * @returns {string} A JSON string representation of the object.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'obj' implicitly has an 'any' type.
 function stringify(obj) {
     return typeof obj === 'string' ? obj : JSON.stringify(obj);
 }
@@ -172,6 +176,7 @@ class ToolDefinition {
      * @param {function} shouldRegister A function that will be called to determine if the tool should be registered.
      * @param {boolean} stealth A tool call result will not be shown in the chat. No follow-up generation will be performed.
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
     constructor(name, displayName, description, parameters, action, formatMessage, shouldRegister, stealth) {
         this.#name = name;
         this.#displayName = displayName;
@@ -206,6 +211,7 @@ class ToolDefinition {
      * @param {object} parameters The parameters to pass to the tool.
      * @returns {Promise<any>} The result of the tool's action function.
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'parameters' implicitly has an 'any' typ... Remove this comment to see the full error message
     async invoke(parameters) {
         return await this.#action(parameters);
     }
@@ -215,6 +221,7 @@ class ToolDefinition {
      * @param {object} parameters The parameters to pass to the tool.
      * @returns {Promise<string>} The formatted message.
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'parameters' implicitly has an 'any' typ... Remove this comment to see the full error message
     async formatMessage(parameters) {
         return typeof this.#formatMessage === 'function'
             ? await this.#formatMessage(parameters)
@@ -265,7 +272,9 @@ export class ToolManager {
     /**
      * Registers a new tool with the tool registry.
      * @param {ToolRegistration} tool The tool to register.
+     * @param {...any} args
      */
+    // @ts-expect-error TS(7019) FIXME: Rest parameter 'args' implicitly has an 'any[]' ty... Remove this comment to see the full error message
     static registerFunctionTool(...args) {
         const hasConfigObject = typeof args[0] === 'object';
         const name = hasConfigObject ? args[0].name : args[0];
@@ -299,6 +308,7 @@ export class ToolManager {
      * Removes a tool from the tool registry.
      * @param {string} name The name of the tool to unregister.
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
     static unregisterFunctionTool(name) {
         if (!this.#tools.has(name)) {
             return;
@@ -313,6 +323,7 @@ export class ToolManager {
      * @param {object} parameters The parameters for a tool call, usually a string with JSON inside
      * @returns {object} The parsed parameters
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'parameters' implicitly has an 'any' typ... Remove this comment to see the full error message
     static #parseParameters(parameters) {
         return parameters === ''
             ? {}
@@ -327,6 +338,7 @@ export class ToolManager {
      * @param {object} parameters Function parameters. For example, if the tool requires a "name" parameter, you would pass {name: "value"}.
      * @returns {Promise<string|Error>} The result of the tool's action function. If an error occurs, null is returned. Non-string results are JSON-stringified.
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
     static async invokeFunctionTool(name, parameters) {
         try {
             if (!this.#tools.has(name)) {
@@ -354,6 +366,7 @@ export class ToolManager {
      * @param {string} name The name of the tool to check.
      * @returns {boolean} Whether the tool is a stealth tool.
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
     static isStealthTool(name) {
         if (!this.#tools.has(name)) {
             return false;
@@ -369,6 +382,7 @@ export class ToolManager {
      * @param {object} parameters Function tool call parameters.
      * @returns {Promise<string>} The formatted message for the tool call.
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
     static async formatToolCallMessage(name, parameters) {
         if (!this.#tools.has(name)) {
             return `Invoked unknown tool: ${name}`;
@@ -389,6 +403,7 @@ export class ToolManager {
      * @param {string} name
      * @returns {string} The display name of the tool.
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
     static getDisplayName(name) {
         if (!this.#tools.has(name)) {
             return name;
@@ -402,6 +417,7 @@ export class ToolManager {
      * Register function tools for the next chat completion request.
      * @param {object} data Generation data
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
     static async registerFunctionToolsOpenAI(data) {
         const tools = [];
 
@@ -429,6 +445,7 @@ export class ToolManager {
      * @param {object} toolSignatures Optional mapping of tool call IDs to thought signatures.
      * @returns {void}
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'toolCalls' implicitly has an 'any' type... Remove this comment to see the full error message
     static parseToolCalls(toolCalls, parsed, toolSignatures = {}) {
         if (!this.isToolCallingSupported()) {
             return;
@@ -469,6 +486,7 @@ export class ToolManager {
 
                     // Transfer thought signature if available
                     if (Object.hasOwn(toolSignatures, targetToolCall.id)) {
+                        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                         targetToolCall.signature = toolSignatures[targetToolCall.id];
                     }
                 }
@@ -567,6 +585,7 @@ export class ToolManager {
      * @param {object} target The target object to apply the delta to
      * @param {object} delta The delta object to apply
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'target' implicitly has an 'any' type.
     static #applyToolCallDelta(target, delta) {
         for (const key in delta) {
             if (!Object.prototype.hasOwnProperty.call(delta, key)) continue;
@@ -611,9 +630,11 @@ export class ToolManager {
      * @returns {boolean} Whether tool calling is supported for the given type
      */
     static isToolCallingSupported(settings = null, model = null) {
+        // @ts-expect-error TS(2322) FIXME: Type '{ send_if_empty: string; impersonation_promp... Remove this comment to see the full error message
         settings = settings ?? oai_settings;
         model = model ?? getChatCompletionModel(settings);
 
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         if (main_api !== 'openai' || !settings.function_calling) {
             return false;
         }
@@ -621,28 +642,39 @@ export class ToolManager {
         // Post-processing will forcefully remove past tool calls from the prompt, making them useless
         const { NONE, MERGE_TOOLS, SEMI_TOOLS, STRICT_TOOLS } = custom_prompt_post_processing_types;
         const allowedPromptPostProcessing = [NONE, MERGE_TOOLS, SEMI_TOOLS, STRICT_TOOLS];
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         if (!allowedPromptPostProcessing.includes(settings.custom_prompt_post_processing)) {
             return false;
         }
 
+        // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
         const currentModel = Array.isArray(model_list) ? model_list.find(m => m.id === model) : null;
         if (currentModel) {
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             switch (settings.chat_completion_source) {
                 case chat_completion_sources.POLLINATIONS:
+                    // @ts-expect-error TS(2339) FIXME: Property 'tools' does not exist on type 'never'.
                     return currentModel.tools;
                 case chat_completion_sources.FIREWORKS:
+                    // @ts-expect-error TS(2339) FIXME: Property 'supports_tools' does not exist on type '... Remove this comment to see the full error message
                     return currentModel.supports_tools;
                 case chat_completion_sources.OPENROUTER:
+                    // @ts-expect-error TS(2339) FIXME: Property 'supported_parameters' does not exist on ... Remove this comment to see the full error message
                     return currentModel.supported_parameters?.includes('tools');
                 case chat_completion_sources.MISTRALAI:
+                    // @ts-expect-error TS(2339) FIXME: Property 'capabilities' does not exist on type 'ne... Remove this comment to see the full error message
                     return currentModel.capabilities?.function_calling;
                 case chat_completion_sources.AIMLAPI:
+                    // @ts-expect-error TS(2339) FIXME: Property 'features' does not exist on type 'never'... Remove this comment to see the full error message
                     return currentModel.features?.includes('openai/chat-completion.function');
                 case chat_completion_sources.CHUTES:
+                    // @ts-expect-error TS(2339) FIXME: Property 'supported_features' does not exist on ty... Remove this comment to see the full error message
                     return currentModel.supported_features?.includes('tools');
                 case chat_completion_sources.ELECTRONHUB:
+                    // @ts-expect-error TS(2339) FIXME: Property 'metadata' does not exist on type 'never'... Remove this comment to see the full error message
                     return currentModel.metadata?.function_call;
                 case chat_completion_sources.WORKERS_AI:
+                    // @ts-expect-error TS(2339) FIXME: Property 'properties' does not exist on type 'neve... Remove this comment to see the full error message
                     return Array.isArray(currentModel.properties) && currentModel.properties.some(p => p.property_id === 'function_calling' && p.value === 'true');
             }
         }
@@ -674,6 +706,7 @@ export class ToolManager {
             chat_completion_sources.WORKERS_AI,
             chat_completion_sources.MINIMAX,
         ];
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         return supportedSources.includes(settings.chat_completion_source);
     }
 
@@ -684,7 +717,9 @@ export class ToolManager {
      * @param {string} model Optional model name
      * @returns {boolean} Whether tool calls can be performed for the given type
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'type' implicitly has an 'any' type.
     static canPerformToolCalls(type, settings = null, model = null) {
+        // @ts-expect-error TS(2322) FIXME: Type '{ send_if_empty: string; impersonation_promp... Remove this comment to see the full error message
         settings = settings ?? oai_settings;
         model = model ?? getChatCompletionModel(settings);
         const noToolCallTypes = ['impersonate', 'quiet', 'continue'];
@@ -697,11 +732,16 @@ export class ToolManager {
      * @param {any} data Response data
      * @returns {any[]} Tool calls from the response data
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
     static #getToolCallsFromData(data) {
         const getRandomId = () => Math.random().toString(36).substring(2);
+        // @ts-expect-error TS(7023) FIXME: 'isClaudeToolCall' implicitly has return type 'any... Remove this comment to see the full error message
         const isClaudeToolCall = c => Array.isArray(c) ? c.filter(x => x).every(isClaudeToolCall) : c?.input && c?.name && c?.id;
+        // @ts-expect-error TS(7023) FIXME: 'isGoogleToolCall' implicitly has return type 'any... Remove this comment to see the full error message
         const isGoogleToolCall = c => Array.isArray(c) ? c.filter(x => x).every(isGoogleToolCall) : c?.name && c?.args;
+        // @ts-expect-error TS(7006) FIXME: Parameter 'c' implicitly has an 'any' type.
         const convertClaudeToolCall = c => ({ id: c.id, function: { name: c.name, arguments: c.input } });
+        // @ts-expect-error TS(7006) FIXME: Parameter 'c' implicitly has an 'any' type.
         const convertGoogleToolCall = (c, signature = null) => ({ id: getRandomId(), function: { name: c.name, arguments: c.args }, signature });
 
         // Parsed tool calls from streaming data
@@ -723,18 +763,21 @@ export class ToolManager {
 
         // Google AI Studio tool calls
         if (Array.isArray(data?.responseContent?.parts)) {
+            // @ts-expect-error TS(7006) FIXME: Parameter 'p' implicitly has an 'any' type.
             return data.responseContent.parts.filter(p => p.functionCall).map(p => convertGoogleToolCall(p.functionCall, p.thoughtSignature));
         }
 
         // Parsed tool calls from non-streaming data
         if (Array.isArray(data?.choices)) {
             // Find a choice with 0-index
+            // @ts-expect-error TS(7006) FIXME: Parameter 'choice' implicitly has an 'any' type.
             const choice = data.choices.find(choice => choice.index === 0);
 
             if (choice && typeof choice.message === 'object' && Array.isArray(choice.message.tool_calls)) {
                 // Add OpenRouter signatures
                 if (Array.isArray(choice.message.reasoning_details)) {
                     for (const toolCall of choice.message.tool_calls) {
+                        // @ts-expect-error TS(7006) FIXME: Parameter 'rd' implicitly has an 'any' type.
                         const reasoningDetail = choice.message.reasoning_details.find(rd => rd.id === toolCall.id);
                         if (reasoningDetail && reasoningDetail.type === 'reasoning.encrypted' && reasoningDetail.data) {
                             toolCall.signature = reasoningDetail.data;
@@ -748,6 +791,7 @@ export class ToolManager {
 
         // Claude tool calls to OpenAI tool calls
         if (Array.isArray(data?.content)) {
+            // @ts-expect-error TS(7006) FIXME: Parameter 'c' implicitly has an 'any' type.
             const content = data.content.filter(c => c.type === 'tool_use').map(convertClaudeToolCall);
 
             if (content) {
@@ -766,6 +810,7 @@ export class ToolManager {
      * @param {object} data Response data
      * @returns {boolean} Whether the response data contains tool calls
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
     static hasToolCalls(data) {
         const toolCalls = ToolManager.#getToolCallsFromData(data);
         return Array.isArray(toolCalls) && toolCalls.length > 0;
@@ -778,6 +823,7 @@ export class ToolManager {
      * @param root0.reasoningText
      * @returns {Promise<ToolInvocationResult>} Successful tool invocations
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
     static async invokeFunctionTools(data, { reasoningText = null } = {}) {
         /** @type {ToolInvocationResult} */
         const result = {
@@ -803,27 +849,37 @@ export class ToolManager {
             const displayName = ToolManager.getDisplayName(name);
             const isStealth = ToolManager.isStealthTool(name);
             const message = await ToolManager.formatToolCallMessage(name, parameters);
-            // @ts-expect-error TS(2552): Cannot find name 'toastr'. Did you mean 'toast'?
+            // @ts-expect-error TS(2552) FIXME: Cannot find name 'toastr'. Did you mean 'toast'?
             const toast = message && toastr.info(message, 'Tool Calling', { timeOut: 0 });
             const toolResult = await ToolManager.invokeFunctionTool(name, parameters);
-            // @ts-expect-error TS(2552): Cannot find name 'toastr'. Did you mean 'toast'?
+            // @ts-expect-error TS(2552) FIXME: Cannot find name 'toastr'. Did you mean 'toast'?
             toastr.clear(toast);
             console.log('[ToolManager] Function tool result:', result);
 
             // Handle tool errors — still create an invocation so the LLM sees the failure
             if (toolResult instanceof Error) {
+                // @ts-expect-error TS(2345) FIXME: Argument of type 'Error' is not assignable to para... Remove this comment to see the full error message
                 result.errors.push(toolResult);
                 if (isStealth) {
+                    // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
                     result.stealthCalls.push(name);
                 } else {
                     result.invocations.push({
+                        // @ts-expect-error TS(2322) FIXME: Type 'any' is not assignable to type 'never'.
                         id,
+                        // @ts-expect-error TS(2322) FIXME: Type 'any' is not assignable to type 'never'.
                         displayName,
+                        // @ts-expect-error TS(2322) FIXME: Type 'any' is not assignable to type 'never'.
                         name,
+                        // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'never'.
                         parameters: stringify(parameters),
+                        // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'never'.
                         result: toolResult.toString(),
+                        // @ts-expect-error TS(2322) FIXME: Type 'boolean' is not assignable to type 'never'.
                         error: true,
+                        // @ts-expect-error TS(2322) FIXME: Type 'any' is not assignable to type 'never'.
                         signature: toolCall.signature || null,
+                        // @ts-expect-error TS(2322) FIXME: Type 'null' is not assignable to type 'never'.
                         reasoning: reasoningText || null,
                     });
                 }
@@ -832,6 +888,7 @@ export class ToolManager {
 
             // Don't save stealth tool invocations
             if (isStealth) {
+                // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
                 result.stealthCalls.push(name);
                 continue;
             }
@@ -846,6 +903,7 @@ export class ToolManager {
                 signature: toolCall.signature || null,
                 reasoning: reasoningText || null,
             };
+            // @ts-expect-error TS(2345) FIXME: Argument of type '{ id: any; displayName: any; nam... Remove this comment to see the full error message
             result.invocations.push(invocation);
         }
 
@@ -857,11 +915,14 @@ export class ToolManager {
      * @param {string[]} toolNames Tool names
      * @returns {string} Grouped tool names
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'toolNames' implicitly has an 'any' type... Remove this comment to see the full error message
     static #groupToolNames(toolNames) {
+        // @ts-expect-error TS(7006) FIXME: Parameter 'acc' implicitly has an 'any' type.
         const toolCounts = toolNames.reduce((acc, name) => {
             acc[name] = (acc[name] || 0) + 1;
             return acc;
         }, {});
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         return Object.entries(toolCounts).map(([name, count]) => count > 1 ? `${name} (${count})` : name).join(', ');
     }
 
@@ -870,6 +931,7 @@ export class ToolManager {
      * @param {ToolInvocation[]} invocations Tool invocations.
      * @returns {string} Formatted message with tool invocations.
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'invocations' implicitly has an 'any' ty... Remove this comment to see the full error message
     static #formatToolInvocationMessage(invocations) {
         const data = structuredClone(invocations);
         const detailsElement = document.createElement('details');
@@ -877,11 +939,13 @@ export class ToolManager {
         const preElement = document.createElement('pre');
         const codeElement = document.createElement('code');
         codeElement.classList.add('language-json');
+        // @ts-expect-error TS(7006) FIXME: Parameter 'i' implicitly has an 'any' type.
         data.forEach(i => {
             i.parameters = tryParse(i.parameters);
             i.result = tryParse(i.result);
         });
         codeElement.textContent = JSON.stringify(data, null, 2);
+        // @ts-expect-error TS(7006) FIXME: Parameter 'i' implicitly has an 'any' type.
         const toolNames = data.map(i => i.displayName || i.name);
         summaryElement.textContent = `Tool calls: ${this.#groupToolNames(toolNames)}`;
         preElement.append(codeElement);
@@ -893,6 +957,7 @@ export class ToolManager {
      * Saves function tool invocations to the last user chat message extra metadata.
      * @param {ToolInvocation[]} invocations Successful tool invocations
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'invocations' implicitly has an 'any' ty... Remove this comment to see the full error message
     static async saveFunctionToolInvocations(invocations) {
         if (!Array.isArray(invocations) || invocations.length === 0) {
             return;
@@ -907,10 +972,11 @@ export class ToolManager {
                 isSmallSys: true,
                 tool_invocations: invocations,
                 api: getGeneratingApi(),
-                // @ts-expect-error TS(2554): Expected 1 arguments, but got 0.
+                // @ts-expect-error TS(2554) FIXME: Expected 1 arguments, but got 0.
                 model: getGeneratingModel(),
             },
         };
+        // @ts-expect-error TS(2345) FIXME: Argument of type '{ name: string; force_avatar: st... Remove this comment to see the full error message
         chat.push(message);
         await eventSource.emit(event_types.TOOL_CALLS_PERFORMED, invocations);
         addOneMessage(message);
@@ -923,9 +989,11 @@ export class ToolManager {
      * @param {Error[]} errors Errors that occurred during tool invocation
      * @returns {void}
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'errors' implicitly has an 'any' type.
     static showToolCallError(errors) {
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.error('An error occurred while invoking function tools. Click here for more details.', 'Tool Calling', {
+            // @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
             onclick: () => Popup.show.text('Tool Calling Errors', DOMPurify.sanitize(errors.map(e => `${e.cause}: ${e.message}`).join('<br>'))),
             timeOut: 5000,
         });
@@ -952,9 +1020,11 @@ export class ToolManager {
                     forceEnum: true,
                 }),
             ],
+            // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
             callback: async (args) => {
                 /** @type {any} */
                 const returnType = String(args?.return ?? 'popup-html').trim().toLowerCase();
+                // @ts-expect-error TS(7006) FIXME: Parameter 'tools' implicitly has an 'any' type.
                 const objectToStringFunc = (tools) => Array.isArray(tools) ? tools.map(x => x.toString()).join('\n\n') : tools.toString();
                 const tools = ToolManager.tools.map(tool => tool.toFunctionOpenAI());
                 return await slashCommandReturnHelper.doReturn(returnType ?? 'popup-html', tools ?? [], { objectToStringFunc });
@@ -984,6 +1054,7 @@ export class ToolManager {
                     enumProvider: toolsEnumProvider,
                 }),
             ],
+            // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
             callback: async (args, name) => {
                 const { parameters } = args;
 
@@ -1082,6 +1153,7 @@ export class ToolManager {
                     acceptsMultiple: false,
                 }),
             ],
+            // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
             callback: async (args, action) => {
                 /**
                  * Converts a slash command closure to a function.
@@ -1089,7 +1161,9 @@ export class ToolManager {
                  * @param {function(any): any} convertResult Function to convert the result
                  * @returns {function} Function that executes the closure
                  */
+                // @ts-expect-error TS(7006) FIXME: Parameter 'action' implicitly has an 'any' type.
                 function closureToFunction(action, convertResult) {
+                    // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
                     return async (args) => {
                         const localClosure = action.getCopy();
                         localClosure.onProgress = () => { };
@@ -1128,8 +1202,11 @@ export class ToolManager {
                     throw new Error('The "shouldRegister" argument must be a closure.');
                 }
 
+                // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
                 const actionFunc = closureToFunction(action, x => x);
+                // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
                 const formatMessageFunc = formatMessage instanceof SlashCommandClosure ? closureToFunction(formatMessage, x => String(x)) : null;
+                // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
                 const shouldRegisterFunc = shouldRegister instanceof SlashCommandClosure ? closureToFunction(shouldRegister, x => isTrueBoolean(x)) : null;
 
                 ToolManager.registerFunctionTool({
@@ -1161,6 +1238,7 @@ export class ToolManager {
                     enumProvider: toolsEnumProvider,
                 }),
             ],
+            // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
             callback: async (_, name) => {
                 if (typeof name !== 'string' || !name) {
                     throw new Error('The unnamed argument must be a non-empty string.');

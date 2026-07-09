@@ -1,12 +1,16 @@
+// @ts-expect-error TS(1259) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import express from 'express';
+// @ts-expect-error TS(1192) FIXME: Module '"node:fs"' has no default export.
 import fs, { promises as fsPromises } from 'node:fs';
+// @ts-expect-error TS(1259) FIXME: Module '"node:path"' can only be default-imported ... Remove this comment to see the full error message
 import path from 'node:path';
-// @ts-expect-error TS(2792): Cannot find module 'sanitize-filename'. Did you me... Remove this comment to see the full error message
+// @ts-expect-error TS(2792) FIXME: Cannot find module 'sanitize-filename'. Did you me... Remove this comment to see the full error message
 import sanitize from 'sanitize-filename';
 import { CHAT_BACKUPS_PREFIX, getChatInfo } from './chats.js';
 
 export const router = express.Router();
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/chat/get', async (request, response) => {
     try {
         const backupModels = [];
@@ -17,7 +21,7 @@ router.post('/chat/get', async (request, response) => {
         for (const name of backupFiles) {
             const filePath = path.join(request.user.directories.backups, name);
             const info = await getChatInfo(filePath);
-            // @ts-expect-error TS(2339): Property 'file_name' does not exist on type 'unkno... Remove this comment to see the full error message
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             if (!info || !info.file_name) {
                 continue;
             }
@@ -31,6 +35,7 @@ router.post('/chat/get', async (request, response) => {
     }
 });
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/chat/delete', async (request, response) => {
     try {
         const { name } = request.body;
@@ -53,6 +58,7 @@ router.post('/chat/delete', async (request, response) => {
     }
 });
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/chat/download', async (request, response) => {
     try {
         const { name } = request.body;

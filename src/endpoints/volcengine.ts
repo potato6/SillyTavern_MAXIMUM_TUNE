@@ -6,7 +6,6 @@ import { readSecret, SECRET_KEYS } from './secrets.js';
 export const router = Router();
 
 
-// @ts-expect-error TS(7030): Not all code paths return a value.
 router.post('/generate-voice', async (req, res) => {
     try {
         let provider_endpoint = req.body.provider_endpoint;
@@ -126,7 +125,7 @@ router.post('/generate-voice', async (req, res) => {
             });
         });
 
-        // @ts-expect-error TS(2345): Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
+        // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
         const finalAudioData = Buffer.concat(result);
 
         res.set('Content-Type', 'audio/mpeg');

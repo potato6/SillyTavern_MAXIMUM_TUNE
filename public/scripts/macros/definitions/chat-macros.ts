@@ -94,10 +94,12 @@ function getLastMessageId({ exclude_swipe_in_propress = true, filter = null } = 
     for (let i = chat.length - 1; i >= 0; i--) {
         const message = chat[i];
 
+        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         if (exclude_swipe_in_propress && message.swipes && message.swipe_id >= message.swipes.length) {
             continue;
         }
 
+        // @ts-expect-error TS(2349) FIXME: This expression is not callable.
         if (!filter || filter(message)) {
             return i;
         }
@@ -111,6 +113,7 @@ function getLastMessageId({ exclude_swipe_in_propress = true, filter = null } = 
  */
 function getLastMessage() {
     const mid = getLastMessageId();
+    // @ts-expect-error TS(2339) FIXME: Property 'mes' does not exist on type 'never'.
     return typeof mid === 'number' ? (chat[mid]?.mes ?? '') : '';
 }
 
@@ -118,7 +121,9 @@ function getLastMessage() {
  *
  */
 function getLastUserMessage() {
+    // @ts-expect-error TS(2322) FIXME: Type '(m: any) => any' is not assignable to type '... Remove this comment to see the full error message
     const mid = getLastMessageId({ filter: m => m.is_user && !m.is_system });
+    // @ts-expect-error TS(2339) FIXME: Property 'mes' does not exist on type 'never'.
     return typeof mid === 'number' ? (chat[mid]?.mes ?? '') : '';
 }
 
@@ -126,7 +131,9 @@ function getLastUserMessage() {
  *
  */
 function getLastCharMessage() {
+    // @ts-expect-error TS(2322) FIXME: Type '(m: any) => boolean' is not assignable to ty... Remove this comment to see the full error message
     const mid = getLastMessageId({ filter: m => !m.is_user && !m.is_system });
+    // @ts-expect-error TS(2339) FIXME: Property 'mes' does not exist on type 'never'.
     return typeof mid === 'number' ? (chat[mid]?.mes ?? '') : '';
 }
 
@@ -134,7 +141,7 @@ function getLastCharMessage() {
  *
  */
 function getFirstIncludedMessageId() {
-    // @ts-expect-error TS(2339): Property 'lastInContextMessageId' does not exist o... Remove this comment to see the full error message
+    // @ts-expect-error TS(2339) FIXME: Property 'lastInContextMessageId' does not exist o... Remove this comment to see the full error message
     const value = chat_metadata.lastInContextMessageId;
     return typeof value === 'number' ? value : null;
 }
@@ -159,6 +166,7 @@ function getLastSwipeId() {
     if (typeof mid !== 'number') {
         return null;
     }
+    // @ts-expect-error TS(2339) FIXME: Property 'swipes' does not exist on type 'never'.
     const swipes = chat[mid]?.swipes;
     return Array.isArray(swipes) ? swipes.length : null;
 }
@@ -171,6 +179,7 @@ function getCurrentSwipeId() {
     if (typeof mid !== 'number') {
         return null;
     }
+    // @ts-expect-error TS(2339) FIXME: Property 'swipe_id' does not exist on type 'never'... Remove this comment to see the full error message
     const swipeId = chat[mid]?.swipe_id;
     return typeof swipeId === 'number' ? swipeId + 1 : null;
 }

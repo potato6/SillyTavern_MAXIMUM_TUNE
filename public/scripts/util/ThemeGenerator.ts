@@ -11,6 +11,7 @@
  * @param {number} c sRGB component (0–255)
  * @returns {number} Linear RGB value (0–1)
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'c' implicitly has an 'any' type.
 function srgbToLinear(c) {
     c /= 255;
     return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
@@ -21,6 +22,7 @@ function srgbToLinear(c) {
  * @param {number} c Linear RGB value (0–1)
  * @returns {number} sRGB component (0–255), clamped
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'c' implicitly has an 'any' type.
 function linearToSrgb(c) {
     const v = c <= 0.0031308 ? 12.92 * c : 1.055 * Math.pow(c, 1 / 2.4) - 0.055;
     return Math.round(Math.min(255, Math.max(0, v * 255)));
@@ -33,6 +35,7 @@ function linearToSrgb(c) {
  * @param {number} b Blue (0–255)
  * @returns {{L: number, C: number, h: number}} Oklch color (h in radians)
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'r' implicitly has an 'any' type.
 function srgbToOklch(r, g, b) {
     const lr = srgbToLinear(r);
     const lg = srgbToLinear(g);
@@ -59,6 +62,7 @@ function srgbToOklch(r, g, b) {
  * @param {number} h Hue (radians)
  * @returns {{r: number, g: number, b: number}} sRGB color
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'L' implicitly has an 'any' type.
 function oklchToSrgb(L, C, h) {
     const a = C * Math.cos(h);
     const b = C * Math.sin(h);
@@ -87,6 +91,7 @@ function oklchToSrgb(L, C, h) {
  * @param {number} b Blue (0–255)
  * @returns {number} Relative luminance (0–1)
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'r' implicitly has an 'any' type.
 function relativeLuminance(r, g, b) {
     return 0.2126 * srgbToLinear(r) + 0.7152 * srgbToLinear(g) + 0.0722 * srgbToLinear(b);
 }
@@ -97,6 +102,7 @@ function relativeLuminance(r, g, b) {
  * @param {{r: number, g: number, b: number}} c2 Second color
  * @returns {number} Contrast ratio (1–21)
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'c1' implicitly has an 'any' type.
 function contrastRatio(c1, c2) {
     const l1 = relativeLuminance(c1.r, c1.g, c1.b);
     const l2 = relativeLuminance(c2.r, c2.g, c2.b);
@@ -114,6 +120,7 @@ function contrastRatio(c1, c2) {
  * @param {HTMLImageElement} imgEl Image element to sample
  * @returns {{r: number, g: number, b: number}} Dominant vivid RGB color
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'imgEl' implicitly has an 'any' type.
 export function extractDominantColor(imgEl) {
     const canvas = document.createElement('canvas');
     const context = canvas.getContext('2d');
@@ -143,6 +150,7 @@ export function extractDominantColor(imgEl) {
 
     for (let i = 0; i < data.length; i += 4 * step) {
         const pr = data[i], pg = data[i + 1], pb = data[i + 2], alpha = data[i + 3];
+        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         if (alpha < 128) continue; // skip transparent pixels
 
         const lch = srgbToOklch(pr, pg, pb);
@@ -190,6 +198,7 @@ export function extractDominantColor(imgEl) {
  * @param {boolean} preferLight Whether to push lighter or darker
  * @returns {{L: number, C: number, h: number}} Adjusted Oklch color
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'L' implicitly has an 'any' type.
 function ensureContrast(L, C, h, refRgb, minContrast, preferLight) {
     const direction = preferLight ? 0.02 : -0.02;
 
@@ -210,6 +219,7 @@ function ensureContrast(L, C, h, refRgb, minContrast, preferLight) {
  * @param {number} [alpha] Alpha value
  * @returns {string} RGBA color string
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'rgb' implicitly has an 'any' type.
 function rgbaString(rgb, alpha = 1) {
     return `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${alpha})`;
 }
@@ -221,6 +231,7 @@ function rgbaString(rgb, alpha = 1) {
  * @param {{r: number, g: number, b: number}} dominantRgb The dominant image color
  * @returns {Partial<Theme>} Theme color properties ready to merge into a theme object
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'dominantRgb' implicitly has an 'any' ty... Remove this comment to see the full error message
 export function generateThemePalette(dominantRgb) {
     const base = srgbToOklch(dominantRgb.r, dominantRgb.g, dominantRgb.b);
 
@@ -303,6 +314,7 @@ export function generateThemePalette(dominantRgb) {
  * @param {string} bgUrl The background image URL
  * @returns {string} A cleaned-up name suitable for a theme name
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'bgUrl' implicitly has an 'any' type.
 export function deriveBackgroundName(bgUrl) {
     // Extract filename from URL path
     let name = bgUrl.split('/').pop() || 'background';

@@ -1,8 +1,11 @@
+// @ts-expect-error TS(1192) FIXME: Module '"node:fs"' has no default export.
 import fs from 'node:fs';
+// @ts-expect-error TS(1259) FIXME: Module '"node:path"' can only be default-imported ... Remove this comment to see the full error message
 import path from 'node:path';
 
+// @ts-expect-error TS(1259) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import express from 'express';
-// @ts-expect-error TS(2792): Cannot find module 'sanitize-filename'. Did you me... Remove this comment to see the full error message
+// @ts-expect-error TS(2792) FIXME: Cannot find module 'sanitize-filename'. Did you me... Remove this comment to see the full error message
 import sanitize from 'sanitize-filename';
 import { sync as writeFileAtomicSync } from 'write-file-atomic';
 import { tryParse } from '../util.js';
@@ -36,11 +39,14 @@ export function readWorldInfoFile(directories: Record<string, string>, worldInfo
 
 export const router = express.Router();
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/list', async (request, response) => {
     try {
         const data = [];
         const jsonFiles = (await fs.promises.readdir(request.user.directories.worlds, { withFileTypes: true }))
+            // @ts-expect-error TS(7006) FIXME: Parameter 'file' implicitly has an 'any' type.
             .filter((file) => file.isFile() && path.extname(file.name).toLowerCase() === '.json')
+            // @ts-expect-error TS(7006) FIXME: Parameter 'a' implicitly has an 'any' type.
             .sort((a, b) => a.name.localeCompare(b.name));
 
         for (const file of jsonFiles) {
@@ -68,6 +74,7 @@ router.post('/list', async (request, response) => {
     }
 });
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/get', (request, response) => {
     if (!request.body?.name) {
         return response.sendStatus(400);
@@ -78,6 +85,7 @@ router.post('/get', (request, response) => {
     return response.send(file);
 });
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/delete', (request, response) => {
     if (!request.body?.name) {
         return response.sendStatus(400);
@@ -96,6 +104,7 @@ router.post('/delete', (request, response) => {
     return response.sendStatus(200);
 });
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/import', (request, response) => {
     if (!request.file) return response.sendStatus(400);
 
@@ -131,6 +140,7 @@ router.post('/import', (request, response) => {
     return response.send({ name: worldName });
 });
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/edit', (request, response) => {
     if (!request.body) {
         return response.sendStatus(400);

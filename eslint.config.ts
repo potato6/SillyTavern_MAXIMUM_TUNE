@@ -29,6 +29,7 @@ const getRules = (config: unknown) => {
     if (Array.isArray(config)) {
         return config.reduce((acc, c) => ({ ...acc, ...(c?.rules || {}) }), {});
     }
+    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
     return config?.rules || {};
 };
 

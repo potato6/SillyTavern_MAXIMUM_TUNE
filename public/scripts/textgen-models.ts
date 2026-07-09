@@ -9,12 +9,19 @@ import { t } from './i18n.js';
 import { accountStorage } from './util/AccountStorage.js';
 import { localizePagination, PAGINATION_TEMPLATE, textValueMatcher } from './utils.js';
 
+// @ts-expect-error TS(7034) FIXME: Variable 'mancerModels' implicitly has type 'any[]... Remove this comment to see the full error message
 let mancerModels = [];
+// @ts-expect-error TS(7034) FIXME: Variable 'togetherModels' implicitly has type 'any... Remove this comment to see the full error message
 let togetherModels = [];
+// @ts-expect-error TS(7034) FIXME: Variable 'infermaticAIModels' implicitly has type ... Remove this comment to see the full error message
 let infermaticAIModels = [];
+// @ts-expect-error TS(7034) FIXME: Variable 'dreamGenModels' implicitly has type 'any... Remove this comment to see the full error message
 let dreamGenModels = [];
+// @ts-expect-error TS(7034) FIXME: Variable 'vllmModels' implicitly has type 'any[]' ... Remove this comment to see the full error message
 let vllmModels = [];
+// @ts-expect-error TS(7034) FIXME: Variable 'aphroditeModels' implicitly has type 'an... Remove this comment to see the full error message
 let aphroditeModels = [];
+// @ts-expect-error TS(7034) FIXME: Variable 'featherlessModels' implicitly has type '... Remove this comment to see the full error message
 let featherlessModels = [];
 let tabbyModels = [];
 let llamacppModels = [];
@@ -331,19 +338,21 @@ const OPENROUTER_PROVIDER_WARNING_SELECTORS = {
  *
  * @param providersSelector
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'providersSelector' implicitly has an 'a... Remove this comment to see the full error message
 export function updateOpenRouterProvidersWarning(providersSelector) {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const $providers = $(providersSelector);
 
+    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     const warningSelectors = OPENROUTER_PROVIDER_WARNING_SELECTORS[providersSelector];
 
     if ($providers.length === 0 || !warningSelectors) {
         return;
     }
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const $fallback = $(warningSelectors.fallbackSelector);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const $warning = $(warningSelectors.warningSelector);
 
     const allowFallback = !!$fallback.prop('checked');
@@ -360,8 +369,9 @@ export function updateOpenRouterProvidersWarning(providersSelector) {
  * @param modelId
  * @param providersSelector
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'modelId' implicitly has an 'any' type.
 export async function syncOpenRouterProvidersForModel(modelId, providersSelector) {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const $providers = $(providersSelector);
 
     const refreshWarningState = () => {
@@ -371,6 +381,7 @@ export async function syncOpenRouterProvidersForModel(modelId, providersSelector
     const providersEl = $providers[0];
 
     if (!modelId || !modelId.includes('/')) {
+        // @ts-expect-error TS(7006) FIXME: Parameter 'el' implicitly has an 'any' type.
         providersEl?.querySelectorAll('option').forEach(el => el.disabled = false);
         $providers.trigger('change.select2');
         refreshWarningState();
@@ -392,12 +403,14 @@ export async function syncOpenRouterProvidersForModel(modelId, providersSelector
         const providerNames = await response.json();
 
         if (!Array.isArray(providerNames) || providerNames.length === 0) {
+            // @ts-expect-error TS(7006) FIXME: Parameter 'el' implicitly has an 'any' type.
             providersEl?.querySelectorAll('option').forEach(el => el.disabled = false);
             $providers.trigger('change.select2');
             refreshWarningState();
             return;
         }
 
+        // @ts-expect-error TS(7006) FIXME: Parameter 'el' implicitly has an 'any' type.
         providersEl?.querySelectorAll('option').forEach(el => {
             const isAvailable = providerNames.includes(el.value);
             el.disabled = !isAvailable;
@@ -416,8 +429,9 @@ export async function syncOpenRouterProvidersForModel(modelId, providersSelector
  * @param modelId
  * @param providersSelector
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'modelId' implicitly has an 'any' type.
 export async function syncNanoGptProvidersForModel(modelId, providersSelector) {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const $providers = $(providersSelector);
 
     const refreshWarningState = () => {
@@ -427,6 +441,7 @@ export async function syncNanoGptProvidersForModel(modelId, providersSelector) {
     const providersEl = $providers[0];
 
     if (!modelId) {
+        // @ts-expect-error TS(7006) FIXME: Parameter 'el' implicitly has an 'any' type.
         providersEl?.querySelectorAll('option').forEach(el => el.disabled = false);
         $providers.trigger('change.select2');
         refreshWarningState();
@@ -449,6 +464,7 @@ export async function syncNanoGptProvidersForModel(modelId, providersSelector) {
         const providerIds = Array.isArray(data?.providers) ? data.providers : [];
 
         if (!data?.supportsProviderSelection || providerIds.length === 0) {
+            // @ts-expect-error TS(7006) FIXME: Parameter 'el' implicitly has an 'any' type.
             providersEl?.querySelectorAll('option').forEach(el => {
                 el.disabled = Boolean(el.value);
             });
@@ -457,6 +473,7 @@ export async function syncNanoGptProvidersForModel(modelId, providersSelector) {
             return;
         }
 
+        // @ts-expect-error TS(7006) FIXME: Parameter 'el' implicitly has an 'any' type.
         providersEl?.querySelectorAll('option').forEach(el => {
             const value = el.value;
             const isAvailable = !value || providerIds.includes(value);
@@ -475,8 +492,9 @@ export async function syncNanoGptProvidersForModel(modelId, providersSelector) {
  *
  * @param providersSelector
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'providersSelector' implicitly has an 'a... Remove this comment to see the full error message
 export function updateNanoGptProvidersWarning(providersSelector) {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const $providers = $(providersSelector);
 
     if ($providers.length === 0) {
@@ -488,7 +506,7 @@ export function updateNanoGptProvidersWarning(providersSelector) {
     const applicableSelectedCount = providersEl?.querySelectorAll('option:checked:not([disabled])').length ?? 0;
     const showWarning = selectedCount > 0 && applicableSelectedCount === 0;
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#nanogpt_provider_warning').toggleClass('displayNone', !showWarning);
 }
 
@@ -496,6 +514,7 @@ export function updateNanoGptProvidersWarning(providersSelector) {
  *
  * @param data
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
 export async function loadOllamaModels(data) {
     if (!Array.isArray(data)) {
         console.error('Invalid Ollama models data', data);
@@ -506,14 +525,14 @@ export async function loadOllamaModels(data) {
         textgen_settings.ollama_model = data[0]?.id || '';
     }
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#ollama_model').empty();
     for (const model of data) {
         const option = document.createElement('option');
         option.value = model.id;
         option.text = model.name;
         option.selected = model.id === textgen_settings.ollama_model;
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#ollama_model').append(option);
     }
 }
@@ -522,6 +541,7 @@ export async function loadOllamaModels(data) {
  *
  * @param data
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
 export async function loadTabbyModels(data) {
     if (!Array.isArray(data)) {
         console.error('Invalid Tabby models data', data);
@@ -536,14 +556,14 @@ export async function loadTabbyModels(data) {
         textgen_settings.tabby_model = tabbyModels[0]?.id || '';
     }
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#tabby_model').empty();
     for (const model of tabbyModels) {
         const option = document.createElement('option');
         option.value = model.id;
         option.text = model.id;
         option.selected = model.id === textgen_settings.tabby_model;
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#tabby_model').append(option);
     }
 }
@@ -552,6 +572,7 @@ export async function loadTabbyModels(data) {
  *
  * @param data
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
 export async function loadLlamaCppModels(data) {
     if (!Array.isArray(data)) {
         console.error('Invalid llama.cpp models data', data);
@@ -566,14 +587,14 @@ export async function loadLlamaCppModels(data) {
         textgen_settings.llamacpp_model = llamacppModels[0]?.id || '';
     }
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#llamacpp_model').empty();
     for (const model of llamacppModels) {
         const option = document.createElement('option');
         option.value = model.id;
         option.text = model.id;
         option.selected = model.id === textgen_settings.llamacpp_model;
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#llamacpp_model').append(option);
     }
 }
@@ -582,6 +603,7 @@ export async function loadLlamaCppModels(data) {
  *
  * @param data
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
 export async function loadTogetherAIModels(data) {
     if (!Array.isArray(data)) {
         console.error('Invalid Together AI models data', data);
@@ -595,7 +617,7 @@ export async function loadTogetherAIModels(data) {
         textgen_settings.togetherai_model = data[0]?.id || '';
     }
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#model_togetherai_select').empty();
     for (const model of data) {
         // Hey buddy, I think you've got the wrong door.
@@ -607,7 +629,7 @@ export async function loadTogetherAIModels(data) {
         option.value = model.id;
         option.text = model.display_name;
         option.selected = model.id === textgen_settings.togetherai_model;
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#model_togetherai_select').append(option);
     }
 }
@@ -616,6 +638,7 @@ export async function loadTogetherAIModels(data) {
  *
  * @param data
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
 export async function loadInfermaticAIModels(data) {
     if (!Array.isArray(data)) {
         console.error('Invalid Infermatic AI models data', data);
@@ -629,7 +652,7 @@ export async function loadInfermaticAIModels(data) {
         textgen_settings.infermaticai_model = data[0]?.id || '';
     }
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#model_infermaticai_select').empty();
     for (const model of data) {
         if (model.display_type === 'image') {
@@ -640,7 +663,7 @@ export async function loadInfermaticAIModels(data) {
         option.value = model.id;
         option.text = model.id;
         option.selected = model.id === textgen_settings.infermaticai_model;
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#model_infermaticai_select').append(option);
     }
 }
@@ -649,6 +672,7 @@ export async function loadInfermaticAIModels(data) {
  *
  * @param data
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
 export function loadGenericModels(data) {
     if (!Array.isArray(data)) {
         console.error('Invalid Generic models data', data);
@@ -656,7 +680,7 @@ export function loadGenericModels(data) {
     }
 
     data.sort((a, b) => a.id.localeCompare(b.id));
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const dataList = $('#generic_model_fill');
     dataList.empty();
 
@@ -672,6 +696,7 @@ export function loadGenericModels(data) {
  *
  * @param data
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
 export async function loadDreamGenModels(data) {
     if (!Array.isArray(data)) {
         console.error('Invalid DreamGen models data', data);
@@ -684,7 +709,7 @@ export async function loadDreamGenModels(data) {
         textgen_settings.dreamgen_model = data[0]?.id || '';
     }
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#model_dreamgen_select').empty();
     for (const model of data) {
         if (model.display_type === 'image') {
@@ -695,7 +720,7 @@ export async function loadDreamGenModels(data) {
         option.value = model.id;
         option.text = model.id;
         option.selected = model.id === textgen_settings.dreamgen_model;
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#model_dreamgen_select').append(option);
     }
 }
@@ -704,6 +729,7 @@ export async function loadDreamGenModels(data) {
  *
  * @param data
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
 export async function loadMancerModels(data) {
     if (!Array.isArray(data)) {
         console.error('Invalid Mancer models data', data);
@@ -717,14 +743,14 @@ export async function loadMancerModels(data) {
         textgen_settings.mancer_model = data[0]?.id || '';
     }
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#mancer_model').empty();
     for (const model of data) {
         const option = document.createElement('option');
         option.value = model.id;
         option.text = model.name;
         option.selected = model.id === textgen_settings.mancer_model;
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#mancer_model').append(option);
     }
 }
@@ -733,6 +759,7 @@ export async function loadMancerModels(data) {
  *
  * @param data
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
 export async function loadOpenRouterModels(data) {
     if (!Array.isArray(data)) {
         console.error('Invalid OpenRouter models data', data);
@@ -740,20 +767,21 @@ export async function loadOpenRouterModels(data) {
     }
 
     data.sort((a, b) => a.name.localeCompare(b.name));
+    // @ts-expect-error TS(2322) FIXME: Type 'any[]' is not assignable to type 'never[]'.
     openRouterModels = data;
 
     if (!data.find(x => x.id === textgen_settings.openrouter_model)) {
         textgen_settings.openrouter_model = data[0]?.id || '';
     }
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#openrouter_model').empty();
     for (const model of data) {
         const option = document.createElement('option');
         option.value = model.id;
         option.text = model.name;
         option.selected = model.id === textgen_settings.openrouter_model;
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#openrouter_model').append(option);
     }
 
@@ -766,6 +794,7 @@ export async function loadOpenRouterModels(data) {
  *
  * @param data
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
 export async function loadVllmModels(data) {
     if (!Array.isArray(data)) {
         console.error('Invalid vLLM models data', data);
@@ -778,14 +807,14 @@ export async function loadVllmModels(data) {
         textgen_settings.vllm_model = data[0]?.id || '';
     }
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#vllm_model').empty();
     for (const model of data) {
         const option = document.createElement('option');
         option.value = model.id;
         option.text = model.id;
         option.selected = model.id === textgen_settings.vllm_model;
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#vllm_model').append(option);
     }
 }
@@ -794,6 +823,7 @@ export async function loadVllmModels(data) {
  *
  * @param data
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
 export async function loadAphroditeModels(data) {
     if (!Array.isArray(data)) {
         console.error('Invalid Aphrodite models data', data);
@@ -806,14 +836,14 @@ export async function loadAphroditeModels(data) {
         textgen_settings.aphrodite_model = data[0]?.id || '';
     }
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#aphrodite_model').empty();
     for (const model of data) {
         const option = document.createElement('option');
         option.value = model.id;
         option.text = model.id;
         option.selected = model.id === textgen_settings.aphrodite_model;
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#aphrodite_model').append(option);
     }
 }
@@ -823,10 +853,11 @@ let featherlessCurrentPage = 1;
  *
  * @param data
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
 export async function loadFeatherlessModels(data) {
     const searchBar = document.getElementById('featherless_model_search_bar');
     const modelCardBlock = document.getElementById('featherless_model_card_block');
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const paginationContainer = $('#featherless_model_pagination_container');
     const sortOrderSelect = document.getElementById('featherless_model_sort_order');
     const classSelect = document.getElementById('featherless_class_selection');
@@ -834,6 +865,7 @@ export async function loadFeatherlessModels(data) {
     const storageKey = 'FeatherlessModels_PerPage';
 
     // Store the original models data for search and filtering
+    // @ts-expect-error TS(7034) FIXME: Variable 'originalModels' implicitly has type 'any... Remove this comment to see the full error message
     let originalModels = [];
 
     if (!Array.isArray(data)) {
@@ -864,6 +896,7 @@ export async function loadFeatherlessModels(data) {
      * @param perPage
      * @param pageNumber
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'models' implicitly has an 'any' type.
     function setupPagination(models, perPage, pageNumber = featherlessCurrentPage) {
         paginationContainer.pagination({
             dataSource: models,
@@ -877,9 +910,12 @@ export async function loadFeatherlessModels(data) {
             nextText: '>',
             formatNavigator: PAGINATION_TEMPLATE,
             showNavigator: true,
+            // @ts-expect-error TS(7006) FIXME: Parameter 'modelsOnPage' implicitly has an 'any' t... Remove this comment to see the full error message
             callback: function (modelsOnPage, pagination) {
+                // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
                 modelCardBlock.innerHTML = '';
 
+                // @ts-expect-error TS(7006) FIXME: Parameter 'model' implicitly has an 'any' type.
                 modelsOnPage.forEach(model => {
                     const card = document.createElement('div');
                     card.classList.add('model-card');
@@ -914,6 +950,7 @@ export async function loadFeatherlessModels(data) {
                     card.appendChild(modelNameContainer);
                     card.appendChild(detailsContainer);
 
+                    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
                     modelCardBlock.appendChild(card);
 
                     if (model.id === textgen_settings.featherless_model) {
@@ -931,6 +968,7 @@ export async function loadFeatherlessModels(data) {
                 featherlessCurrentPage = pagination.pageNumber;
                 localizePagination(paginationContainer);
             },
+            // @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
             afterSizeSelectorChange: function (e) {
                 const newPerPage = e.target.value;
                 accountStorage.setItem(storageKey, newPerPage);
@@ -940,30 +978,34 @@ export async function loadFeatherlessModels(data) {
     }
 
     // Unset previously added listeners
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(searchBar).off('input');
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(sortOrderSelect).off('change');
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(classSelect).off('change');
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(categoriesSelect).off('change');
 
     // Add event listener for input on the search bar
+    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     searchBar.addEventListener('input', function () {
         applyFiltersAndSort();
     });
 
     // Add event listener for the sort order select
+    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     sortOrderSelect.addEventListener('change', function () {
         applyFiltersAndSort();
     });
 
     // Add event listener for the class select
+    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     classSelect.addEventListener('change', function () {
         applyFiltersAndSort();
     });
 
+    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     categoriesSelect.addEventListener('change', function () {
         applyFiltersAndSort();
     });
@@ -973,16 +1015,19 @@ export async function loadFeatherlessModels(data) {
      *
      * @param models
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'models' implicitly has an 'any' type.
     function populateClassSelection(models) {
+        // @ts-expect-error TS(7006) FIXME: Parameter 'model' implicitly has an 'any' type.
         const uniqueClasses = [...new Set(models.map(model => model.model_class).filter(Boolean))];  // Get unique class names
-        // @ts-expect-error TS(2339): Property 'localeCompare' does not exist on type 'u... Remove this comment to see the full error message
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         uniqueClasses.sort((a, b) => a.localeCompare(b));
         uniqueClasses.forEach(className => {
             const option = document.createElement('option');
-            // @ts-expect-error TS(2322): Type 'unknown' is not assignable to type 'string'.
+            // @ts-expect-error TS(2322) FIXME: Type 'unknown' is not assignable to type 'string'.
             option.value = className;
-            // @ts-expect-error TS(2322): Type 'unknown' is not assignable to type 'string'.
+            // @ts-expect-error TS(2322) FIXME: Type 'unknown' is not assignable to type 'string |... Remove this comment to see the full error message
             option.textContent = className;
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             classSelect.appendChild(option);
         });
     }
@@ -1008,13 +1053,16 @@ export async function loadFeatherlessModels(data) {
         if (selectedCategory === 'Top') {
             featherlessTop = await fetchFeatherlessStats();
         }
+        // @ts-expect-error TS(7006) FIXME: Parameter 'stat' implicitly has an 'any' type.
         const featherlessIds = featherlessTop.map(stat => stat.id);
 
         if (selectedCategory === 'New') {
             featherlessNew = await fetchFeatherlessNew();
         }
+        // @ts-expect-error TS(7006) FIXME: Parameter 'stat' implicitly has an 'any' type.
         const featherlessNewIds = featherlessNew.map(stat => stat.id);
 
+        // @ts-expect-error TS(7005) FIXME: Variable 'originalModels' implicitly has an 'any[]... Remove this comment to see the full error message
         const filteredModels = originalModels.filter(model => {
             const matchesSearch = model.id.toLowerCase().includes(searchQuery);
             const matchesClass = selectedClass ? model.model_class === selectedClass : true;
@@ -1049,14 +1097,14 @@ export async function loadFeatherlessModels(data) {
     }
 
     // Required to keep the /model command function
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#featherless_model').empty();
     for (const model of data) {
         const option = document.createElement('option');
         option.value = model.id;
         option.text = model.id;
         option.selected = model.id === textgen_settings.featherless_model;
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#featherless_model').append(option);
     }
 }
@@ -1083,12 +1131,14 @@ async function fetchFeatherlessNew() {
  *
  * @param modelId
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'modelId' implicitly has an 'any' type.
 function onFeatherlessModelSelect(modelId) {
+    // @ts-expect-error TS(7005) FIXME: Variable 'featherlessModels' implicitly has an 'an... Remove this comment to see the full error message
     const model = featherlessModels.find(x => x.id === modelId);
     textgen_settings.featherless_model = modelId;
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#featherless_model').val(modelId);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#api_button_textgenerationwebui').trigger('click');
     setGenerationParamsFromPreset({ max_length: model.context_length });
 }
@@ -1098,17 +1148,23 @@ let featherlessIsGridView = false;  // Default state set to grid view
 // Ensure the correct initial view is applied when the page loads
 document.addEventListener('DOMContentLoaded', function () {
     const modelCardBlock = document.getElementById('featherless_model_card_block');
+    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     modelCardBlock.classList.add('list-view');
 
     const toggleButton = document.getElementById('featherless_model_grid_toggle');
+    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     toggleButton.addEventListener('click', function () {
         // Toggle between grid and list view
         if (featherlessIsGridView) {
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             modelCardBlock.classList.remove('grid-view');
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             modelCardBlock.classList.add('list-view');
             this.title = 'Toggle to grid view';
         } else {
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             modelCardBlock.classList.remove('list-view');
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             modelCardBlock.classList.add('grid-view');
             this.title = 'Toggle to list view';
         }
@@ -1120,12 +1176,13 @@ document.addEventListener('DOMContentLoaded', function () {
  *
  */
 function onMancerModelSelect() {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const modelId = String($('#mancer_model').val());
     textgen_settings.mancer_model = modelId;
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#api_button_textgenerationwebui').trigger('click');
 
+    // @ts-expect-error TS(7005) FIXME: Variable 'mancerModels' implicitly has an 'any[]' ... Remove this comment to see the full error message
     const limits = mancerModels.find(x => x.id === modelId)?.limits;
     setGenerationParamsFromPreset({ max_length: limits.context });
 }
@@ -1134,11 +1191,12 @@ function onMancerModelSelect() {
  *
  */
 function onTogetherModelSelect() {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const modelName = String($('#model_togetherai_select').val());
     textgen_settings.togetherai_model = modelName;
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#api_button_textgenerationwebui').trigger('click');
+    // @ts-expect-error TS(7005) FIXME: Variable 'togetherModels' implicitly has an 'any[]... Remove this comment to see the full error message
     const model = togetherModels.find(x => x.id === modelName);
     setGenerationParamsFromPreset({ max_length: model.context_length });
 }
@@ -1147,11 +1205,12 @@ function onTogetherModelSelect() {
  *
  */
 function onInfermaticAIModelSelect() {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const modelName = String($('#model_infermaticai_select').val());
     textgen_settings.infermaticai_model = modelName;
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#api_button_textgenerationwebui').trigger('click');
+    // @ts-expect-error TS(7005) FIXME: Variable 'infermaticAIModels' implicitly has an 'a... Remove this comment to see the full error message
     const model = infermaticAIModels.find(x => x.id === modelName);
     setGenerationParamsFromPreset({ max_length: model.context_length });
 }
@@ -1160,10 +1219,10 @@ function onInfermaticAIModelSelect() {
  *
  */
 function onDreamGenModelSelect() {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const modelName = String($('#model_dreamgen_select').val());
     textgen_settings.dreamgen_model = modelName;
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#api_button_textgenerationwebui').trigger('click');
     // TODO(DreamGen): Consider retuning max_tokens from API and setting it here.
 }
@@ -1172,10 +1231,10 @@ function onDreamGenModelSelect() {
  *
  */
 function onOllamaModelSelect() {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const modelId = String($('#ollama_model').val());
     textgen_settings.ollama_model = modelId;
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#api_button_textgenerationwebui').trigger('click');
 }
 
@@ -1183,10 +1242,10 @@ function onOllamaModelSelect() {
  *
  */
 function onTabbyModelSelect() {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const modelId = String($('#tabby_model').val());
     textgen_settings.tabby_model = modelId;
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#api_button_textgenerationwebui').trigger('click');
 }
 
@@ -1194,10 +1253,10 @@ function onTabbyModelSelect() {
  *
  */
 function onLlamaCppModelSelect() {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const modelId = String($('#llamacpp_model').val());
     textgen_settings.llamacpp_model = modelId;
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#api_button_textgenerationwebui').trigger('click');
 }
 
@@ -1205,13 +1264,15 @@ function onLlamaCppModelSelect() {
  *
  */
 function onOpenRouterModelSelect() {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const modelId = String($('#openrouter_model').val());
     textgen_settings.openrouter_model = modelId;
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#api_button_textgenerationwebui').trigger('click');
+    // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
     const model = openRouterModels.find(x => x.id === modelId);
     syncOpenRouterProvidersForModel(modelId, '#openrouter_providers_text');
+    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
     setGenerationParamsFromPreset({ max_length: model.context_length });
 }
 
@@ -1219,10 +1280,10 @@ function onOpenRouterModelSelect() {
  *
  */
 function onVllmModelSelect() {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const modelId = String($('#vllm_model').val());
     textgen_settings.vllm_model = modelId;
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#api_button_textgenerationwebui').trigger('click');
 }
 
@@ -1230,10 +1291,10 @@ function onVllmModelSelect() {
  *
  */
 function onAphroditeModelSelect() {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const modelId = String($('#aphrodite_model').val());
     textgen_settings.aphrodite_model = modelId;
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#api_button_textgenerationwebui').trigger('click');
 }
 
@@ -1241,7 +1302,9 @@ function onAphroditeModelSelect() {
  *
  * @param option
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'option' implicitly has an 'any' type.
 function getMancerModelTemplate(option) {
+    // @ts-expect-error TS(7005) FIXME: Variable 'mancerModels' implicitly has an 'any[]' ... Remove this comment to see the full error message
     const model = mancerModels.find(x => x.id === option?.element?.value);
 
     if (!option.id || !model) {
@@ -1252,7 +1315,7 @@ function getMancerModelTemplate(option) {
     const creditsPerCompletion = model.limits?.completion * model.pricing?.completion;
     const creditsTotal = Math.round(creditsPerPrompt + creditsPerCompletion).toFixed(0);
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     return $((`
         <div class="flex-container flexFlowColumn">
             <div><strong>${DOMPurify.sanitize(model.name)}</strong> | <span>${model.limits?.context} ctx</span> / <span>${model.limits?.completion} res</span> | <small>Credits per request (max): ${creditsTotal}</small></div>
@@ -1264,14 +1327,16 @@ function getMancerModelTemplate(option) {
  *
  * @param option
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'option' implicitly has an 'any' type.
 function getTogetherModelTemplate(option) {
+    // @ts-expect-error TS(7005) FIXME: Variable 'togetherModels' implicitly has an 'any[]... Remove this comment to see the full error message
     const model = togetherModels.find(x => x.id === option?.element?.value);
 
     if (!option.id || !model) {
         return option.text;
     }
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     return $((`
         <div class="flex-container flexFlowColumn">
             <div><strong>${DOMPurify.sanitize(model.id)}</strong> | <span>${model.context_length || '???'} tokens</span></div>
@@ -1284,14 +1349,16 @@ function getTogetherModelTemplate(option) {
  *
  * @param option
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'option' implicitly has an 'any' type.
 function getInfermaticAIModelTemplate(option) {
+    // @ts-expect-error TS(7005) FIXME: Variable 'infermaticAIModels' implicitly has an 'a... Remove this comment to see the full error message
     const model = infermaticAIModels.find(x => x.id === option?.element?.value);
 
     if (!option.id || !model) {
         return option.text;
     }
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     return $((`
         <div class="flex-container flexFlowColumn">
             <div><strong>${DOMPurify.sanitize(model.id)}</strong></div>
@@ -1303,14 +1370,16 @@ function getInfermaticAIModelTemplate(option) {
  *
  * @param option
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'option' implicitly has an 'any' type.
 function getDreamGenModelTemplate(option) {
+    // @ts-expect-error TS(7005) FIXME: Variable 'dreamGenModels' implicitly has an 'any[]... Remove this comment to see the full error message
     const model = dreamGenModels.find(x => x.id === option?.element?.value);
 
     if (!option.id || !model) {
         return option.text;
     }
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     return $((`
         <div class="flex-container flexFlowColumn">
             <div><strong>${DOMPurify.sanitize(model.id)}</strong></div>
@@ -1322,21 +1391,35 @@ function getDreamGenModelTemplate(option) {
  *
  * @param option
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'option' implicitly has an 'any' type.
 function getOpenRouterModelTemplate(option) {
+    // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
     const model = openRouterModels.find(x => x.id === option?.element?.value);
 
     if (!option.id || !model) {
         return option.text;
     }
 
+    // @ts-expect-error TS(2339) FIXME: Property 'pricing' does not exist on type 'never'.
     const tokens_dollar = Number(1 / (1000 * model.pricing?.prompt));
     const tokens_rounded = (Math.round(tokens_dollar * 1000) / 1000).toFixed(0);
 
+    // @ts-expect-error TS(2339) FIXME: Property 'pricing' does not exist on type 'never'.
     const price = 0 === Number(model.pricing?.prompt) ? 'Free' : `${tokens_rounded}k t/$ `;
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     return $((`
+        // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
+        // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
+        // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
+        // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
+        // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
         <div class="flex-container flexFlowColumn" title="${DOMPurify.sanitize(model.id)}">
+            // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
+            // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
+            // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
+            // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
+            // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
             <div><strong>${DOMPurify.sanitize(model.name)}</strong> | ${model.context_length} ctx | <small>${price}</small></div>
         </div>
     `));
@@ -1346,14 +1429,16 @@ function getOpenRouterModelTemplate(option) {
  *
  * @param option
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'option' implicitly has an 'any' type.
 function getVllmModelTemplate(option) {
+    // @ts-expect-error TS(7005) FIXME: Variable 'vllmModels' implicitly has an 'any[]' ty... Remove this comment to see the full error message
     const model = vllmModels.find(x => x.id === option?.element?.value);
 
     if (!option.id || !model) {
         return option.text;
     }
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     return $((`
         <div class="flex-container flexFlowColumn">
             <div><strong>${DOMPurify.sanitize(model.id)}</strong></div>
@@ -1365,14 +1450,16 @@ function getVllmModelTemplate(option) {
  *
  * @param option
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'option' implicitly has an 'any' type.
 function getAphroditeModelTemplate(option) {
+    // @ts-expect-error TS(7005) FIXME: Variable 'aphroditeModels' implicitly has an 'any[... Remove this comment to see the full error message
     const model = aphroditeModels.find(x => x.id === option?.element?.value);
 
     if (!option.id || !model) {
         return option.text;
     }
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     return $((`
         <div class="flex-container flexFlowColumn">
             <div><strong>${DOMPurify.sanitize(model.id)}</strong></div>
@@ -1385,10 +1472,11 @@ function getAphroditeModelTemplate(option) {
  */
 async function downloadOllamaModel() {
     try {
+        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         const serverUrl = textgen_settings.server_urls[textgen_types.OLLAMA];
 
         if (!serverUrl) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.info('Please connect to an Ollama server first.');
             return;
         }
@@ -1401,7 +1489,7 @@ async function downloadOllamaModel() {
             return;
         }
 
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.info('Download may take a while, please wait...', 'Working on it');
 
         const response = await fetch('/api/backends/text-completions/ollama/download', {
@@ -1418,13 +1506,13 @@ async function downloadOllamaModel() {
         }
 
         // Force refresh the model list
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.success('Download complete. Please select the model from the dropdown.');
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#api_button_textgenerationwebui').trigger('click');
     } catch (err) {
         console.error(err);
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.error('Failed to download Ollama model. Please try again.');
     }
 }
@@ -1434,15 +1522,16 @@ async function downloadOllamaModel() {
  */
 async function downloadTabbyModel() {
     try {
+        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         const serverUrl = textgen_settings.server_urls[textgen_types.TABBY];
 
         if (online_status === 'no_connection' || !serverUrl) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.info('Please connect to a TabbyAPI server first.');
             return;
         }
 
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const downloadHtml = $(await renderTemplateAsync('tabbyDownloader'));
         const popupResult = await callGenericPopup(downloadHtml, POPUP_TYPE.CONFIRM, '', { okButton: 'Download', cancelButton: 'Cancel' });
 
@@ -1453,13 +1542,13 @@ async function downloadTabbyModel() {
 
         const repoId = String(downloadHtml[0].querySelector('input[name="hf_repo_id"]')?.value ?? '');
         if (!repoId) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.error('A HuggingFace repo ID must be provided. Skipping Download.');
             return;
         }
 
         if (repoId.split('/').length !== 2) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.error('A HuggingFace repo ID must be formatted as Author/Name. Please try again.');
             return;
         }
@@ -1474,17 +1563,18 @@ async function downloadTabbyModel() {
         for (const suffix of ['include', 'exclude']) {
             const patterns = String(downloadHtml[0].querySelector(`textarea[name="tabby_download_${suffix}"]`)?.value ?? '');
             if (patterns) {
+                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 params[suffix] = patterns.split('\n');
             }
         }
 
         // Params for the server side of ST
-        // @ts-expect-error TS(2339): Property 'api_server' does not exist on type '{ re... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'api_server' does not exist on type '{ re... Remove this comment to see the full error message
         params.api_server = serverUrl;
-        // @ts-expect-error TS(2339): Property 'api_type' does not exist on type '{ repo... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'api_type' does not exist on type '{ repo... Remove this comment to see the full error message
         params.api_type = textgen_settings.type;
 
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.info('Downloading. Check the Tabby console for progress reports.');
 
         const response = await fetch('/api/backends/text-completions/tabby/download', {
@@ -1494,18 +1584,18 @@ async function downloadTabbyModel() {
         });
 
         if (response.status === 403) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.error('The provided key has invalid permissions. Please use an admin key for downloading.');
             return;
         } else if (!response.ok) {
             throw new Error(response.statusText);
         }
 
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.success('Download complete.');
     } catch (err) {
         console.error(err);
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.error('Failed to download HuggingFace model in TabbyAPI. Please try again.');
     }
 }
@@ -1519,10 +1609,14 @@ function calculateOpenRouterCost() {
     }
 
     let cost = 'Unknown';
+    // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
     const model = openRouterModels.find(x => x.id === textgen_settings.openrouter_model);
 
+    // @ts-expect-error TS(2339) FIXME: Property 'pricing' does not exist on type 'never'.
     if (model?.pricing) {
+        // @ts-expect-error TS(2339) FIXME: Property 'pricing' does not exist on type 'never'.
         const completionCost = Number(model.pricing.completion);
+        // @ts-expect-error TS(2339) FIXME: Property 'pricing' does not exist on type 'never'.
         const promptCost = Number(model.pricing.prompt);
         const completionTokens = amount_gen;
         const promptTokens = (max_context - completionTokens);
@@ -1532,7 +1626,7 @@ function calculateOpenRouterCost() {
         }
     }
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#or_prompt_cost').text(cost);
 
     // Schedule an update when settings change
@@ -1545,10 +1639,12 @@ function calculateOpenRouterCost() {
  */
 export function getCurrentOpenRouterModelTokenizer() {
     const modelId = textgen_settings.openrouter_model;
+    // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
     const model = openRouterModels.find(x => x.id === modelId);
     if (modelId?.includes('jamba')) {
         return tokenizers.JAMBA;
     }
+    // @ts-expect-error TS(2339) FIXME: Property 'architecture' does not exist on type 'ne... Remove this comment to see the full error message
     switch (model?.architecture?.tokenizer) {
         case 'Llama2':
             return tokenizers.LLAMA;
@@ -1576,6 +1672,7 @@ export function getCurrentOpenRouterModelTokenizer() {
  */
 export function getCurrentDreamGenModelTokenizer() {
     const modelId = textgen_settings.dreamgen_model;
+    // @ts-expect-error TS(7005) FIXME: Variable 'dreamGenModels' implicitly has an 'any[]... Remove this comment to see the full error message
     const model = dreamGenModels.find(x => x.id === modelId);
     if (model.id.startsWith('lucid-v1-medium') || model.id.startsWith('lucid-v1-base')) {
         return tokenizers.MISTRAL;
@@ -1590,47 +1687,47 @@ export function getCurrentDreamGenModelTokenizer() {
  *
  */
 export function initTextGenModels() {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#mancer_model').on('change', onMancerModelSelect);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#model_togetherai_select').on('change', onTogetherModelSelect);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#model_infermaticai_select').on('change', onInfermaticAIModelSelect);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#model_dreamgen_select').on('change', onDreamGenModelSelect);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#ollama_model').on('change', onOllamaModelSelect);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#openrouter_model').on('change', onOpenRouterModelSelect);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#ollama_download_model').on('click', downloadOllamaModel);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#vllm_model').on('change', onVllmModelSelect);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#aphrodite_model').on('change', onAphroditeModelSelect);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#tabby_download_model').on('click', downloadTabbyModel);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#tabby_model').on('change', onTabbyModelSelect);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#llamacpp_model').on('change', onLlamaCppModelSelect);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#featherless_model').on('change', () => onFeatherlessModelSelect(String($('#featherless_model').val())));
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const providersSelect = $('.openrouter_providers');
     for (const provider of OPENROUTER_PROVIDERS) {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         providersSelect.append($('<option>', {
             value: provider,
             text: provider,
         }));
     }
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const nanoGptProvidersSelect = $('#nanogpt_provider');
     for (const provider of NANOGPT_PROVIDERS) {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         nanoGptProvidersSelect.append($('<option>', {
             value: provider.id,
             text: provider.label,
@@ -1638,7 +1735,7 @@ export function initTextGenModels() {
     }
 
     if (!isMobile()) {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#mancer_model').select2({
             placeholder: t`Select a model`,
             searchInputPlaceholder: t`Search models...`,
@@ -1646,7 +1743,7 @@ export function initTextGenModels() {
             width: '100%',
             templateResult: getMancerModelTemplate,
         });
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#model_togetherai_select').select2({
             placeholder: t`Select a model`,
             searchInputPlaceholder: t`Search models...`,
@@ -1654,14 +1751,14 @@ export function initTextGenModels() {
             width: '100%',
             templateResult: getTogetherModelTemplate,
         });
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#ollama_model').select2({
             placeholder: t`Select a model`,
             searchInputPlaceholder: t`Search models...`,
             searchInputCssClass: 'text_pole',
             width: '100%',
         });
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#tabby_model').select2({
             placeholder: t`[Currently loaded]`,
             searchInputPlaceholder: t`Search models...`,
@@ -1669,7 +1766,7 @@ export function initTextGenModels() {
             width: '100%',
             allowClear: true,
         });
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#llamacpp_model').select2({
             placeholder: t`[Currently loaded]`,
             searchInputPlaceholder: t`Search models...`,
@@ -1677,7 +1774,7 @@ export function initTextGenModels() {
             width: '100%',
             allowClear: true,
         });
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#model_infermaticai_select').select2({
             placeholder: t`Select a model`,
             searchInputPlaceholder: t`Search models...`,
@@ -1685,7 +1782,7 @@ export function initTextGenModels() {
             width: '100%',
             templateResult: getInfermaticAIModelTemplate,
         });
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#model_dreamgen_select').select2({
             placeholder: t`Select a model`,
             searchInputPlaceholder: t`Search models...`,
@@ -1693,7 +1790,7 @@ export function initTextGenModels() {
             width: '100%',
             templateResult: getDreamGenModelTemplate,
         });
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#openrouter_model').select2({
             placeholder: t`Select a model`,
             searchInputPlaceholder: t`Search models...`,
@@ -1702,7 +1799,7 @@ export function initTextGenModels() {
             templateResult: getOpenRouterModelTemplate,
             matcher: textValueMatcher,
         });
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#vllm_model').select2({
             placeholder: t`Select a model`,
             searchInputPlaceholder: t`Search models...`,
@@ -1710,7 +1807,7 @@ export function initTextGenModels() {
             width: '100%',
             templateResult: getVllmModelTemplate,
         });
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#aphrodite_model').select2({
             placeholder: t`Select a model`,
             searchInputPlaceholder: t`Search models...`,
@@ -1718,7 +1815,7 @@ export function initTextGenModels() {
             width: '100%',
             templateResult: getAphroditeModelTemplate,
         });
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('.openrouter_quantizations').select2({
             closeOnSelect: false,
             placeholder: t`Select quantizations. No selection = all quantizations.`,
@@ -1727,6 +1824,7 @@ export function initTextGenModels() {
             width: '100%',
         });
         providersSelect.select2({
+            // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
             sorter: data => data.sort((a, b) => a.text.localeCompare(b.text)),
             placeholder: t`Select providers. No selection = all providers.`,
             searchInputPlaceholder: t`Search providers...`,
@@ -1734,18 +1832,20 @@ export function initTextGenModels() {
             width: '100%',
             closeOnSelect: false,
         });
+        // @ts-expect-error TS(7006) FIXME: Parameter 'evt' implicitly has an 'any' type.
         providersSelect.on('select2:select', function (/** @type {any} */ evt) {
             const element = evt.params.data.element;
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const $element = $(element);
 
             $element.detach();
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(this).append($element);
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(this).trigger('change');
         });
         nanoGptProvidersSelect.select2({
+            // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
             sorter: data => data.sort((a, b) => a.text.localeCompare(b.text)),
             placeholder: t`Select providers. No selection = all providers.`,
             searchInputPlaceholder: t`Search providers...`,

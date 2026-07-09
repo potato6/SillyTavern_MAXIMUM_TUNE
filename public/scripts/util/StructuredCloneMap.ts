@@ -26,7 +26,7 @@ export class StructuredCloneMap extends Map {
      * @param {V} value - The value to set
      * @returns {this} The updated map
      */
-    // @ts-expect-error TS(4114): This member must have an 'override' modifier becau... Remove this comment to see the full error message
+    // @ts-expect-error TS(4114) FIXME: This member must have an 'override' modifier becau... Remove this comment to see the full error message
     set(key, value) {
         if (!this.cloneOnSet) {
             return super.set(key, value);
@@ -45,7 +45,7 @@ export class StructuredCloneMap extends Map {
      * @param {K} key - The key to get the value for
      * @returns {V | undefined} Returns the element associated with the specified key. If no element is associated with the specified key, undefined is returned.
      */
-    // @ts-expect-error TS(4114): This member must have an 'override' modifier becau... Remove this comment to see the full error message
+    // @ts-expect-error TS(4114) FIXME: This member must have an 'override' modifier becau... Remove this comment to see the full error message
     get(key) {
         if (!this.cloneOnGet) {
             return super.get(key);

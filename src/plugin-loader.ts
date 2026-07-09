@@ -1,14 +1,20 @@
+// @ts-expect-error TS(1192) FIXME: Module '"node:fs"' has no default export.
 import fs from 'node:fs';
+// @ts-expect-error TS(1259) FIXME: Module '"node:path"' can only be default-imported ... Remove this comment to see the full error message
 import path from 'node:path';
+// @ts-expect-error TS(1192) FIXME: Module '"node:url"' has no default export.
 import url from 'node:url';
 
+// @ts-expect-error TS(1259) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import express from 'express';
-// @ts-expect-error TS(2792): Cannot find module 'simple-git'. Did you mean to s... Remove this comment to see the full error message
+// @ts-expect-error TS(2792) FIXME: Cannot find module 'simple-git'. Did you mean to s... Remove this comment to see the full error message
 import { default as git, CheckRepoActions } from 'simple-git';
 import { sync as commandExistsSync } from 'command-exists';
 import { getConfigValue, color } from './util.js';
 
+// @ts-expect-error TS(2345) FIXME: Argument of type 'false' is not assignable to para... Remove this comment to see the full error message
 const enableServerPlugins = !!getConfigValue('enableServerPlugins', false, 'boolean');
+// @ts-expect-error TS(2345) FIXME: Argument of type 'true' is not assignable to param... Remove this comment to see the full error message
 const enableServerPluginsAutoUpdate = !!getConfigValue('enableServerPluginsAutoUpdate', true, 'boolean');
 
 interface PluginInfo {
@@ -170,6 +176,7 @@ async function loadFromPackage(app: express.Express, packageJsonPath: string, ex
 async function loadFromFile(app: express.Express, pluginFilePath: string, exitHooks: Array<() => unknown>) {
     try {
         const fileUrl = url.pathToFileURL(pluginFilePath).toString();
+        // @ts-expect-error TS(1323) FIXME: Dynamic imports are only supported when the '--mod... Remove this comment to see the full error message
         const plugin = await import(fileUrl);
         console.log(`Initializing plugin from ${pluginFilePath}`);
         return await initPlugin(app, plugin, exitHooks);
@@ -206,6 +213,7 @@ async function initPlugin(app: express.Express, plugin: PluginModule, exitHooks:
     // We don't currently use "name" or "description" but it would be nice to have a UI for listing server plugins, so
     // require them now just to be safe
     for (const field of ['id', 'name', 'description']) {
+        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         if (typeof info[field] !== 'string') {
             console.error(`Failed to load plugin module; plugin info missing field '${field}'`);
             return false;
@@ -260,7 +268,9 @@ async function updatePlugins(pluginsPath: string) {
     }
 
     const directories = fs.readdirSync(pluginsPath)
+        // @ts-expect-error TS(7006) FIXME: Parameter 'file' implicitly has an 'any' type.
         .filter(file => !file.startsWith('.'))
+        // @ts-expect-error TS(7006) FIXME: Parameter 'file' implicitly has an 'any' type.
         .filter(file => fs.statSync(path.join(pluginsPath, file)).isDirectory());
 
     if (directories.length === 0) {
@@ -303,6 +313,7 @@ async function updatePlugins(pluginsPath: string) {
             const latestCommit = await pluginRepo.revparse(['HEAD']);
             console.log(`Plugin ${color.green(directory)} updated to commit ${color.cyan(latestCommit)}`);
         } catch (error) {
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             console.error(color.red(`Failed to update plugin ${directory}: ${error.message}`));
         }
     }

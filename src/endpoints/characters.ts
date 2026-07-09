@@ -1,17 +1,23 @@
+// @ts-expect-error TS(1259) FIXME: Module '"node:path"' can only be default-imported ... Remove this comment to see the full error message
 import path from 'node:path';
+// @ts-expect-error TS(1192) FIXME: Module '"node:fs"' has no default export.
 import fs from 'node:fs';
 import { promises as fsPromises } from 'node:fs';
 import { Buffer } from 'node:buffer';
 
+// @ts-expect-error TS(1259) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import express from 'express';
-// @ts-expect-error TS(2792): Cannot find module 'sanitize-filename'. Did you me... Remove this comment to see the full error message
+// @ts-expect-error TS(2792) FIXME: Cannot find module 'sanitize-filename'. Did you me... Remove this comment to see the full error message
 import sanitize from 'sanitize-filename';
 import { sync as writeFileAtomicSync } from 'write-file-atomic';
-// @ts-expect-error TS(2792): Cannot find module 'yaml'. Did you mean to set the... Remove this comment to see the full error message
+// @ts-expect-error TS(2792) FIXME: Cannot find module 'yaml'. Did you mean to set the... Remove this comment to see the full error message
 import yaml from 'yaml';
+// @ts-expect-error TS(2792) FIXME: Cannot find module 'es-toolkit/compat'. Did you me... Remove this comment to see the full error message
 import { get, set, unset, isUndefined, forEach, isPlainObject, cloneDeep } from 'es-toolkit/compat';
+// @ts-expect-error TS(1192) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import mime from 'mime-types';
 
+// @ts-expect-error TS(1259) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import storage from 'node-persist';
 
 import { AVATAR_WIDTH, AVATAR_HEIGHT, DEFAULT_AVATAR_PATH } from '../constants.js';
@@ -29,12 +35,15 @@ import { CharXParser, persistCharXAssets } from '../charx.js';
 import cacheBuster from '../middleware/cacheBuster.js';
 
 // With 100 MB limit it would take roughly 3000 characters to reach this limit
+// @ts-expect-error TS(2345) FIXME: Argument of type '"100mb"' is not assignable to pa... Remove this comment to see the full error message
 const memoryCacheCapacity = getConfigValue('performance.memoryCacheCapacity', '100mb');
 const memoryCache = new MemoryLimitedMap(memoryCacheCapacity);
 // Some Android devices require tighter memory management
 const isAndroid = process.platform === 'android';
 // Use shallow character data for the character list
+// @ts-expect-error TS(2345) FIXME: Argument of type 'false' is not assignable to para... Remove this comment to see the full error message
 const useShallowCharacters = !!getConfigValue('performance.lazyLoadCharacters', false, 'boolean');
+// @ts-expect-error TS(2345) FIXME: Argument of type 'true' is not assignable to param... Remove this comment to see the full error message
 const useDiskCache = !!getConfigValue('performance.useDiskCache', true, 'boolean');
 
 class DiskCache {
@@ -51,9 +60,11 @@ class DiskCache {
     static SYNC_INTERVAL = 5 * 60 * 1000;
 
     /** @type {import('node-persist').LocalStorage} */
+    // @ts-expect-error TS(7008) FIXME: Member '#instance' implicitly has an 'any' type.
     #instance;
 
     /** @type {NodeJS.Timeout} */
+    // @ts-expect-error TS(7008) FIXME: Member '#syncInterval' implicitly has an 'any' typ... Remove this comment to see the full error message
     #syncInterval;
 
     /**
@@ -89,6 +100,7 @@ class DiskCache {
                 return;
             }
 
+            // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
             const directories = [...this.syncQueue].map(entry => getUserDirectories(entry));
             this.syncQueue.clear();
 
@@ -112,7 +124,6 @@ class DiskCache {
             ttl: false,
             forgiveParseErrors: true,
             expiredInterval: 0,
-            // @ts-expect-error TS(2345): Argument of type '{ dir: string; ttl: false; forgi... Remove this comment to see the full error message
             maxFileDescriptors: 100,
         });
         await this.#instance.init();
@@ -125,6 +136,7 @@ class DiskCache {
      * @param {import('../users.js').UserDirectoryList[]} directoriesList List of user directories
      * @returns {Promise<void>}
      */
+    // @ts-expect-error TS(2694) FIXME: Namespace '"/mnt/DISCO/downloads/some_git_projects... Remove this comment to see the full error message
     async verify(directoriesList: import('../users.js').UserDirectoryList[]) {
         try {
             if (!useDiskCache) {
@@ -135,6 +147,7 @@ class DiskCache {
             const validKeys = new Set();
             for (const dir of directoriesList) {
                 const files = fs.readdirSync(dir.characters, { withFileTypes: true });
+                // @ts-expect-error TS(7006) FIXME: Parameter 'f' implicitly has an 'any' type.
                 for (const file of files.filter(f => f.isFile() && path.extname(f.name) === '.png')) {
                     const filePath = path.join(dir.characters, file.name);
                     const cacheKey = getCacheKey(filePath);
@@ -221,6 +234,7 @@ async function readCharacterData(inputFile: string, inputFormat = 'png') {
  * @param {Crop|undefined} crop - Crop parameters
  * @returns {Promise<boolean>} - True if the operation was successful
  */
+// @ts-expect-error TS(2304) FIXME: Cannot find name 'Crop'.
 async function writeCharacterData(inputFile: string | Buffer, data: string, outputFile: string, request: import('express').Request, crop: Crop | undefined = undefined) {
     try {
         // Reset the cache
@@ -283,6 +297,7 @@ async function writeCharacterData(inputFile: string | Buffer, data: string, outp
  * @param {Crop|undefined} [crop] Crop parameters
  * @returns {Promise<Buffer>} Processed image buffer
  */
+// @ts-expect-error TS(2304) FIXME: Cannot find name 'Crop'.
 export async function applyAvatarCropResize(buffer: Buffer, crop: Crop | undefined) {
     const metadata = await new Bun.Image(buffer).metadata();
     let finalWidth = metadata.width ?? 0;
@@ -316,6 +331,7 @@ export async function applyAvatarCropResize(buffer: Buffer, crop: Crop | undefin
  * @param {Crop|undefined} [crop] Crop parameters
  * @returns {Promise<Buffer>} Image buffer
  */
+// @ts-expect-error TS(2304) FIXME: Cannot find name 'Crop'.
 async function parseImageBuffer(buffer: Buffer, crop: Crop | undefined) {
     return await applyAvatarCropResize(buffer, crop);
 }
@@ -326,6 +342,7 @@ async function parseImageBuffer(buffer: Buffer, crop: Crop | undefined) {
  * @param {Crop|undefined} crop Crop parameters
  * @returns {Promise<Buffer>} Image buffer
  */
+// @ts-expect-error TS(2304) FIXME: Cannot find name 'Crop'.
 async function tryReadImage(imgPath: string, crop: Crop | undefined) {
     try {
         const buffer = fs.readFileSync(imgPath);
@@ -362,7 +379,7 @@ const calculateChatSize = (charDir: string) => {
 
 // Calculate the total string length of the data object
 const calculateDataSize = (data: unknown) => {
-    // @ts-expect-error TS(2365): Operator '+' cannot be applied to types 'unknown' ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2769) FIXME: No overload matches this call.
     return typeof data === 'object' ? Object.values(data).reduce((acc, val) => acc + String(val).length, 0) : 0;
 };
 
@@ -406,6 +423,7 @@ const toShallow = (character: Record<string, unknown>) => {
  * @param  {boolean} options.shallow If true, only return the core character's metadata
  * @returns {Promise<object>}     A Promise that resolves when the character processing is done.
  */
+// @ts-expect-error TS(2694) FIXME: Namespace '"/mnt/DISCO/downloads/some_git_projects... Remove this comment to see the full error message
 const processCharacter = async (item: string, directories: import('../users.js').UserDirectoryList, {
     shallow
 }: { shallow: boolean }) => {
@@ -452,6 +470,7 @@ const processCharacter = async (item: string, directories: import('../users.js')
  * @param {boolean} hoistDate Will set the chat and create_date fields to the current date if they are missing
  * @returns {object} Character object in Spec V2 format
  */
+// @ts-expect-error TS(2694) FIXME: Namespace '"/mnt/DISCO/downloads/some_git_projects... Remove this comment to see the full error message
 function getCharaCardV2(jsonObject: Record<string, unknown>, directories: import('../users.js').UserDirectoryList, hoistDate = true) {
     if (jsonObject.spec === undefined) {
         jsonObject = convertToV2(jsonObject, directories);
@@ -471,6 +490,7 @@ function getCharaCardV2(jsonObject: Record<string, unknown>, directories: import
  * @param {import('../users.js').UserDirectoryList} directories User directories
  * @returns {object} Character object in Spec V2 format
  */
+// @ts-expect-error TS(2694) FIXME: Namespace '"/mnt/DISCO/downloads/some_git_projects... Remove this comment to see the full error message
 function convertToV2(char: Record<string, unknown>, directories: import('../users.js').UserDirectoryList) {
     // Simulate incoming data from frontend form
     const result = charaFormatData({
@@ -533,6 +553,7 @@ function readFromV2(char: Record<string, unknown>) {
         tags: 'tags',
     };
 
+    // @ts-expect-error TS(7006) FIXME: Parameter 'v2Path' implicitly has an 'any' type.
     forEach(fieldMappings, (v2Path, charField) => {
         //console.info(`Migrating field: ${charField} from ${v2Path}`);
         const v2Value = get(char.data, v2Path);
@@ -573,8 +594,10 @@ function readFromV2(char: Record<string, unknown>) {
  * @param {import('../users.js').UserDirectoryList} directories User directories
  * @returns {Record<string, unknown>} Formatted character object
  */
+// @ts-expect-error TS(2694) FIXME: Namespace '"/mnt/DISCO/downloads/some_git_projects... Remove this comment to see the full error message
 function charaFormatData(data: Record<string, unknown>, directories: import('../users.js').UserDirectoryList) {
     // This is supposed to save all the foreign keys that ST doesn't care about
+    // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
     const char = tryParse(data.json_data) || {};
 
     // Prevent erroneous 'json_data' recursive saving
@@ -638,6 +661,7 @@ function charaFormatData(data: Record<string, unknown>, directories: import('../
 
     if (data.world) {
         try {
+            // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
             const file = readWorldInfoFile(directories, data.world, false);
 
             // File was imported - save it to the character book
@@ -647,6 +671,7 @@ function charaFormatData(data: Record<string, unknown>, directories: import('../
 
             // File was not imported - convert the world info to the character book
             if (file && file.entries) {
+                // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
                 set(char, 'data.character_book', convertWorldInfoToCharacterBook(data.world, file.entries));
             }
         } catch {
@@ -656,6 +681,7 @@ function charaFormatData(data: Record<string, unknown>, directories: import('../
 
     if (data.extensions) {
         try {
+            // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
             const extensions = JSON.parse(data.extensions);
             // Deep merge the extensions object
             set(char, 'data.extensions', deepMerge(char.data.extensions, extensions));
@@ -680,53 +706,96 @@ function convertWorldInfoToCharacterBook(name: string, entries: Record<string, u
         const entry = entries[index];
 
         const originalEntry = {
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             id: entry.uid,
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             keys: entry.key,
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             secondary_keys: entry.keysecondary,
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             comment: entry.comment,
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             content: entry.content,
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             constant: entry.constant,
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             selective: entry.selective,
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             insertion_order: entry.order,
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             enabled: !entry.disable,
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             position: entry.position == 0 ? 'before_char' : 'after_char',
             use_regex: true, // ST keys are always regex
             extensions: {
+                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 ...entry.extensions,
+                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 position: entry.position,
+                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 exclude_recursion: entry.excludeRecursion,
+                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 display_index: entry.displayIndex,
+                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 probability: entry.probability ?? null,
+                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 useProbability: entry.useProbability ?? false,
+                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 depth: entry.depth ?? 4,
+                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 selectiveLogic: entry.selectiveLogic ?? 0,
+                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 outlet_name: entry.outletName ?? '',
+                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 group: entry.group ?? '',
+                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 group_override: entry.groupOverride ?? false,
+                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 group_weight: entry.groupWeight ?? null,
+                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 prevent_recursion: entry.preventRecursion ?? false,
+                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 delay_until_recursion: entry.delayUntilRecursion ?? false,
+                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 scan_depth: entry.scanDepth ?? null,
+                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 match_whole_words: entry.matchWholeWords ?? null,
+                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 use_group_scoring: entry.useGroupScoring ?? false,
+                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 case_sensitive: entry.caseSensitive ?? null,
+                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 automation_id: entry.automationId ?? '',
+                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 role: entry.role ?? 0,
+                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 vectorized: entry.vectorized ?? false,
+                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 sticky: entry.sticky ?? null,
+                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 cooldown: entry.cooldown ?? null,
+                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 delay: entry.delay ?? null,
+                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 match_persona_description: entry.matchPersonaDescription ?? false,
+                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 match_character_description: entry.matchCharacterDescription ?? false,
+                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 match_character_personality: entry.matchCharacterPersonality ?? false,
+                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 match_character_depth_prompt: entry.matchCharacterDepthPrompt ?? false,
+                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 match_scenario: entry.matchScenario ?? false,
+                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 match_creator_notes: entry.matchCreatorNotes ?? false,
+                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 triggers: entry.triggers ?? [],
+                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 ignore_budget: entry.ignoreBudget ?? false,
             },
         };
 
+        // @ts-expect-error TS(2345) FIXME: Argument of type '{ id: any; keys: any; secondary_... Remove this comment to see the full error message
         result.entries.push(originalEntry);
     }
 
@@ -796,6 +865,7 @@ async function importFromCharX(uploadPath: string, {
     unsetPrivateFields(processedCard);
     processedCard.create_date = new Date().toISOString();
 
+    // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
     const fileName = preservedFileName || getPngName(processedCard.name, request.user.directories);
     // Use the actual character name for asset folders, not the unique filename
     // ST's sprite system looks up by character name, not PNG filename
@@ -803,6 +873,7 @@ async function importFromCharX(uploadPath: string, {
 
     if (auxiliaryAssets.length > 0) {
         try {
+            // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
             const summary = persistCharXAssets(auxiliaryAssets, extractedBuffers, request.user.directories, characterFolder);
             if (summary.sprites || summary.backgrounds || summary.misc) {
                 console.log(`CharX: Imported ${summary.sprites} sprite(s), ${summary.backgrounds} background(s), ${summary.misc} misc asset(s) for ${characterFolder}`);
@@ -847,6 +918,7 @@ async function importFromByaf(uploadPath: string, {
             const filePath = path.join(request.user.directories.chats, path.basename(fileName), chatName);
             const dir = path.dirname(filePath);
             if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+            // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
             writeFileAtomicSync(filePath, ByafParser.getChatFromScenario(scenario, request.body.user_name, card.name, byafData.chatBackgrounds), 'utf8');
             console.log(`Created ${chatName} chat from BYAF import`);
             return chatName;
@@ -896,6 +968,7 @@ async function importFromByaf(uploadPath: string, {
         }
     }
 
+    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
     const result = await writeCharacterData(byafData.images[0].image, JSON.stringify(card), fileName, request);
 
     return result ? fileName : '';
@@ -1053,7 +1126,7 @@ async function importFromPng(uploadPath: string, {
 
 export const router = express.Router();
 
-// @ts-expect-error TS(7030): Not all code paths return a value.
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/create', getFileNameValidationFunction('file_name'), async function (request, response) {
     try {
         if (!request.body) return response.sendStatus(400);
@@ -1071,7 +1144,6 @@ router.post('/create', getFileNameValidationFunction('file_name'), async functio
             await writeCharacterData(DEFAULT_AVATAR_PATH, char, internalName, request);
             return response.send(avatarName);
         } else {
-            // @ts-expect-error TS(4111): Property 'crop' comes from an index signature, so ... Remove this comment to see the full error message
             const crop = tryParse(request.query.crop);
             const uploadPath = path.join(request.file.destination, request.file.filename);
             await writeCharacterData(uploadPath, char, internalName, request, crop);
@@ -1084,6 +1156,7 @@ router.post('/create', getFileNameValidationFunction('file_name'), async functio
     }
 });
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/rename', validateAvatarUrlMiddleware, async function (request, response) {
     if (!request.body.avatar_url || !request.body.new_name) {
         return response.sendStatus(400);
@@ -1130,18 +1203,17 @@ router.post('/rename', validateAvatarUrlMiddleware, async function (request, res
     }
 });
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/edit', validateAvatarUrlMiddleware, async function (request, response) {
     if (!request.body) {
         console.warn('Error: no response body detected');
         response.status(400).send('Error: no response body detected');
-        // @ts-expect-error TS(7030): Not all code paths return a value.
         return;
     }
 
     if (request.body.ch_name === '' || request.body.ch_name === undefined || request.body.ch_name === '.') {
         console.warn('Error: invalid name.');
         response.status(400).send('Error: invalid name.');
-        // @ts-expect-error TS(7030): Not all code paths return a value.
         return;
     }
 
@@ -1156,7 +1228,6 @@ router.post('/edit', validateAvatarUrlMiddleware, async function (request, respo
             const avatarPath = path.join(request.user.directories.characters, request.body.avatar_url);
             await writeCharacterData(avatarPath, char, targetFile, request);
         } else {
-            // @ts-expect-error TS(4111): Property 'crop' comes from an index signature, so ... Remove this comment to see the full error message
             const crop = tryParse(request.query.crop);
             const newAvatarPath = path.join(request.file.destination, request.file.filename);
             invalidateThumbnail(request.user.directories, 'avatar', request.body.avatar_url);
@@ -1174,6 +1245,7 @@ router.post('/edit', validateAvatarUrlMiddleware, async function (request, respo
     }
 });
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/edit-avatar', validateAvatarUrlMiddleware, async function (request, response) {
     try {
         if (!request.file) {
@@ -1197,7 +1269,6 @@ router.post('/edit-avatar', validateAvatarUrlMiddleware, async function (request
             return response.status(400).send('Error: failed to read character data');
         }
 
-        // @ts-expect-error TS(4111): Property 'crop' comes from an index signature, so ... Remove this comment to see the full error message
         const crop = tryParse(request.query.crop);
         const fileName = request.body.avatar_url.replace('.png', '');
         await writeCharacterData(uploadPath, data, fileName, request, crop);
@@ -1225,6 +1296,7 @@ router.post('/edit-avatar', validateAvatarUrlMiddleware, async function (request
  * @param {object} response - The HTTP response object.
  * @returns {void}
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/edit-attribute', validateAvatarUrlMiddleware, async function (request, response) {
     console.debug(request.body);
     if (!request.body) {
@@ -1252,7 +1324,6 @@ router.post('/edit-attribute', validateAvatarUrlMiddleware, async function (requ
         if (char[request.body.field] === undefined && char.data[request.body.field] === undefined) {
             console.warn('Error: invalid field.');
             response.status(400).send('Error: invalid field.');
-            // @ts-expect-error TS(7030): Not all code paths return a value.
             return;
         }
         char[request.body.field] = request.body.value;
@@ -1294,6 +1365,7 @@ function processUnsetSentinels(target: Record<string, unknown>, source: Record<s
         if (source[key] === UNSET_SENTINEL) {
             unset(target, key);
         } else if (isPlainObject(source[key]) && isPlainObject(target[key])) {
+            // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
             processUnsetSentinels(target[key], source[key]);
         }
     }
@@ -1360,7 +1432,7 @@ async function mergeCharacterUpdate(avatarPath: string, avatar: string, updateDa
  * @param {import("express").Response} response - The HTTP response object
  * @returns {void}
  */
-// @ts-expect-error TS(7030): Not all code paths return a value.
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/merge-attributes', getFileNameValidationFunction('avatar'), async function (request, response) {
     try {
         // ── Bulk mode: avatars array is present ──────────────────
@@ -1383,6 +1455,7 @@ router.post('/merge-attributes', getFileNameValidationFunction('avatar'), async 
             } else {
                 // Empty array → scan all characters in the directory
                 const files = fs.readdirSync(request.user.directories.characters);
+                // @ts-expect-error TS(7006) FIXME: Parameter 'file' implicitly has an 'any' type.
                 targetAvatars = files.filter(file => path.extname(file).toLowerCase() === '.png');
             }
 
@@ -1403,7 +1476,7 @@ router.post('/merge-attributes', getFileNameValidationFunction('avatar'), async 
 
                     // Apply optional server-side filter before updating the card
                     if (filter && typeof filter.path === 'string') {
-                        // @ts-expect-error TS(2322): Type '(character: any) => boolean' is not assignab... Remove this comment to see the full error message
+                        // @ts-expect-error TS(2322) FIXME: Type '(character: Record<string, unknown>) => bool... Remove this comment to see the full error message
                         shouldSkip = (character: Record<string, unknown>) => {
                             const value = get(character, filter.path);
                             return value === undefined;
@@ -1446,10 +1519,12 @@ router.post('/merge-attributes', getFileNameValidationFunction('avatar'), async 
             response.status(400).send({ message: `Validation failed for ${update.avatar}`, error: result.error });
         }
     } catch (exception) {
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         response.status(500).send({ message: 'Unexpected error while saving character.', error: exception.toString() });
     }
 });
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/delete', validateAvatarUrlMiddleware, async function (request, response) {
     if (!request.body || !request.body.avatar_url) {
         return response.sendStatus(400);
@@ -1499,12 +1574,15 @@ router.post('/delete', validateAvatarUrlMiddleware, async function (request, res
  * @param  {import("express").Response} response The HTTP response object.
  * @returns {void}
  */
-// @ts-expect-error TS(7030): Not all code paths return a value.
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/all', async function (request, response) {
     try {
         const files = fs.readdirSync(request.user.directories.characters);
+        // @ts-expect-error TS(7006) FIXME: Parameter 'file' implicitly has an 'any' type.
         const pngFiles = files.filter(file => file.endsWith('.png'));
+        // @ts-expect-error TS(7006) FIXME: Parameter 'file' implicitly has an 'any' type.
         const processingPromises = pngFiles.map(file => processCharacter(file, request.user.directories, { shallow: useShallowCharacters }));
+        // @ts-expect-error TS(7006) FIXME: Parameter 'c' implicitly has an 'any' type.
         const data = (await Promise.all(processingPromises)).filter(c => c.name);
         return response.send(data);
     } catch (err) {
@@ -1514,7 +1592,7 @@ router.post('/all', async function (request, response) {
     }
 });
 
-// @ts-expect-error TS(7030): Not all code paths return a value.
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/get', validateAvatarUrlMiddleware, async function (request, response) {
     try {
         if (!request.body) return response.sendStatus(400);
@@ -1534,6 +1612,7 @@ router.post('/get', validateAvatarUrlMiddleware, async function (request, respon
     }
 });
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/chats', validateAvatarUrlMiddleware, async function (request, response) {
     try {
         if (!request.body) return response.sendStatus(400);
@@ -1546,6 +1625,7 @@ router.post('/chats', validateAvatarUrlMiddleware, async function (request, resp
         }
 
         const files = fs.readdirSync(chatsDirectory, { withFileTypes: true });
+        // @ts-expect-error TS(7006) FIXME: Parameter 'file' implicitly has an 'any' type.
         const jsonFiles = files.filter(file => file.isFile() && path.extname(file.name) === '.jsonl').map(file => file.name);
 
         if (jsonFiles.length === 0) {
@@ -1553,17 +1633,20 @@ router.post('/chats', validateAvatarUrlMiddleware, async function (request, resp
         }
 
         if (request.body.simple) {
+            // @ts-expect-error TS(7006) FIXME: Parameter 'file' implicitly has an 'any' type.
             return response.send(jsonFiles.map(file => ({ file_name: file, file_id: path.parse(file).name })));
         }
 
+        // @ts-expect-error TS(7006) FIXME: Parameter 'file' implicitly has an 'any' type.
         const jsonFilesPromise = jsonFiles.map((file) => {
             const withMetadata = !!request.body.metadata;
             const pathToFile = path.join(request.user.directories.chats, characterDirectory, file);
             return getChatInfo(pathToFile, {}, withMetadata);
         });
 
-        // @ts-expect-error TS(2339): Property 'value' does not exist on type 'PromiseSe... Remove this comment to see the full error message
+        // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
         const chatData = (await Promise.allSettled(jsonFilesPromise)).filter(x => x.status === 'fulfilled').map(x => x.value);
+        // @ts-expect-error TS(7006) FIXME: Parameter 'i' implicitly has an 'any' type.
         const validFiles = chatData.filter(i => i.file_name);
 
         return response.send(validFiles);
@@ -1579,9 +1662,11 @@ router.post('/chats', validateAvatarUrlMiddleware, async function (request, resp
  * @param {import('../users.js').UserDirectoryList} directories User directories
  * @returns {string} - The name for the uploaded PNG file
  */
+// @ts-expect-error TS(2694) FIXME: Namespace '"/mnt/DISCO/downloads/some_git_projects... Remove this comment to see the full error message
 function getPngName(file: string, directories: import('../users.js').UserDirectoryList) {
     file = sanitize(file);
     return getUniqueName(file, (name: string) => fs.existsSync(path.join(directories.characters, `${name}.png`)),
+        // @ts-expect-error TS(2322) FIXME: Type '(base: string, i: number) => string' is not ... Remove this comment to see the full error message
         { nameBuilder: (base: string, i: number) => i === 0 ? base : `${base}${i}`, startIndex: 0, maxTries: 10000 }) ?? file;
 }
 
@@ -1596,7 +1681,7 @@ function getPreservedName(request: import('express').Request) {
         : undefined;
 }
 
-// @ts-expect-error TS(7030): Not all code paths return a value.
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/import', async function (request, response) {
     if (!request.body || !request.file) return response.sendStatus(400);
 
@@ -1614,6 +1699,7 @@ router.post('/import', async function (request, response) {
     };
 
     try {
+        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         const importFunction = formatImportFunctions[format];
 
         if (!importFunction) {
@@ -1638,7 +1724,7 @@ router.post('/import', async function (request, response) {
     }
 });
 
-// @ts-expect-error TS(7030): Not all code paths return a value.
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/duplicate', validateAvatarUrlMiddleware, async function (request, response) {
     try {
         if (!request.body.avatar_url) {
@@ -1684,7 +1770,7 @@ router.post('/duplicate', validateAvatarUrlMiddleware, async function (request, 
     }
 });
 
-// @ts-expect-error TS(7030): Not all code paths return a value.
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/export', validateAvatarUrlMiddleware, async function (request, response) {
     try {
         if (!request.body.format || !request.body.avatar_url) {
@@ -1701,6 +1787,7 @@ router.post('/export', validateAvatarUrlMiddleware, async function (request, res
             case 'png': {
                 const rawBuffer = await fsPromises.readFile(filename);
                 const rawData = read(rawBuffer);
+                // @ts-expect-error TS(2345) FIXME: Argument of type '(char: Record<string, unknown>) ... Remove this comment to see the full error message
                 const mutatedData = mutateJsonString(rawData, unsetPrivateFields);
                 const mutatedBuffer = write(rawBuffer, mutatedData);
                 const contentType = mime.lookup(filename) || 'image/png';

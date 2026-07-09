@@ -1,9 +1,11 @@
+// @ts-expect-error TS(1192) FIXME: Module '"node:fs"' has no default export.
 import fs from 'node:fs';
 import { Buffer } from 'node:buffer';
 
 import fetch from 'node-fetch';
-// @ts-expect-error TS(2792): Cannot find module 'form-data'. Did you mean to se... Remove this comment to see the full error message
+// @ts-expect-error TS(2792) FIXME: Cannot find module 'form-data'. Did you mean to se... Remove this comment to see the full error message
 import FormData from 'form-data';
+// @ts-expect-error TS(1259) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import express from 'express';
 
 import { getConfigValue, mergeObjectWithYaml, excludeKeysByYaml, trimV1, delay } from '../util.js';
@@ -13,7 +15,7 @@ import { AIMLAPI_HEADERS, OPENROUTER_HEADERS, SILICONFLOW_ENDPOINT, ZAI_ENDPOINT
 
 export const router = express.Router();
 
-// @ts-expect-error TS(7030): Not all code paths return a value.
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/caption-image', async (request, response) => {
     try {
         let key = '';
@@ -48,7 +50,7 @@ router.post('/caption-image', async (request, response) => {
 
         if (request.body.api === 'ooba') {
             key = readSecret(request.user.directories, SECRET_KEYS.OOBA);
-            // @ts-expect-error TS(2339): Property 'temperature' does not exist on type '{}'... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'temperature' does not exist on type '{}'... Remove this comment to see the full error message
             bodyParams.temperature = 0.1;
         }
 
@@ -97,13 +99,13 @@ router.post('/caption-image', async (request, response) => {
         }
 
         if (request.body.api === 'zai') {
-            // @ts-expect-error TS(2339): Property 'max_tokens' does not exist on type '{}'.
+            // @ts-expect-error TS(2339) FIXME: Property 'max_tokens' does not exist on type '{}'.
             bodyParams.max_tokens = 4096; // default is 1024
         }
 
         if (request.body.api === 'pollinations') {
             key = readSecret(request.user.directories, SECRET_KEYS.POLLINATIONS);
-            // @ts-expect-error TS(2339): Property 'seed' does not exist on type '{}'.
+            // @ts-expect-error TS(2339) FIXME: Property 'seed' does not exist on type '{}'.
             bodyParams.seed = Math.floor(Math.random() * Math.pow(2, 32));
         }
 
@@ -219,7 +221,7 @@ router.post('/caption-image', async (request, response) => {
                 const imgContent = message.content.find(c => c.type === 'image_url');
                 if (imgContent) {
                     imgContent.type = 'video_url';
-                    // @ts-expect-error TS(2339): Property 'video_url' does not exist on type '{ typ... Remove this comment to see the full error message
+                    // @ts-expect-error TS(2339) FIXME: Property 'video_url' does not exist on type '{ typ... Remove this comment to see the full error message
                     imgContent.video_url = imgContent.image_url;
                     delete imgContent.image_url;
                 }
@@ -247,7 +249,7 @@ router.post('/caption-image', async (request, response) => {
             body.messages.push({
                 role: 'user',
                 content: [],
-                // @ts-expect-error TS(2345): Argument of type '{ role: string; content: undefin... Remove this comment to see the full error message
+                // @ts-expect-error TS(2345) FIXME: Argument of type '{ role: string; content: never[]... Remove this comment to see the full error message
                 image_url: imgMessage?.content?.[1]?.image_url?.url,
             });
         }
@@ -287,7 +289,7 @@ router.post('/caption-image', async (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7030): Not all code paths return a value.
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/generate-voice', async (request, response) => {
     try {
         const key = readSecret(request.user.directories, SECRET_KEYS.OPENAI);
@@ -306,7 +308,7 @@ router.post('/generate-voice', async (request, response) => {
         };
 
         if (request.body.instructions) {
-            // @ts-expect-error TS(2339): Property 'instructions' does not exist on type '{ ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'instructions' does not exist on type '{ ... Remove this comment to see the full error message
             requestBody.instructions = request.body.instructions;
         }
 
@@ -337,7 +339,7 @@ router.post('/generate-voice', async (request, response) => {
 });
 
 // ElectronHub TTS proxy
-// @ts-expect-error TS(7030): Not all code paths return a value.
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/electronhub/generate-voice', async (request, response) => {
     try {
         const key = readSecret(request.user.directories, SECRET_KEYS.ELECTRONHUB);
@@ -357,30 +359,32 @@ router.post('/electronhub/generate-voice', async (request, response) => {
         };
 
         // Optional provider-specific params
-        // @ts-expect-error TS(2339): Property 'instructions' does not exist on type '{ ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'instructions' does not exist on type '{ ... Remove this comment to see the full error message
         if (request.body.instructions) requestBody.instructions = request.body.instructions;
-        // @ts-expect-error TS(2339): Property 'speaker_transcript' does not exist on ty... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'speaker_transcript' does not exist on ty... Remove this comment to see the full error message
         if (request.body.speaker_transcript) requestBody.speaker_transcript = request.body.speaker_transcript;
-        // @ts-expect-error TS(2339): Property 'cfg_scale' does not exist on type '{ inp... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'cfg_scale' does not exist on type '{ inp... Remove this comment to see the full error message
         if (Number.isFinite(request.body.cfg_scale)) requestBody.cfg_scale = Number(request.body.cfg_scale);
-        // @ts-expect-error TS(2339): Property 'cfg_filter_top_k' does not exist on type... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'cfg_filter_top_k' does not exist on type... Remove this comment to see the full error message
         if (Number.isFinite(request.body.cfg_filter_top_k)) requestBody.cfg_filter_top_k = Number(request.body.cfg_filter_top_k);
-        // @ts-expect-error TS(2339): Property 'speech_rate' does not exist on type '{ i... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'speech_rate' does not exist on type '{ i... Remove this comment to see the full error message
         if (Number.isFinite(request.body.speech_rate)) requestBody.speech_rate = Number(request.body.speech_rate);
-        // @ts-expect-error TS(2339): Property 'pitch_adjustment' does not exist on type... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'pitch_adjustment' does not exist on type... Remove this comment to see the full error message
         if (Number.isFinite(request.body.pitch_adjustment)) requestBody.pitch_adjustment = Number(request.body.pitch_adjustment);
-        // @ts-expect-error TS(2339): Property 'emotional_style' does not exist on type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'emotional_style' does not exist on type ... Remove this comment to see the full error message
         if (request.body.emotional_style) requestBody.emotional_style = request.body.emotional_style;
 
         // Handle dynamic parameters sent from the frontend
         const knownParams = new Set(Object.keys(requestBody));
         for (const key in request.body) {
             if (!knownParams.has(key) && request.body[key] !== undefined) {
+                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 requestBody[key] = request.body[key];
             }
         }
 
         // Clean undefineds
+        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         Object.keys(requestBody).forEach(k => requestBody[k] === undefined && delete requestBody[k]);
 
         console.debug('ElectronHub TTS request', requestBody);
@@ -411,7 +415,7 @@ router.post('/electronhub/generate-voice', async (request, response) => {
 });
 
 // ElectronHub model list
-// @ts-expect-error TS(7030): Not all code paths return a value.
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/electronhub/models', async (request, response) => {
     try {
         const key = readSecret(request.user.directories, SECRET_KEYS.ELECTRONHUB);
@@ -444,7 +448,7 @@ router.post('/electronhub/models', async (request, response) => {
 });
 
 // Chutes TTS
-// @ts-expect-error TS(7030): Not all code paths return a value.
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/chutes/generate-voice', async (request, response) => {
     try {
         const key = readSecret(request.user.directories, SECRET_KEYS.CHUTES);
@@ -487,7 +491,7 @@ router.post('/chutes/generate-voice', async (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7030): Not all code paths return a value.
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/chutes/models/embedding', async (request, response) => {
     try {
         const key = readSecret(request.user.directories, SECRET_KEYS.CHUTES);
@@ -524,7 +528,7 @@ router.post('/chutes/models/embedding', async (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7030): Not all code paths return a value.
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/nanogpt/models/embedding', async (request, response) => {
     try {
         const key = readSecret(request.user.directories, SECRET_KEYS.NANOGPT);
@@ -562,7 +566,7 @@ router.post('/nanogpt/models/embedding', async (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7030): Not all code paths return a value.
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/siliconflow/models/embedding', async (request, response) => {
     try {
         const key = readSecret(request.user.directories, SECRET_KEYS.SILICONFLOW);
@@ -604,7 +608,7 @@ router.post('/siliconflow/models/embedding', async (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7030): Not all code paths return a value.
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/workers-ai/models/embedding', async (request, response) => {
     try {
         const key = readSecret(request.user.directories, SECRET_KEYS.WORKERS_AI);
@@ -652,7 +656,7 @@ router.post('/workers-ai/models/embedding', async (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7030): Not all code paths return a value.
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/generate-image', async (request, response) => {
     try {
         const key = readSecret(request.user.directories, SECRET_KEYS.OPENAI);
@@ -687,7 +691,7 @@ router.post('/generate-image', async (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7030): Not all code paths return a value.
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/generate-video', async (request, response) => {
     try {
         const controller = new AbortController();
@@ -791,7 +795,7 @@ router.post('/generate-video', async (request, response) => {
 
 const custom = express.Router();
 
-// @ts-expect-error TS(7030): Not all code paths return a value.
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 custom.post('/generate-voice', async (request, response) => {
     try {
         const key = readSecret(request.user.directories, SECRET_KEYS.CUSTOM_OPENAI_TTS);
@@ -924,7 +928,7 @@ router.post('/zai/transcribe-audio', createTranscribeHandler({
     providerName: 'Z.AI',
 }));
 
-// @ts-expect-error TS(7030): Not all code paths return a value.
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/chutes/transcribe-audio', async (request, response) => {
     try {
         const key = readSecret(request.user.directories, SECRET_KEYS.CHUTES);

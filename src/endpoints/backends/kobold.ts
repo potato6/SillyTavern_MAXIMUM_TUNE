@@ -1,4 +1,6 @@
+// @ts-expect-error TS(1192) FIXME: Module '"node:fs"' has no default export.
 import fs from 'node:fs';
+// @ts-expect-error TS(1259) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import express from 'express';
 import fetch from 'node-fetch';
 
@@ -8,6 +10,7 @@ import { TEXTGEN_TYPES } from '../../constants.js';
 
 export const router = express.Router();
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/generate', async function (request, response_generate) {
     if (!request.body) return response_generate.sendStatus(400);
 
@@ -56,7 +59,7 @@ router.post('/generate', async function (request, response_generate) {
             use_world_info: false,
             max_context_length: request.body.max_context_length,
             max_length: request.body.max_length,
-            // @ts-expect-error TS(2322): Type '{ prompt: any; use_story: false; use_memory:... Remove this comment to see the full error message
+            // @ts-expect-error TS(2322) FIXME: Type '{ prompt: any; use_story: false; use_memory:... Remove this comment to see the full error message
             rep_pen: request.body.rep_pen,
             rep_pen_range: request.body.rep_pen_range,
             rep_pen_slope: request.body.rep_pen_slope,
@@ -77,7 +80,7 @@ router.post('/generate', async function (request, response_generate) {
             sampler_seed: request.body.sampler_seed,
         };
         if (request.body.stop_sequence) {
-            // @ts-expect-error TS(2339): Property 'stop_sequence' does not exist on type '{... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'stop_sequence' does not exist on type '{... Remove this comment to see the full error message
             this_settings.stop_sequence = request.body.stop_sequence;
         }
     }
@@ -102,7 +105,6 @@ router.post('/generate', async function (request, response_generate) {
             if (request.body.streaming) {
                 // Pipe remote SSE stream to Express response
                 await forwardFetchResponse(response, response_generate);
-                // @ts-expect-error TS(7030): Not all code paths return a value.
                 return;
             } else {
                 if (!response.ok) {
@@ -124,6 +126,7 @@ router.post('/generate', async function (request, response_generate) {
             }
         } catch (error) {
             // response
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             switch (error?.status) {
                 case 403:
                 case 503: // retry in case of temporary service issue, possibly caused by a queue failure?
@@ -131,7 +134,9 @@ router.post('/generate', async function (request, response_generate) {
                     await delay(delayAmount);
                     break;
                 default:
+                    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                     if ('status' in error) {
+                        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                         console.error('Status Code from Kobold:', error.status);
                     }
                     return response_generate.send({ error: true });
@@ -143,7 +148,7 @@ router.post('/generate', async function (request, response_generate) {
     return response_generate.send({ error: true });
 });
 
-// @ts-expect-error TS(7030): Not all code paths return a value.
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/status', async function (request, response) {
     if (!request.body) return response.sendStatus(400);
     let api_server = request.body.api_server;
@@ -182,11 +187,11 @@ router.post('/status', async function (request, response) {
         }).catch(() => null),
     ]);
 
-    // @ts-expect-error TS(2339): Property 'koboldUnitedVersion' does not exist on t... Remove this comment to see the full error message
+    // @ts-expect-error TS(2339) FIXME: Property 'koboldUnitedVersion' does not exist on t... Remove this comment to see the full error message
     result.koboldUnitedVersion = koboldUnitedResponse.result;
-    // @ts-expect-error TS(2339): Property 'koboldCppVersion' does not exist on type... Remove this comment to see the full error message
+    // @ts-expect-error TS(2339) FIXME: Property 'koboldCppVersion' does not exist on type... Remove this comment to see the full error message
     result.koboldCppVersion = koboldExtraResponse.result;
-    // @ts-expect-error TS(2339): Property 'model' does not exist on type '{}'.
+    // @ts-expect-error TS(2339) FIXME: Property 'model' does not exist on type '{}'.
     result.model = !koboldModelResponse || koboldModelResponse.result === 'ReadOnly' ?
         'no_connection' :
         koboldModelResponse.result;
@@ -194,7 +199,7 @@ router.post('/status', async function (request, response) {
     response.send(result);
 });
 
-// @ts-expect-error TS(7030): Not all code paths return a value.
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/transcribe-audio', async function (request, response) {
     try {
         const server = request.body.server;
@@ -246,7 +251,7 @@ router.post('/transcribe-audio', async function (request, response) {
     }
 });
 
-// @ts-expect-error TS(7030): Not all code paths return a value.
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/embed', async function (request, response) {
     try {
         const { server, items } = request.body;

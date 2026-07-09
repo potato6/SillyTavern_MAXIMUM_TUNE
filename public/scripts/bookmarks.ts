@@ -20,10 +20,12 @@ import {
     DEFAULT_AUTO_MODE_DELAY,
     group_activation_strategy,
     group_generation_mode,
+    // @ts-expect-error TS(7034) FIXME: Variable 'groups' implicitly has type 'any[]' in s... Remove this comment to see the full error message
     groups,
     openGroupById,
     openGroupChat,
     saveGroupBookmarkChat,
+    // @ts-expect-error TS(7034) FIXME: Variable 'selected_group' implicitly has type 'any... Remove this comment to see the full error message
     selected_group,
 } from './group-chats.js';
 import { loader } from './action-loader.js';
@@ -50,7 +52,9 @@ const bookmarkNameToken = 'Checkpoint #';
  * @returns {Promise<string[]>} - Returns a promise that resolves to an array of existing chat names.
  */
 async function getExistingChatNames() {
+    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
     if (selected_group) {
+        // @ts-expect-error TS(7005) FIXME: Variable 'groups' implicitly has an 'any[]' type.
         const group = groups.find(x => x.id == selected_group);
         if (group && Array.isArray(group.chats)) {
             return [...group.chats];
@@ -71,12 +75,13 @@ async function getExistingChatNames() {
     const response = await fetch('/api/characters/chats', {
         method: 'POST',
         headers: getRequestHeaders(),
+        // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
         body: JSON.stringify({ avatar_url: character.avatar, simple: true }),
     });
 
     if (response.ok) {
         const data = await response.json();
-        // @ts-expect-error TS(2339): Property 'file_name' does not exist on type 'unkno... Remove this comment to see the full error message
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         const chats = Object.values(data).map(x => x.file_name.replace('.jsonl', ''));
         return [...chats];
     }
@@ -98,6 +103,7 @@ async function getBookmarkName({ isReplace = false, forceName = null } = {}) {
      * @param name
      * @param i
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
     function buildCheckpointName(name, i) {
         // Strip off existing suffixes, then build new name
         let cleanName = name.replace(new RegExp(` - ${bookmarkNameToken}\\d+$`), '');
@@ -106,6 +112,7 @@ async function getBookmarkName({ isReplace = false, forceName = null } = {}) {
         return `${cleanName} - ${bookmarkNameToken}${i}`;
     }
     const existingChats = await getExistingChatNames();
+    // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
     const suggestedName = getUniqueName(mainChatName, (x) => existingChats.includes(x), { nameBuilder: buildCheckpointName });
 
     const body = await renderTemplateAsync('createCheckpoint', { isReplace: isReplace, suggestedName: suggestedName });
@@ -126,18 +133,21 @@ async function getBookmarkName({ isReplace = false, forceName = null } = {}) {
  */
 function getMainChatName() {
     if (chat_metadata) {
-        // @ts-expect-error TS(2339): Property 'main_chat' does not exist on type '{}'.
+        // @ts-expect-error TS(2339) FIXME: Property 'main_chat' does not exist on type '{}'.
         if (chat_metadata.main_chat) {
-            // @ts-expect-error TS(2339): Property 'main_chat' does not exist on type '{}'.
+            // @ts-expect-error TS(2339) FIXME: Property 'main_chat' does not exist on type '{}'.
             return chat_metadata.main_chat;
+        // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
         } else if (selected_group) {
             // groups didn't support bookmarks before chat metadata was introduced
             return null;
+        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         } else if (characters[this_chid].chat && characters[this_chid].chat.includes(bookmarkNameToken)) {
+            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             const tokenIndex = characters[this_chid].chat.lastIndexOf(bookmarkNameToken);
-            // @ts-expect-error TS(2339): Property 'main_chat' does not exist on type '{}'.
+            // @ts-expect-error TS(2339) FIXME: Property 'main_chat' does not exist on type '{}'.
             chat_metadata.main_chat = characters[this_chid].chat.substring(0, tokenIndex).trim();
-            // @ts-expect-error TS(2339): Property 'main_chat' does not exist on type '{}'.
+            // @ts-expect-error TS(2339) FIXME: Property 'main_chat' does not exist on type '{}'.
             return chat_metadata.main_chat;
         }
     }
@@ -149,40 +159,42 @@ function getMainChatName() {
  */
 export function showBookmarksButtons() {
     try {
+        // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
         if (selected_group) {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#option_convert_to_group').hide();
         } else {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#option_convert_to_group').show();
         }
 
-        // @ts-expect-error TS(2339): Property 'main_chat' does not exist on type '{}'.
+        // @ts-expect-error TS(2339) FIXME: Property 'main_chat' does not exist on type '{}'.
         if (chat_metadata.main_chat) {
             // In bookmark chat
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#option_back_to_main').show();
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#option_new_bookmark').show();
+        // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
         } else if (!selected_group && !characters[this_chid].chat) {
             // No chat recorded on character
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#option_back_to_main').hide();
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#option_new_bookmark').hide();
         } else {
             // In main chat
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#option_back_to_main').hide();
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#option_new_bookmark').show();
         }
     } catch {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#option_back_to_main').hide();
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#option_new_bookmark').hide();
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#option_convert_to_group').hide();
     }
 }
@@ -192,7 +204,7 @@ export function showBookmarksButtons() {
  */
 async function saveBookmarkMenu() {
     if (!chat.length) {
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.warning('The chat is empty.', 'Checkpoint creation failed');
         return;
     }
@@ -206,6 +218,7 @@ async function saveBookmarkMenu() {
  * @param {{swipeId?: number|null}} [options]
  * @returns {ChatMessage[]|null}
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'mesId' implicitly has an 'any' type.
 function getBranchChatSnapshot(mesId, { swipeId = null } = {}) {
     const snapshot = structuredClone(chat.slice(0, Number(mesId) + 1));
 
@@ -227,15 +240,16 @@ function getBranchChatSnapshot(mesId, { swipeId = null } = {}) {
  * @param root0
  * @param root0.swipeId
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'mesId' implicitly has an 'any' type.
 export async function createBranch(mesId, { swipeId = null } = {}) {
     if (!chat.length) {
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.warning('The chat is empty.', 'Branch creation failed');
         return;
     }
 
     if (mesId < 0 || mesId >= chat.length) {
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.warning('Invalid message ID.', 'Branch creation failed');
         return;
     }
@@ -245,8 +259,9 @@ export async function createBranch(mesId, { swipeId = null } = {}) {
     const newMetadata = { main_chat: mainChatName };
     const selectedSwipeId = swipeId === null ? null : Number(swipeId);
 
+    // @ts-expect-error TS(2339) FIXME: Property 'swipes' does not exist on type 'never'.
     if (selectedSwipeId !== null && (!Number.isInteger(selectedSwipeId) || selectedSwipeId < 0 || selectedSwipeId >= (lastMes?.swipes?.length ?? 0))) {
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.warning('Invalid swipe ID.', 'Branch creation failed');
         return;
     }
@@ -256,6 +271,7 @@ export async function createBranch(mesId, { swipeId = null } = {}) {
      * @param name
      * @param i
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
     function buildBranchName(name, i) {
         // Strip off existing suffixes, then build new name
         let cleanName = name.replace(/ - Branch #\d+$/, '');
@@ -264,34 +280,43 @@ export async function createBranch(mesId, { swipeId = null } = {}) {
         return `${cleanName} - Branch #${i}`;
     }
     const existingChats = await getExistingChatNames();
+    // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
     const name = getUniqueName(mainChatName, (x) => existingChats.includes(x), { nameBuilder: buildBranchName });
     if (!name) {
         console.error('Could not generate a unique branch name.');
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.error('Could not generate a unique branch name.', 'Branch creation failed');
         return;
     }
 
+    // @ts-expect-error TS(2322) FIXME: Type 'number | null' is not assignable to type 'nu... Remove this comment to see the full error message
     const branchChatSnapshot = getBranchChatSnapshot(mesId, { swipeId: selectedSwipeId });
     if (!branchChatSnapshot) {
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.warning('Could not prepare the selected swipe for branching.', 'Branch creation failed');
         return;
     }
 
+    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
     if (selected_group) {
+        // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
         await saveGroupBookmarkChat(selected_group, name, newMetadata, mesId, branchChatSnapshot);
     } else {
         await saveChat({ chatName: name, withMetadata: newMetadata, mesId, chatData: branchChatSnapshot });
     }
     // append to branches list if it exists
     // otherwise create it
+    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
     if (typeof lastMes.extra !== 'object') {
+        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         lastMes.extra = {};
     }
+    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
     if (typeof lastMes.extra.branches !== 'object') {
+        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         lastMes.extra.branches = [];
     }
+    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
     lastMes.extra.branches.push(name);
     return name;
 }
@@ -303,29 +328,34 @@ export async function createBranch(mesId, { swipeId = null } = {}) {
  * @param {string?} [options.forceName] - The name to force for the bookmark.
  * @returns {Promise<string?>} - A promise that resolves to the bookmark name when the bookmark is created.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'mesId' implicitly has an 'any' type.
 export async function createNewBookmark(mesId, { forceName = null } = {}) {
+    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
     if (this_chid === undefined && !selected_group) {
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.info('No character selected.', 'Create Checkpoint');
         return null;
     }
     if (!chat.length) {
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.warning('The chat is empty.', 'Create Checkpoint');
         return null;
     }
     if (!chat[mesId]) {
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.warning('Invalid message ID.', 'Create Checkpoint');
         return null;
     }
 
     const lastMes = chat[mesId];
 
+    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
     if (typeof lastMes.extra !== 'object') {
+        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         lastMes.extra = {};
     }
 
+    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
     const isReplace = lastMes.extra.bookmark_link;
 
     const name = await getBookmarkName({ isReplace: isReplace, forceName: forceName });
@@ -333,24 +363,29 @@ export async function createNewBookmark(mesId, { forceName = null } = {}) {
         return null;
     }
 
+    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
     const mainChat = selected_group ? groups?.find(x => x.id == selected_group)?.chat_id : characters[this_chid].chat;
     const newMetadata = { main_chat: mainChat };
     await saveItemizedPrompts(name);
 
+    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
     if (selected_group) {
+        // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
         await saveGroupBookmarkChat(selected_group, name, newMetadata, mesId);
     } else {
         await saveChat({ chatName: name, withMetadata: newMetadata, mesId });
     }
 
+    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
     lastMes.extra.bookmark_link = name;
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const mes = $(`.mes[mesid="${mesId}"]`);
+    // @ts-expect-error TS(2345) FIXME: Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
     updateBookmarkDisplay(mes, name);
 
     await saveChatConditional();
-    // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+    // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
     toastr.success('Click the flag icon next to the message to open the checkpoint chat.', 'Create Checkpoint', { timeOut: 10000 });
     return name;
 }
@@ -361,6 +396,7 @@ export async function createNewBookmark(mesId, { forceName = null } = {}) {
  * @param {JQuery<HTMLElement>} mes - The message element
  * @param {string?} [newBookmarkLink] - The new bookmark link (optional)
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'mes' implicitly has an 'any' type.
 export function updateBookmarkDisplay(mes, newBookmarkLink = null) {
         if (newBookmarkLink) mes.attr('bookmark_link', newBookmarkLink);
     const bookmarkFlag = mes.find('.mes_bookmark');
@@ -375,7 +411,9 @@ async function backToMainChat() {
     const allChats = await getExistingChatNames();
 
     if (allChats.includes(mainChatName)) {
+        // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
         if (selected_group) {
+            // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
             await openGroupChat(selected_group, mainChatName);
         } else {
             await openCharacterChat(mainChatName);
@@ -390,6 +428,7 @@ async function backToMainChat() {
  *
  */
 export async function convertSoloToGroupChat() {
+    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
     if (selected_group) {
         console.log('Already in group. No need for conversion');
         return;
@@ -408,15 +447,19 @@ export async function convertSoloToGroupChat() {
     const character = characters[this_chid];
 
     // Populate group required fields
+    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
     const name = getUniqueName(`Group: ${character.name}`, y => groups.findIndex(x => x.name === y) !== -1);
+    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
     const avatar = getThumbnailUrl('avatar', character.avatar);
     const chatName = humanizedDateTime();
     const chats = [chatName];
+    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
     const members = [character.avatar];
+    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
     const favChecked = character.fav || character.fav == 'true';
     /** @type {ChatMetadata} */
     const metadata = Object.assign({}, chat_metadata);
-    // @ts-expect-error TS(2339): Property 'main_chat' does not exist on type '{}'.
+    // @ts-expect-error TS(2339) FIXME: Property 'main_chat' does not exist on type '{}'.
     delete metadata.main_chat;
     /** @type {ChatHeader} */
     const chatHeader = {
@@ -468,19 +511,26 @@ export async function convertSoloToGroupChat() {
         const message = groupChat[index];
 
         // Skip messages we don't care about
+        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         if (message.is_user || message.is_system || message.extra?.type === system_message_types.NARRATOR || message.force_avatar !== undefined) {
             continue;
         }
 
+        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         if (!message.extra || typeof message.extra !== 'object') {
+            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             message.extra = {};
         }
 
         // Set force fields for solo character
+        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         message.name = character.name;
+        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         message.original_avatar = character.avatar;
+        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         message.force_avatar = getThumbnailUrl('avatar', character.avatar);
         // Allow regens of a single message in group
+        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         message.extra.gen_id = genIdFirst + index;
     }
 
@@ -494,7 +544,7 @@ export async function convertSoloToGroupChat() {
 
     if (!createChatResponse.ok) {
         console.error('Group chat creation unsuccessful');
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.error('Group chat creation unsuccessful');
         return;
     }
@@ -503,7 +553,7 @@ export async function convertSoloToGroupChat() {
     setActiveGroup(group.id);
     await openGroupById(group.id);
 
-    // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+    // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
     toastr.success(t`The chat has been successfully converted!`);
 }
 
@@ -513,9 +563,11 @@ export async function convertSoloToGroupChat() {
  * @param {{swipeId?: number|null}} [options] Branch options
  * @returns {Promise<string?>} Branch file name
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'mesId' implicitly has an 'any' type.
 export async function branchChat(mesId, { swipeId = null } = {}) {
+    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
     if (this_chid === undefined && !selected_group) {
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.info('No character selected.', 'Create Branch');
         return null;
     }
@@ -527,7 +579,9 @@ export async function branchChat(mesId, { swipeId = null } = {}) {
 
     await saveItemizedPrompts(fileName);
 
+    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
     if (selected_group) {
+        // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
         await openGroupChat(selected_group, fileName);
     } else {
         await openCharacterChat(fileName);
@@ -546,14 +600,15 @@ function registerBookmarksSlashCommands() {
      * @param {string} context - The context of the slash command. Will be used as the title of any toasts.
      * @returns {boolean} - Returns true if the message ID is valid, otherwise false.
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'mesId' implicitly has an 'any' type.
     function validateMessageId(mesId, context) {
         if (isNaN(mesId)) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.warning('Invalid message ID was provided', context);
             return false;
         }
         if (!chat[mesId]) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.warning(`Message for id ${mesId} not found`, context);
             return false;
         }
@@ -563,6 +618,7 @@ function registerBookmarksSlashCommands() {
     SlashCommandParser.addCommandObject(SlashCommand.fromProps({
         name: 'branch-create',
         returns: 'Name of the new branch',
+        // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
         callback: async (args, text) => {
             const mesId = Number(args.mesId ?? text ?? getLastMessageId());
             if (!validateMessageId(mesId, 'Create Branch')) return '';
@@ -592,16 +648,18 @@ function registerBookmarksSlashCommands() {
     SlashCommandParser.addCommandObject(SlashCommand.fromProps({
         name: 'checkpoint-create',
         returns: 'Name of the new checkpoint',
+        // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
         callback: async (args, text) => {
             const mesId = Number(args.mesId ?? getLastMessageId());
             if (!validateMessageId(mesId, 'Create Checkpoint')) return '';
 
             if (typeof text !== 'string') {
-                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                 toastr.warning('Checkpoint name must be a string or empty', 'Create Checkpoint');
                 return '';
             }
 
+            // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'null | un... Remove this comment to see the full error message
             const checkPointName = await createNewBookmark(mesId, { forceName: text });
             return checkPointName ?? '';
         },
@@ -646,18 +704,22 @@ function registerBookmarksSlashCommands() {
     SlashCommandParser.addCommandObject(SlashCommand.fromProps({
         name: 'checkpoint-go',
         returns: 'Name of the checkpoint',
+        // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
         callback: async (args, text) => {
             const mesId = Number(args.mesId ?? text ?? getLastMessageId());
             if (!validateMessageId(mesId, 'Open Checkpoint')) return '';
 
+            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             const checkPointName = chat[mesId].extra?.bookmark_link;
             if (!checkPointName) {
-                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                 toastr.warning('No checkpoint is linked to the selected message', 'Open Checkpoint');
                 return '';
             }
 
+            // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
             if (selected_group) {
+                // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
                 await openGroupChat(selected_group, checkPointName);
             } else {
                 await openCharacterChat(checkPointName);
@@ -701,10 +763,12 @@ function registerBookmarksSlashCommands() {
     SlashCommandParser.addCommandObject(SlashCommand.fromProps({
         name: 'checkpoint-get',
         returns: 'Name of the chat',
+        // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
         callback: async (args, text) => {
             const mesId = Number(args.mesId ?? text ?? getLastMessageId());
             if (!validateMessageId(mesId, 'Get Checkpoint')) return '';
 
+            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             const checkPointName = chat[mesId].extra?.bookmark_link;
             return checkPointName ?? '';
         },
@@ -728,9 +792,12 @@ function registerBookmarksSlashCommands() {
          * @param {{links?: string}} args @returns {Promise<string>}
          * @param _
          */
+        // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
         callback: async (args, _) => {
             const result = Object.entries(chat)
+                // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type 'never'.
                 .filter(([_, message]) => message.extra?.bookmark_link)
+                // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type 'never'.
                 .map(([mesId, message]) => isTrueBoolean(args.links) ? message.extra.bookmark_link : Number(mesId));
             return JSON.stringify(result);
         },
@@ -758,16 +825,17 @@ function registerBookmarksSlashCommands() {
  *
  */
 export function initBookmarks() {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#option_new_bookmark').on('click', saveBookmarkMenu);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#option_back_to_main').on('click', backToMainChat);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#option_convert_to_group').on('click', convertSoloToGroupChat);
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.select_chat_block, .mes_bookmark', async function (e) {
         // If shift is held down, we are not following the bookmark, but creating a new one
+        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
         const mes = this.closest('.mes');
         if (e.shiftKey && mes) {
             const selectedMesId = mes.getAttribute('mesid');
@@ -775,8 +843,11 @@ export function initBookmarks() {
             return;
         }
 
+        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
         const fileName = this.classList.contains('mes_bookmark')
+            // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
             ? this.closest('.mes').getAttribute('bookmark_link')
+            // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
             : this.getAttribute('file_name');
 
         if (!fileName) {
@@ -791,7 +862,9 @@ export function initBookmarks() {
         });
 
         try {
+            // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
             if (selected_group) {
+                // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
                 await openGroupChat(selected_group, fileName);
             } else {
                 await openCharacterChat(fileName);
@@ -800,20 +873,22 @@ export function initBookmarks() {
             await loaderHandle.hide();
         }
 
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#shadow_select_chat_popup').css('display', 'none');
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.mes_create_bookmark', async function () {
+        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
         const mesId = this.closest('.mes').getAttribute('mesid');
         if (mesId !== undefined) {
             await createNewBookmark(Number(mesId));
         }
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.mes_create_branch', async function () {
+        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
         const mesId = this.closest('.mes').getAttribute('mesid');
         if (mesId !== undefined) {
             await branchChat(Number(mesId));

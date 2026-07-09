@@ -8,6 +8,7 @@ import {
     animation_duration,
 } from '../script.js';
 import { extension_settings, saveMetadataDebounced } from './extensions.js';
+// @ts-expect-error TS(7034) FIXME: Variable 'selected_group' implicitly has type 'any... Remove this comment to see the full error message
 import { selected_group } from './group-chats.js';
 import { getCharaFilename, delay } from './utils.js';
 import { power_user } from './power-user.js';
@@ -40,6 +41,7 @@ function updateSettings() {
  * @param tempValue
  * @param setting
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'tempValue' implicitly has an 'any' type... Remove this comment to see the full error message
 function setCharCfg(tempValue, setting) {
     const avatarName = getCharaFilename();
 
@@ -50,15 +52,15 @@ function setCharCfg(tempValue, setting) {
 
     switch (setting) {
         case settingType.guidance_scale:
-            // @ts-expect-error TS(2339): Property 'guidance_scale' does not exist on type '... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'guidance_scale' does not exist on type '... Remove this comment to see the full error message
             tempCharaCfg.guidance_scale = Number(tempValue);
             break;
         case settingType.negative_prompt:
-            // @ts-expect-error TS(2339): Property 'negative_prompt' does not exist on type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'negative_prompt' does not exist on type ... Remove this comment to see the full error message
             tempCharaCfg.negative_prompt = tempValue;
             break;
         case settingType.positive_prompt:
-            // @ts-expect-error TS(2339): Property 'positive_prompt' does not exist on type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'positive_prompt' does not exist on type ... Remove this comment to see the full error message
             tempCharaCfg.positive_prompt = tempValue;
             break;
         default:
@@ -68,15 +70,15 @@ function setCharCfg(tempValue, setting) {
     let existingCharaCfgIndex;
     let existingCharaCfg;
 
-    // @ts-expect-error TS(2339): Property 'cfg' does not exist on type '{ apiUrl: s... Remove this comment to see the full error message
+    // @ts-expect-error TS(2339) FIXME: Property 'cfg' does not exist on type '{ apiUrl: s... Remove this comment to see the full error message
     if (extension_settings.cfg.chara) {
-        // @ts-expect-error TS(2339): Property 'cfg' does not exist on type '{ apiUrl: s... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'cfg' does not exist on type '{ apiUrl: s... Remove this comment to see the full error message
         existingCharaCfgIndex = extension_settings.cfg.chara.findIndex((e) => e.name === avatarName);
-        // @ts-expect-error TS(2339): Property 'cfg' does not exist on type '{ apiUrl: s... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'cfg' does not exist on type '{ apiUrl: s... Remove this comment to see the full error message
         existingCharaCfg = extension_settings.cfg.chara[existingCharaCfgIndex];
     }
 
-    // @ts-expect-error TS(2339): Property 'cfg' does not exist on type '{ apiUrl: s... Remove this comment to see the full error message
+    // @ts-expect-error TS(2339) FIXME: Property 'cfg' does not exist on type '{ apiUrl: s... Remove this comment to see the full error message
     if (extension_settings.cfg.chara && existingCharaCfg) {
         const tempAssign = Object.assign(existingCharaCfg, tempCharaCfg);
 
@@ -85,17 +87,17 @@ function setCharCfg(tempValue, setting) {
             (tempAssign.guidance_scale ?? 1.00) === 1.00 &&
             (tempAssign.negative_prompt?.length ?? 0) === 0 &&
             (tempAssign.positive_prompt?.length ?? 0) === 0) {
-            // @ts-expect-error TS(2339): Property 'cfg' does not exist on type '{ apiUrl: s... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'cfg' does not exist on type '{ apiUrl: s... Remove this comment to see the full error message
             extension_settings.cfg.chara.splice(existingCharaCfgIndex, 1);
         }
     } else if (avatarName && tempValue.length > 0) {
-        // @ts-expect-error TS(2339): Property 'cfg' does not exist on type '{ apiUrl: s... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'cfg' does not exist on type '{ apiUrl: s... Remove this comment to see the full error message
         if (!extension_settings.cfg.chara) {
-            // @ts-expect-error TS(2339): Property 'cfg' does not exist on type '{ apiUrl: s... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'cfg' does not exist on type '{ apiUrl: s... Remove this comment to see the full error message
             extension_settings.cfg.chara = [];
         }
 
-        // @ts-expect-error TS(2339): Property 'cfg' does not exist on type '{ apiUrl: s... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'cfg' does not exist on type '{ apiUrl: s... Remove this comment to see the full error message
         extension_settings.cfg.chara.push(tempCharaCfg);
     } else {
         console.debug('Character CFG error: No avatar name key could be found.');
@@ -114,15 +116,19 @@ function setCharCfg(tempValue, setting) {
  * @param tempValue
  * @param setting
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'tempValue' implicitly has an 'any' type... Remove this comment to see the full error message
 function setChatCfg(tempValue, setting) {
     switch (setting) {
         case settingType.guidance_scale:
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             chat_metadata[metadataKeys.guidance_scale] = tempValue;
             break;
         case settingType.negative_prompt:
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             chat_metadata[metadataKeys.negative_prompt] = tempValue;
             break;
         case settingType.positive_prompt:
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             chat_metadata[metadataKeys.positive_prompt] = tempValue;
             break;
         default:
@@ -139,62 +145,63 @@ function setChatCfg(tempValue, setting) {
  *
  */
 function onCfgMenuItemClick() {
+    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
     if (!selected_group && this_chid === undefined) {
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.warning('Select a character before trying to configure CFG', '', { timeOut: 2000 });
         return;
     }
 
     //show CFG config if it's hidden
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     if ($('#cfgConfig').css('display') !== 'flex') {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#cfgConfig').addClass('resizing');
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#cfgConfig').css('display', 'flex');
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#cfgConfig').css('opacity', 0.0);
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#cfgConfig').transition({
             opacity: 1.0,
             duration: animation_duration,
         }, async function () {
             await delay(50);
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#cfgConfig').removeClass('resizing');
         });
 
         //auto-open the main AN inline drawer
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         if ($('#CFGBlockToggle')
             .siblings('.inline-drawer-content')
             .css('display') !== 'block') {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#floatingPrompt').addClass('resizing');
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#CFGBlockToggle').trigger('click');
         }
     } else {
         //hide AN if it's already displayed
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#cfgConfig').addClass('resizing');
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#cfgConfig').transition({
             opacity: 0.0,
             duration: animation_duration,
         }, async function () {
             await delay(50);
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#cfgConfig').removeClass('resizing');
         });
         setTimeout(function () {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#cfgConfig').hide();
         }, animation_duration);
     }
     //duplicate options menu close handler from script.js
     //because this listener takes priority
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#options').stop().fadeOut(animation_duration);
 }
 
@@ -211,15 +218,16 @@ async function onChatChanged() {
  *
  */
 async function modifyCharaHtml() {
+    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
     if (selected_group) {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#chara_cfg_container').hide();
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#groupchat_cfg_use_chara_container').show();
     } else {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#chara_cfg_container').show();
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#groupchat_cfg_use_chara_container').hide();
         // TODO: Remove chat checkbox here
     }
@@ -231,19 +239,21 @@ async function modifyCharaHtml() {
  */
 function loadSettings() {
     // Set chat CFG if it exists
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#chat_cfg_guidance_scale').val(chat_metadata[metadataKeys.guidance_scale] ?? (1.0).toFixed(2));
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#chat_cfg_guidance_scale_counter').val(chat_metadata[metadataKeys.guidance_scale]?.toFixed(2) ?? (1.0).toFixed(2));
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#chat_cfg_negative_prompt').val(chat_metadata[metadataKeys.negative_prompt] ?? '');
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#chat_cfg_positive_prompt').val(chat_metadata[metadataKeys.positive_prompt] ?? '');
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#groupchat_cfg_use_chara').prop('checked', chat_metadata[metadataKeys.groupchat_individual_chars] ?? false);
+    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     if (chat_metadata[metadataKeys.prompt_combine]?.length > 0) {
+        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         chat_metadata[metadataKeys.prompt_combine].forEach((element) => {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(`input[name="cfg_prompt_combine"][value="${element}"]`)
                 .prop('checked', true);
         });
@@ -251,6 +261,7 @@ function loadSettings() {
 
     // Display the negative separator in quotes if not quoted already
     const promptSeparatorDisplay = [];
+    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     const promptSeparator = chat_metadata[metadataKeys.prompt_separator];
     if (promptSeparator) {
         promptSeparatorDisplay.push(promptSeparator);
@@ -263,23 +274,24 @@ function loadSettings() {
         }
     }
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#cfg_prompt_separator').val(promptSeparatorDisplay.length === 0 ? '' : promptSeparatorDisplay.join(''));
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#cfg_prompt_insertion_depth').val(chat_metadata[metadataKeys.prompt_insertion_depth] ?? 1);
 
     // Set character CFG if it exists
+    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
     if (!selected_group) {
-        // @ts-expect-error TS(2339): Property 'cfg' does not exist on type '{ apiUrl: s... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'cfg' does not exist on type '{ apiUrl: s... Remove this comment to see the full error message
         const charaCfg = extension_settings.cfg.chara.find((e) => e.name === getCharaFilename());
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#chara_cfg_guidance_scale').val(charaCfg?.guidance_scale ?? 1.00);
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#chara_cfg_guidance_scale_counter').val(charaCfg?.guidance_scale?.toFixed(2) ?? (1.0).toFixed(2));
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#chara_cfg_negative_prompt').val(charaCfg?.negative_prompt ?? '');
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#chara_cfg_positive_prompt').val(charaCfg?.positive_prompt ?? '');
     }
 }
@@ -290,20 +302,23 @@ function loadSettings() {
  */
 async function initialLoadSettings() {
     // Create the settings if they don't exist
+    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     extension_settings[extensionName] = extension_settings[extensionName] || {};
+    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     if (Object.keys(extension_settings[extensionName]).length === 0) {
+        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         Object.assign(extension_settings[extensionName], defaultSettings);
         saveSettingsDebounced();
     }
 
     // Set global CFG values on load
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#global_cfg_guidance_scale').val(extension_settings.cfg.global.guidance_scale);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#global_cfg_guidance_scale_counter').val(extension_settings.cfg.global.guidance_scale.toFixed(2));
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#global_cfg_negative_prompt').val(extension_settings.cfg.global.negative_prompt);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#global_cfg_positive_prompt').val(extension_settings.cfg.global.positive_prompt);
 }
 
@@ -314,47 +329,47 @@ function migrateSettings() {
     let performSettingsSave = false;
     let performMetaSave = false;
 
-    // @ts-expect-error TS(2339): Property 'guidance_scale' does not exist on type '... Remove this comment to see the full error message
+    // @ts-expect-error TS(2339) FIXME: Property 'guidance_scale' does not exist on type '... Remove this comment to see the full error message
     if (power_user.guidance_scale) {
-        // @ts-expect-error TS(2339): Property 'cfg' does not exist on type '{ apiUrl: s... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'cfg' does not exist on type '{ apiUrl: s... Remove this comment to see the full error message
         extension_settings.cfg.global.guidance_scale = power_user.guidance_scale;
-        // @ts-expect-error TS(2339): Property 'guidance_scale' does not exist on type '... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'guidance_scale' does not exist on type '... Remove this comment to see the full error message
         delete power_user.guidance_scale;
         performSettingsSave = true;
     }
 
-    // @ts-expect-error TS(2339): Property 'negative_prompt' does not exist on type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2339) FIXME: Property 'negative_prompt' does not exist on type ... Remove this comment to see the full error message
     if (power_user.negative_prompt) {
-        // @ts-expect-error TS(2339): Property 'cfg' does not exist on type '{ apiUrl: s... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'cfg' does not exist on type '{ apiUrl: s... Remove this comment to see the full error message
         extension_settings.cfg.global.negative_prompt = power_user.negative_prompt;
-        // @ts-expect-error TS(2339): Property 'negative_prompt' does not exist on type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'negative_prompt' does not exist on type ... Remove this comment to see the full error message
         delete power_user.negative_prompt;
         performSettingsSave = true;
     }
 
-    // @ts-expect-error TS(2339): Property 'cfg_negative_combine' does not exist on ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2339) FIXME: Property 'cfg_negative_combine' does not exist on ... Remove this comment to see the full error message
     if (chat_metadata.cfg_negative_combine) {
-        // @ts-expect-error TS(2339): Property 'cfg_negative_combine' does not exist on ... Remove this comment to see the full error message
+        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         chat_metadata[metadataKeys.prompt_combine] = chat_metadata.cfg_negative_combine;
-        // @ts-expect-error TS(2339): Property 'cfg_negative_combine' does not exist on ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'cfg_negative_combine' does not exist on ... Remove this comment to see the full error message
         chat_metadata.cfg_negative_combine = undefined;
         performMetaSave = true;
     }
 
-    // @ts-expect-error TS(2339): Property 'cfg_negative_insertion_depth' does not e... Remove this comment to see the full error message
+    // @ts-expect-error TS(2339) FIXME: Property 'cfg_negative_insertion_depth' does not e... Remove this comment to see the full error message
     if (chat_metadata.cfg_negative_insertion_depth) {
-        // @ts-expect-error TS(2339): Property 'cfg_negative_insertion_depth' does not e... Remove this comment to see the full error message
+        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         chat_metadata[metadataKeys.prompt_insertion_depth] = chat_metadata.cfg_negative_insertion_depth;
-        // @ts-expect-error TS(2339): Property 'cfg_negative_insertion_depth' does not e... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'cfg_negative_insertion_depth' does not e... Remove this comment to see the full error message
         chat_metadata.cfg_negative_insertion_depth = undefined;
         performMetaSave = true;
     }
 
-    // @ts-expect-error TS(2339): Property 'cfg_negative_separator' does not exist o... Remove this comment to see the full error message
+    // @ts-expect-error TS(2339) FIXME: Property 'cfg_negative_separator' does not exist o... Remove this comment to see the full error message
     if (chat_metadata.cfg_negative_separator) {
-        // @ts-expect-error TS(2339): Property 'cfg_negative_separator' does not exist o... Remove this comment to see the full error message
+        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         chat_metadata[metadataKeys.prompt_separator] = chat_metadata.cfg_negative_separator;
-        // @ts-expect-error TS(2339): Property 'cfg_negative_separator' does not exist o... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'cfg_negative_separator' does not exist o... Remove this comment to see the full error message
         chat_metadata.cfg_negative_separator = undefined;
         performMetaSave = true;
     }
@@ -373,119 +388,122 @@ function migrateSettings() {
  *
  */
 export function initCfg() {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#CFGClose').on('click', function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#cfgConfig').transition({
             opacity: 0,
             duration: animation_duration,
             easing: 'ease-in-out',
         });
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         setTimeout(function () { $('#cfgConfig').hide(); }, animation_duration);
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#chat_cfg_guidance_scale').on('input', function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const numberValue = Number($(this).val());
         const success = setChatCfg(numberValue, settingType.guidance_scale);
         if (success) {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#chat_cfg_guidance_scale_counter').val(numberValue.toFixed(2));
         }
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#chat_cfg_negative_prompt').on('input', function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         setChatCfg($(this).val(), settingType.negative_prompt);
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#chat_cfg_positive_prompt').on('input', function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         setChatCfg($(this).val(), settingType.positive_prompt);
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#chara_cfg_guidance_scale').on('input', function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const value = $(this).val();
         const success = setCharCfg(value, settingType.guidance_scale);
         if (success) {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#chara_cfg_guidance_scale_counter').val(Number(value).toFixed(2));
         }
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#chara_cfg_negative_prompt').on('input', function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         setCharCfg($(this).val(), settingType.negative_prompt);
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#chara_cfg_positive_prompt').on('input', function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         setCharCfg($(this).val(), settingType.positive_prompt);
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#global_cfg_guidance_scale').on('input', function () {
-        // @ts-expect-error TS(2339): Property 'cfg' does not exist on type '{ apiUrl: s... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'cfg' does not exist on type '{ apiUrl: s... Remove this comment to see the full error message
         extension_settings.cfg.global.guidance_scale = Number($(this).val());
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#global_cfg_guidance_scale_counter').val(extension_settings.cfg.global.guidance_scale.toFixed(2));
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#global_cfg_negative_prompt').on('input', function () {
-        // @ts-expect-error TS(2339): Property 'cfg' does not exist on type '{ apiUrl: s... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'cfg' does not exist on type '{ apiUrl: s... Remove this comment to see the full error message
         extension_settings.cfg.global.negative_prompt = $(this).val();
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#global_cfg_positive_prompt').on('input', function () {
-        // @ts-expect-error TS(2339): Property 'cfg' does not exist on type '{ apiUrl: s... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'cfg' does not exist on type '{ apiUrl: s... Remove this comment to see the full error message
         extension_settings.cfg.global.positive_prompt = $(this).val();
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('input[name="cfg_prompt_combine"]').on('input', function () {
         const values = Array.from(document.querySelectorAll('#cfgConfig input[name="cfg_prompt_combine"]:checked'))
+            // @ts-expect-error TS(2339) FIXME: Property 'value' does not exist on type 'Element'.
             .map(function (el) { return Number(el.value); })
             .filter((e) => !Number.isNaN(e)) || [];
 
+        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         chat_metadata[metadataKeys.prompt_combine] = values;
         saveMetadataDebounced();
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#cfg_prompt_insertion_depth').on('input', function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         chat_metadata[metadataKeys.prompt_insertion_depth] = Number($(this).val());
         saveMetadataDebounced();
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#cfg_prompt_separator').on('input', function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         chat_metadata[metadataKeys.prompt_separator] = $(this).val();
         saveMetadataDebounced();
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#groupchat_cfg_use_chara').on('input', function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const checked = !!$(this).prop('checked');
+        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         chat_metadata[metadataKeys.groupchat_individual_chars] = checked;
 
         if (checked) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.info('You can edit character CFG values in their respective character chats.');
         }
 
@@ -494,12 +512,12 @@ export function initCfg() {
 
     initialLoadSettings();
 
-    // @ts-expect-error TS(2339): Property 'cfg' does not exist on type '{ apiUrl: s... Remove this comment to see the full error message
+    // @ts-expect-error TS(2339) FIXME: Property 'cfg' does not exist on type '{ apiUrl: s... Remove this comment to see the full error message
     if (extension_settings.cfg) {
         migrateSettings();
     }
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#option_toggle_CFG').on('click', onCfgMenuItemClick);
 
     // Hook events
@@ -529,18 +547,18 @@ export const metadataKeys = {
 /**
  *
  */
-// @ts-expect-error TS(7030): Not all code paths return a value.
 export function getGuidanceScale() {
-    // @ts-expect-error TS(2339): Property 'cfg' does not exist on type '{ apiUrl: s... Remove this comment to see the full error message
+    // @ts-expect-error TS(2339) FIXME: Property 'cfg' does not exist on type '{ apiUrl: s... Remove this comment to see the full error message
     if (!extension_settings.cfg) {
         console.warn('CFG extension is not enabled. Skipping CFG guidance.');
-        // @ts-expect-error TS(7030): Not all code paths return a value.
         return;
     }
 
-    // @ts-expect-error TS(2339): Property 'cfg' does not exist on type '{ apiUrl: s... Remove this comment to see the full error message
+    // @ts-expect-error TS(2339) FIXME: Property 'cfg' does not exist on type '{ apiUrl: s... Remove this comment to see the full error message
     const charaCfg = extension_settings.cfg.chara?.find((e) => e.name === getCharaFilename(this_chid));
+    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     const chatGuidanceScale = chat_metadata[metadataKeys.guidance_scale];
+    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     const groupchatCharOverride = chat_metadata[metadataKeys.groupchat_individual_chars] ?? false;
 
     if (chatGuidanceScale && chatGuidanceScale !== 1 && !groupchatCharOverride) {
@@ -550,6 +568,7 @@ export function getGuidanceScale() {
         };
     }
 
+    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
     if ((!selected_group && charaCfg || groupchatCharOverride) && charaCfg?.guidance_scale !== 1) {
         return {
             type: cfgType.chara,
@@ -557,11 +576,11 @@ export function getGuidanceScale() {
         };
     }
 
-    // @ts-expect-error TS(2339): Property 'cfg' does not exist on type '{ apiUrl: s... Remove this comment to see the full error message
+    // @ts-expect-error TS(2339) FIXME: Property 'cfg' does not exist on type '{ apiUrl: s... Remove this comment to see the full error message
     if (extension_settings.cfg.global && extension_settings.cfg.global?.guidance_scale !== 1) {
         return {
             type: cfgType.global,
-            // @ts-expect-error TS(2339): Property 'cfg' does not exist on type '{ apiUrl: s... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'cfg' does not exist on type '{ apiUrl: s... Remove this comment to see the full error message
             value: extension_settings.cfg.global.guidance_scale,
         };
     }
@@ -575,7 +594,9 @@ function getCustomSeparator() {
     const defaultSeparator = '\n';
 
     try {
+        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         if (chat_metadata[metadataKeys.prompt_separator]) {
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             return JSON.parse(chat_metadata[metadataKeys.prompt_separator]);
         }
 
@@ -593,19 +614,22 @@ function getCustomSeparator() {
  * @param {boolean} quiet Whether to suppress console output
  * @returns {{value: string, depth: number}} The CFG prompt and insertion depth
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'guidanceScale' implicitly has an 'any' ... Remove this comment to see the full error message
 export function getCfgPrompt(guidanceScale, isNegative, quiet = false) {
     const splitCfgPrompt = [];
 
+    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     const cfgPromptCombine = chat_metadata[metadataKeys.prompt_combine] ?? [];
     if (guidanceScale.type === cfgType.chat || cfgPromptCombine.includes(cfgType.chat)) {
         splitCfgPrompt.unshift(
             substituteParams(
+                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 chat_metadata[isNegative ? metadataKeys.negative_prompt : metadataKeys.positive_prompt],
             ),
         );
     }
 
-    // @ts-expect-error TS(2339): Property 'cfg' does not exist on type '{ apiUrl: s... Remove this comment to see the full error message
+    // @ts-expect-error TS(2339) FIXME: Property 'cfg' does not exist on type '{ apiUrl: s... Remove this comment to see the full error message
     const charaCfg = extension_settings.cfg.chara?.find((e) => e.name === getCharaFilename(this_chid));
     if (guidanceScale.type === cfgType.chara || cfgPromptCombine.includes(cfgType.chara)) {
         splitCfgPrompt.unshift(
@@ -618,7 +642,7 @@ export function getCfgPrompt(guidanceScale, isNegative, quiet = false) {
     if (guidanceScale.type === cfgType.global || cfgPromptCombine.includes(cfgType.global)) {
         splitCfgPrompt.unshift(
             substituteParams(
-                // @ts-expect-error TS(2339): Property 'cfg' does not exist on type '{ apiUrl: s... Remove this comment to see the full error message
+                // @ts-expect-error TS(2339) FIXME: Property 'cfg' does not exist on type '{ apiUrl: s... Remove this comment to see the full error message
                 isNegative ? extension_settings.cfg.global.negative_prompt : extension_settings.cfg.global.positive_prompt,
             ),
         );
@@ -626,6 +650,7 @@ export function getCfgPrompt(guidanceScale, isNegative, quiet = false) {
 
     const customSeparator = getCustomSeparator();
     const combinedCfgPrompt = splitCfgPrompt.filter((e) => e.length > 0).join(customSeparator);
+    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     const insertionDepth = chat_metadata[metadataKeys.prompt_insertion_depth] ?? 1;
     if (!quiet) console.log(`Setting CFG with guidance scale: ${guidanceScale.value}, negatives: ${combinedCfgPrompt}`);
 

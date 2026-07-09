@@ -1,11 +1,14 @@
+// @ts-expect-error TS(1192) FIXME: Module '"node:fs"' has no default export.
 import fs from 'node:fs';
+// @ts-expect-error TS(1259) FIXME: Module '"node:path"' can only be default-imported ... Remove this comment to see the full error message
 import path from 'node:path';
 
+// @ts-expect-error TS(1259) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import express from 'express';
-// @ts-expect-error TS(2792): Cannot find module 'sanitize-filename'. Did you me... Remove this comment to see the full error message
+// @ts-expect-error TS(2792) FIXME: Cannot find module 'sanitize-filename'. Did you me... Remove this comment to see the full error message
 import sanitize from 'sanitize-filename';
 import { sync as writeFileAtomicSync } from 'write-file-atomic';
-// @ts-expect-error TS(2792): Cannot find module 'image-size'. Did you mean to s... Remove this comment to see the full error message
+// @ts-expect-error TS(2792) FIXME: Cannot find module 'image-size'. Did you mean to s... Remove this comment to see the full error message
 import { imageSize as sizeOf } from 'image-size';
 
 import { getConfigValue, invalidateFirefoxCache } from '../util.js';
@@ -17,8 +20,11 @@ export const apiRouter = express.Router();
 export const SKIPPED_EXTENSIONS = new Set(['.apng', '.mp4', '.webm', '.avi', '.mkv', '.flv', '.gif']);
 export const ALLOWED_IMAGE_EXTENSIONS = new Set(['.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp', '.tif', '.tiff', '.apng']);
 
+// @ts-expect-error TS(2345) FIXME: Argument of type 'true' is not assignable to param... Remove this comment to see the full error message
 const thumbnailsEnabled = !!getConfigValue('thumbnails.enabled', true, 'boolean');
+// @ts-expect-error TS(2345) FIXME: Argument of type '95' is not assignable to paramet... Remove this comment to see the full error message
 const quality = Math.min(100, Math.max(1, parseInt(getConfigValue('thumbnails.quality', 95, 'number'))));
+// @ts-expect-error TS(2345) FIXME: Argument of type '"jpg"' is not assignable to para... Remove this comment to see the full error message
 const pngFormat = String(getConfigValue('thumbnails.format', 'jpg')).toLowerCase().trim() === 'png';
 
 /**
@@ -32,6 +38,7 @@ const pngFormat = String(getConfigValue('thumbnails.format', 'jpg')).toLowerCase
  * @param {ThumbnailType} type Thumbnail type
  * @returns {string} Path to the thumbnails folder
  */
+// @ts-expect-error TS(2694) FIXME: Namespace '"/mnt/DISCO/downloads/some_git_projects... Remove this comment to see the full error message
 function getThumbnailFolder(directories: import('../users.js').UserDirectoryList, type: 'bg' | 'avatar' | 'persona') {
     let thumbnailFolder;
 
@@ -56,6 +63,7 @@ function getThumbnailFolder(directories: import('../users.js').UserDirectoryList
  * @param {ThumbnailType} type Thumbnail type
  * @returns {string} Path to the original images folder
  */
+// @ts-expect-error TS(2694) FIXME: Namespace '"/mnt/DISCO/downloads/some_git_projects... Remove this comment to see the full error message
 function getOriginalFolder(directories: import('../users.js').UserDirectoryList, type: 'bg' | 'avatar' | 'persona') {
     let originalFolder;
 
@@ -80,6 +88,7 @@ function getOriginalFolder(directories: import('../users.js').UserDirectoryList,
  * @param {ThumbnailType} type Type of the thumbnail
  * @param {string} file Name of the file
  */
+// @ts-expect-error TS(2694) FIXME: Namespace '"/mnt/DISCO/downloads/some_git_projects... Remove this comment to see the full error message
 export function invalidateThumbnail(directories: import('../users.js').UserDirectoryList, type: 'bg' | 'avatar' | 'persona', file: string) {
     const folder = getThumbnailFolder(directories, type);
     if (folder === undefined) throw new Error('Invalid thumbnail type');
@@ -100,6 +109,7 @@ export function invalidateThumbnail(directories: import('../users.js').UserDirec
  * @param {boolean|null} [isKnownAnimated] - If true, skips generation. If false, assumes static. If null, checks.
  * @returns {Promise<{path: string|null, aspectRatio: number|null, resolution: number|null}>} Path to thumbnail, its aspect ratio, and resolution.
  */
+// @ts-expect-error TS(2694) FIXME: Namespace '"/mnt/DISCO/downloads/some_git_projects... Remove this comment to see the full error message
 export async function generateThumbnail(directories: import('../users.js').UserDirectoryList, type: 'bg' | 'avatar' | 'persona', file: string, forceGenerate = false, isKnownAnimated: boolean | null = null) {
     // If the caller has already determined the file is animated, skip processing.
     if (isKnownAnimated) {
@@ -236,6 +246,7 @@ async function processSingleImage(file: string, originalFolder: string, thumbnai
         return { success: true, aspectRatio, resolution: thumbnailResolution };
     } catch (error) {
         console.warn(`[Thumbnails] Failed to process image ${file}:`, error);
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         return { success: false, filename: file, error: error.message };
     }
 }
@@ -245,6 +256,7 @@ async function processSingleImage(file: string, originalFolder: string, thumbnai
  * @param {express.Request} request - The Express request object.
  * @param {express.Response} response - The Express response object.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 publicRouter.get('/', async function (request, response) {
     try {
         const { file: rawFile, type, animated } = request.query;

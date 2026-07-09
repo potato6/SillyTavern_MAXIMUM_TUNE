@@ -1,4 +1,4 @@
-// @ts-expect-error TS(2792): Cannot find module '/lib.js'. Did you mean to set ... Remove this comment to see the full error message
+// @ts-expect-error TS(2792) FIXME: Cannot find module '/lib.js'. Did you mean to set ... Remove this comment to see the full error message
 import { gzip } from '/lib.js';
 
 /**
@@ -20,6 +20,7 @@ const requestCompressionConfig = {
  * Sets the configuration for request compression from the server.
  * @param {RequestCompressionConfig} config Configuration object for request compression
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'config' implicitly has an 'any' type.
 export function setRequestCompressionConfig(config) {
     Object.assign(requestCompressionConfig, (config ?? {}));
 }
@@ -29,10 +30,12 @@ export function setRequestCompressionConfig(config) {
  * @param {Uint8Array<ArrayBuffer>} input Uint8Array to compress
  * @returns {{ promise: Promise<Uint8Array<ArrayBuffer>>, terminate: () => void }} Gzip-compressed Uint8Array promise and a terminate function.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'input' implicitly has an 'any' type.
 function gzipBuffer(input) {
     let terminate = () => {};
     const promise = new Promise((resolve, reject) => {
         try {
+            // @ts-expect-error TS(7006) FIXME: Parameter 'error' implicitly has an 'any' type.
             terminate = gzip(input, (error, compressed) => {
                 if (error) {
                     reject(error);
@@ -57,6 +60,7 @@ function gzipBuffer(input) {
  * @returns {Promise<T>} Resolves with the original promise's value if it settles in time, otherwise rejects with a timeout error
  * @template T Type of the promise's resolved value
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'promise' implicitly has an 'any' type.
 async function withTimeout(promise, timeoutMs, label) {
     let timeoutId = null;
     const timeoutPromise = new Promise((_, reject) => {
@@ -79,6 +83,7 @@ async function withTimeout(promise, timeoutMs, label) {
  * @param {RequestInit} request fetch request parameters
  * @returns {Promise<RequestInit>} A request init object that may include gzip-compressed body
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 export async function compressRequest(request) {
     const plainRequest = { ...request };
     const requestBody = plainRequest?.body;

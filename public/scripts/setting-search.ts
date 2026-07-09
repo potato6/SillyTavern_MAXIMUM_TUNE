@@ -3,9 +3,9 @@
  */
 async function searchSettings() {
     removeHighlighting(); // Remove previous highlights
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const searchString = String($('#settingsSearch').val());
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const searchableText = $('#user-settings-block-content'); // Get the HTML block
     if (searchString.trim() !== '') {
         highlightMatchingElements(searchableText[0], searchString); // Highlight matching elements
@@ -17,6 +17,7 @@ async function searchSettings() {
  * @param {HTMLElement | Text | Document | Comment} element Settings block HTML element
  * @returns {boolean} True if the element is a child of a header element, false otherwise
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'element' implicitly has an 'any' type.
 function isParentHeader(element) {
     return element instanceof HTMLElement && element.closest('h4, h3') !== null;
 }
@@ -26,6 +27,7 @@ function isParentHeader(element) {
  * @param {HTMLElement | Text | Document | Comment} element Settings block HTML element
  * @param {string} searchString Search string
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'element' implicitly has an 'any' type.
 function highlightMatchingElements(element, searchString) {
     for (const node of element.childNodes) {
         const isTextNode = node.nodeType === Node.TEXT_NODE;
@@ -48,7 +50,7 @@ function highlightMatchingElements(element, searchString) {
  * Remove highlighting from previously highlighted elements.
  */
 function removeHighlighting() {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('.highlighted').removeClass('highlighted');  // Remove CSS class from previously highlighted elements
 }
 
@@ -56,6 +58,6 @@ function removeHighlighting() {
  *
  */
 export function initSettingsSearch() {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#settingsSearch').on('input change', searchSettings);
 }

@@ -1,5 +1,8 @@
+// @ts-expect-error TS(1192) FIXME: Module '"node:https"' has no default export.
 import https from 'node:https';
+// @ts-expect-error TS(1192) FIXME: Module '"node:http"' has no default export.
 import http from 'node:http';
+// @ts-expect-error TS(1192) FIXME: Module '"node:fs"' has no default export.
 import fs from 'node:fs';
 import { color, urlHostnameToIPv6, getHasIP } from './util.js';
 
@@ -72,7 +75,6 @@ export function redirectDeprecatedEndpoints(app: import('express').Express) {
      * @param {string} destination The URL to redirect to.
      */
     function redirect(src: string, destination: string) {
-        // @ts-expect-error TS(6133): 'req' is declared but its value is never read.
         app.use(src, (req: import('express').Request, res: import('express').Response) => {
             console.warn(`API endpoint ${src} is deprecated; use ${destination} instead`);
             // HTTP 301 causes the request to become a GET. 308 preserves the request method.
@@ -189,12 +191,14 @@ export function setupPrivateEndpoints(app: import('express').Express) {
  */
 export class ServerStartup {
     app: import('express').Express;
+    // @ts-expect-error TS(2694) FIXME: Namespace '"/mnt/DISCO/downloads/some_git_projects... Remove this comment to see the full error message
     cliArgs: import('./command-line.js').CommandLineArguments;
     /**
      * Creates a new ServerStartup instance.
      * @param {import('express').Express} app The Express app to use
      * @param {import('./command-line.js').CommandLineArguments} cliArgs The command-line arguments
      */
+    // @ts-expect-error TS(2694) FIXME: Namespace '"/mnt/DISCO/downloads/some_git_projects... Remove this comment to see the full error message
     constructor(app: import('express').Express, cliArgs: import('./command-line.js').CommandLineArguments) {
         this.app = app;
         this.cliArgs = cliArgs;
@@ -215,6 +219,7 @@ export class ServerStartup {
      * @returns {error is NodeJS.ErrnoException} True if the error is an EADDRINUSE error
      */
     #isAddressInUseError(error: unknown) {
+        // @ts-expect-error TS(2339) FIXME: Property 'code' does not exist on type 'object'.
         return typeof error === 'object' && error !== null && 'code' in error && error.code === 'EADDRINUSE';
     }
 
@@ -378,6 +383,7 @@ export class ServerStartup {
         v4Error,
         useIPv6,
         useIPv4
+    // @ts-expect-error TS(2304) FIXME: Cannot find name 'ServerStartupResult'.
     }: ServerStartupResult) {
         if (v6Failed && !useIPv4) {
             if (this.#isAddressInUseError(v6Error)) {

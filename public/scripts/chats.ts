@@ -29,6 +29,7 @@ import {
     getMediaDisplay,
     chatElement,
 } from '../script.js';
+// @ts-expect-error TS(7034) FIXME: Variable 'selected_group' implicitly has type 'any... Remove this comment to see the full error message
 import { selected_group } from './group-chats.js';
 import { power_user } from './power-user.js';
 import {
@@ -101,6 +102,7 @@ const converters = {
  * @param {string} type MIME type
  * @returns {string} Matching key
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'type' implicitly has an 'any' type.
 function findConverterKey(type) {
     return Object.keys(converters).find((key) => {
         // Match exact type
@@ -122,6 +124,7 @@ function findConverterKey(type) {
  * @param {string} type MIME type
  * @returns {boolean} True if the file type is convertible, false otherwise.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'type' implicitly has an 'any' type.
 function isConvertible(type) {
     return Boolean(findConverterKey(type));
 }
@@ -131,8 +134,10 @@ function isConvertible(type) {
  * @param {string} type MIME type
  * @returns {ConverterFunction} Converter function
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'type' implicitly has an 'any' type.
 function getConverter(type) {
     const key = findConverterKey(type);
+    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     return key && converters[key];
 }
 
@@ -144,6 +149,7 @@ function getConverter(type) {
  * @param {string} nameFitler Optional name filter
  * @returns {Promise<void>}
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'start' implicitly has an 'any' type.
 export async function hideChatMessageRange(start, end, unhide, nameFitler = null) {
     if (isNaN(start)) return;
     if (!end) end = start;
@@ -152,8 +158,10 @@ export async function hideChatMessageRange(start, end, unhide, nameFitler = null
     for (let messageId = start; messageId <= end; messageId++) {
         const message = chat[messageId];
         if (!message) continue;
+        // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
         if (nameFitler && message.name !== nameFitler) continue;
 
+        // @ts-expect-error TS(2339) FIXME: Property 'is_system' does not exist on type 'never... Remove this comment to see the full error message
         message.is_system = hide;
 
         // Also toggle "hidden" state for all visible messages
@@ -175,6 +183,7 @@ export async function hideChatMessageRange(start, end, unhide, nameFitler = null
  * @param {JQuery<Element>} _messageBlock Unused
  * @returns {Promise<void>}
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'messageId' implicitly has an 'any' type... Remove this comment to see the full error message
 export async function hideChatMessage(messageId, _messageBlock) {
     return hideChatMessageRange(messageId, messageId, false);
 }
@@ -186,6 +195,7 @@ export async function hideChatMessage(messageId, _messageBlock) {
  * @param {JQuery<Element>} _messageBlock Unused
  * @returns {Promise<void>}
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'messageId' implicitly has an 'any' type... Remove this comment to see the full error message
 export async function unhideChatMessage(messageId, _messageBlock) {
     return hideChatMessageRange(messageId, messageId, true);
 }
@@ -196,6 +206,7 @@ export async function unhideChatMessage(messageId, _messageBlock) {
  * @param inputId
  * @returns {Promise<void>} A promise that resolves when file is uploaded.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'message' implicitly has an 'any' type.
 export async function populateFileAttachment(message, inputId = 'file_form_input') {
     try {
         if (!message) return;
@@ -203,11 +214,12 @@ export async function populateFileAttachment(message, inputId = 'file_form_input
         const fileInput = document.getElementById(inputId);
         if (!(fileInput instanceof HTMLInputElement)) return;
 
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         for (const file of fileInput.files) {
             const slug = getStringHash(file.name);
             const fileNamePrefix = `${Date.now()}_${slug}`;
             const fileBase64 = await getBase64Async(file);
-            // @ts-expect-error TS(2339): Property 'split' does not exist on type 'unknown'.
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             let base64Data = fileBase64.split(',')[1];
             const extension = getFileExtension(file);
 
@@ -236,7 +248,7 @@ export async function populateFileAttachment(message, inputId = 'file_form_input
                         const fileText = await converter(file);
                         base64Data = convertTextToBase64(fileText);
                     } catch (error) {
-                        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+                        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                         toastr.error(String(error), t`Could not convert file`);
                         console.error('Could not convert file', error);
                     }
@@ -262,9 +274,10 @@ export async function populateFileAttachment(message, inputId = 'file_form_input
         }
     } catch (error) {
         console.error('Could not upload file', error);
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.error(t`Either the file is corrupted or its format is not supported.`, t`Could not upload the file`);
     } finally {
+        // @ts-expect-error TS(2339) FIXME: Property 'reset' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
         document.getElementById('file_form')?.reset();
     }
 }
@@ -275,6 +288,7 @@ export async function populateFileAttachment(message, inputId = 'file_form_input
  * @param {string} base64Data
  * @returns {Promise<string>} File URL
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'fileName' implicitly has an 'any' type.
 export async function uploadFileAttachment(fileName, base64Data) {
     try {
         const result = await fetch('/api/files/upload', {
@@ -294,7 +308,7 @@ export async function uploadFileAttachment(fileName, base64Data) {
         const responseData = await result.json();
         return responseData.path;
     } catch (error) {
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.error(String(error), t`Could not upload file`);
         console.error('Could not upload file', error);
     }
@@ -305,7 +319,7 @@ export async function uploadFileAttachment(fileName, base64Data) {
  * @param {string} url File URL
  * @returns {Promise<string>} File text
  */
-// @ts-expect-error TS(7030): Not all code paths return a value.
+// @ts-expect-error TS(7006) FIXME: Parameter 'url' implicitly has an 'any' type.
 export async function getFileAttachment(url) {
     try {
         const result = await fetch(url, {
@@ -322,7 +336,7 @@ export async function getFileAttachment(url) {
         const text = await result.text();
         return text;
     } catch (error) {
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.error(error, t`Could not download file`);
         console.error('Could not download file', error);
     }
@@ -333,20 +347,21 @@ export async function getFileAttachment(url) {
  * @param {File} file File object
  * @returns {Promise<boolean>} True if file is valid, false otherwise.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'file' implicitly has an 'any' type.
 async function validateFile(file) {
     const fileText = await file.text();
     const isMedia = file.type.startsWith('image/') || file.type.startsWith('video/') || file.type.startsWith('audio/');
     const isBinary = /^[\x00-\x08\x0E-\x1F\x7F-\xFF]*$/.test(fileText);
 
     if (!isMedia && file.size > fileSizeLimit) {
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.error(t`File is too big. Maximum size is ${humanFileSize(fileSizeLimit)}.`);
         return false;
     }
 
     // If file is binary
     if (isBinary && !isMedia && !isConvertible(file.type)) {
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.error(t`Binary files are not supported. Select a text file or image.`);
         return false;
     }
@@ -360,6 +375,7 @@ async function validateFile(file) {
 export function hasPendingFileAttachment() {
     const fileInput = document.getElementById('file_form_input');
     if (!(fileInput instanceof HTMLInputElement)) return false;
+    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     return fileInput.files.length > 0;
 }
 
@@ -368,6 +384,7 @@ export function hasPendingFileAttachment() {
  * @param {FileList} fileList File object
  * @returns {Promise<void>}
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'fileList' implicitly has an 'any' type.
 async function onFileAttach(fileList) {
     if (!fileList || fileList.length === 0) return;
 
@@ -376,8 +393,9 @@ async function onFileAttach(fileList) {
 
         // If file is binary
         if (!isValid) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.warning(t`File ${file.name} is not supported.`);
+            // @ts-expect-error TS(2339) FIXME: Property 'reset' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
             document.getElementById('file_form')?.reset();
             return;
         }
@@ -390,11 +408,13 @@ async function onFileAttach(fileList) {
     const fileNameEl = document.querySelector('#file_form .file_name');
     if (fileNameEl) {
         fileNameEl.textContent = name;
+        // @ts-expect-error TS(2339) FIXME: Property 'title' does not exist on type 'Element'.
         fileNameEl.title = title;
     }
     const fileSizeEl = document.querySelector('#file_form .file_size');
     if (fileSizeEl) {
         fileSizeEl.textContent = humanFileSize(size);
+        // @ts-expect-error TS(2339) FIXME: Property 'title' does not exist on type 'Element'.
         fileSizeEl.title = size;
     }
     document.getElementById('file_form')?.classList.remove('displayNone');
@@ -403,6 +423,7 @@ async function onFileAttach(fileList) {
     const currentChatId = getCurrentChatId();
     if (currentChatId) {
         eventSource.once(event_types.CHAT_CHANGED, () => {
+            // @ts-expect-error TS(2339) FIXME: Property 'reset' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
             document.getElementById('file_form')?.reset();
         });
     }
@@ -414,6 +435,7 @@ async function onFileAttach(fileList) {
  * @param {number} messageId Message ID
  * @param {number} fileIndex File index
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'messageBlock' implicitly has an 'any' t... Remove this comment to see the full error message
 async function deleteMessageFile(messageBlock, messageId, fileIndex) {
     if (isNaN(messageId) || isNaN(fileIndex)) {
         console.warn('Invalid message ID or file index');
@@ -429,17 +451,21 @@ async function deleteMessageFile(messageBlock, messageId, fileIndex) {
 
     const message = chat[messageId];
 
+    // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type 'never'.
     if (!Array.isArray(message?.extra?.files)) {
         console.debug('Message has no files');
         return;
     }
 
+    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
     if (fileIndex < 0 || fileIndex >= message.extra.files.length) {
         console.warn('Invalid file index for message');
         return;
     }
 
+    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
     const url = message.extra.files[fileIndex]?.url;
+    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
     message.extra.files.splice(fileIndex, 1);
 
     await saveChatConditional();
@@ -453,6 +479,7 @@ async function deleteMessageFile(messageBlock, messageId, fileIndex) {
  * @param {number} messageId Message ID
  * @param {number} fileIndex File index
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'messageId' implicitly has an 'any' type... Remove this comment to see the full error message
 async function viewMessageFile(messageId, fileIndex) {
     if (isNaN(messageId) || isNaN(fileIndex)) {
         console.warn('Invalid message ID or file index');
@@ -461,16 +488,19 @@ async function viewMessageFile(messageId, fileIndex) {
 
     const message = chat[messageId];
 
+    // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type 'never'.
     if (!Array.isArray(message?.extra?.files)) {
         console.debug('Message has no files');
         return;
     }
 
+    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
     if (fileIndex < 0 || fileIndex >= message.extra.files.length) {
         console.warn('Invalid file index for message');
         return;
     }
 
+    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
     const messageFile = message.extra.files[fileIndex];
 
     if (!messageFile) {
@@ -487,6 +517,7 @@ async function viewMessageFile(messageId, fileIndex) {
  * @param {JQuery<HTMLElement>} messageBlock
  * @returns {Promise<void>}
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'messageId' implicitly has an 'any' type... Remove this comment to see the full error message
 function embedMessageFile(messageId, messageBlock) {
     const message = chat[messageId];
 
@@ -498,8 +529,10 @@ function embedMessageFile(messageId, messageBlock) {
     const embedInput = document.getElementById('embed_file_input');
     if (embedInput instanceof HTMLInputElement) {
         const clonedInput = embedInput.cloneNode(true);
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         embedInput.parentNode.replaceChild(clonedInput, embedInput);
         clonedInput.addEventListener('change', parseAndUploadEmbed);
+        // @ts-expect-error TS(2339) FIXME: Property 'click' does not exist on type 'Node'.
         clonedInput.click();
     }
 
@@ -507,6 +540,7 @@ function embedMessageFile(messageId, messageBlock) {
      *
      * @param e
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
     async function parseAndUploadEmbed(/** @type {JQuery.ChangeEvent} */ e) {
         if (!(e.target instanceof HTMLInputElement)) return;
         if (!e.target.files.length) return;
@@ -515,8 +549,9 @@ function embedMessageFile(messageId, messageBlock) {
             const isValid = await validateFile(file);
 
             if (!isValid) {
-                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                 toastr.warning(t`File ${file.name} is not supported.`);
+                // @ts-expect-error TS(2339) FIXME: Property 'reset' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
                 document.getElementById('file_form')?.reset();
                 return;
             }
@@ -535,6 +570,7 @@ function embedMessageFile(messageId, messageBlock) {
  * @param {string} messageText Message text
  * @returns {Promise<string>} Message text with file content appended.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'message' implicitly has an 'any' type.
 export async function appendFileContent(message, messageText) {
     if (!message || !message.extra || typeof message.extra !== 'object') {
         return messageText;
@@ -563,8 +599,10 @@ export async function appendFileContent(message, messageText) {
  * @returns {string} Encoded message text
  * @copyright https://github.com/kwaroran/risuAI
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'text' implicitly has an 'any' type.
 export function encodeStyleTags(text) {
     const styleRegex = /<style>(.+?)<\/style>/gims;
+    // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
     return text.replaceAll(styleRegex, (_, match) => {
         return `<custom-style>${encodeURIComponent(match)}</custom-style>`;
     });
@@ -578,6 +616,7 @@ export function encodeStyleTags(text) {
  * @returns {string} Sanitized message text
  * @copyright https://github.com/kwaroran/risuAI
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'text' implicitly has an 'any' type.
 export function decodeStyleTags(text, { prefix } = { prefix: '.mes_text ' }) {
     const styleDecodeRegex = /<custom-style>(.+?)<\/custom-style>/gms;
     const mediaAllowed = isExternalMediaAllowed();
@@ -586,6 +625,7 @@ export function decodeStyleTags(text, { prefix } = { prefix: '.mes_text ' }) {
      *
      * @param rule
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'rule' implicitly has an 'any' type.
     function sanitizeRule(rule) {
         if (Array.isArray(rule.selectors)) {
             for (let i = 0; i < rule.selectors.length; i++) {
@@ -596,6 +636,7 @@ export function decodeStyleTags(text, { prefix } = { prefix: '.mes_text ' }) {
             }
         }
         if (!mediaAllowed && Array.isArray(rule.declarations) && rule.declarations.length > 0) {
+            // @ts-expect-error TS(7006) FIXME: Parameter 'declaration' implicitly has an 'any' ty... Remove this comment to see the full error message
             rule.declarations = rule.declarations.filter(declaration => !declaration.value.includes('://'));
         }
     }
@@ -604,13 +645,14 @@ export function decodeStyleTags(text, { prefix } = { prefix: '.mes_text ' }) {
      *
      * @param selector
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'selector' implicitly has an 'any' type.
     function sanitizeSelector(selector) {
         // Handle pseudo-classes that can contain nested selectors
         const pseudoClasses = ['has', 'not', 'where', 'is', 'matches', 'any'];
         const pseudoRegex = new RegExp(`:(${pseudoClasses.join('|')})\\(([^)]+)\\)`, 'g');
 
         // First, sanitize any nested selectors within pseudo-classes
-        // @ts-expect-error TS(6133): 'match' is declared but its value is never read.
+        // @ts-expect-error TS(7006) FIXME: Parameter 'match' implicitly has an 'any' type.
         selector = selector.replace(pseudoRegex, (match, pseudoClass, content) => {
             // Recursively sanitize the content within the pseudo-class
             const sanitizedContent = sanitizeSimpleSelector(content);
@@ -625,10 +667,13 @@ export function decodeStyleTags(text, { prefix } = { prefix: '.mes_text ' }) {
      *
      * @param selector
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'selector' implicitly has an 'any' type.
     function sanitizeSimpleSelector(selector) {
         // Split by spaces but preserve complex selectors
+        // @ts-expect-error TS(7006) FIXME: Parameter 'part' implicitly has an 'any' type.
         return selector.split(/\s+/).map((part) => {
             // Handle class selectors, but preserve pseudo-classes and other complex parts
+            // @ts-expect-error TS(7006) FIXME: Parameter 'match' implicitly has an 'any' type.
             return part.replace(/\.([\w-]+)/g, (match, className) => {
                 // Don't modify if it's already prefixed with 'custom-'
                 if (className.startsWith('custom-')) {
@@ -643,12 +688,14 @@ export function decodeStyleTags(text, { prefix } = { prefix: '.mes_text ' }) {
      *
      * @param ruleSet
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'ruleSet' implicitly has an 'any' type.
     function sanitizeRuleSet(ruleSet) {
         if (Array.isArray(ruleSet.selectors) || Array.isArray(ruleSet.declarations)) {
             sanitizeRule(ruleSet);
         }
 
         if (Array.isArray(ruleSet.rules)) {
+            // @ts-expect-error TS(7006) FIXME: Parameter 'rule' implicitly has an 'any' type.
             ruleSet.rules = ruleSet.rules.filter(rule => rule.type !== 'import');
 
             for (const mediaRule of ruleSet.rules) {
@@ -657,6 +704,7 @@ export function decodeStyleTags(text, { prefix } = { prefix: '.mes_text ' }) {
         }
     }
 
+    // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
     return text.replaceAll(styleDecodeRegex, (_, style) => {
         try {
             const styleCleaned = decodeURIComponent(style).replaceAll(/<br\/>/g, '');
@@ -681,6 +729,7 @@ class StylesPreference {
      * Creates a new StylesPreference instance.
      * @param {string|null} avatarId - The avatar ID of the character
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'avatarId' implicitly has an 'any' type.
     constructor(avatarId) {
         this.avatarId = avatarId;
     }
@@ -716,6 +765,7 @@ class StylesPreference {
      * Sets the global styles preference.
      * @param {boolean} allowed - Whether global styles are allowed
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'allowed' implicitly has an 'any' type.
     set(allowed) {
         if (this.avatarId) {
             accountStorage.setItem(this.key, String(allowed));
@@ -729,6 +779,7 @@ class StylesPreference {
  * @param {string} avatarId Avatar ID
  * @returns {string} Formatted HTML text
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'text' implicitly has an 'any' type.
 export function formatCreatorNotes(text, avatarId) {
     const preference = new StylesPreference(avatarId);
     const sanitizeStyles = !preference.get();
@@ -754,8 +805,9 @@ export function formatCreatorNotes(text, avatarId) {
  *
  */
 async function openGlobalStylesPreferenceDialog() {
+    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
     if (selected_group) {
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.info(t`To change the global styles preference, please select a character individually.`);
         return;
     }
@@ -769,22 +821,31 @@ async function openGlobalStylesPreferenceDialog() {
     tempDiv.innerHTML = templateHTML;
     const template = tempDiv.firstElementChild;
 
+    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     const allowedRadio = template.querySelector('#global_styles_allowed');
+    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     const forbiddenRadio = template.querySelector('#global_styles_forbidden');
 
+    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     allowedRadio.addEventListener('change', () => {
         preference.set(true);
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         allowedRadio.checked = true;
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         forbiddenRadio.checked = false;
     });
 
+    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     forbiddenRadio.addEventListener('change', () => {
         preference.set(false);
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         allowedRadio.checked = false;
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         forbiddenRadio.checked = true;
     });
 
     const currentPreferenceRadio = currentValue ? allowedRadio : forbiddenRadio;
+    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     currentPreferenceRadio.checked = true;
 
     await callGenericPopup(template, POPUP_TYPE.TEXT, '', { wide: false, large: false });
@@ -792,7 +853,6 @@ async function openGlobalStylesPreferenceDialog() {
     // Re-render the notes if the preference changed
     const newValue = preference.get();
     if (newValue !== currentValue) {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         document.getElementById('rm_button_selected_ch')?.click();
         setGlobalStylesButtonClass(newValue);
     }
@@ -803,11 +863,14 @@ async function openGlobalStylesPreferenceDialog() {
  */
 async function checkForCreatorNotesStyles() {
     // Don't do anything if in group chat or not in a chat
+    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
     if (selected_group || this_chid === undefined) {
         return;
     }
 
+    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
     const notes = characters[this_chid].data?.creator_notes || characters[this_chid].creatorcomment;
+    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
     const avatarId = characters[this_chid].avatar;
     const styleContents = getStyleContentsFromMarkdown(notes);
 
@@ -824,6 +887,7 @@ async function checkForCreatorNotesStyles() {
         tempDiv.innerHTML = templateHTML;
         const template = tempDiv.firstElementChild;
         
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         const textarea = template.querySelector('textarea');
         if (textarea) textarea.value = styleContents;
 
@@ -846,7 +910,6 @@ async function checkForCreatorNotesStyles() {
                 break;
         }
 
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         document.getElementById('rm_button_selected_ch')?.click();
     }
 
@@ -858,6 +921,7 @@ async function checkForCreatorNotesStyles() {
  * Sets the class of the global styles button based on the state.
  * @param {boolean|null} state State of the button
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'state' implicitly has an 'any' type.
 function setGlobalStylesButtonClass(state) {
     const button = document.getElementById('creators_note_styles_button');
     button?.classList.toggle('empty', state === null);
@@ -870,6 +934,7 @@ function setGlobalStylesButtonClass(state) {
  * @param {string} text Markdown text
  * @returns {string} The joined contents of all style elements
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'text' implicitly has an 'any' type.
 function getStyleContentsFromMarkdown(text) {
     if (!text) {
         return '';
@@ -879,7 +944,9 @@ function getStyleContentsFromMarkdown(text) {
     const parsedDocument = new DOMParser().parseFromString(html, 'text/html');
     const styleElements = Array.from(parsedDocument.querySelectorAll('style'));
     return styleElements
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         .filter(s => s.textContent.trim().length > 0)
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         .map(s => s.textContent.trim())
         .join('\n\n');
 }
@@ -891,7 +958,7 @@ async function openExternalMediaOverridesDialog() {
     const entityId = getCurrentEntityId();
 
     if (!entityId) {
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.info(t`No character or group selected`);
         return;
     }
@@ -901,19 +968,31 @@ async function openExternalMediaOverridesDialog() {
     tempDiv.innerHTML = templateHTML;
     const template = tempDiv.firstElementChild;
 
+    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     const forbiddenEl = template.querySelector('.forbid_media_global_state_forbidden');
+    // @ts-expect-error TS(2339) FIXME: Property 'style' does not exist on type 'Element'.
     if (forbiddenEl) forbiddenEl.style.display = power_user.forbid_external_media ? 'block' : 'none';
+    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     const allowedEl = template.querySelector('.forbid_media_global_state_allowed');
+    // @ts-expect-error TS(2339) FIXME: Property 'style' does not exist on type 'Element'.
     if (allowedEl) allowedEl.style.display = !power_user.forbid_external_media ? 'block' : 'none';
 
+    // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
     if (power_user.external_media_allowed_overrides.includes(entityId)) {
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         const overrideAllowed = template.querySelector('#forbid_media_override_allowed');
+        // @ts-expect-error TS(2339) FIXME: Property 'checked' does not exist on type 'Element... Remove this comment to see the full error message
         if (overrideAllowed) overrideAllowed.checked = true;
+    // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
     } else if (power_user.external_media_forbidden_overrides.includes(entityId)) {
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         const overrideForbidden = template.querySelector('#forbid_media_override_forbidden');
+        // @ts-expect-error TS(2339) FIXME: Property 'checked' does not exist on type 'Element... Remove this comment to see the full error message
         if (overrideForbidden) overrideForbidden.checked = true;
     } else {
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         const overrideGlobal = template.querySelector('#forbid_media_override_global');
+        // @ts-expect-error TS(2339) FIXME: Property 'checked' does not exist on type 'Element... Remove this comment to see the full error message
         if (overrideGlobal) overrideGlobal.checked = true;
     }
 
@@ -924,10 +1003,13 @@ async function openExternalMediaOverridesDialog() {
  *
  */
 export function getCurrentEntityId() {
+    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
     if (selected_group) {
+        // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
         return String(selected_group);
     }
 
+    // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
     return characters[this_chid]?.avatar ?? null;
 }
 
@@ -940,10 +1022,12 @@ export function isExternalMediaAllowed() {
         return !power_user.forbid_external_media;
     }
 
+    // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
     if (power_user.external_media_allowed_overrides.includes(entityId)) {
         return true;
     }
 
+    // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
     if (power_user.external_media_forbidden_overrides.includes(entityId)) {
         return false;
     }
@@ -957,33 +1041,33 @@ export function isExternalMediaAllowed() {
  * @param {number} mediaIndex Media index
  * @returns {HTMLElement} Enlarged media element
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'messageId' implicitly has an 'any' type... Remove this comment to see the full error message
 function expandMessageMedia(messageId, mediaIndex) {
     if (isNaN(messageId) || isNaN(mediaIndex)) {
         console.warn('Invalid message ID or media index');
-        // @ts-expect-error TS(7030): Not all code paths return a value.
         return;
     }
 
     /** @type {ChatMessage} */
     const message = chat[messageId];
 
+    // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type 'never'.
     if (!Array.isArray(message?.extra?.media) || message.extra.media.length === 0) {
         console.warn('Message has no media to expand');
-        // @ts-expect-error TS(7030): Not all code paths return a value.
         return;
     }
 
+    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
     const mediaAttachment = message.extra.media[mediaIndex];
+    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
     const title = mediaAttachment.title || message.extra.title || '';
 
     if (!mediaAttachment) {
-        // @ts-expect-error TS(7030): Not all code paths return a value.
         return;
     }
 
     if (mediaAttachment.type === MEDIA_TYPE.AUDIO) {
         console.warn('Audio media cannot be expanded');
-        // @ts-expect-error TS(7030): Not all code paths return a value.
         return;
     }
 
@@ -1070,6 +1154,7 @@ function expandMessageMedia(messageId, mediaIndex) {
  * @param {number} mediaIndex Image index
  * @param {JQuery<HTMLElement>} messageBlock Message block element
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'messageId' implicitly has an 'any' type... Remove this comment to see the full error message
 async function deleteMessageMedia(messageId, mediaIndex, messageBlock) {
     if (isNaN(messageId) || isNaN(mediaIndex)) {
         console.warn('Invalid message ID or media index');
@@ -1103,6 +1188,7 @@ async function deleteMessageMedia(messageId, mediaIndex, messageBlock) {
                 defaultState: true,
             },
         ],
+        // @ts-expect-error TS(7006) FIXME: Parameter 'popup' implicitly has an 'any' type.
         onClose: (popup) => {
             deleteFromServer = Boolean(popup.inputResults.get(deleteFromServerId) ?? false);
         },
@@ -1115,31 +1201,42 @@ async function deleteMessageMedia(messageId, mediaIndex, messageBlock) {
     /** @type {ChatMessage} */
     const message = chat[messageId];
 
+    // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type 'never'.
     if (!Array.isArray(message?.extra?.media)) {
         console.debug('Message has no media');
         return;
     }
 
+    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
     if (mediaIndex < 0 || mediaIndex >= message.extra.media.length) {
         console.warn('Invalid media index for message');
         return;
     }
 
+    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
     deleteUrls.push(message.extra.media[mediaIndex].url);
+    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
     message.extra.media.splice(mediaIndex, 1);
 
+    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
     if (message.extra.media_index === mediaIndex) {
         const newIndex = mediaIndex > 0 ? mediaIndex - 1 : 0;
+        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         message.extra.media_index = clamp(newIndex, 0, message.extra.media.length - 1);
     }
 
     if (value === POPUP_RESULT.CUSTOM1) {
+        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         for (const media of message.extra.media) {
             deleteUrls.push(media.url);
         }
+        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         delete message.extra.media;
+        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         delete message.extra.inline_image;
+        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         delete message.extra.title;
+        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         delete message.extra.append_title;
     }
 
@@ -1160,6 +1257,7 @@ async function deleteMessageMedia(messageId, mediaIndex, messageBlock) {
  * @param {JQuery<HTMLElement>} messageBlock Message block element
  * @param {MEDIA_DISPLAY} targetDisplay Target display mode
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'messageId' implicitly has an 'any' type... Remove this comment to see the full error message
 async function switchMessageMediaDisplay(messageId, messageBlock, targetDisplay) {
     if (isNaN(messageId)) {
         console.warn('Invalid message ID');
@@ -1174,10 +1272,13 @@ async function switchMessageMediaDisplay(messageId, messageBlock, targetDisplay)
         return;
     }
 
+    // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type 'never'.
     if (!message.extra || typeof message.extra !== 'object') {
+        // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type 'never'.
         message.extra = {};
     }
 
+    // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type 'never'.
     message.extra.media_display = targetDisplay;
     await saveChatConditional();
     appendMediaToMessage(message, messageBlock, SCROLL_BEHAVIOR.KEEP);
@@ -1189,6 +1290,7 @@ async function switchMessageMediaDisplay(messageId, messageBlock, targetDisplay)
  * @param {boolean} [silent] If true, do not show error messages
  * @returns {Promise<boolean>} True if media file was deleted, false otherwise.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'url' implicitly has an 'any' type.
 export async function deleteMediaFromServer(url, silent = false) {
     try {
         const result = await fetch('/api/images/delete', {
@@ -1208,7 +1310,7 @@ export async function deleteMediaFromServer(url, silent = false) {
         await eventSource.emit(event_types.MEDIA_ATTACHMENT_DELETED, url);
         return true;
     } catch (error) {
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.error(String(error), t`Could not delete image`);
         console.error('Could not delete image', error);
         return false;
@@ -1221,6 +1323,7 @@ export async function deleteMediaFromServer(url, silent = false) {
  * @param {boolean} [silent] If true, do not show error messages
  * @returns {Promise<boolean>} True if file was deleted, false otherwise.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'url' implicitly has an 'any' type.
 export async function deleteFileFromServer(url, silent = false) {
     try {
         const result = await fetch('/api/files/delete', {
@@ -1240,7 +1343,7 @@ export async function deleteFileFromServer(url, silent = false) {
         await eventSource.emit(event_types.FILE_ATTACHMENT_DELETED, url);
         return true;
     } catch (error) {
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.error(String(error), t`Could not delete file`);
         console.error('Could not delete file', error);
         return false;
@@ -1251,6 +1354,7 @@ export async function deleteFileFromServer(url, silent = false) {
  * Opens file attachment in a modal.
  * @param {FileAttachment} attachment File attachment
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'attachment' implicitly has an 'any' typ... Remove this comment to see the full error message
 async function openFilePopup(attachment) {
     const fileText = attachment.text || (await getFileAttachment(attachment.url));
 
@@ -1273,6 +1377,7 @@ async function openFilePopup(attachment) {
  * @param {string} source Attachment source
  * @param {function} callback Callback function
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'attachment' implicitly has an 'any' typ... Remove this comment to see the full error message
 async function editAttachment(attachment, source, callback) {
     const originalFileText = attachment.text || (await getFileAttachment(attachment.url));
     const templateHTML = await renderExtensionTemplateAsync('attachments', 'notepad');
@@ -1281,15 +1386,18 @@ async function editAttachment(attachment, source, callback) {
     const template = tempDiv.firstElementChild;
 
     let editedFileText = originalFileText;
+    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     const contentInput = template.querySelector('[name="notepadFileContent"]');
     if (contentInput instanceof HTMLInputElement || contentInput instanceof HTMLTextAreaElement) {
         contentInput.value = editedFileText;
         contentInput.addEventListener('input', function () {
+            // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
             editedFileText = String(this.value);
         });
     }
 
     let editedFileName = attachment.name;
+    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     const nameInput = template.querySelector('[name="notepadFileName"]');
     if (nameInput instanceof HTMLInputElement) {
         nameInput.value = editedFileName;
@@ -1320,6 +1428,7 @@ async function editAttachment(attachment, source, callback) {
  * Downloads an attachment to the user's device.
  * @param {FileAttachment} attachment Attachment to download
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'attachment' implicitly has an 'any' typ... Remove this comment to see the full error message
 async function downloadAttachment(attachment) {
     const fileText = attachment.text || (await getFileAttachment(attachment.url));
     const blob = new Blob([fileText], { type: 'text/plain' });
@@ -1336,6 +1445,7 @@ async function downloadAttachment(attachment) {
  * @param {FileAttachment} attachment Attachment to enable
  * @param {function} callback Success callback
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'attachment' implicitly has an 'any' typ... Remove this comment to see the full error message
 function enableAttachment(attachment, callback) {
     ensureAttachmentsExist();
     extension_settings.disabled_attachments = extension_settings.disabled_attachments.filter(url => url !== attachment.url);
@@ -1348,8 +1458,10 @@ function enableAttachment(attachment, callback) {
  * @param {FileAttachment} attachment Attachment to disable
  * @param {function} callback Success callback
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'attachment' implicitly has an 'any' typ... Remove this comment to see the full error message
 function disableAttachment(attachment, callback) {
     ensureAttachmentsExist();
+    // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
     extension_settings.disabled_attachments.push(attachment.url);
     saveSettingsDebounced();
     callback();
@@ -1362,6 +1474,7 @@ function disableAttachment(attachment, callback) {
  * @param {function} callback Success callback
  * @returns {Promise<void>} A promise that resolves when the attachment is moved.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'attachment' implicitly has an 'any' typ... Remove this comment to see the full error message
 async function moveAttachment(attachment, source, callback) {
     let selectedTarget = source;
     const targets = getAvailableTargets();
@@ -1370,6 +1483,7 @@ async function moveAttachment(attachment, source, callback) {
     tempDiv.innerHTML = templateHTML;
     const template = tempDiv.firstElementChild;
 
+    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     const targetInput = template.querySelector('.moveAttachmentTarget');
     if (targetInput instanceof HTMLInputElement) {
         targetInput.value = source;
@@ -1405,6 +1519,7 @@ async function moveAttachment(attachment, source, callback) {
  * @param {boolean} [confirm] If true, show a confirmation dialog
  * @returns {Promise<void>} A promise that resolves when the attachment is deleted.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'attachment' implicitly has an 'any' typ... Remove this comment to see the full error message
 export async function deleteAttachment(attachment, source, callback, confirm = true) {
     if (confirm) {
         const result = await callGenericPopup('Are you sure you want to delete this attachment?', POPUP_TYPE.CONFIRM);
@@ -1418,19 +1533,22 @@ export async function deleteAttachment(attachment, source, callback, confirm = t
 
     switch (source) {
         case 'global':
+            // @ts-expect-error TS(2339) FIXME: Property 'url' does not exist on type 'never'.
             extension_settings.attachments = extension_settings.attachments.filter((a) => a.url !== attachment.url);
             saveSettingsDebounced();
             break;
         case 'chat':
-            // @ts-expect-error TS(2339): Property 'attachments' does not exist on type '{}'... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'attachments' does not exist on type '{}'... Remove this comment to see the full error message
             chat_metadata.attachments = chat_metadata.attachments.filter((a) => a.url !== attachment.url);
             saveMetadataDebounced();
             break;
         case 'character':
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             extension_settings.character_attachments[characters[this_chid]?.avatar] = extension_settings.character_attachments[characters[this_chid]?.avatar].filter((a) => a.url !== attachment.url);
             break;
     }
 
+    // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
     if (Array.isArray(extension_settings.disabled_attachments) && extension_settings.disabled_attachments.includes(attachment.url)) {
         extension_settings.disabled_attachments = extension_settings.disabled_attachments.filter(url => url !== attachment.url);
         saveSettingsDebounced();
@@ -1446,6 +1564,7 @@ export async function deleteAttachment(attachment, source, callback, confirm = t
  * @param {FileAttachment} attachment Attachment to check
  * @returns {boolean} True if attachment is disabled, false otherwise.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'attachment' implicitly has an 'any' typ... Remove this comment to see the full error message
 function isAttachmentDisabled(attachment) {
     return extension_settings.disabled_attachments.some(url => url === attachment?.url);
 }
@@ -1459,6 +1578,7 @@ async function openAttachmentManager() {
      * @param {FileAttachment[]} attachments List of attachments
      * @param {string} source Source of the attachments
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'attachments' implicitly has an 'any' ty... Remove this comment to see the full error message
     async function renderList(attachments, source) {
         /**
          * Sorts attachments by sortField and sortOrder.
@@ -1466,6 +1586,7 @@ async function openAttachmentManager() {
          * @param {FileAttachment} b Second attachment
          * @returns {number} Sort order
          */
+        // @ts-expect-error TS(7006) FIXME: Parameter 'a' implicitly has an 'any' type.
         function sortFn(a, b) {
             const sortValueA = a[sortField];
             const sortValueB = b[sortField];
@@ -1480,6 +1601,7 @@ async function openAttachmentManager() {
          * @param {FileAttachment} a Attachment
          * @returns {boolean} True if attachment matches the filter, false otherwise.
          */
+        // @ts-expect-error TS(7006) FIXME: Parameter 'a' implicitly has an 'any' type.
         function filterFn(a) {
             if (!filterString) {
                 return true;
@@ -1493,10 +1615,12 @@ async function openAttachmentManager() {
             [ATTACHMENT_SOURCE.CHAT]: '.chatAttachmentsList',
         };
 
+        // @ts-expect-error TS(2769) FIXME: No overload matches this call.
         const containerEl = template.querySelector(sources[source]);
         const selected = Array.from(containerEl?.querySelectorAll('.attachmentListItemCheckbox:checked') ?? [])
             .map(el => el.closest('.attachmentListItem')?.getAttribute('data-attachment-url'));
 
+        // @ts-expect-error TS(2769) FIXME: No overload matches this call.
         const sourceContainer = template.querySelector(sources[source]);
         if (sourceContainer) sourceContainer.innerHTML = '';
 
@@ -1505,39 +1629,56 @@ async function openAttachmentManager() {
 
         for (const attachment of sortedAttachmentList) {
             const isDisabled = isAttachmentDisabled(attachment);
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             const attachmentTemplate = template.querySelector('.attachmentListItemTemplate .attachmentListItem').cloneNode(true);
+            // @ts-expect-error TS(2339) FIXME: Property 'classList' does not exist on type 'Node'... Remove this comment to see the full error message
             attachmentTemplate.classList.toggle('disabled', isDisabled);
+            // @ts-expect-error TS(2339) FIXME: Property 'setAttribute' does not exist on type 'No... Remove this comment to see the full error message
             attachmentTemplate.setAttribute('data-attachment-url', attachment.url);
+            // @ts-expect-error TS(2339) FIXME: Property 'setAttribute' does not exist on type 'No... Remove this comment to see the full error message
             attachmentTemplate.setAttribute('data-attachment-source', source);
             
+            // @ts-expect-error TS(2339) FIXME: Property 'querySelector' does not exist on type 'N... Remove this comment to see the full error message
             const fileIcon = attachmentTemplate.querySelector('.attachmentFileIcon');
             if (fileIcon) fileIcon.setAttribute('title', attachment.url);
             
+            // @ts-expect-error TS(2339) FIXME: Property 'querySelector' does not exist on type 'N... Remove this comment to see the full error message
             const listItemName = attachmentTemplate.querySelector('.attachmentListItemName');
             if (listItemName) listItemName.textContent = attachment.name;
+            // @ts-expect-error TS(2339) FIXME: Property 'querySelector' does not exist on type 'N... Remove this comment to see the full error message
             const sizeEl = attachmentTemplate.querySelector('.attachmentListItemSize');
             if (sizeEl) sizeEl.textContent = humanFileSize(attachment.size);
+            // @ts-expect-error TS(2339) FIXME: Property 'querySelector' does not exist on type 'N... Remove this comment to see the full error message
             const createdEl = attachmentTemplate.querySelector('.attachmentListItemCreated');
             if (createdEl) createdEl.textContent = new Date(attachment.created).toLocaleString();
+            // @ts-expect-error TS(2339) FIXME: Property 'querySelector' does not exist on type 'N... Remove this comment to see the full error message
             attachmentTemplate.querySelector('.viewAttachmentButton')?.addEventListener('click', () => openFilePopup(attachment));
+            // @ts-expect-error TS(2339) FIXME: Property 'querySelector' does not exist on type 'N... Remove this comment to see the full error message
             attachmentTemplate.querySelector('.editAttachmentButton')?.addEventListener('click', () => editAttachment(attachment, source, renderAttachments));
+            // @ts-expect-error TS(2339) FIXME: Property 'querySelector' does not exist on type 'N... Remove this comment to see the full error message
             attachmentTemplate.querySelector('.deleteAttachmentButton')?.addEventListener('click', () => deleteAttachment(attachment, source, renderAttachments));
+            // @ts-expect-error TS(2339) FIXME: Property 'querySelector' does not exist on type 'N... Remove this comment to see the full error message
             attachmentTemplate.querySelector('.downloadAttachmentButton')?.addEventListener('click', () => downloadAttachment(attachment));
+            // @ts-expect-error TS(2339) FIXME: Property 'querySelector' does not exist on type 'N... Remove this comment to see the full error message
             attachmentTemplate.querySelector('.moveAttachmentButton')?.addEventListener('click', () => moveAttachment(attachment, source, renderAttachments));
+            // @ts-expect-error TS(2339) FIXME: Property 'querySelector' does not exist on type 'N... Remove this comment to see the full error message
             const enableBtn = attachmentTemplate.querySelector('.enableAttachmentButton');
             if (enableBtn) {
                 enableBtn.style.display = isDisabled ? '' : 'none';
                 enableBtn.addEventListener('click', () => enableAttachment(attachment, renderAttachments));
             }
+            // @ts-expect-error TS(2339) FIXME: Property 'querySelector' does not exist on type 'N... Remove this comment to see the full error message
             const disableBtn = attachmentTemplate.querySelector('.disableAttachmentButton');
             if (disableBtn) {
                 disableBtn.style.display = !isDisabled ? '' : 'none';
                 disableBtn.addEventListener('click', () => disableAttachment(attachment, renderAttachments));
             }
+            // @ts-expect-error TS(2769) FIXME: No overload matches this call.
             const sourceContainer = template.querySelector(sources[source]);
             if (sourceContainer) sourceContainer.appendChild(attachmentTemplate);
 
             if (selected.includes(attachment.url)) {
+                // @ts-expect-error TS(2339) FIXME: Property 'querySelector' does not exist on type 'N... Remove this comment to see the full error message
                 const checkbox = attachmentTemplate.querySelector('.attachmentListItemCheckbox');
                 if (checkbox instanceof HTMLInputElement) {
                     checkbox.checked = true;
@@ -1565,16 +1706,23 @@ async function openAttachmentManager() {
                 continue;
             }
 
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             const buttonTemplate = template.querySelector('.actionButtonTemplate .actionButton').cloneNode(true);
             if (scraper.iconAvailable) {
+                // @ts-expect-error TS(2339) FIXME: Property 'querySelector' does not exist on type 'N... Remove this comment to see the full error message
                 buttonTemplate.querySelector('.actionButtonIcon')?.classList.add(...scraper.iconClass.split(' '));
+                // @ts-expect-error TS(2339) FIXME: Property 'querySelector' does not exist on type 'N... Remove this comment to see the full error message
                 buttonTemplate.querySelector('.actionButtonImg')?.remove();
             } else {
+                // @ts-expect-error TS(2339) FIXME: Property 'querySelector' does not exist on type 'N... Remove this comment to see the full error message
                 buttonTemplate.querySelector('.actionButtonImg')?.setAttribute('src', scraper.iconClass);
+                // @ts-expect-error TS(2339) FIXME: Property 'querySelector' does not exist on type 'N... Remove this comment to see the full error message
                 buttonTemplate.querySelector('.actionButtonIcon')?.remove();
             }
+            // @ts-expect-error TS(2339) FIXME: Property 'querySelector' does not exist on type 'N... Remove this comment to see the full error message
             const textEl = buttonTemplate.querySelector('.actionButtonText');
             if (textEl) textEl.textContent = scraper.name;
+            // @ts-expect-error TS(2339) FIXME: Property 'setAttribute' does not exist on type 'No... Remove this comment to see the full error message
             buttonTemplate.setAttribute('title', scraper.description);
             buttonTemplate.addEventListener('click', () => {
                 const target = modal?.getAttribute('data-attachment-manager-target');
@@ -1588,7 +1736,6 @@ async function openAttachmentManager() {
             const button = template?.querySelector(`${selector} .openActionModalButton`);
 
             if (!button) {
-                // @ts-expect-error TS(7030): Not all code paths return a value.
                 return;
             }
 
@@ -1596,11 +1743,14 @@ async function openAttachmentManager() {
             button.addEventListener('mousedown', (e) => { e.stopPropagation(); });
             button.addEventListener('click', () => {
                 modal?.setAttribute('data-attachment-manager-target', source);
+                // @ts-expect-error TS(2339) FIXME: Property 'style' does not exist on type 'Element'.
                 button.style.setProperty('anchor-name', '--action-btn');
+                // @ts-expect-error TS(2339) FIXME: Property 'togglePopover' does not exist on type 'E... Remove this comment to see the full error message
                 modal?.togglePopover();
             });
 
             return;
+        // @ts-expect-error TS(2339) FIXME: Property 'filter' does not exist on type 'void'.
         }).filter(Boolean);
 
         return () => {
@@ -1615,22 +1765,27 @@ async function openAttachmentManager() {
         /** @type {FileAttachment[]} */
         const globalAttachments = extension_settings.attachments ?? [];
         /** @type {FileAttachment[]} */
-        // @ts-expect-error TS(2339): Property 'attachments' does not exist on type '{}'... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'attachments' does not exist on type '{}'... Remove this comment to see the full error message
         const chatAttachments = chat_metadata.attachments ?? [];
         /** @type {FileAttachment[]} */
+        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         const characterAttachments = extension_settings.character_attachments?.[characters[this_chid]?.avatar] ?? [];
 
         await renderList(globalAttachments, ATTACHMENT_SOURCE.GLOBAL);
         await renderList(chatAttachments, ATTACHMENT_SOURCE.CHAT);
         await renderList(characterAttachments, ATTACHMENT_SOURCE.CHARACTER);
 
+        // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
         const isNotCharacter = this_chid === undefined || selected_group;
         const isNotInChat = getCurrentChatId() === undefined;
         const charBlock = template.querySelector('.characterAttachmentsBlock');
+        // @ts-expect-error TS(2339) FIXME: Property 'style' does not exist on type 'Element'.
         if (charBlock) charBlock.style.display = isNotCharacter ? 'none' : '';
         const chatBlock = template.querySelector('.chatAttachmentsBlock');
+        // @ts-expect-error TS(2339) FIXME: Property 'style' does not exist on type 'Element'.
         if (chatBlock) chatBlock.style.display = isNotInChat ? 'none' : '';
 
+        // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
         const characterName = characters[this_chid]?.name || 'Anonymous';
         const charNameEl = template.querySelector('.characterAttachmentsName');
         if (charNameEl) charNameEl.textContent = characterName;
@@ -1640,7 +1795,7 @@ async function openAttachmentManager() {
         if (chatNameEl) chatNameEl.textContent = chatName;
     }
 
-    // @ts-expect-error TS(6133): 'event' is declared but its value is never read.
+    // @ts-expect-error TS(7006) FIXME: Parameter 'files' implicitly has an 'any' type.
     const dragDropHandler = new DragAndDropHandler('.popup', async (files, event) => {
         let selectedTarget = ATTACHMENT_SOURCE.GLOBAL;
         const targets = getAvailableTargets();
@@ -1674,17 +1829,22 @@ async function openAttachmentManager() {
     template.innerHTML = templateHtml;
 
     template.querySelector('.attachmentSearch')?.addEventListener('input', function () {
+        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
         if (this instanceof HTMLInputElement) {
+            // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
             filterString = String(this.value);
         }
         renderAttachments();
     });
     template.querySelector('.attachmentSort')?.addEventListener('change', function () {
+        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
         if (!(this instanceof HTMLSelectElement) || this.selectedOptions.length === 0) {
             return;
         }
 
+        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
         sortField = this.selectedOptions[0].dataset.sortField;
+        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
         sortOrder = this.selectedOptions[0].dataset.sortOrder;
         accountStorage.setItem('DataBank_sortField', sortField);
         accountStorage.setItem('DataBank_sortOrder', sortOrder);
@@ -1694,12 +1854,13 @@ async function openAttachmentManager() {
      *
      * @param action
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'action' implicitly has an 'any' type.
     function handleBulkAction(action) {
         return async () => {
             const selectedAttachments = document.querySelectorAll('.attachmentListItemCheckboxContainer .attachmentListItemCheckbox:checked');
 
             if (selectedAttachments.length === 0) {
-                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                 toastr.info(t`No attachments selected.`, t`Data Bank`);
                 return;
             }
@@ -1718,9 +1879,7 @@ async function openAttachmentManager() {
                 if (!(listItem instanceof HTMLElement)) {
                     return;
                 }
-                // @ts-expect-error TS(4111): Property 'attachmentUrl' comes from an index signa... Remove this comment to see the full error message
                 const url = listItem.dataset.attachmentUrl;
-                // @ts-expect-error TS(4111): Property 'attachmentSource' comes from an index si... Remove this comment to see the full error message
                 const source = listItem.dataset.attachmentSource;
                 const attachment = attachments.find(a => a.url === url);
                 if (!attachment) {
@@ -1740,15 +1899,18 @@ async function openAttachmentManager() {
     }
 
     template.querySelector('.bulkActionDisable')?.addEventListener('click', handleBulkAction({
+        // @ts-expect-error TS(7006) FIXME: Parameter 'attachment' implicitly has an 'any' typ... Remove this comment to see the full error message
         perform: (attachment) => disableAttachment(attachment, () => { }),
     }));
 
     template.querySelector('.bulkActionEnable')?.addEventListener('click', handleBulkAction({
+        // @ts-expect-error TS(7006) FIXME: Parameter 'attachment' implicitly has an 'any' typ... Remove this comment to see the full error message
         perform: (attachment) => enableAttachment(attachment, () => { }),
     }));
 
     template.querySelector('.bulkActionDelete')?.addEventListener('click', handleBulkAction({
         confirmMessage: 'Are you sure you want to delete the selected attachments?',
+        // @ts-expect-error TS(7006) FIXME: Parameter 'attachment' implicitly has an 'any' typ... Remove this comment to see the full error message
         perform: async (attachment, source) => await deleteAttachment(attachment, source, () => { }, false),
     }));
 
@@ -1783,6 +1945,7 @@ async function openAttachmentManager() {
 function getAvailableTargets() {
     const targets = Object.values(ATTACHMENT_SOURCE);
 
+    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
     const isNotCharacter = this_chid === undefined || selected_group;
     const isNotInChat = getCurrentChatId() === undefined;
 
@@ -1804,6 +1967,7 @@ function getAvailableTargets() {
  * @param {function} callback Callback function
  * @returns {Promise<void>} A promise that resolves when the source is scraped.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'scraperId' implicitly has an 'any' type... Remove this comment to see the full error message
 async function runScraper(scraperId, target, callback) {
     try {
         console.log(`Running scraper ${scraperId} for ${target}`);
@@ -1816,7 +1980,7 @@ async function runScraper(scraperId, target, callback) {
 
         if (files.length === 0) {
             console.warn('Scraping returned no files');
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.info(t`No files were scraped.`, t`Data Bank`);
             return;
         }
@@ -1825,12 +1989,12 @@ async function runScraper(scraperId, target, callback) {
             await uploadFileAttachmentToServer(file, target);
         }
 
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.success(t`Scraped ${files.length} files from ${scraperId} to ${target}.`, t`Data Bank`);
         callback();
     } catch (error) {
         console.error('Scraping failed', error);
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.error(t`Check browser console for details.`, t`Scraping failed`);
     }
 }
@@ -1841,6 +2005,7 @@ async function runScraper(scraperId, target, callback) {
  * @param {string} target Target for the attachment
  * @returns {Promise<string>} Path to the uploaded file
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'file' implicitly has an 'any' type.
 export async function uploadFileAttachmentToServer(file, target) {
     const isValid = await validateFile(file);
 
@@ -1858,7 +2023,7 @@ export async function uploadFileAttachmentToServer(file, target) {
             const fileText = await converter(file);
             base64Data = convertTextToBase64(fileText);
         } catch (error) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.error(String(error), t`Could not convert file`);
             console.error('Could not convert file', error);
         }
@@ -1868,7 +2033,7 @@ export async function uploadFileAttachmentToServer(file, target) {
     }
 
     const fileUrl = await uploadFileAttachment(uniqueFileName, base64Data);
-    // @ts-expect-error TS(2339): Property 'length' does not exist on type 'unknown'... Remove this comment to see the full error message
+    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
     const convertedSize = Math.round(base64Data.length * 0.75);
 
     if (!fileUrl) {
@@ -1886,15 +2051,17 @@ export async function uploadFileAttachmentToServer(file, target) {
 
     switch (target) {
         case ATTACHMENT_SOURCE.GLOBAL:
+            // @ts-expect-error TS(2345) FIXME: Argument of type '{ url: any; size: number; name: ... Remove this comment to see the full error message
             extension_settings.attachments.push(attachment);
             saveSettingsDebounced();
             break;
         case ATTACHMENT_SOURCE.CHAT:
-            // @ts-expect-error TS(2339): Property 'attachments' does not exist on type '{}'... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'attachments' does not exist on type '{}'... Remove this comment to see the full error message
             chat_metadata.attachments.push(attachment);
             saveMetadataDebounced();
             break;
         case ATTACHMENT_SOURCE.CHARACTER:
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             extension_settings.character_attachments[characters[this_chid]?.avatar].push(attachment);
             saveSettingsDebounced();
             break;
@@ -1915,9 +2082,9 @@ function ensureAttachmentsExist() {
         extension_settings.attachments = [];
     }
 
-    // @ts-expect-error TS(2339): Property 'attachments' does not exist on type '{}'... Remove this comment to see the full error message
+    // @ts-expect-error TS(2339) FIXME: Property 'attachments' does not exist on type '{}'... Remove this comment to see the full error message
     if (!Array.isArray(chat_metadata.attachments)) {
-        // @ts-expect-error TS(2339): Property 'attachments' does not exist on type '{}'... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'attachments' does not exist on type '{}'... Remove this comment to see the full error message
         chat_metadata.attachments = [];
     }
 
@@ -1926,7 +2093,9 @@ function ensureAttachmentsExist() {
             extension_settings.character_attachments = {};
         }
 
+        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         if (!Array.isArray(extension_settings.character_attachments[characters[this_chid].avatar])) {
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             extension_settings.character_attachments[characters[this_chid].avatar] = [];
         }
     }
@@ -1940,8 +2109,9 @@ function ensureAttachmentsExist() {
 export function getDataBankAttachments(includeDisabled = false) {
     ensureAttachmentsExist();
     const globalAttachments = extension_settings.attachments ?? [];
-    // @ts-expect-error TS(2339): Property 'attachments' does not exist on type '{}'... Remove this comment to see the full error message
+    // @ts-expect-error TS(2339) FIXME: Property 'attachments' does not exist on type '{}'... Remove this comment to see the full error message
     const chatAttachments = chat_metadata.attachments ?? [];
+    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     const characterAttachments = extension_settings.character_attachments?.[characters[this_chid]?.avatar] ?? [];
 
     return [...globalAttachments, ...chatAttachments, ...characterAttachments].filter(x => includeDisabled || !isAttachmentDisabled(x));
@@ -1953,6 +2123,7 @@ export function getDataBankAttachments(includeDisabled = false) {
  * @param {boolean} [includeDisabled] If true, include disabled attachments
  * @returns {FileAttachment[]} List of attachments
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'source' implicitly has an 'any' type.
 export function getDataBankAttachmentsForSource(source, includeDisabled = true) {
     ensureAttachmentsExist();
 
@@ -1964,15 +2135,17 @@ export function getDataBankAttachmentsForSource(source, includeDisabled = true) 
             case ATTACHMENT_SOURCE.GLOBAL:
                 return extension_settings.attachments ?? [];
             case ATTACHMENT_SOURCE.CHAT:
-                // @ts-expect-error TS(2339): Property 'attachments' does not exist on type '{}'... Remove this comment to see the full error message
+                // @ts-expect-error TS(2339) FIXME: Property 'attachments' does not exist on type '{}'... Remove this comment to see the full error message
                 return chat_metadata.attachments ?? [];
             case ATTACHMENT_SOURCE.CHARACTER:
+                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 return extension_settings.character_attachments?.[characters[this_chid]?.avatar] ?? [];
         }
 
         return [];
     }
 
+    // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
     return getBySource().filter(x => includeDisabled || !isAttachmentDisabled(x));
 }
 
@@ -1991,9 +2164,11 @@ async function verifyAttachments() {
  * @param {string} source Attachment source
  * @returns {Promise<void>} A promise that resolves when attachments are verified.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'source' implicitly has an 'any' type.
 async function verifyAttachmentsForSource(source) {
     try {
         const attachments = getDataBankAttachmentsForSource(source);
+        // @ts-expect-error TS(7006) FIXME: Parameter 'a' implicitly has an 'any' type.
         const urls = attachments.map(a => a.url);
         const response = await fetch('/api/files/verify', {
             method: 'POST',
@@ -2024,6 +2199,7 @@ const NEUTRAL_CHAT_KEY = 'neutralChat';
  *
  */
 export function preserveNeutralChat() {
+    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
     if (this_chid !== undefined || selected_group || name2 !== neutralCharacterName) {
         return;
     }
@@ -2035,6 +2211,7 @@ export function preserveNeutralChat() {
  *
  */
 export function restoreNeutralChat() {
+    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
     if (this_chid !== undefined || selected_group || name2 !== neutralCharacterName) {
         return;
     }
@@ -2045,6 +2222,7 @@ export function restoreNeutralChat() {
     }
 
     const { chat: neutralChatData, chat_metadata: neutralChatMetadata } = JSON.parse(neutralChat);
+    // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
     chat.splice(0, chat.length, ...neutralChatData);
     updateChatMetadata(neutralChatMetadata, true);
     sessionStorage.removeItem(NEUTRAL_CHAT_KEY);
@@ -2056,6 +2234,7 @@ export function restoreNeutralChat() {
  * @param {ConverterFunction} converter Function to convert file
  * @returns {void}
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'mimeType' implicitly has an 'any' type.
 export function registerFileConverter(mimeType, converter) {
     if (typeof mimeType !== 'string' || typeof converter !== 'function') {
         console.error('Invalid converter registration');
@@ -2067,6 +2246,7 @@ export function registerFileConverter(mimeType, converter) {
         return;
     }
 
+    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     converters[mimeType] = converter;
 }
 
@@ -2075,6 +2255,7 @@ export function registerFileConverter(mimeType, converter) {
  */
 export function addDOMPurifyHooks() {
     // Allow target="_blank" in links
+    // @ts-expect-error TS(7006) FIXME: Parameter 'node' implicitly has an 'any' type.
     DOMPurify.addHook('afterSanitizeAttributes', function (node) {
         if ('target' in node) {
             node.setAttribute('target', '_blank');
@@ -2082,6 +2263,7 @@ export function addDOMPurifyHooks() {
         }
     });
 
+    // @ts-expect-error TS(7006) FIXME: Parameter 'node' implicitly has an 'any' type.
     DOMPurify.addHook('uponSanitizeAttribute', (node, data, config) => {
         if (!config.MESSAGE_SANITIZE) {
             return;
@@ -2096,6 +2278,7 @@ export function addDOMPurifyHooks() {
         switch (data.attrName) {
             case 'class': {
                 if (data.attrValue) {
+                    // @ts-expect-error TS(7006) FIXME: Parameter 'v' implicitly has an 'any' type.
                     data.attrValue = data.attrValue.split(' ').map((v) => {
                         if (v.startsWith('fa-') || v.startsWith('note-') || v === 'monospace') {
                             return v;
@@ -2109,6 +2292,7 @@ export function addDOMPurifyHooks() {
         }
     });
 
+    // @ts-expect-error TS(7006) FIXME: Parameter 'node' implicitly has an 'any' type.
     DOMPurify.addHook('uponSanitizeElement', (node, _, config) => {
         if (!config.MESSAGE_SANITIZE) {
             return;
@@ -2123,7 +2307,7 @@ export function addDOMPurifyHooks() {
             const walker = document.createTreeWalker(node, NodeFilter.SHOW_TEXT);
             while (walker.nextNode()) {
                 const textNode = /** @type {Text} */ (walker.currentNode);
-                // @ts-expect-error TS(2339): Property 'data' does not exist on type 'Node'.
+                // @ts-expect-error TS(2339) FIXME: Property 'data' does not exist on type 'Node'.
                 if (!textNode.data.includes('\n')) continue;
 
                 // Skip if this text node is within a <pre> (any ancestor)
@@ -2133,8 +2317,10 @@ export function addDOMPurifyHooks() {
             }
 
             for (const textNode of candidates) {
+                // @ts-expect-error TS(2339) FIXME: Property 'data' does not exist on type 'Node'.
                 const parts = textNode.data.split('\n');
                 const frag = document.createDocumentFragment();
+                // @ts-expect-error TS(7006) FIXME: Parameter 'part' implicitly has an 'any' type.
                 parts.forEach((part, idx) => {
                     if (part.length) {
                         frag.appendChild(document.createTextNode(part));
@@ -2143,6 +2329,7 @@ export function addDOMPurifyHooks() {
                         frag.appendChild(document.createElement('br'));
                     }
                 });
+                // @ts-expect-error TS(2339) FIXME: Property 'replaceWith' does not exist on type 'Nod... Remove this comment to see the full error message
                 textNode.replaceWith(frag);
             }
         }
@@ -2166,6 +2353,7 @@ export function addDOMPurifyHooks() {
             case 'EMBED':
             case 'OBJECT':
             case 'IMG': {
+                // @ts-expect-error TS(7006) FIXME: Parameter 'url' implicitly has an 'any' type.
                 const isExternalUrl = (url) => (url.indexOf('://') > 0 || url.indexOf('//') === 0) && !url.startsWith(window.location.origin);
                 const src = node.getAttribute('src');
                 const data = node.getAttribute('data');
@@ -2211,14 +2399,14 @@ export function addDOMPurifyHooks() {
             const warningShownKey = `mediaWarningShown:${entityId}`;
 
             if (accountStorage.getItem(warningShownKey) === null) {
-                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                 const warningToast = toastr.warning(
                     t`Use the 'Ext. Media' button to allow it. Click on this message to dismiss.`,
                     t`External media has been blocked`,
                     {
                         timeOut: 0,
                         preventDuplicates: true,
-                        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+                        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                         onclick: () => toastr.clear(warningToast),
                     },
                 );
@@ -2236,6 +2424,7 @@ export function addDOMPurifyHooks() {
  * @param {string} direction Swipe direction
  * @returns {Promise<void>}
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'messageId' implicitly has an 'any' type... Remove this comment to see the full error message
 async function onImageSwiped(messageId, element, direction) {
     const animationClass = 'fa-fade';
     const messageMedia = element.find('.mes_img, .mes_video');
@@ -2246,6 +2435,7 @@ async function onImageSwiped(messageId, element, direction) {
     }
 
     const message = chat[messageId];
+    // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type 'never'.
     const media = message?.extra?.media;
 
     if (!message || !Array.isArray(media) || media.length === 0) {
@@ -2271,12 +2461,14 @@ async function onImageSwiped(messageId, element, direction) {
     // Switch to previous image or wrap around if at the beginning
     if (direction === SWIPE_DIRECTION.LEFT) {
         const newIndex = currentIndex === 0 ? media.length - 1 : currentIndex - 1;
+        // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type 'never'.
         message.extra.media_index = newIndex;
     }
 
     // Switch to next image or generate a new one if at the end
     if (direction === SWIPE_DIRECTION.RIGHT) {
         const newIndex = currentIndex === media.length - 1 ? 0 : currentIndex + 1;
+        // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type 'never'.
         message.extra.media_index = newIndex >= media.length ? 0 : newIndex;
     }
 
@@ -2288,39 +2480,45 @@ async function onImageSwiped(messageId, element, direction) {
  *
  */
 export function initChatUtilities() {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.mes_hide', async function () {
+        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
         const messageBlock = this.closest('.mes');
         const messageId = Number(messageBlock?.getAttribute('mesid'));
         await hideChatMessageRange(messageId, messageId, false);
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.mes_unhide', async function () {
+        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
         const messageBlock = this.closest('.mes');
         const messageId = Number(messageBlock?.getAttribute('mesid'));
         await hideChatMessageRange(messageId, messageId, true);
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.mes_file_delete', async function () {
+        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
         const messageBlock = this.closest('.mes');
         const messageId = Number(messageBlock?.getAttribute('mesid'));
+        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
         const fileBlock = this.closest('.mes_file_container');
         const fileIndex = Number(fileBlock?.getAttribute('data-index'));
         await deleteMessageFile(messageBlock, messageId, fileIndex);
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.mes_file_open', async function () {
+        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
         const messageBlock = this.closest('.mes');
         const messageId = Number(messageBlock?.getAttribute('mesid'));
+        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
         const fileBlock = this.closest('.mes_file_container');
         const fileIndex = Number(fileBlock?.getAttribute('data-index'));
         await viewMessageFile(messageId, fileIndex);
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.assistant_note_export', async function (_e) {
         /** @type {ChatHeader} */
         const chatHeader = {
@@ -2330,15 +2528,17 @@ export function initChatUtilities() {
         };
         const chatToSave = [
             chatHeader,
+            // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type 'never'.
             ...chat.filter(x => x?.extra?.type !== system_message_types.ASSISTANT_NOTE),
         ];
 
         download(chatToSave.map((m) => JSON.stringify(m)).join('\n'), `Assistant - ${humanizedDateTime()}.jsonl`, 'application/json');
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.assistant_note_import', async function () {
         const importFile = async () => {
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             const file = fileInput.files[0];
             if (!file) {
                 return;
@@ -2346,19 +2546,21 @@ export function initChatUtilities() {
 
             try {
                 const text = await getFileText(file);
-                // @ts-expect-error TS(2339): Property 'split' does not exist on type 'unknown'.
+                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 const lines = text.split('\n').filter(line => line.trim() !== '');
+                // @ts-expect-error TS(7006) FIXME: Parameter 'line' implicitly has an 'any' type.
                 const messages = lines.map(line => JSON.parse(line));
                 const metadata = messages.shift()?.chat_metadata || {};
-                // @ts-expect-error TS(2554): Expected 2-3 arguments, but got 1.
+                // @ts-expect-error TS(2554) FIXME: Expected 2-3 arguments, but got 1.
                 messages.unshift(getSystemMessageByType(system_message_types.ASSISTANT_NOTE));
                 await clearChat();
+                // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
                 chat.splice(0, chat.length, ...messages);
                 updateChatMetadata(metadata, true);
                 await printMessages();
             } catch (error) {
                 console.error('Error importing assistant chat:', error);
-                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                 toastr.error(t`It's either corrupted or not a valid JSONL file.`, t`Failed to import chat`);
             }
         };
@@ -2372,19 +2574,21 @@ export function initChatUtilities() {
     const fileInput = document.getElementById('file_form_input');
 
     // Do not change. #attachFile is added by extension.
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '#attachFile', function () {
         if (!(fileInput instanceof HTMLInputElement)) return;
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const $fileInput = $(fileInput);
 
         // Preserve existing files in DataTransfer
         const dataTransfer = new DataTransfer();
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         for (const file of fileInput.files) {
             dataTransfer.items.add(file);
         }
 
         $fileInput.off('change').on('change', async () => {
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             for (const file of fileInput.files) {
                 if (!Array.from(dataTransfer.files).some(f => isSameFile(f, file))) {
                     dataTransfer.items.add(file);
@@ -2399,29 +2603,30 @@ export function initChatUtilities() {
     });
 
     // Do not change. #manageAttachments is added by extension.
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '#manageAttachments', function () {
         openAttachmentManager();
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.mes_embed', function () {
+        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
         const messageBlock = this.closest('.mes');
         const messageId = Number(messageBlock?.getAttribute('mesid'));
         embedMessageFile(messageId, messageBlock);
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.editor_maximize', async function (e) {
         e.preventDefault();
         e.stopPropagation();
 
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const broId = $(this).attr('data-for');
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const bro = $(`#${broId}`);
         const contentEditable = bro.is('[contenteditable]');
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const withTab = $(this).attr('data-tab');
 
         if (!bro.length) {
@@ -2433,14 +2638,10 @@ export function initChatUtilities() {
         wrapper.classList.add('height100p', 'wide100p', 'flex-container');
         wrapper.classList.add('flexFlowColumn', 'justifyCenter', 'alignitemscenter');
         const textarea = document.createElement('textarea');
-        // @ts-expect-error TS(4111): Property 'for' comes from an index signature, so i... Remove this comment to see the full error message
         textarea.dataset.for = broId;
         if (bro[0].dataset.macros !== undefined) {
-            // @ts-expect-error TS(4111): Property 'macros' comes from an index signature, s... Remove this comment to see the full error message
             textarea.dataset.macros = bro[0].dataset.macros;
-            // @ts-expect-error TS(4111): Property 'macrosAutocomplete' comes from an index ... Remove this comment to see the full error message
             textarea.dataset.macrosAutocomplete = 'always'; // Always show autocomplete in expanded editor
-            // @ts-expect-error TS(4111): Property 'macrosAutocompleteStyle' comes from an i... Remove this comment to see the full error message
             textarea.dataset.macrosAutocompleteStyle = 'expanded'; // Use expanded autocomplete style
         }
         textarea.value = String(contentEditable ? bro[0].innerText : bro.val());
@@ -2490,40 +2691,44 @@ export function initChatUtilities() {
         await callGenericPopup(wrapper, POPUP_TYPE.TEXT, '', { wide: true, large: true });
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', 'body .mes .mes_text, body .mes .mes_reasoning', function (event) {
         if (!power_user.click_to_edit) return;
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         if (window.getSelection().toString()) return;
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         if ($('.edit_textarea').length) return;
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(this.closest('.mes')?.querySelector('.mes_edit')).trigger('click');
         if (event.target.closest('.mes_reasoning')) {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('.reasoning_edit_textarea').trigger('focus');
         }
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.open_media_overrides', openExternalMediaOverridesDialog);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('input', '#forbid_media_override_allowed', function () {
         const entityId = getCurrentEntityId();
         if (!entityId) return;
+        // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
         power_user.external_media_allowed_overrides.push(entityId);
         power_user.external_media_forbidden_overrides = power_user.external_media_forbidden_overrides.filter((v) => v !== entityId);
         saveSettingsDebounced();
         reloadCurrentChat();
     });
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('input', '#forbid_media_override_forbidden', function () {
         const entityId = getCurrentEntityId();
         if (!entityId) return;
+        // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
         power_user.external_media_forbidden_overrides.push(entityId);
         power_user.external_media_allowed_overrides = power_user.external_media_allowed_overrides.filter((v) => v !== entityId);
         saveSettingsDebounced();
         reloadCurrentChat();
     });
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('input', '#forbid_media_override_global', function () {
         const entityId = getCurrentEntityId();
         if (!entityId) return;
@@ -2533,7 +2738,7 @@ export function initChatUtilities() {
         reloadCurrentChat();
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#creators_note_styles_button').on('click', function (e) {
         e.stopPropagation();
         openGlobalStylesPreferenceDialog();
@@ -2550,50 +2755,60 @@ export function initChatUtilities() {
      * @property {number} mediaIndex The media index within the message
      */
     function getMediaContainerInfo(containerClass = '.mes_media_container') {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const messageBlock = $(this.closest('.mes'));
         const messageId = Number(messageBlock.attr('mesid'));
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const mediaBlock = $(this.closest(containerClass));
         const mediaIndex = Number(mediaBlock.attr('data-index'));
         return { messageBlock, messageId, mediaBlock, mediaIndex };
     }
     chatElement.on('click', '.mes_img', async function () {
+        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
         const { messageId, mediaIndex } = getMediaContainerInfo.call(this);
         expandMessageMedia(messageId, mediaIndex);
     });
     chatElement.on('click', '.mes_media_enlarge', async function () {
+        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
         const { messageId, mediaIndex } = getMediaContainerInfo.call(this);
+        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         expandMessageMedia(messageId, mediaIndex).click();
     });
     chatElement.on('click', '.mes_media_delete', async function () {
+        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
         const { messageId, mediaIndex, messageBlock } = getMediaContainerInfo.call(this);
         await deleteMessageMedia(messageId, mediaIndex, messageBlock);
     });
     chatElement.on('click', '.mes_media_list', async function () {
+        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
         const { messageId, messageBlock } = getMediaContainerInfo.call(this);
         await switchMessageMediaDisplay(messageId, messageBlock, MEDIA_DISPLAY.GALLERY);
     });
     chatElement.on('click', '.mes_media_gallery', async function () {
+        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
         const { messageId, messageBlock } = getMediaContainerInfo.call(this);
         await switchMessageMediaDisplay(messageId, messageBlock, MEDIA_DISPLAY.LIST);
     });
     chatElement.on('click', '.mes_img_swipe_left', async function () {
+        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
         const { messageId, messageBlock } = getMediaContainerInfo.call(this);
         await onImageSwiped(messageId, messageBlock, SWIPE_DIRECTION.LEFT);
     });
     chatElement.on('click', '.mes_img_swipe_right', async function () {
+        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
         const { messageId, messageBlock } = getMediaContainerInfo.call(this);
         await onImageSwiped(messageId, messageBlock, SWIPE_DIRECTION.RIGHT);
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#file_form').on('reset', function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#file_form').addClass('displayNone');
     });
 
+    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     document.getElementById('send_textarea').addEventListener('paste', async function (event) {
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         if (event.clipboardData.files.length === 0) {
             return;
         }
@@ -2601,9 +2816,11 @@ export function initChatUtilities() {
         event.preventDefault();
         event.stopPropagation();
 
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         await handleFileAttach(Array.from(event.clipboardData.files));
     });
 
+    // @ts-expect-error TS(7006) FIXME: Parameter 'files' implicitly has an 'any' type.
     new DragAndDropHandler('#form_sheld', async (files) => {
         await handleFileAttach(files);
     });
@@ -2613,11 +2830,13 @@ export function initChatUtilities() {
      * @param {File[]} files Files to attach
      * @returns {Promise<void>}
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'files' implicitly has an 'any' type.
     async function handleFileAttach(files) {
         if (!(fileInput instanceof HTMLInputElement)) return;
 
         // Workaround for Firefox: Use a DataTransfer object to indirectly set fileInput.files
         const dataTransfer = new DataTransfer();
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         for (const file of fileInput.files) {
             dataTransfer.items.add(file);
         }

@@ -1,8 +1,9 @@
 import fetch from 'node-fetch';
+// @ts-expect-error TS(1259) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import express from 'express';
-// @ts-expect-error TS(2792): Cannot find module 'bing-translate-api'. Did you m... Remove this comment to see the full error message
+// @ts-expect-error TS(2792) FIXME: Cannot find module 'bing-translate-api'. Did you m... Remove this comment to see the full error message
 import { translate as bingTranslate } from 'bing-translate-api';
-// @ts-expect-error TS(2792): Cannot find module 'google-translate-api-x'. Did y... Remove this comment to see the full error message
+// @ts-expect-error TS(2792) FIXME: Cannot find module 'google-translate-api-x'. Did y... Remove this comment to see the full error message
 import { Translator } from 'google-translate-api-x';
 
 import { readSecret, SECRET_KEYS } from './secrets.js';
@@ -14,6 +15,7 @@ const LINGVA_DEFAULT = 'https://lingva.ml/api/v1';
 
 export const router = express.Router();
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/libre', async (request, response) => {
     try {
         const key = readSecret(request.user.directories, SECRET_KEYS.LIBRE);
@@ -69,11 +71,13 @@ router.post('/libre', async (request, response) => {
 
         return response.send(json.translatedText);
     } catch (error) {
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         console.error('Translation error: ' + error.message);
         return response.sendStatus(500);
     }
 });
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/google', async (request, response) => {
     try {
         if (request.body.lang === 'pt-BR') {
@@ -90,6 +94,7 @@ router.post('/google', async (request, response) => {
         console.debug('Input text: ' + text);
 
         const translator = new Translator({ to: lang, requestFunction: fetch });
+        // @ts-expect-error TS(7006) FIXME: Parameter 'result' implicitly has an 'any' type.
         const translatedText = await translator.translate(text).then(result => result.text);
 
         response.setHeader('Content-Type', 'text/plain; charset=utf-8');
@@ -101,6 +106,7 @@ router.post('/google', async (request, response) => {
     }
 });
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/yandex', async (request, response) => {
     try {
         if (request.body.lang === 'pt-PT') {
@@ -152,11 +158,13 @@ router.post('/yandex', async (request, response) => {
 
         return response.send(translated);
     } catch (error) {
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         console.error('Translation error: ' + error.message);
         return response.sendStatus(500);
     }
 });
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/lingva', async (request, response) => {
     try {
         const secretUrl = readSecret(request.user.directories, SECRET_KEYS.LINGVA_URL);
@@ -201,6 +209,7 @@ router.post('/lingva', async (request, response) => {
     }
 });
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/deepl', async (request, response) => {
     try {
         const key = readSecret(request.user.directories, SECRET_KEYS.DEEPL);
@@ -216,6 +225,7 @@ router.post('/deepl', async (request, response) => {
 
         const text = request.body.text;
         const lang = request.body.lang;
+        // @ts-expect-error TS(2345) FIXME: Argument of type '"default"' is not assignable to ... Remove this comment to see the full error message
         const formality = getConfigValue('deepl.formality', 'default');
 
         if (!text || !lang) {
@@ -258,11 +268,13 @@ router.post('/deepl', async (request, response) => {
 
         return response.send(json.translations[0].text);
     } catch (error) {
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         console.error('Translation error: ' + error.message);
         return response.sendStatus(500);
     }
 });
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/onering', async (request, response) => {
     try {
         const secretUrl = readSecret(request.user.directories, SECRET_KEYS.ONERING_URL);
@@ -315,11 +327,13 @@ router.post('/onering', async (request, response) => {
 
         return response.send(data.result);
     } catch (error) {
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         console.error('Translation error: ' + error.message);
         return response.sendStatus(500);
     }
 });
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/deeplx', async (request, response) => {
     try {
         const secretUrl = readSecret(request.user.directories, SECRET_KEYS.DEEPLX_URL);
@@ -371,11 +385,13 @@ router.post('/deeplx', async (request, response) => {
 
         return response.send(json.data);
     } catch (error) {
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         console.error('DeepLX translation error: ' + error.message);
         return response.sendStatus(500);
     }
 });
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/bing', async (request, response) => {
     try {
         const text = request.body.text;

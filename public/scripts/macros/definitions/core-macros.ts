@@ -42,6 +42,7 @@ export function registerCoreMacros() {
         description: 'Returns one or more spaces. One space by default, more if the count argument is specified.',
         returns: 'One or more spaces.',
         exampleUsage: ['{{space}}', '{{space::4}}'],
+        // @ts-expect-error TS(7031) FIXME: Binding element 'count' implicitly has an 'any' ty... Remove this comment to see the full error message
         handler: ({ unnamedArgs: [count] }) => ' '.repeat(Number(count ?? 1)),
     });
 
@@ -60,6 +61,7 @@ export function registerCoreMacros() {
         description: 'Inserts one or more newlines. One newline by default, more if the count argument is specified.',
         returns: 'One or more \\n.',
         exampleUsage: ['{{newline}}', '{{newline::2}}'],
+        // @ts-expect-error TS(7031) FIXME: Binding element 'count' implicitly has an 'any' ty... Remove this comment to see the full error message
         handler: ({ unnamedArgs: [count] }) => '\n'.repeat(Number(count ?? 1)),
     });
 
@@ -84,6 +86,7 @@ export function registerCoreMacros() {
             },
         ],
         returns: '',
+        // @ts-expect-error TS(7031) FIXME: Binding element 'content' implicitly has an 'any' ... Remove this comment to see the full error message
         handler: ({ unnamedArgs: [content], isScoped }) => {
             // Scoped usage: return content (already auto-trimmed by the engine)
             if (isScoped) return content ?? '';
@@ -99,8 +102,10 @@ export function registerCoreMacros() {
      * @param {string} content - The raw content to split
      * @returns {{ thenBranch: string, elseBranch: string | undefined }}
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'content' implicitly has an 'any' type.
     function splitOnTopLevelElse(content) {
         const { cst } = MacroParser.parseDocument(content);
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         const macroNodes = /** @type {import('chevrotain').CstNode[]} */ (cst?.children?.macro || []);
 
         let depth = 0;
@@ -154,6 +159,7 @@ export function registerCoreMacros() {
         returns: 'The content if condition is truthy, else branch or empty string otherwise.',
         // Delay argument resolution so nested macros are only evaluated in the chosen branch
         delayArgResolution: true,
+        // @ts-expect-error TS(7031) FIXME: Binding element 'rawCondition' implicitly has an '... Remove this comment to see the full error message
         handler: ({ unnamedArgs: [rawCondition, rawContent], flags, resolve, trimContent }) => {
             // With delayArgResolution: true, args contain raw (unresolved) text.
             // We resolve the condition first, then only resolve the chosen branch.
@@ -227,7 +233,7 @@ export function registerCoreMacros() {
         category: MacroCategory.UTILITY,
         description: 'Current text from the send textarea.',
         returns: 'Current text from the send textarea.',
-        // @ts-expect-error TS(2339): Property 'value' does not exist on type 'Element'.
+        // @ts-expect-error TS(2339) FIXME: Property 'value' does not exist on type 'Element'.
         handler: () => (/** @type {HTMLTextAreaElement} */(document.querySelector('#send_textarea')))?.value ?? '',
     });
 
@@ -274,6 +280,7 @@ export function registerCoreMacros() {
         description: 'Reverses the characters of the argument provided.',
         returns: 'Reversed string.',
         exampleUsage: ['{{reverse::I am Lana}}'],
+        // @ts-expect-error TS(7031) FIXME: Binding element 'value' implicitly has an 'any' ty... Remove this comment to see the full error message
         handler: ({ unnamedArgs: [value] }) => Array.from(value).reverse().join(''),
     });
 
@@ -317,6 +324,7 @@ export function registerCoreMacros() {
             '{{roll::6}}',
             '{{roll::3d6+4}}',
         ],
+        // @ts-expect-error TS(7031) FIXME: Binding element 'formula' implicitly has an 'any' ... Remove this comment to see the full error message
         handler: ({ unnamedArgs: [formula], warn }) => {
             // If only digits were provided, treat it as `1dX`.
             if (/^\d+$/.test(formula)) {
@@ -342,6 +350,7 @@ export function registerCoreMacros() {
         description: 'Picks a random item from a list. Will be re-rolled every time macros are resolved.',
         returns: 'Randomly selected item from the list.',
         exampleUsage: ['{{random::blonde::brown::red::black::blue}}'],
+        // @ts-expect-error TS(7031) FIXME: Binding element 'list' implicitly has an 'any' typ... Remove this comment to see the full error message
         handler: ({ list }) => {
             // Handle old legacy cases, where we have to split the list manually
             if (list.length === 1) {
@@ -370,6 +379,7 @@ export function registerCoreMacros() {
         // `,
         returns: 'Stable randomly selected item from the list.',
         exampleUsage: ['{{pick::blonde::brown::red::black::blue}}'],
+        // @ts-expect-error TS(7031) FIXME: Binding element 'list' implicitly has an 'any' typ... Remove this comment to see the full error message
         handler: ({ list, globalOffset, env }) => {
             // Handle old legacy cases, where we have to split the list manually
             if (list.length === 1) {
@@ -395,7 +405,7 @@ export function registerCoreMacros() {
             const offset = globalOffset;
 
             // Reroll seed allows users to reset all picks in the chat via /reroll-pick command
-            // @ts-expect-error TS(2339): Property 'pick_reroll_seed' does not exist on type... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'pick_reroll_seed' does not exist on type... Remove this comment to see the full error message
             const rerollSeed = chat_metadata.pick_reroll_seed || null;
 
             const combinedSeedString = [chatIdHash, rawContentHash, offset, rerollSeed].filter(it => it !== null).join('-');
@@ -407,17 +417,20 @@ export function registerCoreMacros() {
     });
 
     /** @param {string} listString @return {string[]} */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'listString' implicitly has an 'any' typ... Remove this comment to see the full error message
     function readSingleArgsRandomList(listString) {
         // If it contains double colons, those will have precedence over comma-separated lists.
         // This can only happen if the macro only had a single colon to introduce the list...
         // like, {{random:a::b::c}}
         if (listString.includes('::')) {
+            // @ts-expect-error TS(7006) FIXME: Parameter 'item' implicitly has an 'any' type.
             return listString.split('::').map((/** @type {string} */ item) => item.trim());
         }
         // Otherwise, we fall back and split by commas that may be present
         return listString
             .replace(/\\,/g, '##�COMMA�##')
             .split(',')
+            // @ts-expect-error TS(7006) FIXME: Parameter 'item' implicitly has an 'any' type.
             .map((/** @type {string} */ item) => item.trim().replace(/##�COMMA�##/g, ','));
     }
 
@@ -435,11 +448,13 @@ export function registerCoreMacros() {
         description: 'Bans a word for Text Completion backend. (Strips quotes surrounding the banned word, if present)',
         returns: '',
         exampleUsage: ['{{banned::delve}}'],
+        // @ts-expect-error TS(7031) FIXME: Binding element 'bannedWord' implicitly has an 'an... Remove this comment to see the full error message
         handler: ({ unnamedArgs: [bannedWord] }) => {
             // Strip quotes via regex, which were allowed in legacy syntax
             bannedWord = bannedWord.replace(/^"|"$/g, '');
             if (main_api === 'textgenerationwebui') {
                 console.log('Found banned word in macros: ' + bannedWord);
+                // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
                 textgenerationwebui_banned_in_macros.push(bannedWord);
             }
             return '';
@@ -460,8 +475,10 @@ export function registerCoreMacros() {
         description: 'Returns the world info outlet prompt for a given outlet key.',
         returns: 'World info outlet prompt.',
         exampleUsage: ['{{outlet::character-achievements}}'],
+        // @ts-expect-error TS(7031) FIXME: Binding element 'outlet' implicitly has an 'any' t... Remove this comment to see the full error message
         handler: ({ unnamedArgs: [outlet] }) => {
             if (!outlet) return '';
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             const value = extension_prompts[inject_ids.CUSTOM_WI_OUTLET(outlet)]?.value;
             return value || '';
         },
@@ -472,16 +489,16 @@ export function registerCoreMacros() {
  *
  */
 function getChatIdHash() {
-    // @ts-expect-error TS(2339): Property 'chat_id_hash' does not exist on type '{}... Remove this comment to see the full error message
+    // @ts-expect-error TS(2339) FIXME: Property 'chat_id_hash' does not exist on type '{}... Remove this comment to see the full error message
     const cachedIdHash = chat_metadata.chat_id_hash;
     if (typeof cachedIdHash === 'number') {
         return cachedIdHash;
     }
 
-    // @ts-expect-error TS(2339): Property 'main_chat' does not exist on type '{}'.
+    // @ts-expect-error TS(2339) FIXME: Property 'main_chat' does not exist on type '{}'.
     const chatId = chat_metadata.main_chat ?? getCurrentChatId();
     const chatIdHash = getStringHash(chatId);
-    // @ts-expect-error TS(2339): Property 'chat_id_hash' does not exist on type '{}... Remove this comment to see the full error message
+    // @ts-expect-error TS(2339) FIXME: Property 'chat_id_hash' does not exist on type '{}... Remove this comment to see the full error message
     chat_metadata.chat_id_hash = chatIdHash;
     return chatIdHash;
 }

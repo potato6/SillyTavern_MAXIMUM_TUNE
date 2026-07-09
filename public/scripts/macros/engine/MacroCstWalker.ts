@@ -8,7 +8,7 @@ import { MacroEngine } from './MacroEngine.js';
 import { parseFlags, createEmptyFlags, MacroFlagType } from './MacroFlags.js';
 import { MacroParser } from './MacroParser.js';
 import { MacroRegistry } from './MacroRegistry.js';
-// @ts-expect-error TS(2792): Cannot find module '/scripts/utils.js'. Did you me... Remove this comment to see the full error message
+// @ts-expect-error TS(2792) FIXME: Cannot find module '/scripts/utils.js'. Did you me... Remove this comment to see the full error message
 import { isFalseBoolean } from '/scripts/utils.js';
 
 /**
@@ -73,6 +73,7 @@ import { isFalseBoolean } from '/scripts/utils.js';
 
 
 class MacroCstWalker {
+    // @ts-expect-error TS(7008) FIXME: Member '#instance' implicitly has an 'any' type.
     /** @type {MacroCstWalker} */ static #instance;
     /** @type {MacroCstWalker} */ static get instance() { return MacroCstWalker.#instance ?? (MacroCstWalker.#instance = new MacroCstWalker()); }
 
@@ -83,6 +84,7 @@ class MacroCstWalker {
      * @param {EvaluationContext & { cst: CstNode }} options
      * @returns {string}
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'options' implicitly has an 'any' type.
     evaluateDocument(options) {
         const { text, cst, contextOffset, env, resolveMacro, trimContent } = options;
 
@@ -123,14 +125,18 @@ class MacroCstWalker {
             if (item.type === 'plaintext') {
                 result += text.slice(item.startOffset, item.endOffset + 1);
                 cursor = item.endOffset + 1;
+            // @ts-expect-error TS(2339) FIXME: Property 'keepRaw' does not exist on type '{ type:... Remove this comment to see the full error message
             } else if (item.keepRaw) {
                 // Unmatched closing macros stay as raw text
                 result += text.slice(item.startOffset, item.endOffset + 1);
                 cursor = item.endOffset + 1;
             } else {
+                // @ts-expect-error TS(2339) FIXME: Property 'scopedContent' does not exist on type '{... Remove this comment to see the full error message
                 result += this.#evaluateMacroNode(item.node, context, item.scopedContent);
                 // If this macro has scoped content, skip past the closing macro
+                // @ts-expect-error TS(2339) FIXME: Property 'scopedContent' does not exist on type '{... Remove this comment to see the full error message
                 if (item.scopedContent && item.scopedContent.closingEndOffset > item.endOffset) {
+                    // @ts-expect-error TS(2339) FIXME: Property 'scopedContent' does not exist on type '{... Remove this comment to see the full error message
                     cursor = item.scopedContent.closingEndOffset + 1;
                 } else {
                     cursor = item.endOffset + 1;
@@ -151,6 +157,7 @@ class MacroCstWalker {
      * @param {CstNode} macroNode - A macro CST node from the parser.
      * @returns {MacroNodeInfo | null}
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'macroNode' implicitly has an 'any' type... Remove this comment to see the full error message
     extractMacroInfo(macroNode) {
         const children = macroNode?.children || {};
 
@@ -181,6 +188,7 @@ class MacroCstWalker {
 
         // Check for closing block flag
         const flagTokens = /** @type {IToken[]} */ (children.flags || []);
+        // @ts-expect-error TS(7006) FIXME: Parameter 'token' implicitly has an 'any' type.
         const isClosing = flagTokens.some(token => token.image === MacroFlagType.CLOSING_BLOCK);
 
         return {
@@ -200,6 +208,7 @@ class MacroCstWalker {
      * @param {CstNode} options.cst - The parsed CST.
      * @returns {Array<{ name: string, startOffset: number, endOffset: number, paddingBefore: string, paddingAfter: string }>} - Array of unclosed macro info, innermost last.
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'options' implicitly has an 'any' type.
     findUnclosedScopes(options) {
         const { text, cst } = options;
 
@@ -224,7 +233,7 @@ class MacroCstWalker {
             if (info.isClosing) {
                 // Find matching opener in stack (case-insensitive)
                 // When closing an outer scope, all inner unclosed scopes are implicitly closed
-                // @ts-expect-error TS(2339): Property 'findLastIndex' does not exist on type 'a... Remove this comment to see the full error message
+                // @ts-expect-error TS(2339) FIXME: Property 'findLastIndex' does not exist on type '{... Remove this comment to see the full error message
                 const matchIndex = unclosedStack.findLastIndex(s => s.name.toLowerCase() === info.name.toLowerCase());
                 if (matchIndex !== -1) {
                     // Pop everything from matchIndex to end (inclusive) - closes the matched scope and all nested ones
@@ -258,6 +267,7 @@ class MacroCstWalker {
      * @param {string} text - The source text.
      * @returns {{ paddingBefore: string, paddingAfter: string }}
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'macroNode' implicitly has an 'any' type... Remove this comment to see the full error message
     #extractMacroPadding(macroNode, text) {
         const children = macroNode.children || {};
         const startToken = /** @type {IToken?} */ ((children['Macro.Start'] || [])[0]);
@@ -292,6 +302,7 @@ class MacroCstWalker {
      * @param {CstNode} cst
      * @returns {Array<DocumentItem>}
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'cst' implicitly has an 'any' type.
     #collectDocumentItems(cst) {
         const plaintextTokens = /** @type {IToken[]} */ (cst.children.plaintext || []);
         const macroNodes = /** @type {CstNode[]} */ (cst.children.macro || []);
@@ -349,6 +360,7 @@ class MacroCstWalker {
      * @param {{ startOffset: number, endOffset: number, closingEndOffset: number }} [scopedContent] - Optional scoped content range for block macros.
      * @returns {string}
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'macroNode' implicitly has an 'any' type... Remove this comment to see the full error message
     #evaluateMacroNode(macroNode, context, scopedContent) {
         const { text, contextOffset, env, resolveMacro, trimContent } = context;
 
@@ -368,6 +380,7 @@ class MacroCstWalker {
 
         // Extract flag tokens and parse them into a MacroFlags object (now inside macroBody)
         const flagTokens = /** @type {IToken[]} */ (children.flags || []);
+        // @ts-expect-error TS(7006) FIXME: Parameter 'token' implicitly has an 'any' type.
         const flagSymbols = flagTokens.map(token => token.image);
         const flags = flagSymbols.length > 0 ? parseFlags(flagSymbols) : createEmptyFlags();
 
@@ -497,10 +510,12 @@ class MacroCstWalker {
      * @param {EvaluationContext} context - The evaluation context.
      * @returns {string}
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'macroNode' implicitly has an 'any' type... Remove this comment to see the full error message
     #evaluateVariableExpr(macroNode, variableExprNode, context) {
         const varChildren = variableExprNode.children || {};
 
         // Extract scope (. for local, $ for global)
+        // @ts-expect-error TS(7006) FIXME: Parameter 't' implicitly has an 'any' type.
         const localPrefixToken = /** @type {IToken?} */ ((varChildren['Var.scope'] || []).find(t => /** @type {IToken} */(t).tokenType?.name === 'Var.LocalPrefix'));
         const isGlobal = !localPrefixToken;
 
@@ -582,7 +597,7 @@ class MacroCstWalker {
                         hasValueExpr = true;
                         break;
                     default:
-                        // @ts-expect-error TS(2345): Argument of type '{ message: string; }' is not ass... Remove this comment to see the full error message
+                        // @ts-expect-error TS(2345) FIXME: Argument of type '{ message: string; }' is not ass... Remove this comment to see the full error message
                         logMacroInternalError({ message: `Lexer found macro operator that is not implemented for variable shorthand expressions in macro node '${macroNode.name}'.` });
                         break;
                 }
@@ -605,7 +620,9 @@ class MacroCstWalker {
      * @param {EvaluationContext} context - The evaluation context.
      * @returns {() => string} A function that returns the evaluated value, caching the result.
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'operatorChildren' implicitly has an 'an... Remove this comment to see the full error message
     #createLazyValue(operatorChildren, context) {
+        // @ts-expect-error TS(7034) FIXME: Variable 'cached' implicitly has type 'any' in som... Remove this comment to see the full error message
         let cached = null;
         let resolved = false;
 
@@ -614,6 +631,7 @@ class MacroCstWalker {
                 cached = this.#evaluateVariableValue(operatorChildren, context);
                 resolved = true;
             }
+            // @ts-expect-error TS(7005) FIXME: Variable 'cached' implicitly has an 'any' type.
             return cached;
         };
     }
@@ -626,9 +644,10 @@ class MacroCstWalker {
      * @param {() => string} lazyValue - A lazy function that returns the value when called. Only evaluated when needed.
      * @returns {string} The result of the operation.
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'varName' implicitly has an 'any' type.
     #executeVariableOperation(varName, isGlobal, operation, lazyValue) {
         const ctx = SillyTavern.getContext();
-        // @ts-expect-error TS(2339): Property 'variables' does not exist on type '() =>... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'variables' does not exist on type '() =>... Remove this comment to see the full error message
         const vars = isGlobal ? ctx.variables.global : ctx.variables.local;
 
         /**
@@ -643,6 +662,7 @@ class MacroCstWalker {
          * @param {any} val
          * @returns {boolean}
          */
+        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
         const isFalsy = (val) => !val || isFalseBoolean(normalize(val));
 
         switch (operation) {
@@ -667,7 +687,7 @@ class MacroCstWalker {
                 // Subtract by adding the negative value
                 const numValue = Number(lazyValue());
                 if (!isNaN(numValue)) vars.add(varName, -numValue);
-                // @ts-expect-error TS(2345): Argument of type '{ message: string; }' is not ass... Remove this comment to see the full error message
+                // @ts-expect-error TS(2345) FIXME: Argument of type '{ message: string; }' is not ass... Remove this comment to see the full error message
                 else logMacroRuntimeWarning({ message: `Variable shorthand "-=" operator requires a numeric value, got: "${lazyValue()}"` });
                 return '';
             }
@@ -727,7 +747,7 @@ class MacroCstWalker {
                 const currentNum = Number(vars.get(varName));
                 const compareNum = Number(lazyValue());
                 if (isNaN(currentNum) || isNaN(compareNum)) {
-                    // @ts-expect-error TS(2345): Argument of type '{ message: string; }' is not ass... Remove this comment to see the full error message
+                    // @ts-expect-error TS(2345) FIXME: Argument of type '{ message: string; }' is not ass... Remove this comment to see the full error message
                     logMacroRuntimeWarning({ message: `Variable shorthand ">" operator requires numeric values. Got: "${vars.get(varName)}" > "${lazyValue()}"` });
                     return 'false';
                 }
@@ -739,7 +759,7 @@ class MacroCstWalker {
                 const currentNum = Number(vars.get(varName));
                 const compareNum = Number(lazyValue());
                 if (isNaN(currentNum) || isNaN(compareNum)) {
-                    // @ts-expect-error TS(2345): Argument of type '{ message: string; }' is not ass... Remove this comment to see the full error message
+                    // @ts-expect-error TS(2345) FIXME: Argument of type '{ message: string; }' is not ass... Remove this comment to see the full error message
                     logMacroRuntimeWarning({ message: `Variable shorthand ">=" operator requires numeric values. Got: "${vars.get(varName)}" >= "${lazyValue()}"` });
                     return 'false';
                 }
@@ -751,7 +771,7 @@ class MacroCstWalker {
                 const currentNum = Number(vars.get(varName));
                 const compareNum = Number(lazyValue());
                 if (isNaN(currentNum) || isNaN(compareNum)) {
-                    // @ts-expect-error TS(2345): Argument of type '{ message: string; }' is not ass... Remove this comment to see the full error message
+                    // @ts-expect-error TS(2345) FIXME: Argument of type '{ message: string; }' is not ass... Remove this comment to see the full error message
                     logMacroRuntimeWarning({ message: `Variable shorthand "<" operator requires numeric values. Got: "${vars.get(varName)}" < "${lazyValue()}"` });
                     return 'false';
                 }
@@ -763,7 +783,7 @@ class MacroCstWalker {
                 const currentNum = Number(vars.get(varName));
                 const compareNum = Number(lazyValue());
                 if (isNaN(currentNum) || isNaN(compareNum)) {
-                    // @ts-expect-error TS(2345): Argument of type '{ message: string; }' is not ass... Remove this comment to see the full error message
+                    // @ts-expect-error TS(2345) FIXME: Argument of type '{ message: string; }' is not ass... Remove this comment to see the full error message
                     logMacroRuntimeWarning({ message: `Variable shorthand "<=" operator requires numeric values. Got: "${vars.get(varName)}" <= "${lazyValue()}"` });
                     return 'false';
                 }
@@ -771,7 +791,7 @@ class MacroCstWalker {
             }
 
             default:
-                // @ts-expect-error TS(2345): Argument of type '{ message: string; }' is not ass... Remove this comment to see the full error message
+                // @ts-expect-error TS(2345) FIXME: Argument of type '{ message: string; }' is not ass... Remove this comment to see the full error message
                 logMacroRuntimeWarning({ message: `Unknown variable shorthand operation: "${operation}"` });
                 return '';
         }
@@ -784,6 +804,7 @@ class MacroCstWalker {
      * @param {EvaluationContext} context - The evaluation context.
      * @returns {string}
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'operatorChildren' implicitly has an 'an... Remove this comment to see the full error message
     #evaluateVariableValue(operatorChildren, context) {
         const { text } = context;
 
@@ -805,6 +826,7 @@ class MacroCstWalker {
         const allTokens = [...identifierTokens, ...unknownTokens];
         const allRanges = [
             ...allTokens.map(t => ({ startOffset: t.startOffset, endOffset: t.endOffset })),
+            // @ts-expect-error TS(7006) FIXME: Parameter 'm' implicitly has an 'any' type.
             ...nestedMacros.map(m => this.#getMacroRange(m)),
         ];
 
@@ -821,11 +843,13 @@ class MacroCstWalker {
         }
 
         // Evaluate nested macros
+        // @ts-expect-error TS(7006) FIXME: Parameter 'node' implicitly has an 'any' type.
         const nestedWithRange = nestedMacros.map(node => ({
             node,
             range: this.#getMacroRange(node),
         }));
 
+        // @ts-expect-error TS(7006) FIXME: Parameter 'a' implicitly has an 'any' type.
         nestedWithRange.sort((a, b) => a.range.startOffset - b.range.startOffset);
 
         let result = '';
@@ -835,7 +859,7 @@ class MacroCstWalker {
             if (entry.range.startOffset > cursor) {
                 result += text.slice(cursor, entry.range.startOffset);
             }
-            // @ts-expect-error TS(2554): Expected 3 arguments, but got 2.
+            // @ts-expect-error TS(2554) FIXME: Expected 3 arguments, but got 2.
             result += this.#evaluateMacroNode(entry.node, context);
             cursor = entry.range.endOffset + 1;
         }
@@ -858,6 +882,7 @@ class MacroCstWalker {
      * @param {EvaluationContext} context - The evaluation context containing the parent document's text and environment.
      * @returns {string} The evaluated argument with all nested macros (including scoped ones) resolved.
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'argNode' implicitly has an 'any' type.
     #evaluateArgumentNode(argNode, context) {
         const location = this.#getArgumentLocation(argNode);
         if (!location) {
@@ -885,6 +910,7 @@ class MacroCstWalker {
      * @param {EvaluationContext} context - The parent evaluation context (used for env, resolveMacro, trimContent).
      * @returns {string} The evaluated content with all macros resolved.
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'rawContent' implicitly has an 'any' typ... Remove this comment to see the full error message
     #evaluateRawContent(rawContent, newContextOffset, context) {
         // If empty, return as-is
         if (!rawContent) {
@@ -896,6 +922,7 @@ class MacroCstWalker {
         const { cst } = MacroParser.parseDocument(rawContent);
 
         // If parsing fails, return the raw content
+        // @ts-expect-error TS(2339) FIXME: Property 'children' does not exist on type 'object... Remove this comment to see the full error message
         if (!cst || typeof cst !== 'object' || !cst.children) {
             return rawContent;
         }
@@ -927,14 +954,18 @@ class MacroCstWalker {
             if (item.type === 'plaintext') {
                 result += rawContent.slice(item.startOffset, item.endOffset + 1);
                 cursor = item.endOffset + 1;
+            // @ts-expect-error TS(2339) FIXME: Property 'keepRaw' does not exist on type '{ type:... Remove this comment to see the full error message
             } else if (item.keepRaw) {
                 // Unmatched closing macros stay as raw text
                 result += rawContent.slice(item.startOffset, item.endOffset + 1);
                 cursor = item.endOffset + 1;
             } else {
+                // @ts-expect-error TS(2339) FIXME: Property 'scopedContent' does not exist on type '{... Remove this comment to see the full error message
                 result += this.#evaluateMacroNode(item.node, contentContext, item.scopedContent);
                 // If this macro has scoped content, skip past the closing macro
+                // @ts-expect-error TS(2339) FIXME: Property 'scopedContent' does not exist on type '{... Remove this comment to see the full error message
                 if (item.scopedContent && item.scopedContent.closingEndOffset > item.endOffset) {
+                    // @ts-expect-error TS(2339) FIXME: Property 'scopedContent' does not exist on type '{... Remove this comment to see the full error message
                     cursor = item.scopedContent.closingEndOffset + 1;
                 } else {
                     cursor = item.endOffset + 1;
@@ -955,6 +986,7 @@ class MacroCstWalker {
      * @param {CstNode} macroNode
      * @returns {TokenRange}
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'macroNode' implicitly has an 'any' type... Remove this comment to see the full error message
     #getMacroRange(macroNode) {
         const startToken = /** @type {IToken?} */ (((macroNode.children || {})['Macro.Start'] || [])[0]);
         const endToken = /** @type {IToken?} */ (((macroNode.children || {})['Macro.End'] || [])[0]);
@@ -975,6 +1007,7 @@ class MacroCstWalker {
      * @param {IToken} excludeToken - The recovery-inserted token to exclude
      * @param {Array<DocumentItem>} items - The items array to add to
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'macroNode' implicitly has an 'any' type... Remove this comment to see the full error message
     #flattenIncompleteMacro(macroNode, excludeToken, items) {
         const children = macroNode.children || {};
 
@@ -1027,6 +1060,7 @@ class MacroCstWalker {
      * @param {IToken|null|undefined} token
      * @returns {boolean}
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'token' implicitly has an 'any' type.
     #isRecoveryToken(token) {
         return token?.isInsertedInRecovery === true
             || typeof token?.startOffset !== 'number'
@@ -1039,6 +1073,7 @@ class MacroCstWalker {
      * @param {CstNode} argNode
      * @returns {TokenRange|null}
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'argNode' implicitly has an 'any' type.
     #getArgumentLocation(argNode) {
         const children = argNode.children || {};
         let startOffset = Number.POSITIVE_INFINITY;
@@ -1081,6 +1116,7 @@ class MacroCstWalker {
      * @param {any} value
      * @returns {value is CstNode}
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
     #isCstNode(value) {
         return !!value && typeof value === 'object' && 'name' in value && 'children' in value;
     }
@@ -1093,6 +1129,7 @@ class MacroCstWalker {
      *        document text, and offsets in scopedContent are relative to that parent text.
      * @returns {string} - The evaluated scoped content with nested macros resolved.
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'scopedContent' implicitly has an 'any' ... Remove this comment to see the full error message
     #evaluateScopedContent(scopedContent, context) {
         const { text, contextOffset } = context;
         const { startOffset, endOffset } = scopedContent;
@@ -1122,7 +1159,7 @@ class MacroCstWalker {
      * @param {string} text - The original document text.
      * @returns {Array<DocumentItem>} - The processed items with scoped macros merged.
      */
-    // @ts-expect-error TS(6133): 'text' is declared but its value is never read.
+    // @ts-expect-error TS(7006) FIXME: Parameter 'items' implicitly has an 'any' type.
     #processScopedMacros(items, text) {
         // Build a list of scoped macro info for each macro item
         /** @type {Array<{ index: number, item: DocumentItemMacro, name: string, isClosing: boolean, matched: boolean }>} */
@@ -1157,6 +1194,7 @@ class MacroCstWalker {
             const openInfo = macroInfos[i];
 
             // Skip closing macros, already matched macros, or macros inside another scope
+            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             if (openInfo.isClosing || openInfo.matched || insideScope.has(openInfo.index)) continue;
 
             // Find the matching closing macro for this opening macro
@@ -1164,29 +1202,39 @@ class MacroCstWalker {
             if (closingIdx === -1) continue;
 
             // Check if the macro can accept scoped content (arity validation)
+            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             if (!this.#canAcceptScopedContent(openInfo.item.node, openInfo.name)) {
                 // Macro cannot accept scoped content - mark both as keepRaw
+                // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
                 openInfo.item.keepRaw = true;
+                // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
                 macroInfos[closingIdx].item.keepRaw = true;
                 // Mark as matched so they won't be processed again
+                // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
                 openInfo.matched = true;
+                // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
                 macroInfos[closingIdx].matched = true;
                 continue;
             }
 
             // Mark both as matched
+            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             openInfo.matched = true;
+            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             macroInfos[closingIdx].matched = true;
 
+            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             const closingIndex = macroInfos[closingIdx].index;
 
             pairs.push({
+                // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
                 openingIndex: openInfo.index,
                 closingIndex: closingIndex,
             });
 
             // Mark all items between this pair as inside a scope
             // They will be processed when the scoped content is re-parsed
+            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             for (let j = openInfo.index + 1; j < closingIndex; j++) {
                 insideScope.add(j);
             }
@@ -1237,6 +1285,7 @@ class MacroCstWalker {
         }
 
         // Filter out removed items
+        // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
         return items.filter((_, index) => !itemsToRemove.has(index));
     }
 
@@ -1245,6 +1294,7 @@ class MacroCstWalker {
      * @param {CstNode} macroNode
      * @returns {{ name: string, isClosing: boolean } | null}
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'macroNode' implicitly has an 'any' type... Remove this comment to see the full error message
     #extractMacroInfo(macroNode) {
         const children = macroNode.children || {};
 
@@ -1265,6 +1315,7 @@ class MacroCstWalker {
 
         // Check for closing block flag (inside macroBody)
         const flagTokens = /** @type {IToken[]} */ (children.flags || []);
+        // @ts-expect-error TS(7006) FIXME: Parameter 'token' implicitly has an 'any' type.
         const isClosing = flagTokens.some(token => token.image === MacroFlagType.CLOSING_BLOCK);
 
         return { name, isClosing };
@@ -1277,6 +1328,7 @@ class MacroCstWalker {
      * @param {string} macroName - The macro name.
      * @returns {boolean} - True if scoped content is allowed.
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'macroNode' implicitly has an 'any' type... Remove this comment to see the full error message
     #canAcceptScopedContent(macroNode, macroName) {
         const def = MacroRegistry.getPrimaryMacro(macroName);
         if (!def) {
@@ -1312,6 +1364,7 @@ class MacroCstWalker {
      * @param {number} openingIdx - Index in macroInfos array of the opening macro.
      * @returns {number} - Index in macroInfos array of the matching closing macro, or -1 if not found.
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'macroInfos' implicitly has an 'any' typ... Remove this comment to see the full error message
     #findMatchingClosingMacro(macroInfos, openingIdx) {
         const openInfo = macroInfos[openingIdx];
         const targetName = openInfo.name;

@@ -1,8 +1,11 @@
+// @ts-expect-error TS(1259) FIXME: Module '"node:path"' can only be default-imported ... Remove this comment to see the full error message
 import path from 'node:path';
+// @ts-expect-error TS(1192) FIXME: Module '"node:fs"' has no default export.
 import fs from 'node:fs';
 
+// @ts-expect-error TS(1259) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import express from 'express';
-// @ts-expect-error TS(2792): Cannot find module 'sanitize-filename'. Did you me... Remove this comment to see the full error message
+// @ts-expect-error TS(2792) FIXME: Cannot find module 'sanitize-filename'. Did you me... Remove this comment to see the full error message
 import sanitize from 'sanitize-filename';
 import { sync as writeFileAtomicSync } from 'write-file-atomic';
 
@@ -14,11 +17,13 @@ import cacheBuster from '../middleware/cacheBuster.js';
 
 export const router = express.Router();
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/get', function (request, response) {
     const images = getImages(request.user.directories.avatars);
     response.send(images);
 });
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/delete', getFileNameValidationFunction('avatar'), function (request, response) {
     if (!request.body) return response.sendStatus(400);
 
@@ -38,12 +43,12 @@ router.post('/delete', getFileNameValidationFunction('avatar'), function (reques
     return response.sendStatus(404);
 });
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/upload', getFileNameValidationFunction('overwrite_name'), async (request, response) => {
     if (!request.file) return response.sendStatus(400);
 
     try {
         const pathToUpload = path.join(request.file.destination, request.file.filename);
-        // @ts-expect-error TS(4111): Property 'crop' comes from an index signature, so ... Remove this comment to see the full error message
         const crop = tryParse(request.query.crop);
         const fileBuffer = fs.readFileSync(pathToUpload);
         const image = await applyAvatarCropResize(fileBuffer, crop);

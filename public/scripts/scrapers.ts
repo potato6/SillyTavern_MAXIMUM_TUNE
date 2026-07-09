@@ -37,7 +37,9 @@ export class ScraperManager {
      * Register a scraper to be used by the Data Bank.
      * @param {Scraper} scraper Instance of a scraper to register
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'scraper' implicitly has an 'any' type.
     static async registerDataBankScraper(scraper) {
+        // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
         if (ScraperManager.#scrapers.some(s => s.id === scraper.id)) {
             console.warn(`Scraper with ID ${scraper.id} already registered`);
             return;
@@ -47,6 +49,7 @@ export class ScraperManager {
             await scraper.init();
         }
 
+        // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
         ScraperManager.#scrapers.push(scraper);
     }
 
@@ -55,6 +58,7 @@ export class ScraperManager {
      * @returns {ScraperInfo[]} List of scrapers available for the Data Bank
      */
     static getDataBankScrapers() {
+        // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
         return ScraperManager.#scrapers.map(s => ({ id: s.id, name: s.name, description: s.description, iconClass: s.iconClass, iconAvailable: s.iconAvailable }));
     }
 
@@ -63,12 +67,15 @@ export class ScraperManager {
      * @param {string} scraperId ID of the scraper to run
      * @returns {Promise<File[]>} List of files scraped by the scraper
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'scraperId' implicitly has an 'any' type... Remove this comment to see the full error message
     static runDataBankScraper(scraperId) {
+        // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
         const scraper = ScraperManager.#scrapers.find(s => s.id === scraperId);
         if (!scraper) {
             console.warn(`Scraper with ID ${scraperId} not found`);
             return;
         }
+        // @ts-expect-error TS(2339) FIXME: Property 'scrape' does not exist on type 'never'.
         return scraper.scrape();
     }
 
@@ -77,12 +84,15 @@ export class ScraperManager {
      * @param {string} scraperId ID of the scraper to check
      * @returns {Promise<boolean>} Whether the scraper is available
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'scraperId' implicitly has an 'any' type... Remove this comment to see the full error message
     static isScraperAvailable(scraperId) {
+        // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
         const scraper = ScraperManager.#scrapers.find(s => s.id === scraperId);
         if (!scraper) {
             console.warn(`Scraper with ID ${scraperId} not found`);
             return;
         }
+        // @ts-expect-error TS(2339) FIXME: Property 'isAvailable' does not exist on type 'nev... Remove this comment to see the full error message
         return scraper.isAvailable();
     }
 }
@@ -140,7 +150,6 @@ class Notepad {
         const result = await callGenericPopup(container, POPUP_TYPE.CONFIRM, '', { wide: true, large: true, okButton: 'Save', cancelButton: 'Cancel' });
 
         if (!result || text === '') {
-            // @ts-expect-error TS(7030): Not all code paths return a value.
             return;
         }
 
@@ -180,6 +189,7 @@ class WebScraper {
      * @param {Blob} blob Blob of the HTML file
      * @returns {Promise<string>} Title of the HTML file
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'blob' implicitly has an 'any' type.
     async getTitleFromHtmlBlob(blob) {
         const text = await blob.text();
         const titleMatch = text.match(/<title>(.*?)<\/title>/i);
@@ -197,20 +207,18 @@ class WebScraper {
         const linksString = await callGenericPopup(container, POPUP_TYPE.INPUT, '', { wide: false, large: false, okButton: 'Scrape', cancelButton: 'Cancel', rows: 4 });
 
         if (!linksString) {
-            // @ts-expect-error TS(7030): Not all code paths return a value.
             return;
         }
 
         const links = String(linksString).split('\n').map(l => l.trim()).filter(l => l).filter(l => isValidUrl(l));
 
         if (links.length === 0) {
-            // @ts-expect-error TS(2552): Cannot find name 'toastr'. Did you mean 'toast'?
+            // @ts-expect-error TS(2552) FIXME: Cannot find name 'toastr'. Did you mean 'toast'?
             toastr.error('Invalid URL');
-            // @ts-expect-error TS(7030): Not all code paths return a value.
             return;
         }
 
-        // @ts-expect-error TS(2552): Cannot find name 'toastr'. Did you mean 'toast'?
+        // @ts-expect-error TS(2552) FIXME: Cannot find name 'toastr'. Did you mean 'toast'?
         const toast = toastr.info('Working, please wait...');
 
         const files = [];
@@ -230,7 +238,7 @@ class WebScraper {
             files.push(file);
         }
 
-        // @ts-expect-error TS(2552): Cannot find name 'toastr'. Did you mean 'toast'?
+        // @ts-expect-error TS(2552) FIXME: Cannot find name 'toastr'. Did you mean 'toast'?
         toastr.clear(toast);
         return files;
     }
@@ -272,6 +280,7 @@ class FileScraper {
             fileInput.type = 'file';
             fileInput.accept = '*/*';
             fileInput.multiple = true;
+            // @ts-expect-error TS(2769) FIXME: No overload matches this call.
             fileInput.onchange = () => resolve(Array.from(fileInput.files));
             fileInput.click();
         });
@@ -336,18 +345,16 @@ class MediaWikiScraper {
         const confirm = await callGenericPopup(container, POPUP_TYPE.CONFIRM, '', { wide: false, large: false, okButton: 'Scrape', cancelButton: 'Cancel' });
 
         if (confirm !== POPUP_RESULT.AFFIRMATIVE) {
-            // @ts-expect-error TS(7030): Not all code paths return a value.
             return;
         }
 
         if (!url) {
-            // @ts-expect-error TS(2552): Cannot find name 'toastr'. Did you mean 'toast'?
+            // @ts-expect-error TS(2552) FIXME: Cannot find name 'toastr'. Did you mean 'toast'?
             toastr.error('URL name is required');
-            // @ts-expect-error TS(7030): Not all code paths return a value.
             return;
         }
 
-        // @ts-expect-error TS(2552): Cannot find name 'toastr'. Did you mean 'toast'?
+        // @ts-expect-error TS(2552) FIXME: Cannot find name 'toastr'. Did you mean 'toast'?
         const toast = toastr.info('Working, please wait...');
 
         const result = await fetch('/api/plugins/fandom/scrape-mediawiki', {
@@ -362,7 +369,7 @@ class MediaWikiScraper {
         }
 
         const data = await result.json();
-        // @ts-expect-error TS(2552): Cannot find name 'toastr'. Did you mean 'toast'?
+        // @ts-expect-error TS(2552) FIXME: Cannot find name 'toastr'. Did you mean 'toast'?
         toastr.clear(toast);
 
         if (output === 'multi') {
@@ -375,6 +382,7 @@ class MediaWikiScraper {
         }
 
         if (output === 'single') {
+            // @ts-expect-error TS(7006) FIXME: Parameter 'a' implicitly has an 'any' type.
             const combinedContent = data.map((a) => String(a.title).trim() + '\n\n' + String(a.content).trim()).join('\n\n\n\n');
             const file = new File([combinedContent], `${url}.txt`, { type: 'text/plain' });
             return [file];
@@ -425,6 +433,7 @@ class FandomScraper {
      * @param {string} fandom URL or name of the fandom
      * @returns {string} ID of the fandom
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'fandom' implicitly has an 'any' type.
     getFandomId(fandom) {
         try {
             const url = new URL(fandom);
@@ -464,18 +473,16 @@ class FandomScraper {
         const confirm = await callGenericPopup(container, POPUP_TYPE.CONFIRM, '', { wide: false, large: false, okButton: 'Scrape', cancelButton: 'Cancel' });
 
         if (confirm !== POPUP_RESULT.AFFIRMATIVE) {
-            // @ts-expect-error TS(7030): Not all code paths return a value.
             return;
         }
 
         if (!fandom) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2552) FIXME: Cannot find name 'toastr'. Did you mean 'toast'?
             toastr.error('Fandom name is required');
-            // @ts-expect-error TS(7030): Not all code paths return a value.
             return;
         }
 
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         const toast = toastr.info('Working, please wait...');
 
         const result = await fetch('/api/plugins/fandom/scrape', {
@@ -490,7 +497,7 @@ class FandomScraper {
         }
 
         const data = await result.json();
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2552) FIXME: Cannot find name 'toastr'. Did you mean 'toast'?
         toastr.clear(toast);
 
         if (output === 'multi') {
@@ -503,6 +510,7 @@ class FandomScraper {
         }
 
         if (output === 'single') {
+            // @ts-expect-error TS(7006) FIXME: Parameter 'a' implicitly has an 'any' type.
             const combinedContent = data.map((a) => String(a.title).trim() + '\n\n' + String(a.content).trim()).join('\n\n\n\n');
             const file = new File([combinedContent], `${fandom}.txt`, { type: 'text/plain' });
             return [file];
@@ -551,6 +559,7 @@ class YouTubeScraper {
     async init() {
         SlashCommandParser.addCommandObject(SlashCommand.fromProps({
             name: 'yt-script',
+            // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
             callback: async (args, url) => {
                 try {
                     if (!url) {
@@ -561,7 +570,7 @@ class YouTubeScraper {
                     const { transcript } = await this.getScript(String(url).trim(), lang);
                     return transcript;
                 } catch (error) {
-                    // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+                    // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                     toastr.error(error.message);
                     return '';
                 }
@@ -569,6 +578,7 @@ class YouTubeScraper {
             helpString: 'Scrape a transcript from a YouTube video by ID or URL.',
             returns: ARGUMENT_TYPE.STRING,
             namedArgumentList: [
+                // @ts-expect-error TS(2345) FIXME: Argument of type '""' is not assignable to paramet... Remove this comment to see the full error message
                 new SlashCommandNamedArgument('lang', 'ISO 639-1 language code of the transcript, e.g. "en"', ARGUMENT_TYPE.STRING, false, false, '', iso6391Codes),
             ],
             unnamedArgumentList: [
@@ -590,6 +600,7 @@ class YouTubeScraper {
      * @param {string} url URL of the YouTube video
      * @returns {string} ID of the YouTube video
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'url' implicitly has an 'any' type.
     parseId(url) {
         // If the URL is already an ID, return it
         if (/^[a-zA-Z0-9_-]{11}$/.test(url)) {
@@ -620,14 +631,13 @@ class YouTubeScraper {
         }
 
         if (!videoUrl) {
-            // @ts-expect-error TS(7030): Not all code paths return a value.
             return;
         }
 
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         const toast = toastr.info('Working, please wait...');
         const { transcript, id } = await this.getScript(String(videoUrl), lang);
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.clear(toast);
 
         const file = new File([transcript], `YouTube - ${id} - ${Date.now()}.txt`, { type: 'text/plain' });
@@ -640,6 +650,7 @@ class YouTubeScraper {
      * @param {string} lang Video language
      * @returns {Promise<{ transcript: string, id: string }>} Transcript of the YouTube video with the video ID
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'videoUrl' implicitly has an 'any' type.
     async getScript(videoUrl, lang) {
         const id = this.parseId(String(videoUrl).trim());
 

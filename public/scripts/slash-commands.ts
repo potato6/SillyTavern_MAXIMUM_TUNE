@@ -69,6 +69,7 @@ import { getMessageTimeStamp, isMobile } from './RossAscends-mods.js';
 import { hideChatMessageRange } from './chats.js';
 import { getContext, saveMetadataDebounced } from './extensions.js';
 import { getRegexedString, regex_placement } from './extensions/regex/engine.js';
+// @ts-expect-error TS(7034) FIXME: Variable 'groups' implicitly has type 'any[]' in s... Remove this comment to see the full error message
 import { findGroupMemberId, groups, is_group_generating, openGroupById, regenerateGroup, resetSelectedGroup, saveGroupChat, selected_group, getGroupMembers } from './group-chats.js';
 import { chat_completion_sources, MINIMAX_ENDPOINT, oai_settings, promptManager, SILICONFLOW_ENDPOINT, ZAI_ENDPOINT } from './openai.js';
 import { user_avatar } from './personas.js';
@@ -93,10 +94,8 @@ import { SlashCommandBreakController } from './slash-commands/SlashCommandBreakC
 import { SlashCommandExecutionError } from './slash-commands/SlashCommandExecutionError.js';
 import { slashCommandReturnHelper } from './slash-commands/SlashCommandReturnHelper.js';
 import { accountStorage } from './util/AccountStorage.js';
-// @ts-expect-error TS(6133): 'SlashCommandDebugController' is declared but its ... Remove this comment to see the full error message
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { SlashCommandDebugController } from './slash-commands/SlashCommandDebugController.js';
-// @ts-expect-error TS(6133): 'SlashCommandScope' is declared but its value is n... Remove this comment to see the full error message
 import { SlashCommandScope } from './slash-commands/SlashCommandScope.js';
 import { t } from './i18n.js';
 import { kai_settings } from './kai-settings.js';
@@ -118,6 +117,7 @@ const getSlashCommandsHelp = parser.getHelpString.bind(parser);
  * @param {SlashCommandClosure} closure
  * @returns {() => Promise<boolean>}
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'closure' implicitly has an 'any' type.
 function closureToFilter(closure) {
     return async () => {
         try {
@@ -207,7 +207,9 @@ function setupConnectAPIMap() {
 
     // Fill connections map from textgen_types and chat_completion_sources
     for (const textGenType of Object.values(textgen_types)) {
+        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         if (result[textGenType]) continue;
+        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         result[textGenType] = {
             selected: 'textgenerationwebui',
             button: '#api_button_textgenerationwebui',
@@ -216,7 +218,9 @@ function setupConnectAPIMap() {
     }
 
     for (const chatCompletionSource of Object.values(chat_completion_sources)) {
+        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         if (result[chatCompletionSource]) continue;
+        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         result[chatCompletionSource] = {
             selected: 'openai',
             button: '#api_button_openai',
@@ -225,7 +229,7 @@ function setupConnectAPIMap() {
     }
 
     Object.assign(CONNECT_API_MAP, result);
-    // @ts-expect-error TS(2339): Property 'selected' does not exist on type 'unknow... Remove this comment to see the full error message
+    // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
     UNIQUE_APIS.push(...new Set(Object.values(CONNECT_API_MAP).map(x => x.selected)));
 }
 
@@ -240,7 +244,7 @@ export function initDefaultSlashCommands() {
      *
      */
     async function enableInstructCallback() {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#instruct_enabled').prop('checked', true).trigger('input').trigger('change');
         return '';
     }
@@ -249,22 +253,23 @@ export function initDefaultSlashCommands() {
      *
      */
     async function disableInstructCallback() {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#instruct_enabled').prop('checked', false).trigger('input').trigger('change');
         return '';
     }
 
     SlashCommandParser.addCommandObject(SlashCommand.fromProps({
         name: 'api',
+        // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
         callback: async function (args, text) {
             if (!text?.toString()?.trim()) {
                 for (const [key, config] of Object.entries(CONNECT_API_MAP)) {
-                    // @ts-expect-error TS(2339): Property 'selected' does not exist on type 'unknow... Remove this comment to see the full error message
+                    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                     if (config.selected !== main_api) continue;
 
-                    // @ts-expect-error TS(2339): Property 'source' does not exist on type 'unknown'... Remove this comment to see the full error message
+                    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                     if (config.source) {
-                        // @ts-expect-error TS(2339): Property 'source' does not exist on type 'unknown'... Remove this comment to see the full error message
+                        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                         if (oai_settings.chat_completion_source === config.source) {
                             return key;
                         } else {
@@ -272,9 +277,9 @@ export function initDefaultSlashCommands() {
                         }
                     }
 
-                    // @ts-expect-error TS(2339): Property 'type' does not exist on type 'unknown'.
+                    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                     if (config.type) {
-                        // @ts-expect-error TS(2339): Property 'type' does not exist on type 'unknown'.
+                        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                         if (textgenerationwebui_settings.type === config.type) {
                             return key;
                         } else {
@@ -289,9 +294,10 @@ export function initDefaultSlashCommands() {
                 return '';
             }
 
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             const apiConfig = CONNECT_API_MAP[text?.toString()?.toLowerCase() ?? ''];
             if (!apiConfig) {
-                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                 toastr.error(t`Error: ${text} is not a valid API`);
                 return '';
             }
@@ -299,36 +305,36 @@ export function initDefaultSlashCommands() {
             let connectionRequired = false;
 
             if (main_api !== apiConfig.selected) {
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $(`#main_api option[value='${apiConfig.selected || text}']`).prop('selected', true);
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $('#main_api').trigger('change');
                 connectionRequired = true;
             }
 
             if (apiConfig.source && oai_settings.chat_completion_source !== apiConfig.source) {
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $(`#chat_completion_source option[value='${apiConfig.source}']`).prop('selected', true);
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $('#chat_completion_source').trigger('change');
                 connectionRequired = true;
             }
 
             if (apiConfig.type && textgenerationwebui_settings.type !== apiConfig.type) {
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $(`#textgen_type option[value='${apiConfig.type}']`).prop('selected', true);
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $('#textgen_type').trigger('change');
                 connectionRequired = true;
             }
 
             if (connectionRequired && apiConfig.button) {
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $(apiConfig.button).trigger('click');
             }
 
             const quiet = isTrueBoolean(args?.quiet?.toString());
-            // @ts-expect-error TS(2304): Cannot find name 'jQuery'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'jQuery'.
             const toast = quiet ? jQuery() : toastr.info(t`API set to ${text}, trying to connect..`);
 
             try {
@@ -340,7 +346,7 @@ export function initDefaultSlashCommands() {
                 console.log('Could not connect after 5 seconds, skipping.');
             }
 
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.clear(toast);
             return text?.toString()?.trim() ?? '';
         },
@@ -358,7 +364,7 @@ export function initDefaultSlashCommands() {
             SlashCommandArgument.fromProps({
                 description: t`API to connect to`,
                 typeList: [ARGUMENT_TYPE.STRING],
-                // @ts-expect-error TS(2339): Property 'selected' does not exist on type '{}'.
+                // @ts-expect-error TS(2339) FIXME: Property 'selected' does not exist on type 'unknow... Remove this comment to see the full error message
                 enumList: Object.entries(CONNECT_API_MAP).sort(([a], [b]) => a.localeCompare(b)).map(([api, { selected }]) =>
                     new SlashCommandEnumValue(api, selected, enumTypes.getBasedOnIndex(UNIQUE_APIS.findIndex(x => x === selected)),
                         selected[0].toUpperCase() ?? enumIcons.default)),
@@ -376,22 +382,22 @@ export function initDefaultSlashCommands() {
     }));
     SlashCommandParser.addCommandObject(SlashCommand.fromProps({
         name: 'impersonate',
+        // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
         callback: async function (args, prompt) {
             const options = prompt?.toString()?.trim() ? { quiet_prompt: prompt.toString().trim(), quietToLoud: true } : {};
             const shouldAwait = isTrueBoolean(args?.await?.toString());
-            // @ts-expect-error TS(7030): Not all code paths return a value.
             const outerPromise = new Promise((outerResolve) => setTimeout(async () => {
                 try {
                     await waitUntilCondition(() => !is_send_press && !is_group_generating, 10000, 100);
                 } catch {
                     console.warn('Timeout waiting for generation unlock');
-                    // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+                    // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                     toastr.warning(t`Cannot run /impersonate command while the reply is being generated.`);
                     return '';
                 }
 
                 // Prevent generate recursion
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $('#send_textarea').val('')[0].dispatchEvent(new Event('input', { bubbles: true }));
 
                 outerResolve(new Promise(innerResolve => setTimeout(() => innerResolve(Generate('impersonate', options)), 1)));
@@ -413,6 +419,7 @@ export function initDefaultSlashCommands() {
                 [ARGUMENT_TYPE.BOOLEAN],
                 false,
                 false,
+                // @ts-expect-error TS(2345) FIXME: Argument of type '"false"' is not assignable to pa... Remove this comment to see the full error message
                 'false',
             ),
         ],
@@ -444,7 +451,7 @@ export function initDefaultSlashCommands() {
             return displayPastChats().then(() => new Promise((resolve) => {
                 let resolved = false;
                 const timeOutId = setTimeout(() => {
-                    // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+                    // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                     toastr.error(t`Chat deletion timed out. Please try again.`);
                     setResolved();
                 }, 5000);
@@ -466,7 +473,7 @@ export function initDefaultSlashCommands() {
                 });
 
                 const currentChatDeleteButton = document.querySelector('.select_chat_block[highlight=\'true\']')?.parentElement?.querySelector('.PastChat_cross');
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $(currentChatDeleteButton).trigger('click', { fromSlashCommand: true });
             }));
         },
@@ -474,23 +481,24 @@ export function initDefaultSlashCommands() {
     }));
     SlashCommandParser.addCommandObject(SlashCommand.fromProps({
         name: 'renamechat',
+        // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
         callback: async function doRenameChat(_, chatName) {
             if (!chatName) {
-                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                 toastr.warning(t`Name must be provided as an argument to rename this chat.`);
                 return '';
             }
 
             const currentChatName = getCurrentChatId();
             if (!currentChatName) {
-                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                 toastr.warning(t`No chat selected that can be renamed.`);
                 return '';
             }
 
             await renameChat(currentChatName, chatName.toString());
 
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.success(t`Successfully renamed chat to: ${chatName}`);
             return '';
         },
@@ -512,7 +520,7 @@ export function initDefaultSlashCommands() {
     SlashCommandParser.addCommandObject(SlashCommand.fromProps({
         name: 'closechat',
         callback: function () {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#option_close_chat').trigger('click');
             return '';
         },
@@ -522,6 +530,7 @@ export function initDefaultSlashCommands() {
         name: 'tempchat',
         callback: () => {
             return new Promise((resolve, reject) => {
+                // @ts-expect-error TS(7006) FIXME: Parameter 'chatId' implicitly has an 'any' type.
                 const eventCallback = async (chatId) => {
                     if (chatId) {
                         return reject(t`Not in a temporary chat`);
@@ -530,7 +539,7 @@ export function initDefaultSlashCommands() {
                     return resolve('');
                 };
                 eventSource.once(event_types.CHAT_CHANGED, eventCallback);
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $('#option_close_chat').trigger('click');
                 setTimeout(() => {
                     reject(t`Failed to open temporary chat`);
@@ -543,7 +552,7 @@ export function initDefaultSlashCommands() {
     SlashCommandParser.addCommandObject(SlashCommand.fromProps({
         name: 'panels',
         callback: function () {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#option_settings').trigger('click');
             return '';
         },
@@ -555,7 +564,7 @@ export function initDefaultSlashCommands() {
         callback: async function () {
             await saveSettings();
             await saveChatConditional();
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.success(t`Chat and settings saved.`);
             return '';
         },
@@ -563,18 +572,20 @@ export function initDefaultSlashCommands() {
     }));
     SlashCommandParser.addCommandObject(SlashCommand.fromProps({
         name: 'instruct',
+        // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
         callback: async function (args, name) {
             if (!name) {
                 return power_user.instruct.enabled || isTrueBoolean(args?.forceGet?.toString()) ? power_user.instruct.preset : '';
             }
 
             const quiet = isTrueBoolean(args?.quiet?.toString());
+            // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
             const instructNames = instruct_presets.map(preset => preset.name);
             const fuse = new Fuse(instructNames);
             const result = fuse.search(name?.toString() ?? '');
 
             if (result.length === 0) {
-                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                 if (!quiet) toastr.warning(t`Instruct template '${name}' not found`);
                 return '';
             }
@@ -604,6 +615,7 @@ export function initDefaultSlashCommands() {
             SlashCommandArgument.fromProps({
                 description: t`instruct template name`,
                 typeList: [ARGUMENT_TYPE.STRING],
+                // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
                 enumProvider: () => instruct_presets.map(preset => new SlashCommandEnumValue(preset.name, null, enumTypes.enum, enumIcons.preset)),
             }),
         ],
@@ -643,6 +655,7 @@ export function initDefaultSlashCommands() {
                 enumList: commonEnumProviders.boolean('trueFalse')(),
             }),
         ],
+        // @ts-expect-error TS(7006) FIXME: Parameter '_args' implicitly has an 'any' type.
         callback: async (_args, state) => {
             if (!state || typeof state !== 'string') {
                 return String(power_user.instruct.enabled);
@@ -659,18 +672,20 @@ export function initDefaultSlashCommands() {
     }));
     SlashCommandParser.addCommandObject(SlashCommand.fromProps({
         name: 'context',
+        // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
         callback: async function (args, name) {
             if (!name) {
                 return power_user.context.preset;
             }
 
             const quiet = isTrueBoolean(args?.quiet?.toString());
+            // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
             const contextNames = context_presets.map(preset => preset.name);
             const fuse = new Fuse(contextNames);
             const result = fuse.search(name?.toString() ?? '');
 
             if (result.length === 0) {
-                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                 if (!quiet) toastr.warning(t`Context template '${name}' not found`);
                 return '';
             }
@@ -693,6 +708,7 @@ export function initDefaultSlashCommands() {
             SlashCommandArgument.fromProps({
                 description: t`context template name`,
                 typeList: [ARGUMENT_TYPE.STRING],
+                // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
                 enumProvider: () => context_presets.map(preset => new SlashCommandEnumValue(preset.name, null, enumTypes.enum, enumIcons.preset)),
             }),
         ],
@@ -701,7 +717,7 @@ export function initDefaultSlashCommands() {
     SlashCommandParser.addCommandObject(SlashCommand.fromProps({
         name: 'chat-manager',
         callback: () => {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#option_select_chat').trigger('click');
             return '';
         },
@@ -759,11 +775,13 @@ export function initDefaultSlashCommands() {
     SlashCommandParser.addCommandObject(SlashCommand.fromProps({
         name: 'char-find',
         aliases: ['findchar'],
+        // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
         callback: (args, name) => {
             if (typeof name !== 'string') throw new Error(t`name must be a string`);
             if (args.preferCurrent instanceof SlashCommandClosure || Array.isArray(args.preferCurrent)) throw new Error(t`preferCurrent cannot be a closure or array`);
             if (args.quiet instanceof SlashCommandClosure || Array.isArray(args.quiet)) throw new Error(t`quiet cannot be a closure or array`);
 
+            // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'null | un... Remove this comment to see the full error message
             const char = findChar({ name: name, filteredByTags: validateArrayArgString(args.tag, 'tag'), preferCurrentChar: !isFalseBoolean(args.preferCurrent), quiet: isTrueBoolean(args.quiet) });
             return char?.avatar ?? '';
         },
@@ -827,72 +845,84 @@ export function initDefaultSlashCommands() {
             name: 'name',
             description: t`The name of the character`,
             typeList: [ARGUMENT_TYPE.STRING],
+            // @ts-expect-error TS(2345) FIXME: Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
             isRequired: requiredFields.includes('name'),
         }),
         SlashCommandNamedArgument.fromProps({
             name: 'description',
             description: t`The character's description/personality definition`,
             typeList: [ARGUMENT_TYPE.STRING],
+            // @ts-expect-error TS(2345) FIXME: Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
             isRequired: requiredFields.includes('description'),
         }),
         SlashCommandNamedArgument.fromProps({
             name: 'firstMessage',
             description: t`The character's first message/greeting`,
             typeList: [ARGUMENT_TYPE.STRING],
+            // @ts-expect-error TS(2345) FIXME: Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
             isRequired: requiredFields.includes('firstMessage'),
         }),
         SlashCommandNamedArgument.fromProps({
             name: 'personality',
             description: t`A brief description of the personality`,
             typeList: [ARGUMENT_TYPE.STRING],
+            // @ts-expect-error TS(2345) FIXME: Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
             isRequired: requiredFields.includes('personality'),
         }),
         SlashCommandNamedArgument.fromProps({
             name: 'scenario',
             description: t`The scenario or circumstances for the conversation`,
             typeList: [ARGUMENT_TYPE.STRING],
+            // @ts-expect-error TS(2345) FIXME: Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
             isRequired: requiredFields.includes('scenario'),
         }),
         SlashCommandNamedArgument.fromProps({
             name: 'messageExamples',
             description: t`Example messages for the character`,
             typeList: [ARGUMENT_TYPE.STRING],
+            // @ts-expect-error TS(2345) FIXME: Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
             isRequired: requiredFields.includes('messageExamples'),
         }),
         SlashCommandNamedArgument.fromProps({
             name: 'creatorNotes',
             description: t`Notes from the character creator`,
             typeList: [ARGUMENT_TYPE.STRING],
+            // @ts-expect-error TS(2345) FIXME: Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
             isRequired: requiredFields.includes('creatorNotes'),
         }),
         SlashCommandNamedArgument.fromProps({
             name: 'systemPrompt',
             description: t`The character's system prompt`,
             typeList: [ARGUMENT_TYPE.STRING],
+            // @ts-expect-error TS(2345) FIXME: Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
             isRequired: requiredFields.includes('systemPrompt'),
         }),
         SlashCommandNamedArgument.fromProps({
             name: 'postHistoryInstructions',
             description: t`Post-history instructions (jailbreak)`,
             typeList: [ARGUMENT_TYPE.STRING],
+            // @ts-expect-error TS(2345) FIXME: Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
             isRequired: requiredFields.includes('postHistoryInstructions'),
         }),
         SlashCommandNamedArgument.fromProps({
             name: 'creator',
             description: t`The creator of the character`,
             typeList: [ARGUMENT_TYPE.STRING],
+            // @ts-expect-error TS(2345) FIXME: Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
             isRequired: requiredFields.includes('creator'),
         }),
         SlashCommandNamedArgument.fromProps({
             name: 'characterVersion',
             description: t`The version of the character`,
             typeList: [ARGUMENT_TYPE.STRING],
+            // @ts-expect-error TS(2345) FIXME: Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
             isRequired: requiredFields.includes('characterVersion'),
         }),
         SlashCommandNamedArgument.fromProps({
             name: 'tags',
             description: t`Comma-separated list of character card tags (embedded in the card, not ST's folder/filter tags). Use /tag-add for ST tags or /tag-import to import card tags as ST tags.`,
             typeList: [ARGUMENT_TYPE.STRING],
+            // @ts-expect-error TS(2345) FIXME: Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
             isRequired: requiredFields.includes('tags'),
         }),
         SlashCommandNamedArgument.fromProps({
@@ -900,19 +930,27 @@ export function initDefaultSlashCommands() {
             description: t`Whether this character is a favorite`,
             typeList: [ARGUMENT_TYPE.BOOLEAN],
             enumProvider: commonEnumProviders.boolean('trueFalse'),
+            // @ts-expect-error TS(2345) FIXME: Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
             isRequired: requiredFields.includes('favorite'),
         }),
         SlashCommandNamedArgument.fromProps({
             name: 'avatar',
             description: t`Avatar image. Use "prompt" to open file picker, or provide a local ST file path (e.g., characters/Name.png, backgrounds/image.png). This can also be the return value from the /imagine command. External URLs are not supported.`,
             typeList: [ARGUMENT_TYPE.STRING],
+            // @ts-expect-error TS(2345) FIXME: Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
             isRequired: requiredFields.includes('avatar'),
             enumList: [
+                // @ts-expect-error TS(2345) FIXME: Argument of type '"Open file picker to select an i... Remove this comment to see the full error message
                 new SlashCommandEnumValue('prompt', 'Open file picker to select an image', 'enum', '📁'),
+                // @ts-expect-error TS(2345) FIXME: Argument of type '"Character avatars path (e.g., c... Remove this comment to see the full error message
                 new SlashCommandEnumValue('characters/...', 'Character avatars path (e.g., characters/Name.png)', 'enum', '📄', (input) => commonEnumMatchProviders.folderEnum(input, 'characters/'), () => 'characters/'),
+                // @ts-expect-error TS(2345) FIXME: Argument of type '"Background image path"' is not ... Remove this comment to see the full error message
                 new SlashCommandEnumValue('backgrounds/...', 'Background image path', 'enum', '📄', (input) => commonEnumMatchProviders.folderEnum(input, 'backgrounds/'), () => 'backgrounds/'),
+                // @ts-expect-error TS(2345) FIXME: Argument of type '"User avatar path"' is not assig... Remove this comment to see the full error message
                 new SlashCommandEnumValue('User Avatars/...', 'User avatar path', 'enum', '📄', (input) => commonEnumMatchProviders.folderEnum(input, 'User Avatars/'), () => 'User Avatars/'),
+                // @ts-expect-error TS(2345) FIXME: Argument of type '"Asset file path"' is not assign... Remove this comment to see the full error message
                 new SlashCommandEnumValue('assets/...', 'Asset file path', 'enum', '📄', (input) => commonEnumMatchProviders.folderEnum(input, 'assets/'), () => 'assets/'),
+                // @ts-expect-error TS(2345) FIXME: Argument of type '"User image path"' is not assign... Remove this comment to see the full error message
                 new SlashCommandEnumValue('user/images/...', 'User image path', 'enum', '📄', (input) => commonEnumMatchProviders.folderEnum(input, 'user/images/'), () => 'user/images/'),
             ],
         }),
@@ -927,6 +965,7 @@ export function initDefaultSlashCommands() {
             name: 'talkativeness',
             description: t`How often the character speaks in group chats (0.0 to 1.0)`,
             typeList: [ARGUMENT_TYPE.NUMBER],
+            // @ts-expect-error TS(2345) FIXME: Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
             isRequired: requiredFields.includes('talkativeness'),
         }),
         SlashCommandNamedArgument.fromProps({
@@ -934,18 +973,21 @@ export function initDefaultSlashCommands() {
             description: t`The name of the lorebook to attach`,
             typeList: [ARGUMENT_TYPE.STRING],
             enumProvider: commonEnumProviders.worlds,
+            // @ts-expect-error TS(2345) FIXME: Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
             isRequired: requiredFields.includes('world'),
         }),
         SlashCommandNamedArgument.fromProps({
             name: 'depthPrompt',
             description: t`Character-specific depth prompt content`,
             typeList: [ARGUMENT_TYPE.STRING],
+            // @ts-expect-error TS(2345) FIXME: Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
             isRequired: requiredFields.includes('depthPrompt'),
         }),
         SlashCommandNamedArgument.fromProps({
             name: 'depthPromptDepth',
             description: t`Depth for the character-specific depth prompt`,
             typeList: [ARGUMENT_TYPE.NUMBER],
+            // @ts-expect-error TS(2345) FIXME: Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
             isRequired: requiredFields.includes('depthPromptDepth'),
         }),
         SlashCommandNamedArgument.fromProps({
@@ -953,6 +995,7 @@ export function initDefaultSlashCommands() {
             description: t`Role for the depth prompt`,
             typeList: [ARGUMENT_TYPE.STRING],
             enumList: commonEnumProviders.messageRoles(),
+            // @ts-expect-error TS(2345) FIXME: Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
             isRequired: requiredFields.includes('depthPromptRole'),
         }),
     ];
@@ -962,6 +1005,7 @@ export function initDefaultSlashCommands() {
         callback: createCharacterCallback,
         returns: t`the avatar key (unique identifier) of the created character`,
         namedArgumentList: [
+            // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'never'.
             ...getCharacterFieldArgs({ requiredFields: ['name'] }),
             SlashCommandNamedArgument.fromProps({
                 name: 'select',
@@ -1271,11 +1315,14 @@ export function initDefaultSlashCommands() {
                 description: 'Persona name, character name, or unique character identifier (avatar key)',
                 typeList: [ARGUMENT_TYPE.STRING],
                 isRequired: false,
+                // @ts-expect-error TS(7006) FIXME: Parameter 'executor' implicitly has an 'any' type.
                 enumProvider: (executor) => {
+                    // @ts-expect-error TS(7006) FIXME: Parameter 'arg' implicitly has an 'any' type.
                     let modifyAt = Number(executor.namedArgumentList.find(arg => arg.name === 'at')?.value ?? (chat.length - 1));
                     if (!isNaN(modifyAt) && (modifyAt < 0 || Object.is(modifyAt, -0))) {
                         modifyAt = chat.length + modifyAt;
                     }
+                    // @ts-expect-error TS(2339) FIXME: Property 'is_user' does not exist on type 'never'.
                     return chat[modifyAt]?.is_user
                         ? commonEnumProviders.personas()()
                         : commonEnumProviders.characters('character')();
@@ -1391,6 +1438,7 @@ export function initDefaultSlashCommands() {
                 [ARGUMENT_TYPE.BOOLEAN],
                 false,
                 false,
+                // @ts-expect-error TS(2345) FIXME: Argument of type '"false"' is not assignable to pa... Remove this comment to see the full error message
                 'false',
             ),
             SlashCommandNamedArgument.fromProps({
@@ -1468,6 +1516,7 @@ export function initDefaultSlashCommands() {
                 [ARGUMENT_TYPE.BOOLEAN],
                 false,
                 false,
+                // @ts-expect-error TS(2345) FIXME: Argument of type '"false"' is not assignable to pa... Remove this comment to see the full error message
                 'false',
             ),
             SlashCommandNamedArgument.fromProps({
@@ -1549,6 +1598,7 @@ export function initDefaultSlashCommands() {
                 [ARGUMENT_TYPE.BOOLEAN],
                 false,
                 false,
+                // @ts-expect-error TS(2345) FIXME: Argument of type '"false"' is not assignable to pa... Remove this comment to see the full error message
                 'false',
             ),
         ],
@@ -1590,6 +1640,7 @@ export function initDefaultSlashCommands() {
                 [ARGUMENT_TYPE.BOOLEAN],
                 false,
                 false,
+                // @ts-expect-error TS(2345) FIXME: Argument of type '"false"' is not assignable to pa... Remove this comment to see the full error message
                 'false',
             ),
         ],
@@ -1612,6 +1663,7 @@ export function initDefaultSlashCommands() {
                 [ARGUMENT_TYPE.STRING],
                 false,
                 false,
+                // @ts-expect-error TS(2345) FIXME: Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
                 SWIPE_DIRECTION.RIGHT,
                 [
                     new SlashCommandEnumValue(SWIPE_DIRECTION.RIGHT, t`Swipe to the next reply`, enumTypes.enum, enumIcons.default),
@@ -1627,6 +1679,7 @@ export function initDefaultSlashCommands() {
                 [ARGUMENT_TYPE.BOOLEAN],
                 false,
                 false,
+                // @ts-expect-error TS(2345) FIXME: Argument of type '"false"' is not assignable to pa... Remove this comment to see the full error message
                 'false',
             ),
         ],
@@ -1660,16 +1713,20 @@ export function initDefaultSlashCommands() {
          * @param {{silent: string, chats: string}} options @param {string} name
          * @param name
          */
+        // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
         callback: async ({ silent = 'true', chats = null }, name) => {
+            // @ts-expect-error TS(2322) FIXME: Type 'boolean | null' is not assignable to type 'n... Remove this comment to see the full error message
             const renamed = await renameCharacter(name, { silent: isTrueBoolean(silent), renameChats: chats !== null ? isTrueBoolean(chats) : null });
             return String(renamed);
         },
         returns: t`true/false - Whether the rename was successful`,
         namedArgumentList: [
             new SlashCommandNamedArgument(
+                // @ts-expect-error TS(2345) FIXME: Argument of type '"true"' is not assignable to par... Remove this comment to see the full error message
                 'silent', t`Hide any blocking popups. (if false, the name is optional. If not supplied, a popup asking for it will appear)`, [ARGUMENT_TYPE.BOOLEAN], false, false, 'true',
             ),
             new SlashCommandNamedArgument(
+                // @ts-expect-error TS(2345) FIXME: Argument of type '"<null>"' is not assignable to p... Remove this comment to see the full error message
                 'chats', t`Rename char in all previous chats`, [ARGUMENT_TYPE.BOOLEAN], false, false, '<null>',
             ),
         ],
@@ -1795,6 +1852,7 @@ export function initDefaultSlashCommands() {
                 [ARGUMENT_TYPE.BOOLEAN],
                 false,
                 false,
+                // @ts-expect-error TS(2345) FIXME: Argument of type '"false"' is not assignable to pa... Remove this comment to see the full error message
                 'false',
             ),
             SlashCommandNamedArgument.fromProps({
@@ -1867,6 +1925,7 @@ export function initDefaultSlashCommands() {
                 [ARGUMENT_TYPE.BOOLEAN],
                 false,
                 false,
+                // @ts-expect-error TS(2345) FIXME: Argument of type '"false"' is not assignable to pa... Remove this comment to see the full error message
                 'false',
             ),
         ],
@@ -1936,28 +1995,30 @@ export function initDefaultSlashCommands() {
     SlashCommandParser.addCommandObject(SlashCommand.fromProps({
         name: 'member-get',
         aliases: ['getmember', 'memberget'],
+        // @ts-expect-error TS(7006) FIXME: Parameter 'arg' implicitly has an 'any' type.
         callback: (async ({ field = 'name' }, arg) => {
+            // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
             if (!selected_group) {
-                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                 toastr.warning(t`Cannot run /member-get command outside of a group chat.`);
                 return '';
             }
             if (field === '') {
-                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                 toastr.warning(t`'/member-get field=' argument required!`);
                 return '';
             }
             field = field.toString();
             arg = arg.toString();
             if (!['name', 'index', 'id', 'avatar'].includes(field)) {
-                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                 toastr.warning(t`'/member-get field=' argument required!`);
                 return '';
             }
             const isId = !isNaN(parseInt(arg));
             const groupMember = findGroupMemberId(arg, true);
             if (!groupMember) {
-                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                 toastr.warning(t`No group member found using ${isId ? 'id' : 'string'} ${arg}`);
                 return '';
             }
@@ -2025,6 +2086,7 @@ export function initDefaultSlashCommands() {
                 description: t`Character name - or unique character identifier (avatar key)`,
                 typeList: [ARGUMENT_TYPE.STRING],
                 isRequired: true,
+                // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
                 enumProvider: () => selected_group ? commonEnumProviders.characters('character')() : [],
             }),
         ],
@@ -2140,7 +2202,9 @@ export function initDefaultSlashCommands() {
                 description: t`1-based swipe id`,
                 typeList: [ARGUMENT_TYPE.NUMBER],
                 isRequired: true,
+                // @ts-expect-error TS(2339) FIXME: Property 'swipes' does not exist on type 'never'.
                 enumProvider: () => Array.isArray(chat[chat.length - 1]?.swipes) ?
+                    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
                     chat[chat.length - 1].swipes.map((/** @type {string} */ swipe, /** @type {number} */ i) => new SlashCommandEnumValue(String(i + 1), swipe, enumTypes.enum, enumIcons.message))
                     : [],
             }),
@@ -2179,9 +2243,13 @@ export function initDefaultSlashCommands() {
                 typeList: [ARGUMENT_TYPE.STRING],
                 defaultValue: 'info',
                 enumProvider: () => [
+                    // @ts-expect-error TS(2345) FIXME: Argument of type '"info"' is not assignable to par... Remove this comment to see the full error message
                     new SlashCommandEnumValue('info', 'info', enumTypes.macro, 'ℹ️'),
+                    // @ts-expect-error TS(2345) FIXME: Argument of type '"warning"' is not assignable to ... Remove this comment to see the full error message
                     new SlashCommandEnumValue('warning', 'warning', enumTypes.enum, '⚠️'),
+                    // @ts-expect-error TS(2345) FIXME: Argument of type '"error"' is not assignable to pa... Remove this comment to see the full error message
                     new SlashCommandEnumValue('error', 'error', enumTypes.enum, '❗'),
+                    // @ts-expect-error TS(2345) FIXME: Argument of type '"success"' is not assignable to ... Remove this comment to see the full error message
                     new SlashCommandEnumValue('success', 'success', enumTypes.enum, '✅'),
                 ],
             }),
@@ -2189,14 +2257,14 @@ export function initDefaultSlashCommands() {
                 name: 'timeout',
                 description: t`time in milliseconds to display the toast message. Set this and 'extendedTimeout' to 0 to show indefinitely until dismissed.`,
                 typeList: [ARGUMENT_TYPE.NUMBER],
-                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                 defaultValue: `${toastr.options.timeOut}`,
             }),
             SlashCommandNamedArgument.fromProps({
                 name: 'extendedTimeout',
                 description: t`time in milliseconds to display the toast message. Set this and 'timeout' to 0 to show indefinitely until dismissed.`,
                 typeList: [ARGUMENT_TYPE.NUMBER],
-                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                 defaultValue: `${toastr.options.extendedTimeOut}`,
             }),
             SlashCommandNamedArgument.fromProps({
@@ -2282,6 +2350,7 @@ export function initDefaultSlashCommands() {
                 enumProvider: commonEnumProviders.boolean('trueFalse'),
             }),
             new SlashCommandNamedArgument(
+                // @ts-expect-error TS(2345) FIXME: Argument of type 'SlashCommandEnumValue[]' is not ... Remove this comment to see the full error message
                 'lock', t`lock user input during generation`, [ARGUMENT_TYPE.BOOLEAN], false, false, null, commonEnumProviders.boolean('onOff')(),
             ),
             SlashCommandNamedArgument.fromProps({
@@ -2324,12 +2393,15 @@ export function initDefaultSlashCommands() {
         returns: t`generated text`,
         namedArgumentList: [
             new SlashCommandNamedArgument(
+                // @ts-expect-error TS(2345) FIXME: Argument of type '"off"' is not assignable to para... Remove this comment to see the full error message
                 'lock', t`lock user input during generation`, [ARGUMENT_TYPE.BOOLEAN], false, false, 'off', commonEnumProviders.boolean('onOff')(),
             ),
             new SlashCommandNamedArgument(
+                // @ts-expect-error TS(2345) FIXME: Argument of type '"on"' is not assignable to param... Remove this comment to see the full error message
                 'instruct', t`use instruct mode`, [ARGUMENT_TYPE.BOOLEAN], false, false, 'on', commonEnumProviders.boolean('onOff')(),
             ),
             new SlashCommandNamedArgument(
+                // @ts-expect-error TS(2345) FIXME: Argument of type '"[]"' is not assignable to param... Remove this comment to see the full error message
                 'stop', t`one-time custom stop strings`, [ARGUMENT_TYPE.LIST], false, false, '[]',
             ),
             SlashCommandNamedArgument.fromProps({
@@ -2352,6 +2424,7 @@ export function initDefaultSlashCommands() {
                 'length', t`API response length in tokens`, [ARGUMENT_TYPE.NUMBER, ARGUMENT_TYPE.VARIABLE_NAME], false,
             ),
             new SlashCommandNamedArgument(
+                // @ts-expect-error TS(2345) FIXME: Argument of type '"on"' is not assignable to param... Remove this comment to see the full error message
                 'trim', t`trim {{user}} and {{char}} prefixes from the output`, [ARGUMENT_TYPE.BOOLEAN], false, false, 'on', commonEnumProviders.boolean('onOff')(),
             ),
         ],
@@ -2510,6 +2583,7 @@ export function initDefaultSlashCommands() {
     }));
     SlashCommandParser.addCommandObject(SlashCommand.fromProps({
         name: 'pass',
+        // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
         callback: (_, arg) => {
             // We do not support arrays of closures. Arrays of strings will be send as JSON
             if (Array.isArray(arg) && arg.some(x => x instanceof SlashCommandClosure)) throw new Error(t`Command /pass does not support multiple closures`);
@@ -2651,8 +2725,10 @@ export function initDefaultSlashCommands() {
                 description: t`scoped variable or qr label`,
                 typeList: [ARGUMENT_TYPE.VARIABLE_NAME, ARGUMENT_TYPE.STRING, ARGUMENT_TYPE.CLOSURE],
                 isRequired: true,
+                // @ts-expect-error TS(7006) FIXME: Parameter 'executor' implicitly has an 'any' type.
                 enumProvider: (executor, scope) => [
                     ...commonEnumProviders.variables('scope')(executor, scope),
+                    // @ts-expect-error TS(7017) FIXME: Element implicitly has an 'any' type because type ... Remove this comment to see the full error message
                     ...(typeof globalThis.qrEnumProviderExecutables === 'function' ? globalThis.qrEnumProviderExecutables() : []),
                 ],
             }),
@@ -2670,9 +2746,11 @@ export function initDefaultSlashCommands() {
         aliases: ['message'],
         namedArgumentList: [
             new SlashCommandNamedArgument(
+                // @ts-expect-error TS(2345) FIXME: Argument of type '"off"' is not assignable to para... Remove this comment to see the full error message
                 'names', t`show message author names`, [ARGUMENT_TYPE.BOOLEAN], false, false, 'off', commonEnumProviders.boolean('onOff')(),
             ),
             new SlashCommandNamedArgument(
+                // @ts-expect-error TS(2345) FIXME: Argument of type '"on"' is not assignable to param... Remove this comment to see the full error message
                 'hidden', t`include hidden messages`, [ARGUMENT_TYPE.BOOLEAN], false, false, 'on', commonEnumProviders.boolean('onOff')(),
             ),
             SlashCommandNamedArgument.fromProps({
@@ -2963,12 +3041,15 @@ export function initDefaultSlashCommands() {
                 enumProvider: commonEnumProviders.injects,
             }),
             new SlashCommandNamedArgument(
+                // @ts-expect-error TS(2345) FIXME: Argument of type '"after"' is not assignable to pa... Remove this comment to see the full error message
                 'position', t`injection position`, [ARGUMENT_TYPE.STRING], false, false, 'after', ['before', 'after', 'chat', 'none'],
             ),
             new SlashCommandNamedArgument(
+                // @ts-expect-error TS(2345) FIXME: Argument of type '"4"' is not assignable to parame... Remove this comment to see the full error message
                 'depth', t`injection depth`, [ARGUMENT_TYPE.NUMBER], false, false, '4',
             ),
             new SlashCommandNamedArgument(
+                // @ts-expect-error TS(2345) FIXME: Argument of type '"false"' is not assignable to pa... Remove this comment to see the full error message
                 'scan', t`include injection content into World Info scans`, [ARGUMENT_TYPE.BOOLEAN], false, false, 'false',
             ),
             SlashCommandNamedArgument.fromProps({
@@ -2983,6 +3064,7 @@ export function initDefaultSlashCommands() {
                 ],
             }),
             new SlashCommandNamedArgument(
+                // @ts-expect-error TS(2345) FIXME: Argument of type '"false"' is not assignable to pa... Remove this comment to see the full error message
                 'ephemeral', t`remove injection after generation`, [ARGUMENT_TYPE.BOOLEAN], false, false, 'false',
             ),
             SlashCommandNamedArgument.fromProps({
@@ -3032,6 +3114,7 @@ export function initDefaultSlashCommands() {
     }));
     SlashCommandParser.addCommandObject(SlashCommand.fromProps({
         name: 'tokens',
+        // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
         callback: (_, text) => {
             if (text instanceof SlashCommandClosure || Array.isArray(text)) throw new Error(t`Unnamed argument cannot be a closure for command /tokens`);
             return getTokenCountAsync(text).then(count => String(count));
@@ -3061,6 +3144,7 @@ export function initDefaultSlashCommands() {
             SlashCommandArgument.fromProps({
                 description: t`model name`,
                 typeList: [ARGUMENT_TYPE.STRING],
+                // @ts-expect-error TS(2345) FIXME: Argument of type 'string | null' is not assignable... Remove this comment to see the full error message
                 enumProvider: () => getModelOptions(true)?.options?.map(option => new SlashCommandEnumValue(option.value, option.value !== option.text ? option.text : null)) ?? [],
             }),
         ],
@@ -3078,8 +3162,11 @@ export function initDefaultSlashCommands() {
                 typeList: [ARGUMENT_TYPE.STRING, ARGUMENT_TYPE.LIST],
                 acceptsMultiple: true,
                 enumProvider: () =>
+                    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
                     promptManager.serviceSettings.prompts
+                        // @ts-expect-error TS(7006) FIXME: Parameter 'prompt' implicitly has an 'any' type.
                         .map(prompt => prompt.identifier)
+                        // @ts-expect-error TS(7006) FIXME: Parameter 'identifier' implicitly has an 'any' typ... Remove this comment to see the full error message
                         .map(identifier => new SlashCommandEnumValue(identifier)),
             }),
             SlashCommandNamedArgument.fromProps({
@@ -3088,8 +3175,11 @@ export function initDefaultSlashCommands() {
                 typeList: [ARGUMENT_TYPE.STRING, ARGUMENT_TYPE.LIST],
                 acceptsMultiple: true,
                 enumProvider: () =>
+                    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
                     promptManager.serviceSettings.prompts
+                        // @ts-expect-error TS(7006) FIXME: Parameter 'prompt' implicitly has an 'any' type.
                         .map(prompt => prompt.name)
+                        // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
                         .map(name => new SlashCommandEnumValue(name)),
             }),
             SlashCommandNamedArgument.fromProps({
@@ -3120,7 +3210,9 @@ export function initDefaultSlashCommands() {
                 typeList: [ARGUMENT_TYPE.STRING, ARGUMENT_TYPE.LIST],
                 acceptsMultiple: true,
                 enumProvider: () => {
+                    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
                     const prompts = promptManager.serviceSettings.prompts;
+                    // @ts-expect-error TS(7006) FIXME: Parameter 'prompt' implicitly has an 'any' type.
                     return prompts.map(prompt => new SlashCommandEnumValue(prompt.identifier, prompt.name, enumTypes.enum));
                 },
             }),
@@ -3130,7 +3222,9 @@ export function initDefaultSlashCommands() {
                 typeList: [ARGUMENT_TYPE.STRING, ARGUMENT_TYPE.LIST],
                 acceptsMultiple: true,
                 enumProvider: () => {
+                    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
                     const prompts = promptManager.serviceSettings.prompts;
+                    // @ts-expect-error TS(7006) FIXME: Parameter 'prompt' implicitly has an 'any' type.
                     return prompts.map(prompt => new SlashCommandEnumValue(prompt.name, prompt.identifier, enumTypes.enum));
                 },
             }),
@@ -3149,8 +3243,10 @@ export function initDefaultSlashCommands() {
     }));
     SlashCommandParser.addCommandObject(SlashCommand.fromProps({
         name: 'pm-render',
+        // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
         callback: (args, _) => {
             const dryRun = !isFalseBoolean(args?.refresh?.toString());
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             promptManager.render(dryRun);
             return '';
         },
@@ -3192,11 +3288,17 @@ export function initDefaultSlashCommands() {
                 description: t`API to set/get the URL for - if not provided, current API is used`,
                 typeList: [ARGUMENT_TYPE.STRING],
                 enumList: [
+                    // @ts-expect-error TS(2345) FIXME: Argument of type '"custom OpenAI-compatible"' is n... Remove this comment to see the full error message
                     new SlashCommandEnumValue('custom', 'custom OpenAI-compatible', enumTypes.getBasedOnIndex(UNIQUE_APIS.findIndex(x => x === 'openai')), 'O'),
+                    // @ts-expect-error TS(2345) FIXME: Argument of type '"Z.AI"' is not assignable to par... Remove this comment to see the full error message
                     new SlashCommandEnumValue('zai', 'Z.AI', enumTypes.getBasedOnIndex(UNIQUE_APIS.findIndex(x => x === 'zai')), 'Z'),
+                    // @ts-expect-error TS(2345) FIXME: Argument of type '"Google Vertex AI"' is not assig... Remove this comment to see the full error message
                     new SlashCommandEnumValue('vertexai', 'Google Vertex AI', enumTypes.getBasedOnIndex(UNIQUE_APIS.findIndex(x => x === 'vertexai')), 'V'),
+                    // @ts-expect-error TS(2345) FIXME: Argument of type '"SiliconFlow"' is not assignable... Remove this comment to see the full error message
                     new SlashCommandEnumValue('siliconflow', 'SiliconFlow', enumTypes.getBasedOnIndex(UNIQUE_APIS.findIndex(x => x === 'siliconflow')), 'S'),
+                    // @ts-expect-error TS(2345) FIXME: Argument of type '"MiniMax"' is not assignable to ... Remove this comment to see the full error message
                     new SlashCommandEnumValue('minimax', 'MiniMax', enumTypes.getBasedOnIndex(UNIQUE_APIS.findIndex(x => x === 'minimax')), 'M'),
+                    // @ts-expect-error TS(2345) FIXME: Argument of type '"KoboldAI Classic"' is not assig... Remove this comment to see the full error message
                     new SlashCommandEnumValue('kobold', 'KoboldAI Classic', enumTypes.getBasedOnIndex(UNIQUE_APIS.findIndex(x => x === 'kobold')), 'K'),
                     ...Object.values(textgen_types).filter(api => Object.keys(SERVER_INPUTS).includes(api)).map(api => new SlashCommandEnumValue(api, null, enumTypes.getBasedOnIndex(UNIQUE_APIS.findIndex(x => x === 'textgenerationwebui')), 'T')),
                 ],
@@ -3259,6 +3361,7 @@ export function initDefaultSlashCommands() {
     SlashCommandParser.addCommandObject(SlashCommand.fromProps({
         name: 'upper',
         aliases: ['uppercase', 'to-upper'],
+        // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
         callback: (_, text) => typeof text === 'string' ? text.toUpperCase() : '',
         returns: t`uppercase string`,
         unnamedArgumentList: [
@@ -3271,6 +3374,7 @@ export function initDefaultSlashCommands() {
     SlashCommandParser.addCommandObject(SlashCommand.fromProps({
         name: 'lower',
         aliases: ['lowercase', 'to-lower'],
+        // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
         callback: (_, text) => typeof text === 'string' ? text.toLowerCase() : '',
         returns: t`lowercase string`,
         unnamedArgumentList: [
@@ -3283,6 +3387,7 @@ export function initDefaultSlashCommands() {
     SlashCommandParser.addCommandObject(SlashCommand.fromProps({
         name: 'substr',
         aliases: ['substring'],
+        // @ts-expect-error TS(7006) FIXME: Parameter 'arg' implicitly has an 'any' type.
         callback: (arg, text) => typeof text === 'string' ? text.slice(...[Number(arg.start), arg.end && Number(arg.end)]) : '',
         returns: t`substring`,
         namedArgumentList: [
@@ -3329,10 +3434,12 @@ export function initDefaultSlashCommands() {
     SlashCommandParser.addCommandObject(SlashCommand.fromProps({
         name: 'chat-render',
         helpString: t`Renders a specified number of messages into the chat window. Displays all messages if no argument is provided.`,
+        // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
         callback: async (args, number) => {
+            // @ts-expect-error TS(2345) FIXME: Argument of type 'number' is not assignable to par... Remove this comment to see the full error message
             await showMoreMessages(number && !isNaN(Number(number)) ? Number(number) : Number.MAX_SAFE_INTEGER);
             if (isTrueBoolean(String(args?.scroll ?? ''))) {
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $('#chat').scrollTop(0);
             }
             return '';
@@ -3363,6 +3470,7 @@ export function initDefaultSlashCommands() {
     SlashCommandParser.addCommandObject(SlashCommand.fromProps({
         name: 'replace',
         aliases: ['re'],
+        // @ts-expect-error TS(7031) FIXME: Binding element 'pattern' implicitly has an 'any' ... Remove this comment to see the full error message
         callback: (async ({ mode = 'literal', pattern, replacer = '' }, text) => {
             if (!pattern) {
                 throw new Error(t`Argument of 'pattern=' cannot be empty`);
@@ -3392,6 +3500,7 @@ export function initDefaultSlashCommands() {
                 'pattern', t`pattern to search with`, [ARGUMENT_TYPE.STRING], true, false,
             ),
             new SlashCommandNamedArgument(
+                // @ts-expect-error TS(2345) FIXME: Argument of type '""' is not assignable to paramet... Remove this comment to see the full error message
                 'replacer', t`replacement text for matches`, [ARGUMENT_TYPE.STRING], false, false, '',
             ),
         ],
@@ -3422,6 +3531,7 @@ export function initDefaultSlashCommands() {
     }));
     SlashCommandParser.addCommandObject(SlashCommand.fromProps({
         name: 'test',
+        // @ts-expect-error TS(7031) FIXME: Binding element 'pattern' implicitly has an 'any' ... Remove this comment to see the full error message
         callback: (({ pattern }, text) => {
             if (!pattern) {
                 throw new Error(t`Argument of 'pattern=' cannot be empty`);
@@ -3461,6 +3571,7 @@ export function initDefaultSlashCommands() {
     }));
     SlashCommandParser.addCommandObject(SlashCommand.fromProps({
         name: 'match',
+        // @ts-expect-error TS(7031) FIXME: Binding element 'pattern' implicitly has an 'any' ... Remove this comment to see the full error message
         callback: (({ pattern }, text) => {
             if (!pattern) {
                 throw new Error(t`Argument of 'pattern=' cannot be empty`);
@@ -3509,11 +3620,12 @@ export function initDefaultSlashCommands() {
     SlashCommandParser.addCommandObject(SlashCommand.fromProps({
         name: 'chat-jump',
         aliases: ['chat-scrollto', 'floor-teleport'],
+        // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
         callback: async (_, index) => {
             const messageIndex = Number(index);
 
             if (isNaN(messageIndex) || messageIndex < 0 || messageIndex >= chat.length) {
-                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                 toastr.warning(t`Invalid message index: ${index}. Please enter a number between 0 and ${chat.length}.`);
                 console.warn(`WARN: Invalid message index provided for /chat-jump: ${index}. Max index: ${chat.length}`);
                 return '';
@@ -3523,6 +3635,7 @@ export function initDefaultSlashCommands() {
             const firstDisplayedMessageId = getFirstDisplayedMessageId();
             if (isFinite(firstDisplayedMessageId) && messageIndex < firstDisplayedMessageId) {
                 const needToLoadCount = firstDisplayedMessageId - messageIndex;
+                // @ts-expect-error TS(2345) FIXME: Argument of type 'number' is not assignable to par... Remove this comment to see the full error message
                 await showMoreMessages(needToLoadCount);
                 await delay(debounce_timeout.quick);
             }
@@ -3542,7 +3655,7 @@ export function initDefaultSlashCommands() {
 
                 flashHighlight(messageElement, 2000);
             } else {
-                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                 toastr.warning(t`Could not find element for message ${messageIndex}. It might not be rendered yet or the index is invalid.`);
                 console.warn(`WARN: Element not found for message index ${messageIndex} in /chat-jump.`);
             }
@@ -3572,7 +3685,7 @@ export function initDefaultSlashCommands() {
         returns: t`clipboard text`,
         callback: async () => {
             if (!navigator.clipboard) {
-                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                 toastr.warning(t`Clipboard API not available in this context.`);
                 return '';
             }
@@ -3582,7 +3695,7 @@ export function initDefaultSlashCommands() {
                 return text;
             } catch (error) {
                 console.error('Error reading clipboard:', error);
-                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                 toastr.warning(t`Failed to read clipboard text. Have you granted the permission?`);
                 return '';
             }
@@ -3592,6 +3705,7 @@ export function initDefaultSlashCommands() {
 
     SlashCommandParser.addCommandObject(SlashCommand.fromProps({
         name: 'clipboard-set',
+        // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
         callback: async (_, text) => {
             await copyText(text.toString());
             return '';
@@ -3609,7 +3723,9 @@ export function initDefaultSlashCommands() {
 
 
     const promptPostProcessingEnumProvider = () => Array
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         .from(document.getElementById('custom_prompt_post_processing').querySelectorAll('option'))
+        // @ts-expect-error TS(2345) FIXME: Argument of type 'string | null' is not assignable... Remove this comment to see the full error message
         .map(option => new SlashCommandEnumValue(option.value || 'none', option.textContent, enumTypes.enum));
     SlashCommandParser.addCommandObject(SlashCommand.fromProps({
         name: 'prompt-post-processing',
@@ -3637,6 +3753,7 @@ export function initDefaultSlashCommands() {
                 enumProvider: promptPostProcessingEnumProvider,
             }),
         ],
+        // @ts-expect-error TS(7006) FIXME: Parameter '_args' implicitly has an 'any' type.
         callback: (_args, value) => {
             const stringValue = String(value ?? '').trim().toLowerCase();
             if (!stringValue) {
@@ -3650,7 +3767,7 @@ export function initDefaultSlashCommands() {
 
             // 'none' value must be coerced to an empty string
             oai_settings.custom_prompt_post_processing = stringValue === 'none' ? '' : stringValue;
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#custom_prompt_post_processing').val(oai_settings.custom_prompt_post_processing);
             saveSettingsDebounced();
 
@@ -3660,21 +3777,22 @@ export function initDefaultSlashCommands() {
 
     SlashCommandParser.addCommandObject(SlashCommand.fromProps({
         name: 'reroll-pick',
+        // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
         callback: (_, value) => {
-            // @ts-expect-error TS(2339): Property 'pick_reroll_seed' does not exist on type... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'pick_reroll_seed' does not exist on type... Remove this comment to see the full error message
             const currentSeed = chat_metadata.pick_reroll_seed ?? 0;
             const parsedValue = value ? parseInt(String(value), 10) : NaN;
 
             if (!isNaN(parsedValue)) {
-                // @ts-expect-error TS(2339): Property 'pick_reroll_seed' does not exist on type... Remove this comment to see the full error message
+                // @ts-expect-error TS(2339) FIXME: Property 'pick_reroll_seed' does not exist on type... Remove this comment to see the full error message
                 chat_metadata.pick_reroll_seed = parsedValue;
             } else {
-                // @ts-expect-error TS(2339): Property 'pick_reroll_seed' does not exist on type... Remove this comment to see the full error message
+                // @ts-expect-error TS(2339) FIXME: Property 'pick_reroll_seed' does not exist on type... Remove this comment to see the full error message
                 chat_metadata.pick_reroll_seed = currentSeed + 1;
             }
 
             saveMetadataDebounced();
-            // @ts-expect-error TS(2339): Property 'pick_reroll_seed' does not exist on type... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'pick_reroll_seed' does not exist on type... Remove this comment to see the full error message
             return String(chat_metadata.pick_reroll_seed);
         },
         returns: t`The new reroll seed value.`,
@@ -3737,16 +3855,17 @@ export function initDefaultSlashCommands() {
                 typeList: [ARGUMENT_TYPE.STRING, ARGUMENT_TYPE.DICTIONARY, ARGUMENT_TYPE.BOOLEAN, ARGUMENT_TYPE.NUMBER, ARGUMENT_TYPE.LIST],
             }),
         ],
+        // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
         callback: (args, value) => {
             // Closures are not supported
             if (value instanceof SlashCommandClosure) {
-                // @ts-expect-error TS(2554): Expected 7 arguments, but got 1.
+                // @ts-expect-error TS(2554) FIXME: Expected 7 arguments, but got 1.
                 throw new SlashCommandExecutionError(t`Closures are not supported as unnamed arguments for /array-wrap. Did you forget to call the closure with parentheses?`);
             }
 
             // Multiple unnamed arguments are not supported since acceptsMultiple is false, but check just in case
             if (Array.isArray(value)) {
-                // @ts-expect-error TS(2554): Expected 7 arguments, but got 1.
+                // @ts-expect-error TS(2554) FIXME: Expected 7 arguments, but got 1.
                 throw new SlashCommandExecutionError(t`/array-wrap does not support multiple unnamed arguments.`);
             }
 
@@ -3796,16 +3915,17 @@ export function initDefaultSlashCommands() {
                 typeList: [ARGUMENT_TYPE.STRING, ARGUMENT_TYPE.DICTIONARY, ARGUMENT_TYPE.BOOLEAN, ARGUMENT_TYPE.NUMBER, ARGUMENT_TYPE.LIST],
             }),
         ],
+        // @ts-expect-error TS(7006) FIXME: Parameter '_args' implicitly has an 'any' type.
         callback: (_args, value) => {
             // Closures are not supported
             if (value instanceof SlashCommandClosure) {
-                // @ts-expect-error TS(2554): Expected 7 arguments, but got 1.
+                // @ts-expect-error TS(2554) FIXME: Expected 7 arguments, but got 1.
                 throw new SlashCommandExecutionError(t`Closures are not supported as unnamed arguments for /array-unwrap. Did you forget to call the closure with parentheses?`);
             }
 
             // Multiple unnamed arguments are not supported since acceptsMultiple is false, but check just in case
             if (Array.isArray(value)) {
-                // @ts-expect-error TS(2554): Expected 7 arguments, but got 1.
+                // @ts-expect-error TS(2554) FIXME: Expected 7 arguments, but got 1.
                 throw new SlashCommandExecutionError(t`/array-unwrap does not support multiple unnamed arguments.`);
             }
 
@@ -3851,6 +3971,7 @@ const SCRIPT_PROMPT_KEY = 'script_inject_';
  * @param {import('./slash-commands/SlashCommand.js').NamedArguments} args Named arguments
  * @param {import('./slash-commands/SlashCommand.js').UnnamedArguments} value Unnamed argument
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
 function injectCallback(args, value) {
     const positions = {
         'before': extension_prompt_types.BEFORE_PROMPT,
@@ -3870,10 +3991,12 @@ function injectCallback(args, value) {
     const defaultPosition = 'after';
     const defaultDepth = 4;
     const positionValue = args?.position ?? defaultPosition;
+    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     const position = positions[positionValue] ?? positions[defaultPosition];
     const depthValue = Number(args?.depth ?? defaultDepth);
     const depth = isNaN(depthValue) ? defaultDepth : depthValue;
     const roleValue = typeof args?.role === 'string' ? args.role.toLowerCase().trim() : Number(args?.role ?? extension_prompt_roles.SYSTEM);
+    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     const role = roles[roleValue] ?? extension_prompt_roles.SYSTEM;
     const scan = isTrueBoolean(String(args?.scan));
     const filter = args?.filter instanceof SlashCommandClosure ? args.filter.rawText : null;
@@ -3885,21 +4008,22 @@ function injectCallback(args, value) {
 
     const prefixedId = `${SCRIPT_PROMPT_KEY}${id}`;
 
-    // @ts-expect-error TS(2339): Property 'script_injects' does not exist on type '... Remove this comment to see the full error message
+    // @ts-expect-error TS(2339) FIXME: Property 'script_injects' does not exist on type '... Remove this comment to see the full error message
     if (!chat_metadata.script_injects) {
-        // @ts-expect-error TS(2339): Property 'script_injects' does not exist on type '... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'script_injects' does not exist on type '... Remove this comment to see the full error message
         chat_metadata.script_injects = {};
     }
 
     if (value) {
         const inject = { value, position, depth, scan, role, filter };
-        // @ts-expect-error TS(2339): Property 'script_injects' does not exist on type '... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'script_injects' does not exist on type '... Remove this comment to see the full error message
         chat_metadata.script_injects[id] = inject;
     } else {
-        // @ts-expect-error TS(2339): Property 'script_injects' does not exist on type '... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'script_injects' does not exist on type '... Remove this comment to see the full error message
         delete chat_metadata.script_injects[id];
     }
 
+    // @ts-expect-error TS(2345) FIXME: Argument of type '(() => Promise<boolean>) | null'... Remove this comment to see the full error message
     setExtensionPrompt(prefixedId, String(value), position, depth, scan, role, filterFunction);
     saveMetadataDebounced();
 
@@ -3910,8 +4034,9 @@ function injectCallback(args, value) {
                 return;
             }
             console.log('Removing ephemeral script injection', id);
-            // @ts-expect-error TS(2339): Property 'script_injects' does not exist on type '... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'script_injects' does not exist on type '... Remove this comment to see the full error message
             delete chat_metadata.script_injects[id];
+            // @ts-expect-error TS(2345) FIXME: Argument of type '(() => Promise<boolean>) | null'... Remove this comment to see the full error message
             setExtensionPrompt(prefixedId, '', position, depth, scan, role, filterFunction);
             saveMetadataDebounced();
             deleted = true;
@@ -3927,25 +4052,27 @@ function injectCallback(args, value) {
  *
  * @param args
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
 async function listInjectsCallback(args) {
     /** @type {import('./slash-commands/SlashCommandReturnHelper.js').SlashCommandReturnType} */
     const returnType = args.return;
 
     // Now the actual new return type handling
+    // @ts-expect-error TS(7006) FIXME: Parameter 'injects' implicitly has an 'any' type.
     const buildTextValue = (injects) => {
         const injectsStr = Object.entries(injects)
             .map(([id, inject]) => {
                 const position = Object.entries(extension_prompt_types);
-                // @ts-expect-error TS(2339): Property 'position' does not exist on type 'unknow... Remove this comment to see the full error message
+                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 const positionName = position.find(([_, value]) => value === inject.position)?.[0] ?? t`unknown`;
-                // @ts-expect-error TS(2339): Property 'value' does not exist on type 'unknown'.
+                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 return `* **${id}**: <code>${inject.value}</code> (${positionName}, ${t`depth`}: ${inject.depth}, ${t`scan`}: ${inject.scan ?? false}, ${t`role`}: ${inject.role ?? extension_prompt_roles.SYSTEM})`;
             })
             .join('\n');
         return `### ${t`Script injections:`}\n${injectsStr || t`No script injections for the current chat`}`;
     };
 
-    // @ts-expect-error TS(2339): Property 'script_injects' does not exist on type '... Remove this comment to see the full error message
+    // @ts-expect-error TS(2339) FIXME: Property 'script_injects' does not exist on type '... Remove this comment to see the full error message
     return await slashCommandReturnHelper.doReturn(returnType ?? 'popup-html', chat_metadata.script_injects ?? {}, { objectToStringFunc: buildTextValue });
 }
 
@@ -3955,24 +4082,25 @@ async function listInjectsCallback(args) {
  * @param {string} value Unnamed argument
  * @returns {string} Empty string
  */
+// @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
 function flushInjectsCallback(_, value) {
-    // @ts-expect-error TS(2339): Property 'script_injects' does not exist on type '... Remove this comment to see the full error message
+    // @ts-expect-error TS(2339) FIXME: Property 'script_injects' does not exist on type '... Remove this comment to see the full error message
     if (!chat_metadata.script_injects) {
         return '';
     }
 
     const idArgument = value;
 
-    // @ts-expect-error TS(2339): Property 'script_injects' does not exist on type '... Remove this comment to see the full error message
+    // @ts-expect-error TS(2339) FIXME: Property 'script_injects' does not exist on type '... Remove this comment to see the full error message
     for (const [id, inject] of Object.entries(chat_metadata.script_injects)) {
         if (idArgument && id !== idArgument) {
             continue;
         }
 
         const prefixedId = `${SCRIPT_PROMPT_KEY}${id}`;
-        // @ts-expect-error TS(2339): Property 'position' does not exist on type 'unknow... Remove this comment to see the full error message
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         setExtensionPrompt(prefixedId, '', inject.position, inject.depth, inject.scan, inject.role);
-        // @ts-expect-error TS(2339): Property 'script_injects' does not exist on type '... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'script_injects' does not exist on type '... Remove this comment to see the full error message
         delete chat_metadata.script_injects[id];
     }
 
@@ -3986,7 +4114,7 @@ function flushInjectsCallback(_, value) {
 export function processChatSlashCommands() {
     const context = getContext();
 
-    // @ts-expect-error TS(2339): Property 'script_injects' does not exist on type '... Remove this comment to see the full error message
+    // @ts-expect-error TS(2339) FIXME: Property 'script_injects' does not exist on type '... Remove this comment to see the full error message
     if (!(context.chatMetadata.script_injects)) {
         return;
     }
@@ -3997,23 +4125,24 @@ export function processChatSlashCommands() {
         }
 
         console.log('Removing script injection', id);
+        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         delete context.extensionPrompts[id];
     }
 
-    // @ts-expect-error TS(2339): Property 'script_injects' does not exist on type '... Remove this comment to see the full error message
+    // @ts-expect-error TS(2339) FIXME: Property 'script_injects' does not exist on type '... Remove this comment to see the full error message
     for (const [id, inject] of Object.entries(context.chatMetadata.script_injects)) {
         /**
          * Rehydrates a filter closure from a string.
          * @returns {SlashCommandClosure | null}
          */
         function reviveFilterClosure() {
-            // @ts-expect-error TS(2339): Property 'filter' does not exist on type 'unknown'... Remove this comment to see the full error message
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             if (!inject.filter) {
                 return null;
             }
 
             try {
-                // @ts-expect-error TS(2339): Property 'filter' does not exist on type 'unknown'... Remove this comment to see the full error message
+                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 return new SlashCommandParser().parse(inject.filter, true);
             } catch (error) {
                 console.warn('Failed to revive filter closure for script injection', id, error);
@@ -4025,7 +4154,7 @@ export function processChatSlashCommands() {
         const filterClosure = reviveFilterClosure();
         const filter = filterClosure ? closureToFilter(filterClosure) : null;
         console.log('Adding script injection', id);
-        // @ts-expect-error TS(2339): Property 'value' does not exist on type 'unknown'.
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         setExtensionPrompt(prefixedId, inject.value, inject.position, inject.depth, inject.scan, inject.role, filter);
     }
 }
@@ -4035,8 +4164,9 @@ export function processChatSlashCommands() {
  * @param _
  * @param value
  */
+// @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
 function setInputCallback(_, value) {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#send_textarea').val(value || '')[0].dispatchEvent(new Event('input', { bubbles: true }));
     return value;
 }
@@ -4046,6 +4176,7 @@ function setInputCallback(_, value) {
  * @param _
  * @param value
  */
+// @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
 function trimStartCallback(_, value) {
     if (!value) {
         return '';
@@ -4059,6 +4190,7 @@ function trimStartCallback(_, value) {
  * @param _
  * @param value
  */
+// @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
 function trimEndCallback(_, value) {
     if (!value) {
         return '';
@@ -4072,6 +4204,7 @@ function trimEndCallback(_, value) {
  * @param arg
  * @param value
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'arg' implicitly has an 'any' type.
 async function trimTokensCallback(arg, value) {
     if (!value) {
         console.warn('WARN: No argument provided for /trimtokens command');
@@ -4136,6 +4269,7 @@ async function trimTokensCallback(arg, value) {
  *                              If 'multiple' is true, returns a JSON string array of labels.
  *                              If 'multiple' is false, returns a single label string.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
 async function buttonsCallback(args, text) {
     try {
         /** @type {(string|ButtonLabel)[]} */
@@ -4168,6 +4302,7 @@ async function buttonsCallback(args, text) {
             const safeValue = DOMPurify.sanitize(text || '');
 
             /** @type {Popup} */
+            // @ts-expect-error TS(2448) FIXME: Block-scoped variable 'popupContainer' used before... Remove this comment to see the full error message
             const popup = new Popup(popupContainer, POPUP_TYPE.TEXT, '', { okButton: multiple ? t`Ok` : t`Cancel`, allowVerticalScrolling: true });
             const buttonContainer = document.createElement('div');
             buttonContainer.classList.add('flex-container', 'flexFlowColumn', 'wide100p');
@@ -4181,7 +4316,6 @@ async function buttonsCallback(args, text) {
 
                 if (multiple) {
                     buttonElement.classList.add('toggleable');
-                    // @ts-expect-error TS(4111): Property 'toggleValue' comes from an index signatu... Remove this comment to see the full error message
                     buttonElement.dataset.toggleValue = String(result);
                     buttonElement.addEventListener('click', async () => {
                         buttonElement.classList.toggle('toggled');
@@ -4193,7 +4327,6 @@ async function buttonsCallback(args, text) {
                     });
                 } else {
                     buttonElement.classList.add('result-control');
-                    // @ts-expect-error TS(4111): Property 'result' comes from an index signature, s... Remove this comment to see the full error message
                     buttonElement.dataset.result = String(result);
                 }
 
@@ -4213,7 +4346,6 @@ async function buttonsCallback(args, text) {
                 // Add tooltip if provided
                 if (button.tooltip) {
                     buttonElement.title = button.tooltip;
-                    // @ts-expect-error TS(4111): Property 'i18n' comes from an index signature, so ... Remove this comment to see the full error message
                     buttonElement.dataset.i18n = '[title]' + button.tooltip;
                 }
 
@@ -4239,9 +4371,10 @@ async function buttonsCallback(args, text) {
              * @param result
              * @returns {string} @param {string|number|boolean} result
              */
+            // @ts-expect-error TS(7006) FIXME: Parameter 'result' implicitly has an 'any' type.
             function getResult(result) {
                 if (multiple) {
-                    // @ts-expect-error TS(2345): Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
+                    // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
                     const array = result === POPUP_RESULT.AFFIRMATIVE ? Array.from(multipleToggledState).map(r => resultToButtonMap.get(r)?.text ?? '') : [];
                     return JSON.stringify(array);
                 }
@@ -4258,6 +4391,7 @@ async function buttonsCallback(args, text) {
  * @param args
  * @param value
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
 async function popupCallback(args, value) {
     const safeBody = DOMPurify.sanitize(value || '');
     const safeHeader = args?.header && typeof args?.header === 'string' ? DOMPurify.sanitize(args.header) : null;
@@ -4283,6 +4417,7 @@ async function popupCallback(args, value) {
  * @param args
  * @param value
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
 async function getMessagesCallback(args, value) {
     const includeNames = !isFalseBoolean(args?.names);
     const includeHidden = isTrueBoolean(args?.hidden);
@@ -4294,6 +4429,7 @@ async function getMessagesCallback(args, value) {
         return '';
     }
 
+    // @ts-expect-error TS(7006) FIXME: Parameter 'mes' implicitly has an 'any' type.
     const filterByRole = (mes) => {
         if (!role) {
             return true;
@@ -4316,6 +4452,7 @@ async function getMessagesCallback(args, value) {
         throw new Error(t`Invalid role provided. Expected one of: system, assistant, user. Got: ${role}`);
     };
 
+    // @ts-expect-error TS(7006) FIXME: Parameter 'mesId' implicitly has an 'any' type.
     const processMessage = async (mesId) => {
         const msg = chat[mesId];
         if (!msg) {
@@ -4328,11 +4465,13 @@ async function getMessagesCallback(args, value) {
             return null;
         }
 
+        // @ts-expect-error TS(2339) FIXME: Property 'is_system' does not exist on type 'never... Remove this comment to see the full error message
         if (!includeHidden && msg.is_system) {
             console.debug(`/messages: Skipping hidden message with ID ${mesId}`);
             return null;
         }
 
+        // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
         return includeNames ? `${msg.name}: ${msg.mes}` : msg.mes;
     };
 
@@ -4351,6 +4490,7 @@ async function getMessagesCallback(args, value) {
  * @param args
  * @param name
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
 async function runCallback(args, name) {
     if (!name) {
         throw new Error(t`No name provided for /run command`);
@@ -4375,10 +4515,14 @@ async function runCallback(args, name) {
         }
         while (closure.providedArgumentList.pop());
         closure.argumentList.forEach(arg => {
+            // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
             if (Object.keys(args).includes(arg.name)) {
                 const providedArg = new SlashCommandNamedArgumentAssignment();
+                // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
                 providedArg.name = arg.name;
+                // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
                 providedArg.value = args[arg.name];
+                // @ts-expect-error TS(2345) FIXME: Argument of type 'SlashCommandNamedArgumentAssignm... Remove this comment to see the full error message
                 closure.providedArgumentList.push(providedArg);
             }
         });
@@ -4386,6 +4530,7 @@ async function runCallback(args, name) {
         return result.pipe;
     }
 
+    // @ts-expect-error TS(7017) FIXME: Element implicitly has an 'any' type because type ... Remove this comment to see the full error message
     if (typeof globalThis.executeQuickReplyByName !== 'function') {
         throw new Error(t`Quick Reply extension is not loaded`);
     }
@@ -4397,8 +4542,10 @@ async function runCallback(args, name) {
             abortController: args._abortController,
             debugController: args._debugController,
         };
+        // @ts-expect-error TS(7017) FIXME: Element implicitly has an 'any' type because type ... Remove this comment to see the full error message
         return await globalThis.executeQuickReplyByName(name, args, options);
     } catch (error) {
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         throw new Error(t`Error running Quick Reply "${name}": ${error.message}`);
     }
 }
@@ -4408,6 +4555,7 @@ async function runCallback(args, name) {
  * @param {import('./slash-commands/SlashCommand.js').NamedArguments} param0
  * @param {string} [reason]
  */
+// @ts-expect-error TS(7031) FIXME: Binding element '_abortController' implicitly has ... Remove this comment to see the full error message
 function abortCallback({ _abortController, quiet }, reason) {
     if (quiet instanceof SlashCommandClosure) throw new Error(t`argument 'quiet' cannot be a closure for command /abort`);
     _abortController.abort((reason ?? '').toString().length == 0 ? t`/abort command executed` : reason, !isFalseBoolean(quiet?.toString() ?? 'true'));
@@ -4419,6 +4567,7 @@ function abortCallback({ _abortController, quiet }, reason) {
  * @param _
  * @param amount
  */
+// @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
 async function delayCallback(_, amount) {
     if (!amount) {
         console.warn('WARN: No amount provided for /delay command');
@@ -4440,6 +4589,7 @@ async function delayCallback(_, amount) {
  * @param args
  * @param prompt
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
 async function inputCallback(args, prompt) {
     const safeValue = DOMPurify.sanitize(prompt || '');
     const defaultInput = args?.default !== undefined && typeof args?.default === 'string' ? args.default : '';
@@ -4487,6 +4637,7 @@ async function inputCallback(args, prompt) {
  * @example /fuzzy list=["down","left","up","right"] "he looks up" | /echo // should return "up"
  * @link https://www.fusejs.io/
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
 function fuzzyCallback(args, searchInValue) {
     if (!searchInValue) {
         console.warn('WARN: No argument provided for /fuzzy command');
@@ -4578,6 +4729,7 @@ function fuzzyCallback(args, searchInValue) {
  *
  * @param value
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
 function setEphemeralStopStrings(value) {
     if (typeof value === 'string' && value.length) {
         try {
@@ -4596,6 +4748,7 @@ function setEphemeralStopStrings(value) {
  * @param args
  * @param value
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
 async function generateRawCallback(args, value) {
     if (!value) {
         console.warn('WARN: No argument provided for /genraw command');
@@ -4603,7 +4756,7 @@ async function generateRawCallback(args, value) {
     }
 
     // Prevent generate recursion
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#send_textarea').val('')[0].dispatchEvent(new Event('input', { bubbles: true }));
     const lock = isTrueBoolean(args?.lock);
     const as = args?.as || 'system';
@@ -4629,11 +4782,12 @@ async function generateRawCallback(args, value) {
             trimNames: trimNames,
             prefill: prefillPrompt,
         };
+        // @ts-expect-error TS(2345) FIXME: Argument of type '{ prompt: any; instructOverride:... Remove this comment to see the full error message
         const result = await generateRaw(params);
         return result;
     } catch (err) {
         console.error('Error on /genraw generation', err);
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.error(err.message, t`API Error`, { preventDuplicates: true });
     } finally {
         if (lock) {
@@ -4650,9 +4804,10 @@ async function generateRawCallback(args, value) {
  * @param {string} value Unnamed argument
  * @returns {Promise<string>} The generated text
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
 async function generateCallback(args, value) {
     // Prevent generate recursion
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#send_textarea').val('')[0].dispatchEvent(new Event('input', { bubbles: true }));
     const lock = isTrueBoolean(args?.lock);
     const trim = isTrueBoolean(args?.trim?.toString());
@@ -4675,13 +4830,15 @@ async function generateCallback(args, value) {
             quietName: char?.name ?? name,
             responseLength: length,
             trimToSentence: trim,
+            // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
             forceChId: char ? characters.indexOf(char) : null,
         };
+        // @ts-expect-error TS(2345) FIXME: Argument of type '{ quietPrompt: any; quietToLoud:... Remove this comment to see the full error message
         const result = await generateQuietPrompt(params);
         return result;
     } catch (err) {
         console.error('Error on /gen generation', err);
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.error(err.message, t`API Error`, { preventDuplicates: true });
     } finally {
         if (lock) {
@@ -4698,6 +4855,7 @@ async function generateCallback(args, value) {
  * @param {string} value - The string to echo (unnamed argument from the slash command)
  * @returns {Promise<string>} The text that was echoed
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
 async function echoCallback(args, value) {
     // Note: We don't need to sanitize input, as toastr is set up by default to escape HTML via toastr options
     if (value === '') {
@@ -4706,7 +4864,7 @@ async function echoCallback(args, value) {
     }
 
     if (args.severity && !['error', 'warning', 'success', 'info'].includes(args.severity)) {
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.warning(t`Invalid severity provided for /echo command: ${args.severity}`);
         args.severity = null;
     }
@@ -4719,41 +4877,42 @@ async function echoCallback(args, value) {
 
     /** @type {ToastrOptions} */
     const options = {};
-    // @ts-expect-error TS(2339): Property 'timeOut' does not exist on type '{}'.
+    // @ts-expect-error TS(2339) FIXME: Property 'timeOut' does not exist on type '{}'.
     if (args.timeout && !isNaN(parseInt(args.timeout))) options.timeOut = parseInt(args.timeout);
-    // @ts-expect-error TS(2339): Property 'extendedTimeOut' does not exist on type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2339) FIXME: Property 'extendedTimeOut' does not exist on type ... Remove this comment to see the full error message
     if (args.extendedTimeout && !isNaN(parseInt(args.extendedTimeout))) options.extendedTimeOut = parseInt(args.extendedTimeout);
-    // @ts-expect-error TS(2339): Property 'preventDuplicates' does not exist on typ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2339) FIXME: Property 'preventDuplicates' does not exist on typ... Remove this comment to see the full error message
     if (isTrueBoolean(args.preventDuplicates)) options.preventDuplicates = true;
-    // @ts-expect-error TS(2339): Property 'toastClass' does not exist on type '{}'.
+    // @ts-expect-error TS(2339) FIXME: Property 'toastClass' does not exist on type '{}'.
     if (args.cssClass) options.toastClass = [options.toastClass, args.cssClass].filter(Boolean).join(' ');
-    // @ts-expect-error TS(2339): Property 'escapeHtml' does not exist on type '{}'.
+    // @ts-expect-error TS(2339) FIXME: Property 'escapeHtml' does not exist on type '{}'.
     options.escapeHtml = args.escapeHtml !== undefined ? isTrueBoolean(args.escapeHtml) : true;
 
     // Prepare possible await handling
     const awaitDismissal = isTrueBoolean(args.awaitDismissal);
+    // @ts-expect-error TS(7034) FIXME: Variable 'resolveToastDismissal' implicitly has ty... Remove this comment to see the full error message
     let resolveToastDismissal;
 
     if (awaitDismissal) {
-        // @ts-expect-error TS(2339): Property 'onHidden' does not exist on type '{}'.
+        // @ts-expect-error TS(2339) FIXME: Property 'onHidden' does not exist on type '{}'.
         options.onHidden = () => resolveToastDismissal(value);
     }
     if (args.onClick) {
         if (args.onClick instanceof SlashCommandClosure) {
-            // @ts-expect-error TS(2339): Property 'onclick' does not exist on type '{}'.
+            // @ts-expect-error TS(2339) FIXME: Property 'onclick' does not exist on type '{}'.
             options.onclick = async () => {
                 // Execute the slash command directly, with its internal scope and everything. Clear progress handler so it doesn't interfere with command execution progress.
                 args.onClick.onProgress = null;
                 await args.onClick.execute();
             };
         } else {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.warning(t`Invalid onClick provided for /echo command. This is not a closure`);
         }
     }
 
     // If we allow HTML, we need to sanitize it to prevent security risks
-    // @ts-expect-error TS(2339): Property 'escapeHtml' does not exist on type '{}'.
+    // @ts-expect-error TS(2339) FIXME: Property 'escapeHtml' does not exist on type '{}'.
     if (!options.escapeHtml) {
         if (title) title = DOMPurify.sanitize(title, { FORBID_TAGS: ['style'] });
         value = DOMPurify.sanitize(value, { FORBID_TAGS: ['style'] });
@@ -4762,20 +4921,20 @@ async function echoCallback(args, value) {
     let toast;
     switch (severity) {
         case 'error':
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toast = toastr.error(value, title, options);
             break;
         case 'warning':
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toast = toastr.warning(value, title, options);
             break;
         case 'success':
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toast = toastr.success(value, title, options);
             break;
         case 'info':
         default:
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toast = toastr.info(value, title, options);
             break;
     }
@@ -4797,11 +4956,12 @@ async function echoCallback(args, value) {
  * @param {{switch?: string}} args - named arguments
  * @param {string} value - The swipe text to add (unnamed argument)
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
 async function addSwipeCallback(args, value) {
     const lastMessage = chat[chat.length - 1];
 
     if (!lastMessage) {
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.warning(t`No messages to add swipes to.`);
         return '';
     }
@@ -4811,28 +4971,38 @@ async function addSwipeCallback(args, value) {
         return '';
     }
 
+    // @ts-expect-error TS(2339) FIXME: Property 'is_user' does not exist on type 'never'.
     if (lastMessage.is_user) {
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.warning(t`Can't add swipes to user messages.`);
         return '';
     }
 
+    // @ts-expect-error TS(2339) FIXME: Property 'is_system' does not exist on type 'never... Remove this comment to see the full error message
     if (lastMessage.is_system) {
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.warning(t`Can't add swipes to system messages.`);
         return '';
     }
 
+    // @ts-expect-error TS(2339) FIXME: Property 'swipes' does not exist on type 'never'.
     if (!Array.isArray(lastMessage.swipes)) {
+        // @ts-expect-error TS(2339) FIXME: Property 'swipes' does not exist on type 'never'.
         lastMessage.swipes = [lastMessage.mes];
+        // @ts-expect-error TS(2339) FIXME: Property 'swipe_info' does not exist on type 'neve... Remove this comment to see the full error message
         lastMessage.swipe_info = [{}];
+        // @ts-expect-error TS(2339) FIXME: Property 'swipe_id' does not exist on type 'never'... Remove this comment to see the full error message
         lastMessage.swipe_id = 0;
     }
+    // @ts-expect-error TS(2339) FIXME: Property 'swipe_info' does not exist on type 'neve... Remove this comment to see the full error message
     if (!Array.isArray(lastMessage.swipe_info)) {
+        // @ts-expect-error TS(2339) FIXME: Property 'swipe_info' does not exist on type 'neve... Remove this comment to see the full error message
         lastMessage.swipe_info = lastMessage.swipes.map(() => ({}));
     }
 
+    // @ts-expect-error TS(2339) FIXME: Property 'swipes' does not exist on type 'never'.
     lastMessage.swipes.push(value);
+    // @ts-expect-error TS(2339) FIXME: Property 'swipe_info' does not exist on type 'neve... Remove this comment to see the full error message
     lastMessage.swipe_info.push({
         send_date: getMessageTimeStamp(),
         gen_started: null,
@@ -4845,13 +5015,17 @@ async function addSwipeCallback(args, value) {
         },
     });
 
+    // @ts-expect-error TS(2339) FIXME: Property 'swipes' does not exist on type 'never'.
     const newSwipeId = lastMessage.swipes.length - 1;
 
     if (isTrueBoolean(args.switch)) {
         // Make sure ad-hoc changes to extras are saved before swiping away
         syncMesToSwipe();
+        // @ts-expect-error TS(2339) FIXME: Property 'swipe_id' does not exist on type 'never'... Remove this comment to see the full error message
         lastMessage.swipe_id = newSwipeId;
+        // @ts-expect-error TS(2339) FIXME: Property 'mes' does not exist on type 'never'.
         lastMessage.mes = lastMessage.swipes[newSwipeId];
+        // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type 'never'.
         lastMessage.extra = structuredClone(lastMessage.swipe_info?.[newSwipeId]?.extra ?? lastMessage.extra ?? {});
     }
 
@@ -4866,10 +5040,12 @@ async function addSwipeCallback(args, value) {
  * @param _
  * @param arg
  */
+// @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
 async function deleteSwipeCallback(_, arg) {
     // Take the provided argument. Null if none provided, which will target the current swipe.
     const swipeId = arg && !isNaN(Number(arg)) ? (Number(arg) - 1) : null;
 
+    // @ts-expect-error TS(2345) FIXME: Argument of type 'number | null' is not assignable... Remove this comment to see the full error message
     const newSwipeId = await deleteSwipe(swipeId);
 
     return String(newSwipeId);
@@ -4880,21 +5056,23 @@ async function deleteSwipeCallback(_, arg) {
  * @param args
  * @param text
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
 async function askCharacter(args, text) {
     // Prevent generate recursion
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#send_textarea').val('')[0].dispatchEvent(new Event('input', { bubbles: true }));
 
     // Not supported in group chats
     // TODO: Maybe support group chats?
+    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
     if (selected_group) {
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.warning(t`Cannot run /ask command in a group chat!`);
         return '';
     }
 
     if (!args.name) {
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.warning(t`You must specify a name of the character to ask.`);
         return '';
     }
@@ -4904,7 +5082,7 @@ async function askCharacter(args, text) {
     // Find the character
     const character = findChar({ name: args?.name });
     if (!character) {
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.error(t`Character not found.`);
         return '';
     }
@@ -4932,6 +5110,7 @@ async function askCharacter(args, text) {
 
         if (prevChId !== undefined) {
             setCharacterId(prevChId);
+            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             setCharacterName(characters[prevChId].name);
         } else {
             setCharacterId(undefined);
@@ -4941,8 +5120,11 @@ async function askCharacter(args, text) {
         // Only force the new avatar if the character name is the same
         // This skips if an error was fired
         const lastMessage = chat[chat.length - 1];
+        // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
         if (lastMessage && lastMessage?.name === name) {
+            // @ts-expect-error TS(2339) FIXME: Property 'force_avatar' does not exist on type 'ne... Remove this comment to see the full error message
             lastMessage.force_avatar = force_avatar;
+            // @ts-expect-error TS(2339) FIXME: Property 'original_avatar' does not exist on type ... Remove this comment to see the full error message
             lastMessage.original_avatar = original_avatar;
         }
     };
@@ -4952,7 +5134,7 @@ async function askCharacter(args, text) {
     // Run generate and restore previous character
     try {
         eventSource.once(event_types.MESSAGE_RECEIVED, restoreCharacter);
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.info(t`Asking ${name} something...`);
         askResult = await Generate('normal');
     } catch (error) {
@@ -4962,7 +5144,7 @@ async function askCharacter(args, text) {
         if (String(this_chid) === String(prevChId)) {
             await saveChatConditional();
         } else {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.error(t`It is strongly recommended to reload the page.`, t`Something went wrong`);
         }
     }
@@ -4977,6 +5159,7 @@ async function askCharacter(args, text) {
  * @param args
  * @param value
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
 async function hideMessageCallback(args, value) {
     const range = value ? stringToRange(value, 0, chat.length - 1) : { start: chat.length - 1, end: chat.length - 1 };
 
@@ -4986,6 +5169,7 @@ async function hideMessageCallback(args, value) {
     }
 
     const nameFilter = String(args.name ?? '').trim();
+    // @ts-expect-error TS(2345) FIXME: Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
     await hideChatMessageRange(range.start, range.end, false, nameFilter);
     return '';
 }
@@ -4995,6 +5179,7 @@ async function hideMessageCallback(args, value) {
  * @param args
  * @param value
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
 async function unhideMessageCallback(args, value) {
     const range = value ? stringToRange(value, 0, chat.length - 1) : { start: chat.length - 1, end: chat.length - 1 };
 
@@ -5004,6 +5189,7 @@ async function unhideMessageCallback(args, value) {
     }
 
     const nameFilter = String(args.name ?? '').trim();
+    // @ts-expect-error TS(2345) FIXME: Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
     await hideChatMessageRange(range.start, range.end, true, nameFilter);
     return '';
 }
@@ -5014,6 +5200,7 @@ async function unhideMessageCallback(args, value) {
  * @param {string} action - one of 'enable', 'disable', 'up', 'down', 'view', 'remove'
  * @returns {void}
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'chid' implicitly has an 'any' type.
 function performGroupMemberAction(chid, action) {
     const memberSelector = `.group_member[data-chid="${chid}"]`;
     // Do not optimize. Paginator gets recreated on every action
@@ -5023,26 +5210,26 @@ function performGroupMemberAction(chid, action) {
     let paginationValue = null;
     let pageValue = null;
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     if ($(memberSelector).length === 0) {
         wasOffscreen = true;
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         paginationValue = Number($(pageSizeSelector).val());
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         pageValue = $(paginationSelector).pagination('getCurrentPageNum');
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(pageSizeSelector).val($(document.querySelector(pageSizeSelector)?.querySelector('option:last-of-type')).val()).trigger('change');
     }
 
+    // @ts-expect-error TS(2339) FIXME: Property 'click' does not exist on type 'Element'.
     document.querySelector(memberSelector)?.querySelector(`[data-action="${action}"]`)?.click();
 
     if (wasOffscreen) {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(pageSizeSelector).val(paginationValue).trigger('change');
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         if ($(paginationSelector).length) {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(paginationSelector).pagination('go', pageValue);
         }
     }
@@ -5053,9 +5240,11 @@ function performGroupMemberAction(chid, action) {
  * @param _
  * @param arg
  */
+// @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
 async function disableGroupMemberCallback(_, arg) {
+    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
     if (!selected_group) {
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.warning(t`Cannot run /member-disable command outside of a group chat.`);
         return '';
     }
@@ -5076,9 +5265,11 @@ async function disableGroupMemberCallback(_, arg) {
  * @param _
  * @param arg
  */
+// @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
 async function enableGroupMemberCallback(_, arg) {
+    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
     if (!selected_group) {
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.warning(t`Cannot run /member-enable command outside of a group chat.`);
         return '';
     }
@@ -5099,9 +5290,11 @@ async function enableGroupMemberCallback(_, arg) {
  * @param _
  * @param arg
  */
+// @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
 async function moveGroupMemberUpCallback(_, arg) {
+    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
     if (!selected_group) {
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.warning(t`Cannot run /member-up command outside of a group chat.`);
         return '';
     }
@@ -5122,9 +5315,11 @@ async function moveGroupMemberUpCallback(_, arg) {
  * @param _
  * @param arg
  */
+// @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
 async function moveGroupMemberDownCallback(_, arg) {
+    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
     if (!selected_group) {
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.warning(t`Cannot run /member-down command outside of a group chat.`);
         return '';
     }
@@ -5145,15 +5340,17 @@ async function moveGroupMemberDownCallback(_, arg) {
  * @param _
  * @param arg
  */
+// @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
 async function peekCallback(_, arg) {
+    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
     if (!selected_group) {
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.warning(t`Cannot run /member-peek command outside of a group chat.`);
         return '';
     }
 
     if (is_group_generating) {
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.warning(t`Cannot run /member-peek command while the group reply is generating.`);
         return '';
     }
@@ -5173,12 +5370,14 @@ async function peekCallback(_, arg) {
  *
  */
 async function countGroupMemberCallback() {
+    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
     if (!selected_group) {
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.warning(t`Cannot run /member-count command outside of a group chat.`);
         return '';
     }
 
+    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
     return String(getGroupMembers(selected_group).length);
 }
 
@@ -5187,9 +5386,11 @@ async function countGroupMemberCallback() {
  * @param _
  * @param arg
  */
+// @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
 async function removeGroupMemberCallback(_, arg) {
+    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
     if (!selected_group) {
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.warning(t`Cannot run /member-remove command outside of a group chat.`);
         return '';
     }
@@ -5210,9 +5411,11 @@ async function removeGroupMemberCallback(_, arg) {
  * @param _
  * @param name
  */
+// @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
 async function addGroupMemberCallback(_, name) {
+    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
     if (!selected_group) {
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.warning(t`Cannot run /memberadd command outside of a group chat.`);
         return '';
     }
@@ -5228,9 +5431,11 @@ async function addGroupMemberCallback(_, name) {
         return '';
     }
 
+    // @ts-expect-error TS(7005) FIXME: Variable 'groups' implicitly has an 'any[]' type.
     const group = groups.find(x => x.id === selected_group);
 
     if (!group || !Array.isArray(group.members)) {
+        // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
         console.warn(`WARN: No group found for ID ${selected_group}`);
         return '';
     }
@@ -5238,16 +5443,17 @@ async function addGroupMemberCallback(_, name) {
     const avatar = character.avatar;
 
     if (group.members.includes(avatar)) {
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.warning(t`${character.name} is already a member of this group.`);
         return '';
     }
 
     group.members.push(avatar);
+    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
     await saveGroupChat(selected_group, true);
 
     // Trigger to reload group UI
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#rm_button_selected_ch').trigger('click');
     return character.name;
 }
@@ -5257,26 +5463,28 @@ async function addGroupMemberCallback(_, name) {
  * @param args
  * @param value
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
 async function triggerGenerationCallback(args, value) {
     const shouldAwait = isTrueBoolean(args?.await);
-    // @ts-expect-error TS(7030): Not all code paths return a value.
     const outerPromise = new Promise((outerResolve) => setTimeout(async () => {
         try {
             await waitUntilCondition(() => !is_send_press && !is_group_generating, 10000, 100);
         } catch {
             console.warn('Timeout waiting for generation unlock');
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.warning(t`Cannot run /trigger command while the reply is being generated.`);
             outerResolve(Promise.resolve(''));
             return '';
         }
 
         // Prevent generate recursion
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#send_textarea').val('')[0].dispatchEvent(new Event('input', { bubbles: true }));
 
+        // @ts-expect-error TS(7034) FIXME: Variable 'chid' implicitly has type 'any' in some ... Remove this comment to see the full error message
         let chid = undefined;
 
+        // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
         if (selected_group && value) {
             chid = findGroupMemberId(value);
 
@@ -5285,6 +5493,7 @@ async function triggerGenerationCallback(args, value) {
             }
         }
 
+        // @ts-expect-error TS(7005) FIXME: Variable 'chid' implicitly has an 'any' type.
         outerResolve(new Promise(innerResolve => setTimeout(() => innerResolve(Generate('normal', { force_chid: chid })), 100)));
     }, 1));
 
@@ -5301,6 +5510,7 @@ async function triggerGenerationCallback(args, value) {
  * @param args
  * @param text
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
 async function sendUserMessageCallback(args, text) {
     text = String(text ?? '').trim();
     const compact = isTrueBoolean(args?.compact);
@@ -5318,8 +5528,10 @@ async function sendUserMessageCallback(args, text) {
     if ('name' in args) {
         const name = args.name || '';
         const avatar = findPersona({ name })?.avatar || user_avatar;
+        // @ts-expect-error TS(2345) FIXME: Argument of type 'number' is not assignable to par... Remove this comment to see the full error message
         message = await sendMessageAsUser(text, bias, insertAt, compact, name, avatar);
     } else {
+        // @ts-expect-error TS(2345) FIXME: Argument of type 'number' is not assignable to par... Remove this comment to see the full error message
         message = await sendMessageAsUser(text, bias, insertAt, compact);
     }
 
@@ -5331,10 +5543,10 @@ async function sendUserMessageCallback(args, text) {
  * @param _
  * @param name
  */
+// @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
 async function deleteMessagesByNameCallback(_, name) {
     if (!name) {
         console.warn('WARN: No name provided for /delname command');
-        // @ts-expect-error TS(7030): Not all code paths return a value.
         return;
     }
 
@@ -5342,8 +5554,10 @@ async function deleteMessagesByNameCallback(_, name) {
     const character = findChar({ name: name });
     name = character?.name || name;
 
+    // @ts-expect-error TS(7034) FIXME: Variable 'messagesToDelete' implicitly has type 'a... Remove this comment to see the full error message
     const messagesToDelete = [];
     chat.forEach((value) => {
+        // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
         if (value.name === name) {
             messagesToDelete.push(value);
         }
@@ -5351,11 +5565,12 @@ async function deleteMessagesByNameCallback(_, name) {
 
     if (!messagesToDelete.length) {
         console.debug('/delname: Nothing to delete');
-        // @ts-expect-error TS(7030): Not all code paths return a value.
         return;
     }
 
+    // @ts-expect-error TS(7005) FIXME: Variable 'messagesToDelete' implicitly has an 'any... Remove this comment to see the full error message
     for (const message of messagesToDelete) {
+        // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
         const index = chat.indexOf(message);
         if (index !== -1) {
             console.debug(`/delname: Deleting message #${index}`, message);
@@ -5366,7 +5581,7 @@ async function deleteMessagesByNameCallback(_, name) {
     await saveChatConditional();
     await reloadCurrentChat();
 
-    // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+    // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
     toastr.info(t`Deleted ${messagesToDelete.length} messages from ${name}`);
     return '';
 }
@@ -5376,6 +5591,7 @@ async function deleteMessagesByNameCallback(_, name) {
  * @param _
  * @param name
  */
+// @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
 async function goToCharacterCallback(_, name) {
     if (!name) {
         console.warn('WARN: No character name provided for /go command');
@@ -5390,6 +5606,7 @@ async function goToCharacterCallback(_, name) {
         setActiveGroup(null);
         return character.name;
     }
+    // @ts-expect-error TS(7005) FIXME: Variable 'groups' implicitly has an 'any[]' type.
     const group = groups.find(it => equalsIgnoreCaseAndAccents(it.name, name));
     if (group) {
         await openGroupById(group.id);
@@ -5405,6 +5622,7 @@ async function goToCharacterCallback(_, name) {
  *
  * @param chid
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'chid' implicitly has an 'any' type.
 async function openChat(chid) {
     resetSelectedGroup();
     setCharacterId(chid);
@@ -5420,6 +5638,7 @@ async function openChat(chid) {
  * @param {boolean} [options.resizePrompt] - Whether to show the resize/crop prompt
  * @returns {Promise<boolean>} True if upload was successful, false if cancelled or failed
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'avatarKey' implicitly has an 'any' type... Remove this comment to see the full error message
 async function uploadCharacterAvatar(avatarKey, base64Data, { resizePrompt = false } = {}) {
     if (!base64Data || !avatarKey) {
         return false;
@@ -5430,7 +5649,7 @@ async function uploadCharacterAvatar(avatarKey, base64Data, { resizePrompt = fal
     // Handle resize prompt
     if (resizePrompt) {
         if (power_user.never_resize_avatars) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.warning(t`Avatar resizing is disabled in settings. The image will be uploaded as-is.`);
         } else {
             const dlg = new Popup(t`Set the crop position of the avatar image`, POPUP_TYPE.CROP, '', { cropImage: base64Data });
@@ -5485,7 +5704,7 @@ async function uploadCharacterAvatar(avatarKey, base64Data, { resizePrompt = fal
         return true;
     } catch (error) {
         console.error('Error uploading character avatar:', error);
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.warning(t`Failed to upload avatar: ${error.message}`);
         return false;
     }
@@ -5496,13 +5715,14 @@ async function uploadCharacterAvatar(avatarKey, base64Data, { resizePrompt = fal
  * @param {object} args Named arguments
  * @returns {Promise<string>} The avatar key of the created character
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
 async function createCharacterCallback(args) {
     const name = args.name;
     const description = args.description;
     const firstMessage = args.firstMessage;
 
     if (!name || typeof name !== 'string' || !name.trim()) {
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.warning(t`Character name is required`);
         return '';
     }
@@ -5520,6 +5740,7 @@ async function createCharacterCallback(args) {
         post_history_instructions: args.postHistoryInstructions ?? '',
         creator: args.creator ?? '',
         character_version: args.characterVersion ?? '',
+        // @ts-expect-error TS(7006) FIXME: Parameter 't' implicitly has an 'any' type.
         tags: args.tags ? args.tags.split(',').map(t => t.trim()).filter(t => t) : [],
         talkativeness: args.talkativeness ?? '0.5',
         world: args.world ?? '',
@@ -5554,7 +5775,7 @@ async function createCharacterCallback(args) {
             const uploaded = await uploadCharacterAvatar(avatarKey, avatarData, { resizePrompt });
             if (!uploaded && resizePrompt) {
                 // User cancelled the resize dialog, but character was still created
-                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                 toastr.info(t`Character created without avatar (resize cancelled)`);
             }
         }
@@ -5565,6 +5786,7 @@ async function createCharacterCallback(args) {
         // Select the character if requested (default: true)
         const shouldSelect = !isFalseBoolean(args.select);
         if (shouldSelect) {
+            // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
             const characterIndex = characters.findIndex(c => c.avatar === avatarKey);
             if (characterIndex !== -1) {
                 // selectCharacterById handles group reset and active character setting
@@ -5572,12 +5794,12 @@ async function createCharacterCallback(args) {
             }
         }
 
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.success(t`Character "${name}" created successfully`);
         return avatarKey;
     } catch (error) {
         console.error('Error creating character:', error);
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.error(t`Failed to create character: ${error.message}`);
         return '';
     }
@@ -5588,6 +5810,7 @@ async function createCharacterCallback(args) {
  * @param {object} args Named arguments
  * @returns {Promise<string>} The avatar key of the updated character
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
 async function updateCharacterCallback(args) {
     // Find the target character
     let character;
@@ -5595,15 +5818,16 @@ async function updateCharacterCallback(args) {
     if (args.char) {
         character = findChar({ name: args.char });
         if (!character) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.warning(t`Character "${args.char}" not found`);
             return '';
         }
+        // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
         characterIndex = String(characters.indexOf(character));
     } else {
         // Use currently selected character
         if (this_chid === undefined || !characters[this_chid]) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.warning(t`No character selected and no char argument provided`);
             return '';
         }
@@ -5641,11 +5865,12 @@ async function updateCharacterCallback(args) {
             if (fieldName === 'tags' && typeof value === 'string') {
                 value = value.split(',').map(t => t.trim()).filter(t => t);
             }
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             updateData[fieldName] = value;
             // Also set in data object for V2 spec compliance
-            // @ts-expect-error TS(2339): Property 'data' does not exist on type '{ avatar: ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'data' does not exist on type '{ avatar: ... Remove this comment to see the full error message
             if (!updateData.data) updateData.data = {};
-            // @ts-expect-error TS(2339): Property 'data' does not exist on type '{ avatar: ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'data' does not exist on type '{ avatar: ... Remove this comment to see the full error message
             updateData.data[fieldName] = value;
             hasUpdates = true;
         }
@@ -5654,17 +5879,17 @@ async function updateCharacterCallback(args) {
     // Special handling for world / lorebook: store under data.extensions.world
     if (args.world !== undefined) {
         const value = args.world;
-        // @ts-expect-error TS(2339): Property 'data' does not exist on type '{ avatar: ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'data' does not exist on type '{ avatar: ... Remove this comment to see the full error message
         if (!updateData.data) {
-            // @ts-expect-error TS(2339): Property 'data' does not exist on type '{ avatar: ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'data' does not exist on type '{ avatar: ... Remove this comment to see the full error message
             updateData.data = {};
         }
-        // @ts-expect-error TS(2339): Property 'data' does not exist on type '{ avatar: ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'data' does not exist on type '{ avatar: ... Remove this comment to see the full error message
         if (!updateData.data.extensions) {
-            // @ts-expect-error TS(2339): Property 'data' does not exist on type '{ avatar: ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'data' does not exist on type '{ avatar: ... Remove this comment to see the full error message
             updateData.data.extensions = {};
         }
-        // @ts-expect-error TS(2339): Property 'data' does not exist on type '{ avatar: ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'data' does not exist on type '{ avatar: ... Remove this comment to see the full error message
         updateData.data.extensions.world = value;
         hasUpdates = true;
     }
@@ -5673,13 +5898,13 @@ async function updateCharacterCallback(args) {
     if (args.talkativeness !== undefined) {
         const talkValue = parseFloat(args.talkativeness);
         if (!isNaN(talkValue)) {
-            // @ts-expect-error TS(2339): Property 'talkativeness' does not exist on type '{... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'talkativeness' does not exist on type '{... Remove this comment to see the full error message
             updateData.talkativeness = talkValue;
-            // @ts-expect-error TS(2339): Property 'data' does not exist on type '{ avatar: ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'data' does not exist on type '{ avatar: ... Remove this comment to see the full error message
             if (!updateData.data) updateData.data = {};
-            // @ts-expect-error TS(2339): Property 'data' does not exist on type '{ avatar: ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'data' does not exist on type '{ avatar: ... Remove this comment to see the full error message
             if (!updateData.data.extensions) updateData.data.extensions = {};
-            // @ts-expect-error TS(2339): Property 'data' does not exist on type '{ avatar: ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'data' does not exist on type '{ avatar: ... Remove this comment to see the full error message
             updateData.data.extensions.talkativeness = talkValue;
             hasUpdates = true;
         }
@@ -5688,13 +5913,13 @@ async function updateCharacterCallback(args) {
     // Handle favorite
     if (args.favorite !== undefined) {
         const favValue = isTrueBoolean(args.favorite);
-        // @ts-expect-error TS(2339): Property 'fav' does not exist on type '{ avatar: a... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'fav' does not exist on type '{ avatar: a... Remove this comment to see the full error message
         updateData.fav = favValue;
-        // @ts-expect-error TS(2339): Property 'data' does not exist on type '{ avatar: ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'data' does not exist on type '{ avatar: ... Remove this comment to see the full error message
         if (!updateData.data) updateData.data = {};
-        // @ts-expect-error TS(2339): Property 'data' does not exist on type '{ avatar: ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'data' does not exist on type '{ avatar: ... Remove this comment to see the full error message
         if (!updateData.data.extensions) updateData.data.extensions = {};
-        // @ts-expect-error TS(2339): Property 'data' does not exist on type '{ avatar: ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'data' does not exist on type '{ avatar: ... Remove this comment to see the full error message
         updateData.data.extensions.fav = favValue;
         hasUpdates = true;
     }
@@ -5707,32 +5932,32 @@ async function updateCharacterCallback(args) {
 
     // Handle depth prompt fields
     if (args.depthPrompt !== undefined || args.depthPromptDepth !== undefined || args.depthPromptRole !== undefined) {
-        // @ts-expect-error TS(2339): Property 'data' does not exist on type '{ avatar: ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'data' does not exist on type '{ avatar: ... Remove this comment to see the full error message
         if (!updateData.data) updateData.data = {};
-        // @ts-expect-error TS(2339): Property 'data' does not exist on type '{ avatar: ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'data' does not exist on type '{ avatar: ... Remove this comment to see the full error message
         if (!updateData.data.extensions) updateData.data.extensions = {};
-        // @ts-expect-error TS(2339): Property 'data' does not exist on type '{ avatar: ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'data' does not exist on type '{ avatar: ... Remove this comment to see the full error message
         if (!updateData.data.extensions.depth_prompt) updateData.data.extensions.depth_prompt = {};
 
         if (args.depthPrompt !== undefined) {
-            // @ts-expect-error TS(2339): Property 'data' does not exist on type '{ avatar: ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'data' does not exist on type '{ avatar: ... Remove this comment to see the full error message
             updateData.data.extensions.depth_prompt.prompt = args.depthPrompt;
             hasUpdates = true;
         }
         if (args.depthPromptDepth !== undefined) {
-            // @ts-expect-error TS(2339): Property 'data' does not exist on type '{ avatar: ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'data' does not exist on type '{ avatar: ... Remove this comment to see the full error message
             updateData.data.extensions.depth_prompt.depth = parseInt(args.depthPromptDepth);
             hasUpdates = true;
         }
         if (args.depthPromptRole !== undefined) {
-            // @ts-expect-error TS(2339): Property 'data' does not exist on type '{ avatar: ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'data' does not exist on type '{ avatar: ... Remove this comment to see the full error message
             updateData.data.extensions.depth_prompt.role = args.depthPromptRole;
             hasUpdates = true;
         }
     }
 
     if (!hasUpdates) {
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.warning(t`No fields provided to update`);
         return character.avatar;
     }
@@ -5755,7 +5980,7 @@ async function updateCharacterCallback(args) {
             const uploaded = await uploadCharacterAvatar(character.avatar, avatarData, { resizePrompt });
             if (!uploaded && resizePrompt) {
                 // User cancelled the resize dialog
-                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                 toastr.warning(t`Avatar update cancelled`);
             }
         }
@@ -5770,12 +5995,12 @@ async function updateCharacterCallback(args) {
             select_selected_character(this_chid, { switchMenu: false });
         }
 
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.success(t`Character "${character.name}" updated successfully`);
         return character.avatar;
     } catch (error) {
         console.error('Error updating character:', error);
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.error(t`Failed to update character: ${error.message}`);
         return '';
     }
@@ -5786,13 +6011,14 @@ async function updateCharacterCallback(args) {
  * @param {object} args Named arguments
  * @returns {Promise<string>} The avatar key of the duplicated character
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
 async function duplicateCharacterCallback(args) {
     // Find the target character if specified
     let targetAvatar = null;
     if (args.char) {
         const character = findChar({ name: args.char });
         if (!character) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.warning(t`Character "${args.char}" not found`);
             return '';
         }
@@ -5802,7 +6028,7 @@ async function duplicateCharacterCallback(args) {
     // Call the duplicateCharacter utility with silent mode (no popup)
     const newAvatarKey = await duplicateCharacter({ avatar: targetAvatar, silent: true });
     if (!newAvatarKey) {
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.error(t`Failed to duplicate character`);
         return '';
     }
@@ -5810,6 +6036,7 @@ async function duplicateCharacterCallback(args) {
     // Select the character if requested (default: false)
     const shouldSelect = isTrueBoolean(args.select);
     if (shouldSelect) {
+        // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
         const characterIndex = characters.findIndex(c => c.avatar === newAvatarKey);
         if (characterIndex !== -1) {
             await selectCharacterById(characterIndex);
@@ -5824,20 +6051,21 @@ async function duplicateCharacterCallback(args) {
  * @param {object} args Named arguments
  * @returns {Promise<string>} Character data or field value
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
 async function getCharacterDataCallback(args) {
     // Find the target character
     let character;
     if (args.char) {
         character = findChar({ name: args.char });
         if (!character) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.warning(t`Character "${args.char}" not found`);
             return '';
         }
     } else {
         // Use currently selected character
         if (this_chid === undefined || !characters[this_chid]) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.warning(t`No character selected and no char argument provided`);
             return '';
         }
@@ -5898,20 +6126,21 @@ async function getCharacterDataCallback(args) {
  * @param {object} args Named arguments
  * @returns {Promise<string>} 'true' if deleted, 'false' otherwise
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
 async function deleteCharacterCallback(args) {
     // Find the target character
     let character;
     if (args.char) {
         character = findChar({ name: args.char });
         if (!character) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.warning(t`Character "${args.char}" not found`);
             return 'false';
         }
     } else {
         // Use currently selected character
         if (this_chid === undefined || !characters[this_chid]) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.warning(t`No character selected and no char argument provided`);
             return 'false';
         }
@@ -5939,7 +6168,7 @@ async function deleteCharacterCallback(args) {
         return success ? 'true' : 'false';
     } catch (error) {
         console.error('Error deleting character:', error);
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.error(t`Failed to delete character: ${error.message}`);
         return 'false';
     }
@@ -5950,6 +6179,7 @@ async function deleteCharacterCallback(args) {
  * @param args
  * @param prompt
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
 async function continueChatCallback(args, prompt) {
     const shouldAwait = isTrueBoolean(args?.await);
 
@@ -5958,20 +6188,20 @@ async function continueChatCallback(args, prompt) {
             await waitUntilCondition(() => !is_send_press && !is_group_generating, 10000, 100);
         } catch {
             console.warn('Timeout waiting for generation unlock');
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.warning(t`Cannot run /continue command while the reply is being generated.`);
             return reject();
         }
 
         try {
             // Prevent infinite recursion
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#send_textarea').val('')[0].dispatchEvent(new Event('input', { bubbles: true }));
 
             const options = prompt?.trim() ? { quiet_prompt: prompt.trim(), quietToLoud: true } : {};
             await Generate('continue', options);
 
-            // @ts-expect-error TS(2794): Expected 1 arguments, but got 0. Did you forget to... Remove this comment to see the full error message
+            // @ts-expect-error TS(2794) FIXME: Expected 1 arguments, but got 0. Did you forget to... Remove this comment to see the full error message
             resolve();
         } catch (error) {
             console.error('Error running /continue command:', error);
@@ -5990,6 +6220,7 @@ async function continueChatCallback(args, prompt) {
  *
  * @param args
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
 async function regenerateChatCallback(args) {
     const shouldAwait = isTrueBoolean(args?.await);
 
@@ -5998,12 +6229,13 @@ async function regenerateChatCallback(args) {
             await waitUntilCondition(() => !is_send_press && !is_group_generating, 10000, 100);
         } catch {
             console.warn('Timeout waiting for generation unlock');
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.warning(t`Cannot run /regenerate command while the reply is being generated.`);
             outerResolve(Promise.resolve(''));
             return '';
         }
 
+        // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
         if (selected_group) {
             outerResolve(Promise.resolve(regenerateGroup()));
             return '';
@@ -6027,6 +6259,7 @@ async function regenerateChatCallback(args) {
  *
  * @param args
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
 async function swipeChatCallback(args) {
     const shouldAwait = isTrueBoolean(args?.await);
     const direction = args?.direction === SWIPE_DIRECTION.LEFT ? SWIPE_DIRECTION.LEFT : SWIPE_DIRECTION.RIGHT;
@@ -6036,7 +6269,7 @@ async function swipeChatCallback(args) {
             await waitUntilCondition(() => !is_send_press && !is_group_generating, 10000, 100);
         } catch {
             console.warn('Timeout waiting for generation unlock');
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.warning(t`Cannot run /swipe command while the reply is being generated.`);
             outerResolve(Promise.resolve(''));
             return '';
@@ -6059,13 +6292,14 @@ async function swipeChatCallback(args) {
  * @param args
  * @param prompt
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
 export async function generateSystemMessage(args, prompt) {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#send_textarea').val('')[0].dispatchEvent(new Event('input', { bubbles: true }));
 
     if (!prompt) {
         console.warn('WARN: No prompt provided for /sysgen command');
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.warning(t`You must provide a prompt for the system message`);
         return '';
     }
@@ -6073,10 +6307,10 @@ export async function generateSystemMessage(args, prompt) {
     const trim = isTrueBoolean(args?.trim?.toString());
 
     // Generate and regex the output if applicable
-    // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+    // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
     const toast = toastr.info(t`Please wait`, t`Generating...`);
     const message = await generateQuietPrompt({ quietPrompt: prompt, trimToSentence: trim });
-    // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+    // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
     toastr.clear(toast);
 
     return await sendNarratorMessage(args, getRegexedString(message, regex_placement.SLASH_COMMAND));
@@ -6086,7 +6320,7 @@ export async function generateSystemMessage(args, prompt) {
  *
  */
 function setStoryModeCallback() {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#chat_display').val(chat_styles.DOCUMENT).trigger('change');
     return '';
 }
@@ -6095,7 +6329,7 @@ function setStoryModeCallback() {
  *
  */
 function setBubbleModeCallback() {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#chat_display').val(chat_styles.BUBBLES).trigger('change');
     return '';
 }
@@ -6104,7 +6338,7 @@ function setBubbleModeCallback() {
  *
  */
 function setFlatModeCallback() {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#chat_display').val(chat_styles.DEFAULT).trigger('change');
     return '';
 }
@@ -6114,10 +6348,12 @@ function setFlatModeCallback() {
  * @param _
  * @param text
  */
+// @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
 async function setNarratorName(_, text) {
     const name = text || NARRATOR_NAME_DEFAULT;
+    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     chat_metadata[NARRATOR_NAME_KEY] = name;
-    // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+    // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
     toastr.info(t`System narrator name set to ${name}`);
     await saveChatConditional();
     return '';
@@ -6132,6 +6368,7 @@ async function setNarratorName(_, text) {
  * @throws {Error} If the argument is not an array
  * @returns {string[]}
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'arg' implicitly has an 'any' type.
 export function validateArrayArgString(arg, name, { allowUndefined = true } = {}) {
     if (arg === undefined) {
         if (allowUndefined) return undefined;
@@ -6151,6 +6388,7 @@ export function validateArrayArgString(arg, name, { allowUndefined = true } = {}
  * @throws {Error} If the argument is not an array of strings or closures
  * @returns {(string|SlashCommandClosure)[]}
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'arg' implicitly has an 'any' type.
 export function validateArrayArg(arg, name, { allowUndefined = true } = {}) {
     if (arg === undefined) {
         if (allowUndefined) return [];
@@ -6171,11 +6409,13 @@ export function validateArrayArg(arg, name, { allowUndefined = true } = {}) {
  * @param {string?} name - The name to get the avatar data for
  * @returns {{name: string, force_avatar: string, original_avatar: string}} An object containing the name for the message, forced avatar URL, and original avatar
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'character' implicitly has an 'any' type... Remove this comment to see the full error message
 export function getNameAndAvatarForMessage(character, name = null) {
     const isNeutralCharacter = !character && name2 === neutralCharacterName && name === neutralCharacterName;
     const currentChar = characters[this_chid];
 
     let force_avatar, original_avatar;
+    // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
     if (character?.avatar === currentChar?.avatar || isNeutralCharacter) {
         // If the targeted character is the currently selected one in a solo chat, we don't need to force any avatars
     } else if (character && character.avatar !== 'none') {
@@ -6199,6 +6439,7 @@ export function getNameAndAvatarForMessage(character, name = null) {
  * @param {string} role - Role to change to.
  * @returns {Promise<string>} The updated message role.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
 async function messageRoleCallback(args, role) {
     let modifyAt = Number(args?.at ?? (chat.length - 1));
     // Convert possible depth parameter to index
@@ -6209,28 +6450,34 @@ async function messageRoleCallback(args, role) {
 
     const message = chat[modifyAt];
     if (!message) {
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.warning(t`No message found at the specified index.`);
         return '';
     }
 
     role = String(role ?? '').trim().toLowerCase();
     if (!role || !['user', 'assistant', 'system'].includes(role)) {
+        // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type 'never'.
         return message?.extra?.type === system_message_types.NARRATOR
             ? 'system'
+            // @ts-expect-error TS(2339) FIXME: Property 'is_user' does not exist on type 'never'.
             : message.is_user ? 'user' : 'assistant';
     }
 
+    // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type 'never'.
     message.extra = message.extra || {};
     if (role === 'system') {
+        // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type 'never'.
         message.extra.type = system_message_types.NARRATOR;
     } else {
+        // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type 'never'.
         delete message.extra.type;
     }
+    // @ts-expect-error TS(2339) FIXME: Property 'is_user' does not exist on type 'never'.
     message.is_user = role === 'user';
 
     await eventSource.emit(event_types.MESSAGE_EDITED, modifyAt);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const existingMessage = $(chatElement[0].querySelector(`.mes[mesid="${modifyAt}"]`));
     if (existingMessage.length) {
         const newMessageElement = updateMessageElement(message, { messageId: modifyAt });
@@ -6249,6 +6496,7 @@ async function messageRoleCallback(args, role) {
  * @param {string} name - Name to change to.
  * @returns {Promise<string>} The updated message name.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
 async function messageNameCallback(args, name) {
     let modifyAt = Number(args?.at ?? (chat.length - 1));
     // Convert possible depth parameter to index
@@ -6259,46 +6507,59 @@ async function messageNameCallback(args, name) {
 
     const message = chat[modifyAt];
     if (!message) {
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.warning(t`No message found at the specified index.`);
         return '';
     }
 
     name = String(name ?? '').trim();
     if (!name) {
+        // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
         return message.name;
     }
 
     let newName = '';
 
+    // @ts-expect-error TS(2339) FIXME: Property 'is_user' does not exist on type 'never'.
     if (message.is_user) {
         const persona = findPersona({ name: name });
         if (persona) {
-            // @ts-expect-error TS(2322): Type 'unknown' is not assignable to type 'string'.
+            // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
             message.name = newName = persona.name;
+            // @ts-expect-error TS(2339) FIXME: Property 'force_avatar' does not exist on type 'ne... Remove this comment to see the full error message
             message.force_avatar = getThumbnailUrl('persona', persona.avatar);
+            // @ts-expect-error TS(2339) FIXME: Property 'original_avatar' does not exist on type ... Remove this comment to see the full error message
             message.original_avatar = persona.avatar;
         } else {
+            // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
             message.name = newName = name;
+            // @ts-expect-error TS(2339) FIXME: Property 'force_avatar' does not exist on type 'ne... Remove this comment to see the full error message
             message.force_avatar = default_avatar;
+            // @ts-expect-error TS(2339) FIXME: Property 'original_avatar' does not exist on type ... Remove this comment to see the full error message
             message.original_avatar = default_avatar;
         }
     } else {
         const character = findChar({ name: name });
         if (character) {
             const characterInfo = getNameAndAvatarForMessage(character, name);
+            // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
             message.name = newName = characterInfo.name;
+            // @ts-expect-error TS(2339) FIXME: Property 'force_avatar' does not exist on type 'ne... Remove this comment to see the full error message
             message.force_avatar = characterInfo.force_avatar;
+            // @ts-expect-error TS(2339) FIXME: Property 'original_avatar' does not exist on type ... Remove this comment to see the full error message
             message.original_avatar = characterInfo.original_avatar;
         } else {
+            // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
             message.name = newName = name;
+            // @ts-expect-error TS(2339) FIXME: Property 'force_avatar' does not exist on type 'ne... Remove this comment to see the full error message
             message.force_avatar = default_avatar;
+            // @ts-expect-error TS(2339) FIXME: Property 'original_avatar' does not exist on type ... Remove this comment to see the full error message
             message.original_avatar = default_avatar;
         }
     }
 
     await eventSource.emit(event_types.MESSAGE_EDITED, modifyAt);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const existingMessage = $(chatElement[0].querySelector(`.mes[mesid="${modifyAt}"]`));
     if (existingMessage.length) {
         const newMessageElement = updateMessageElement(message, { messageId: modifyAt });
@@ -6316,13 +6577,14 @@ async function messageNameCallback(args, name) {
  * @param args
  * @param text
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
 export async function sendMessageAs(args, text) {
     let name = args.name?.trim();
 
     if (!name) {
         const namelessWarningKey = 'sendAsNamelessWarningShown';
         if (accountStorage.getItem(namelessWarningKey) !== 'true') {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.warning(t`To avoid confusion, please use /sendas name="Character Name"`, t`Name defaulted to {{char}}`, { timeOut: 10000 });
             accountStorage.setItem(namelessWarningKey, 'true');
         }
@@ -6343,7 +6605,7 @@ export async function sendMessageAs(args, text) {
 
     const avatarCharacter = args.avatar ? findChar({ name: args.avatar }) : character;
     if (args.avatar && !avatarCharacter) {
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.warning(t`Character for avatar ${args.avatar} not found`);
         return '';
     }
@@ -6367,11 +6629,11 @@ export async function sendMessageAs(args, text) {
         },
     };
 
-    // @ts-expect-error TS(2339): Property 'swipe_id' does not exist on type '{ name... Remove this comment to see the full error message
+    // @ts-expect-error TS(2339) FIXME: Property 'swipe_id' does not exist on type '{ name... Remove this comment to see the full error message
     message.swipe_id = 0;
-    // @ts-expect-error TS(2339): Property 'swipes' does not exist on type '{ name: ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2339) FIXME: Property 'swipes' does not exist on type '{ name: ... Remove this comment to see the full error message
     message.swipes = [message.mes];
-    // @ts-expect-error TS(2339): Property 'swipe_info' does not exist on type '{ na... Remove this comment to see the full error message
+    // @ts-expect-error TS(2339) FIXME: Property 'swipe_info' does not exist on type '{ na... Remove this comment to see the full error message
     message.swipe_info = [{
         send_date: message.send_date,
         gen_started: null,
@@ -6393,16 +6655,18 @@ export async function sendMessageAs(args, text) {
         insertAt = chat.length + insertAt;
     }
 
-    // @ts-expect-error TS(2339): Property 'tainted' does not exist on type '{}'.
+    // @ts-expect-error TS(2339) FIXME: Property 'tainted' does not exist on type '{}'.
     chat_metadata.tainted = true;
 
     if (!isNaN(insertAt) && insertAt >= 0 && insertAt <= chat.length) {
+        // @ts-expect-error TS(2345) FIXME: Argument of type '{ name: any; is_user: boolean; i... Remove this comment to see the full error message
         chat.splice(insertAt, 0, message);
         await saveChatConditional();
         await eventSource.emit(event_types.MESSAGE_RECEIVED, insertAt, 'command');
         await reloadCurrentChat();
         await eventSource.emit(event_types.CHARACTER_MESSAGE_RENDERED, insertAt, 'command');
     } else {
+        // @ts-expect-error TS(2345) FIXME: Argument of type '{ name: any; is_user: boolean; i... Remove this comment to see the full error message
         chat.push(message);
         await eventSource.emit(event_types.MESSAGE_RECEIVED, (chat.length - 1), 'command');
         addOneMessage(message);
@@ -6418,8 +6682,10 @@ export async function sendMessageAs(args, text) {
  * @param args
  * @param text
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
 export async function sendNarratorMessage(args, text) {
     text = String(text ?? '');
+    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     const name = args.name ?? (chat_metadata[NARRATOR_NAME_KEY] || NARRATOR_NAME_DEFAULT);
     // Messages that do nothing but set bias will be hidden from the context
     const bias = extractMessageBias(text);
@@ -6451,16 +6717,18 @@ export async function sendNarratorMessage(args, text) {
         insertAt = chat.length + insertAt;
     }
 
-    // @ts-expect-error TS(2339): Property 'tainted' does not exist on type '{}'.
+    // @ts-expect-error TS(2339) FIXME: Property 'tainted' does not exist on type '{}'.
     chat_metadata.tainted = true;
 
     if (!isNaN(insertAt) && insertAt >= 0 && insertAt <= chat.length) {
+        // @ts-expect-error TS(2345) FIXME: Argument of type '{ name: any; is_user: boolean; i... Remove this comment to see the full error message
         chat.splice(insertAt, 0, message);
         await saveChatConditional();
         await eventSource.emit(event_types.MESSAGE_SENT, insertAt);
         await reloadCurrentChat();
         await eventSource.emit(event_types.USER_MESSAGE_RENDERED, insertAt);
     } else {
+        // @ts-expect-error TS(2345) FIXME: Argument of type '{ name: any; is_user: boolean; i... Remove this comment to see the full error message
         chat.push(message);
         await eventSource.emit(event_types.MESSAGE_SENT, (chat.length - 1));
         addOneMessage(message);
@@ -6476,6 +6744,7 @@ export async function sendNarratorMessage(args, text) {
  * @param who
  * @param text
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'who' implicitly has an 'any' type.
 export async function promptQuietForLoudResponse(who, text) {
     const character_id = getContext().characterId;
     if (who === 'sys') {
@@ -6483,6 +6752,7 @@ export async function promptQuietForLoudResponse(who, text) {
     } else if (who === 'user') {
         text = name1 + ': ' + text;
     } else if (who === 'char') {
+        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         text = characters[character_id].name + ': ' + text;
     } else if (who === 'raw') {
         // We don't need to modify the text
@@ -6494,6 +6764,7 @@ export async function promptQuietForLoudResponse(who, text) {
     text = await getRegexedString(reply, regex_placement.SLASH_COMMAND);
 
     const message = {
+        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         name: characters[character_id].name,
         is_user: false,
         is_name: true,
@@ -6508,9 +6779,10 @@ export async function promptQuietForLoudResponse(who, text) {
         },
     };
 
-    // @ts-expect-error TS(2339): Property 'tainted' does not exist on type '{}'.
+    // @ts-expect-error TS(2339) FIXME: Property 'tainted' does not exist on type '{}'.
     chat_metadata.tainted = true;
 
+    // @ts-expect-error TS(2345) FIXME: Argument of type '{ name: any; is_user: boolean; i... Remove this comment to see the full error message
     chat.push(message);
     await eventSource.emit(event_types.MESSAGE_SENT, (chat.length - 1));
     addOneMessage(message);
@@ -6523,6 +6795,7 @@ export async function promptQuietForLoudResponse(who, text) {
  * @param args
  * @param text
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
 async function sendCommentMessage(args, text) {
     const compact = isTrueBoolean(args?.compact);
     const message = {
@@ -6549,16 +6822,18 @@ async function sendCommentMessage(args, text) {
         insertAt = chat.length + insertAt;
     }
 
-    // @ts-expect-error TS(2339): Property 'tainted' does not exist on type '{}'.
+    // @ts-expect-error TS(2339) FIXME: Property 'tainted' does not exist on type '{}'.
     chat_metadata.tainted = true;
 
     if (!isNaN(insertAt) && insertAt >= 0 && insertAt <= chat.length) {
+        // @ts-expect-error TS(2345) FIXME: Argument of type '{ name: string; is_user: boolean... Remove this comment to see the full error message
         chat.splice(insertAt, 0, message);
         await saveChatConditional();
         await eventSource.emit(event_types.MESSAGE_SENT, insertAt);
         await reloadCurrentChat();
         await eventSource.emit(event_types.USER_MESSAGE_RENDERED, insertAt);
     } else {
+        // @ts-expect-error TS(2345) FIXME: Argument of type '{ name: string; is_user: boolean... Remove this comment to see the full error message
         chat.push(message);
         await eventSource.emit(event_types.MESSAGE_SENT, (chat.length - 1));
         addOneMessage(message);
@@ -6574,6 +6849,7 @@ async function sendCommentMessage(args, text) {
  * @param {any} _ Unused
  * @param {string} type Type of help to display
  */
+// @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
 function helpCommandCallback(_, type) {
     switch (type?.trim()?.toLowerCase()) {
         case 'slash':
@@ -6581,7 +6857,7 @@ function helpCommandCallback(_, type) {
         case 'slashes':
         case 'slash commands':
         case '1':
-            // @ts-expect-error TS(2554): Expected 2-3 arguments, but got 1.
+            // @ts-expect-error TS(2554) FIXME: Expected 2-3 arguments, but got 1.
             sendSystemMessage(system_message_types.SLASH_COMMANDS);
             break;
         case 'format':
@@ -6589,23 +6865,23 @@ function helpCommandCallback(_, type) {
         case 'formats':
         case 'chat formatting':
         case '2':
-            // @ts-expect-error TS(2554): Expected 2-3 arguments, but got 1.
+            // @ts-expect-error TS(2554) FIXME: Expected 2-3 arguments, but got 1.
             sendSystemMessage(system_message_types.FORMATTING);
             break;
         case 'hotkeys':
         case 'hotkey':
         case '3':
-            // @ts-expect-error TS(2554): Expected 2-3 arguments, but got 1.
+            // @ts-expect-error TS(2554) FIXME: Expected 2-3 arguments, but got 1.
             sendSystemMessage(system_message_types.HOTKEYS);
             break;
         case 'macros':
         case 'macro':
         case '4':
-            // @ts-expect-error TS(2554): Expected 2-3 arguments, but got 1.
+            // @ts-expect-error TS(2554) FIXME: Expected 2-3 arguments, but got 1.
             sendSystemMessage(system_message_types.MACROS);
             break;
         default:
-            // @ts-expect-error TS(2554): Expected 2-3 arguments, but got 1.
+            // @ts-expect-error TS(2554) FIXME: Expected 2-3 arguments, but got 1.
             sendSystemMessage(system_message_types.HELP);
             break;
     }
@@ -6613,10 +6889,10 @@ function helpCommandCallback(_, type) {
     return '';
 }
 
-// @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+// @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
 $(document).on('click', '[data-displayHelp]', function (e) {
     e.preventDefault();
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const page = String($(this).data('displayhelp'));
     helpCommandCallback(null, page);
 });
@@ -6626,6 +6902,7 @@ $(document).on('click', '[data-displayHelp]', function (e) {
  * @param _
  * @param bg
  */
+// @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
 function setBackgroundCallback(_, bg) {
     if (!bg) {
         // allow reporting of the background name if called without args
@@ -6641,7 +6918,7 @@ function setBackgroundCallback(_, bg) {
     const result = fuse.search(bg);
 
     if (!result.length) {
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.error(t`No background found with name "${bg}"`);
         return '';
     }
@@ -6660,6 +6937,7 @@ function setBackgroundCallback(_, bg) {
  * @param {boolean} quiet - Whether to suppress toasts
  * @returns {{control: HTMLSelectElement|HTMLInputElement, options: HTMLOptionElement[]}?} An array of objects representing the available model options, or null if not supported
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'quiet' implicitly has an 'any' type.
 function getModelOptions(quiet) {
     const nullResult = { control: null, options: null };
     const modelSelectMap = [
@@ -6723,7 +7001,7 @@ function getModelOptions(quiet) {
     const modelSelectItem = modelSelectMap.find(x => x.api == main_api && x.type == apiSubType)?.id;
 
     if (!modelSelectItem) {
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         if (!quiet) toastr.info(t`Setting a model for your API is not supported or not implemented yet.`);
         return nullResult;
     }
@@ -6731,7 +7009,7 @@ function getModelOptions(quiet) {
     const modelSelectControl = document.getElementById(modelSelectItem);
 
     if (!(modelSelectControl instanceof HTMLSelectElement) && !(modelSelectControl instanceof HTMLInputElement)) {
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         if (!quiet) toastr.error(t`Model select control not found: ${main_api}[${apiSubType}]`);
         return nullResult;
     }
@@ -6741,6 +7019,7 @@ function getModelOptions(quiet) {
      * @param {HTMLSelectElement | HTMLInputElement} control Control containing the options
      * @returns {HTMLOptionElement[]} Array of options
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'control' implicitly has an 'any' type.
     const getOptions = (control) => {
         if (control instanceof HTMLSelectElement) {
             return Array.from(control.options);
@@ -6765,6 +7044,7 @@ function getModelOptions(quiet) {
  * @param {string} model New model name
  * @returns {string} New or existing model name
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
 function modelCallback(args, model) {
     const quiet = isTrueBoolean(args?.quiet);
     const { control: modelSelectControl, options } = getModelOptions(quiet);
@@ -6784,15 +7064,15 @@ function modelCallback(args, model) {
 
     if (modelSelectControl instanceof HTMLInputElement) {
         modelSelectControl.value = model;
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(modelSelectControl).trigger('input');
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         if (!quiet) toastr.success(t`Model set to "${model}"`);
         return model;
     }
 
     if (!options.length) {
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         if (!quiet) toastr.warning(t`No model options found. Check your API settings.`);
         return '';
     }
@@ -6815,13 +7095,13 @@ function modelCallback(args, model) {
 
     if (newSelectedOption) {
         modelSelectControl.value = newSelectedOption.value;
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(modelSelectControl).trigger('change');
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         if (!quiet) toastr.success(t`Model set to "${newSelectedOption.text}"`);
         return newSelectedOption.value;
     } else {
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         if (!quiet) toastr.warning(t`No model found with name "${model}"`);
         return '';
     }
@@ -6835,7 +7115,9 @@ function modelCallback(args, model) {
  * @param {string} args.return The type of return value to use (simple, list, dict)
  * @returns {object} An object containing the states of the requested prompt entries
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
 function getPromptEntryCallback(args) {
+    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     const prompts = promptManager.serviceSettings.prompts;
     let returnType = args.return ?? 'simple';
 
@@ -6843,6 +7125,7 @@ function getPromptEntryCallback(args) {
      *
      * @param arg
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'arg' implicitly has an 'any' type.
     function parseArgs(arg) {
         // Arg is already an array
         if (Array.isArray(arg)) {
@@ -6865,13 +7148,16 @@ function getPromptEntryCallback(args) {
 
     // Check if identifiers exists in prompt, else remove from list
     if (identifiersList.length !== 0) {
+        // @ts-expect-error TS(7006) FIXME: Parameter 'prompt' implicitly has an 'any' type.
         identifiersList = identifiersList.filter(identifier => prompts.some(prompt => prompt.identifier === identifier));
     }
 
     if (nameList.length !== 0) {
         nameList.forEach(name => {
             const identifiers = prompts
+                // @ts-expect-error TS(7006) FIXME: Parameter 'entry' implicitly has an 'any' type.
                 .filter(entry => entry.name === name)
+                // @ts-expect-error TS(7006) FIXME: Parameter 'entry' implicitly has an 'any' type.
                 .map(entry => entry.identifier);
             identifiersList = identifiersList.concat(identifiers);
         });
@@ -6880,6 +7166,7 @@ function getPromptEntryCallback(args) {
     // Get the state for each prompt entry
     const promptStates = new Map();
     identifiersList.forEach(identifier => {
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         const promptOrderEntry = promptManager.getPromptOrderEntry(promptManager.activeCharacter, identifier);
         if (promptOrderEntry) {
             promptStates.set(identifier, promptOrderEntry.enabled);
@@ -6908,14 +7195,17 @@ function getPromptEntryCallback(args) {
  * @param {string} targetState The targeted state of the entry/entries
  * @returns {string} empty string
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
 function setPromptEntryCallback(args, targetState) {
     // needs promptManager to manipulate prompt entries
+    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     const prompts = promptManager.serviceSettings.prompts;
 
     /**
      *
      * @param arg
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'arg' implicitly has an 'any' type.
     function parseArgs(arg) {
         // Arg is already an array
         if (Array.isArray(arg)) {
@@ -6938,18 +7228,22 @@ function setPromptEntryCallback(args, targetState) {
 
     // Check if identifiers exists in prompt, else remove from list
     if (identifiersList.length !== 0) {
+        // @ts-expect-error TS(7006) FIXME: Parameter 'prompt' implicitly has an 'any' type.
         identifiersList = identifiersList.filter(identifier => prompts.some(prompt => prompt.identifier === identifier));
     }
 
     if (nameList.length !== 0) {
         nameList.forEach(name => {
             // one name could potentially have multiple entries, find all identifiers that match given name
+            // @ts-expect-error TS(7034) FIXME: Variable 'identifiers' implicitly has type 'any[]'... Remove this comment to see the full error message
             const identifiers = [];
+            // @ts-expect-error TS(7006) FIXME: Parameter 'entry' implicitly has an 'any' type.
             prompts.forEach(entry => {
                 if (entry.name === name) {
                     identifiers.push(entry.identifier);
                 }
             });
+            // @ts-expect-error TS(7005) FIXME: Variable 'identifiers' implicitly has an 'any[]' t... Remove this comment to see the full error message
             identifiersList = identifiersList.concat(identifiers);
         });
     }
@@ -6959,6 +7253,7 @@ function setPromptEntryCallback(args, targetState) {
     if (identifiersList.length === 0) return '';
 
     // logic adapted from PromptManager.js, handleToggle
+    // @ts-expect-error TS(7006) FIXME: Parameter 'promptOrderEntry' implicitly has an 'an... Remove this comment to see the full error message
     const getPromptOrderEntryState = (promptOrderEntry) => {
         if (['toggle', 't', ''].includes(targetState.trim().toLowerCase())) {
             return !promptOrderEntry.enabled;
@@ -6976,7 +7271,9 @@ function setPromptEntryCallback(args, targetState) {
     };
 
     identifiersList.forEach(promptID => {
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         const promptOrderEntry = promptManager.getPromptOrderEntry(promptManager.activeCharacter, promptID);
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         const counts = promptManager.tokenHandler.getCounts();
 
         counts[promptID] = null;
@@ -6984,7 +7281,9 @@ function setPromptEntryCallback(args, targetState) {
     });
 
     // no need to render for each identifier
+    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     promptManager.render();
+    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     promptManager.saveServiceSettings();
     return '';
 }
@@ -6998,6 +7297,7 @@ function setPromptEntryCallback(args, targetState) {
  * @param {string} url - the API URL to set
  * @returns {Promise<string>}
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'url' implicitly has an 'any' type.
 async function setApiUrlCallback({ api = null, connect = 'true', quiet = 'false' }, url) {
     const isQuiet = isTrueBoolean(quiet);
     const autoConnect = isTrueBoolean(connect);
@@ -7010,16 +7310,16 @@ async function setApiUrlCallback({ api = null, connect = 'true', quiet = 'false'
         }
 
         if (!isCurrentlyCustomOpenai && autoConnect) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.warning(t`Custom OpenAI API is not the currently selected API, so we cannot do an auto-connect. Consider switching to it via /api beforehand.`);
             return '';
         }
 
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#custom_api_url_text').val(url).trigger('input');
 
         if (autoConnect) {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#api_button_openai').trigger('click');
         }
 
@@ -7034,22 +7334,22 @@ async function setApiUrlCallback({ api = null, connect = 'true', quiet = 'false'
 
         const permittedValues = Object.values(ZAI_ENDPOINT);
         if (!permittedValues.includes(url)) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             if (!isQuiet) toastr.warning(t`Valid options are: ${permittedValues.join(', ')}`, t`ZAI endpoint '${url}' is not a valid option.`);
             return '';
         }
 
         if (!isCurrentlyZAI && autoConnect) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.warning(t`Z.AI is not the currently selected API, so we cannot do an auto-connect. Consider switching to it via /api beforehand.`);
             return '';
         }
 
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#zai_endpoint').val(url).trigger('input');
 
         if (autoConnect) {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#api_button_openai').trigger('click');
         }
 
@@ -7064,22 +7364,22 @@ async function setApiUrlCallback({ api = null, connect = 'true', quiet = 'false'
 
         const permittedValues = Object.values(SILICONFLOW_ENDPOINT);
         if (!permittedValues.includes(url)) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             if (!isQuiet) toastr.warning(t`Valid options are: ${permittedValues.join(', ')}`, t`SiliconFlow endpoint '${url}' is not a valid option.`);
             return '';
         }
 
         if (!isCurrentlySiliconFlow && autoConnect) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.warning(t`SiliconFlow is not the currently selected API, so we cannot do an auto-connect. Consider switching to it via /api beforehand.`);
             return '';
         }
 
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#siliconflow_endpoint').val(url).trigger('input');
 
         if (autoConnect) {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#api_button_openai').trigger('click');
         }
 
@@ -7094,22 +7394,22 @@ async function setApiUrlCallback({ api = null, connect = 'true', quiet = 'false'
 
         const permittedValues = Object.values(MINIMAX_ENDPOINT);
         if (!permittedValues.includes(url)) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             if (!isQuiet) toastr.warning(t`Valid options are: ${permittedValues.join(', ')}`, t`MiniMax endpoint '${url}' is not a valid option.`);
             return '';
         }
 
         if (!isCurrentlyMinimax && autoConnect) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.warning(t`MiniMax is not the currently selected API, so we cannot do an auto-connect. Consider switching to it via /api beforehand.`);
             return '';
         }
 
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#minimax_endpoint').val(url).trigger('input');
 
         if (autoConnect) {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#api_button_openai').trigger('click');
         }
 
@@ -7129,21 +7429,21 @@ async function setApiUrlCallback({ api = null, connect = 'true', quiet = 'false'
         }
 
         if (!permittedValues.includes(url)) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             if (!isQuiet) toastr.info(t`Generation requests may fail.`, t`Unknown VertexAI region '${url}'`);
         }
 
         if (!isCurrentlyVertexAI && autoConnect) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.warning(t`VertexAI is not the currently selected API, so we cannot do an auto-connect. Consider switching to it via /api beforehand.`);
             return '';
         }
 
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#vertexai_region').val(url).trigger('input');
 
         if (autoConnect) {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#api_button_openai').trigger('click');
         }
 
@@ -7158,19 +7458,19 @@ async function setApiUrlCallback({ api = null, connect = 'true', quiet = 'false'
         }
 
         if (!isCurrentlyKoboldClassic && autoConnect) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.warning(t`Kobold Classic API is not the currently selected API, so we cannot do an auto-connect. Consider switching to it via /api beforehand.`);
             return '';
         }
 
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#api_url_text').val(url).trigger('input');
         // trigger blur debounced, so we hide the autocomplete menu
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         setTimeout(() => $('#api_url_text').trigger('blur'), 1);
 
         if (autoConnect) {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#api_button').trigger('click');
         }
 
@@ -7179,22 +7479,22 @@ async function setApiUrlCallback({ api = null, connect = 'true', quiet = 'false'
 
     // Do some checks and get the api type we are targeting with this command
     if (api && !Object.values(textgen_types).includes(api)) {
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         if (!isQuiet) toastr.warning(t`API '${api}' is not a valid text_gen API.`);
         return '';
     }
     if (!api && !Object.values(textgen_types).includes(textgenerationwebui_settings.type)) {
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         if (!isQuiet) toastr.warning(t`API '${textgenerationwebui_settings.type}' is not a valid text_gen API.`);
         return '';
     }
     if (!api && main_api !== 'textgenerationwebui') {
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         if (!isQuiet) toastr.warning(t`API type '${main_api}' does not support setting the server URL.`);
         return '';
     }
     if (api && url && autoConnect && api !== textgenerationwebui_settings.type) {
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         if (!isQuiet) toastr.warning(t`API '${api}' is not the currently selected API, so we cannot do an auto-connect. Consider switching to it via /api beforehand.`);
         return '';
     }
@@ -7202,30 +7502,32 @@ async function setApiUrlCallback({ api = null, connect = 'true', quiet = 'false'
 
     const inputSelector = SERVER_INPUTS[type];
     if (!inputSelector) {
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         if (!isQuiet) toastr.warning(t`API '${type}' does not have a server url input.`);
         return '';
     }
 
     // If no url was provided, return the current one
     if (!url) {
+        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         return textgenerationwebui_settings.server_urls[type] ?? '';
     }
 
     // else, we want to actually set the url
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(inputSelector).val(url).trigger('input');
     // trigger blur debounced, so we hide the autocomplete menu
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     setTimeout(() => $(inputSelector).trigger('blur'), 1);
 
     // Trigger the auto connect via connect button, if requested
     if (autoConnect) {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#api_button_textgenerationwebui').trigger('click');
     }
 
     // We still re-acquire the value, as it might have been modified by the validation on connect
+    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     return textgenerationwebui_settings.server_urls[type] ?? '';
 }
 
@@ -7234,6 +7536,7 @@ async function setApiUrlCallback({ api = null, connect = 'true', quiet = 'false'
  * @param _
  * @param name
  */
+// @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
 async function selectTokenizerCallback(_, name) {
     if (!name) {
         return getAvailableTokenizers().find(tokenizer => tokenizer.tokenizerId === power_user.tokenizer)?.tokenizerKey ?? '';
@@ -7244,7 +7547,7 @@ async function selectTokenizerCallback(_, name) {
     const result = fuse.search(name);
 
     if (result.length === 0) {
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.warning(t`Tokenizer "${name}" not found`);
         return '';
     }
@@ -7257,12 +7560,14 @@ async function selectTokenizerCallback(_, name) {
 }
 
 export let isExecutingCommandsFromChatInput = false;
+// @ts-expect-error TS(7005) FIXME: Variable 'commandsFromChatInputAbortController' im... Remove this comment to see the full error message
 export let commandsFromChatInputAbortController;
 
 /**
  * Show command execution pause/stop buttons next to chat input.
  */
 export function activateScriptButtons() {
+    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     document.querySelector('#form_sheld').classList.add('isExecutingCommandsFromChatInput');
 }
 
@@ -7270,6 +7575,7 @@ export function activateScriptButtons() {
  * Hide command execution pause/stop buttons next to chat input.
  */
 export function deactivateScriptButtons() {
+    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     document.querySelector('#form_sheld').classList.remove('isExecutingCommandsFromChatInput');
 }
 
@@ -7280,9 +7586,11 @@ export function pauseScriptExecution() {
     if (commandsFromChatInputAbortController) {
         if (commandsFromChatInputAbortController.signal.paused) {
             commandsFromChatInputAbortController.continue('Clicked pause button');
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             document.querySelector('#form_sheld').classList.remove('script_paused');
         } else {
             commandsFromChatInputAbortController.pause('Clicked pause button');
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             document.querySelector('#form_sheld').classList.add('script_paused');
         }
     }
@@ -7315,6 +7623,7 @@ async function clearCommandProgress() {
     fs.classList.remove('script_error');
     fs.classList.remove('script_aborted');
     await delay(1);
+    // @ts-expect-error TS(2322) FIXME: Type 'null' is not assignable to type 'string'.
     ta.style.transition = null;
 }
 /**
@@ -7348,6 +7657,7 @@ const clearCommandProgressDebounced = debounce(clearCommandProgress);
  * @param {string} text Slash command text
  * @param {ExecuteSlashCommandsOnChatInputOptions} options
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'text' implicitly has an 'any' type.
 export async function executeSlashCommandsOnChatInput(text, options = {}) {
     if (isExecutingCommandsFromChatInput) return null;
 
@@ -7366,19 +7676,23 @@ export async function executeSlashCommandsOnChatInput(text, options = {}) {
     const ta = document.querySelector('#send_textarea');
     const fs = document.querySelector('#form_sheld');
 
-    // @ts-expect-error TS(2339): Property 'clearChatInput' does not exist on type '... Remove this comment to see the full error message
+    // @ts-expect-error TS(2339) FIXME: Property 'clearChatInput' does not exist on type '... Remove this comment to see the full error message
     if (options.clearChatInput) {
-        // @ts-expect-error TS(2339): Property 'value' does not exist on type 'Element'.
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         ta.value = '';
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         ta.dispatchEvent(new Event('input', { bubbles: true }));
     }
 
-    // @ts-expect-error TS(2339): Property 'style' does not exist on type 'Element'.
+    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     ta.style.setProperty('--prog', '0%');
-    // @ts-expect-error TS(2339): Property 'style' does not exist on type 'Element'.
+    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     ta.style.setProperty('--progDone', '0');
+    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     fs.classList.remove('script_success');
+    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     fs.classList.remove('script_error');
+    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     fs.classList.remove('script_aborted');
 
     /**@type {SlashCommandClosureResult} */
@@ -7388,31 +7702,37 @@ export async function executeSlashCommandsOnChatInput(text, options = {}) {
         commandsFromChatInputAbortController = new SlashCommandAbortController();
         result = await executeSlashCommandsWithOptions(text, {
             abortController: commandsFromChatInputAbortController,
+            // @ts-expect-error TS(7006) FIXME: Parameter 'done' implicitly has an 'any' type.
             onProgress: (done, total) => {
                 const newProgress = done / total;
                 if (newProgress > currentProgress) {
                     currentProgress = newProgress;
-                    // @ts-expect-error TS(2339): Property 'style' does not exist on type 'Element'.
+                    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
                     ta.style.setProperty('--prog', `${newProgress * 100}%`);
                 }
             },
-            // @ts-expect-error TS(2339): Property 'parserFlags' does not exist on type '{}'... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'parserFlags' does not exist on type '{}'... Remove this comment to see the full error message
             parserFlags: options.parserFlags,
-            // @ts-expect-error TS(2339): Property 'scope' does not exist on type '{}'.
+            // @ts-expect-error TS(2339) FIXME: Property 'scope' does not exist on type '{}'.
             scope: options.scope,
-            // @ts-expect-error TS(2339): Property 'source' does not exist on type '{}'.
+            // @ts-expect-error TS(2339) FIXME: Property 'source' does not exist on type '{}'.
             source: options.source,
         });
         if (commandsFromChatInputAbortController.signal.aborted) {
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             document.querySelector('#form_sheld').classList.add('script_aborted');
         } else {
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             document.querySelector('#form_sheld').classList.add('script_success');
         }
     } catch (e) {
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         document.querySelector('#form_sheld').classList.add('script_error');
         result = new SlashCommandClosureResult();
         result.isError = true;
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         result.errorMessage = e.message || t`An unknown error occurred`;
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         if (e.cause !== 'abort') {
             if (e instanceof SlashCommandExecutionError) {
                 /**@type {SlashCommandExecutionError}*/
@@ -7423,14 +7743,14 @@ export async function executeSlashCommandsOnChatInput(text, options = {}) {
                     <pre style="text-align:left;">${ex.hint}</pre>
                     `;
                 const clickHint = `<p>${t`Click to see details`}</p>`;
-                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                 toastr.error(
                     `${toast}${clickHint}`,
                     'Slash Command Execution Error',
                     { escapeHtml: false, timeOut: 10000, onclick: () => callGenericPopup(toast, POPUP_TYPE.TEXT, '', { allowHorizontalScrolling: true, allowVerticalScrolling: true }) },
                 );
             } else {
-                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                 toastr.error(result.errorMessage);
             }
         }
@@ -7450,6 +7770,7 @@ export async function executeSlashCommandsOnChatInput(text, options = {}) {
  * @param {ExecuteSlashCommandsOptions} [options]
  * @returns {Promise<SlashCommandClosureResult>}
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'text' implicitly has an 'any' type.
 async function executeSlashCommandsWithOptions(text, options = {}) {
     if (!text) {
         return null;
@@ -7467,18 +7788,18 @@ async function executeSlashCommandsWithOptions(text, options = {}) {
 
     let closure;
     try {
-        // @ts-expect-error TS(2339): Property 'parserFlags' does not exist on type '{}'... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'parserFlags' does not exist on type '{}'... Remove this comment to see the full error message
         closure = parser.parse(text, true, options.parserFlags, options.abortController ?? new SlashCommandAbortController());
-        // @ts-expect-error TS(2339): Property 'scope' does not exist on type '{}'.
+        // @ts-expect-error TS(2339) FIXME: Property 'scope' does not exist on type '{}'.
         closure.scope.parent = options.scope;
-        // @ts-expect-error TS(2339): Property 'onProgress' does not exist on type '{}'.
+        // @ts-expect-error TS(2339) FIXME: Property 'onProgress' does not exist on type '{}'.
         closure.onProgress = options.onProgress;
-        // @ts-expect-error TS(2339): Property 'debugController' does not exist on type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'debugController' does not exist on type ... Remove this comment to see the full error message
         closure.debugController = options.debugController;
-        // @ts-expect-error TS(2339): Property 'source' does not exist on type '{}'.
+        // @ts-expect-error TS(2339) FIXME: Property 'source' does not exist on type '{}'.
         closure.source = options.source;
     } catch (e) {
-        // @ts-expect-error TS(2339): Property 'handleParserErrors' does not exist on ty... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'handleParserErrors' does not exist on ty... Remove this comment to see the full error message
         if (options.handleParserErrors && e instanceof SlashCommandParserError) {
             /**@type {SlashCommandParserError}*/
             const ex = e;
@@ -7488,7 +7809,7 @@ async function executeSlashCommandsWithOptions(text, options = {}) {
                 <pre style="text-align:left;">${ex.hint}</pre>
                 `;
             const clickHint = `<p>${t`Click to see details`}</p>`;
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.error(
                 `${toast}${clickHint}`,
                 'SlashCommandParserError',
@@ -7504,13 +7825,13 @@ async function executeSlashCommandsWithOptions(text, options = {}) {
     try {
         const result = await closure.execute();
         if (result.isAborted && !result.isQuietlyAborted) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.warning(result.abortReason, t`Command execution aborted`);
             closure.abortController.signal.isQuiet = true;
         }
         return result;
     } catch (e) {
-        // @ts-expect-error TS(2339): Property 'handleExecutionErrors' does not exist on... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'handleExecutionErrors' does not exist on... Remove this comment to see the full error message
         if (options.handleExecutionErrors) {
             if (e instanceof SlashCommandExecutionError) {
                 /**@type {SlashCommandExecutionError}*/
@@ -7521,18 +7842,19 @@ async function executeSlashCommandsWithOptions(text, options = {}) {
                     <pre style="text-align:left;">${ex.hint}</pre>
                     `;
                 const clickHint = '<p>Click to see details</p>';
-                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                 toastr.error(
                     `${toast}${clickHint}`,
                     'SlashCommandExecutionError',
                     { escapeHtml: false, timeOut: 10000, onclick: () => callGenericPopup(toast, POPUP_TYPE.TEXT, '', { allowHorizontalScrolling: true, allowVerticalScrolling: true }) },
                 );
             } else {
-                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                 toastr.error(e.message);
             }
             const result = new SlashCommandClosureResult();
             result.isError = true;
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             result.errorMessage = e.message;
             return result;
         } else {
@@ -7552,6 +7874,7 @@ async function executeSlashCommandsWithOptions(text, options = {}) {
  * @param {(done:number, total:number)=>void} onProgress Callback to handle progress events
  * @returns {Promise<SlashCommandClosureResult>}
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'text' implicitly has an 'any' type.
 async function executeSlashCommands(text, handleParserErrors = true, scope = null, handleExecutionErrors = false, parserFlags = null, abortController = null, onProgress = null) {
     return executeSlashCommandsWithOptions(text, {
         handleParserErrors,
@@ -7569,10 +7892,10 @@ async function executeSlashCommands(text, handleParserErrors = true, scope = nul
  * @param {boolean} isFloating Whether to show the auto complete as a floating window (e.g., large QR editor)
  * @returns {Promise<AutoComplete>}
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'textarea' implicitly has an 'any' type.
 export async function setSlashCommandAutoComplete(textarea, isFloating = false) {
     if (!canUseNegativeLookbehind()) {
         console.warn('Cannot use negative lookbehind in this browser');
-        // @ts-expect-error TS(7030): Not all code paths return a value.
         return;
     }
 
@@ -7580,6 +7903,7 @@ export async function setSlashCommandAutoComplete(textarea, isFloating = false) 
     const ac = new AutoComplete(
         textarea,
         () => ac.text[0] == '/' && (power_user.stscript.autocomplete.state === AUTOCOMPLETE_STATE.ALWAYS || power_user.stscript.autocomplete.state === AUTOCOMPLETE_STATE.MIN_LENGTH && ac.text.length > 2),
+        // @ts-expect-error TS(7006) FIXME: Parameter 'text' implicitly has an 'any' type.
         async (text, index) => await parser.getNameAt(text, index),
         isFloating,
     );
@@ -7592,13 +7916,14 @@ export async function setSlashCommandAutoComplete(textarea, isFloating = false) 
 export async function initSlashCommandAutoComplete() {
     const sendTextarea = /** @type {HTMLTextAreaElement} */ (document.querySelector('#send_textarea'));
     setSlashCommandAutoComplete(sendTextarea);
+    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     sendTextarea.addEventListener('input', () => {
-        // @ts-expect-error TS(2339): Property 'value' does not exist on type 'Element'.
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         if (sendTextarea.value && sendTextarea.value[0] == '/') {
-            // @ts-expect-error TS(2339): Property 'style' does not exist on type 'Element'.
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             sendTextarea.style.fontFamily = 'var(--monoFontFamily, monospace)';
         } else {
-            // @ts-expect-error TS(2339): Property 'style' does not exist on type 'Element'.
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             sendTextarea.style.fontFamily = null;
         }
     });

@@ -1,18 +1,22 @@
 import { t } from './i18n.js';
 import { callGenericPopup, Popup, POPUP_TYPE } from './popup.js';
 import { getFileExtension, sortMoments, timestampToMoment } from './utils.js';
-// @ts-expect-error TS(2792): Cannot find module '/script.js'. Did you mean to s... Remove this comment to see the full error message
+// @ts-expect-error TS(2792) FIXME: Cannot find module '/script.js'. Did you mean to s... Remove this comment to see the full error message
 import { displayPastChats, getRequestHeaders, importCharacterChat } from '/script.js';
 import { importGroupChat } from './group-chats.js';
 
 class BackupsBrowser {
     /** @type {HTMLElement} */
+    // @ts-expect-error TS(7008) FIXME: Member '#buttonElement' implicitly has an 'any' ty... Remove this comment to see the full error message
     #buttonElement;
     /** @type {HTMLElement} */
+    // @ts-expect-error TS(7008) FIXME: Member '#buttonChevronIcon' implicitly has an 'any... Remove this comment to see the full error message
     #buttonChevronIcon;
     /** @type {HTMLElement} */
+    // @ts-expect-error TS(7008) FIXME: Member '#backupsListElement' implicitly has an 'an... Remove this comment to see the full error message
     #backupsListElement;
     /** @type {AbortController} */
+    // @ts-expect-error TS(7008) FIXME: Member '#loadingAbortController' implicitly has an... Remove this comment to see the full error message
     #loadingAbortController;
     /** @type {boolean} */
     #isOpen = false;
@@ -26,6 +30,7 @@ class BackupsBrowser {
      * @param {string} name File name of the backup to view.
      * @returns {Promise<void>}
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
     async viewBackup(name) {
         const response = await fetch('/api/backups/chat/download', {
             method: 'POST',
@@ -34,7 +39,7 @@ class BackupsBrowser {
         });
 
         if (!response.ok) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.error(t`Failed to download backup, try again later.`);
             console.error('Failed to download chat backup:', response.statusText);
             return;
@@ -42,6 +47,7 @@ class BackupsBrowser {
 
         try {
             /** @type {ChatMessage[]} */
+            // @ts-expect-error TS(7034) FIXME: Variable 'parsedLines' implicitly has type 'any[]'... Remove this comment to see the full error message
             const parsedLines = [];
             const fileText = await response.text();
             fileText.split('\n').forEach(line => {
@@ -58,11 +64,12 @@ class BackupsBrowser {
             const textArea = document.createElement('textarea');
             textArea.classList.add('text_pole', 'monospace', 'textarea_compact', 'margin0', 'height100p');
             textArea.readOnly = true;
+            // @ts-expect-error TS(7005) FIXME: Variable 'parsedLines' implicitly has an 'any[]' t... Remove this comment to see the full error message
             textArea.value = parsedLines.map(l => `${l.name} [${timestampToMoment(l.send_date).format('lll')}]\n${l.mes}`).join('\n\n\n');
             await callGenericPopup(textArea, POPUP_TYPE.TEXT, '', { allowVerticalScrolling: true, large: true, wide: true });
         } catch (error) {
             console.error('Failed to parse chat backup content:', error);
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.error(t`Failed to parse backup content.`);
             return;
         }
@@ -73,6 +80,7 @@ class BackupsBrowser {
      * @param {string} name File name of the backup to restore.
      * @returns {Promise<void>}
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
     async restoreBackup(name) {
         const response = await fetch('/api/backups/chat/download', {
             method: 'POST',
@@ -81,7 +89,7 @@ class BackupsBrowser {
         });
 
         if (!response.ok) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.error(t`Failed to download backup, try again later.`);
             console.error('Failed to download chat backup:', response.statusText);
             return;
@@ -93,7 +101,7 @@ class BackupsBrowser {
         const extension = getFileExtension(file);
 
         if (extension !== 'jsonl') {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.warning(t`Only .jsonl files are supported for chat imports.`);
             return;
         }
@@ -103,24 +111,24 @@ class BackupsBrowser {
         const formData = new FormData();
         formData.set('file_type', extension);
         formData.set('avatar', file);
-        // @ts-expect-error TS(2339): Property 'characters' does not exist on type '() =... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'characters' does not exist on type '() =... Remove this comment to see the full error message
         formData.set('avatar_url', context.characters[context.characterId]?.avatar || '');
-        // @ts-expect-error TS(2339): Property 'name1' does not exist on type '() => { a... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'name1' does not exist on type '() => { a... Remove this comment to see the full error message
         formData.set('user_name', context.name1);
-        // @ts-expect-error TS(2339): Property 'name2' does not exist on type '() => { a... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'name2' does not exist on type '() => { a... Remove this comment to see the full error message
         formData.set('character_name', context.name2);
 
-        // @ts-expect-error TS(2339): Property 'groupId' does not exist on type '() => {... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'groupId' does not exist on type '() => {... Remove this comment to see the full error message
         const importFn = context.groupId ? importGroupChat : importCharacterChat;
         const result = await importFn(formData, { refresh: false });
 
         if (result.length === 0) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.error(t`Failed to import chat backup, try again later.`);
             return;
         }
 
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.success(`Chat imported: ${result.join(', ')}`);
         await displayPastChats(result);
     }
@@ -130,8 +138,9 @@ class BackupsBrowser {
      * @param {string} name File name of the backup to delete.
      * @returns {Promise<boolean>} True if deleted, false otherwise.
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
     async deleteBackup(name) {
-        // @ts-expect-error TS(2554): Expected 2-3 arguments, but got 1.
+        // @ts-expect-error TS(2554) FIXME: Expected 2-3 arguments, but got 1.
         const confirm = await Popup.show.confirm(t`Are you sure?`);
         if (!confirm) {
             return false;
@@ -144,13 +153,13 @@ class BackupsBrowser {
         });
 
         if (!response.ok) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.error(t`Failed to delete backup, try again later.`);
             console.error('Failed to delete chat backup:', response.statusText);
             return false;
         }
 
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.success(t`Backup deleted successfully.`);
         return true;
     }
@@ -160,6 +169,7 @@ class BackupsBrowser {
      * @param {AbortSignal} signal Signal to abort loading.
      * @returns {Promise<void>}
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'signal' implicitly has an 'any' type.
     async loadBackupsIntoList(signal) {
         if (!this.#backupsListElement) {
             return;
@@ -181,6 +191,7 @@ class BackupsBrowser {
         /** @type {import('../../src/endpoints/chats.js').ChatInfo[]} */
         const backupsList = await response.json();
 
+        // @ts-expect-error TS(7006) FIXME: Parameter 'a' implicitly has an 'any' type.
         for (const backup of backupsList.sort((a, b) => sortMoments(timestampToMoment(a.last_mes), timestampToMoment(b.last_mes)))) {
             const listItem = document.createElement('div');
             listItem.classList.add('chatBackupsListItem');
@@ -310,6 +321,7 @@ class BackupsBrowser {
             }
         });
 
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         sibling.parentNode.insertBefore(button, sibling);
 
         this.#buttonElement = button;
@@ -330,6 +342,7 @@ class BackupsBrowser {
         const list = document.createElement('div');
         list.classList.add('chatBackupsList');
 
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         sibling.parentNode.insertBefore(list, sibling);
         this.#backupsListElement = list;
     }

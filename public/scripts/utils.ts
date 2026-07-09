@@ -13,12 +13,16 @@ import { debounce_timeout } from './constants.js';
 import { Popup, POPUP_RESULT, POPUP_TYPE } from './popup.js';
 import { SlashCommandClosure } from './slash-commands/SlashCommandClosure.js';
 import { getTagsList } from './tags.js';
+// @ts-expect-error TS(7034) FIXME: Variable 'groups' implicitly has type 'any[]' in s... Remove this comment to see the full error message
 import { groups, selected_group } from './group-chats.js';
 import { getCurrentLocale, t } from './i18n.js';
 import { importWorldInfo } from './world-info.js';
+// @ts-expect-error TS(2792) FIXME: Cannot find module 'es-toolkit'. Did you mean to s... Remove this comment to see the full error message
 import { throttle as esThrottle } from 'es-toolkit';
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
 export const shiftUpByOne = (e, i, a) => a[i] = e + 1;
+// @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
 export const shiftDownByOne = (e, i, a) => a[i] = e - 1;
 
 /**
@@ -27,12 +31,17 @@ export const shiftDownByOne = (e, i, a) => a[i] = e - 1;
  */
 export const PAGINATION_TEMPLATE = '<%= rangeStart %>-<%= rangeEnd %> .. <%= totalNumber %>';
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'container' implicitly has an 'any' type... Remove this comment to see the full error message
 export const localizePagination = function (container) {
     const el = container[0];
     if (el) {
+        // @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
         el.querySelectorAll('[title="Next page"]').forEach(e => e.setAttribute('title', t`Next page`));
+        // @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
         el.querySelectorAll('[title="Previous page"]').forEach(e => e.setAttribute('title', t`Previous page`));
+        // @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
         el.querySelectorAll('[title="First page"]').forEach(e => e.setAttribute('title', t`First page`));
+        // @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
         el.querySelectorAll('[title="Last page"]').forEach(e => e.setAttribute('title', t`Last page`));
     }
 };
@@ -42,13 +51,14 @@ export const localizePagination = function (container) {
  * @type {{ (): boolean; result?: boolean }} Defines the function as a memoized object with a cached result.
  * @returns {boolean} True if negative lookbehind is supported, false otherwise.
  */
+// @ts-expect-error TS(7023) FIXME: 'canUseNegativeLookbehind' implicitly has return t... Remove this comment to see the full error message
 export function canUseNegativeLookbehind() {
     /**
      * A reference to the function itself, typed as a callable object with a cache property.
      * @type {{ (): boolean; result?: boolean }}
      */
     const fn = canUseNegativeLookbehind;
-    // @ts-expect-error TS(2339): Property 'result' does not exist on type '() => an... Remove this comment to see the full error message
+    // @ts-expect-error TS(7022) FIXME: 'result' implicitly has type 'any' because it does... Remove this comment to see the full error message
     let result = fn.result;
     if (typeof result !== 'boolean') {
         try {
@@ -57,7 +67,7 @@ export function canUseNegativeLookbehind() {
         } catch {
             result = false;
         }
-        // @ts-expect-error TS(2339): Property 'result' does not exist on type '() => an... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'result' does not exist on type '() => an... Remove this comment to see the full error message
         fn.result = result;
     }
     return result;
@@ -69,12 +79,14 @@ export function canUseNegativeLookbehind() {
  * @param {number[]} sizeChangerOptions Array of page size options
  * @returns {string} The rendered dropdown element as a string
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'pageSize' implicitly has an 'any' type.
 export const renderPaginationDropdown = function (pageSize, sizeChangerOptions) {
     const sizeSelect = document.createElement('select');
     sizeSelect.classList.add('J-paginationjs-size-select');
 
     if (sizeChangerOptions.indexOf(pageSize) === -1) {
         sizeChangerOptions.unshift(pageSize);
+        // @ts-expect-error TS(7006) FIXME: Parameter 'a' implicitly has an 'any' type.
         sizeChangerOptions.sort((a, b) => a - b);
     }
 
@@ -91,11 +103,14 @@ export const renderPaginationDropdown = function (pageSize, sizeChangerOptions) 
     return sizeSelect.outerHTML;
 };
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'event' implicitly has an 'any' type.
 export const paginationDropdownChangeHandler = function (event, size) {
     const container = event?.originalEvent?.currentTarget || event.delegateTarget;
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const dropdown = $(container.querySelector('select'));
+    // @ts-expect-error TS(7006) FIXME: Parameter 'el' implicitly has an 'any' type.
     dropdown[0]?.querySelectorAll('[selected]').forEach(el => el.removeAttribute('selected'));
+    // @ts-expect-error TS(7006) FIXME: Parameter 'el' implicitly has an 'any' type.
     dropdown[0]?.querySelectorAll(`[value="${size}"]`).forEach(el => el.setAttribute('selected', ''));
 };
 
@@ -113,6 +128,7 @@ export const navigation_option = {
  * @param {any} item The item to check.
  * @returns {boolean} True if the item is an object, false otherwise.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'item' implicitly has an 'any' type.
 export function isObject(item) {
     return (item && typeof item === 'object' && !Array.isArray(item));
 }
@@ -123,6 +139,7 @@ export function isObject(item) {
  * @param {object} source The source object
  * @returns {object} Merged object
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'target' implicitly has an 'any' type.
 export function deepMerge(target, source) {
     const output = Object.assign({}, target);
     if (isObject(target) && isObject(source)) {
@@ -145,6 +162,7 @@ export function deepMerge(target, source) {
  * @param {object} obj Object to ensure is a plain object
  * @returns {object} A plain object, or an empty object if the input is not an object.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'obj' implicitly has an 'any' type.
 export function ensurePlainObject(obj) {
     if (typeof obj !== 'object' || obj === null || Array.isArray(obj)) {
         return {};
@@ -158,6 +176,7 @@ export function ensurePlainObject(obj) {
  * @param {string?} str
  * @returns {string}
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'str' implicitly has an 'any' type.
 export function escapeHtml(str) {
     return String(str ?? '')
         .replace(/&/g, '&amp;')
@@ -173,6 +192,7 @@ export function escapeHtml(str) {
  * @param {string} replacement Replacement for invalid characters
  * @returns {string} Sanitized string
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'str' implicitly has an 'any' type.
 export function sanitizeSelector(str, replacement = '_') {
     return String(str).replace(/[^a-z0-9_-]/ig, replacement);
 }
@@ -181,6 +201,7 @@ export function sanitizeSelector(str, replacement = '_') {
  *
  * @param value
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
 export function isValidUrl(value) {
     try {
         new URL(value);
@@ -195,6 +216,7 @@ export function isValidUrl(value) {
  * @param {string} url URL to check
  * @returns {boolean} True if the URL is external, false otherwise
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'url' implicitly has an 'any' type.
 export function isExternalUrl(url) {
     return (url.indexOf('://') > 0 || url.indexOf('//') === 0) && !url.startsWith(window.location.origin);
 }
@@ -204,6 +226,7 @@ export function isExternalUrl(url) {
  * @param {string} value String to check
  * @returns {boolean} True if the string is a valid UUID, false otherwise.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
 export function isUuid(value) {
     // Regular expression to match UUIDs
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -216,6 +239,7 @@ export function isUuid(value) {
  * @param {string} type Type to convert to
  * @returns {any} Converted value
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
 export function convertValueType(value, type) {
     if (value instanceof SlashCommandClosure || typeof type !== 'string') {
         return value;
@@ -287,6 +311,7 @@ export function convertValueType(value, type) {
  * @param {number} max The maximum value.
  * @returns {{ start: number, end: number }} The parsed range.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'input' implicitly has an 'any' type.
 export function stringToRange(input, min, max) {
     let start, end;
 
@@ -316,6 +341,7 @@ export function stringToRange(input, min, max) {
  * @param {any} array The array being processed.
  * @returns {boolean} True if the value is unique, false otherwise.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
 export function onlyUnique(value, index, array) {
     return array.indexOf(value) === index;
 }
@@ -327,7 +353,9 @@ export function onlyUnique(value, index, array) {
  * @param {any[]} array The array being processed.
  * @returns {boolean} True if the value is unique, false otherwise.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
 export function onlyUniqueJson(value, index, array) {
+    // @ts-expect-error TS(7006) FIXME: Parameter 'v' implicitly has an 'any' type.
     return array.map(v => JSON.stringify(v)).indexOf(JSON.stringify(value)) === index;
 }
 
@@ -337,6 +365,7 @@ export function onlyUniqueJson(value, index, array) {
  * @param {*} item - The item to remove from the array
  * @returns {boolean} - Returns true if the item was successfully removed, false otherwise.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'array' implicitly has an 'any' type.
 export function removeFromArray(array, item) {
     const index = array.indexOf(item);
     if (index === -1) return false;
@@ -349,7 +378,9 @@ export function removeFromArray(array, item) {
  * @param {any[]} arr - The array to normalize.
  * @returns {any[]} The normalized array.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'arr' implicitly has an 'any' type.
 export function normalizeArray(arr) {
+    // @ts-expect-error TS(7006) FIXME: Parameter 's' implicitly has an 'any' type.
     return [...new Set((arr ?? []).map(s => typeof s === 'string' ? s.trim() : s).filter(Boolean))];
 }
 
@@ -361,6 +392,7 @@ export function normalizeArray(arr) {
  * isDigitsOnly('123'); // true
  * isDigitsOnly('abc'); // false
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'str' implicitly has an 'any' type.
 export function isDigitsOnly(str) {
     return /^\d+$/.test(str);
 }
@@ -377,6 +409,7 @@ export function getSortableDelay() {
  *
  * @param buffer
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'buffer' implicitly has an 'any' type.
 export async function bufferToBase64(buffer) {
     // use a FileReader to generate a base64 data URI:
     const base64url = await new Promise(resolve => {
@@ -385,7 +418,7 @@ export async function bufferToBase64(buffer) {
         reader.readAsDataURL(new Blob([buffer]));
     });
     // remove the `data:...;base64,` part from the start
-    // @ts-expect-error TS(2339): Property 'slice' does not exist on type 'unknown'.
+    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
     return base64url.slice(base64url.indexOf(',') + 1);
 }
 
@@ -396,6 +429,7 @@ export async function bufferToBase64(buffer) {
  * @example
  * shuffle([1, 2, 3]); // [2, 3, 1]
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'array' implicitly has an 'any' type.
 export function shuffle(array) {
     let currentIndex = array.length,
         randomIndex;
@@ -417,6 +451,7 @@ export function shuffle(array) {
  * @param {string} fileName File name.
  * @param {string} contentType File content type.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'content' implicitly has an 'any' type.
 export function download(content, fileName, contentType) {
     const a = document.createElement('a');
     const file = new Blob([content], { type: contentType });
@@ -432,6 +467,7 @@ export function download(content, fileName, contentType) {
  * @param {any} params Fetch parameters.
  * @returns {Promise<string>} A promise that resolves to the data URI.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'url' implicitly has an 'any' type.
 export async function urlContentToDataUri(url, params) {
     const response = await fetch(url, params);
     const blob = await response.blob();
@@ -453,6 +489,7 @@ export async function urlContentToDataUri(url, params) {
  * @param {File} b Second file
  * @returns {boolean} True if the files are probably the same, false otherwise.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'a' implicitly has an 'any' type.
 export function isSameFile(a, b) {
     return a.lastModified === b.lastModified && a.name === b.name && a.size === b.size && a.type === b.type;
 }
@@ -462,6 +499,7 @@ export function isSameFile(a, b) {
  * @param {Blob} file The file to read.
  * @returns {Promise<string>} A promise that resolves to the file's text.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'file' implicitly has an 'any' type.
 export function getFileText(file) {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -479,6 +517,7 @@ export function getFileText(file) {
  * Returns a promise that resolves to the file's array buffer.
  * @param {Blob} file The file to read.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'file' implicitly has an 'any' type.
 export function getFileBuffer(file) {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -497,6 +536,7 @@ export function getFileBuffer(file) {
  * @param {Blob} file The file to read.
  * @returns {Promise<string>} A promise that resolves to the base64 encoded string.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'file' implicitly has an 'any' type.
 export function getBase64Async(file) {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -515,10 +555,12 @@ export function getBase64Async(file) {
  * @param {Blob} file The file to read.
  * @returns {Promise<any>} A promise that resolves to the parsed JSON object.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'file' implicitly has an 'any' type.
 export async function parseJsonFile(file) {
     return new Promise((resolve, reject) => {
         const fileReader = new FileReader();
         fileReader.readAsText(file);
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         fileReader.onload = event => resolve(JSON.parse(String(event.target.result)));
         fileReader.onerror = error => reject(error);
     });
@@ -534,6 +576,7 @@ export async function parseJsonFile(file) {
  * @param {number} [seed] The seed to use for the hash.
  * @returns {number} The hash code.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'str' implicitly has an 'any' type.
 export function getStringHash(str, seed = 0) {
     if (typeof str !== 'string') {
         return 0;
@@ -558,7 +601,7 @@ export function getStringHash(str, seed = 0) {
  * @param {string} text - The text to copy to the clipboard.
  * @returns {Promise<void>} A promise that resolves when the text has been copied to the clipboard.
  */
-// @ts-expect-error TS(7030): Not all code paths return a value.
+// @ts-expect-error TS(7006) FIXME: Parameter 'text' implicitly has an 'any' type.
 export function copyText(text) {
     if (navigator.clipboard) {
         return navigator.clipboard.writeText(text);
@@ -587,12 +630,17 @@ const debounceMap = new WeakMap();
  * @param {debounce_timeout|number} [timeout] The timeout based on the common enum values, or in milliseconds.
  * @returns {function} The debounced function.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'func' implicitly has an 'any' type.
 export function debounce(func, timeout = debounce_timeout.standard) {
+    // @ts-expect-error TS(7034) FIXME: Variable 'timer' implicitly has type 'any' in some... Remove this comment to see the full error message
     let timer;
+    // @ts-expect-error TS(7019) FIXME: Rest parameter 'args' implicitly has an 'any[]' ty... Remove this comment to see the full error message
     const fn = (...args) => {
+        // @ts-expect-error TS(7005) FIXME: Variable 'timer' implicitly has an 'any' type.
         clearTimeout(timer);
         timer = setTimeout(async () => {
             try {
+                // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
                 await func.apply(this, args);
             } catch (e) {
                 console.error('Error in debounced function:', e);
@@ -611,16 +659,24 @@ export function debounce(func, timeout = debounce_timeout.standard) {
  * @param {number} [timeout] The timeout in milliseconds.
  * @returns {Function} The debounced function.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'func' implicitly has an 'any' type.
 export function debounceAsync(func, timeout = debounce_timeout.standard) {
+    // @ts-expect-error TS(7034) FIXME: Variable 'timer' implicitly has type 'any' in some... Remove this comment to see the full error message
     let timer;
     /**@type {Promise}*/
+    // @ts-expect-error TS(7034) FIXME: Variable 'debouncePromise' implicitly has type 'an... Remove this comment to see the full error message
     let debouncePromise;
     /**@type {Function}*/
+    // @ts-expect-error TS(7034) FIXME: Variable 'debounceResolver' implicitly has type 'a... Remove this comment to see the full error message
     let debounceResolver;
     /**@type {Function}*/
+    // @ts-expect-error TS(7034) FIXME: Variable 'debounceReject' implicitly has type 'any... Remove this comment to see the full error message
     let debounceReject;
+    // @ts-expect-error TS(7019) FIXME: Rest parameter 'args' implicitly has an 'any[]' ty... Remove this comment to see the full error message
     return (...args) => {
+        // @ts-expect-error TS(7005) FIXME: Variable 'timer' implicitly has an 'any' type.
         clearTimeout(timer);
+        // @ts-expect-error TS(7005) FIXME: Variable 'debouncePromise' implicitly has an 'any'... Remove this comment to see the full error message
         if (!debouncePromise) {
             debouncePromise = new Promise((resolve, reject) => {
                 debounceResolver = resolve;
@@ -629,15 +685,19 @@ export function debounceAsync(func, timeout = debounce_timeout.standard) {
         }
         timer = setTimeout(async () => {
             try {
+                // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
                 const result = await func.apply(this, args);
+                // @ts-expect-error TS(7005) FIXME: Variable 'debounceResolver' implicitly has an 'any... Remove this comment to see the full error message
                 debounceResolver(result);
             } catch (e) {
                 console.error('Error in debouncedAsync function:', e);
+                // @ts-expect-error TS(7005) FIXME: Variable 'debounceReject' implicitly has an 'any' ... Remove this comment to see the full error message
                 debounceReject(e);
             } finally {
                 debouncePromise = null;
             }
         }, timeout);
+        // @ts-expect-error TS(7005) FIXME: Variable 'debouncePromise' implicitly has an 'any'... Remove this comment to see the full error message
         return debouncePromise;
     };
 }
@@ -647,6 +707,7 @@ export function debounceAsync(func, timeout = debounce_timeout.standard) {
  * Does nothing if the function is not debounced or not scheduled.
  * @param {function} func The function to cancel. Either the original or the debounced function.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'func' implicitly has an 'any' type.
 export function cancelDebounce(func) {
     if (debounceMap.has(func)) {
         clearTimeout(debounceMap.get(func));
@@ -660,12 +721,17 @@ export function cancelDebounce(func) {
  * @param {number} [limit] The limit in milliseconds.
  * @returns {function} The throttled function.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'func' implicitly has an 'any' type.
 export function throttle(func, limit = 300) {
+    // @ts-expect-error TS(7034) FIXME: Variable 'lastCall' implicitly has type 'any' in s... Remove this comment to see the full error message
     let lastCall;
+    // @ts-expect-error TS(7019) FIXME: Rest parameter 'args' implicitly has an 'any[]' ty... Remove this comment to see the full error message
     return (...args) => {
         const now = Date.now();
+        // @ts-expect-error TS(7005) FIXME: Variable 'lastCall' implicitly has an 'any' type.
         if (!lastCall || (now - lastCall) >= limit) {
             lastCall = now;
+            // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
             func.apply(this, args);
         }
     };
@@ -677,21 +743,29 @@ export function throttle(func, limit = 300) {
  * @param {number} [limit] The limit in milliseconds.
  * @returns {function} The throttled function.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'func' implicitly has an 'any' type.
 export function debouncedThrottle(func, limit = 300) {
+    // @ts-expect-error TS(7034) FIXME: Variable 'last' implicitly has type 'any' in some ... Remove this comment to see the full error message
     let last, deferTimer;
     const db = debounce(func);
 
+    // @ts-expect-error TS(7019) FIXME: Rest parameter 'args' implicitly has an 'any[]' ty... Remove this comment to see the full error message
     return function (...args) {
         const now = +new Date;
+        // @ts-expect-error TS(7005) FIXME: Variable 'last' implicitly has an 'any' type.
         if (!last || (last && now < last + limit)) {
+            // @ts-expect-error TS(7005) FIXME: Variable 'deferTimer' implicitly has an 'any' type... Remove this comment to see the full error message
             clearTimeout(deferTimer);
+            // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
             db.apply(this, args);
             deferTimer = setTimeout(function () {
                 last = now;
+                // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
                 func.apply(this, args);
             }, limit);
         } else {
             last = now;
+            // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
             func.apply(this, args);
         }
     };
@@ -702,11 +776,12 @@ export function debouncedThrottle(func, limit = 300) {
  * @param {Element} el The element to check.
  * @returns {boolean} True if the element is in the viewport, false otherwise.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'el' implicitly has an 'any' type.
 export function isElementInViewport(el) {
     if (!el) {
         return false;
     }
-    // @ts-expect-error TS(2304): Cannot find name 'jQuery'.
+    // @ts-expect-error TS(2304) FIXME: Cannot find name 'jQuery'.
     if (typeof jQuery === 'function' && el instanceof jQuery) {
         el = el[0];
     }
@@ -731,11 +806,14 @@ export function isElementInViewport(el) {
  *        When set to 0, the intention is to also check if the basename (without applied index) is free.
  * @returns {string|null} A unique name. Null if no unique name could be found in `maxTries`.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'baseName' implicitly has an 'any' type.
 export function getUniqueName(baseName, exists, { nameBuilder = null, maxTries = 1000, startIndex = 1 } = {}) {
+    // @ts-expect-error TS(2322) FIXME: Type '(baseName: any, i: any) => any' is not assig... Remove this comment to see the full error message
     nameBuilder ??= (baseName, i) => i === 0 ? baseName : `${baseName} (${i})`;
     let i = startIndex;
     let name;
     while (i < maxTries + startIndex) {
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         name = nameBuilder(baseName, i);
         if (!exists(name)) {
             return name;
@@ -750,6 +828,7 @@ export function getUniqueName(baseName, exists, { nameBuilder = null, maxTries =
  * @param {number} ms The number of milliseconds to wait.
  * @returns {Promise<void>} A promise that resolves after the specified number of milliseconds.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'ms' implicitly has an 'any' type.
 export function delay(ms) {
     return new Promise((res) => setTimeout(res, ms));
 }
@@ -760,6 +839,7 @@ export function delay(ms) {
  * @param {any[]} b Array B
  * @returns {boolean} True if B is a subset of A, false otherwise.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'a' implicitly has an 'any' type.
 export function isSubsetOf(a, b) {
     return (Array.isArray(a) && Array.isArray(b)) ? b.every(val => a.includes(val)) : false;
 }
@@ -771,6 +851,7 @@ export function isSubsetOf(a, b) {
  * @example
  * incrementString('Hello, world! 1'); // 'Hello, world! 2'
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'str' implicitly has an 'any' type.
 export function incrementString(str) {
     // Find the trailing number or it will match the empty string
     const count = str.match(/\d*$/);
@@ -788,7 +869,9 @@ export function incrementString(str) {
  * @example
  * stringFormat('Hello, {0}!', 'world'); // 'Hello, world!'
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'format' implicitly has an 'any' type.
 export function stringFormat(format, ...args) {
+    // @ts-expect-error TS(7006) FIXME: Parameter 'match' implicitly has an 'any' type.
     return format.replace(/{(\d+)}/g, function (match, number) {
         return typeof args[number] != 'undefined'
             ? args[number]
@@ -801,16 +884,19 @@ export function stringFormat(format, ...args) {
  * @param {Element} element The element to save the caret position of.
  * @returns {{ start: number, end: number }} An object with the start and end offsets of the caret.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'element' implicitly has an 'any' type.
 export function saveCaretPosition(element) {
     // Get the current selection
     const selection = window.getSelection();
 
     // If the selection is empty, return null
+    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     if (selection.rangeCount === 0) {
         return null;
     }
 
     // Get the range of the current selection
+    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     const range = selection.getRangeAt(0);
 
     // If the range is not within the specified element, return null
@@ -834,6 +920,7 @@ export function saveCaretPosition(element) {
  * @param {Element} element The element to restore the caret position of.
  * @param {{ start: any; end: any; }} position An object with the start and end offsets of the caret.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'element' implicitly has an 'any' type.
 export function restoreCaretPosition(element, position) {
     // If the position is null, do nothing
     if (!position) {
@@ -851,7 +938,9 @@ export function restoreCaretPosition(element, position) {
 
     // Create a new selection object and set the range
     const selection = window.getSelection();
+    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     selection.removeAllRanges();
+    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     selection.addRange(range);
 }
 
@@ -859,10 +948,11 @@ export function restoreCaretPosition(element, position) {
  *
  * @param element
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'element' implicitly has an 'any' type.
 export async function resetScrollHeight(element) {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(element).css('height', '0px');
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(element).css('height', $(element).prop('scrollHeight') + 3 + 'px');
 }
 
@@ -871,12 +961,13 @@ export async function resetScrollHeight(element) {
  * @param {JQuery<HTMLElement>} element The element to initialize the scroll height of.
  * @returns {Promise<void>} A promise that resolves when the scroll height has been initialized.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'element' implicitly has an 'any' type.
 export async function initScrollHeight(element) {
     await delay(1);
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const curHeight = Number($(element).css('height').replace('px', ''));
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const curScrollHeight = Number($(element).prop('scrollHeight'));
     const diff = curScrollHeight - curHeight;
 
@@ -884,9 +975,9 @@ export async function initScrollHeight(element) {
 
     const newHeight = curHeight + diff + 3; //the +3 here is to account for padding/line-height on text inputs
     //console.log(`init height to ${newHeight}`);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(element).css('height', '');
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(element).css('height', `${newHeight}px`);
     //resetScrollHeight(element);
 }
@@ -897,10 +988,11 @@ export async function initScrollHeight(element) {
  * @param {any} b The second element.
  * @returns {number} A negative number if a is before b, a positive number if a is after b, or 0 if they are equal.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'a' implicitly has an 'any' type.
 export function sortByCssOrder(a, b) {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const _a = Number($(a).css('order'));
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const _b = Number($(b).css('order'));
     return _a - _b;
 }
@@ -915,6 +1007,7 @@ export function sortByCssOrder(a, b) {
  *
  * @param input
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'input' implicitly has an 'any' type.
 export function trimSpaces(input) {
     if (!input || typeof input !== 'string') {
         return input;
@@ -929,11 +1022,13 @@ export function trimSpaces(input) {
  * @example
  * trimToEndSentence('Hello, world! I am from'); // 'Hello, world!'
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'input' implicitly has an 'any' type.
 export function trimToEndSentence(input) {
     if (!input) {
         return '';
     }
 
+    // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
     const isEmoji = x => /(\p{Emoji_Presentation}|\p{Extended_Pictographic})/gu.test(x);
     const punctuation = new Set(['.', '!', '?', '*', '"', ')', '}', '`', ']', '$', '。', '！', '？', '”', '）', '】', '’', '」', '_']); // extend this as you see fit
     let last = -1;
@@ -943,9 +1038,9 @@ export function trimToEndSentence(input) {
         const char = characters[i];
         const emoji = isEmoji(char);
 
-        // @ts-expect-error TS(2345): Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
+        // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
         if (punctuation.has(char) || emoji) {
-            // @ts-expect-error TS(2345): Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
+            // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
             if (!emoji && i > 0 && /[\s\n]/.test(characters[i - 1])) {
                 last = i - 1;
             } else {
@@ -966,6 +1061,7 @@ export function trimToEndSentence(input) {
  *
  * @param input
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'input' implicitly has an 'any' type.
 export function trimToStartSentence(input) {
     if (!input) {
         return '';
@@ -998,6 +1094,7 @@ export function trimToStartSentence(input) {
  * @param dp Number of decimal places to display.
  * @returns Formatted string.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'bytes' implicitly has an 'any' type.
 export function humanFileSize(bytes, si = false, dp = 1) {
     const thresh = si ? 1000 : 1024;
 
@@ -1025,6 +1122,7 @@ export function humanFileSize(bytes, si = false, dp = 1) {
  * @param {number} seconds - Time in seconds
  * @returns {string} Formatted time string
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'seconds' implicitly has an 'any' type.
 export function formatTime(seconds) {
     if (!isFinite(seconds) || isNaN(seconds)) {
         return '0:00';
@@ -1044,6 +1142,7 @@ export function formatTime(seconds) {
  * countOccurrences('Hello, world!', 'l'); // 3
  * countOccurrences('Hello, world!', 'x'); // 0
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'string' implicitly has an 'any' type.
 export function countOccurrences(string, character) {
     let count = 0;
 
@@ -1061,6 +1160,7 @@ export function countOccurrences(string, character) {
  * @param {string} arg String to check
  * @returns {boolean} True if the string is true, false otherwise.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'arg' implicitly has an 'any' type.
 export function isTrueBoolean(arg) {
     return ['on', 'true', '1'].includes(arg?.trim()?.toLowerCase());
 }
@@ -1070,6 +1170,7 @@ export function isTrueBoolean(arg) {
  * @param {string} arg String to check
  * @returns {boolean} True if the string is false, false otherwise.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'arg' implicitly has an 'any' type.
 export function isFalseBoolean(arg) {
     return ['off', 'false', '0'].includes(arg?.trim()?.toLowerCase());
 }
@@ -1079,6 +1180,7 @@ export function isFalseBoolean(arg) {
  * @param {string} value String to parse
  * @returns {string[]} The parsed array.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
 export function parseStringArray(value) {
     if (!value || typeof value !== 'string') return [];
 
@@ -1101,6 +1203,7 @@ export function parseStringArray(value) {
  * isOdd(3); // true
  * isOdd(4); // false
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'number' implicitly has an 'any' type.
 export function isOdd(number) {
     return number % 2 !== 0;
 }
@@ -1111,6 +1214,7 @@ export function isOdd(number) {
  * @param {import('moment').Moment} b The second moment object.
  * @returns {number} A negative number if a is before b, a positive number if a is after b, or 0 if they are equal.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'a' implicitly has an 'any' type.
 export function sortMoments(a, b) {
     if (a.isBefore(b)) {
         return 1;
@@ -1129,6 +1233,7 @@ const dateCache = new Map();
  * @param {MessageTimestamp} timestamp String or number representing a date.
  * @returns {import('moment').Moment} Moment object
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'timestamp' implicitly has an 'any' type... Remove this comment to see the full error message
 export function timestampToMoment(timestamp) {
     if (dateCache.has(timestamp)) {
         return dateCache.get(timestamp);
@@ -1146,6 +1251,7 @@ export function timestampToMoment(timestamp) {
  * @param {MessageTimestamp} timestamp - The timestamp to parse. It can be a string or a number.
  * @returns {string} - If the timestamp is valid, returns an ISO 8601 string.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'timestamp' implicitly has an 'any' type... Remove this comment to see the full error message
 function parseTimestamp(timestamp) {
     if (!timestamp) return;
 
@@ -1170,6 +1276,7 @@ function parseTimestamp(timestamp) {
     const dtFmt = [];
 
     // meridiem-based format
+    // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
     const convertFromMeridiemBased = (_, month, day, year, hour, minute, meridiem) => {
         const monthNum = moment().month(month).format('MM');
         const hour24 = meridiem.toLowerCase() === 'pm' ? (parseInt(hour, 10) % 12) + 12 : parseInt(hour, 10) % 12;
@@ -1179,6 +1286,7 @@ function parseTimestamp(timestamp) {
     dtFmt.push({ callback: convertFromMeridiemBased, pattern: /(\w+)\s(\d{1,2}),\s(\d{4})\s(\d{1,2}):(\d{1,2})(am|pm)/i });
 
     // ST "humanized" format patterns
+    // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
     const convertFromHumanized = (_, year, month, day, hour, min, sec, ms) => {
         ms = typeof ms !== 'undefined' ? `.${ms.padStart(3, '0')}` : '';
         return `${year.padStart(4, '0')}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T${hour.padStart(2, '0')}:${min.padStart(2, '0')}:${sec.padStart(2, '0')}${ms}Z`;
@@ -1193,6 +1301,7 @@ function parseTimestamp(timestamp) {
     for (const x of dtFmt) {
         const rgxMatch = timestamp.match(x.pattern);
         if (!rgxMatch) continue;
+        // @ts-expect-error TS(2556) FIXME: A spread argument must either have a tuple type or... Remove this comment to see the full error message
         return x.callback(...rgxMatch);
     }
 
@@ -1208,6 +1317,7 @@ function parseTimestamp(timestamp) {
  * @example
  * splitRecursive('Hello, world!', 3); // ['Hel', 'lo,', 'wor', 'ld!']
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'input' implicitly has an 'any' type.
 export function splitRecursive(input, length, delimiters = ['\n\n', '\n', ' ', '']) {
     // Invalid length
     if (length <= 0) {
@@ -1217,6 +1327,7 @@ export function splitRecursive(input, length, delimiters = ['\n\n', '\n', ' ', '
     const delim = delimiters[0] ?? '';
     const parts = input.split(delim);
 
+    // @ts-expect-error TS(7006) FIXME: Parameter 'p' implicitly has an 'any' type.
     const flatParts = parts.flatMap(p => {
         if (p.length < length) return p;
         return splitRecursive(p, length, delimiters.slice(1));
@@ -1250,6 +1361,7 @@ export function splitRecursive(input, length, delimiters = ['\n\n', '\n', ' ', '
  * @example
  * isDataURL('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUA...'); // true
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'str' implicitly has an 'any' type.
 export function isDataURL(str) {
     const regex = /^data:([a-z]+\/[a-z0-9-+.]+(;[a-z-]+=[a-z0-9-]+)*;?)?(base64)?,([a-z0-9!$&',()*+;=\-_%.~:@/?#]+)?$/i;
     return typeof str === 'string' && regex.test(str);
@@ -1260,6 +1372,7 @@ export function isDataURL(str) {
  * @param {string} dataUrl Image data URL
  * @returns {Promise<{ width: number, height: number }>} Image size
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'dataUrl' implicitly has an 'any' type.
 export function getImageSizeFromDataURL(dataUrl) {
     const image = new Image();
     image.src = dataUrl;
@@ -1278,6 +1391,7 @@ export function getImageSizeFromDataURL(dataUrl) {
  * @param {string} dataUrl Video data URL
  * @returns {Promise<number>} Duration in seconds
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'dataUrl' implicitly has an 'any' type.
 export function getVideoDurationFromDataURL(dataUrl) {
     const video = document.createElement('video');
     video.src = dataUrl;
@@ -1299,6 +1413,7 @@ export function getVideoDurationFromDataURL(dataUrl) {
  * @param {string} [type] MIME type of the thumbnail
  * @returns {Promise<string>} Promise that resolves to a data URL of the video thumbnail
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'videoUrl' implicitly has an 'any' type.
 export function getVideoThumbnail(videoUrl, maxWidth = null, maxHeight = null, type = 'image/jpeg') {
     const video = document.createElement('video');
     video.src = videoUrl;
@@ -1315,10 +1430,15 @@ export function getVideoThumbnail(videoUrl, maxWidth = null, maxHeight = null, t
 
             canvas.width = thumbnailWidth;
             canvas.height = thumbnailHeight;
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             ctx.imageSmoothingEnabled = true;
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             ctx.imageSmoothingQuality = 'high';
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             ctx.fillStyle = 'black';
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             ctx.fillRect(0, 0, thumbnailWidth, thumbnailHeight);
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             ctx.drawImage(video, 0, 0, thumbnailWidth, thumbnailHeight);
             // Get the data URL of the thumbnail
             const dataUrl = canvas.toDataURL(type);
@@ -1338,6 +1458,7 @@ export function getVideoThumbnail(videoUrl, maxWidth = null, maxHeight = null, t
  * @param {number?} maxHeight Max height (null = no limit)
  * @returns {{ thumbnailWidth: number, thumbnailHeight: number }} Thumbnail size
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'width' implicitly has an 'any' type.
 export function calculateThumbnailSize(width, height, maxWidth, maxHeight) {
     // Calculate the thumbnail dimensions while maintaining the aspect ratio
     const aspectRatio = width / height;
@@ -1374,6 +1495,7 @@ export function calculateThumbnailSize(width, height, maxWidth, maxHeight) {
  * @param {string} dataUrl Audio data URL
  * @returns {Promise<number>} Duration in seconds
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'dataUrl' implicitly has an 'any' type.
 export function getAudioDurationFromDataURL(dataUrl) {
     const audio = document.createElement('audio');
     audio.src = dataUrl;
@@ -1396,6 +1518,7 @@ export function getAudioDurationFromDataURL(dataUrl) {
  */
 export function getCharaFilename(chid = null, { manualAvatarKey = null } = {}) {
     const context = getContext();
+    // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
     const fileName = manualAvatarKey ?? context.characters[chid ?? context.characterId]?.avatar;
 
     return fileName?.replace(/\.[^/.]+$/, '') ?? null;
@@ -1408,10 +1531,13 @@ export function getCharaFilename(chid = null, { manualAvatarKey = null } = {}) {
  * @example
  * extractAllWords('Hello, world!'); // ['hello', 'world']
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
 export function extractAllWords(value) {
+    // @ts-expect-error TS(7034) FIXME: Variable 'words' implicitly has type 'any[]' in so... Remove this comment to see the full error message
     const words = [];
 
     if (!value) {
+        // @ts-expect-error TS(7005) FIXME: Variable 'words' implicitly has an 'any[]' type.
         return words;
     }
 
@@ -1429,6 +1555,7 @@ export function extractAllWords(value) {
  * @example
  * escapeRegex('^Hello$'); // '\\^Hello\\$'
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'string' implicitly has an 'any' type.
 export function escapeRegex(string) {
     return string.replace(/[/\-\\^$*+?.()|[\]{}]/g, '\\$&');
 }
@@ -1439,6 +1566,7 @@ export function escapeRegex(string) {
  * @returns {RegExp} The regular expression instance.
  * @copyright Originally from: https://github.com/IonicaBizau/regex-parser.js/blob/master/lib/index.js
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'input' implicitly has an 'any' type.
 export function regexFromString(input) {
     try {
         // Parse input
@@ -1452,7 +1580,6 @@ export function regexFromString(input) {
         // Create the regular expression
         return new RegExp(m[2], m[3]);
     } catch {
-        // @ts-expect-error TS(7030): Not all code paths return a value.
         return;
     }
 }
@@ -1464,6 +1591,7 @@ export class Stopwatch {
      * Initializes a Stopwatch class.
      * @param {number} interval Update interval in milliseconds. Must be a finite number above zero.
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'interval' implicitly has an 'any' type.
     constructor(interval) {
         if (isNaN(interval) || !isFinite(interval) || interval <= 0) {
             console.warn('Invalid interval for Stopwatch, setting to 1');
@@ -1479,6 +1607,7 @@ export class Stopwatch {
      * @param {(arg0: any) => any} action Action function
      * @returns Promise<void>
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'action' implicitly has an 'any' type.
     async tick(action) {
         const passed = (Date.now() - this.lastAction);
 
@@ -1507,6 +1636,7 @@ export class RateLimiter {
      *    console.log('Waited 1000ms');
      * });
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'interval' implicitly has an 'any' type.
     constructor(interval) {
         this.interval = interval;
         this.lastResolveTime = 0;
@@ -1518,6 +1648,7 @@ export class RateLimiter {
      * @param {AbortSignal} abortSignal An optional AbortSignal to abort the wait.
      * @returns {Promise<void>} A promise that resolves when the remaining time has elapsed.
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'abortSignal' implicitly has an 'any' ty... Remove this comment to see the full error message
     _waitRemainingTime(abortSignal) {
         const currentTime = Date.now();
         const elapsedTime = currentTime - this.lastResolveTime;
@@ -1525,7 +1656,7 @@ export class RateLimiter {
 
         return new Promise((resolve, reject) => {
             const timeoutId = setTimeout(() => {
-                // @ts-expect-error TS(2794): Expected 1 arguments, but got 0. Did you forget to... Remove this comment to see the full error message
+                // @ts-expect-error TS(2794) FIXME: Expected 1 arguments, but got 0. Did you forget to... Remove this comment to see the full error message
                 resolve();
             }, remainingTime);
 
@@ -1543,8 +1674,10 @@ export class RateLimiter {
      * @param {AbortSignal} abortSignal An optional AbortSignal to abort the wait.
      * @returns {Promise<void>} A promise that resolves when the next interval has elapsed.
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'abortSignal' implicitly has an 'any' ty... Remove this comment to see the full error message
     async waitForResolve(abortSignal) {
         await this.pendingResolve;
+        // @ts-expect-error TS(2322) FIXME: Type 'Promise<unknown>' is not assignable to type ... Remove this comment to see the full error message
         this.pendingResolve = this._waitRemainingTime(abortSignal);
 
         // Update the last resolve time
@@ -1561,6 +1694,7 @@ export class RateLimiter {
  * @param {string} identifier The identifier to look for in the PNG tEXT data.
  * @returns {object} The extracted JSON object.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
 export function extractDataFromPng(data, identifier = 'chara') {
     console.log('Attempting PNG import...');
     const uint8 = new Uint8Array(4);
@@ -1585,6 +1719,7 @@ export function extractDataFromPng(data, identifier = 'chara') {
         uint8[0] = data[idx++];
 
         // Chunk includes name/type for CRC check (see below).
+        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         const length = uint32[0] + 4;
         const chunk = new Uint8Array(length);
         chunk[0] = data[idx++];
@@ -1594,9 +1729,13 @@ export function extractDataFromPng(data, identifier = 'chara') {
 
         // Get the name in ASCII for identification.
         const name = (
+            // @ts-expect-error TS(2345) FIXME: Argument of type 'number | undefined' is not assig... Remove this comment to see the full error message
             String.fromCharCode(chunk[0]) +
+            // @ts-expect-error TS(2345) FIXME: Argument of type 'number | undefined' is not assig... Remove this comment to see the full error message
             String.fromCharCode(chunk[1]) +
+            // @ts-expect-error TS(2345) FIXME: Argument of type 'number | undefined' is not assig... Remove this comment to see the full error message
             String.fromCharCode(chunk[2]) +
+            // @ts-expect-error TS(2345) FIXME: Argument of type 'number | undefined' is not assig... Remove this comment to see the full error message
             String.fromCharCode(chunk[3])
         );
 
@@ -1655,8 +1794,10 @@ export function extractDataFromPng(data, identifier = 'chara') {
     } else {
         try {
             let b64buf = '';
+            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             const bytes = found[0].data; //skip the chara
             for (let i = identifier.length + 1; i < bytes.length; i++) {
+                // @ts-expect-error TS(2345) FIXME: Argument of type 'number | undefined' is not assig... Remove this comment to see the full error message
                 b64buf += String.fromCharCode(bytes[i]);
             }
             const decoded = JSON.parse(atob(b64buf));
@@ -1674,6 +1815,7 @@ export function extractDataFromPng(data, identifier = 'chara') {
  * @param {string} fileName - The name of the file to sanitize
  * @returns {Promise<string>} A Promise that resolves to the sanitized filename if successful, or rejects with an error message if unsuccessful
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'fileName' implicitly has an 'any' type.
 export async function getSanitizedFilename(fileName) {
     try {
         const result = await fetch('/api/files/sanitize-filename', {
@@ -1692,7 +1834,7 @@ export async function getSanitizedFilename(fileName) {
         const responseData = await result.json();
         return responseData.fileName;
     } catch (error) {
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.error(String(error), 'Could not sanitize fileName');
         console.error('Could not sanitize fileName', error);
         throw error;
@@ -1708,6 +1850,7 @@ export async function getSanitizedFilename(fileName) {
  * @returns {Promise<string>} - Resolves to the saved image's path on the server.
  *                              Rejects with an error if the upload fails.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'base64Data' implicitly has an 'any' typ... Remove this comment to see the full error message
 export async function saveBase64AsFile(base64Data, subFolder, fileName, extension) {
     // Prepare the request body
     const requestBody = {
@@ -1739,6 +1882,7 @@ export async function saveBase64AsFile(base64Data, subFolder, fileName, extensio
  * @param {File} file The file to get the extension from
  * @returns {string} The file extension of the given file
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'file' implicitly has an 'any' type.
 export function getFileExtension(file) {
     return file.name.substring((file.name.lastIndexOf('.') + file.name.length) % file.name.length + 1).toLowerCase().trim();
 }
@@ -1748,6 +1892,7 @@ export function getFileExtension(file) {
  * @param {string} text The UTF-8 string
  * @returns {string} The Base64-encoded string
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'text' implicitly has an 'any' type.
 export function convertTextToBase64(text) {
     const encoder = new TextEncoder();
     const utf8Bytes = encoder.encode(text);
@@ -1756,7 +1901,6 @@ export function convertTextToBase64(text) {
      * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array/toBase64|MDN Reference}
      */
     if ('toBase64' in Uint8Array.prototype) {
-        // @ts-expect-error TS(2339): Property 'toBase64' does not exist on type 'Uint8A... Remove this comment to see the full error message
         return utf8Bytes.toBase64();
     }
     // Creates binary string, where each character's code point directly matches the byte value (0-255).
@@ -1774,6 +1918,7 @@ export function convertTextToBase64(text) {
  * @param {string} type - The type of file to load: "css" or "js".
  * @returns {Promise} - Resolves when the file has loaded, rejects if there's an error or invalid type.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'url' implicitly has an 'any' type.
 export function loadFileToDocument(url, type) {
     return new Promise((resolve, reject) => {
         let element;
@@ -1810,7 +1955,6 @@ export async function promptForAvatarFile() {
         const input = document.createElement('input');
         input.type = 'file';
         input.accept = supportedImageMimeTypes.join(',');
-        // @ts-expect-error TS(7030): Not all code paths return a value.
         input.onchange = async (e) => {
             if (!(e.target instanceof HTMLInputElement)) {
                 return '';
@@ -1818,7 +1962,6 @@ export async function promptForAvatarFile() {
             const file = e.target?.files?.[0];
             if (!file) {
                 resolve(null);
-                // @ts-expect-error TS(7030): Not all code paths return a value.
                 return;
             }
             try {
@@ -1827,12 +1970,12 @@ export async function promptForAvatarFile() {
                 resolve(base64);
             } catch (error) {
                 console.error('Error processing selected image:', error);
-                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                 toastr.error(t`Failed to process selected image: ${error.message}`);
                 resolve(null);
             }
         };
-        // @ts-expect-error TS(2339): Property 'oncancel' does not exist on type 'HTMLIn... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'oncancel' does not exist on type 'HTMLIn... Remove this comment to see the full error message
         input.oncancel = () => resolve(null);
         input.click();
     });
@@ -1843,6 +1986,7 @@ export async function promptForAvatarFile() {
  * @param {string} input - "prompt" to open file picker, base64 data URL, or local file path
  * @returns {Promise<string|null>} Base64 data URL or null if invalid/cancelled
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'input' implicitly has an 'any' type.
 export async function resolveAvatarData(input) {
     if (!input || typeof input !== 'string') {
         return null;
@@ -1862,7 +2006,7 @@ export async function resolveAvatarData(input) {
 
     // External URLs are not supported
     if (isExternalUrl(trimmed)) {
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.warning(t`External URLs are not supported for avatars. Use a local file path or "prompt" to select a file.`);
         return null;
     }
@@ -1894,7 +2038,7 @@ export async function resolveAvatarData(input) {
             return await getBase64Async(converted);
         } catch (error) {
             console.error('Error fetching local avatar:', error);
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.warning(t`Failed to load avatar from path: ${error.message}`);
             return null;
         }
@@ -1902,7 +2046,7 @@ export async function resolveAvatarData(input) {
 
     // Unknown format
     console.warn('Unknown avatar format:', trimmed.substring(0, 50));
-    // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+    // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
     toastr.warning(t`Unknown avatar format. Use "prompt" to select a file, or provide a local file path.`);
     return null;
 }
@@ -1926,6 +2070,7 @@ export const supportedImageMimeTypes = Object.freeze([
  * @param {File} file Input file
  * @returns {Promise<File>} A promise that resolves to the supported file.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'file' implicitly has an 'any' type.
 export async function ensureImageFormatSupported(file) {
     if (supportedImageMimeTypes.includes(file.type) || !file.type.startsWith('image/')) {
         return file;
@@ -1940,10 +2085,11 @@ export async function ensureImageFormatSupported(file) {
  * @param {string} type Target file type
  * @returns {Promise<File>} A promise that resolves to the converted file.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'inputFile' implicitly has an 'any' type... Remove this comment to see the full error message
 export async function convertImageFile(inputFile, type = 'image/png') {
     const base64 = await getBase64Async(inputFile);
     const thumbnail = await createThumbnail(base64, null, null, type);
-    // @ts-expect-error TS(2769): No overload matches this call.
+    // @ts-expect-error TS(2769) FIXME: No overload matches this call.
     const blob = await fetch(thumbnail).then(res => res.blob());
     const outputFile = new File([blob], inputFile.name, { type });
     return outputFile;
@@ -1957,6 +2103,7 @@ export async function convertImageFile(inputFile, type = 'image/png') {
  * @param {string} [type] The type of the thumbnail.
  * @returns {Promise<string>} A promise that resolves to the thumbnail data URL.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'dataUrl' implicitly has an 'any' type.
 export function createThumbnail(dataUrl, maxWidth = null, maxHeight = null, type = 'image/jpeg') {
     // Someone might pass in a base64 encoded string without the data URL prefix
     if (!dataUrl.includes('data:')) {
@@ -1974,10 +2121,15 @@ export function createThumbnail(dataUrl, maxWidth = null, maxHeight = null, type
             // Set the canvas dimensions and draw the resized image
             canvas.width = thumbnailWidth;
             canvas.height = thumbnailHeight;
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             ctx.imageSmoothingEnabled = true;
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             ctx.imageSmoothingQuality = 'high';
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             ctx.fillStyle = 'white';
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             ctx.fillRect(0, 0, thumbnailWidth, thumbnailHeight);
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             ctx.drawImage(img, 0, 0, thumbnailWidth, thumbnailHeight);
 
             // Convert the canvas to a data URL and resolve the promise
@@ -2000,8 +2152,9 @@ export function createThumbnail(dataUrl, maxWidth = null, maxHeight = null, type
  * @param {boolean} [options.rejectOnTimeout] Whether to reject the promise on timeout or resolve it.
  * @returns {Promise<void>} A promise that resolves when the condition is true.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'condition' implicitly has an 'any' type... Remove this comment to see the full error message
 export async function waitUntilCondition(condition, timeout = 1000, interval = 100, options = {}) {
-    // @ts-expect-error TS(2339): Property 'rejectOnTimeout' does not exist on type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2339) FIXME: Property 'rejectOnTimeout' does not exist on type ... Remove this comment to see the full error message
     const { rejectOnTimeout = true } = options;
 
     return new Promise((resolve, reject) => {
@@ -2015,7 +2168,7 @@ export async function waitUntilCondition(condition, timeout = 1000, interval = 1
             if (condition()) {
                 clearTimeout(timeoutId);
                 clearInterval(intervalId);
-                // @ts-expect-error TS(2794): Expected 1 arguments, but got 0. Did you forget to... Remove this comment to see the full error message
+                // @ts-expect-error TS(2794) FIXME: Expected 1 arguments, but got 0. Did you forget to... Remove this comment to see the full error message
                 resolve();
             }
         }, interval);
@@ -2044,6 +2197,7 @@ export function uuidv4() {
  * @param {string} s String to process
  * @returns {string} String with collapsed spaces
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 's' implicitly has an 'any' type.
 export function collapseSpaces(s) {
     return s.replace(/\s+/g, ' ').trim();
 }
@@ -2053,6 +2207,7 @@ export function collapseSpaces(s) {
  * @param text
  * @param collapse
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'text' implicitly has an 'any' type.
 function postProcessText(text, collapse = true) {
     // Remove carriage returns
     text = text.replace(/\r/g, '');
@@ -2064,11 +2219,13 @@ function postProcessText(text, collapse = true) {
     if (collapse) {
         text = collapseNewlines(text);
         // Trim leading and trailing whitespace, and remove empty lines
+        // @ts-expect-error TS(7006) FIXME: Parameter 'l' implicitly has an 'any' type.
         text = text.split('\n').map(l => l.trim()).filter(Boolean).join('\n');
     } else {
         // Replace more than 4 newlines with 4 newlines
         text = text.replace(/\n{4,}/g, '\n\n\n\n');
         // Trim lines that contain nothing but whitespace
+        // @ts-expect-error TS(7006) FIXME: Parameter 'l' implicitly has an 'any' type.
         text = text.split('\n').map(l => /^\s+$/.test(l) ? '' : l).join('\n');
     }
     // Collapse multiple spaces into one (except for newlines)
@@ -2084,6 +2241,7 @@ function postProcessText(text, collapse = true) {
  * @param {string} [textSelector] The fallback selector for the text to parse.
  * @returns {Promise<string>} A promise that resolves to the parsed text.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'document' implicitly has an 'any' type.
 export async function getReadableText(document, textSelector = 'body') {
     if (isProbablyReaderable(document)) {
         const parser = new Readability(document);
@@ -2092,7 +2250,7 @@ export async function getReadableText(document, textSelector = 'body') {
     }
 
     const elements = document.querySelectorAll(textSelector);
-    // @ts-expect-error TS(2339): Property 'textContent' does not exist on type 'unk... Remove this comment to see the full error message
+    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
     const rawText = Array.from(elements).map(e => e.textContent).join('\n');
     const text = postProcessText(rawText);
     return text;
@@ -2103,9 +2261,12 @@ export async function getReadableText(document, textSelector = 'body') {
  * @param {Blob} blob PDF file blob
  * @returns {Promise<string>} A promise that resolves to the parsed text.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'blob' implicitly has an 'any' type.
 export async function extractTextFromPDF(blob) {
     if (!('pdfjsLib' in window)) {
+        // @ts-expect-error TS(1323) FIXME: Dynamic imports are only supported when the '--mod... Remove this comment to see the full error message
         await import('../lib/pdf.min.mjs');
+        // @ts-expect-error TS(1323) FIXME: Dynamic imports are only supported when the '--mod... Remove this comment to see the full error message
         await import('../lib/pdf.worker.min.mjs');
     }
 
@@ -2115,6 +2276,7 @@ export async function extractTextFromPDF(blob) {
     for (let i = 1; i <= pdf.numPages; i++) {
         const page = await pdf.getPage(i);
         const textContent = await page.getTextContent();
+        // @ts-expect-error TS(7006) FIXME: Parameter 'item' implicitly has an 'any' type.
         const text = textContent.items.map(item => item.str).join(' ');
         pages.push(text);
     }
@@ -2127,6 +2289,7 @@ export async function extractTextFromPDF(blob) {
  * @param textSelector
  * @returns {Promise<string>} A promise that resolves to the parsed text.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'blob' implicitly has an 'any' type.
 export async function extractTextFromHTML(blob, textSelector = 'body') {
     const html = await blob.text();
     const domParser = new DOMParser();
@@ -2139,6 +2302,7 @@ export async function extractTextFromHTML(blob, textSelector = 'body') {
  * @param {Blob} blob Markdown content blob
  * @returns {Promise<string>} A promise that resolves to the parsed text.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'blob' implicitly has an 'any' type.
 export async function extractTextFromMarkdown(blob) {
     const markdown = await blob.text();
     const text = postProcessText(markdown, false);
@@ -2149,16 +2313,21 @@ export async function extractTextFromMarkdown(blob) {
  *
  * @param blob
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'blob' implicitly has an 'any' type.
 export async function extractTextFromEpub(blob) {
     if (!('ePub' in window)) {
+        // @ts-expect-error TS(1343) FIXME: The 'import.meta' meta-property is only allowed wh... Remove this comment to see the full error message
         await loadFileToDocument(new URL('../lib/jszip.min.js', import.meta.url).href, 'js');
+        // @ts-expect-error TS(1343) FIXME: The 'import.meta' meta-property is only allowed wh... Remove this comment to see the full error message
         await loadFileToDocument(new URL('../lib/epub.min.js', import.meta.url).href, 'js');
     }
 
     const book = ePub(blob);
     await book.ready;
+    // @ts-expect-error TS(7034) FIXME: Variable 'sectionPromises' implicitly has type 'an... Remove this comment to see the full error message
     const sectionPromises = [];
 
+    // @ts-expect-error TS(7006) FIXME: Parameter 'section' implicitly has an 'any' type.
     book.spine.each((section) => {
         const sectionPromise = (async () => {
             const chapter = await book.load(section.href);
@@ -2171,6 +2340,7 @@ export async function extractTextFromEpub(blob) {
         sectionPromises.push(sectionPromise);
     });
 
+    // @ts-expect-error TS(7005) FIXME: Variable 'sectionPromises' implicitly has an 'any[... Remove this comment to see the full error message
     const content = await Promise.all(sectionPromises);
     const text = content.filter(text => text);
     return postProcessText(text.join('\n'), false);
@@ -2181,6 +2351,7 @@ export async function extractTextFromEpub(blob) {
  * @param {File} blob File to extract text from
  * @returns {Promise<string>} A promise that resolves to the extracted text.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'blob' implicitly has an 'any' type.
 export async function extractTextFromOffice(blob) {
     /**
      *
@@ -2227,6 +2398,7 @@ export async function extractTextFromOffice(blob) {
  * @param {any} value Value to set
  * @returns {void}
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'obj' implicitly has an 'any' type.
 export function setValueByPath(obj, path, value) {
     const keyParts = path.split('.');
     let currentObject = obj;
@@ -2249,6 +2421,7 @@ export function setValueByPath(obj, path, value) {
  * @param {object} obj Object to delete from
  * @param {string} path Dot-separated key path (e.g. "data.extensions.myKey")
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'obj' implicitly has an 'any' type.
 export function deleteValueByPath(obj, path) {
     const keyParts = path.split('.');
     let current = obj;
@@ -2266,6 +2439,7 @@ export function deleteValueByPath(obj, path) {
  * @param {HTMLElement} element - The element to flash
  * @param {number} timespan - A number in milliseconds how the flash should last (default is 2000ms.  Multiples of 1000ms work best, as they end with the flash animation being at 100% opacity)
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'element' implicitly has an 'any' type.
 export function flashHighlight(element, timespan = 2000) {
     const flashDuration = 2000; // Duration of a single flash cycle in milliseconds
 
@@ -2292,7 +2466,9 @@ export function flashHighlight(element, timespan = 2000) {
  * @param {HTMLElement} control - The control element to check for animation
  * @returns {boolean} Whether the control has an animation applied
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'control' implicitly has an 'any' type.
 export function hasAnimation(control) {
+    // @ts-expect-error TS(7015) FIXME: Element implicitly has an 'any' type because index... Remove this comment to see the full error message
     const animatioName = getComputedStyle(control, null)['animation-name'];
     return animatioName != 'none';
 }
@@ -2304,6 +2480,7 @@ export function hasAnimation(control) {
  * @param {(control:*?) => void} callback - The callback function to be executed when the animation ends
  * @param {number} [timeout] - The timeout in milliseconds to wait for the animation to end before executing the callback
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'control' implicitly has an 'any' type.
 export function runAfterAnimation(control, callback, timeout = 500) {
     if (hasAnimation(control)) {
         Promise.race([
@@ -2323,6 +2500,7 @@ export function runAfterAnimation(control, callback, timeout = 500) {
  * @returns {T} - The result of the comparison.
  * @template T
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'a' implicitly has an 'any' type.
 export function compareIgnoreCaseAndAccents(a, b, comparisonFunction) {
     if (!a || !b) return comparisonFunction(a, b); // Return the comparison result if either string is empty
 
@@ -2341,7 +2519,9 @@ export function compareIgnoreCaseAndAccents(a, b, comparisonFunction) {
  * @param {string} searchTerm - The substring to search for in the text
  * @returns {boolean} true if the searchTerm is found within the text, otherwise returns false
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'text' implicitly has an 'any' type.
 export function includesIgnoreCaseAndAccents(text, searchTerm) {
+    // @ts-expect-error TS(7006) FIXME: Parameter 'a' implicitly has an 'any' type.
     return compareIgnoreCaseAndAccents(text, searchTerm, (a, b) => a?.includes(b) === true);
 }
 
@@ -2352,7 +2532,9 @@ export function includesIgnoreCaseAndAccents(text, searchTerm) {
  * @param {string} b - The second string to compare
  * @returns {boolean} true if the strings are equal, otherwise returns false
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'a' implicitly has an 'any' type.
 export function equalsIgnoreCaseAndAccents(a, b) {
+    // @ts-expect-error TS(7006) FIXME: Parameter 'a' implicitly has an 'any' type.
     return compareIgnoreCaseAndAccents(a, b, (a, b) => a === b);
 }
 
@@ -2362,7 +2544,9 @@ export function equalsIgnoreCaseAndAccents(a, b) {
  * @param {string} b - The second string to compare
  * @returns {number} -1 if a < b, 1 if a > b, 0 if a === b
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'a' implicitly has an 'any' type.
 export function sortIgnoreCaseAndAccents(a, b) {
+    // @ts-expect-error TS(7006) FIXME: Parameter 'a' implicitly has an 'any' type.
     return compareIgnoreCaseAndAccents(a, b, (a, b) => a?.localeCompare(b));
 }
 
@@ -2378,6 +2562,7 @@ export function sortIgnoreCaseAndAccents(a, b) {
  * @param {string} option - The option
  * @returns {string} A hashed version of that option
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'option' implicitly has an 'any' type.
 export function getSelect2OptionId(option) {
     return String(getStringHash(option));
 }
@@ -2390,14 +2575,19 @@ export function getSelect2OptionId(option) {
  * @param {boolean} [options.select] - Whether the options should be selected right away
  * @param {object} [options.changeEventArgs] - Optional event args being passed into the "change" event when its triggered because a new options is selected
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'element' implicitly has an 'any' type.
 export function select2ModifyOptions(element, items, { select = false, changeEventArgs = null } = {}) {
     if (!items.length) return;
     /** @type {Select2Option[]} */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
     const dataItems = items.map(x => typeof x === 'string' ? { id: getSelect2OptionId(x), text: x } : x);
 
+    // @ts-expect-error TS(7034) FIXME: Variable 'optionsToSelect' implicitly has type 'an... Remove this comment to see the full error message
     const optionsToSelect = [];
+    // @ts-expect-error TS(7034) FIXME: Variable 'newOptions' implicitly has type 'any[]' ... Remove this comment to see the full error message
     const newOptions = [];
 
+    // @ts-expect-error TS(7006) FIXME: Parameter 'item' implicitly has an 'any' type.
     dataItems.forEach(item => {
         // Set the value, creating a new option if necessary
         if (element[0].querySelector('option[value=\'' + item.id + '\']')) {
@@ -2411,7 +2601,9 @@ export function select2ModifyOptions(element, items, { select = false, changeEve
         }
     });
 
+    // @ts-expect-error TS(7005) FIXME: Variable 'newOptions' implicitly has an 'any[]' ty... Remove this comment to see the full error message
     element.append(newOptions);
+    // @ts-expect-error TS(7005) FIXME: Variable 'optionsToSelect' implicitly has an 'any[... Remove this comment to see the full error message
     if (optionsToSelect.length) element.val(optionsToSelect).trigger('change', changeEventArgs);
 }
 
@@ -2421,6 +2613,7 @@ export function select2ModifyOptions(element, items, { select = false, changeEve
  * @param {function():Select2Option[]} dataProvider - The provider/function to retrieve the data - can be as simple as "() => myData" for arrays
  * @returns {{transport: (params, success, failure) => any}} The ajax object with the transport function to use on the select2 ajax property
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'dataProvider' implicitly has an 'any' t... Remove this comment to see the full error message
 export function dynamicSelect2DataViaAjax(dataProvider) {
     /**
      *
@@ -2428,15 +2621,16 @@ export function dynamicSelect2DataViaAjax(dataProvider) {
      * @param success
      * @param failure
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'params' implicitly has an 'any' type.
     function dynamicSelect2DataTransport(params, success, failure) {
         let items = dataProvider();
         // fitering if params.data.q available
         if (params.data && params.data.q) {
+            // @ts-expect-error TS(7006) FIXME: Parameter 'item' implicitly has an 'any' type.
             items = items.filter(function (item) {
                 return includesIgnoreCaseAndAccents(item.text, params.data.q);
             });
         }
-        // @ts-expect-error TS(6133): 'reject' is declared but its value is never read.
         const promise = new Promise(function (resolve, reject) {
             resolve({ results: items });
         });
@@ -2454,8 +2648,9 @@ export function dynamicSelect2DataViaAjax(dataProvider) {
  * @param {JQuery<HTMLElement>|HTMLElement} element - The element to check
  * @returns {boolean} Whether this is a choice element
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'element' implicitly has an 'any' type.
 export function isSelect2ChoiceElement(element) {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const $element = $(element);
     return ($element.hasClass('select2-selection__choice__display') || $element[0]?.closest('.select2-selection__choice__display') !== null);
 }
@@ -2469,14 +2664,16 @@ export function isSelect2ChoiceElement(element) {
  * @param {boolean} [options.closeDrawer] - Whether the drawer should be closed and focus removed after the choice item was clicked
  * @param {boolean} [options.openDrawer] - Whether the drawer should be opened, even if this click would normally close it
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'control' implicitly has an 'any' type.
 export function select2ChoiceClickSubscribe(control, action, { buttonStyle = false, closeDrawer = false, openDrawer = false } = {}) {
     // Add class for styling (hover color, changed cursor, etc)
     control.addClass('select2_choice_clickable');
     if (buttonStyle) control.addClass('select2_choice_clickable_buttonstyle');
 
     // Get the real container below and create a click handler on that one
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const select2Container = $(control[0].nextElementSibling?.matches('span.select2-container') ? control[0].nextElementSibling : null);
+    // @ts-expect-error TS(7006) FIXME: Parameter 'event' implicitly has an 'any' type.
     select2Container.on('click', function (event) {
         const isChoice = isSelect2ChoiceElement(event.target);
         if (isChoice) {
@@ -2485,6 +2682,7 @@ export function select2ChoiceClickSubscribe(control, action, { buttonStyle = fal
             // select2 still bubbles the event to open the dropdown. So we close it here and remove focus if we want that
             if (closeDrawer) {
                 control.select2('close');
+                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 setTimeout(() => $(select2Container[0].querySelector('textarea')).trigger('blur'), debounce_timeout.quick);
             }
             if (openDrawer) {
@@ -2502,8 +2700,10 @@ export function select2ChoiceClickSubscribe(control, action, { buttonStyle = fal
  * @param {string} regexStr - The javascript compatible regex string
  * @returns {string} The html representation of the highlighted regex
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'regexStr' implicitly has an 'any' type.
 export function highlightRegex(regexStr) {
     // Function to escape special characters for safety or readability
+    // @ts-expect-error TS(7006) FIXME: Parameter 'str' implicitly has an 'any' type.
     const escape = (str) => str.replace(/[&<>"'\x01]/g, match => ({
         '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', '\'': '&#39;', '\x01': '\\x01',
     })[match]);
@@ -2540,7 +2740,9 @@ export function highlightRegex(regexStr) {
     const patterns = getPatterns();
 
     // Function to replace each pattern with a highlighted HTML span
+    // @ts-expect-error TS(7006) FIXME: Parameter 'pattern' implicitly has an 'any' type.
     const wrapPattern = (pattern, className) => {
+        // @ts-expect-error TS(7006) FIXME: Parameter 'match' implicitly has an 'any' type.
         regexStr = regexStr.replace(pattern, match => `<span class="${className}">${match}</span>`);
     };
 
@@ -2567,7 +2769,9 @@ export function highlightRegex(regexStr) {
  * @param {(existingName:string)=>void} [options.deleteAction] - Optional action to execute wen deleting an existing data object on overwrite
  * @returns {Promise<boolean>} True if the user confirmed the overwrite or there is no overwrite needed, false otherwise
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'type' implicitly has an 'any' type.
 export async function checkOverwriteExistingData(type, existingNames, name, { interactive = false, actionName = 'Overwrite', deleteAction = null } = {}) {
+    // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
     const existing = existingNames.find(x => equalsIgnoreCaseAndAccents(x, name));
     if (!existing) {
         return true;
@@ -2575,16 +2779,17 @@ export async function checkOverwriteExistingData(type, existingNames, name, { in
 
     const overwrite = interactive && (await Popup.show.confirm(`${type} ${actionName}`, `<p>A ${type.toLowerCase()} with the same name already exists:<br />${escapeHtml(existing)}</p>Do you want to overwrite it?`));
     if (!overwrite) {
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.warning(`${type} ${actionName.toLowerCase()} cancelled. A ${type.toLowerCase()} with the same name already exists:<br />${escapeHtml(existing)}`, `${type} ${actionName}`, { escapeHtml: false });
         return false;
     }
 
-    // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+    // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
     toastr.info(`Overwriting Existing ${type}:<br />${escapeHtml(existing)}`, `${type} ${actionName}`, { escapeHtml: false });
 
     // If there is an action to delete the existing data, do it, as the name might be slightly different so file name would not be the same
     if (deleteAction) {
+        // @ts-expect-error TS(2349) FIXME: This expression is not callable.
         deleteAction(existing);
     }
 
@@ -2598,6 +2803,7 @@ export async function checkOverwriteExistingData(type, existingNames, name, { in
  * @param {(n: number) => string} [numberFormatter] - The function used to format the counter
  * @returns {string} The generated free name
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
 export function getFreeName(name, list, numberFormatter = (n) => ` #${n}`) {
     if (!list.includes(name)) {
         return name;
@@ -2616,6 +2822,7 @@ export function getFreeName(name, list, numberFormatter = (n) => ` #${n}`) {
  * @param {HTMLElement} drawer - The drawer element to toggle
  * @param {boolean} [expand] - Whether to expand or collapse the drawer
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'drawer' implicitly has an 'any' type.
 export function toggleDrawer(drawer, expand = true) {
     /** @type {HTMLElement} */
     const icon = drawer.querySelector(':scope > .inline-drawer-header .inline-drawer-icon');
@@ -2653,6 +2860,7 @@ export function toggleDrawer(drawer, expand = true) {
  * @param {string} name - The name of the dataset property
  * @param {string|null} value - The value to set - If null, the dataset property will be removed
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'element' implicitly has an 'any' type.
 export function setDatasetProperty(element, name, value) {
     if (value === null) {
         delete element.dataset[name];
@@ -2665,14 +2873,17 @@ export function setDatasetProperty(element, name, value) {
  *
  * @param name
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
 export async function fetchFaFile(name) {
     const style = document.createElement('style');
     style.innerHTML = await (await fetch(`/css/${name}`)).text();
     document.head.append(style);
     const sheet = style.sheet;
     style.remove();
+    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     return [...sheet.cssRules]
         .filter(rule => (rule instanceof CSSStyleRule && rule.style?.content))
+        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         .map(rule => rule['selectorText'].split(/,\s*/).map(selector => selector.split('::').shift().slice(1)));
 }
 
@@ -2704,11 +2915,14 @@ export async function showFontAwesomePicker(customList = null) {
                 qry.placeholder = 'Filter icons';
                 qry.autofocus = true;
                 const qryDebounced = debounce(() => {
+                    // @ts-expect-error TS(7006) FIXME: Parameter 'className' implicitly has an 'any' type... Remove this comment to see the full error message
                     const result = faList.filter(fa => fa.find(className => className.includes(qry.value.toLowerCase())));
                     for (const fa of faList) {
                         if (!result.includes(fa)) {
+                            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                             fas[fa].classList.add('hidden');
                         } else {
+                            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                             fas[fa].classList.remove('hidden');
                         }
                     }
@@ -2722,12 +2936,13 @@ export async function showFontAwesomePicker(customList = null) {
             grid.classList.add('faPicker');
             for (const fa of faList) {
                 const opt = document.createElement('div'); {
+                    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                     fas[fa] = opt;
                     opt.classList.add('menu_button');
                     opt.classList.add('fa-solid');
                     opt.classList.add(fa[0]);
+                    // @ts-expect-error TS(7006) FIXME: Parameter 'it' implicitly has an 'any' type.
                     opt.title = fa.map(it => it.slice(3)).join(', ');
-                    // @ts-expect-error TS(4111): Property 'result' comes from an index signature, s... Remove this comment to see the full error message
                     opt.dataset.result = POPUP_RESULT.AFFIRMATIVE.toString();
                     opt.addEventListener('click', () => value = fa[0]);
                     grid.append(opt);
@@ -2737,6 +2952,7 @@ export async function showFontAwesomePicker(customList = null) {
         }
     }
     let value = '';
+    // @ts-expect-error TS(2345) FIXME: Argument of type 'null' is not assignable to param... Remove this comment to see the full error message
     const picker = new Popup(dom, POPUP_TYPE.TEXT, null, { allowVerticalScrolling: true, okButton: 'No Icon', cancelButton: 'Cancel' });
     await picker.show();
     if (picker.result == POPUP_RESULT.AFFIRMATIVE) {
@@ -2761,6 +2977,7 @@ export async function showFontAwesomePicker(customList = null) {
 export function findPersona({ name = null, allowAvatar = true, insensitive = true, preferCurrentPersona = true, quiet = false } = {}) {
     /** @type {PersonaViewModel[]} */
     const personas = Object.entries(power_user.personas).map(([avatar, name]) => ({ avatar, name }));
+    // @ts-expect-error TS(7006) FIXME: Parameter 'persona' implicitly has an 'any' type.
     const matches = (/** @type {PersonaViewModel} */ persona) => !name || (allowAvatar && persona.avatar === name) || (insensitive ? equalsIgnoreCaseAndAccents(persona.name, name) : persona.name === name);
 
     // If we have a current persona and prefer it, return that if it matches
@@ -2780,7 +2997,7 @@ export function findPersona({ name = null, allowAvatar = true, insensitive = tru
     // Search for matching personas by name
     const matchingPersonas = personas.filter(a => matches(a));
     if (matchingPersonas.length > 1) {
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         if (!quiet) toastr.warning(t`Multiple personas found for given conditions.`);
         else console.warn(t`Multiple personas found for given conditions. Returning the first match.`);
     }
@@ -2800,27 +3017,32 @@ export function findPersona({ name = null, allowAvatar = true, insensitive = tru
  * @returns {Character?} - The found character or null if not found
  */
 export function findChar({ name = null, allowAvatar = true, insensitive = true, filteredByTags = null, preferCurrentChar = true, quiet = false } = {}) {
+    // @ts-expect-error TS(7006) FIXME: Parameter 'char' implicitly has an 'any' type.
     const matches = (char) => !name || (allowAvatar && char.avatar === name) || (insensitive ? equalsIgnoreCaseAndAccents(char.name, name) : char.name === name);
 
     // Filter characters by tags if provided
     let filteredCharacters = characters;
     if (filteredByTags) {
         filteredCharacters = characters.filter(char => {
+            // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
             const charTags = getTagsList(char.avatar, false);
+            // @ts-expect-error TS(2339) FIXME: Property 'every' does not exist on type 'never'.
             return filteredByTags.every(tagName => charTags.some(x => x.name == tagName));
         });
     }
 
     // Get the current character(s)
     /** @type {any[]} */
+    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
     const currentChars = selected_group ? groups.find(group => group.id === selected_group)?.members.map(member => filteredCharacters.find(char => char.avatar === member))
+        // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
         : filteredCharacters.filter(char => characters[this_chid]?.avatar === char.avatar);
 
     // If we have a current char and prefer it, return that if it matches
     if (preferCurrentChar) {
         const preferredCharSearch = currentChars.filter(matches);
         if (preferredCharSearch.length > 1) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             if (!quiet) toastr.warning(t`Multiple characters found for given conditions.`);
             else console.warn(t`Multiple characters found for given conditions. Returning the first match.`);
         }
@@ -2831,6 +3053,7 @@ export function findChar({ name = null, allowAvatar = true, insensitive = true, 
 
     // If allowAvatar is true, search by avatar first
     if (allowAvatar && name) {
+        // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
         const characterByAvatar = filteredCharacters.find(char => char.avatar === name || (!name.endsWith('.png') && char.avatar === `${name}.png`));
         if (characterByAvatar) {
             return characterByAvatar;
@@ -2840,7 +3063,7 @@ export function findChar({ name = null, allowAvatar = true, insensitive = true, 
     // Search for matching characters by name
     const matchingCharacters = name ? filteredCharacters.filter(matches) : filteredCharacters;
     if (matchingCharacters.length > 1) {
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         if (!quiet) toastr.warning('Multiple characters found for given conditions.');
         else console.warn('Multiple characters found for given conditions. Returning the first match.');
     }
@@ -2854,8 +3077,10 @@ export function findChar({ name = null, allowAvatar = true, insensitive = true, 
  * @throws {Error} If the character is not found
  * @returns {number} The index of the character in the characters array
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'char' implicitly has an 'any' type.
 export function getCharIndex(char) {
     if (!char) throw new Error('Character is undefined');
+    // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
     const index = characters.findIndex(c => c.avatar === char.avatar);
     if (index === -1) throw new Error(`Character not found: ${char.avatar}`);
     return index;
@@ -2867,6 +3092,7 @@ export function getCharIndex(char) {
  * @param {any[]} b - The second array
  * @returns {boolean} True if the arrays are equal, false otherwise
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'a' implicitly has an 'any' type.
 export function arraysEqual(a, b) {
     if (a === b) return true;
     if (a == null || b == null) return false;
@@ -2884,6 +3110,7 @@ export function arraysEqual(a, b) {
  * @param {string | HTMLElement?} content - The message to display inside the information block (supports HTML) or an HTML element
  * @param {'hint' | 'info' | 'warning' | 'error'} [type] - The type of message, which determines the styling of the information block
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'target' implicitly has an 'any' type.
 export function setInfoBlock(target, content, type = 'info') {
     if (!content) {
         clearInfoBlock(target);
@@ -2906,6 +3133,7 @@ export function setInfoBlock(target, content, type = 'info') {
  * Clears the content and style of an information block.
  * @param {string | HTMLElement} target - The CSS selector or the HTML element of the information block
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'target' implicitly has an 'any' type.
 export function clearInfoBlock(target) {
     const infoBlock = typeof target === 'string' ? document.querySelector(target) : target;
     if (infoBlock && infoBlock.classList.contains('info-block')) {
@@ -2920,6 +3148,7 @@ export function clearInfoBlock(target) {
  * @param {import('select2').OptGroupData|import('select2').OptionData} data
  * @returns {import('select2').OptGroupData|import('select2').OptionData|null}
  */
+// @ts-expect-error TS(7023) FIXME: 'textValueMatcher' implicitly has return type 'any... Remove this comment to see the full error message
 export function textValueMatcher(params, data) {
     // Always return the object if there is nothing to compare
     if (params.term == null || params.term.trim() === '') {
@@ -2953,7 +3182,9 @@ export function textValueMatcher(params, data) {
         return textValueMatcher(params, match);
     }
 
+    // @ts-expect-error TS(7006) FIXME: Parameter 'a' implicitly has an 'any' type.
     const textMatch = compareIgnoreCaseAndAccents(data.text, params.term, (a, b) => a.indexOf(b) > -1);
+    // @ts-expect-error TS(7006) FIXME: Parameter 'a' implicitly has an 'any' type.
     const valueMatch = data.element instanceof HTMLOptionElement && compareIgnoreCaseAndAccents(data.element.value, params.term, (a, b) => a.indexOf(b) > -1);
 
     if (textMatch || valueMatch) {
@@ -2970,6 +3201,7 @@ export function textValueMatcher(params, data) {
  * @param {string} minVersion The target version number to test against
  * @returns {boolean} True if srcVersion >= minVersion, false if not
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'srcVersion' implicitly has an 'any' typ... Remove this comment to see the full error message
 export function versionCompare(srcVersion, minVersion) {
     return (srcVersion || '0.0.0').localeCompare(minVersion, undefined, { numeric: true, sensitivity: 'base' }) > -1;
 }
@@ -2982,6 +3214,7 @@ export function versionCompare(srcVersion, minVersion) {
  * @param {{[unnamedArgName: string]: string}} [valueObj] - The user-built object containing context for the warning (e.g., { uid: uid }).
  * @returns {void}
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'message' implicitly has an 'any' type.
 export function logSlashCommandWarn(message, args, valueObj = null) {
     if (valueObj !== null && valueObj !== undefined) {
         console.warn(message, valueObj, stripInternalArgs(args));
@@ -2993,11 +3226,13 @@ export function logSlashCommandWarn(message, args, valueObj = null) {
      *
      * @param args
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
     function stripInternalArgs(args) {
         // strip all args/properties that start with an underscore
         const result = {};
         for (const [key, value] of Object.entries(args)) {
             if (!key.startsWith('_')) {
+                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 result[key] = value;
             }
         }
@@ -3014,6 +3249,7 @@ export function logSlashCommandWarn(message, args, valueObj = null) {
  * @param {number} [params.visibilityThreshold] Scroll position (px) to show the button (default: 300)
  * @returns {() => void} Cleanup function to remove event listeners
  */
+// @ts-expect-error TS(7031) FIXME: Binding element 'scrollContainerId' implicitly has... Remove this comment to see the full error message
 export function setupScrollToTop({ scrollContainerId, buttonId, drawerId, visibilityThreshold = 300 }) {
     const scrollContainer = document.getElementById(scrollContainerId);
     const btn = document.getElementById(buttonId);
@@ -3036,6 +3272,7 @@ export function setupScrollToTop({ scrollContainerId, buttonId, drawerId, visibi
     scrollContainer.addEventListener('scroll', onScroll, { passive: true });
 
     // Scroll to top on click (button semantics provide keyboard activation natively)
+    // @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
     const onActivate = (/** @type {MouseEvent} */ e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -3045,9 +3282,12 @@ export function setupScrollToTop({ scrollContainerId, buttonId, drawerId, visibi
     };
     btn.addEventListener('click', onActivate);
 
+    // @ts-expect-error TS(7034) FIXME: Variable 'frameHandle' implicitly has type 'any' i... Remove this comment to see the full error message
     let frameHandle = null;
     const resizeObserver = new ResizeObserver(() => {
+        // @ts-expect-error TS(7005) FIXME: Variable 'frameHandle' implicitly has an 'any' typ... Remove this comment to see the full error message
         if (frameHandle !== null) {
+            // @ts-expect-error TS(7005) FIXME: Variable 'frameHandle' implicitly has an 'any' typ... Remove this comment to see the full error message
             cancelAnimationFrame(frameHandle);
         }
         frameHandle = requestAnimationFrame(() => {
@@ -3074,6 +3314,7 @@ export function setupScrollToTop({ scrollContainerId, buttonId, drawerId, visibi
  * @param {string|null} [options.preserveFileName] Optional file name to use for the imported content.
  * @returns {Promise<void>} A promise that resolves when the import is complete.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'url' implicitly has an 'any' type.
 export async function importFromExternalUrl(url, { preserveFileName = null } = {}) {
     let request;
 
@@ -3094,7 +3335,7 @@ export async function importFromExternalUrl(url, { preserveFileName = null } = {
     }
 
     if (!request.ok) {
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.info(request.statusText, 'Custom content import failed');
         console.error('Custom content import failed', request.status, request.statusText);
         return;
@@ -3102,6 +3343,7 @@ export async function importFromExternalUrl(url, { preserveFileName = null } = {
 
     const data = await request.blob();
     const customContentType = request.headers.get('X-Custom-Content-Type');
+    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     let fileName = request.headers.get('Content-Disposition').split('filename=')[1].replace(/"/g, '');
     const file = new File([data], fileName, { type: data.type });
 
@@ -3119,7 +3361,7 @@ export async function importFromExternalUrl(url, { preserveFileName = null } = {
             await importWorldInfo(file);
             break;
         default:
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.warning('Unknown content type');
             console.error('Unknown content type', customContentType);
             break;
@@ -3134,6 +3376,7 @@ export async function importFromExternalUrl(url, { preserveFileName = null } = {
  * @param {number} max The maximum for value.
  * @returns {number} The clamped value.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
 export const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
 
 /**
@@ -3143,10 +3386,11 @@ export const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
  * @param {number} duration Duration in milliseconds.
  * @param {string} easing CSS easing function.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'targetElement' implicitly has an 'any' ... Remove this comment to see the full error message
 export function shakeElement(targetElement, distance = 10, duration = 100, easing = 'ease-in-out') {
     // Don't call the JQuery animation.
     // https://developer.mozilla.org/en-US/docs/Web/API/Element/animate
-    // @ts-expect-error TS(2304): Cannot find name 'jQuery'.
+    // @ts-expect-error TS(2304) FIXME: Cannot find name 'jQuery'.
     if (targetElement instanceof jQuery) targetElement = targetElement[0];
 
     return targetElement.animate([
@@ -3163,6 +3407,7 @@ export function shakeElement(targetElement, distance = 10, duration = 100, easin
  * @param {string?} [errorMessage]
  * @returns {Promise<never>} A promise that rejects.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'ms' implicitly has an 'any' type.
 export function createTimeout(ms, errorMessage = '') {
     errorMessage ??= `Operation timed out after ${ms}ms.`;
     return new Promise((_, reject) => {
@@ -3177,9 +3422,12 @@ export function createTimeout(ms, errorMessage = '') {
  * @param {(e: TouchEvent) => void} callback Callback to invoke on long-press, `this` is the matched element
  * @param {number} [delay] Long-press duration in ms
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'selector' implicitly has an 'any' type.
 export function addLongPressEvent(selector, callback, delay = 500) {
+    // @ts-expect-error TS(7034) FIXME: Variable 'timer' implicitly has type 'any' in some... Remove this comment to see the full error message
     let timer = null;
     let fired = false;
+    // @ts-expect-error TS(7034) FIXME: Variable 'target' implicitly has type 'any' in som... Remove this comment to see the full error message
     let target = null;
 
     document.addEventListener('touchstart', function (event) {
@@ -3200,6 +3448,7 @@ export function addLongPressEvent(selector, callback, delay = 500) {
     document.addEventListener('touchcancel', cancelTimer);
 
     document.addEventListener('click', function (event) {
+        // @ts-expect-error TS(7005) FIXME: Variable 'target' implicitly has an 'any' type.
         if (fired && target && target.contains(event.target)) {
             event.preventDefault();
             event.stopImmediatePropagation();
@@ -3212,6 +3461,7 @@ export function addLongPressEvent(selector, callback, delay = 500) {
      *
      */
     function cancelTimer() {
+        // @ts-expect-error TS(7005) FIXME: Variable 'timer' implicitly has an 'any' type.
         clearTimeout(timer);
         timer = null;
     }

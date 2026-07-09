@@ -10,12 +10,14 @@ export const BIAS_CACHE = new Map();
  * @param {string} containerSelector Container element selector
  * @returns
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'logitBias' implicitly has an 'any' type... Remove this comment to see the full error message
 export function displayLogitBias(logitBias, containerSelector) {
     if (!Array.isArray(logitBias)) {
         console.log('Logit bias set not found');
         return;
     }
 
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const list = $(document.querySelector(containerSelector).querySelector('.logit_bias_list'));
     list.empty();
 
@@ -36,10 +38,12 @@ export function displayLogitBias(logitBias, containerSelector) {
         delay: getSortableDelay(),
         handle: '.drag-handle',
         stop: function () {
+            // @ts-expect-error TS(7034) FIXME: Variable 'order' implicitly has type 'any[]' in so... Remove this comment to see the full error message
             const order = [];
             for (const child of list[0].children) {
                 order.unshift(child.dataset.id);
             }
+            // @ts-expect-error TS(7005) FIXME: Variable 'order' implicitly has an 'any[]' type.
             logitBias.sort((a, b) => order.indexOf(a.id) - order.indexOf(b.id));
             console.log('Logit bias reordered:', logitBias);
             saveSettingsDebounced();
@@ -54,6 +58,7 @@ export function displayLogitBias(logitBias, containerSelector) {
  * @param {object[]} logitBias Array of logit bias objects
  * @param {string} containerSelector Container element ID
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'logitBias' implicitly has an 'any' type... Remove this comment to see the full error message
 export function createNewLogitBiasEntry(logitBias, containerSelector) {
     const entry = { id: uuidv4(), text: '', value: 0 };
     logitBias.push(entry);
@@ -68,25 +73,34 @@ export function createNewLogitBiasEntry(logitBias, containerSelector) {
  * @param {object[]} logitBias Array of logit bias objects
  * @param {string} containerSelector Container element ID
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'entry' implicitly has an 'any' type.
 function createLogitBiasListItem(entry, logitBias, containerSelector) {
     const id = entry.id;
+    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     const template = /** @type {HTMLElement} */(document.querySelector('#logit_bias_template .logit_bias_form')).cloneNode(true);
+    // @ts-expect-error TS(2339) FIXME: Property 'dataset' does not exist on type 'Node'.
     template.dataset.id = id;
+    // @ts-expect-error TS(2339) FIXME: Property 'querySelector' does not exist on type 'N... Remove this comment to see the full error message
     const textInput = template.querySelector('.logit_bias_text');
     textInput.value = entry.text;
     textInput.addEventListener('input', function () {
+        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
         entry.text = this.value;
         BIAS_CACHE.delete(containerSelector);
         saveSettingsDebounced();
     });
+    // @ts-expect-error TS(2339) FIXME: Property 'querySelector' does not exist on type 'N... Remove this comment to see the full error message
     const valueInput = template.querySelector('.logit_bias_value');
     valueInput.value = entry.value;
     valueInput.addEventListener('input', function () {
+        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
         entry.value = Number(this.value);
         BIAS_CACHE.delete(containerSelector);
         saveSettingsDebounced();
     });
+    // @ts-expect-error TS(2339) FIXME: Property 'querySelector' does not exist on type 'N... Remove this comment to see the full error message
     template.querySelector('.logit_bias_remove').addEventListener('click', function () {
+        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
         this.closest('.logit_bias_form').remove();
         const index = logitBias.indexOf(entry);
         if (index > -1) {
@@ -105,6 +119,7 @@ function createLogitBiasListItem(entry, logitBias, containerSelector) {
  * @param {(bias: number, sequence: number[]) => object} getBiasObject Transformer function to create bias object
  * @returns {object[]} Array of logit bias objects
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'biasPreset' implicitly has an 'any' typ... Remove this comment to see the full error message
 export function getLogitBiasListResult(biasPreset, tokenizerType, getBiasObject) {
     const result = [];
 

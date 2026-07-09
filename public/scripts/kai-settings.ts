@@ -22,7 +22,9 @@ import {
 import { getEventSourceStream } from './sse-stream.js';
 import { getSortableDelay, versionCompare } from './utils.js';
 
+// @ts-expect-error TS(7005) FIXME: Variable 'koboldai_settings' implicitly has an 'an... Remove this comment to see the full error message
 export let koboldai_settings;
+// @ts-expect-error TS(7005) FIXME: Variable 'koboldai_setting_names' implicitly has a... Remove this comment to see the full error message
 export let koboldai_setting_names;
 
 export const kai_settings = {
@@ -79,6 +81,7 @@ const KOBOLDCPP_ORDER = [6, 0, 1, 3, 4, 2, 5];
  *
  * @param value
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
 export function formatKoboldUrl(value) {
     try {
         const url = new URL(value);
@@ -96,7 +99,7 @@ export function formatKoboldUrl(value) {
  *
  */
 function selectKoboldGuiPreset() {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#settings_preset option[value=gui]')
         .attr('selected', 'true')
         .trigger('change');
@@ -108,25 +111,24 @@ function selectKoboldGuiPreset() {
  * @param preset
  * @param settings
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
 export function loadKoboldSettings(data, preset, settings) {
     koboldai_setting_names = data.koboldai_setting_names;
     koboldai_settings = data.koboldai_settings;
-    // @ts-expect-error TS(6133): 'arr' is declared but its value is never read.
+    // @ts-expect-error TS(7006) FIXME: Parameter 'item' implicitly has an 'any' type.
     koboldai_settings.forEach(function (item, i, arr) {
         koboldai_settings[i] = JSON.parse(item);
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     if (document.getElementById('settings_preset')) {
         document.getElementById('settings_preset')!.innerHTML = '';
     }
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     document.getElementById('settings_preset')?.insertAdjacentHTML('beforeend', '<option value="gui">GUI KoboldAI Settings</option>');
     const names = {};
-    // @ts-expect-error TS(6133): 'arr' is declared but its value is never read.
+    // @ts-expect-error TS(7006) FIXME: Parameter 'item' implicitly has an 'any' type.
     koboldai_setting_names.forEach(function (item, i, arr) {
+        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         names[item] = i;
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         document.getElementById('settings_preset')?.insertAdjacentHTML('beforeend', `<option value=${i}>${item}</option>`);
     });
     koboldai_setting_names = names;
@@ -138,7 +140,7 @@ export function loadKoboldSettings(data, preset, settings) {
         selectKoboldGuiPreset();
     } else {
         if (typeof koboldai_setting_names[kai_settings.preset_settings] !== 'undefined') {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(`#settings_preset option[value=${koboldai_setting_names[kai_settings.preset_settings]}]`)
                 .attr('selected', 'true');
         } else {
@@ -150,7 +152,7 @@ export function loadKoboldSettings(data, preset, settings) {
     loadKoboldSettingsFromPreset(preset);
 
     //Load the API server URL from settings
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#api_url_text').val(kai_settings.api_server);
 }
 
@@ -158,6 +160,7 @@ export function loadKoboldSettings(data, preset, settings) {
  *
  * @param preset
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'preset' implicitly has an 'any' type.
 function loadKoboldSettingsFromPreset(preset) {
     for (const name of Object.keys(kai_settings)) {
         if (name === 'extensions') {
@@ -165,6 +168,7 @@ function loadKoboldSettingsFromPreset(preset) {
             continue;
         }
 
+        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         const value = preset[name] ?? defaultValues[name];
         const slider = sliders.find(x => x.name === name);
 
@@ -174,20 +178,20 @@ function loadKoboldSettingsFromPreset(preset) {
 
         const formattedValue = slider.format(value);
         slider.setValue(value);
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(slider.sliderId).val(value);
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(slider.counterId).val(formattedValue);
     }
 
     if (Object.hasOwn(preset, 'streaming_kobold')) {
         kai_settings.streaming_kobold = preset.streaming_kobold;
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#streaming_kobold').prop('checked', kai_settings.streaming_kobold);
     }
     if (Object.hasOwn(preset, 'use_default_badwordsids')) {
         kai_settings.use_default_badwordsids = preset.use_default_badwordsids;
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#use_default_badwordsids').prop('checked', kai_settings.use_default_badwordsids);
     }
 }
@@ -202,6 +206,7 @@ function loadKoboldSettingsFromPreset(preset) {
  * @param {string} type Generation type.
  * @returns {object} Kobold generation data.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'finalPrompt' implicitly has an 'any' ty... Remove this comment to see the full error message
 export function getKoboldGenerationData(finalPrompt, settings, maxLength, maxContextLength, isHorde, type) {
     const isImpersonate = type === 'impersonate';
     const isContinue = type === 'continue';
@@ -245,6 +250,7 @@ export function getKoboldGenerationData(finalPrompt, settings, maxLength, maxCon
  * @param response
  * @param decoded
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'response' implicitly has an 'any' type.
 function tryParseStreamingError(response, decoded) {
     try {
         const data = JSON.parse(decoded);
@@ -254,7 +260,7 @@ function tryParseStreamingError(response, decoded) {
         }
 
         if (data.error) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.error(data.error.message || response.statusText, 'KoboldAI API');
             throw new Error(data);
         }
@@ -268,6 +274,7 @@ function tryParseStreamingError(response, decoded) {
  * @param generate_data
  * @param signal
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'generate_data' implicitly has an 'any' ... Remove this comment to see the full error message
 export async function generateKoboldWithStreaming(generate_data, signal) {
     const response = await fetch('/api/backends/kobold/generate', {
         headers: getRequestHeaders(),
@@ -280,7 +287,9 @@ export async function generateKoboldWithStreaming(generate_data, signal) {
         throw new Error(`Got response status ${response.status}`);
     }
     const eventStream = getEventSourceStream();
+    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     response.body.pipeThrough(eventStream);
+    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     const reader = eventStream.readable.getReader();
 
     return async function* streamData() {
@@ -303,112 +312,144 @@ const sliders = [
         name: 'temp',
         sliderId: '#temp',
         counterId: '#temp_counter',
+        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
         format: (val) => Number(val).toFixed(2),
+        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
         setValue: (val) => { kai_settings.temp = Number(val); },
     },
     {
         name: 'rep_pen',
         sliderId: '#rep_pen',
         counterId: '#rep_pen_counter',
+        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
         format: (val) => Number(val).toFixed(2),
+        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
         setValue: (val) => { kai_settings.rep_pen = Number(val); },
     },
     {
         name: 'rep_pen_range',
         sliderId: '#rep_pen_range',
         counterId: '#rep_pen_range_counter',
+        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
         format: (val) => val,
+        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
         setValue: (val) => { kai_settings.rep_pen_range = Number(val); },
     },
     {
         name: 'top_p',
         sliderId: '#top_p',
         counterId: '#top_p_counter',
+        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
         format: (val) => val,
+        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
         setValue: (val) => { kai_settings.top_p = Number(val); },
     },
     {
         name: 'min_p',
         sliderId: '#min_p',
         counterId: '#min_p_counter',
+        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
         format: (val) => val,
+        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
         setValue: (val) => { kai_settings.min_p = Number(val); },
     },
     {
         name: 'top_a',
         sliderId: '#top_a',
         counterId: '#top_a_counter',
+        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
         format: (val) => val,
+        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
         setValue: (val) => { kai_settings.top_a = Number(val); },
     },
     {
         name: 'top_k',
         sliderId: '#top_k',
         counterId: '#top_k_counter',
+        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
         format: (val) => val,
+        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
         setValue: (val) => { kai_settings.top_k = Number(val); },
     },
     {
         name: 'typical',
         sliderId: '#typical_p',
         counterId: '#typical_p_counter',
+        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
         format: (val) => val,
+        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
         setValue: (val) => { kai_settings.typical = Number(val); },
     },
     {
         name: 'tfs',
         sliderId: '#tfs',
         counterId: '#tfs_counter',
+        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
         format: (val) => val,
+        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
         setValue: (val) => { kai_settings.tfs = Number(val); },
     },
     {
         name: 'rep_pen_slope',
         sliderId: '#rep_pen_slope',
         counterId: '#rep_pen_slope_counter',
+        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
         format: (val) => val,
+        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
         setValue: (val) => { kai_settings.rep_pen_slope = Number(val); },
     },
     {
         name: 'sampler_order',
         sliderId: '#no_op_selector',
         counterId: '#no_op_selector',
+        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
         format: (val) => val,
+        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
         setValue: (val) => { sortItemsByOrder(val); kai_settings.sampler_order = val; },
     },
     {
         name: 'mirostat',
         sliderId: '#mirostat_mode_kobold',
         counterId: '#mirostat_mode_counter_kobold',
+        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
         format: (val) => val,
+        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
         setValue: (val) => { kai_settings.mirostat = Number(val); },
     },
     {
         name: 'mirostat_tau',
         sliderId: '#mirostat_tau_kobold',
         counterId: '#mirostat_tau_counter_kobold',
+        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
         format: (val) => val,
+        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
         setValue: (val) => { kai_settings.mirostat_tau = Number(val); },
     },
     {
         name: 'mirostat_eta',
         sliderId: '#mirostat_eta_kobold',
         counterId: '#mirostat_eta_counter_kobold',
+        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
         format: (val) => val,
+        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
         setValue: (val) => { kai_settings.mirostat_eta = Number(val); },
     },
     {
         name: 'grammar',
         sliderId: '#grammar',
         counterId: '#grammar_counter_kobold',
+        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
         format: (val) => val,
+        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
         setValue: (val) => { kai_settings.grammar = val; },
     },
     {
         name: 'seed',
         sliderId: '#seed_kobold',
         counterId: '#seed_counter_kobold',
+        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
         format: (val) => val,
+        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
         setValue: (val) => { kai_settings.seed = Number(val); },
     },
 ];
@@ -418,6 +459,7 @@ const sliders = [
  * @param {string} koboldUnitedVersion Kobold United version
  * @param {string} koboldCppVersion KoboldCPP version
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'koboldUnitedVersion' implicitly has an ... Remove this comment to see the full error message
 export function setKoboldFlags(koboldUnitedVersion, koboldCppVersion) {
     kai_flags.can_use_stop_sequence = versionCompare(koboldUnitedVersion, MIN_STOP_SEQUENCE_VERSION);
     kai_flags.can_use_streaming = versionCompare(koboldCppVersion, MIN_STREAMING_KCPPVERSION);
@@ -427,7 +469,7 @@ export function setKoboldFlags(koboldUnitedVersion, koboldCppVersion) {
     kai_flags.can_use_grammar = versionCompare(koboldCppVersion, MIN_GRAMMAR_KCPPVERSION);
     kai_flags.can_use_min_p = versionCompare(koboldCppVersion, MIN_MIN_P_KCPPVERSION);
     const isKoboldCpp = versionCompare(koboldCppVersion, '1.0.0');
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#koboldcpp_hint').toggleClass('displayNone', !isKoboldCpp);
 }
 
@@ -435,13 +477,16 @@ export function setKoboldFlags(koboldUnitedVersion, koboldCppVersion) {
  * Sorts the sampler items by the given order.
  * @param {any[]} orderArray Sampler order array.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'orderArray' implicitly has an 'any' typ... Remove this comment to see the full error message
 function sortItemsByOrder(orderArray) {
     console.debug('Preset samplers order: ' + orderArray);
     const draggableItems = document.getElementById('kobold_order');
 
     for (let i = 0; i < orderArray.length; i++) {
         const index = orderArray[i];
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         const item = draggableItems.querySelector(`[data-id="${index}"]`);
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         draggableItems.appendChild(item);
     }
 }
@@ -485,7 +530,7 @@ export async function getStatusKobold() {
 
         // We didn't get a 200 status code, but the endpoint has an explanation. Which means it DID connect, but I digress.
         if (online_status === 'no_connection' && data.response) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.error(data.response, t`API Error`, { timeOut: 5000, preventDuplicates: true });
         }
     } catch (err) {
@@ -501,32 +546,32 @@ export async function getStatusKobold() {
  */
 export function initKoboldSettings() {
     sliders.forEach(slider => {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(document).on('input', slider.sliderId, function () {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const value = $(this).val();
             const formattedValue = slider.format(value);
             slider.setValue(value);
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(slider.counterId).val(formattedValue);
             saveSettingsDebounced();
         });
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#api_button').on('click', function (e) {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         if ($('#api_url_text').val() != '') {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const value = formatKoboldUrl(String($('#api_url_text').val()).trim());
 
             if (!value) {
-                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                 toastr.error('Please enter a valid URL.');
                 return;
             }
 
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#api_url_text').val(value);
             kai_settings.api_server = value;
             startStatusLoading();
@@ -535,67 +580,74 @@ export function initKoboldSettings() {
         }
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#streaming_kobold').on('input', function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const value = !!$(this).prop('checked');
         kai_settings.streaming_kobold = value;
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#use_default_badwordsids').on('input', function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const value = !!$(this).prop('checked');
         kai_settings.use_default_badwordsids = value;
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#kobold_order').sortable({
         delay: getSortableDelay(),
         stop: function () {
+            // @ts-expect-error TS(7034) FIXME: Variable 'order' implicitly has type 'any[]' in so... Remove this comment to see the full error message
             const order = [];
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             Array.from(document.getElementById('kobold_order').children).forEach(function (child) {
+                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 order.push($(child).data('id'));
             });
+            // @ts-expect-error TS(7005) FIXME: Variable 'order' implicitly has an 'any[]' type.
             kai_settings.sampler_order = order;
             console.log('Samplers reordered:', kai_settings.sampler_order);
             saveSettingsDebounced();
         },
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#samplers_order_recommended').on('click', function () {
         kai_settings.sampler_order = KOBOLDCPP_ORDER;
         sortItemsByOrder(kai_settings.sampler_order);
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#settings_preset').on('change', async function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const settingsPresetEl = document.getElementById('settings_preset');
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         if (settingsPresetEl.options[settingsPresetEl.selectedIndex].value != 'gui') {
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             kai_settings.preset_settings = settingsPresetEl.options[settingsPresetEl.selectedIndex].text;
             const preset = koboldai_settings[koboldai_setting_names[kai_settings.preset_settings]];
             loadKoboldSettingsFromPreset(preset);
             setGenerationParamsFromPreset(preset);
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(document.getElementById('kobold_api-settings').querySelectorAll('input')).prop('disabled', false);
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#kobold_api-settings').css('opacity', 1.0);
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#kobold_order')
                 .css('opacity', 1)
                 .sortable('enable');
         } else {
             kai_settings.preset_settings = 'gui';
 
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(document.getElementById('kobold_api-settings').querySelectorAll('input')).prop('disabled', true);
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#kobold_api-settings').css('opacity', 0.5);
 
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#kobold_order')
                 .css('opacity', 0.5)
                 .sortable('disable');

@@ -8,6 +8,7 @@ import { debounce_timeout } from './constants.js';
 export class DragAndDropHandler {
     /** @private */ selector;
     /** @private */ onDropCallback;
+    // @ts-expect-error TS(7008) FIXME: Member 'dragLeaveTimeout' implicitly has an 'any' ... Remove this comment to see the full error message
     /** @private */ dragLeaveTimeout;
     /** @private */ noAnimation;
     /** @private */ _boundDragOver;
@@ -21,14 +22,18 @@ export class DragAndDropHandler {
      * @param root0
      * @param root0.noAnimation
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'selector' implicitly has an 'any' type.
     constructor(selector, onDropCallback, { noAnimation = false } = {}) {
         this.selector = selector;
         this.onDropCallback = onDropCallback;
         this.dragLeaveTimeout = null;
         this.noAnimation = noAnimation;
 
+        // @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
         this._boundDragOver = (e) => this._handleIfMatch(e, this.handleDragOver);
+        // @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
         this._boundDragLeave = (e) => this._handleIfMatch(e, this.handleDragLeave);
+        // @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
         this._boundDrop = (e) => this._handleIfMatch(e, this.handleDrop);
 
         this.init();
@@ -39,6 +44,7 @@ export class DragAndDropHandler {
      * @param {(event: DragEvent) => void} handler
      * @private
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'event' implicitly has an 'any' type.
     _handleIfMatch(event, handler) {
         if (this.selector === 'body' || (event.target instanceof Element && event.target.closest(this.selector))) {
             handler.call(this, event);
@@ -78,6 +84,7 @@ export class DragAndDropHandler {
      * @param {DragEvent} event - The dragover event
      * @private
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'event' implicitly has an 'any' type.
     handleDragOver(event) {
         event.preventDefault();
         event.stopPropagation();
@@ -90,6 +97,7 @@ export class DragAndDropHandler {
      * @param {DragEvent} event - The dragleave event
      * @private
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'event' implicitly has an 'any' type.
     handleDragLeave(event) {
         event.preventDefault();
         event.stopPropagation();
@@ -104,6 +112,7 @@ export class DragAndDropHandler {
      * @param {DragEvent} event - The drop event
      * @private
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'event' implicitly has an 'any' type.
     handleDrop(event) {
         event.preventDefault();
         event.stopPropagation();

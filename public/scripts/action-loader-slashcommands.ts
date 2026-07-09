@@ -22,6 +22,7 @@ export function registerActionLoaderSlashCommands() {
      * @param {boolean} [options.throwInvalid] - Whether to throw an error for invalid input
      * @returns {(() => Promise<void>)|null} The handler function, or null if no closure
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'closure' implicitly has an 'any' type.
     function createClosureHandler(closure, { argName = 'onStop', throwInvalid = true } = {}) {
         if (!(closure instanceof SlashCommandClosure)) {
             if (closure && throwInvalid) {
@@ -44,14 +45,18 @@ export function registerActionLoaderSlashCommands() {
     // Shared loader enum providers
     const loaderEnumProviders = {
         toastModeEnumProvider: () => [
+            // @ts-expect-error TS(2345) FIXME: Argument of type '"No toast displayed"' is not ass... Remove this comment to see the full error message
             new SlashCommandEnumValue(ActionLoaderToastMode.NONE, 'No toast displayed', enumTypes.enum, enumIcons.disabled),
+            // @ts-expect-error TS(2345) FIXME: Argument of type '"Static toast without stop butto... Remove this comment to see the full error message
             new SlashCommandEnumValue(ActionLoaderToastMode.STATIC, 'Static toast without stop button', enumTypes.enum, enumIcons.spinner),
+            // @ts-expect-error TS(2345) FIXME: Argument of type '"Toast with stop button (default... Remove this comment to see the full error message
             new SlashCommandEnumValue(ActionLoaderToastMode.STOPPABLE, 'Toast with stop button (default)', enumTypes.enum, enumIcons.stop),
         ],
         loaderHandleProvider: () => getActiveLoaderHandles().map(
-            // @ts-expect-error TS(2339): Property 'id' does not exist on type 'unknown'.
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             handle => new SlashCommandEnumValue(handle.id, `Active loader: ${handle.id}`, enumTypes.enum, enumIcons.spinner),
         ).concat(
+            // @ts-expect-error TS(2345) FIXME: Argument of type '"Any loader handle saved in vari... Remove this comment to see the full error message
             new SlashCommandEnumValue('Temporary loader handle', 'Any loader handle saved in variables or similar', 'enum', '📄', () => true, () => ''),
         ),
     };
@@ -142,6 +147,7 @@ export function registerActionLoaderSlashCommands() {
                 isRequired: true,
             }),
         ],
+        // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
         callback: async (args, value) => {
             if (!(value instanceof SlashCommandClosure)) {
                 // Throw error on purpose. This is defined as a syntax error.
@@ -264,6 +270,7 @@ export function registerActionLoaderSlashCommands() {
             }),
         ],
         unnamedArgumentList: [],
+        // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
         callback: async (args) => {
             const blocking = !isFalseBoolean(String(args.blocking));
             const toastMode = Object.values(ActionLoaderToastMode).includes(String(args.toast))
@@ -310,14 +317,15 @@ export function registerActionLoaderSlashCommands() {
                 enumProvider: loaderEnumProviders.loaderHandleProvider,
             }),
         ],
+        // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
         callback: async (args) => {
             const handleId = args.handle ? String(args.handle) : null;
 
             if (handleId) {
                 const handle = getLoaderHandleById(handleId);
-                // @ts-expect-error TS(2339): Property 'isActive' does not exist on type 'unknow... Remove this comment to see the full error message
+                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 if (handle && handle.isActive) {
-                    // @ts-expect-error TS(2339): Property 'hide' does not exist on type 'unknown'.
+                    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                     await handle.hide();
                     return 'true';
                 }
@@ -353,19 +361,20 @@ export function registerActionLoaderSlashCommands() {
                 enumProvider: loaderEnumProviders.loaderHandleProvider,
             }),
         ],
+        // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
         callback: async (args) => {
             const handleId = args.handle ? String(args.handle) : null;
 
             if (!handleId) {
-                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                 toastr.warning(t`No handle provided. You must specify which loader to stop.`);
                 return 'false';
             }
 
             const handle = getLoaderHandleById(handleId);
-            // @ts-expect-error TS(2339): Property 'isActive' does not exist on type 'unknow... Remove this comment to see the full error message
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             if (handle && handle.isActive) {
-                // @ts-expect-error TS(2339): Property 'stop' does not exist on type 'unknown'.
+                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 await handle.stop();
                 return 'true';
             }

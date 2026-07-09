@@ -1,3 +1,4 @@
+// @ts-expect-error TS(1259) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import express from 'express';
 import fetch from 'node-fetch';
 import { readSecret, SECRET_KEYS } from './secrets.js';
@@ -13,9 +14,11 @@ const getAudioMimeType = (format: string) => {
         'flac': 'audio/flac',
         'aac': 'audio/aac',
     };
+    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     return mimeTypes[format] || 'audio/mpeg';
 };
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/generate-voice', async (request, response) => {
     try {
         const {
@@ -61,7 +64,7 @@ router.post('/generate-voice', async (request, response) => {
 
         // Add language parameter if provided
         if (language) {
-            // @ts-expect-error TS(2339): Property 'lang' does not exist on type '{ model: a... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'lang' does not exist on type '{ model: a... Remove this comment to see the full error message
             requestBody.lang = language;
         }
 
@@ -192,6 +195,7 @@ router.post('/generate-voice', async (request, response) => {
                 return response.send(Buffer.from(audioBytes));
             } catch (conversionError) {
                 console.error('MiniMax TTS: Audio conversion error:', conversionError);
+                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 return response.status(500).json({ error: `Audio data conversion failed: ${conversionError.message}` });
             }
         } else if (responseData.data && responseData.data.url) {
@@ -214,6 +218,7 @@ router.post('/generate-voice', async (request, response) => {
                 return response.send(Buffer.from(audioBuffer));
             } catch (urlError) {
                 console.error('MiniMax TTS: Error fetching audio from URL:', urlError);
+                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 return response.status(500).json({ error: `Failed to fetch audio: ${urlError.message}` });
             }
         } else {

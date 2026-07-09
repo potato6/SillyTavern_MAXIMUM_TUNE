@@ -3,21 +3,23 @@
 // 1. node plugins.js update
 // 2. node plugins.js install <plugin-git-url>
 // More operations coming soon.
+// @ts-expect-error TS(1192) FIXME: Module '"node:fs"' has no default export.
 import fs from 'node:fs';
+// @ts-expect-error TS(1259) FIXME: Module '"node:path"' can only be default-imported ... Remove this comment to see the full error message
 import path from 'node:path';
+// @ts-expect-error TS(1259) FIXME: Module '"node:process"' can only be default-import... Remove this comment to see the full error message
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 
-// @ts-expect-error TS(2792): Cannot find module 'simple-git'. Did you mean to s... Remove this comment to see the full error message
+// @ts-expect-error TS(2792) FIXME: Cannot find module 'simple-git'. Did you mean to s... Remove this comment to see the full error message
 import { default as git, CheckRepoActions } from 'simple-git';
 import { createGitClient } from './src/git/client.js';
 import { color } from './src/util.js';
 
-// @ts-expect-error TS(2339): Property 'dirname' does not exist on type 'ImportM... Remove this comment to see the full error message
+// @ts-expect-error TS(1343) FIXME: The 'import.meta' meta-property is only allowed wh... Remove this comment to see the full error message
 const __dirname = import.meta.dirname ?? path.dirname(fileURLToPath(import.meta.url));
 process.chdir(__dirname);
 const pluginsPath = './plugins';
-// @ts-expect-error TS(4111): Property 'SILLYTAVERN_GIT_BACKEND' comes from an i... Remove this comment to see the full error message
 const gitBackend = process.env.SILLYTAVERN_GIT_BACKEND || 'auto';
 
 const command = process.argv[2];
@@ -46,7 +48,9 @@ if (command === 'install') {
  */
 async function updatePlugins() {
     const directories = fs.readdirSync(pluginsPath)
+        // @ts-expect-error TS(7006) FIXME: Parameter 'file' implicitly has an 'any' type.
         .filter(file => !file.startsWith('.'))
+        // @ts-expect-error TS(7006) FIXME: Parameter 'file' implicitly has an 'any' type.
         .filter(file => fs.statSync(path.join(pluginsPath, file)).isDirectory());
 
     console.log(`Found ${color.cyan(directories.length)} directories in ./plugins`);
@@ -80,6 +84,7 @@ async function updatePlugins() {
             const latestCommit = await pluginRepo.revparse(['HEAD']);
             console.log(`Plugin ${color.green(directory)} updated to commit ${color.cyan(latestCommit)}`);
         } catch (error) {
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             console.error(color.red(`Failed to update plugin ${directory}: ${error.message}`));
         }
     }
@@ -91,6 +96,7 @@ async function updatePlugins() {
  * @param {string} pluginName Name of the plugin to install
  * @returns {Promise<void>}
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'pluginName' implicitly has an 'any' typ... Remove this comment to see the full error message
 async function installPlugin(pluginName) {
     try {
         const pluginPath = path.join(pluginsPath, path.basename(pluginName, '.git'));

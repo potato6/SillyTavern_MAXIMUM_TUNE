@@ -1,20 +1,28 @@
 // Native Node Modules
+// @ts-expect-error TS(1259) FIXME: Module '"node:path"' can only be default-imported ... Remove this comment to see the full error message
 import path from 'node:path';
+// @ts-expect-error TS(1192) FIXME: Module '"node:fs"' has no default export.
 import fs from 'node:fs';
+// @ts-expect-error TS(1192) FIXME: Module '"node:crypto"' has no default export.
 import crypto from 'node:crypto';
+// @ts-expect-error TS(1192) FIXME: Module '"node:os"' has no default export.
 import os from 'node:os';
+// @ts-expect-error TS(1259) FIXME: Module '"node:process"' can only be default-import... Remove this comment to see the full error message
 import process from 'node:process';
 import { Buffer } from 'node:buffer';
 
 // Express and other dependencies
+// @ts-expect-error TS(1259) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import storage from 'node-persist';
+// @ts-expect-error TS(1259) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import express from 'express';
+// @ts-expect-error TS(1192) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import mime from 'mime-types';
 import { Archiver } from 'archiver';
 import { sync as writeFileAtomicSync } from 'write-file-atomic';
-// @ts-expect-error TS(2792): Cannot find module 'sanitize-filename'. Did you me... Remove this comment to see the full error message
+// @ts-expect-error TS(2792) FIXME: Cannot find module 'sanitize-filename'. Did you me... Remove this comment to see the full error message
 import sanitize from 'sanitize-filename';
-// @ts-expect-error TS(2792): Cannot find module 'ip-matching'. Did you mean to ... Remove this comment to see the full error message
+// @ts-expect-error TS(2792) FIXME: Cannot find module 'ip-matching'. Did you mean to ... Remove this comment to see the full error message
 import ipMatching from 'ip-matching';
 
 import { USER_DIRECTORY_TEMPLATE, DEFAULT_USER, PUBLIC_DIRECTORIES, SETTINGS_FILE, UPLOADS_DIRECTORY } from './constants.js';
@@ -24,15 +32,21 @@ import { getContentOfType } from './endpoints/content-manager.js';
 import { serverDirectory } from './server-directory.js';
 import { filterValidIpPatterns, getIpFromRequest } from './express-common.js';
 import { extensionsEnabledFeatureGuard } from './endpoints/extensions.js';
+// @ts-expect-error TS(2792) FIXME: Cannot find module 'es-toolkit'. Did you mean to s... Remove this comment to see the full error message
 import { uniqBy } from 'es-toolkit';
 
 export const KEY_PREFIX = 'user:';
 const AVATAR_PREFIX = 'avatar:';
+// @ts-expect-error TS(2345) FIXME: Argument of type 'false' is not assignable to para... Remove this comment to see the full error message
 const ENABLE_ACCOUNTS = getConfigValue('enableUserAccounts', false, 'boolean');
+// @ts-expect-error TS(2345) FIXME: Argument of type 'false' is not assignable to para... Remove this comment to see the full error message
 const AUTHELIA_AUTH = getConfigValue('sso.autheliaAuth', false, 'boolean');
+// @ts-expect-error TS(2345) FIXME: Argument of type 'false' is not assignable to para... Remove this comment to see the full error message
 const AUTHENTIK_AUTH = getConfigValue('sso.authentikAuth', false, 'boolean');
+// @ts-expect-error TS(2345) FIXME: Argument of type 'false' is not assignable to para... Remove this comment to see the full error message
 const PER_USER_BASIC_AUTH = getConfigValue('perUserBasicAuth', false, 'boolean');
 const ANON_CSRF_SECRET = crypto.randomBytes(64).toString('base64');
+// @ts-expect-error TS(2345) FIXME: Argument of type 'string[]' is not assignable to p... Remove this comment to see the full error message
 const TRUSTED_PROXIES = filterValidIpPatterns(getConfigValue('sso.trustedProxies', ['127.0.0.1', '::1']) ?? [], (entry: string, message: string) => `${color.red('Warning')}: Ignoring invalid sso.trustedProxies entry ${color.yellow(entry)} - ${message}`);
 
 /**
@@ -120,12 +134,11 @@ export async function ensurePublicDirectoriesExist() {
     }
 
     const userHandles = await getAllUserHandles();
+    // @ts-expect-error TS(7006) FIXME: Parameter 'handle' implicitly has an 'any' type.
     const directoriesList = userHandles.map(handle => getUserDirectories(handle));
     for (const userDirectories of directoriesList) {
         for (const dir of Object.values(userDirectories)) {
-            // @ts-expect-error TS(2345): Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
             if (!fs.existsSync(dir)) {
-                // @ts-expect-error TS(2769): No overload matches this call.
                 fs.mkdirSync(dir, { recursive: true });
             }
         }
@@ -142,6 +155,7 @@ function logSecurityAlert(message: string) {
     const { basicAuthMode, whitelistMode } = globalThis.COMMAND_LINE_ARGS;
     if (basicAuthMode || whitelistMode) return; // safe!
     console.error(color.red(message));
+    // @ts-expect-error TS(2345) FIXME: Argument of type 'false' is not assignable to para... Remove this comment to see the full error message
     if (getConfigValue('securityOverride', false, 'boolean')) {
         console.warn(color.red('Security has been overridden. If it\'s not a trusted network, change the settings.'));
         return;
@@ -166,11 +180,14 @@ export async function verifySecuritySettings() {
     }
 
     const users = await getAllEnabledUsers();
+    // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
     const unprotectedUsers = users.filter(x => !x.password);
+    // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
     const unprotectedAdminUsers = unprotectedUsers.filter(x => x.admin);
 
     if (unprotectedUsers.length > 0) {
         console.warn(color.blue('A friendly reminder that the following users are not password protected:'));
+        // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
         unprotectedUsers.map(x => `${color.yellow(x.handle)} ${color.red(x.admin ? '(admin)' : '')}`).forEach(x => console.warn(x));
         console.log();
         console.warn(`Consider setting a password in the admin panel or by using the ${color.blue('recover.js')} script.`);
@@ -182,13 +199,16 @@ export async function verifySecuritySettings() {
     }
 
     if (basicAuthMode) {
+        // @ts-expect-error TS(2345) FIXME: Argument of type 'false' is not assignable to para... Remove this comment to see the full error message
         const perUserBasicAuth = getConfigValue('perUserBasicAuth', false, 'boolean');
         if (perUserBasicAuth && !ENABLE_ACCOUNTS) {
             console.error(color.red(
                 'Per-user basic authentication is enabled, but user accounts are disabled. This configuration may be insecure.',
             ));
         } else if (!perUserBasicAuth) {
+            // @ts-expect-error TS(2345) FIXME: Argument of type '""' is not assignable to paramet... Remove this comment to see the full error message
             const basicAuthUserName = getConfigValue('basicAuthUser.username', '');
+            // @ts-expect-error TS(2345) FIXME: Argument of type '""' is not assignable to paramet... Remove this comment to see the full error message
             const basicAuthUserPassword = getConfigValue('basicAuthUser.password', '');
             if (!basicAuthUserName || !basicAuthUserPassword) {
                 console.warn(color.yellow(
@@ -213,6 +233,7 @@ export function cleanUploads() {
             }
 
             console.debug(`Cleaning uploads folder (${uploads.length} files)`);
+            // @ts-expect-error TS(7006) FIXME: Parameter 'file' implicitly has an 'any' type.
             uploads.forEach(file => {
                 const pathToFile = path.join(uploadsPath, file);
                 fs.unlinkSync(pathToFile);
@@ -229,6 +250,7 @@ export function cleanUploads() {
  */
 export async function getUserDirectoriesList() {
     const userHandles = await getAllUserHandles();
+    // @ts-expect-error TS(7006) FIXME: Parameter 'handle' implicitly has an 'any' type.
     const directoriesList = userHandles.map(handle => getUserDirectories(handle));
     return directoriesList;
 }
@@ -425,6 +447,7 @@ export async function migrateUserData() {
                 fs.rmSync(migration.old, { recursive: true, force: true });
             }
         } catch (error) {
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             console.error(color.red(`Error migrating ${migration.old} to ${migration.new}:`), error.message);
             errors.push(migration.old);
         }
@@ -482,8 +505,10 @@ export async function migrateSystemPrompts() {
                 }
             }
             // Only leave unique contents
+            // @ts-expect-error TS(7006) FIXME: Parameter 'item' implicitly has an 'any' type.
             migratedPrompts = uniqBy(migratedPrompts, item => item.content);
             // Only leave contents that are not in the default prompts
+            // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
             migratedPrompts = migratedPrompts.filter(x => !defaultPrompts.some(y => y.content === x.content));
             for (const sysPromptData of migratedPrompts) {
                 sysPromptData.name = `[Migrated] ${sysPromptData.name}`;
@@ -635,6 +660,7 @@ export function getCookieSessionName() {
  */
 export function getSessionCookieAge() {
     // Defaults to "no expiration" if not set
+    // @ts-expect-error TS(2345) FIXME: Argument of type '-1' is not assignable to paramet... Remove this comment to see the full error message
     const configValue = getConfigValue('sessionTimeout', -1, 'number');
 
     // Convert to milliseconds
@@ -687,7 +713,9 @@ export function getCsrfSecret(request: import('express').Request) {
  * @returns {Promise<string[]>} - The list of user handles
  */
 export async function getAllUserHandles() {
+    // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
     const keys = await storage.keys(x => x.key.startsWith(KEY_PREFIX));
+    // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
     const handles = keys.map(x => x.replace(KEY_PREFIX, ''));
     return handles;
 }
@@ -707,6 +735,7 @@ export function getUserDirectories(handle: string) {
 
     const directories = structuredClone(USER_DIRECTORY_TEMPLATE);
     for (const key in directories) {
+        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         directories[key] = path.join(globalThis.DATA_ROOT, handle, USER_DIRECTORY_TEMPLATE[key]);
     }
     DIRECTORIES_CACHE.set(handle, directories);
@@ -957,6 +986,7 @@ async function basicUserLogin(request: import('express').Request) {
  * @param {User} user User account object
  * @returns {string} Account version tag
  */
+// @ts-expect-error TS(2304) FIXME: Cannot find name 'User'.
 export function getAccountVersion(user: User) {
     return crypto.createHash('shake256', { outputLength: 8 })
         .update(JSON.stringify([user.handle, user.password, user.salt]))
@@ -1169,6 +1199,7 @@ export async function createBackupArchive(handle: string, response: express.Resp
     const directories = getUserDirectories(handle);
 
     console.info('Backup requested for', handle);
+    // @ts-expect-error TS(2559) FIXME: Type '"zip"' has no properties in common with type... Remove this comment to see the full error message
     const archive = new Archiver('zip');
 
     archive.on('error', function (err) {
@@ -1222,6 +1253,7 @@ async function getAllUsers() {
  */
 export async function getAllEnabledUsers() {
     const users = await getAllUsers();
+    // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
     return users.filter(x => x.enabled);
 }
 

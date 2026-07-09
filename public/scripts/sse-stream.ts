@@ -20,6 +20,7 @@ class EventSourceStream {
          *
          * @param controller
          */
+        // @ts-expect-error TS(7006) FIXME: Parameter 'controller' implicitly has an 'any' typ... Remove this comment to see the full error message
         function processChunk(controller) {
             // Events are separated by two newlines
             const events = streamBuffer.split(/\r\n\r\n|\r\r|\n\n/g);
@@ -27,6 +28,7 @@ class EventSourceStream {
 
             // The leftover text to remain in the buffer is whatever doesn't have two newlines after it. If the buffer ended
             // with two newlines, this will be an empty string.
+            // @ts-expect-error TS(2322) FIXME: Type 'string | undefined' is not assignable to typ... Remove this comment to see the full error message
             streamBuffer = events.pop();
 
             for (const eventChunk of events) {
@@ -91,6 +93,7 @@ class EventSourceStream {
  * @param {string} s The character.
  * @returns {number} The delay in milliseconds.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 's' implicitly has an 'any' type.
 function getDelay(s) {
     if (!s) {
         return 0;
@@ -116,6 +119,7 @@ function getDelay(s) {
  * @param {object} json The JSON data.
  * @returns {AsyncGenerator<{data: object, chunk: string, reasoning?: boolean}>} The parsed data and the chunk to be sent.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'json' implicitly has an 'any' type.
 async function* parseStreamData(json) {
     if (typeof json.delta === 'object' && typeof json.delta.message === 'object' && ['tool-plan-delta', 'content-delta'].includes(json.type)) {
         // Cohere
@@ -157,7 +161,9 @@ async function* parseStreamData(json) {
         // Google VertexAI / AI Studio
         for (let i = 0; i < json.candidates.length; i++) {
             const isNotPrimary = json.candidates?.[0]?.index > 0;
+            // @ts-expect-error TS(7006) FIXME: Parameter 'p' implicitly has an 'any' type.
             const hasToolCalls = json?.candidates?.[0]?.content?.parts?.some(p => p?.functionCall);
+            // @ts-expect-error TS(7006) FIXME: Parameter 'p' implicitly has an 'any' type.
             const hasInlineData = json?.candidates?.[0]?.content?.parts?.some(p => p?.inlineData);
             if (isNotPrimary || json.candidates.length === 0) {
                 return null;
@@ -205,7 +211,7 @@ async function* parseStreamData(json) {
         // llama.cpp?
         const isNotPrimary = json?.index > 0;
         if (isNotPrimary) {
-            // @ts-expect-error TS(2322): Type 'symbol' is not assignable to type 'Error'.
+            // @ts-expect-error TS(2769) FIXME: No overload matches this call.
             throw new Error('Not a primary swipe', { cause: NOT_PRIMARY });
         }
         for (let i = 0; i < json.content.length; i++) {
@@ -220,7 +226,7 @@ async function* parseStreamData(json) {
         // OpenAI-likes and friends
         const isNotPrimary = json?.choices?.[0]?.index > 0;
         if (isNotPrimary || json.choices.length === 0) {
-            // @ts-expect-error TS(2322): Type 'symbol' is not assignable to type 'Error'.
+            // @ts-expect-error TS(2769) FIXME: No overload matches this call.
             throw new Error('Not a primary swipe', { cause: NOT_PRIMARY });
         }
 
@@ -346,7 +352,7 @@ async function* parseStreamData(json) {
  * Like the default one, but multiplies the events by the number of letters in the event data.
  */
 export class SmoothEventSourceStream extends EventSourceStream {
-    // @ts-expect-error TS(2612): Property 'readable' will overwrite the base proper... Remove this comment to see the full error message
+    // @ts-expect-error TS(4114) FIXME: This member must have an 'override' modifier becau... Remove this comment to see the full error message
     readable: ReadableStream | null;
     constructor() {
         super();
@@ -378,7 +384,7 @@ export class SmoothEventSourceStream extends EventSourceStream {
                         lastStr = parsed.chunk;
                     }
                 } catch (error) {
-                    // @ts-expect-error TS(2367): This condition will always return 'true' since the... Remove this comment to see the full error message
+                    // @ts-expect-error TS(2367) FIXME: This condition will always return 'true' since the... Remove this comment to see the full error message
                     if (error instanceof Error && error.cause !== NOT_PRIMARY) {
                         console.debug('Smooth Streaming parsing error', error);
                     }
@@ -387,6 +393,7 @@ export class SmoothEventSourceStream extends EventSourceStream {
             },
         });
 
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         this.readable = this.readable.pipeThrough(transformStream);
     }
 }

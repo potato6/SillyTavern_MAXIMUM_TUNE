@@ -1,10 +1,14 @@
 import { Buffer } from 'node:buffer';
 import fetch from 'node-fetch';
+// @ts-expect-error TS(1259) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import express from 'express';
-// @ts-expect-error TS(2792): Cannot find module 'google-translate-api-x'. Did y... Remove this comment to see the full error message
+// @ts-expect-error TS(2792) FIXME: Cannot find module 'google-translate-api-x'. Did y... Remove this comment to see the full error message
 import { speak, languages } from 'google-translate-api-x';
+// @ts-expect-error TS(1192) FIXME: Module '"node:crypto"' has no default export.
 import crypto from 'node:crypto';
+// @ts-expect-error TS(1192) FIXME: Module '"node:util"' has no default export.
 import util from 'node:util';
+// @ts-expect-error TS(2792) FIXME: Cannot find module 'es-toolkit/compat'. Did you me... Remove this comment to see the full error message
 import { clamp } from 'es-toolkit/compat';
 
 import { readSecret, SECRET_KEYS } from './secrets.js';
@@ -88,6 +92,7 @@ export async function getVertexAIAuth(request: express.Request) {
                 };
             } catch (error) {
                 console.error('Failed to authenticate with service account:', error);
+                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 throw new Error(`Service account authentication failed: ${error.message}`);
             }
         }
@@ -207,6 +212,7 @@ export async function getGoogleApiConfig(request: express.Request, model: string
             url = projectId
                 ? `${baseUrl}/projects/${projectId}/locations/${region}/publishers/google/models/${model}:${endpoint}`
                 : `${baseUrl}/publishers/google/models/${model}:${endpoint}`;
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             headers['x-goog-api-key'] = keyParam;
         } else if (authType === 'full') {
             // Full mode: use project-specific URL with Authorization header
@@ -228,21 +234,25 @@ export async function getGoogleApiConfig(request: express.Request, model: string
                 ? 'https://aiplatform.googleapis.com/v1'
                 : `https://${region}-aiplatform.googleapis.com/v1`;
             url = `${baseUrl}/projects/${projectId}/locations/${region}/publishers/google/models/${model}:${endpoint}`;
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             headers['Authorization'] = authHeader;
         } else {
             // Proxy mode: use Authorization header
             const apiUrl = trimTrailingSlash(request.body.reverse_proxy || API_VERTEX_AI);
             baseUrl = `${apiUrl}/v1`;
             url = `${baseUrl}/publishers/google/models/${model}:${endpoint}`;
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             headers['Authorization'] = authHeader;
         }
     } else {
         // Google AI Studio
         const apiKey = request.body.reverse_proxy ? request.body.proxy_password : readSecret(request.user.directories, SECRET_KEYS.MAKERSUITE);
         const apiUrl = trimTrailingSlash(request.body.reverse_proxy || API_MAKERSUITE);
+        // @ts-expect-error TS(2345) FIXME: Argument of type '"v1beta"' is not assignable to p... Remove this comment to see the full error message
         const apiVersion = getConfigValue('gemini.apiVersion', 'v1beta');
         baseUrl = `${apiUrl}/${apiVersion}`;
         url = `${baseUrl}/models/${model}:${endpoint}`;
+        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         headers['x-goog-api-key'] = apiKey;
     }
 
@@ -251,7 +261,7 @@ export async function getGoogleApiConfig(request: express.Request, model: string
 
 export const router = express.Router();
 
-// @ts-expect-error TS(7030): Not all code paths return a value.
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/caption-image', async (request, response) => {
     try {
         const mimeType = request.body.image.split(';')[0].split(':')[1];
@@ -309,11 +319,12 @@ router.post('/caption-image', async (request, response) => {
     }
 });
 
+// @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
 router.post('/list-voices', (_, response) => {
     return response.json(languages);
 });
 
-// @ts-expect-error TS(7030): Not all code paths return a value.
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/generate-voice', async (request, response) => {
     try {
         const text = request.body.text;
@@ -332,7 +343,7 @@ router.post('/generate-voice', async (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7030): Not all code paths return a value.
+// @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
 router.post('/list-native-voices', async (_, response) => {
     try {
         // Hardcoded Gemini native TTS voices from official documentation
@@ -376,7 +387,7 @@ router.post('/list-native-voices', async (_, response) => {
     }
 });
 
-// @ts-expect-error TS(7030): Not all code paths return a value.
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/generate-native-tts', async (request, response) => {
     try {
         const { text, voice, model } = request.body;
@@ -453,6 +464,7 @@ router.post('/generate-native-tts', async (request, response) => {
     }
 });
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/generate-image', async (request, response) => {
     try {
         const model = request.body.model || 'imagen-3.0-generate-002';
@@ -463,6 +475,7 @@ router.post('/generate-image', async (request, response) => {
         // Is it even worth it?
         const isDeprecated = model.startsWith('imagegeneration');
         // Get person generation setting from config
+        // @ts-expect-error TS(2345) FIXME: Argument of type '"allow_adult"' is not assignable... Remove this comment to see the full error message
         const personGeneration = getConfigValue('gemini.image.personGeneration', 'allow_adult');
 
         const requestBody = {
@@ -519,6 +532,7 @@ router.post('/generate-image', async (request, response) => {
     }
 });
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/generate-video', async (request, response) => {
     try {
         const controller = new AbortController();

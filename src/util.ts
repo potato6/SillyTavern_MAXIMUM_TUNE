@@ -1,25 +1,36 @@
+// @ts-expect-error TS(1259) FIXME: Module '"node:path"' can only be default-imported ... Remove this comment to see the full error message
 import path from 'node:path';
+// @ts-expect-error TS(1192) FIXME: Module '"node:fs"' has no default export.
 import fs from 'node:fs';
+// @ts-expect-error TS(1192) FIXME: Module '"node:http2"' has no default export.
 import http2 from 'node:http2';
+// @ts-expect-error TS(1259) FIXME: Module '"node:process"' can only be default-import... Remove this comment to see the full error message
 import process from 'node:process';
 import { Readable } from 'node:stream';
 import { createRequire } from 'node:module';
 import { Buffer } from 'node:buffer';
 import { promises as dnsPromise } from 'node:dns';
+// @ts-expect-error TS(1192) FIXME: Module '"node:os"' has no default export.
 import os from 'node:os';
+// @ts-expect-error TS(1192) FIXME: Module '"node:crypto"' has no default export.
 import crypto from 'node:crypto';
+// @ts-expect-error TS(1192) FIXME: Module '"node:readline"' has no default export.
 import readline from 'node:readline';
 
-// @ts-expect-error TS(2792): Cannot find module 'yaml'. Did you mean to set the... Remove this comment to see the full error message
+// @ts-expect-error TS(2792) FIXME: Cannot find module 'yaml'. Did you mean to set the... Remove this comment to see the full error message
 import yaml from 'yaml';
 import { sync as commandExistsSync } from 'command-exists';
+// @ts-expect-error TS(2792) FIXME: Cannot find module 'es-toolkit/compat'. Did you me... Remove this comment to see the full error message
 import { get } from 'es-toolkit/compat';
+// @ts-expect-error TS(2792) FIXME: Cannot find module 'fflate'. Did you mean to set t... Remove this comment to see the full error message
 import * as fflate from 'fflate';
+// @ts-expect-error TS(1192) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import mime from 'mime-types';
-// @ts-expect-error TS(2792): Cannot find module 'simple-git'. Did you mean to s... Remove this comment to see the full error message
+// @ts-expect-error TS(2792) FIXME: Cannot find module 'simple-git'. Did you mean to s... Remove this comment to see the full error message
 import { default as simpleGit } from 'simple-git';
-// @ts-expect-error TS(2792): Cannot find module 'chalk'. Did you mean to set th... Remove this comment to see the full error message
+// @ts-expect-error TS(2792) FIXME: Cannot find module 'chalk'. Did you mean to set th... Remove this comment to see the full error message
 import chalk from 'chalk';
+// @ts-expect-error TS(1259) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import bytes from 'bytes';
 import { LOG_LEVELS, CHAT_COMPLETION_SOURCES, MEDIA_REQUEST_TYPE } from './constants.js';
 import { serverDirectory } from './server-directory.js';
@@ -55,6 +66,7 @@ export function setConfigFilePath(configFilePath: string) {
  * Returns the config object from the config.yaml file.
  * @returns {Record<string, unknown>} Config object
  */
+// @ts-expect-error TS(2366) FIXME: Function lacks ending return statement and return ... Remove this comment to see the full error message
 export function getConfig(): Record<string, unknown> {
     if (CONFIG_PATH === null) {
         console.trace();
@@ -76,6 +88,7 @@ export function getConfig(): Record<string, unknown> {
         return config;
     } catch (error) {
         console.error(color.red('FATAL: Failed to read config.yaml. Please check the file for syntax errors.'));
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         console.error(error.message);
         process.exit(1);
     }
@@ -106,8 +119,10 @@ export function getConfigValue(key: string, defaultValue = null, typeConverter =
 
     const value = _getValue();
     switch (typeConverter) {
+        // @ts-expect-error TS(2678) FIXME: Type '"number"' is not comparable to type 'null'.
         case 'number':
             return isNaN(parseFloat(value)) ? defaultValue : parseFloat(value);
+        // @ts-expect-error TS(2678) FIXME: Type '"boolean"' is not comparable to type 'null'.
         case 'boolean':
             return toBoolean(value);
         default:
@@ -148,6 +163,7 @@ export async function getVersion() {
     let isLatest = true;
 
     try {
+        // @ts-expect-error TS(1343) FIXME: The 'import.meta' meta-property is only allowed wh... Remove this comment to see the full error message
         const require = createRequire(import.meta.url);
         const pkgJson = require(path.join(serverDirectory, './package.json'));
         pkgVersion = pkgJson.version;
@@ -216,6 +232,7 @@ export async function extractFileFromZipBuffer(archiveBuffer: ArrayBufferLike, f
         const zip = fflate.unzipSync(new Uint8Array(archiveBuffer));
         for (const [fileName, data] of Object.entries(zip)) {
             if (fileName.endsWith(fileExtension) && !fileName.startsWith('__MACOSX')) {
+                // @ts-expect-error TS(2769) FIXME: No overload matches this call.
                 return Buffer.from(data);
             }
         }
@@ -284,6 +301,7 @@ export async function extractFilesFromZipBuffer(archiveBuffer: ArrayBufferLike, 
         for (const [fileName, data] of Object.entries(zip)) {
             const normalizedEntry = normalizeZipEntryPath(fileName);
             if (normalizedEntry && targets.has(normalizedEntry)) {
+                // @ts-expect-error TS(2769) FIXME: No overload matches this call.
                 results.set(normalizedEntry, Buffer.from(data));
                 targets.delete(normalizedEntry);
                 if (targets.size === 0) break;
@@ -333,6 +351,7 @@ export async function getImageBuffers(zipFilePath: string) {
     for (const [fileName, data] of Object.entries(zip)) {
         const mimeType = mime.lookup(fileName);
         if (mimeType && mimeType.startsWith('image/') && !fileName.startsWith('__MACOSX')) {
+            // @ts-expect-error TS(2769) FIXME: No overload matches this call.
             imageBuffers.push([path.parse(fileName).base, Buffer.from(data)]);
         }
     }
@@ -350,6 +369,7 @@ export async function readAllChunks(readableStream: Readable) {
         // Consume the readable stream
         const chunks: Buffer[] = [];
         readableStream.on('data', (chunk: Buffer | string) => {
+            // @ts-expect-error TS(2345) FIXME: Argument of type 'string | Buffer' is not assignab... Remove this comment to see the full error message
             chunks.push(chunk);
         });
 
@@ -388,6 +408,7 @@ export function deepMerge(target: Record<string, unknown>, source: Record<string
                 if (!(key in target)) {
                     Object.assign(output, { [key]: source[key] });
                 } else {
+                    // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
                     output[key] = deepMerge(target[key], source[key]);
                 }
             } else {
@@ -439,6 +460,7 @@ export function humanizedDateTime(timestamp = Date.now()) {
     };
     for (const key in dt) {
         const padLength = key === 'millisecond' ? 3 : 2;
+        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         dt[key] = dt[key].toString().padStart(padLength, '0');
     }
     return `${dt.year}-${dt.month}-${dt.day}@${dt.hour}h${dt.minute}m${dt.second}s${dt.millisecond}ms`;
@@ -485,10 +507,12 @@ export function clientRelativePath(root: string, inputPath: string) {
  * @returns {string|null} A unique name. Null if no unique name could be found in `maxTries`.
  */
 export function getUniqueName(baseName: string, exists: (name: string) => boolean, { nameBuilder = null, maxTries = 1000, startIndex = 1 } = {}) {
+    // @ts-expect-error TS(2322) FIXME: Type '(baseName: string, i: number) => string' is ... Remove this comment to see the full error message
     nameBuilder ??= (baseName: string, i: number) => i === 0 ? baseName : `${baseName} (${i})`;
     let i = startIndex;
     let name;
     while (i < maxTries + startIndex) {
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         name = nameBuilder(baseName, i);
         if (!exists(name)) {
             return name;
@@ -503,7 +527,6 @@ export function getUniqueName(baseName: string, exists: (name: string) => boolea
  * @param {string} char Character to sanitize
  * @returns {string} Safe replacement character
  */
-// @ts-expect-error TS(6133): 'char' is declared but its value is never read.
 export function sanitizeSafeCharacterReplacements(char: string) {
     return '_';
 }
@@ -540,11 +563,15 @@ export function generateTimestamp() {
  * @param {number?} limit Maximum number of backups to keep. If null, the limit is determined by the `backups.common.numberOfBackups` config value.
  */
 export function removeOldBackups(directory: string, prefix: string, limit = null) {
+    // @ts-expect-error TS(2345) FIXME: Argument of type '50' is not assignable to paramet... Remove this comment to see the full error message
     const MAX_BACKUPS = limit ?? Number(getConfigValue('backups.common.numberOfBackups', 50, 'number'));
 
+    // @ts-expect-error TS(7006) FIXME: Parameter 'f' implicitly has an 'any' type.
     let files = fs.readdirSync(directory).filter(f => f.startsWith(prefix));
     if (files.length > MAX_BACKUPS) {
+        // @ts-expect-error TS(7006) FIXME: Parameter 'f' implicitly has an 'any' type.
         files = files.map(f => path.join(directory, f));
+        // @ts-expect-error TS(7006) FIXME: Parameter 'a' implicitly has an 'any' type.
         files.sort((a, b) => fs.statSync(a).mtimeMs - fs.statSync(b).mtimeMs);
 
         while (files.length > MAX_BACKUPS) {
@@ -583,8 +610,11 @@ export function getImages(directoryPath: string, sortBy = 'name', type = MEDIA_R
 
     return fs
         .readdirSync(directoryPath, { withFileTypes: true })
+        // @ts-expect-error TS(7006) FIXME: Parameter 'dirent' implicitly has an 'any' type.
         .filter(dirent => dirent.isFile())
+        // @ts-expect-error TS(7006) FIXME: Parameter 'dirent' implicitly has an 'any' type.
         .map(dirent => dirent.name)
+        // @ts-expect-error TS(7006) FIXME: Parameter 'file' implicitly has an 'any' type.
         .filter(file => {
             const fileType = mime.lookup(file);
             if (!fileType) {
@@ -681,6 +711,7 @@ export function makeHttp2Request(endpoint: string, method: string, body: string,
             });
             req.setEncoding('utf8');
 
+            // @ts-expect-error TS(7006) FIXME: Parameter 'headers' implicitly has an 'any' type.
             req.on('response', (headers) => {
                 const status = Number(headers[':status']);
 
@@ -690,6 +721,7 @@ export function makeHttp2Request(endpoint: string, method: string, body: string,
 
                 let data = '';
 
+                // @ts-expect-error TS(7006) FIXME: Parameter 'chunk' implicitly has an 'any' type.
                 req.on('data', (chunk) => {
                     data += chunk;
                 });
@@ -700,6 +732,7 @@ export function makeHttp2Request(endpoint: string, method: string, body: string,
                 });
             });
 
+            // @ts-expect-error TS(7006) FIXME: Parameter 'err' implicitly has an 'any' type.
             req.on('error', (err) => {
                 reject(err);
             });
@@ -812,7 +845,9 @@ export class Cache {
      */
     get(key: string) {
         const value = this.cache.get(key);
+        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         if (value?.expiry > Date.now()) {
+            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             return value.value;
         }
 
@@ -955,6 +990,7 @@ export async function getHasIP() {
             continue;
         }
 
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         for (const info of iface) {
             if (info.family === 'IPv6') {
                 hasIPv6Any = true;
@@ -1014,6 +1050,7 @@ export function stringToBool(str: unknown) {
  * Setup the minimum log level
  */
 export function setupLogLevel() {
+    // @ts-expect-error TS(2345) FIXME: Argument of type 'number' is not assignable to par... Remove this comment to see the full error message
     const logLevel = getConfigValue('logging.minLogLevel', LOG_LEVELS.DEBUG, 'number');
 
     globalThis.console.debug = logLevel <= LOG_LEVELS.DEBUG ? console.debug : () => { };
@@ -1076,6 +1113,7 @@ export class MemoryLimitedMap {
         // Check if the key already exists to adjust memory accordingly
         if (this.map.has(key)) {
             const oldValue = this.map.get(key);
+            // @ts-expect-error TS(2345) FIXME: Argument of type 'string | undefined' is not assig... Remove this comment to see the full error message
             const oldValueSize = MemoryLimitedMap.estimateStringSize(oldValue);
             this.currentMemory -= oldValueSize;
             // Remove the key from its current position in the queue
@@ -1088,8 +1126,11 @@ export class MemoryLimitedMap {
         // Evict oldest entries until there's enough space
         while (this.currentMemory + newValueSize > this.maxMemory && this.queue.length > 0) {
             const oldestKey = this.queue.shift();
+            // @ts-expect-error TS(2345) FIXME: Argument of type 'string | undefined' is not assig... Remove this comment to see the full error message
             const oldestValue = this.map.get(oldestKey);
+            // @ts-expect-error TS(2345) FIXME: Argument of type 'string | undefined' is not assig... Remove this comment to see the full error message
             const oldestValueSize = MemoryLimitedMap.estimateStringSize(oldestValue);
+            // @ts-expect-error TS(2345) FIXME: Argument of type 'string | undefined' is not assig... Remove this comment to see the full error message
             this.map.delete(oldestKey);
             this.currentMemory -= oldestValueSize;
         }
@@ -1133,6 +1174,7 @@ export class MemoryLimitedMap {
             return false;
         }
         const value = this.map.get(key);
+        // @ts-expect-error TS(2345) FIXME: Argument of type 'string | undefined' is not assig... Remove this comment to see the full error message
         const valueSize = MemoryLimitedMap.estimateStringSize(value);
         this.map.delete(key);
         this.currentMemory -= valueSize;
@@ -1213,7 +1255,6 @@ export class MemoryLimitedMap {
  * @returns {string | null} The contents at `filePath` if it exists, or `null` if not.
  */
 export function safeReadFileSync(filePath: string, options = { encoding: 'utf-8' }) {
-    // @ts-expect-error TS(2769): No overload matches this call.
     if (fs.existsSync(filePath)) return fs.readFileSync(filePath, options);
     return null;
 }
@@ -1272,6 +1313,7 @@ export function setPermissionsSync(targetPath: string) {
             appendWritablePermission(targetPath, stats);
             const files = fs.readdirSync(targetPath);
 
+            // @ts-expect-error TS(7006) FIXME: Parameter 'file' implicitly has an 'any' type.
             files.forEach((file) => {
                 setPermissionsSync(path.join(targetPath, file));
             });
@@ -1308,9 +1350,11 @@ export function isFileURL(request: string | URL | Request) {
         return request.startsWith('file://');
     }
     if (request instanceof URL) {
+        // @ts-expect-error TS(2339) FIXME: Property 'protocol' does not exist on type 'URL | ... Remove this comment to see the full error message
         return request.protocol === 'file:';
     }
     if (request instanceof Request) {
+        // @ts-expect-error TS(2339) FIXME: Property 'url' does not exist on type 'URL | Reque... Remove this comment to see the full error message
         return request.url.startsWith('file://');
     }
     return false;
@@ -1326,9 +1370,11 @@ export function getRequestURL(request: string | URL | Request) {
         return request;
     }
     if (request instanceof URL) {
+        // @ts-expect-error TS(2339) FIXME: Property 'href' does not exist on type 'URL | Requ... Remove this comment to see the full error message
         return request.href;
     }
     if (request instanceof Request) {
+        // @ts-expect-error TS(2339) FIXME: Property 'url' does not exist on type 'URL | Reque... Remove this comment to see the full error message
         return request.url;
     }
     throw new TypeError('Invalid request type');
@@ -1358,6 +1404,7 @@ export function flattenSchema(schema: Record<string, unknown>, api: string) {
      * @param {string[]} parents List of parents to prevent recursion
      * @returns {unknown} The resolved object
      */
+    // @ts-expect-error TS(7023) FIXME: 'resolve' implicitly has return type 'any' because... Remove this comment to see the full error message
     function resolve(obj: unknown, parents: string[] = []) {
         if (!obj || typeof obj !== 'object') {
             return obj;
@@ -1367,10 +1414,14 @@ export function flattenSchema(schema: Record<string, unknown>, api: string) {
         }
 
         // 1. Resolve $refs first
+        // @ts-expect-error TS(2339) FIXME: Property '$ref' does not exist on type 'object'.
         if (obj.$ref?.startsWith('#/$defs/')) {
+            // @ts-expect-error TS(2339) FIXME: Property '$ref' does not exist on type 'object'.
             const defName = obj.$ref.split('/').pop();
             if (parents.includes(defName)) return {}; // Prevent infinite recursion
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             if (definitions[defName]) {
+                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 return resolve(structuredClone(definitions[defName]), [...parents, defName]);
             }
             return {}; // Broken reference
@@ -1386,6 +1437,7 @@ export function flattenSchema(schema: Record<string, unknown>, api: string) {
                 continue;
             }
 
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             result[key] = resolve(obj[key], parents);
         }
 
@@ -1422,6 +1474,7 @@ export function tryReadFileSync(filePath: string) {
             return fs.readFileSync(filePath, 'utf8');
         }
     } catch (error) {
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         console.error(`Error reading ${filePath}: ${error.message}`);
     }
     return null;
@@ -1453,6 +1506,7 @@ export function readFirstLine(filePath: string) {
     const rl = readline.createInterface({ input: stream });
     return new Promise((resolve, reject) => {
         let resolved = false;
+        // @ts-expect-error TS(7006) FIXME: Parameter 'line' implicitly has an 'any' type.
         rl.on('line', line => {
             resolved = true;
             rl.close();
@@ -1460,6 +1514,7 @@ export function readFirstLine(filePath: string) {
             resolve(line);
         });
 
+        // @ts-expect-error TS(7006) FIXME: Parameter 'error' implicitly has an 'any' type.
         rl.on('error', error => {
             resolved = true;
             reject(error);

@@ -38,19 +38,25 @@ export class SlashCommand {
      * @param {SlashCommandNamedArgument[]} [props.namedArgumentList]
      * @param {SlashCommandArgument[]} [props.unnamedArgumentList]
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'props' implicitly has an 'any' type.
     static fromProps(props) {
         const instance = Object.assign(new this(), props);
         return instance;
     }
 
 
+    // @ts-expect-error TS(7008) FIXME: Member 'name' implicitly has an 'any' type.
     /**@type {string}*/ name;
+    // @ts-expect-error TS(7008) FIXME: Member 'callback' implicitly has an 'any' type.
     /**@type {(namedArguments:NamedArguments, unnamedArguments:UnnamedArguments)=>string|SlashCommandClosure|Promise<string|SlashCommandClosure>}*/ callback;
+    // @ts-expect-error TS(7008) FIXME: Member 'helpString' implicitly has an 'any' type.
     /**@type {string}*/ helpString;
     /**@type {boolean}*/ splitUnnamedArgument = false;
+    // @ts-expect-error TS(7008) FIXME: Member 'splitUnnamedArgumentCount' implicitly has ... Remove this comment to see the full error message
     /**@type {Number}*/ splitUnnamedArgumentCount;
     /** @type {boolean} */ rawQuotes = false;
     /**@type {string[]}*/ aliases = [];
+    // @ts-expect-error TS(7008) FIXME: Member 'returns' implicitly has an 'any' type.
     /**@type {string}*/ returns;
     /**@type {SlashCommandNamedArgument[]}*/ namedArgumentList = [];
     /**@type {SlashCommandArgument[]}*/ unnamedArgumentList = [];
@@ -60,10 +66,12 @@ export class SlashCommand {
 
     /**@type {boolean}*/ isExtension = false;
     /**@type {boolean}*/ isThirdParty = false;
+    // @ts-expect-error TS(7008) FIXME: Member 'source' implicitly has an 'any' type.
     /**@type {string}*/ source;
 
     renderHelpItem(key = null) {
         key = key ?? this.name;
+        // @ts-expect-error TS(2538) FIXME: Type 'null' cannot be used as an index type.
         if (!this.helpCache[key]) {
             const typeIcon = '[/]';
             const li = document.createElement('li'); {
@@ -80,6 +88,7 @@ export class SlashCommand {
                         name.classList.add('name');
                         name.classList.add('monospace');
                         name.textContent = '/';
+                        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
                         key.split('').forEach(char => {
                             const span = document.createElement('span'); {
                                 span.textContent = char;
@@ -96,16 +105,21 @@ export class SlashCommand {
                                 const argItem = document.createElement('span'); {
                                     argItem.classList.add('argument');
                                     argItem.classList.add('namedArgument');
+                                    // @ts-expect-error TS(2339) FIXME: Property 'isRequired' does not exist on type 'neve... Remove this comment to see the full error message
                                     if (!arg.isRequired || (arg.defaultValue ?? false)) argItem.classList.add('optional');
+                                    // @ts-expect-error TS(2339) FIXME: Property 'acceptsMultiple' does not exist on type ... Remove this comment to see the full error message
                                     if (arg.acceptsMultiple) argItem.classList.add('multiple');
                                     const name = document.createElement('span'); {
                                         name.classList.add('argument-name');
+                                        // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
                                         name.textContent = arg.name;
                                         argItem.append(name);
                                     }
+                                    // @ts-expect-error TS(2339) FIXME: Property 'enumList' does not exist on type 'never'... Remove this comment to see the full error message
                                     if (arg.enumList.length > 0) {
                                         const enums = document.createElement('span'); {
                                             enums.classList.add('argument-enums');
+                                            // @ts-expect-error TS(2339) FIXME: Property 'enumList' does not exist on type 'never'... Remove this comment to see the full error message
                                             for (const e of arg.enumList) {
                                                 const enumItem = document.createElement('span'); {
                                                     enumItem.classList.add('argument-enum');
@@ -118,6 +132,7 @@ export class SlashCommand {
                                     } else {
                                         const types = document.createElement('span'); {
                                             types.classList.add('argument-types');
+                                            // @ts-expect-error TS(2339) FIXME: Property 'typeList' does not exist on type 'never'... Remove this comment to see the full error message
                                             for (const t of arg.typeList) {
                                                 const type = document.createElement('span'); {
                                                     type.classList.add('argument-type');
@@ -135,11 +150,15 @@ export class SlashCommand {
                                 const argItem = document.createElement('span'); {
                                     argItem.classList.add('argument');
                                     argItem.classList.add('unnamedArgument');
+                                    // @ts-expect-error TS(2339) FIXME: Property 'isRequired' does not exist on type 'neve... Remove this comment to see the full error message
                                     if (!arg.isRequired || (arg.defaultValue ?? false)) argItem.classList.add('optional');
+                                    // @ts-expect-error TS(2339) FIXME: Property 'acceptsMultiple' does not exist on type ... Remove this comment to see the full error message
                                     if (arg.acceptsMultiple) argItem.classList.add('multiple');
+                                    // @ts-expect-error TS(2339) FIXME: Property 'enumList' does not exist on type 'never'... Remove this comment to see the full error message
                                     if (arg.enumList.length > 0) {
                                         const enums = document.createElement('span'); {
                                             enums.classList.add('argument-enums');
+                                            // @ts-expect-error TS(2339) FIXME: Property 'enumList' does not exist on type 'never'... Remove this comment to see the full error message
                                             for (const e of arg.enumList) {
                                                 const enumItem = document.createElement('span'); {
                                                     enumItem.classList.add('argument-enum');
@@ -152,6 +171,7 @@ export class SlashCommand {
                                     } else {
                                         const types = document.createElement('span'); {
                                             types.classList.add('argument-types');
+                                            // @ts-expect-error TS(2339) FIXME: Property 'typeList' does not exist on type 'never'... Remove this comment to see the full error message
                                             for (const t of arg.typeList) {
                                                 const type = document.createElement('span'); {
                                                     type.classList.add('argument-type');
@@ -209,13 +229,16 @@ export class SlashCommand {
                     }
                 }
             }
+            // @ts-expect-error TS(2538) FIXME: Type 'null' cannot be used as an index type.
             this.helpCache[key] = li;
         }
+        // @ts-expect-error TS(2538) FIXME: Type 'null' cannot be used as an index type.
         return /**@type {HTMLElement}*/(this.helpCache[key].cloneNode(true));
     }
 
     renderHelpDetails(key = null) {
         key = key ?? this.name;
+        // @ts-expect-error TS(2538) FIXME: Type 'null' cannot be used as an index type.
         if (!this.helpDetailsCache[key]) {
             const frag = document.createDocumentFragment();
             const namedArguments = this.namedArgumentList ?? [];
@@ -276,19 +299,25 @@ export class SlashCommand {
                                     const argItem = document.createElement('div'); {
                                         argItem.classList.add('argument');
                                         argItem.classList.add('namedArgument');
+                                        // @ts-expect-error TS(2339) FIXME: Property 'isRequired' does not exist on type 'neve... Remove this comment to see the full error message
                                         argItem.title = arg.isRequired ? t`Named argument` : t`Optional named argument`;
+                                        // @ts-expect-error TS(2339) FIXME: Property 'isRequired' does not exist on type 'neve... Remove this comment to see the full error message
                                         if (!arg.isRequired || (arg.defaultValue ?? false)) argItem.classList.add('optional');
+                                        // @ts-expect-error TS(2339) FIXME: Property 'acceptsMultiple' does not exist on type ... Remove this comment to see the full error message
                                         if (arg.acceptsMultiple) argItem.classList.add('multiple');
                                         const name = document.createElement('span'); {
                                             name.classList.add('argument-name');
                                             name.title = t`${argItem.title} - Name`;
+                                            // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
                                             name.textContent = arg.name;
                                             argItem.append(name);
                                         }
+                                        // @ts-expect-error TS(2339) FIXME: Property 'enumList' does not exist on type 'never'... Remove this comment to see the full error message
                                         if (arg.enumList.length > 0) {
                                             const enums = document.createElement('span'); {
                                                 enums.classList.add('argument-enums');
                                                 enums.title = t`${argItem.title} - Accepted values`;
+                                                // @ts-expect-error TS(2339) FIXME: Property 'enumList' does not exist on type 'never'... Remove this comment to see the full error message
                                                 for (const e of arg.enumList) {
                                                     const enumItem = document.createElement('span'); {
                                                         enumItem.classList.add('argument-enum');
@@ -302,6 +331,7 @@ export class SlashCommand {
                                             const types = document.createElement('span'); {
                                                 types.classList.add('argument-types');
                                                 types.title = t`${argItem.title} - Accepted types`;
+                                                // @ts-expect-error TS(2339) FIXME: Property 'typeList' does not exist on type 'never'... Remove this comment to see the full error message
                                                 for (const t of arg.typeList) {
                                                     const type = document.createElement('span'); {
                                                         type.classList.add('argument-type');
@@ -314,10 +344,12 @@ export class SlashCommand {
                                         }
                                         argSpec.append(argItem);
                                     }
+                                    // @ts-expect-error TS(2339) FIXME: Property 'defaultValue' does not exist on type 'ne... Remove this comment to see the full error message
                                     if (arg.defaultValue !== null) {
                                         const argDefault = document.createElement('div'); {
                                             argDefault.classList.add('argument-default');
                                             argDefault.title = t`Default value`;
+                                            // @ts-expect-error TS(2339) FIXME: Property 'defaultValue' does not exist on type 'ne... Remove this comment to see the full error message
                                             argDefault.textContent = arg.defaultValue.toString();
                                             argSpec.append(argDefault);
                                         }
@@ -326,6 +358,7 @@ export class SlashCommand {
                                 }
                                 const desc = document.createElement('div'); {
                                     desc.classList.add('argument-description');
+                                    // @ts-expect-error TS(2339) FIXME: Property 'description' does not exist on type 'nev... Remove this comment to see the full error message
                                     desc.innerHTML = arg.description;
                                     listItem.append(desc);
                                 }
@@ -340,13 +373,18 @@ export class SlashCommand {
                                     const argItem = document.createElement('div'); {
                                         argItem.classList.add('argument');
                                         argItem.classList.add('unnamedArgument');
+                                        // @ts-expect-error TS(2339) FIXME: Property 'isRequired' does not exist on type 'neve... Remove this comment to see the full error message
                                         argItem.title = arg.isRequired ? t`Unnamed argument` : t`Optional unnamed argument`;
+                                        // @ts-expect-error TS(2339) FIXME: Property 'isRequired' does not exist on type 'neve... Remove this comment to see the full error message
                                         if (!arg.isRequired || (arg.defaultValue ?? false)) argItem.classList.add('optional');
+                                        // @ts-expect-error TS(2339) FIXME: Property 'acceptsMultiple' does not exist on type ... Remove this comment to see the full error message
                                         if (arg.acceptsMultiple) argItem.classList.add('multiple');
+                                        // @ts-expect-error TS(2339) FIXME: Property 'enumList' does not exist on type 'never'... Remove this comment to see the full error message
                                         if (arg.enumList.length > 0) {
                                             const enums = document.createElement('span'); {
                                                 enums.classList.add('argument-enums');
                                                 enums.title = t`${argItem.title} - Accepted values`;
+                                                // @ts-expect-error TS(2339) FIXME: Property 'enumList' does not exist on type 'never'... Remove this comment to see the full error message
                                                 for (const e of arg.enumList) {
                                                     const enumItem = document.createElement('span'); {
                                                         enumItem.classList.add('argument-enum');
@@ -360,6 +398,7 @@ export class SlashCommand {
                                             const types = document.createElement('span'); {
                                                 types.classList.add('argument-types');
                                                 types.title = t`${argItem.title} - Accepted types`;
+                                                // @ts-expect-error TS(2339) FIXME: Property 'typeList' does not exist on type 'never'... Remove this comment to see the full error message
                                                 for (const t of arg.typeList) {
                                                     const type = document.createElement('span'); {
                                                         type.classList.add('argument-type');
@@ -372,10 +411,12 @@ export class SlashCommand {
                                         }
                                         argSpec.append(argItem);
                                     }
+                                    // @ts-expect-error TS(2339) FIXME: Property 'defaultValue' does not exist on type 'ne... Remove this comment to see the full error message
                                     if (arg.defaultValue !== null) {
                                         const argDefault = document.createElement('div'); {
                                             argDefault.classList.add('argument-default');
                                             argDefault.title = t`Default value`;
+                                            // @ts-expect-error TS(2339) FIXME: Property 'defaultValue' does not exist on type 'ne... Remove this comment to see the full error message
                                             argDefault.textContent = arg.defaultValue.toString();
                                             argSpec.append(argDefault);
                                         }
@@ -384,6 +425,7 @@ export class SlashCommand {
                                 }
                                 const desc = document.createElement('div'); {
                                     desc.classList.add('argument-description');
+                                    // @ts-expect-error TS(2339) FIXME: Property 'description' does not exist on type 'nev... Remove this comment to see the full error message
                                     desc.innerHTML = arg.description;
                                     listItem.append(desc);
                                 }
@@ -424,9 +466,11 @@ export class SlashCommand {
                     frag.append(aliases);
                 }
             }
+            // @ts-expect-error TS(2538) FIXME: Type 'null' cannot be used as an index type.
             this.helpDetailsCache[key] = frag;
         }
         const frag = document.createDocumentFragment();
+        // @ts-expect-error TS(2538) FIXME: Type 'null' cannot be used as an index type.
         frag.append(this.helpDetailsCache[key].cloneNode(true));
         return frag;
     }

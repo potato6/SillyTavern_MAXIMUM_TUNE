@@ -1,16 +1,23 @@
+// @ts-expect-error TS(1192) FIXME: Module '"node:crypto"' has no default export.
 import crypto from 'node:crypto';
 
+// @ts-expect-error TS(1259) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import storage from 'node-persist';
+// @ts-expect-error TS(1259) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import express from 'express';
-// @ts-expect-error TS(2792): Cannot find module 'rate-limiter-flexible'. Did yo... Remove this comment to see the full error message
+// @ts-expect-error TS(2792) FIXME: Cannot find module 'rate-limiter-flexible'. Did yo... Remove this comment to see the full error message
 import { RateLimiterMemory, RateLimiterRes } from 'rate-limiter-flexible';
 import { getIpAddress, retryAfter } from '../express-common.js';
 import { color, Cache, getConfigValue } from '../util.js';
 import { KEY_PREFIX, getUserAvatar, toKey, getPasswordHash, getPasswordSalt, getAccountVersion } from '../users.js';
 
+// @ts-expect-error TS(2345) FIXME: Argument of type 'false' is not assignable to para... Remove this comment to see the full error message
 const DISCREET_LOGIN = getConfigValue('enableDiscreetLogin', false, 'boolean');
+// @ts-expect-error TS(2345) FIXME: Argument of type 'false' is not assignable to para... Remove this comment to see the full error message
 const PREFER_REAL_IP_HEADER = getConfigValue('rateLimiting.preferRealIpHeader', false, 'boolean');
+// @ts-expect-error TS(2345) FIXME: Argument of type '5' is not assignable to paramete... Remove this comment to see the full error message
 const LOGIN_POINTS = getConfigValue('rateLimiting.accountsLoginMaxAttempts', 5, 'number');
+// @ts-expect-error TS(2345) FIXME: Argument of type '5' is not assignable to paramete... Remove this comment to see the full error message
 const RECOVER_POINTS = getConfigValue('rateLimiting.accountsRecoverMaxAttempts', 5, 'number');
 const MFA_CACHE = new Cache(5 * 60 * 1000);
 
@@ -26,6 +33,7 @@ const recoverLimiter = new RateLimiterMemory({
     duration: 300,
 });
 
+// @ts-expect-error TS(7006) FIXME: Parameter '_request' implicitly has an 'any' type.
 router.post('/list', async (_request, response) => {
     try {
         if (DISCREET_LOGIN) {
@@ -33,11 +41,14 @@ router.post('/list', async (_request, response) => {
         }
 
         /** @type {import('../users.js').User[]} */
+        // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
         const users = await storage.values(x => x.key.startsWith(KEY_PREFIX));
 
         /** @type {Promise<import('../users.js').UserViewModel>[]} */
         const viewModelPromises = users
+            // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
             .filter(x => x.enabled)
+            // @ts-expect-error TS(7006) FIXME: Parameter 'user' implicitly has an 'any' type.
             .map(user => new Promise(async (resolve) => {
                 getUserAvatar(user.handle).then(avatar =>
                     resolve({
@@ -51,7 +62,7 @@ router.post('/list', async (_request, response) => {
             }));
 
         const viewModels = await Promise.all(viewModelPromises);
-        // @ts-expect-error TS(2339): Property 'created' does not exist on type 'unknown... Remove this comment to see the full error message
+        // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
         viewModels.sort((x, y) => (x.created ?? 0) - (y.created ?? 0));
         return response.json(viewModels);
     } catch (error) {
@@ -60,6 +71,7 @@ router.post('/list', async (_request, response) => {
     }
 });
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/login', async (request, response) => {
     try {
         if (!request.body.handle) {
@@ -109,6 +121,7 @@ router.post('/login', async (request, response) => {
     }
 });
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/recover-step1', async (request, response) => {
     try {
         if (!request.body.handle) {
@@ -149,6 +162,7 @@ router.post('/recover-step1', async (request, response) => {
     }
 });
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/recover-step2', async (request, response) => {
     try {
         if (!request.body.handle || !request.body.code) {

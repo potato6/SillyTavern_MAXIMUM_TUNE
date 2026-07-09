@@ -1,6 +1,6 @@
 import { MacroRegistry, MacroCategory } from '../engine/MacroRegistry.js';
 import { eventSource, event_types } from '../../events.js';
-// @ts-expect-error TS(2792): Cannot find module '/scripts/extensions.js'. Did y... Remove this comment to see the full error message
+// @ts-expect-error TS(2792) FIXME: Cannot find module '/scripts/extensions.js'. Did y... Remove this comment to see the full error message
 import { findExtension } from '/scripts/extensions.js';
 
 let lastGenerationTypeValue = '';
@@ -16,6 +16,7 @@ function ensureLastGenerationTypeTracking() {
     lastGenerationTypeTrackingInitialized = true;
 
     try {
+        // @ts-expect-error TS(7006) FIXME: Parameter 'type' implicitly has an 'any' type.
         eventSource?.on?.(event_types.GENERATION_STARTED, (type, _params, isDryRun) => {
             if (isDryRun) return;
             lastGenerationTypeValue = type || 'normal';
@@ -53,6 +54,7 @@ export function registerStateMacros() {
         }],
         description: 'Checks if a specific extension is enabled. If the extension does not exist, returns false.',
         returns: 'true if the extension is enabled, false otherwise.',
+        // @ts-expect-error TS(7031) FIXME: Binding element 'extensionName' implicitly has an ... Remove this comment to see the full error message
         handler: ({ unnamedArgs: [extensionName] }) => {
             const extension = findExtension(extensionName);
             return String(extension?.enabled ?? false);

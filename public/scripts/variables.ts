@@ -6,13 +6,11 @@ import { SlashCommandAbortController } from './slash-commands/SlashCommandAbortC
 import { ARGUMENT_TYPE, SlashCommandArgument, SlashCommandNamedArgument } from './slash-commands/SlashCommandArgument.js';
 import { SlashCommandBreakController } from './slash-commands/SlashCommandBreakController.js';
 import { SlashCommandClosure } from './slash-commands/SlashCommandClosure.js';
-// @ts-expect-error TS(6133): 'SlashCommandClosureResult' is declared but its va... Remove this comment to see the full error message
 import { SlashCommandClosureResult } from './slash-commands/SlashCommandClosureResult.js';
 import { commonEnumProviders, enumIcons } from './slash-commands/SlashCommandCommonEnumsProvider.js';
 import { SlashCommandEnumValue, enumTypes } from './slash-commands/SlashCommandEnumValue.js';
 import { SlashCommandParser } from './slash-commands/SlashCommandParser.js';
 import { slashCommandReturnHelper } from './slash-commands/SlashCommandReturnHelper.js';
-// @ts-expect-error TS(6133): 'SlashCommandScope' is declared but its value is n... Remove this comment to see the full error message
 import { SlashCommandScope } from './slash-commands/SlashCommandScope.js';
 import { isFalseBoolean, convertValueType, isTrueBoolean } from './utils.js';
 
@@ -26,26 +24,27 @@ const MAX_LOOPS = 100;
  * @param name
  * @param args
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
 export function getLocalVariable(name, args = {}) {
-    // @ts-expect-error TS(2339): Property 'variables' does not exist on type '{}'.
+    // @ts-expect-error TS(2339) FIXME: Property 'variables' does not exist on type '{}'.
     if (!chat_metadata.variables) {
-        // @ts-expect-error TS(2339): Property 'variables' does not exist on type '{}'.
+        // @ts-expect-error TS(2339) FIXME: Property 'variables' does not exist on type '{}'.
         chat_metadata.variables = {};
     }
 
-    // @ts-expect-error TS(2339): Property 'variables' does not exist on type '{}'.
+    // @ts-expect-error TS(2339) FIXME: Property 'variables' does not exist on type '{}'.
     let localVariable = chat_metadata?.variables[args.key ?? name];
-    // @ts-expect-error TS(2339): Property 'index' does not exist on type '{}'.
+    // @ts-expect-error TS(2339) FIXME: Property 'index' does not exist on type '{}'.
     if (args.index !== undefined) {
         try {
             localVariable = JSON.parse(localVariable);
-            // @ts-expect-error TS(2339): Property 'index' does not exist on type '{}'.
+            // @ts-expect-error TS(2339) FIXME: Property 'index' does not exist on type '{}'.
             const numIndex = Number(args.index);
             if (Number.isNaN(numIndex)) {
-                // @ts-expect-error TS(2339): Property 'index' does not exist on type '{}'.
+                // @ts-expect-error TS(2339) FIXME: Property 'index' does not exist on type '{}'.
                 localVariable = localVariable[args.index];
             } else {
-                // @ts-expect-error TS(2339): Property 'index' does not exist on type '{}'.
+                // @ts-expect-error TS(2339) FIXME: Property 'index' does not exist on type '{}'.
                 localVariable = localVariable[Number(args.index)];
             }
             if (typeof localVariable == 'object') {
@@ -65,44 +64,45 @@ export function getLocalVariable(name, args = {}) {
  * @param value
  * @param args
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
 export function setLocalVariable(name, value, args = {}) {
     if (!name) {
         throw new Error('Variable name cannot be empty or undefined.');
     }
 
-    // @ts-expect-error TS(2339): Property 'variables' does not exist on type '{}'.
+    // @ts-expect-error TS(2339) FIXME: Property 'variables' does not exist on type '{}'.
     if (!chat_metadata.variables) {
-        // @ts-expect-error TS(2339): Property 'variables' does not exist on type '{}'.
+        // @ts-expect-error TS(2339) FIXME: Property 'variables' does not exist on type '{}'.
         chat_metadata.variables = {};
     }
 
-    // @ts-expect-error TS(2339): Property 'index' does not exist on type '{}'.
+    // @ts-expect-error TS(2339) FIXME: Property 'index' does not exist on type '{}'.
     if (args.index !== undefined) {
         try {
-            // @ts-expect-error TS(2339): Property 'variables' does not exist on type '{}'.
+            // @ts-expect-error TS(2339) FIXME: Property 'variables' does not exist on type '{}'.
             let localVariable = JSON.parse(chat_metadata.variables[name] ?? 'null');
-            // @ts-expect-error TS(2339): Property 'index' does not exist on type '{}'.
+            // @ts-expect-error TS(2339) FIXME: Property 'index' does not exist on type '{}'.
             const numIndex = Number(args.index);
             if (Number.isNaN(numIndex)) {
                 if (localVariable === null) {
                     localVariable = {};
                 }
-                // @ts-expect-error TS(2339): Property 'index' does not exist on type '{}'.
+                // @ts-expect-error TS(2339) FIXME: Property 'index' does not exist on type '{}'.
                 localVariable[args.index] = convertValueType(value, args.as);
             } else {
                 if (localVariable === null) {
                     localVariable = [];
                 }
-                // @ts-expect-error TS(2339): Property 'as' does not exist on type '{}'.
+                // @ts-expect-error TS(2339) FIXME: Property 'as' does not exist on type '{}'.
                 localVariable[numIndex] = convertValueType(value, args.as);
             }
-            // @ts-expect-error TS(2339): Property 'variables' does not exist on type '{}'.
+            // @ts-expect-error TS(2339) FIXME: Property 'variables' does not exist on type '{}'.
             chat_metadata.variables[name] = JSON.stringify(localVariable);
         } catch {
             // that didn't work
         }
     } else {
-        // @ts-expect-error TS(2339): Property 'variables' does not exist on type '{}'.
+        // @ts-expect-error TS(2339) FIXME: Property 'variables' does not exist on type '{}'.
         chat_metadata.variables[name] = value;
     }
     saveMetadataDebounced();
@@ -114,20 +114,21 @@ export function setLocalVariable(name, value, args = {}) {
  * @param name
  * @param args
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
 export function getGlobalVariable(name, args = {}) {
-    // @ts-expect-error TS(2339): Property 'key' does not exist on type '{}'.
+    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     let globalVariable = extension_settings.variables.global[args.key ?? name];
-    // @ts-expect-error TS(2339): Property 'index' does not exist on type '{}'.
+    // @ts-expect-error TS(2339) FIXME: Property 'index' does not exist on type '{}'.
     if (args.index !== undefined) {
         try {
             globalVariable = JSON.parse(globalVariable);
-            // @ts-expect-error TS(2339): Property 'index' does not exist on type '{}'.
+            // @ts-expect-error TS(2339) FIXME: Property 'index' does not exist on type '{}'.
             const numIndex = Number(args.index);
             if (Number.isNaN(numIndex)) {
-                // @ts-expect-error TS(2339): Property 'index' does not exist on type '{}'.
+                // @ts-expect-error TS(2339) FIXME: Property 'index' does not exist on type '{}'.
                 globalVariable = globalVariable[args.index];
             } else {
-                // @ts-expect-error TS(2339): Property 'index' does not exist on type '{}'.
+                // @ts-expect-error TS(2339) FIXME: Property 'index' does not exist on type '{}'.
                 globalVariable = globalVariable[Number(args.index)];
             }
             if (typeof globalVariable == 'object') {
@@ -147,35 +148,39 @@ export function getGlobalVariable(name, args = {}) {
  * @param value
  * @param args
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
 export function setGlobalVariable(name, value, args = {}) {
     if (!name) {
         throw new Error('Variable name cannot be empty or undefined.');
     }
 
-    // @ts-expect-error TS(2339): Property 'index' does not exist on type '{}'.
+    // @ts-expect-error TS(2339) FIXME: Property 'index' does not exist on type '{}'.
     if (args.index !== undefined) {
         try {
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             let globalVariable = JSON.parse(extension_settings.variables.global[name] ?? 'null');
-            // @ts-expect-error TS(2339): Property 'index' does not exist on type '{}'.
+            // @ts-expect-error TS(2339) FIXME: Property 'index' does not exist on type '{}'.
             const numIndex = Number(args.index);
             if (Number.isNaN(numIndex)) {
                 if (globalVariable === null) {
                     globalVariable = {};
                 }
-                // @ts-expect-error TS(2339): Property 'index' does not exist on type '{}'.
+                // @ts-expect-error TS(2339) FIXME: Property 'index' does not exist on type '{}'.
                 globalVariable[args.index] = convertValueType(value, args.as);
             } else {
                 if (globalVariable === null) {
                     globalVariable = [];
                 }
-                // @ts-expect-error TS(2339): Property 'as' does not exist on type '{}'.
+                // @ts-expect-error TS(2339) FIXME: Property 'as' does not exist on type '{}'.
                 globalVariable[numIndex] = convertValueType(value, args.as);
             }
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             extension_settings.variables.global[name] = JSON.stringify(globalVariable);
         } catch {
             // that didn't work
         }
     } else {
+        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         extension_settings.variables.global[name] = value;
     }
     saveSettingsDebounced();
@@ -187,6 +192,7 @@ export function setGlobalVariable(name, value, args = {}) {
  * @param name
  * @param value
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
 export function addLocalVariable(name, value) {
     const currentValue = getLocalVariable(name) || 0;
     try {
@@ -222,6 +228,7 @@ export function addLocalVariable(name, value) {
  * @param name
  * @param value
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
 export function addGlobalVariable(name, value) {
     const currentValue = getGlobalVariable(name) || 0;
     try {
@@ -256,6 +263,7 @@ export function addGlobalVariable(name, value) {
  *
  * @param name
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
 export function incrementLocalVariable(name) {
     return addLocalVariable(name, 1);
 }
@@ -264,6 +272,7 @@ export function incrementLocalVariable(name) {
  *
  * @param name
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
 export function incrementGlobalVariable(name) {
     return addGlobalVariable(name, 1);
 }
@@ -272,6 +281,7 @@ export function incrementGlobalVariable(name) {
  *
  * @param name
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
 export function decrementLocalVariable(name) {
     return addLocalVariable(name, -1);
 }
@@ -280,6 +290,7 @@ export function decrementLocalVariable(name) {
  *
  * @param name
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
 export function decrementGlobalVariable(name) {
     return addGlobalVariable(name, -1);
 }
@@ -290,8 +301,11 @@ export function decrementGlobalVariable(name) {
  * @param {SlashCommandScope} scope Scope
  * @returns {string} Variable value or the string literal
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
 export function resolveVariable(name, scope = null) {
+    // @ts-expect-error TS(2339) FIXME: Property 'existsVariable' does not exist on type '... Remove this comment to see the full error message
     if (scope?.existsVariable(name)) {
+        // @ts-expect-error TS(2339) FIXME: Property 'getVariable' does not exist on type 'nev... Remove this comment to see the full error message
         return scope.getVariable(name);
     }
 
@@ -313,24 +327,34 @@ export function resolveVariable(name, scope = null) {
 export function getVariableMacros() {
     return [
         // Replace {{setvar::name::value}} with empty string and set the variable name to value
+        // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
         { regex: /{{setvar::([^:]+)::([^}]*)}}/gi, replace: (_, name, value) => { setLocalVariable(name.trim(), value); return ''; } },
         // Replace {{addvar::name::value}} with empty string and add value to the variable value
+        // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
         { regex: /{{addvar::([^:]+)::([^}]+)}}/gi, replace: (_, name, value) => { addLocalVariable(name.trim(), value); return ''; } },
         // Replace {{incvar::name}} with empty string and increment the variable name by 1
+        // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
         { regex: /{{incvar::([^}]+)}}/gi, replace: (_, name) => incrementLocalVariable(name.trim()) },
         // Replace {{decvar::name}} with empty string and decrement the variable name by 1
+        // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
         { regex: /{{decvar::([^}]+)}}/gi, replace: (_, name) => decrementLocalVariable(name.trim()) },
         // Replace {{getvar::name}} with the value of the variable name
+        // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
         { regex: /{{getvar::([^}]+)}}/gi, replace: (_, name) => getLocalVariable(name.trim()) },
         // Replace {{setglobalvar::name::value}} with empty string and set the global variable name to value
+        // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
         { regex: /{{setglobalvar::([^:]+)::([^}]*)}}/gi, replace: (_, name, value) => { setGlobalVariable(name.trim(), value); return ''; } },
         // Replace {{addglobalvar::name::value}} with empty string and add value to the global variable value
+        // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
         { regex: /{{addglobalvar::([^:]+)::([^}]+)}}/gi, replace: (_, name, value) => { addGlobalVariable(name.trim(), value); return ''; } },
         // Replace {{incglobalvar::name}} with empty string and increment the global variable name by 1
+        // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
         { regex: /{{incglobalvar::([^}]+)}}/gi, replace: (_, name) => incrementGlobalVariable(name.trim()) },
         // Replace {{decglobalvar::name}} with empty string and decrement the global variable name by 1
+        // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
         { regex: /{{decglobalvar::([^}]+)}}/gi, replace: (_, name) => decrementGlobalVariable(name.trim()) },
         // Replace {{getglobalvar::name}} with the value of the global variable name
+        // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
         { regex: /{{getglobalvar::([^}]+)}}/gi, replace: (_, name) => getGlobalVariable(name.trim()) },
     ];
 }
@@ -339,25 +363,27 @@ export function getVariableMacros() {
  *
  * @param args
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
 async function listVariablesCallback(args) {
     /** @type {import('./slash-commands/SlashCommandReturnHelper.js').SlashCommandReturnType} */
     const returnType = args.return;
 
     // Now the actual new return type handling
     const scope = String(args?.scope || '').toLowerCase().trim() || 'all';
-    // @ts-expect-error TS(2339): Property 'variables' does not exist on type '{}'.
+    // @ts-expect-error TS(2339) FIXME: Property 'variables' does not exist on type '{}'.
     if (!chat_metadata.variables) {
-        // @ts-expect-error TS(2339): Property 'variables' does not exist on type '{}'.
+        // @ts-expect-error TS(2339) FIXME: Property 'variables' does not exist on type '{}'.
         chat_metadata.variables = {};
     }
 
     const includeLocalVariables = scope === 'all' || scope === 'local';
     const includeGlobalVariables = scope === 'all' || scope === 'global';
 
-    // @ts-expect-error TS(2339): Property 'variables' does not exist on type '{}'.
+    // @ts-expect-error TS(2339) FIXME: Property 'variables' does not exist on type '{}'.
     const localVariables = includeLocalVariables ? Object.entries(chat_metadata.variables).map(([name, value]) => `${name}: ${value}`) : [];
     const globalVariables = includeGlobalVariables ? Object.entries(extension_settings.variables.global).map(([name, value]) => `${name}: ${value}`) : [];
 
+    // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
     const buildTextValue = (_) => {
         const localVariablesString = localVariables.length > 0 ? localVariables.join('\n\n') : 'No local variables';
         const globalVariablesString = globalVariables.length > 0 ? globalVariables.join('\n\n') : 'No global variables';
@@ -371,7 +397,7 @@ async function listVariablesCallback(args) {
     };
 
     const jsonVariables = [
-        // @ts-expect-error TS(2339): Property 'variables' does not exist on type '{}'.
+        // @ts-expect-error TS(2339) FIXME: Property 'variables' does not exist on type '{}'.
         ...Object.entries(chat_metadata.variables).map(x => ({ key: x[0], value: x[1], scope: 'local' })),
         ...Object.entries(extension_settings.variables.global).map(x => ({ key: x[0], value: x[1], scope: 'global' })),
     ];
@@ -384,6 +410,7 @@ async function listVariablesCallback(args) {
  * @param {NamedArguments} args
  * @param {(string|SlashCommandClosure)[]} value
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
 async function whileCallback(args, value) {
     if (args.guard instanceof SlashCommandClosure) throw new Error('argument \'guard\' cannot be a closure for command /while');
     const isGuardOff = isFalseBoolean(args.guard?.toString());
@@ -410,7 +437,9 @@ async function whileCallback(args, value) {
             } else {
                 commandResult = await executeSubCommands(command, args._scope, args._parserFlags, args._abortController);
             }
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             if (commandResult.isAborted) break;
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             if (commandResult.isBreak) break;
         } else {
             break;
@@ -430,6 +459,7 @@ async function whileCallback(args, value) {
  * @param {UnnamedArguments} value
  * @returns
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
 async function timesCallback(args, value) {
     if (args.guard instanceof SlashCommandClosure) throw new Error('argument \'guard\' cannot be a closure for command /while');
     let repeats;
@@ -456,7 +486,9 @@ async function timesCallback(args, value) {
         } else {
             result = await executeSubCommands(command.replace(/\{\{timesIndex\}\}/g, i.toString()), args._scope, args._parserFlags, args._abortController);
         }
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         if (result.isAborted) break;
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         if (result.isBreak) break;
     }
 
@@ -468,6 +500,7 @@ async function timesCallback(args, value) {
  * @param {NamedArguments} args
  * @param {(string|SlashCommandClosure)[]} value
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
 async function ifCallback(args, value) {
     const { a, b, rule } = parseBooleanOperands(args);
     const result = evalBoolean(rule, a, b);
@@ -502,8 +535,9 @@ async function ifCallback(args, value) {
  * @param {string} name Local variable name
  * @returns {boolean} True if the local variable exists, false otherwise
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
 export function existsLocalVariable(name) {
-    // @ts-expect-error TS(2339): Property 'variables' does not exist on type '{}'.
+    // @ts-expect-error TS(2339) FIXME: Property 'variables' does not exist on type '{}'.
     return chat_metadata.variables && chat_metadata.variables[name] !== undefined;
 }
 
@@ -512,7 +546,9 @@ export function existsLocalVariable(name) {
  * @param {string} name Global variable name
  * @returns {boolean} True if the global variable exists, false otherwise
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
 export function existsGlobalVariable(name) {
+    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     return extension_settings.variables.global && extension_settings.variables.global[name] !== undefined;
 }
 
@@ -521,11 +557,13 @@ export function existsGlobalVariable(name) {
  * @param {object} args Command arguments
  * @returns {{a: string | number, b: string | number?, rule: string}} Boolean operands
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
 export function parseBooleanOperands(args) {
     // Resolution order: numeric literal, local variable, global variable, string literal
     /**
      * @param {string} operand Boolean operand candidate
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'operand' implicitly has an 'any' type.
     function getOperand(operand) {
         if (operand === undefined) {
             return undefined;
@@ -574,6 +612,7 @@ export function parseBooleanOperands(args) {
  * @param {string|number?} b The right operand
  * @returns {boolean} True if the rule yields true, false otherwise
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'rule' implicitly has an 'any' type.
 export function evalBoolean(rule, a, b) {
     if (a === undefined) {
         throw new Error('Left operand is not provided');
@@ -651,6 +690,7 @@ export function evalBoolean(rule, a, b) {
  * @param {SlashCommandAbortController} [abortController] The abort controller to use.
  * @returns {Promise<SlashCommandClosureResult>} Closure execution result
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'command' implicitly has an 'any' type.
 async function executeSubCommands(command, scope = null, parserFlags = null, abortController = null) {
     if (command.startsWith('"') && command.endsWith('"')) {
         command = command.slice(1, -1);
@@ -672,13 +712,14 @@ async function executeSubCommands(command, scope = null, parserFlags = null, abo
  * @param {string} name Variable name to delete
  * @returns {string} Empty string
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
 export function deleteLocalVariable(name) {
     if (!existsLocalVariable(name)) {
         console.warn(`The local variable "${name}" does not exist.`);
         return '';
     }
 
-    // @ts-expect-error TS(2339): Property 'variables' does not exist on type '{}'.
+    // @ts-expect-error TS(2339) FIXME: Property 'variables' does not exist on type '{}'.
     delete chat_metadata.variables[name];
     saveMetadataDebounced();
     return '';
@@ -689,12 +730,14 @@ export function deleteLocalVariable(name) {
  * @param {string} name Variable name to delete
  * @returns {string} Empty string
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
 export function deleteGlobalVariable(name) {
     if (!existsGlobalVariable(name)) {
         console.warn(`The global variable "${name}" does not exist.`);
         return '';
     }
 
+    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     delete extension_settings.variables.global[name];
     saveSettingsDebounced();
     return '';
@@ -706,6 +749,7 @@ export function deleteGlobalVariable(name) {
  * @param {SlashCommandScope} scope Scope
  * @returns {number[]} An array of numeric values
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
 function parseNumericSeries(value, scope = null) {
     if (typeof value === 'number') {
         return [value];
@@ -725,9 +769,13 @@ function parseNumericSeries(value, scope = null) {
         }
     }
 
+    // @ts-expect-error TS(7006) FIXME: Parameter 'i' implicitly has an 'any' type.
     const array = values.map(i => typeof i === 'string' ? i.trim() : i)
+        // @ts-expect-error TS(7006) FIXME: Parameter 'i' implicitly has an 'any' type.
         .filter(i => i !== '')
+        // @ts-expect-error TS(7006) FIXME: Parameter 'i' implicitly has an 'any' type.
         .map(i => isNaN(Number(i)) ? Number(resolveVariable(String(i), scope)) : Number(i))
+        // @ts-expect-error TS(7006) FIXME: Parameter 'i' implicitly has an 'any' type.
         .filter(i => !isNaN(i));
 
     return array;
@@ -740,6 +788,7 @@ function parseNumericSeries(value, scope = null) {
  * @param singleOperand
  * @param scope
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
 function performOperation(value, operation, singleOperand = false, scope = null) {
     /**
      *
@@ -773,7 +822,9 @@ function performOperation(value, operation, singleOperand = false, scope = null)
  * @param args
  * @param value
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
 function addValuesCallback(args, value) {
+    // @ts-expect-error TS(7006) FIXME: Parameter 'array' implicitly has an 'any' type.
     return performOperation(value, (array) => array.reduce((a, b) => a + b, 0), false, args._scope);
 }
 
@@ -782,7 +833,9 @@ function addValuesCallback(args, value) {
  * @param args
  * @param value
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
 function mulValuesCallback(args, value) {
+    // @ts-expect-error TS(7006) FIXME: Parameter 'array' implicitly has an 'any' type.
     return performOperation(value, (array) => array.reduce((a, b) => a * b, 1), false, args._scope);
 }
 
@@ -791,7 +844,9 @@ function mulValuesCallback(args, value) {
  * @param args
  * @param value
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
 function minValuesCallback(args, value) {
+    // @ts-expect-error TS(7006) FIXME: Parameter 'array' implicitly has an 'any' type.
     return performOperation(value, (array) => Math.min(...array), false, args._scope);
 }
 
@@ -800,7 +855,9 @@ function minValuesCallback(args, value) {
  * @param args
  * @param value
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
 function maxValuesCallback(args, value) {
+    // @ts-expect-error TS(7006) FIXME: Parameter 'array' implicitly has an 'any' type.
     return performOperation(value, (array) => Math.max(...array), false, args._scope);
 }
 
@@ -809,7 +866,9 @@ function maxValuesCallback(args, value) {
  * @param args
  * @param value
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
 function subValuesCallback(args, value) {
+    // @ts-expect-error TS(7006) FIXME: Parameter 'array' implicitly has an 'any' type.
     return performOperation(value, (array) => array.reduce((a, b) => a - b, array.shift() ?? 0), false, args._scope);
 }
 
@@ -818,7 +877,9 @@ function subValuesCallback(args, value) {
  * @param args
  * @param value
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
 function divValuesCallback(args, value) {
+    // @ts-expect-error TS(7006) FIXME: Parameter 'array' implicitly has an 'any' type.
     return performOperation(value, (array) => {
         if (array[1] === 0) {
             console.warn('Division by zero.');
@@ -833,7 +894,9 @@ function divValuesCallback(args, value) {
  * @param args
  * @param value
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
 function modValuesCallback(args, value) {
+    // @ts-expect-error TS(7006) FIXME: Parameter 'array' implicitly has an 'any' type.
     return performOperation(value, (array) => {
         if (array[1] === 0) {
             console.warn('Division by zero.');
@@ -848,7 +911,9 @@ function modValuesCallback(args, value) {
  * @param args
  * @param value
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
 function powValuesCallback(args, value) {
+    // @ts-expect-error TS(7006) FIXME: Parameter 'array' implicitly has an 'any' type.
     return performOperation(value, (array) => Math.pow(array[0], array[1]), false, args._scope);
 }
 
@@ -857,6 +922,7 @@ function powValuesCallback(args, value) {
  * @param args
  * @param value
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
 function sinValuesCallback(args, value) {
     return performOperation(value, Math.sin, true, args._scope);
 }
@@ -866,6 +932,7 @@ function sinValuesCallback(args, value) {
  * @param args
  * @param value
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
 function cosValuesCallback(args, value) {
     return performOperation(value, Math.cos, true, args._scope);
 }
@@ -875,6 +942,7 @@ function cosValuesCallback(args, value) {
  * @param args
  * @param value
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
 function logValuesCallback(args, value) {
     return performOperation(value, Math.log, true, args._scope);
 }
@@ -884,6 +952,7 @@ function logValuesCallback(args, value) {
  * @param args
  * @param value
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
 function roundValuesCallback(args, value) {
     return performOperation(value, Math.round, true, args._scope);
 }
@@ -893,6 +962,7 @@ function roundValuesCallback(args, value) {
  * @param args
  * @param value
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
 function absValuesCallback(args, value) {
     return performOperation(value, Math.abs, true, args._scope);
 }
@@ -902,6 +972,7 @@ function absValuesCallback(args, value) {
  * @param args
  * @param value
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
 function sqrtValuesCallback(args, value) {
     return performOperation(value, Math.sqrt, true, args._scope);
 }
@@ -910,6 +981,7 @@ function sqrtValuesCallback(args, value) {
  *
  * @param value
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
 function lenValuesCallback(value) {
     let parsedValue = value;
     try {
@@ -938,6 +1010,7 @@ function lenValuesCallback(value) {
  * @param to
  * @param args
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'from' implicitly has an 'any' type.
 function randValuesCallback(from, to, args) {
     const range = to - from;
     const value = from + Math.random() * range;
@@ -958,6 +1031,7 @@ function randValuesCallback(from, to, args) {
  * @param a
  * @param b
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'a' implicitly has an 'any' type.
 function customSortComparitor(a, b) {
     if (typeof a != typeof b) {
         a = typeof a;
@@ -971,7 +1045,9 @@ function customSortComparitor(a, b) {
  * @param args
  * @param value
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
 function sortArrayObjectCallback(args, value) {
+    // @ts-expect-error TS(7034) FIXME: Variable 'parsedValue' implicitly has type 'any' i... Remove this comment to see the full error message
     let parsedValue;
     if (typeof value == 'string') {
         try {
@@ -989,6 +1065,7 @@ function sortArrayObjectCallback(args, value) {
     } else if (typeof parsedValue == 'object') {
         const keysort = args.keysort;
         if (isFalseBoolean(keysort)) {
+            // @ts-expect-error TS(7005) FIXME: Variable 'parsedValue' implicitly has an 'any' typ... Remove this comment to see the full error message
             parsedValue = Object.keys(parsedValue).sort(function (a, b) { return customSortComparitor(parsedValue[a], parsedValue[b]); });
         } else {
             parsedValue = Object.keys(parsedValue).sort(customSortComparitor);
@@ -1003,6 +1080,7 @@ function sortArrayObjectCallback(args, value) {
  * @param {string|SlashCommandClosure|(string|SlashCommandClosure)[]} value Name and optional value for the variable.
  * @returns The variable's value
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
 function letCallback(args, value) {
     if (!Array.isArray(value)) value = [value];
     if (args.key !== undefined) {
@@ -1035,6 +1113,7 @@ function letCallback(args, value) {
  * @param {string|SlashCommandClosure|(string|SlashCommandClosure)[]} value Name and optional value for the variable.
  * @returns The variable's value
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
 function varCallback(args, value) {
     if (!Array.isArray(value)) value = [value];
     if (args.key !== undefined) {
@@ -1064,7 +1143,7 @@ function varCallback(args, value) {
  * @param {SlashCommandClosure} value
  * @returns {string}
  */
-// @ts-expect-error TS(6133): 'args' is declared but its value is never read.
+// @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
 function closureSerializeCallback(args, value) {
     if (!(value instanceof SlashCommandClosure)) {
         throw new Error('unnamed argument must be a closure');
@@ -1077,6 +1156,7 @@ function closureSerializeCallback(args, value) {
  * @param {UnnamedArguments} value
  * @returns {SlashCommandClosure}
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
 function closureDeserializeCallback(args, value) {
     const parser = new SlashCommandParser();
     const closure = parser.parse(value, true, args._parserFlags, args._abortController);
@@ -1103,8 +1183,11 @@ export function registerVariableCommands() {
                 isRequired: false,
                 forceEnum: true,
                 enumList: [
+                    // @ts-expect-error TS(2345) FIXME: Argument of type '"All variables"' is not assignab... Remove this comment to see the full error message
                     new SlashCommandEnumValue('all', 'All variables', enumTypes.enum, enumIcons.variable),
+                    // @ts-expect-error TS(2345) FIXME: Argument of type '"Local variables"' is not assign... Remove this comment to see the full error message
                     new SlashCommandEnumValue('local', 'Local variables', enumTypes.enum, enumIcons.localVariable),
+                    // @ts-expect-error TS(2345) FIXME: Argument of type '"Global variables"' is not assig... Remove this comment to see the full error message
                     new SlashCommandEnumValue('global', 'Global variables', enumTypes.enum, enumIcons.globalVariable),
                 ],
             }),
@@ -1120,6 +1203,7 @@ export function registerVariableCommands() {
     }));
     SlashCommandParser.addCommandObject(SlashCommand.fromProps({
         name: 'setvar',
+        // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
         callback: (args, value) => String(setLocalVariable(args.key || args.name, value, args)),
         aliases: ['setchatvar'],
         returns: 'the set variable value',
@@ -1169,6 +1253,7 @@ export function registerVariableCommands() {
     }));
     SlashCommandParser.addCommandObject(SlashCommand.fromProps({
         name: 'getvar',
+        // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
         callback: (args, value) => String(getLocalVariable(value, args)),
         aliases: ['getchatvar'],
         returns: 'the variable value',
@@ -1213,6 +1298,7 @@ export function registerVariableCommands() {
     }));
     SlashCommandParser.addCommandObject(SlashCommand.fromProps({
         name: 'addvar',
+        // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
         callback: (args, value) => String(addLocalVariable(args.key || args.name, value)),
         aliases: ['addchatvar'],
         returns: 'the new variable value',
@@ -1247,6 +1333,7 @@ export function registerVariableCommands() {
     }));
     SlashCommandParser.addCommandObject(SlashCommand.fromProps({
         name: 'setglobalvar',
+        // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
         callback: (args, value) => String(setGlobalVariable(args.key || args.name, value, args)),
         returns: 'the set global variable value',
         namedArgumentList: [
@@ -1295,6 +1382,7 @@ export function registerVariableCommands() {
     }));
     SlashCommandParser.addCommandObject(SlashCommand.fromProps({
         name: 'getglobalvar',
+        // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
         callback: (args, value) => String(getGlobalVariable(value, args)),
         returns: 'global variable value',
         namedArgumentList: [
@@ -1337,6 +1425,7 @@ export function registerVariableCommands() {
     }));
     SlashCommandParser.addCommandObject(SlashCommand.fromProps({
         name: 'addglobalvar',
+        // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
         callback: (args, value) => String(addGlobalVariable(args.key || args.name, value)),
         returns: 'the new variable value',
         namedArgumentList: [
@@ -1370,6 +1459,7 @@ export function registerVariableCommands() {
     }));
     SlashCommandParser.addCommandObject(SlashCommand.fromProps({
         name: 'incvar',
+        // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
         callback: (_, value) => String(incrementLocalVariable(value)),
         aliases: ['incchatvar'],
         returns: 'the new variable value',
@@ -1399,6 +1489,7 @@ export function registerVariableCommands() {
     }));
     SlashCommandParser.addCommandObject(SlashCommand.fromProps({
         name: 'decvar',
+        // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
         callback: (_, value) => String(decrementLocalVariable(value)),
         aliases: ['decchatvar'],
         returns: 'the new variable value',
@@ -1428,6 +1519,7 @@ export function registerVariableCommands() {
     }));
     SlashCommandParser.addCommandObject(SlashCommand.fromProps({
         name: 'incglobalvar',
+        // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
         callback: (_, value) => String(incrementGlobalVariable(value)),
         returns: 'the new variable value',
         unnamedArgumentList: [
@@ -1456,6 +1548,7 @@ export function registerVariableCommands() {
     }));
     SlashCommandParser.addCommandObject(SlashCommand.fromProps({
         name: 'decglobalvar',
+        // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
         callback: (_, value) => String(decrementGlobalVariable(value)),
         returns: 'the new variable value',
         unnamedArgumentList: [
@@ -1506,14 +1599,23 @@ export function registerVariableCommands() {
                 typeList: [ARGUMENT_TYPE.STRING],
                 defaultValue: 'eq',
                 enumList: [
+                    // @ts-expect-error TS(2345) FIXME: Argument of type '"a == b (strings & numbers)"' is... Remove this comment to see the full error message
                     new SlashCommandEnumValue('eq', 'a == b (strings & numbers)'),
+                    // @ts-expect-error TS(2345) FIXME: Argument of type '"a !== b (strings & numbers)"' i... Remove this comment to see the full error message
                     new SlashCommandEnumValue('neq', 'a !== b (strings & numbers)'),
+                    // @ts-expect-error TS(2345) FIXME: Argument of type '"a includes b (strings & numbers... Remove this comment to see the full error message
                     new SlashCommandEnumValue('in', 'a includes b (strings & numbers as strings)'),
+                    // @ts-expect-error TS(2345) FIXME: Argument of type '"a not includes b (strings & num... Remove this comment to see the full error message
                     new SlashCommandEnumValue('nin', 'a not includes b (strings & numbers as strings)'),
+                    // @ts-expect-error TS(2345) FIXME: Argument of type '"a > b (numbers)"' is not assign... Remove this comment to see the full error message
                     new SlashCommandEnumValue('gt', 'a > b (numbers)'),
+                    // @ts-expect-error TS(2345) FIXME: Argument of type '"a >= b (numbers)"' is not assig... Remove this comment to see the full error message
                     new SlashCommandEnumValue('gte', 'a >= b (numbers)'),
+                    // @ts-expect-error TS(2345) FIXME: Argument of type '"a < b (numbers)"' is not assign... Remove this comment to see the full error message
                     new SlashCommandEnumValue('lt', 'a < b (numbers)'),
+                    // @ts-expect-error TS(2345) FIXME: Argument of type '"a <= b (numbers)"' is not assig... Remove this comment to see the full error message
                     new SlashCommandEnumValue('lte', 'a <= b (numbers)'),
+                    // @ts-expect-error TS(2345) FIXME: Argument of type '"!a (truthy)"' is not assignable... Remove this comment to see the full error message
                     new SlashCommandEnumValue('not', '!a (truthy)'),
                 ],
                 forceEnum: true,
@@ -1607,14 +1709,23 @@ export function registerVariableCommands() {
                 typeList: [ARGUMENT_TYPE.STRING],
                 defaultValue: 'eq',
                 enumList: [
+                    // @ts-expect-error TS(2345) FIXME: Argument of type '"a == b (strings & numbers)"' is... Remove this comment to see the full error message
                     new SlashCommandEnumValue('eq', 'a == b (strings & numbers)'),
+                    // @ts-expect-error TS(2345) FIXME: Argument of type '"a !== b (strings & numbers)"' i... Remove this comment to see the full error message
                     new SlashCommandEnumValue('neq', 'a !== b (strings & numbers)'),
+                    // @ts-expect-error TS(2345) FIXME: Argument of type '"a includes b (strings & numbers... Remove this comment to see the full error message
                     new SlashCommandEnumValue('in', 'a includes b (strings & numbers as strings)'),
+                    // @ts-expect-error TS(2345) FIXME: Argument of type '"a not includes b (strings & num... Remove this comment to see the full error message
                     new SlashCommandEnumValue('nin', 'a not includes b (strings & numbers as strings)'),
+                    // @ts-expect-error TS(2345) FIXME: Argument of type '"a > b (numbers)"' is not assign... Remove this comment to see the full error message
                     new SlashCommandEnumValue('gt', 'a > b (numbers)'),
+                    // @ts-expect-error TS(2345) FIXME: Argument of type '"a >= b (numbers)"' is not assig... Remove this comment to see the full error message
                     new SlashCommandEnumValue('gte', 'a >= b (numbers)'),
+                    // @ts-expect-error TS(2345) FIXME: Argument of type '"a < b (numbers)"' is not assign... Remove this comment to see the full error message
                     new SlashCommandEnumValue('lt', 'a < b (numbers)'),
+                    // @ts-expect-error TS(2345) FIXME: Argument of type '"a <= b (numbers)"' is not assig... Remove this comment to see the full error message
                     new SlashCommandEnumValue('lte', 'a <= b (numbers)'),
+                    // @ts-expect-error TS(2345) FIXME: Argument of type '"!a (truthy)"' is not assignable... Remove this comment to see the full error message
                     new SlashCommandEnumValue('not', '!a (truthy)'),
                 ],
                 forceEnum: true,
@@ -1679,6 +1790,7 @@ export function registerVariableCommands() {
         returns: 'result of the last executed command',
         namedArgumentList: [
             new SlashCommandNamedArgument(
+                // @ts-expect-error TS(2345) FIXME: Argument of type 'SlashCommandEnumValue[]' is not ... Remove this comment to see the full error message
                 'guard', 'disable loop iteration limit', [ARGUMENT_TYPE.STRING], false, false, null, commonEnumProviders.boolean('onOff')(),
             ),
         ],
@@ -1720,6 +1832,7 @@ export function registerVariableCommands() {
     }));
     SlashCommandParser.addCommandObject(SlashCommand.fromProps({
         name: 'flushvar',
+        // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
         callback: async (_, value) => deleteLocalVariable(value instanceof SlashCommandClosure ? (await value.execute())?.pipe : String(value)),
         aliases: ['flushchatvar'],
         unnamedArgumentList: [
@@ -1746,6 +1859,7 @@ export function registerVariableCommands() {
     }));
     SlashCommandParser.addCommandObject(SlashCommand.fromProps({
         name: 'flushglobalvar',
+        // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
         callback: async (_, value) => deleteGlobalVariable(value instanceof SlashCommandClosure ? (await value.execute())?.pipe : String(value)),
         namedArgumentList: [],
         unnamedArgumentList: [
@@ -1773,6 +1887,7 @@ export function registerVariableCommands() {
     }));
     SlashCommandParser.addCommandObject(SlashCommand.fromProps({
         name: 'add',
+        // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
         callback: (args, value) => addValuesCallback(args, value),
         returns: 'sum of the provided values',
         unnamedArgumentList: [
@@ -1808,6 +1923,7 @@ export function registerVariableCommands() {
     }));
     SlashCommandParser.addCommandObject(SlashCommand.fromProps({
         name: 'mul',
+        // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
         callback: (args, value) => mulValuesCallback(args, value),
         returns: 'product of the provided values',
         unnamedArgumentList: [
@@ -2225,6 +2341,7 @@ export function registerVariableCommands() {
     }));
     SlashCommandParser.addCommandObject(SlashCommand.fromProps({
         name: 'len',
+        // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
         callback: (_, value) => String(lenValuesCallback(value)),
         aliases: ['length'],
         returns: 'length of the provided value',
@@ -2309,6 +2426,7 @@ export function registerVariableCommands() {
     }));
     SlashCommandParser.addCommandObject(SlashCommand.fromProps({
         name: 'rand',
+        // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
         callback: (args, value) => String(randValuesCallback(Number(args.from ?? 0), Number(args.to ?? (value ? value : 1)), args)),
         returns: 'random number',
         namedArgumentList: [
@@ -2318,6 +2436,7 @@ export function registerVariableCommands() {
                 [ARGUMENT_TYPE.NUMBER],
                 false,
                 false,
+                // @ts-expect-error TS(2345) FIXME: Argument of type '"0"' is not assignable to parame... Remove this comment to see the full error message
                 '0',
             ),
             new SlashCommandNamedArgument(
@@ -2326,6 +2445,7 @@ export function registerVariableCommands() {
                 [ARGUMENT_TYPE.NUMBER],
                 false,
                 false,
+                // @ts-expect-error TS(2345) FIXME: Argument of type '"1"' is not assignable to parame... Remove this comment to see the full error message
                 '1',
             ),
             new SlashCommandNamedArgument(
@@ -2335,6 +2455,7 @@ export function registerVariableCommands() {
                 false,
                 false,
                 null,
+                // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'never'.
                 ['round', 'ceil', 'floor'],
             ),
         ],
@@ -2363,6 +2484,7 @@ export function registerVariableCommands() {
     }));
     SlashCommandParser.addCommandObject(SlashCommand.fromProps({
         name: 'var',
+        // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
         callback: (/** @type {NamedArguments} */ args, value) => varCallback(args, value),
         returns: 'the variable value',
         namedArgumentList: [
@@ -2428,6 +2550,7 @@ export function registerVariableCommands() {
     }));
     SlashCommandParser.addCommandObject(SlashCommand.fromProps({
         name: 'let',
+        // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
         callback: (/** @type {NamedArguments} */ args, value) => letCallback(args, value),
         returns: 'the variable value',
         namedArgumentList: [
@@ -2480,6 +2603,7 @@ export function registerVariableCommands() {
          * @param {SlashCommandClosure} value
          * @returns {string}
          */
+        // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
         callback: (args, value) => closureSerializeCallback(args, value),
         unnamedArgumentList: [
             SlashCommandArgument.fromProps({
@@ -2510,6 +2634,7 @@ export function registerVariableCommands() {
          * @param {UnnamedArguments} value
          * @returns {SlashCommandClosure}
          */
+        // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
         callback: (args, value) => closureDeserializeCallback(args, value),
         unnamedArgumentList: [
             SlashCommandArgument.fromProps({

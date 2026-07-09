@@ -1,5 +1,7 @@
 /* global Bun */
+// @ts-expect-error TS(1259) FIXME: Module '"node:path"' can only be default-imported ... Remove this comment to see the full error message
 import path from 'node:path';
+// @ts-expect-error TS(1192) FIXME: Module '"node:crypto"' has no default export.
 import crypto from 'node:crypto';
 import type { Request, Response, NextFunction } from 'express';
 import { getVersion } from '../util.js';
@@ -58,7 +60,6 @@ export default function getLibServeMiddleware() {
 
         const { path: outdir } = await getLibOutputPath(forceDist);
 
-        // @ts-expect-error TS(2304): Cannot find name 'Bun'.
         const result = await Bun.build({
             entrypoints: ['./public/lib.js'],
             outdir: outdir,

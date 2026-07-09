@@ -2,13 +2,19 @@ import { escapeRegex } from '../utils.js';
 import { SlashCommandParser } from './SlashCommandParser.js';
 
 export class SlashCommandBrowser {
+    // @ts-expect-error TS(7008) FIXME: Member 'cmdList' implicitly has an 'any' type.
     /**@type {SlashCommand[]}*/ cmdList;
+    // @ts-expect-error TS(7008) FIXME: Member 'dom' implicitly has an 'any' type.
     /**@type {HTMLElement}*/ dom;
+    // @ts-expect-error TS(7008) FIXME: Member 'search' implicitly has an 'any' type.
     /**@type {HTMLElement}*/ search;
+    // @ts-expect-error TS(7008) FIXME: Member 'details' implicitly has an 'any' type.
     /**@type {HTMLElement}*/ details;
     /**@type {Object.<string,HTMLElement>}*/ itemMap = {};
+    // @ts-expect-error TS(7008) FIXME: Member 'mo' implicitly has an 'any' type.
     /**@type {MutationObserver}*/ mo;
 
+    // @ts-expect-error TS(7006) FIXME: Parameter 'parent' implicitly has an 'any' type.
     renderInto(parent) {
         if (!this.dom) {
             const queryRegex = /(?:(?:^|\s+)([^\s"][^\s]*?)(?:\s+|$))|(?:(?:^|\s+)"(.*?)(?:"|$)(?:\s+|$))/;
@@ -32,7 +38,9 @@ export class SlashCommandBrowser {
                                 if (query.slice(-1) === '"' && !/(?:^|\s+)"/.test(query)) {
                                     query = `"${query}`;
                                 }
+                                // @ts-expect-error TS(7034) FIXME: Variable 'fuzzyList' implicitly has type 'any[]' i... Remove this comment to see the full error message
                                 const fuzzyList = [];
+                                // @ts-expect-error TS(7034) FIXME: Variable 'quotedList' implicitly has type 'any[]' ... Remove this comment to see the full error message
                                 const quotedList = [];
                                 while (query.length > 0) {
                                     const match = queryRegex.exec(query);
@@ -42,25 +50,36 @@ export class SlashCommandBrowser {
                                     } else if (match[2] !== undefined) {
                                         quotedList.push(match[2]);
                                     }
+                                    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
                                     query = query.slice(match.index + match[0].length);
                                 }
                                 for (const cmd of this.cmdList) {
                                     const targets = [
                                         cmd.name,
+                                        // @ts-expect-error TS(7006) FIXME: Parameter 'it' implicitly has an 'any' type.
                                         ...cmd.namedArgumentList.map(it => it.name),
+                                        // @ts-expect-error TS(7006) FIXME: Parameter 'it' implicitly has an 'any' type.
                                         ...cmd.namedArgumentList.map(it => it.description),
+                                        // @ts-expect-error TS(7006) FIXME: Parameter 'it' implicitly has an 'any' type.
                                         ...cmd.namedArgumentList.map(it => it.enumList.map(e => e.value)).flat(),
+                                        // @ts-expect-error TS(7006) FIXME: Parameter 'it' implicitly has an 'any' type.
                                         ...cmd.namedArgumentList.map(it => it.typeList).flat(),
+                                        // @ts-expect-error TS(7006) FIXME: Parameter 'it' implicitly has an 'any' type.
                                         ...cmd.unnamedArgumentList.map(it => it.description),
+                                        // @ts-expect-error TS(7006) FIXME: Parameter 'it' implicitly has an 'any' type.
                                         ...cmd.unnamedArgumentList.map(it => it.enumList.map(e => e.value)).flat(),
+                                        // @ts-expect-error TS(7006) FIXME: Parameter 'it' implicitly has an 'any' type.
                                         ...cmd.unnamedArgumentList.map(it => it.typeList).flat(),
                                         ...cmd.aliases,
                                         cmd.helpString,
                                     ];
+                                    // @ts-expect-error TS(7005) FIXME: Variable 'fuzzyList' implicitly has an 'any[]' typ... Remove this comment to see the full error message
                                     const find = () => targets.find(t => (fuzzyList.find(f => f.test(t)) ?? quotedList.find(q => t.includes(q))) !== undefined) !== undefined;
                                     if (fuzzyList.length + quotedList.length === 0 || find()) {
+                                        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                                         this.itemMap[cmd.name].classList.remove('isFiltered');
                                     } else {
+                                        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                                         this.itemMap[cmd.name].classList.add('isFiltered');
                                     }
                                 }
@@ -77,15 +96,20 @@ export class SlashCommandBrowser {
                         list.classList.add('autoComplete');
                         this.cmdList = Object
                             .keys(SlashCommandParser.commands)
+                            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                             .filter(key => SlashCommandParser.commands[key].name === key) // exclude aliases
                             .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()))
+                            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                             .map(key => SlashCommandParser.commands[key])
                         ;
                         for (const cmd of this.cmdList) {
                             const item = cmd.renderHelpItem();
+                            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                             this.itemMap[cmd.name] = item;
+                            // @ts-expect-error TS(7034) FIXME: Variable 'details' implicitly has type 'any' in so... Remove this comment to see the full error message
                             let details;
                             item.addEventListener('click', () => {
+                                // @ts-expect-error TS(7005) FIXME: Variable 'details' implicitly has an 'any' type.
                                 if (!details) {
                                     details = document.createElement('div'); {
                                         details.classList.add('autoComplete-detailsWrap');
@@ -96,17 +120,22 @@ export class SlashCommandBrowser {
                                         }
                                     }
                                 }
+                                // @ts-expect-error TS(7005) FIXME: Variable 'details' implicitly has an 'any' type.
                                 if (this.details !== details) {
                                     Array.from(list.querySelectorAll('.selected')).forEach(it => it.classList.remove('selected'));
                                     item.classList.add('selected');
                                     this.details?.remove();
+                                    // @ts-expect-error TS(7005) FIXME: Variable 'details' implicitly has an 'any' type.
                                     container.append(details);
+                                    // @ts-expect-error TS(7005) FIXME: Variable 'details' implicitly has an 'any' type.
                                     this.details = details;
                                     const pRect = list.getBoundingClientRect();
                                     const rect = item.children[0].getBoundingClientRect();
+                                    // @ts-expect-error TS(7005) FIXME: Variable 'details' implicitly has an 'any' type.
                                     details.style.setProperty('--targetOffset', rect.top - pRect.top);
                                 } else {
                                     item.classList.remove('selected');
+                                    // @ts-expect-error TS(7005) FIXME: Variable 'details' implicitly has an 'any' type.
                                     details.remove();
                                     this.details = null;
                                 }
@@ -134,6 +163,7 @@ export class SlashCommandBrowser {
         return this.dom;
     }
 
+    // @ts-expect-error TS(7006) FIXME: Parameter 'evt' implicitly has an 'any' type.
     handleKeyDown(evt) {
         if (!evt.shiftKey && !evt.altKey && evt.ctrlKey && evt.key.toLowerCase() === 'f') {
             if (!this.dom.closest('body')) return;

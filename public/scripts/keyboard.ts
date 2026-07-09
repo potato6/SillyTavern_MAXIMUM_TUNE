@@ -61,20 +61,21 @@ const observer = new MutationObserver(mutations => {
  * Function to handle node changes (added or modified nodes)
  * @param {Element} node
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'node' implicitly has an 'any' type.
 function handleNodeChange(node) {
     if (node.nodeType === Node.ELEMENT_NODE && node instanceof Element) {
         // Handle keyboard interactables
         if (isKeyboardInteractable(node)) {
             makeKeyboardInteractable(node);
         }
-        // @ts-expect-error TS(2345): Argument of type 'Element' is not assignable to pa... Remove this comment to see the full error message
+        // @ts-expect-error TS(2345) FIXME: Argument of type 'Element' is not assignable to pa... Remove this comment to see the full error message
         initializeInteractables(node);
 
         // Handle scroll reset containers
         if (node.classList.contains('scroll-reset-container')) {
             applyScrollResetBehavior(node);
         }
-        // @ts-expect-error TS(2345): Argument of type 'Element' is not assignable to pa... Remove this comment to see the full error message
+        // @ts-expect-error TS(2345) FIXME: Argument of type 'Element' is not assignable to pa... Remove this comment to see the full error message
         initializeScrollResetBehaviors(node);
     }
 }
@@ -87,6 +88,7 @@ function handleNodeChange(node) {
  * @param {boolean} [options.disabledByDefault] - Whether interactables of this class should be disabled by default
  * @param {boolean} [options.notFocusableByDefault] - Whether interactables of this class should not be focusable by default
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'interactableSelector' implicitly has an... Remove this comment to see the full error message
 export function registerInteractableType(interactableSelector, { disabledByDefault = false, notFocusableByDefault = false } = {}) {
     interactableSelectors.push(interactableSelector);
 
@@ -107,6 +109,7 @@ export function registerInteractableType(interactableSelector, { disabledByDefau
  * @param {Element} control - The control element to check
  * @returns {boolean} Returns true if the control is a keyboard interactable, false otherwise
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'control' implicitly has an 'any' type.
 export function isKeyboardInteractable(control) {
     // Check if this control matches any of the selectors
     return interactableSelectors.some(selector => control.matches(selector));
@@ -117,6 +120,7 @@ export function isKeyboardInteractable(control) {
  * If the control doesn't have any of the classes, it will be set to a custom-enabled keyboard interactable.
  * @param {Element[]} interactables - The controls to make interactable and set their state
  */
+// @ts-expect-error TS(7019) FIXME: Rest parameter 'interactables' implicitly has an '... Remove this comment to see the full error message
 export function makeKeyboardInteractable(...interactables) {
     interactables.forEach(interactable => {
         // If this control doesn't have any of the classes, lets say the caller knows this and wants this to be a custom-enabled keyboard control.
@@ -134,6 +138,7 @@ export function makeKeyboardInteractable(...interactables) {
          * @param {Element} el
          * @returns {boolean}
          */
+        // @ts-expect-error TS(7006) FIXME: Parameter 'el' implicitly has an 'any' type.
         const hasDisabledOrNotFocusableAncestor = (el) => {
             while (el) {
                 if (el.classList.contains(NOT_FOCUSABLE_CONTROL_CLASS) || el.classList.contains(DISABLED_CONTROL_CLASS)) {
@@ -171,8 +176,10 @@ function initializeInteractables(element = document) {
  * @param {Element|Document} element - The element within which to query the interactables
  * @returns {HTMLElement[]} An array containing all the interactables that match the given selectors
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'element' implicitly has an 'any' type.
 function getAllInteractables(element) {
     // Query each selector individually and combine all to a big array to return
+    // @ts-expect-error TS(2769) FIXME: No overload matches this call.
     return [].concat(...interactableSelectors.map(selector => Array.from(element.querySelectorAll(`${selector}`))));
 }
 
@@ -180,8 +187,9 @@ function getAllInteractables(element) {
  * Function to apply scroll reset behavior to a container
  * @param {Element} container - The container
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'container' implicitly has an 'any' type... Remove this comment to see the full error message
 const applyScrollResetBehavior = (container) => {
-    // @ts-expect-error TS(6133): 'e' is declared but its value is never read.
+    // @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
     container.addEventListener('focusout', (e) => {
         setTimeout(() => {
             const focusedElement = document.activeElement;
@@ -206,6 +214,7 @@ function initializeScrollResetBehaviors(element = document) {
  * Handles keydown events on the document to trigger click on Enter key press for interactables
  * @param {KeyboardEvent} event - The keyboard event
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'event' implicitly has an 'any' type.
 function handleGlobalKeyDown(event) {
     if (event.key === 'Enter') {
         if (!(event.target instanceof HTMLElement))

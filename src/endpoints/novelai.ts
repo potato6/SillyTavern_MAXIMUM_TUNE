@@ -1,7 +1,9 @@
+// @ts-expect-error TS(1192) FIXME: Module '"node:util"' has no default export.
 import util from 'node:util';
 import { Buffer } from 'node:buffer';
 
 import fetch from 'node-fetch';
+// @ts-expect-error TS(1259) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import express from 'express';
 
 import { readSecret, SECRET_KEYS } from './secrets.js';
@@ -147,6 +149,7 @@ function calculateSkipCfgAboveSigma(width: number, height: number, modelName: st
 
 export const router = express.Router();
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
 router.post('/status', async function (req, res) {
     if (!req.body) return res.sendStatus(400);
     const api_key_novel = readSecret(req.user.directories, SECRET_KEYS.NOVEL);
@@ -181,7 +184,7 @@ router.post('/status', async function (req, res) {
     }
 });
 
-// @ts-expect-error TS(7030): Not all code paths return a value.
+// @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
 router.post('/generate', async function (req, res) {
     if (!req.body) return res.sendStatus(400);
 
@@ -266,11 +269,11 @@ router.post('/generate', async function (req, res) {
     // Tells the model to stop generation at '>'
     if ('theme_textadventure' === req.body.prefix) {
         if (req.body.model.includes('clio') || req.body.model.includes('kayra')) {
-            // @ts-expect-error TS(2339): Property 'eos_token_id' does not exist on type '{ ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'eos_token_id' does not exist on type '{ ... Remove this comment to see the full error message
             data.parameters.eos_token_id = 49405;
         }
         if (req.body.model.includes('erato')) {
-            // @ts-expect-error TS(2339): Property 'eos_token_id' does not exist on type '{ ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'eos_token_id' does not exist on type '{ ... Remove this comment to see the full error message
             data.parameters.eos_token_id = 29;
         }
     }
@@ -317,6 +320,7 @@ router.post('/generate', async function (req, res) {
     }
 });
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/generate-image', async (request, response) => {
     if (!request.body) {
         return response.sendStatus(400);
@@ -410,7 +414,6 @@ router.post('/generate-image', async (request, response) => {
             return response.sendStatus(500);
         }
 
-        // @ts-expect-error TS(2554): Expected 0 arguments, but got 1.
         const originalBase64 = imageBuffer.toString('base64');
 
         // No upscaling
@@ -437,7 +440,7 @@ router.post('/generate-image', async (request, response) => {
 
             if (!upscaleResult.ok) {
                 const text = await upscaleResult.text();
-                // @ts-expect-error TS(2322): Type 'string' is not assignable to type 'Error'.
+                // @ts-expect-error TS(2769) FIXME: No overload matches this call.
                 throw new Error('NovelAI returned an error.', { cause: text });
             }
 
@@ -448,7 +451,6 @@ router.post('/generate-image', async (request, response) => {
                 throw new Error('NovelAI upscaled an image, but the PNG file was not found.');
             }
 
-            // @ts-expect-error TS(2554): Expected 0 arguments, but got 1.
             const upscaledBase64 = upscaledImageBuffer.toString('base64');
 
             return response.send(upscaledBase64);
@@ -462,6 +464,7 @@ router.post('/generate-image', async (request, response) => {
     }
 });
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/generate-voice', async (request, response) => {
     const token = readSecret(request.user.directories, SECRET_KEYS.NOVEL);
 
@@ -493,8 +496,9 @@ router.post('/generate-voice', async (request, response) => {
             return response.sendStatus(500);
         }
 
+        // @ts-expect-error TS(2345) FIXME: Argument of type 'ReadableStream' is not assignabl... Remove this comment to see the full error message
         const chunks = await readAllChunks(result.body);
-        // @ts-expect-error TS(2339): Property 'map' does not exist on type 'unknown'.
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         const buffer = Buffer.concat(chunks.map((chunk: Buffer) => new Uint8Array(chunk)));
         response.setHeader('Content-Type', 'audio/mpeg');
         return response.send(buffer);

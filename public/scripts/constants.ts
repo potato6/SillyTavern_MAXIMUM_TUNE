@@ -49,9 +49,12 @@ export const inject_ids = {
     STORY_STRING: '__STORY_STRING__',
     QUIET_PROMPT: 'QUIET_PROMPT',
     DEPTH_PROMPT: 'DEPTH_PROMPT',
+    // @ts-expect-error TS(7006) FIXME: Parameter 'index' implicitly has an 'any' type.
     DEPTH_PROMPT_INDEX: (index) => `DEPTH_PROMPT_${index}`,
     CUSTOM_WI_DEPTH: 'customDepthWI',
+    // @ts-expect-error TS(7006) FIXME: Parameter 'depth' implicitly has an 'any' type.
     CUSTOM_WI_DEPTH_ROLE: (depth, role) => `customDepthWI_${depth}_${role}`,
+    // @ts-expect-error TS(7006) FIXME: Parameter 'key' implicitly has an 'any' type.
     CUSTOM_WI_OUTLET: (key) => `customWIOutlet_${key}`,
 };
 
@@ -101,6 +104,7 @@ export const IMAGE_OVERSWIPE = {
  * @readonly
  */
 export const MEDIA_TYPE = {
+    // @ts-expect-error TS(7006) FIXME: Parameter 'mimeType' implicitly has an 'any' type.
     getFromMime: (/** @type {string} */ mimeType) => {
         if (mimeType.startsWith('image/')) {
             return MEDIA_TYPE.IMAGE;

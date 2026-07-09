@@ -2,6 +2,7 @@ import { localspace } from '../lib.js';
 import { characters, event_types, eventSource, main_api, nai_settings, online_status, this_chid } from '../script.js';
 import { power_user, registerDebugFunction } from './power-user.js';
 import { chat_completion_sources, model_list, oai_settings } from './openai.js';
+// @ts-expect-error TS(7034) FIXME: Variable 'groups' implicitly has type 'any[]' in s... Remove this comment to see the full error message
 import { groups, selected_group } from './group-chats.js';
 import { getStringHash } from './utils.js';
 import { kai_flags, kai_settings } from './kai-settings.js';
@@ -163,6 +164,7 @@ let tokenCache = {};
  * @param {string} str String to tokenize.
  * @returns {number} Token count.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'str' implicitly has an 'any' type.
 export function guesstimate(str) {
     const byteLength = textEncoder.encode(str).length;
     return Math.ceil(byteLength / BYTES_PER_TOKEN);
@@ -199,9 +201,10 @@ export async function saveTokenCache() {
 async function resetTokenCache() {
     try {
         console.debug('Chat Completions: resetting token cache');
+        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         Object.keys(tokenCache).forEach(key => delete tokenCache[key]);
         await objectStore.removeItem('tokenCache');
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.success('Token cache cleared. Please reload the chat to re-tokenize it.');
     } catch (e) {
         console.log('Chat Completions: unable to reset token cache', e);
@@ -222,8 +225,11 @@ async function resetTokenCache() {
 export function getAvailableTokenizers() {
     const tokenizerOptions = Array.from(document.querySelectorAll('#tokenizer option'));
     return tokenizerOptions.map(tokenizerOption => ({
+        // @ts-expect-error TS(2339) FIXME: Property 'value' does not exist on type 'Element'.
         tokenizerId: Number(tokenizerOption.value),
+        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         tokenizerKey: Object.entries(tokenizers).find(([_, value]) => value === Number(tokenizerOption.value))[0].toLocaleLowerCase(),
+        // @ts-expect-error TS(2339) FIXME: Property 'text' does not exist on type 'Element'.
         tokenizerName: tokenizerOption.text,
     }));
 }
@@ -232,6 +238,7 @@ export function getAvailableTokenizers() {
  * Selects tokenizer if not already selected.
  * @param {number} tokenizerId Tokenizer ID.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'tokenizerId' implicitly has an 'any' ty... Remove this comment to see the full error message
 export function selectTokenizer(tokenizerId) {
     if (tokenizerId !== power_user.tokenizer) {
         const tokenizer = getAvailableTokenizers().find(tokenizer => tokenizer.tokenizerId === tokenizerId);
@@ -239,9 +246,9 @@ export function selectTokenizer(tokenizerId) {
             console.warn('Failed to find tokenizer with id', tokenizerId);
             return;
         }
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#tokenizer').val(tokenizer.tokenizerId).trigger('change');
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.info(`Tokenizer: "${tokenizer.tokenizerName}" selected`);
     }
 }
@@ -251,12 +258,14 @@ export function selectTokenizer(tokenizerId) {
  * @param {string} forApi API to get the tokenizer for. Defaults to the main API.
  * @returns {Tokenizer} Tokenizer info
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'forApi' implicitly has an 'any' type.
 export function getFriendlyTokenizerName(forApi) {
     if (!forApi) {
         forApi = main_api;
     }
 
     const tokenizerOption = document.querySelector('#tokenizer option:checked');
+    // @ts-expect-error TS(2339) FIXME: Property 'value' does not exist on type 'Element'.
     let tokenizerId = Number(tokenizerOption?.value);
     let tokenizerName = tokenizerOption?.textContent;
 
@@ -271,7 +280,7 @@ export function getFriendlyTokenizerName(forApi) {
                 tokenizerName = 'API (Text Completion)';
                 break;
             default:
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 tokenizerName = $(`#tokenizer option[value="${tokenizerId}"]`).text();
                 break;
         }
@@ -285,6 +294,7 @@ export function getFriendlyTokenizerName(forApi) {
         ? tokenizers.OPENAI
         : tokenizerId;
 
+    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
     const tokenizerKey = Object.entries(tokenizers).find(([_, value]) => value === tokenizerId)[0].toLocaleLowerCase();
 
     return { tokenizerName, tokenizerKey, tokenizerId };
@@ -295,6 +305,7 @@ export function getFriendlyTokenizerName(forApi) {
  * @param {string} forApi API to get the tokenizer for. Defaults to the main API.
  * @returns {number} Tokenizer type.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'forApi' implicitly has an 'any' type.
 export function getTokenizerBestMatch(forApi) {
     if (!forApi) {
         forApi = main_api;
@@ -319,6 +330,7 @@ export function getTokenizerBestMatch(forApi) {
         const hasTokenizerError = sessionStorage.getItem(TOKENIZER_WARNING_KEY);
         const hasValidEndpoint = sessionStorage.getItem(TOKENIZER_SUPPORTED_KEY);
         const isConnected = online_status !== 'no_connection';
+        // @ts-expect-error TS(2345) FIXME: Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
         const isTokenizerSupported = TEXTGEN_TOKENIZERS.includes(textgen_settings.type) && (textgen_settings.type !== textgen_types.OOBA || hasValidEndpoint);
 
         if (!hasTokenizerError && isConnected) {
@@ -398,6 +410,7 @@ function currentRemoteTokenizerAPI() {
  * @param {string} str String to tokenize.
  * @returns {number} Token count.
  */
+// @ts-expect-error TS(7023) FIXME: 'callTokenizer' implicitly has return type 'any' b... Remove this comment to see the full error message
 function callTokenizer(type, str) {
     if (type === tokenizers.NONE) return guesstimate(str);
 
@@ -405,10 +418,10 @@ function callTokenizer(type, str) {
         case tokenizers.API_CURRENT:
             return callTokenizer(currentRemoteTokenizerAPI(), str);
         case tokenizers.API_KOBOLD:
-            // @ts-expect-error TS(2554): Expected 2 arguments, but got 1.
+            // @ts-expect-error TS(2554) FIXME: Expected 2 arguments, but got 1.
             return countTokensFromKoboldAPI(str);
         case tokenizers.API_TEXTGENERATIONWEBUI:
-            // @ts-expect-error TS(2554): Expected 2 arguments, but got 1.
+            // @ts-expect-error TS(2554) FIXME: Expected 2 arguments, but got 1.
             return countTokensFromTextgenAPI(str);
         default: {
             const endpointUrl = TOKENIZER_URLS[type]?.count;
@@ -416,7 +429,7 @@ function callTokenizer(type, str) {
                 console.warn('Unknown tokenizer type', type);
                 return apiFailureTokenCount(str);
             }
-            // @ts-expect-error TS(2554): Expected 3 arguments, but got 2.
+            // @ts-expect-error TS(2554) FIXME: Expected 3 arguments, but got 2.
             return countTokensFromServer(endpointUrl, str);
         }
     }
@@ -428,6 +441,7 @@ function callTokenizer(type, str) {
  * @param {string} str String to tokenize.
  * @returns {Promise<number>} Token count.
  */
+// @ts-expect-error TS(7023) FIXME: 'callTokenizerAsync' implicitly has return type 'a... Remove this comment to see the full error message
 function callTokenizerAsync(type, str) {
     return new Promise(resolve => {
         if (type === tokenizers.NONE) {
@@ -459,6 +473,7 @@ function callTokenizerAsync(type, str) {
  * @param {number | undefined} padding Optional padding tokens. Defaults to 0.
  * @returns {Promise<number>} Token count.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'str' implicitly has an 'any' type.
 export async function getTokenCountAsync(str, padding = undefined) {
     if (typeof str !== 'string' || !str?.length) {
         return 0;
@@ -486,6 +501,7 @@ export async function getTokenCountAsync(str, padding = undefined) {
     }
 
     if (padding === undefined) {
+        // @ts-expect-error TS(2322) FIXME: Type '0' is not assignable to type 'undefined'.
         padding = 0;
     }
 
@@ -515,6 +531,7 @@ export async function getTokenCountAsync(str, padding = undefined) {
  * @returns {number} Token count.
  * @deprecated Use getTokenCountAsync instead.
  */
+// @ts-expect-error TS(7023) FIXME: 'getTokenCount' implicitly has return type 'any' b... Remove this comment to see the full error message
 export function getTokenCount(str, padding = undefined) {
     if (typeof str !== 'string' || !str?.length) {
         return 0;
@@ -542,6 +559,7 @@ export function getTokenCount(str, padding = undefined) {
     }
 
     if (padding === undefined) {
+        // @ts-expect-error TS(2322) FIXME: Type '0' is not assignable to type 'undefined'.
         padding = 0;
     }
 
@@ -553,6 +571,7 @@ export function getTokenCount(str, padding = undefined) {
         return cacheObject[cacheKey];
     }
 
+    // @ts-expect-error TS(7022) FIXME: 'result' implicitly has type 'any' because it does... Remove this comment to see the full error message
     const result = callTokenizer(tokenizerType, str) + padding;
 
     if (isNaN(result)) {
@@ -570,6 +589,7 @@ export function getTokenCount(str, padding = undefined) {
  * @returns {number} Token count.
  * @deprecated Use counterWrapperOpenAIAsync instead.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'text' implicitly has an 'any' type.
 function counterWrapperOpenAI(text) {
     const message = { role: 'system', content: text };
     return countTokensOpenAI(message, true);
@@ -580,6 +600,7 @@ function counterWrapperOpenAI(text) {
  * @param {string} text Text to tokenize.
  * @returns {Promise<number>} Token count.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'text' implicitly has an 'any' type.
 function counterWrapperOpenAIAsync(text) {
     const message = { role: 'system', content: text };
     return countTokensOpenAIAsync(message, true);
@@ -623,22 +644,32 @@ export function getTokenizerModel() {
     if (main_api == 'openai' && oai_settings.chat_completion_source == chat_completion_sources.OPENROUTER && oai_settings.openrouter_model ||
         main_api == 'textgenerationwebui' && textgen_settings.type === textgen_types.OPENROUTER && textgen_settings.openrouter_model) {
         const model = main_api == 'openai'
+            // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
             ? model_list.find(x => x.id === oai_settings.openrouter_model)
+            // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
             : openRouterModels.find(x => x.id === textgen_settings.openrouter_model);
 
+        // @ts-expect-error TS(2339) FIXME: Property 'architecture' does not exist on type 'ne... Remove this comment to see the full error message
         if (model?.architecture?.tokenizer === 'Llama2') {
             return llamaTokenizer;
+        // @ts-expect-error TS(2339) FIXME: Property 'architecture' does not exist on type 'ne... Remove this comment to see the full error message
         } else if (model?.architecture?.tokenizer === 'Llama3') {
             return llama3Tokenizer;
+        // @ts-expect-error TS(2339) FIXME: Property 'architecture' does not exist on type 'ne... Remove this comment to see the full error message
         } else if (model?.architecture?.tokenizer === 'Mistral') {
             return mistralTokenizer;
+        // @ts-expect-error TS(2339) FIXME: Property 'architecture' does not exist on type 'ne... Remove this comment to see the full error message
         } else if (model?.architecture?.tokenizer === 'Yi') {
             return yiTokenizer;
+        // @ts-expect-error TS(2339) FIXME: Property 'architecture' does not exist on type 'ne... Remove this comment to see the full error message
         } else if (model?.architecture?.tokenizer === 'Gemini') {
             return gemmaTokenizer;
+        // @ts-expect-error TS(2339) FIXME: Property 'architecture' does not exist on type 'ne... Remove this comment to see the full error message
         } else if (model?.architecture?.tokenizer === 'Qwen') {
             return qwen2Tokenizer;
+        // @ts-expect-error TS(2339) FIXME: Property 'architecture' does not exist on type 'ne... Remove this comment to see the full error message
         } else if (model?.architecture?.tokenizer === 'Cohere') {
+            // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
             if (model?.id && model?.id.includes('command-a')) {
                 return commandATokenizer;
             }
@@ -816,6 +847,7 @@ export function getTokenizerModel() {
  * @param full
  * @deprecated Use countTokensOpenAIAsync instead.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'messages' implicitly has an 'any' type.
 export function countTokensOpenAI(messages, full = false) {
     const tokenizerEndpoint = `/api/tokenizers/openai/count?model=${getTokenizerModel()}`;
     const cacheObject = getTokenCacheObject();
@@ -840,7 +872,7 @@ export function countTokensOpenAI(messages, full = false) {
         if (typeof cachedCount === 'number') {
             token_count += cachedCount;
         } else {
-            // @ts-expect-error TS(2304): Cannot find name 'jQuery'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'jQuery'.
             jQuery.ajax({
                 async: false,
                 type: 'POST', //
@@ -848,6 +880,7 @@ export function countTokensOpenAI(messages, full = false) {
                 data: JSON.stringify([message]),
                 dataType: 'json',
                 contentType: 'application/json',
+                // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
                 success: function (data) {
                     token_count += Number(data.token_count);
                     cacheObject[cacheKey] = Number(data.token_count);
@@ -867,6 +900,7 @@ export function countTokensOpenAI(messages, full = false) {
  * @param {boolean} full
  * @returns {Promise<number>} Token count.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'messages' implicitly has an 'any' type.
 export async function countTokensOpenAIAsync(messages, full = false) {
     const tokenizerEndpoint = `/api/tokenizers/openai/count?model=${getTokenizerModel()}`;
     const cacheObject = getTokenCacheObject();
@@ -891,7 +925,7 @@ export async function countTokensOpenAIAsync(messages, full = false) {
         if (typeof cachedCount === 'number') {
             token_count += cachedCount;
         } else {
-            // @ts-expect-error TS(2304): Cannot find name 'jQuery'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'jQuery'.
             const data = await jQuery.ajax({
                 async: true,
                 type: 'POST', //
@@ -919,19 +953,25 @@ function getTokenCacheObject() {
     let chatId = 'undefined';
 
     try {
+        // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
         if (selected_group) {
+            // @ts-expect-error TS(7005) FIXME: Variable 'groups' implicitly has an 'any[]' type.
             chatId = groups.find(x => x.id == selected_group)?.chat_id;
         } else if (this_chid !== undefined) {
+            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             chatId = characters[this_chid].chat;
         }
     } catch {
         console.log('No character / group selected. Using default cache item');
     }
 
+    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     if (typeof tokenCache[chatId] !== 'object') {
+        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         tokenCache[chatId] = {};
     }
 
+    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     return tokenCache[String(chatId)];
 }
 
@@ -942,11 +982,12 @@ function getTokenCacheObject() {
  * @param {function} [resolve] Promise resolve function.s
  * @returns {number} Token count.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'endpoint' implicitly has an 'any' type.
 function countTokensFromServer(endpoint, str, resolve) {
     const isAsync = typeof resolve === 'function';
     let tokenCount = 0;
 
-    // @ts-expect-error TS(2304): Cannot find name 'jQuery'.
+    // @ts-expect-error TS(2304) FIXME: Cannot find name 'jQuery'.
     jQuery.ajax({
         async: isAsync,
         type: 'POST',
@@ -954,6 +995,7 @@ function countTokensFromServer(endpoint, str, resolve) {
         data: JSON.stringify({ text: str }),
         dataType: 'json',
         contentType: 'application/json',
+        // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
         success: function (data) {
             if (typeof data.count === 'number') {
                 tokenCount = data.count;
@@ -974,14 +1016,16 @@ function countTokensFromServer(endpoint, str, resolve) {
  * @param {function} [resolve] Promise resolve function.
  * @returns {number} Token count.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'str' implicitly has an 'any' type.
 function countTokensFromKoboldAPI(str, resolve) {
     const isAsync = typeof resolve === 'function';
     let tokenCount = 0;
 
-    // @ts-expect-error TS(2304): Cannot find name 'jQuery'.
+    // @ts-expect-error TS(2304) FIXME: Cannot find name 'jQuery'.
     jQuery.ajax({
         async: isAsync,
         type: 'POST',
+        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         url: TOKENIZER_URLS[tokenizers.API_KOBOLD].count,
         data: JSON.stringify({
             text: str,
@@ -989,6 +1033,7 @@ function countTokensFromKoboldAPI(str, resolve) {
         }),
         dataType: 'json',
         contentType: 'application/json',
+        // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
         success: function (data) {
             if (typeof data.count === 'number') {
                 tokenCount = data.count;
@@ -1007,6 +1052,7 @@ function countTokensFromKoboldAPI(str, resolve) {
  *
  * @param str
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'str' implicitly has an 'any' type.
 function getTextgenAPITokenizationParams(str) {
     return {
         text: str,
@@ -1022,18 +1068,21 @@ function getTextgenAPITokenizationParams(str) {
  * @param {function} [resolve] Promise resolve function.
  * @returns {number} Token count.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'str' implicitly has an 'any' type.
 function countTokensFromTextgenAPI(str, resolve) {
     const isAsync = typeof resolve === 'function';
     let tokenCount = 0;
 
-    // @ts-expect-error TS(2304): Cannot find name 'jQuery'.
+    // @ts-expect-error TS(2304) FIXME: Cannot find name 'jQuery'.
     jQuery.ajax({
         async: isAsync,
         type: 'POST',
+        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         url: TOKENIZER_URLS[tokenizers.API_TEXTGENERATIONWEBUI].count,
         data: JSON.stringify(getTextgenAPITokenizationParams(str)),
         dataType: 'json',
         contentType: 'application/json',
+        // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
         success: function (data) {
             if (typeof data.count === 'number') {
                 tokenCount = data.count;
@@ -1052,6 +1101,7 @@ function countTokensFromTextgenAPI(str, resolve) {
  *
  * @param str
  */
+// @ts-expect-error TS(7023) FIXME: 'apiFailureTokenCount' implicitly has return type ... Remove this comment to see the full error message
 function apiFailureTokenCount(str) {
     console.error('Error counting tokens');
     let shouldTryAgain = false;
@@ -1080,10 +1130,12 @@ function apiFailureTokenCount(str) {
  * @param {function} [resolve] Promise resolve function.
  * @returns {number[]} Array of token ids.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'endpoint' implicitly has an 'any' type.
 function getTextTokensFromServer(endpoint, str, resolve) {
     const isAsync = typeof resolve === 'function';
+    // @ts-expect-error TS(7034) FIXME: Variable 'ids' implicitly has type 'any[]' in some... Remove this comment to see the full error message
     let ids = [];
-    // @ts-expect-error TS(2304): Cannot find name 'jQuery'.
+    // @ts-expect-error TS(2304) FIXME: Cannot find name 'jQuery'.
     jQuery.ajax({
         async: isAsync,
         type: 'POST',
@@ -1091,6 +1143,7 @@ function getTextTokensFromServer(endpoint, str, resolve) {
         data: JSON.stringify({ text: str }),
         dataType: 'json',
         contentType: 'application/json',
+        // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
         success: function (data) {
             ids = data.ids;
 
@@ -1101,6 +1154,7 @@ function getTextTokensFromServer(endpoint, str, resolve) {
 
             if (isAsync) resolve(ids);        },
     });
+    // @ts-expect-error TS(7005) FIXME: Variable 'ids' implicitly has an 'any[]' type.
     return ids;
 }
 
@@ -1110,21 +1164,26 @@ function getTextTokensFromServer(endpoint, str, resolve) {
  * @param {function} [resolve] Promise resolve function.
  * @returns {number[]} Array of token ids.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'str' implicitly has an 'any' type.
 function getTextTokensFromTextgenAPI(str, resolve) {
     const isAsync = typeof resolve === 'function';
+    // @ts-expect-error TS(7034) FIXME: Variable 'ids' implicitly has type 'any[]' in some... Remove this comment to see the full error message
     let ids = [];
-    // @ts-expect-error TS(2304): Cannot find name 'jQuery'.
+    // @ts-expect-error TS(2304) FIXME: Cannot find name 'jQuery'.
     jQuery.ajax({
         async: isAsync,
         type: 'POST',
+        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         url: TOKENIZER_URLS[tokenizers.API_TEXTGENERATIONWEBUI].encode,
         data: JSON.stringify(getTextgenAPITokenizationParams(str)),
         dataType: 'json',
         contentType: 'application/json',
+        // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
         success: function (data) {
             ids = data.ids;
             if (isAsync) resolve(ids);        },
     });
+    // @ts-expect-error TS(7005) FIXME: Variable 'ids' implicitly has an 'any[]' type.
     return ids;
 }
 
@@ -1134,14 +1193,17 @@ function getTextTokensFromTextgenAPI(str, resolve) {
  * @param {function} [resolve] Promise resolve function.
  * @returns {number[]} Array of token ids.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'str' implicitly has an 'any' type.
 function getTextTokensFromKoboldAPI(str, resolve) {
     const isAsync = typeof resolve === 'function';
+    // @ts-expect-error TS(7034) FIXME: Variable 'ids' implicitly has type 'any[]' in some... Remove this comment to see the full error message
     let ids = [];
 
-    // @ts-expect-error TS(2304): Cannot find name 'jQuery'.
+    // @ts-expect-error TS(2304) FIXME: Cannot find name 'jQuery'.
     jQuery.ajax({
         async: isAsync,
         type: 'POST',
+        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         url: TOKENIZER_URLS[tokenizers.API_KOBOLD].encode,
         data: JSON.stringify({
             text: str,
@@ -1149,11 +1211,13 @@ function getTextTokensFromKoboldAPI(str, resolve) {
         }),
         dataType: 'json',
         contentType: 'application/json',
+        // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
         success: function (data) {
             ids = data.ids;
             if (isAsync) resolve(ids);        },
     });
 
+    // @ts-expect-error TS(7005) FIXME: Variable 'ids' implicitly has an 'any[]' type.
     return ids;
 }
 
@@ -1164,11 +1228,13 @@ function getTextTokensFromKoboldAPI(str, resolve) {
  * @param {function} [resolve] Promise resolve function.
  * @returns {({ text: string, chunks?: string[] })} Decoded token text as a single string and individual chunks (if available).
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'endpoint' implicitly has an 'any' type.
 function decodeTextTokensFromServer(endpoint, ids, resolve) {
     const isAsync = typeof resolve === 'function';
     let text = '';
+    // @ts-expect-error TS(7034) FIXME: Variable 'chunks' implicitly has type 'any[]' in s... Remove this comment to see the full error message
     let chunks = [];
-    // @ts-expect-error TS(2304): Cannot find name 'jQuery'.
+    // @ts-expect-error TS(2304) FIXME: Cannot find name 'jQuery'.
     jQuery.ajax({
         async: isAsync,
         type: 'POST',
@@ -1176,11 +1242,13 @@ function decodeTextTokensFromServer(endpoint, ids, resolve) {
         data: JSON.stringify({ ids: ids }),
         dataType: 'json',
         contentType: 'application/json',
+        // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
         success: function (data) {
             text = data.text;
             chunks = data.chunks;
             if (isAsync) resolve({ text, chunks });        },
     });
+    // @ts-expect-error TS(7005) FIXME: Variable 'chunks' implicitly has an 'any[]' type.
     return { text, chunks };
 }
 
@@ -1190,15 +1258,16 @@ function decodeTextTokensFromServer(endpoint, ids, resolve) {
  * @param {string} str String to tokenize.
  * @returns {number[]} Array of token ids.
  */
+// @ts-expect-error TS(7023) FIXME: 'getTextTokens' implicitly has return type 'any' b... Remove this comment to see the full error message
 export function getTextTokens(tokenizerType, str) {
     switch (tokenizerType) {
         case tokenizers.API_CURRENT:
             return getTextTokens(currentRemoteTokenizerAPI(), str);
         case tokenizers.API_TEXTGENERATIONWEBUI:
-            // @ts-expect-error TS(2554): Expected 2 arguments, but got 1.
+            // @ts-expect-error TS(2554) FIXME: Expected 2 arguments, but got 1.
             return getTextTokensFromTextgenAPI(str);
         case tokenizers.API_KOBOLD:
-            // @ts-expect-error TS(2554): Expected 2 arguments, but got 1.
+            // @ts-expect-error TS(2554) FIXME: Expected 2 arguments, but got 1.
             return getTextTokensFromKoboldAPI(str);
         default: {
             const tokenizerEndpoints = TOKENIZER_URLS[tokenizerType];
@@ -1216,7 +1285,7 @@ export function getTextTokens(tokenizerType, str) {
             if (tokenizerType === tokenizers.OPENAI) {
                 endpointUrl += `?model=${getTokenizerModel()}`;
             }
-            // @ts-expect-error TS(2554): Expected 3 arguments, but got 2.
+            // @ts-expect-error TS(2554) FIXME: Expected 3 arguments, but got 2.
             return getTextTokensFromServer(endpointUrl, str);
         }
     }
@@ -1228,6 +1297,7 @@ export function getTextTokens(tokenizerType, str) {
  * @param {number[]} ids Array of token ids
  * @returns {({ text: string, chunks?: string[] })} Decoded token text as a single string and individual chunks (if available).
  */
+// @ts-expect-error TS(7023) FIXME: 'decodeTextTokens' implicitly has return type 'any... Remove this comment to see the full error message
 export function decodeTextTokens(tokenizerType, ids) {
     // Currently, neither remote API can decode, but this may change in the future. Put this guard here to be safe
     if (tokenizerType === tokenizers.API_CURRENT) {
@@ -1246,7 +1316,7 @@ export function decodeTextTokens(tokenizerType, ids) {
     if (tokenizerType === tokenizers.OPENAI) {
         endpointUrl += `?model=${getTokenizerModel()}`;
     }
-    // @ts-expect-error TS(2554): Expected 3 arguments, but got 2.
+    // @ts-expect-error TS(2554) FIXME: Expected 3 arguments, but got 2.
     return decodeTextTokensFromServer(endpointUrl, ids);
 }
 
@@ -1255,6 +1325,7 @@ export function decodeTextTokens(tokenizerType, ids) {
  */
 export async function initTokenizers() {
     TEXTGEN_TOKENIZERS.push(
+        // @ts-expect-error TS(2345) FIXME: Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
         textgen_types.OOBA,
         textgen_types.TABBY,
         textgen_types.KOBOLDCPP,
@@ -1264,6 +1335,7 @@ export async function initTokenizers() {
     );
     eventSource.on(event_types.ONLINE_STATUS_CHANGED, async () => {
         // Clear tokenizer warning when (re)connecting to an LLM backend that supports tokenization
+        // @ts-expect-error TS(2345) FIXME: Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
         if (main_api === 'textgenerationwebui' && TEXTGEN_TOKENIZERS.includes(textgen_settings.type)) {
             sessionStorage.removeItem(TOKENIZER_WARNING_KEY);
         }

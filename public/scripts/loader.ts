@@ -4,6 +4,7 @@ import { loader } from './action-loader.js';
  * Handle for the legacy loader created by showLoader().
  * @type {import('./action-loader.js').ActionLoaderHandle|null}
  */
+// @ts-expect-error TS(7034) FIXME: Variable 'legacyLoaderHandle' implicitly has type ... Remove this comment to see the full error message
 let legacyLoaderHandle = null;
 
 /**
@@ -20,7 +21,9 @@ let legacyLoaderHandle = null;
  */
 export function showLoader() {
     // Hide any existing legacy loader first to maintain old behavior
+    // @ts-expect-error TS(7005) FIXME: Variable 'legacyLoaderHandle' implicitly has an 'a... Remove this comment to see the full error message
     if (legacyLoaderHandle && legacyLoaderHandle.isActive) {
+        // @ts-expect-error TS(7005) FIXME: Variable 'legacyLoaderHandle' implicitly has an 'a... Remove this comment to see the full error message
         legacyLoaderHandle.hide();
     }
 
@@ -45,11 +48,13 @@ export function showLoader() {
  * @returns {Promise<void>}
  */
 export async function hideLoader() {
+    // @ts-expect-error TS(7005) FIXME: Variable 'legacyLoaderHandle' implicitly has an 'a... Remove this comment to see the full error message
     if (!legacyLoaderHandle || !legacyLoaderHandle.isActive) {
         console.warn('There is no loader showing to hide');
         return Promise.resolve();
     }
 
+    // @ts-expect-error TS(7005) FIXME: Variable 'legacyLoaderHandle' implicitly has an 'a... Remove this comment to see the full error message
     await legacyLoaderHandle.hide();
     legacyLoaderHandle = null;
 }

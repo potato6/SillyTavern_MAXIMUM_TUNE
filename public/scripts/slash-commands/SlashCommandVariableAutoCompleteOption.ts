@@ -4,12 +4,13 @@ export class SlashCommandVariableAutoCompleteOption extends AutoCompleteOption {
     /**
      * @param {string} name
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
     constructor(name) {
         super(name);
     }
 
 
-    // @ts-expect-error TS(4114): This member must have an 'override' modifier becau... Remove this comment to see the full error message
+    // @ts-expect-error TS(4114) FIXME: This member must have an 'override' modifier becau... Remove this comment to see the full error message
     renderItem() {
         const li = this.makeItem(this.name, '[𝑥]', true);
         li.setAttribute('data-name', this.name);
@@ -18,7 +19,7 @@ export class SlashCommandVariableAutoCompleteOption extends AutoCompleteOption {
     }
 
 
-    // @ts-expect-error TS(4114): This member must have an 'override' modifier becau... Remove this comment to see the full error message
+    // @ts-expect-error TS(4114) FIXME: This member must have an 'override' modifier becau... Remove this comment to see the full error message
     renderDetails() {
         const frag = document.createDocumentFragment();
         const specs = document.createElement('div'); {

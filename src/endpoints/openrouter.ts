@@ -1,5 +1,7 @@
+// @ts-expect-error TS(1259) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import express from 'express';
 import fetch from 'node-fetch';
+// @ts-expect-error TS(1192) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import mime from 'mime-types';
 import { readSecret, SECRET_KEYS } from './secrets.js';
 import { OPENROUTER_HEADERS } from '../constants.js';
@@ -7,6 +9,7 @@ import { OPENROUTER_HEADERS } from '../constants.js';
 export const router = express.Router();
 const API_OPENROUTER = 'https://openrouter.ai/api/v1';
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
 router.post('/models/providers', async (req, res) => {
     try {
         const { model } = req.body;
@@ -70,8 +73,10 @@ async function fetchModelsByModality(endpoint: string, inputModality: string, ou
     return typeof mapFn === 'function' ? filtered.map(mapFn) : filtered;
 }
 
+// @ts-expect-error TS(7006) FIXME: Parameter '_req' implicitly has an 'any' type.
 router.post('/models/multimodal', async (_req, res) => {
     try {
+        // @ts-expect-error TS(2345) FIXME: Argument of type '(m: {    id: string;}) => string... Remove this comment to see the full error message
         const models = await fetchModelsByModality('/models', 'image', 'text', (m: { id: string }) => m.id);
         return res.json(models);
     } catch (error) {
@@ -80,8 +85,10 @@ router.post('/models/multimodal', async (_req, res) => {
     }
 });
 
+// @ts-expect-error TS(7006) FIXME: Parameter '_req' implicitly has an 'any' type.
 router.post('/models/embedding', async (_req, res) => {
     try {
+        // @ts-expect-error TS(2345) FIXME: Argument of type '(m: {    id: string;    name?: s... Remove this comment to see the full error message
         const models = await fetchModelsByModality('/models', 'text', 'embeddings', (m: { id: string; name?: string }) => ({
             id: m.id,
             name: m.name
@@ -93,8 +100,10 @@ router.post('/models/embedding', async (_req, res) => {
     }
 });
 
+// @ts-expect-error TS(7006) FIXME: Parameter '_req' implicitly has an 'any' type.
 router.post('/models/image', async (_req, res) => {
     try {
+        // @ts-expect-error TS(2345) FIXME: Argument of type '(m: {    id: string;    name?: s... Remove this comment to see the full error message
         const models = await fetchModelsByModality('/models', 'text', 'image', (m: { id: string; name?: string }) => ({
             value: m.id,
             text: m.name || m.id
@@ -106,6 +115,7 @@ router.post('/models/image', async (_req, res) => {
     }
 });
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
 router.post('/credits', async (req, res) => {
     try {
         const key = readSecret(req.user.directories, SECRET_KEYS.OPENROUTER);
@@ -141,6 +151,7 @@ router.post('/credits', async (req, res) => {
     }
 });
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
 router.post('/image/generate', async (req, res) => {
     try {
         const key = readSecret(req.user.directories, SECRET_KEYS.OPENROUTER);

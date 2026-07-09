@@ -1,9 +1,13 @@
+// @ts-expect-error TS(1192) FIXME: Module '"node:fs"' has no default export.
 import fs from 'node:fs';
+// @ts-expect-error TS(1259) FIXME: Module '"node:path"' can only be default-imported ... Remove this comment to see the full error message
 import path from 'node:path';
 
+// @ts-expect-error TS(1259) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import express from 'express';
+// @ts-expect-error TS(1192) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import mime from 'mime-types';
-// @ts-expect-error TS(2792): Cannot find module 'sanitize-filename'. Did you me... Remove this comment to see the full error message
+// @ts-expect-error TS(2792) FIXME: Cannot find module 'sanitize-filename'. Did you me... Remove this comment to see the full error message
 import sanitize from 'sanitize-filename';
 import { sync as writeFileAtomicSync } from 'write-file-atomic';
 
@@ -16,6 +20,7 @@ import { getImageBuffers } from '../util.js';
  * @param {boolean} isSubfolder - Whether the name contains a subfolder
  * @returns {string | null} The path to the sprites folder. Null if the name is invalid.
  */
+// @ts-expect-error TS(2694) FIXME: Namespace '"/mnt/DISCO/downloads/some_git_projects... Remove this comment to see the full error message
 function getSpritesPath(directories: import('../users.js').UserDirectoryList, name: string, isSubfolder: boolean) {
     if (isSubfolder) {
         const nameParts = name.split('/');
@@ -46,9 +51,12 @@ function getSpritesPath(directories: import('../users.js').UserDirectoryList, na
  * @param {object} data RisuAI character data
  * @returns {void}
  */
+// @ts-expect-error TS(2694) FIXME: Namespace '"/mnt/DISCO/downloads/some_git_projects... Remove this comment to see the full error message
 export function importRisuSprites(directories: import('../users.js').UserDirectoryList, data: Record<string, unknown>) {
     try {
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         const name = data?.data?.name;
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         const risuData = data?.data?.extensions?.risuai;
 
         // Not a Risu AI character
@@ -107,7 +115,9 @@ export function importRisuSprites(directories: import('../users.js').UserDirecto
         }
 
         // Remove additionalAssets and emotions from data (they are now in the sprites folder)
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         delete data.data.extensions.risuai.additionalAssets;
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         delete data.data.extensions.risuai.emotions;
     } catch (error) {
         console.error(error);
@@ -116,8 +126,8 @@ export function importRisuSprites(directories: import('../users.js').UserDirecto
 
 export const router = express.Router();
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.get('/get', function (request, response) {
-    // @ts-expect-error TS(4111): Property 'name' comes from an index signature, so ... Remove this comment to see the full error message
     const name = String(request.query.name);
     const isSubfolder = name.includes('/');
     const spritesPath = getSpritesPath(request.user.directories, name, isSubfolder);
@@ -126,10 +136,12 @@ router.get('/get', function (request, response) {
     try {
         if (spritesPath && fs.existsSync(spritesPath) && fs.statSync(spritesPath).isDirectory()) {
             sprites = fs.readdirSync(spritesPath)
+                // @ts-expect-error TS(7006) FIXME: Parameter 'file' implicitly has an 'any' type.
                 .filter(file => {
                     const mimeType = mime.lookup(file);
                     return mimeType && mimeType.startsWith('image/');
                 })
+                // @ts-expect-error TS(7006) FIXME: Parameter 'file' implicitly has an 'any' type.
                 .map((file) => {
                     const pathToSprite = path.join(spritesPath, file);
                     const mtime = fs.statSync(pathToSprite).mtime?.toISOString().replace(/[^0-9]/g, '').slice(0, 14);
@@ -151,6 +163,7 @@ router.get('/get', function (request, response) {
     return response.send(sprites);
 });
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/delete', async (request, response) => {
     const label = request.body.label;
     const name = String(request.body.name);
@@ -185,6 +198,7 @@ router.post('/delete', async (request, response) => {
     }
 });
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/upload-zip', async (request, response) => {
     const file = request.file;
     const name = String(request.body.name);
@@ -216,9 +230,9 @@ router.post('/upload-zip', async (request, response) => {
         const sprites = await getImageBuffers(spritePackPath);
         const files = fs.readdirSync(spritesPath);
 
-        // @ts-expect-error TS(2488): Type 'unknown' must have a '[Symbol.iterator]()' m... Remove this comment to see the full error message
         for (const [filename, buffer] of sprites) {
             // Remove existing sprite with the same label
+            // @ts-expect-error TS(7006) FIXME: Parameter 'file' implicitly has an 'any' type.
             const existingFile = files.find(file => path.parse(file).name === path.parse(filename).name);
 
             if (existingFile) {
@@ -232,7 +246,6 @@ router.post('/upload-zip', async (request, response) => {
 
         // Remove uploaded ZIP file
         fs.unlinkSync(spritePackPath);
-        // @ts-expect-error TS(2339): Property 'length' does not exist on type 'unknown'... Remove this comment to see the full error message
         return response.send({ ok: true, count: sprites.length });
     } catch (error) {
         console.error(error);
@@ -240,6 +253,7 @@ router.post('/upload-zip', async (request, response) => {
     }
 });
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/upload', async (request, response) => {
     const file = request.file;
     const label = request.body.label;

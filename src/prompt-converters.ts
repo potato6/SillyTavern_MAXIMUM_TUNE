@@ -1,6 +1,8 @@
+// @ts-expect-error TS(1192) FIXME: Module '"node:crypto"' has no default export.
 import crypto from 'node:crypto';
 import { getConfigValue, tryParse } from './util.js';
 
+// @ts-expect-error TS(2345) FIXME: Argument of type '"Let's get started."' is not ass... Remove this comment to see the full error message
 const PROMPT_PLACEHOLDER = getConfigValue('promptPlaceholder', 'Let\'s get started.');
 
 const REASONING_EFFORT = {
@@ -31,6 +33,7 @@ const GEMINI_MEDIA_RESOLUTION = {
     high: 'media_resolution_high',
 };
 
+// @ts-expect-error TS(2345) FIXME: Argument of type 'true' is not assignable to param... Remove this comment to see the full error message
 const enableThoughtSignatures = !!getConfigValue('gemini.thoughtSignatures', true, 'boolean');
 
 type Message = Record<string, unknown>;
@@ -71,7 +74,9 @@ export function addAssistantPrefix(prompt: Message[], tools: object[], property:
         return prompt;
     }
     const hasAnyTools = (Array.isArray(tools) && tools.length > 0) || prompt.some((x: Message) => x.role === 'tool');
+    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
     if (!hasAnyTools && prompt[prompt.length - 1].role === 'assistant') {
+        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         prompt[prompt.length - 1][property] = true;
     }
     return prompt;
@@ -84,22 +89,30 @@ export function addAssistantPrefix(prompt: Message[], tools: object[], property:
  * @param {PromptNames} names Prompt names
  * @returns {object[]} Post-processed messages
  */
+// @ts-expect-error TS(2304) FIXME: Cannot find name 'PromptNames'.
 export function postProcessPrompt(messages: object[], type: string, names: PromptNames) {
     switch (type) {
         case PROMPT_PROCESSING_TYPE.MERGE:
         case PROMPT_PROCESSING_TYPE.CLAUDE:
+            // @ts-expect-error TS(2345) FIXME: Argument of type 'object[]' is not assignable to p... Remove this comment to see the full error message
             return mergeMessages(messages, names, { strict: false, placeholders: false, single: false, tools: false });
         case PROMPT_PROCESSING_TYPE.MERGE_TOOLS:
+            // @ts-expect-error TS(2345) FIXME: Argument of type 'object[]' is not assignable to p... Remove this comment to see the full error message
             return mergeMessages(messages, names, { strict: false, placeholders: false, single: false, tools: true });
         case PROMPT_PROCESSING_TYPE.SEMI:
+            // @ts-expect-error TS(2345) FIXME: Argument of type 'object[]' is not assignable to p... Remove this comment to see the full error message
             return mergeMessages(messages, names, { strict: true, placeholders: false, single: false, tools: false });
         case PROMPT_PROCESSING_TYPE.SEMI_TOOLS:
+            // @ts-expect-error TS(2345) FIXME: Argument of type 'object[]' is not assignable to p... Remove this comment to see the full error message
             return mergeMessages(messages, names, { strict: true, placeholders: false, single: false, tools: true });
         case PROMPT_PROCESSING_TYPE.STRICT:
+            // @ts-expect-error TS(2345) FIXME: Argument of type 'object[]' is not assignable to p... Remove this comment to see the full error message
             return mergeMessages(messages, names, { strict: true, placeholders: true, single: false, tools: false });
         case PROMPT_PROCESSING_TYPE.STRICT_TOOLS:
+            // @ts-expect-error TS(2345) FIXME: Argument of type 'object[]' is not assignable to p... Remove this comment to see the full error message
             return mergeMessages(messages, names, { strict: true, placeholders: true, single: false, tools: true });
         case PROMPT_PROCESSING_TYPE.SINGLE:
+            // @ts-expect-error TS(2345) FIXME: Argument of type 'object[]' is not assignable to p... Remove this comment to see the full error message
             return mergeMessages(messages, names, { strict: true, placeholders: false, single: true, tools: false });
         default:
             return messages;
@@ -134,6 +147,7 @@ export function convertClaudePrompt(messages: Message[], addAssistantPostfix: bo
         if (excludePrefixes) {
             messages.slice(0, -1).forEach((message: Message) => message.role = 'system');
         } else {
+            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             messages[0].role = 'system';
         }
         //Add the assistant's message to the end of messages.
@@ -146,6 +160,7 @@ export function convertClaudePrompt(messages: Message[], addAssistantPostfix: bo
         // Find the index of the first message with an assistant role and check for a "'user' role/Human:" before it.
         let hasUser = false;
         const firstAssistantIndex = messages.findIndex((message: Message, i: number) => {
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             if (i >= 0 && (message.role === 'user' || message.content.includes('\n\nHuman: '))) {
                 hasUser = true;
             }
@@ -154,6 +169,7 @@ export function convertClaudePrompt(messages: Message[], addAssistantPostfix: bo
         // When 2.1+ and 'Use system prompt' checked, switches to the system prompt format by setting the first message's role to the 'system'.
         // Inserts the human's message before the first the assistant one, if there are no such message or prefix found.
         if (withSysPromptSupport && useSystemPrompt) {
+            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             messages[0].role = 'system';
             if (firstAssistantIndex > 0 && addSysHumanMsg && !hasUser) {
                 messages.splice(firstAssistantIndex, 0, {
@@ -163,9 +179,11 @@ export function convertClaudePrompt(messages: Message[], addAssistantPostfix: bo
             }
         } else {
             // Otherwise, use the default message format by setting the first message's role to 'user'(compatible with all claude models including 2.1.)
+            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             messages[0].role = 'user';
             // Fix messages order for default message format when(messages > Context Size) by merging two messages with "\n\nHuman: " prefixes into one, before the first Assistant's message.
             if (firstAssistantIndex > 0 && !excludePrefixes) {
+                // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
                 messages[firstAssistantIndex - 1].role = firstAssistantIndex - 1 !== 0 && messages[firstAssistantIndex - 1].role === 'user' ? 'FixHumMsg' : messages[firstAssistantIndex - 1].role;
             }
         }
@@ -179,6 +197,7 @@ export function convertClaudePrompt(messages: Message[], addAssistantPostfix: bo
             'user': '\n\nHuman: ',
             'system': i === 0 ? '' : v.name === 'example_assistant' ? '\n\nA: ' : v.name === 'example_user' ? '\n\nH: ' : excludePrefixes && v.name ? `\n\n${v.name}: ` : '\n\n',
             'FixHumMsg': '\n\nFirst message: ',
+        // @ts-expect-error TS(2538) FIXME: Type 'unknown' cannot be used as an index type.
         }[v.role] ?? '';
         // Claude doesn't support message names, so we'll just add them to the message content.
         return `${prefix}${v.name && v.role !== 'system' ? `${v.name}: ` : ''}${v.content}`;
@@ -196,26 +215,35 @@ export function convertClaudePrompt(messages: Message[], addAssistantPostfix: bo
  * @param {PromptNames} names Prompt names
  * @returns {{messages: object[], systemPrompt: object[]}} Prompt for Anthropic
  */
+// @ts-expect-error TS(2304) FIXME: Cannot find name 'PromptNames'.
 export function convertClaudeMessages(messages: Message[], prefillString: string, useSysPrompt: boolean, useTools: boolean, names: PromptNames) {
     const systemPrompt: Message[] = [];
     if (useSysPrompt) {
         // Collect all the system messages up until the first instance of a non-system message, and then remove them from the messages array.
         let i;
         for (i = 0; i < messages.length; i++) {
+            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             if (messages[i].role !== 'system') {
                 break;
             }
             // Append example names if not already done by the frontend (e.g. for group chats).
+            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             if (names.userName && messages[i].name === 'example_user') {
+                // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
                 if (!messages[i].content.startsWith(`${names.userName}: `)) {
+                    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
                     messages[i].content = `${names.userName}: ${messages[i].content}`;
                 }
             }
+            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             if (names.charName && messages[i].name === 'example_assistant') {
+                // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
                 if (!messages[i].content.startsWith(`${names.charName}: `) && !names.startsWithGroupName(messages[i].content)) {
+                    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
                     messages[i].content = `${names.charName}: ${messages[i].content}`;
                 }
             }
+            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             systemPrompt.push({ type: 'text', text: messages[i].content });
         }
 
@@ -238,7 +266,9 @@ export function convertClaudeMessages(messages: Message[], prefillString: string
             message.content = (message.tool_calls as Message[]).map((tc: Message) => ({
                 type: 'tool_use',
                 id: tc.id,
+                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 name: tc.function.name,
+                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 input: parse(tc.function.arguments)
             }));
         }
@@ -254,11 +284,13 @@ export function convertClaudeMessages(messages: Message[], prefillString: string
 
         if (message.role === 'system') {
             if (names.userName && message.name === 'example_user') {
+                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 if (!message.content.startsWith(`${names.userName}: `)) {
                     message.content = `${names.userName}: ${message.content}`;
                 }
             }
             if (names.charName && message.name === 'example_assistant') {
+                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 if (!message.content.startsWith(`${names.charName}: `) && !names.startsWithGroupName(message.content)) {
                     message.content = `${names.charName}: ${message.content}`;
                 }
@@ -281,6 +313,7 @@ export function convertClaudeMessages(messages: Message[], prefillString: string
             message.content = (message.content as Message[]).map((content: Message) => {
                 if (content.type === 'image_url') {
                     const imageEntry = content?.image_url;
+                    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                     const imageData = imageEntry?.url;
                     const mimeType = imageData?.split(';')?.[0].split(':')?.[1];
                     const base64Data = imageData?.split(',')?.[1];
@@ -319,6 +352,7 @@ export function convertClaudeMessages(messages: Message[], prefillString: string
         if ((messages[i] as Message).role === 'assistant' && ((messages[i] as Message).content as Message[]).some((c: Message) => c.type === 'image')) {
             // Find the next user message
             let j = i + 1;
+            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             while (j < messages.length && messages[j].role !== 'user') {
                 j++;
             }
@@ -347,7 +381,9 @@ export function convertClaudeMessages(messages: Message[], prefillString: string
     // Also handle multi-modality, holy slop.
     const mergedMessages: Message[] = [];
     messages.forEach((message: Message) => {
+        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         if (mergedMessages.length > 0 && mergedMessages[mergedMessages.length - 1].role === message.role) {
+            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             mergedMessages[mergedMessages.length - 1].content.push(...message.content);
         } else {
             mergedMessages.push(message);
@@ -383,6 +419,7 @@ export function convertClaudeMessages(messages: Message[], prefillString: string
  * @param {PromptNames} names Prompt names
  * @returns {{chatHistory: object[]}} Prompt for Cohere
  */
+// @ts-expect-error TS(2304) FIXME: Cannot find name 'PromptNames'.
 export function convertCohereMessages(messages: Message[], names: PromptNames) {
     if (messages.length === 0) {
         messages.unshift({
@@ -404,15 +441,18 @@ export function convertCohereMessages(messages: Message[], names: PromptNames) {
         // No names support (who would've thought)
         if (msg.name) {
             if (msg.role == 'system' && msg.name == 'example_assistant') {
+                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 if (names.charName && !msg.content.startsWith(`${names.charName}: `) && !names.startsWithGroupName(msg.content)) {
                     msg.content = `${names.charName}: ${msg.content}`;
                 }
             }
             if (msg.role == 'system' && msg.name == 'example_user') {
+                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 if (names.userName && !msg.content.startsWith(`${names.userName}: `)) {
                     msg.content = `${names.userName}: ${msg.content}`;
                 }
             }
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             if (msg.role !== 'system' && !msg.content.startsWith(`${msg.name}: `)) {
                 msg.content = `${msg.name}: ${msg.content}`;
             }
@@ -431,22 +471,31 @@ export function convertCohereMessages(messages: Message[], names: PromptNames) {
  * @param {PromptNames} names Prompt names
  * @returns {{contents: object[], system_instruction: {parts: {text: string}[]}}} Prompt for Google MakerSuite models
  */
+// @ts-expect-error TS(2304) FIXME: Cannot find name 'PromptNames'.
 export function convertGooglePrompt(messages: Message[], model: string, useSysPrompt: boolean, names: PromptNames) {
     const sysPrompt: string[] = [];
 
     if (useSysPrompt) {
+        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         while (messages.length > 1 && messages[0].role === 'system') {
             // Append example names if not already done by the frontend (e.g. for group chats).
+            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             if (names.userName && messages[0].name === 'example_user') {
+                // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
                 if (!messages[0].content.startsWith(`${names.userName}: `)) {
+                    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
                     messages[0].content = `${names.userName}: ${messages[0].content}`;
                 }
             }
+            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             if (names.charName && messages[0].name === 'example_assistant') {
+                // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
                 if (!messages[0].content.startsWith(`${names.charName}: `) && !names.startsWithGroupName(messages[0].content)) {
+                    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
                     messages[0].content = `${names.charName}: ${messages[0].content}`;
                 }
             }
+            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             sysPrompt.push(messages[0].content);
             messages.shift();
         }
@@ -490,14 +539,17 @@ export function convertGooglePrompt(messages: Message[], model: string, useSysPr
                     return;
                 }
                 if (message.name === 'example_user') {
+                    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                     if (names.userName && !part.text.startsWith(`${names.userName}: `)) {
                         part.text = `${names.userName}: ${part.text}`;
                     }
                 } else if (message.name === 'example_assistant') {
+                    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                     if (names.charName && !part.text.startsWith(`${names.charName}: `) && !names.startsWithGroupName(part.text)) {
                         part.text = `${names.charName}: ${part.text}`;
                     }
                 } else {
+                    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                     if (!part.text.startsWith(`${message.name}: `)) {
                         part.text = `${message.name}: ${part.text}`;
                     }
@@ -513,7 +565,9 @@ export function convertGooglePrompt(messages: Message[], model: string, useSysPr
             const addDataUrlPart = (url: string, defaultMimeType: string, detail: string | null = null) => {
                 if (url && url.startsWith('data:')) {
                     const [header, base64Data] = url.split(',');
+                    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
                     const mimeType = header.match(/data:([^;]+)/)?.[1] || defaultMimeType;
+                    // @ts-expect-error TS(2538) FIXME: Type 'null' cannot be used as an index type.
                     const mediaResolution = GEMINI_MEDIA_RESOLUTION[detail] || null;
 
                     const part = {
@@ -525,7 +579,7 @@ export function convertGooglePrompt(messages: Message[], model: string, useSysPr
 
                     // https://ai.google.dev/gemini-api/docs/gemini-3#media_resolution
                     if (/gemini-3/.test(model) && mediaResolution) {
-                        // @ts-expect-error TS(2339): Property 'mediaResolution' does not exist on type ... Remove this comment to see the full error message
+                        // @ts-expect-error TS(2339) FIXME: Property 'mediaResolution' does not exist on type ... Remove this comment to see the full error message
                         part.mediaResolution = {
                             level: mediaResolution,
                         };
@@ -538,6 +592,7 @@ export function convertGooglePrompt(messages: Message[], model: string, useSysPr
             if (part.type === 'text') {
                 parts.push({ text: part.text });
             } else if (part.type === 'tool_call_id') {
+                // @ts-expect-error TS(2538) FIXME: Type 'unknown' cannot be used as an index type.
                 const name = toolNameMap[part.tool_call_id] ?? 'unknown';
                 parts.push({
                     functionResponse: {
@@ -549,23 +604,31 @@ export function convertGooglePrompt(messages: Message[], model: string, useSysPr
                 (part.tool_calls as Message[]).forEach((toolCall: Message) => {
                     parts.push({
                         functionCall: {
+                            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                             name: toolCall.function.name,
+                            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                             args: tryParse(toolCall.function.arguments) ?? toolCall.function.arguments,
                         },
                         ...(toolCall.signature ? { thoughtSignature: toolCall.signature } : {}),
                     });
 
+                    // @ts-expect-error TS(2538) FIXME: Type 'unknown' cannot be used as an index type.
                     toolNameMap[toolCall.id] = toolCall.function.name;
                 });
             } else if (part.type === 'image_url') {
+                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 const imageUrl = part.image_url?.url;
+                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 const detail = part.image_url?.detail;
                 addDataUrlPart(imageUrl, 'image/png', detail);
             } else if (part.type === 'video_url') {
+                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 const videoUrl = part.video_url?.url;
+                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 const detail = part.video_url?.detail;
                 addDataUrlPart(videoUrl, 'video/mp4', detail);
             } else if (part.type === 'audio_url') {
+                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 const audioUrl = part.audio_url?.url;
                 addDataUrlPart(audioUrl, 'audio/mpeg');
             }
@@ -596,6 +659,7 @@ export function convertGooglePrompt(messages: Message[], model: string, useSysPr
         }
 
         // merge consecutive messages with the same role
+        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         if (index > 0 && message.role === contents[contents.length - 1].role) {
             parts.forEach((part) => {
                 if (part.text) {
@@ -603,10 +667,12 @@ export function convertGooglePrompt(messages: Message[], model: string, useSysPr
                     if (textPart) {
                         textPart.text += '\n\n' + part.text;
                     } else {
+                        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
                         contents[contents.length - 1].parts.push(part);
                     }
                 }
                 if (part.inlineData || part.functionCall || part.functionResponse || part.thoughtSignature || part.mediaResolution) {
+                    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
                     contents[contents.length - 1].parts.push(part);
                 }
             });
@@ -627,6 +693,7 @@ export function convertGooglePrompt(messages: Message[], model: string, useSysPr
  * @param {PromptNames} names Prompt names
  * @returns {object[]} Prompt for AI21
  */
+// @ts-expect-error TS(2304) FIXME: Cannot find name 'PromptNames'.
 export function convertAI21Messages(messages: Message[], names: PromptNames) {
     if (!Array.isArray(messages)) {
         return [];
@@ -636,20 +703,28 @@ export function convertAI21Messages(messages: Message[], names: PromptNames) {
     let i = 0, systemPrompt = '';
 
     for (i = 0; i < messages.length; i++) {
+        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         if (messages[i].role !== 'system') {
             break;
         }
         // Append example names if not already done by the frontend (e.g. for group chats).
+        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         if (names.userName && messages[i].name === 'example_user') {
+            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             if (!messages[i].content.startsWith(`${names.userName}: `)) {
+                // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
                 messages[i].content = `${names.userName}: ${messages[i].content}`;
             }
         }
+        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         if (names.charName && messages[i].name === 'example_assistant') {
+            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             if (!messages[i].content.startsWith(`${names.charName}: `) && !names.startsWithGroupName(messages[i].content)) {
+                // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
                 messages[i].content = `${names.charName}: ${messages[i].content}`;
             }
         }
+        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         systemPrompt += `${messages[i].content}\n\n`;
     }
 
@@ -673,6 +748,7 @@ export function convertAI21Messages(messages: Message[], names: PromptNames) {
     // Doesn't support completion names, so prepend if not already done by the frontend (e.g. for group chats).
     messages.forEach(msg => {
         if ('name' in msg) {
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             if (msg.role !== 'system' && !msg.content.startsWith(`${msg.name}: `)) {
                 msg.content = `${msg.name}: ${msg.content}`;
             }
@@ -699,12 +775,14 @@ export function convertAI21Messages(messages: Message[], names: PromptNames) {
  * @param {PromptNames} names Prompt names
  * @returns {object[]} Prompt for MistralAI
  */
+// @ts-expect-error TS(2304) FIXME: Cannot find name 'PromptNames'.
 export function convertMistralMessages(messages: Message[], names: PromptNames) {
     if (!Array.isArray(messages)) {
         return [];
     }
 
     // Make the last assistant message a prefill
+    // @ts-expect-error TS(2345) FIXME: Argument of type 'false' is not assignable to para... Remove this comment to see the full error message
     const prefixEnabled = getConfigValue('mistral.enablePrefix', false, 'boolean');
     const lastMsg = messages[messages.length - 1];
     if (prefixEnabled && messages.length > 0 && lastMsg?.role === 'assistant') {
@@ -717,13 +795,16 @@ export function convertMistralMessages(messages: Message[], names: PromptNames) 
     messages.forEach(msg => {
         if ('tool_calls' in msg && Array.isArray(msg.tool_calls)) {
             (msg.tool_calls as Message[]).forEach((tool: Message) => {
+                // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
                 tool.id = sanitizeToolId(tool.id);
             });
         }
         if ('tool_call_id' in msg && msg.role === 'tool') {
+            // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
             msg.tool_call_id = sanitizeToolId(msg.tool_call_id);
         }
         if (msg.role === 'system' && msg.name === 'example_assistant') {
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             if (names.charName && !msg.content.startsWith(`${names.charName}: `) && !names.startsWithGroupName(msg.content)) {
                 msg.content = `${names.charName}: ${msg.content}`;
             }
@@ -731,12 +812,14 @@ export function convertMistralMessages(messages: Message[], names: PromptNames) 
         }
 
         if (msg.role === 'system' && msg.name === 'example_user') {
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             if (names.userName && !msg.content.startsWith(`${names.userName}: `)) {
                 msg.content = `${names.userName}: ${msg.content}`;
             }
             delete msg.name;
         }
 
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         if (msg.name && msg.role !== 'system' && !msg.content.startsWith(`${msg.name}: `)) {
             msg.content = `${msg.name}: ${msg.content}`;
             delete msg.name;
@@ -752,10 +835,12 @@ export function convertMistralMessages(messages: Message[], names: PromptNames) 
                 if (i === messages.length - 1) {
                     return;
                 }
+                // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
                 if (message.role === 'tool' && messages[i + 1].role === 'user') {
-                    // @ts-expect-error TS(2339): Property 'findLastIndex' does not exist on type 'a... Remove this comment to see the full error message
+                    // @ts-expect-error TS(2339) FIXME: Property 'findLastIndex' does not exist on type 'M... Remove this comment to see the full error message
                     const lastUserMessage = messages.slice(0, i).findLastIndex((m: Message) => m.role === 'user' && m.content);
                     if (lastUserMessage !== -1) {
+                        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
                         messages[lastUserMessage].content += '\n\n' + messages[i + 1].content;
                         messages.splice(i + 1, 1);
                         rerun = true;
@@ -768,7 +853,9 @@ export function convertMistralMessages(messages: Message[], names: PromptNames) 
 
     // If system role message immediately follows an assistant message, change its role to user
     for (let i = 0; i < messages.length - 1; i++) {
+        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         if (messages[i].role === 'assistant' && messages[i + 1].role === 'system') {
+            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             messages[i + 1].role = 'user';
         }
     }
@@ -782,6 +869,7 @@ export function convertMistralMessages(messages: Message[], names: PromptNames) 
  * @param {PromptNames} names Prompt names
  * @returns {object[]} Prompt for xAI
  */
+// @ts-expect-error TS(2304) FIXME: Cannot find name 'PromptNames'.
 export function convertXAIMessages(messages: Message[], names: PromptNames) {
     if (!Array.isArray(messages)) {
         return [];
@@ -793,8 +881,11 @@ export function convertXAIMessages(messages: Message[], names: PromptNames) {
         }
 
         const needsCharNamePrefix = [
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             { role: 'assistant', condition: names.charName && !msg.content.startsWith(`${names.charName}: `) && !names.startsWithGroupName(msg.content) },
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             { role: 'system', name: 'example_assistant', condition: names.charName && !msg.content.startsWith(`${names.charName}: `) && !names.startsWithGroupName(msg.content) },
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             { role: 'system', name: 'example_user', condition: names.userName && !msg.content.startsWith(`${names.userName}: `) },
         ];
 
@@ -824,6 +915,7 @@ export function convertXAIMessages(messages: Message[], names: PromptNames) {
  * @param {boolean} [options.tools] Allow tool calls in the prompt. If false, tool call messages are removed.
  * @returns {object[]} Merged messages
  */
+// @ts-expect-error TS(7023) FIXME: 'mergeMessages' implicitly has return type 'any' b... Remove this comment to see the full error message
 export function mergeMessages(messages: Message[], names: PromptNames, { strict = false, placeholders = false, single = false, tools = false } = {}) {
     const mergedMessages: Message[] = [];
 
@@ -852,16 +944,19 @@ export function mergeMessages(messages: Message[], names: PromptNames, { strict 
             message.content = text;
         }
         if (message.role === 'system' && message.name === 'example_assistant') {
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             if (names.charName && !message.content.startsWith(`${names.charName}: `) && !names.startsWithGroupName(message.content)) {
                 message.content = `${names.charName}: ${message.content}`;
             }
         }
         if (message.role === 'system' && message.name === 'example_user') {
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             if (names.userName && !message.content.startsWith(`${names.userName}: `)) {
                 message.content = `${names.userName}: ${message.content}`;
             }
         }
         if (message.name && message.role !== 'system') {
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             if (!message.content.startsWith(`${message.name}: `)) {
                 message.content = `${message.name}: ${message.content}`;
             }
@@ -871,11 +966,13 @@ export function mergeMessages(messages: Message[], names: PromptNames, { strict 
         }
         if (single) {
             if (message.role === 'assistant') {
+                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 if (names.charName && !message.content.startsWith(`${names.charName}: `) && !names.startsWithGroupName(message.content)) {
                     message.content = `${names.charName}: ${message.content}`;
                 }
             }
             if (message.role === 'user') {
+                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 if (names.userName && !message.content.startsWith(`${names.userName}: `)) {
                     message.content = `${names.userName}: ${message.content}`;
                 }
@@ -910,9 +1007,11 @@ export function mergeMessages(messages: Message[], names: PromptNames, { strict 
     // Check for content tokens and replace them with the actual content objects
     if (contentTokens.size > 0) {
         mergedMessages.forEach((message) => {
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             const hasValidToken = Array.from(contentTokens.keys()).some(token => message.content.includes(token));
 
             if (hasValidToken) {
+                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 const splitContent = message.content.split('\n\n');
                 const mergedContent: Message[] = [];
 
@@ -936,13 +1035,17 @@ export function mergeMessages(messages: Message[], names: PromptNames, { strict 
     if (strict) {
         for (let i = 0; i < mergedMessages.length; i++) {
             // Force mid-prompt system messages to be user messages
+            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             if (i > 0 && mergedMessages[i].role === 'system') {
+                // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
                 mergedMessages[i].role = 'user';
             }
         }
         if (mergedMessages.length && placeholders) {
+            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             if (mergedMessages[0].role === 'system' && (mergedMessages.length === 1 || mergedMessages[1].role !== 'user')) {
                 mergedMessages.splice(1, 0, { role: 'user', content: PROMPT_PLACEHOLDER });
+            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             } else if (mergedMessages[0].role !== 'system' && mergedMessages[0].role !== 'user') {
                 mergedMessages.unshift({ role: 'user', content: PROMPT_PLACEHOLDER });
             }
@@ -988,15 +1091,19 @@ export function cachingAtDepthForClaude(messages: Message[], cachingAtDepth: num
     let previousRoleName = '';
 
     for (let i = messages.length - 1; i >= 0; i--) {
+        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         if (!passedThePrefill && messages[i].role === 'assistant') {
             continue;
         }
 
         passedThePrefill = true;
 
+        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         if (messages[i].role !== previousRoleName) {
             if (depth === cachingAtDepth || depth === cachingAtDepth + 2) {
+                // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
                 const content = messages[i].content;
+                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 content[content.length - 1].cache_control = { type: 'ephemeral', ttl: ttl };
             }
 
@@ -1005,6 +1112,7 @@ export function cachingAtDepthForClaude(messages: Message[], cachingAtDepth: num
             }
 
             depth += 1;
+            // @ts-expect-error TS(2322) FIXME: Type 'unknown' is not assignable to type 'string'.
             previousRoleName = messages[i].role;
         }
     }
@@ -1024,6 +1132,7 @@ export function cachingAtDepthForOpenRouterClaude(messages: Message[], cachingAt
     let depth = 0;
     let previousRoleName = '';
     for (let i = messages.length - 1; i >= 0; i--) {
+        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         if (!passedThePrefill && messages[i].role === 'assistant') {
             continue;
         }
@@ -1031,21 +1140,28 @@ export function cachingAtDepthForOpenRouterClaude(messages: Message[], cachingAt
         passedThePrefill = true;
 
         // Skip system messages so they don't affect depth counting or receive cache breakpoints
+        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         if (messages[i].role === 'system') {
             continue;
         }
 
+        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         if (messages[i].role !== previousRoleName) {
             if (depth === cachingAtDepth || depth === cachingAtDepth + 2) {
+                // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
                 const content = messages[i].content;
                 if (typeof content === 'string') {
+                    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
                     messages[i].content = [{
                         type: 'text',
                         text: content,
                         cache_control: { type: 'ephemeral', ttl: ttl },
                     }];
+                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 } else if (content?.length > 0) {
+                    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                     const contentPartCount = content.length;
+                    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                     content[contentPartCount - 1].cache_control = {
                         type: 'ephemeral',
                         ttl: ttl,
@@ -1058,6 +1174,7 @@ export function cachingAtDepthForOpenRouterClaude(messages: Message[], cachingAt
             }
 
             depth += 1;
+            // @ts-expect-error TS(2322) FIXME: Type 'unknown' is not assignable to type 'string'.
             previousRoleName = messages[i].role;
         }
     }
@@ -1371,6 +1488,7 @@ export function embedOpenRouterMedia(messages: Message[], { audio = true, video 
 
                 contentPart.type = 'input_audio';
                 contentPart.input_audio = {
+                    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                     format: formatMap[mimeType] || 'mp3',
                     data: base64Data,
                 };
@@ -1444,7 +1562,7 @@ export function addOpenRouterSignatures(messages: Message[], model: string) {
         };
         if (typeof message.signature === 'string') {
             if (enableThoughtSignatures) {
-                // @ts-expect-error TS(2554): Expected 2 arguments, but got 1.
+                // @ts-expect-error TS(2554) FIXME: Expected 2 arguments, but got 1.
                 addDetail(message.signature);
             }
             delete message.signature;
@@ -1452,6 +1570,7 @@ export function addOpenRouterSignatures(messages: Message[], model: string) {
         if (Array.isArray(message.tool_calls)) {
             (message.tool_calls as Message[]).forEach((toolCall: Message) => {
                 if (typeof toolCall.signature === 'string') {
+                    // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
                     addDetail(toolCall.signature, toolCall.id);
                     delete toolCall.signature;
                 }

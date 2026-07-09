@@ -81,6 +81,7 @@ import {
     writeExtensionField,
     writeExtensionFieldBulk,
 } from './extensions.js';
+// @ts-expect-error TS(7034) FIXME: Variable 'groups' implicitly has type 'any[]' in s... Remove this comment to see the full error message
 import { groups, openGroupChat, selected_group, unshallowGroupMembers } from './group-chats.js';
 import { addLocaleData, getCurrentLocale, t, translate } from './i18n.js';
 import { hideLoader, showLoader } from './loader.js';
@@ -97,6 +98,7 @@ import { SlashCommand } from './slash-commands/SlashCommand.js';
 import { ARGUMENT_TYPE, SlashCommandArgument, SlashCommandNamedArgument } from './slash-commands/SlashCommandArgument.js';
 import { SlashCommandEnumValue } from './slash-commands/SlashCommandEnumValue.js';
 import { SlashCommandParser } from './slash-commands/SlashCommandParser.js';
+// @ts-expect-error TS(7034) FIXME: Variable 'tags' implicitly has type 'any[]' in som... Remove this comment to see the full error message
 import { tag_map, tags, importTags } from './tags.js';
 import { getTextGenServer, textgenerationwebui_settings } from './textgen-settings.js';
 import { tokenizers, getTextTokens, getTokenCount, getTokenCountAsync, getTokenizerModel } from './tokenizers.js';
@@ -119,13 +121,18 @@ export function getContext() {
         accountStorage,
         chat,
         characters,
+        // @ts-expect-error TS(7005) FIXME: Variable 'groups' implicitly has an 'any[]' type.
         groups,
         name1,
         name2,
         characterId: this_chid,
+        // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
         groupId: selected_group,
+        // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
         chatId: selected_group
+            // @ts-expect-error TS(7005) FIXME: Variable 'groups' implicitly has an 'any[]' type.
             ? groups.find(x => x.id == selected_group)?.chat_id
+            // @ts-expect-error TS(2339) FIXME: Property 'chat' does not exist on type 'never'.
             : (characters[this_chid]?.chat),
         getCurrentChatId,
         getRequestHeaders,
@@ -217,6 +224,7 @@ export function getContext() {
         translate,
         getCurrentLocale,
         addLocaleData,
+        // @ts-expect-error TS(7005) FIXME: Variable 'tags' implicitly has an 'any[]' type.
         tags,
         tagMap: tag_map,
         menuType: menu_type,

@@ -8,11 +8,9 @@ import { SlashCommandExecutor } from './SlashCommandExecutor.js';
 import { SlashCommandParserError } from './SlashCommandParserError.js';
 import { AutoCompleteNameResult } from '../autocomplete/AutoCompleteNameResult.js';
 import { SlashCommandQuickReplyAutoCompleteOption } from './SlashCommandQuickReplyAutoCompleteOption.js';
-// @ts-expect-error TS(6133): 'SlashCommandScope' is declared but its value is n... Remove this comment to see the full error message
 import { SlashCommandScope } from './SlashCommandScope.js';
 import { SlashCommandVariableAutoCompleteOption } from './SlashCommandVariableAutoCompleteOption.js';
 import { SlashCommandNamedArgumentAssignment } from './SlashCommandNamedArgumentAssignment.js';
-// @ts-expect-error TS(6133): 'SlashCommandAbortController' is declared but its ... Remove this comment to see the full error message
 import { SlashCommandAbortController } from './SlashCommandAbortController.js';
 import { SlashCommandAutoCompleteNameResult } from './SlashCommandAutoCompleteNameResult.js';
 import { SlashCommandUnnamedArgumentAssignment } from './SlashCommandUnnamedArgumentAssignment.js';
@@ -22,7 +20,6 @@ import {
     buildMacroAutoCompleteResult,
 } from '../autocomplete/MacroAutoCompleteHelper.js';
 import { SlashCommandBreakPoint } from './SlashCommandBreakPoint.js';
-// @ts-expect-error TS(6133): 'SlashCommandDebugController' is declared but its ... Remove this comment to see the full error message
 import { SlashCommandDebugController } from './SlashCommandDebugController.js';
 import { commonEnumProviders } from './SlashCommandCommonEnumsProvider.js';
 import { SlashCommandBreak } from './SlashCommandBreak.js';
@@ -53,6 +50,7 @@ export class SlashCommandParser {
      * @param {string[]} aliases List of alternative command names
      * @param {string} helpString Help text shown in autocomplete and command browser
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'command' implicitly has an 'any' type.
     static addCommand(command, callback, aliases, helpString = '') {
         this.addCommandObject(SlashCommand.fromProps({
             name: command,
@@ -65,9 +63,11 @@ export class SlashCommandParser {
      *
      * @param {SlashCommand} command
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'command' implicitly has an 'any' type.
     static addCommandObject(command) {
         const reserved = ['/', '#', ':', 'parser-flag', 'breakpoint'];
         for (const start of reserved) {
+            // @ts-expect-error TS(7006) FIXME: Parameter 'a' implicitly has an 'any' type.
             if (command.name.toLowerCase().startsWith(start) || (command.aliases ?? []).find(a => a.toLowerCase().startsWith(start))) {
                 throw new Error(`Illegal Name. Slash command name cannot begin with "${start}".`);
             }
@@ -78,28 +78,36 @@ export class SlashCommandParser {
      *
      * @param {SlashCommand} command
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'command' implicitly has an 'any' type.
     static addCommandObjectUnsafe(command) {
         if ([command.name, ...command.aliases].some(x => Object.hasOwn(this.commands, x))) {
             console.trace('WARN: Duplicate slash command registered!', [command.name, ...command.aliases]);
         }
 
+        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         const stack = new Error().stack.split('\n').map(it => it.trim());
         command.isExtension = stack.find(it => it.includes('/scripts/extensions/')) != null;
         command.isThirdParty = stack.find(it => it.includes('/scripts/extensions/third-party/')) != null;
         if (command.isThirdParty) {
+            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             command.source = stack.find(it => it.includes('/scripts/extensions/third-party/')).replace(/^.*?\/scripts\/extensions\/third-party\/([^/]+)\/.*$/, '$1');
         } else if (command.isExtension) {
+            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             command.source = stack.find(it => it.includes('/scripts/extensions/')).replace(/^.*?\/scripts\/extensions\/([^/]+)\/.*$/, '$1');
         } else {
-            // @ts-expect-error TS(2339): Property 'findLastIndex' does not exist on type 's... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'findLastIndex' does not exist on type 's... Remove this comment to see the full error message
             const idx = stack.findLastIndex(it => it.includes('at SlashCommandParser.')) + 1;
+            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             command.source = stack[idx].replace(/^.*?\/((?:scripts\/)?(?:[^/]+)\.js).*$/, '$1');
         }
 
+        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         this.commands[command.name] = command;
 
         if (Array.isArray(command.aliases)) {
+            // @ts-expect-error TS(7006) FIXME: Parameter 'alias' implicitly has an 'any' type.
             command.aliases.forEach((alias) => {
+                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 this.commands[alias] = command;
             });
         }
@@ -111,22 +119,33 @@ export class SlashCommandParser {
     }
     /** @type {Object.<string, string>} */ helpStrings = {};
     /** @type {boolean} */ verifyCommandNames = true;
+    // @ts-expect-error TS(7008) FIXME: Member 'text' implicitly has an 'any' type.
     /** @type {string} */ text;
+    // @ts-expect-error TS(7008) FIXME: Member 'index' implicitly has an 'any' type.
     /** @type {number} */ index;
+    // @ts-expect-error TS(7008) FIXME: Member 'abortController' implicitly has an 'any' t... Remove this comment to see the full error message
     /** @type {SlashCommandAbortController} */ abortController;
+    // @ts-expect-error TS(7008) FIXME: Member 'debugController' implicitly has an 'any' t... Remove this comment to see the full error message
     /** @type {SlashCommandDebugController} */ debugController;
+    // @ts-expect-error TS(7008) FIXME: Member 'scope' implicitly has an 'any' type.
     /** @type {SlashCommandScope} */ scope;
+    // @ts-expect-error TS(7008) FIXME: Member 'closure' implicitly has an 'any' type.
     /** @type {SlashCommandClosure} */ closure;
 
     /** @type {Object.<PARSER_FLAG,boolean>} */ flags = {};
 
     /** @type {boolean} */ jumpedEscapeSequence = false;
 
+    // @ts-expect-error TS(7008) FIXME: Member 'closureIndex' implicitly has an 'any' type... Remove this comment to see the full error message
     /** @type {{start:number, end:number}[]} */ closureIndex;
+    // @ts-expect-error TS(7008) FIXME: Member 'macroIndex' implicitly has an 'any' type.
     /** @type {{start:number, end:number, name:string}[]} */ macroIndex;
+    // @ts-expect-error TS(7008) FIXME: Member 'commandIndex' implicitly has an 'any' type... Remove this comment to see the full error message
     /** @type {SlashCommandExecutor[]} */ commandIndex;
+    // @ts-expect-error TS(7008) FIXME: Member 'scopeIndex' implicitly has an 'any' type.
     /** @type {SlashCommandScope[]} */ scopeIndex;
 
+    // @ts-expect-error TS(7008) FIXME: Member 'parserContext' implicitly has an 'any' typ... Remove this comment to see the full error message
     /** @type {string} */ parserContext;
 
     get userIndex() { return this.index; }
@@ -149,7 +168,9 @@ export class SlashCommandParser {
         // add dummy commands for help strings / autocomplete
         if (!Object.keys(this.commands).includes('parser-flag')) {
             const help = {};
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             help[PARSER_FLAG.REPLACE_GETVAR] = 'Replace all {{getvar::}} and {{getglobalvar::}} macros with scoped variables to avoid double macro substitution.';
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             help[PARSER_FLAG.STRICT_ESCAPING] = 'Allows to escape all delimiters with backslash, and allows escaping of backslashes.';
             SlashCommandParser.addCommandObjectUnsafe(SlashCommand.fromProps({ name: 'parser-flag',
                 unnamedArgumentList: [
@@ -157,6 +178,7 @@ export class SlashCommandParser {
                         description: 'The parser flag to modify.',
                         typeList: [ARGUMENT_TYPE.STRING],
                         isRequired: true,
+                        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                         enumList: Object.keys(PARSER_FLAG).map(flag => new SlashCommandEnumValue(flag, help[PARSER_FLAG[flag]])),
                     }),
                     SlashCommandArgument.fromProps({
@@ -360,9 +382,11 @@ export class SlashCommandParser {
             end: '',
         };
         BLOCK_COMMENT.contains.push(
+            // @ts-expect-error TS(2345) FIXME: Argument of type '{ scope: string; begin: RegExp; ... Remove this comment to see the full error message
             BLOCK_COMMENT,
         );
         RUN.contains.push(
+            // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
             hljs.BACKSLASH_ESCAPE,
             NAMED_ARG,
             hljs.QUOTE_STRING_MODE,
@@ -371,6 +395,7 @@ export class SlashCommandParser {
             CLOSURE,
         );
         IMPORT.contains.push(
+            // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
             hljs.BACKSLASH_ESCAPE,
             NAMED_ARG,
             NUMBER,
@@ -379,6 +404,7 @@ export class SlashCommandParser {
             hljs.QUOTE_STRING_MODE,
         );
         BREAK.contains.push(
+            // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
             hljs.BACKSLASH_ESCAPE,
             NAMED_ARG,
             NUMBER,
@@ -387,6 +413,7 @@ export class SlashCommandParser {
             hljs.QUOTE_STRING_MODE,
         );
         LET.contains.push(
+            // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
             hljs.BACKSLASH_ESCAPE,
             NAMED_ARG,
             NUMBER,
@@ -395,6 +422,7 @@ export class SlashCommandParser {
             hljs.QUOTE_STRING_MODE,
         );
         SETVAR.contains.push(
+            // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
             hljs.BACKSLASH_ESCAPE,
             NAMED_ARG,
             NUMBER,
@@ -403,6 +431,7 @@ export class SlashCommandParser {
             hljs.QUOTE_STRING_MODE,
         );
         GETVAR.contains.push(
+            // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
             hljs.BACKSLASH_ESCAPE,
             NAMED_ARG,
             hljs.QUOTE_STRING_MODE,
@@ -411,6 +440,7 @@ export class SlashCommandParser {
             CLOSURE,
         );
         ABORT.contains.push(
+            // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
             hljs.BACKSLASH_ESCAPE,
             NAMED_ARG,
             NUMBER,
@@ -419,6 +449,7 @@ export class SlashCommandParser {
             hljs.QUOTE_STRING_MODE,
         );
         COMMAND.contains.push(
+            // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
             hljs.BACKSLASH_ESCAPE,
             NAMED_ARG,
             NUMBER,
@@ -427,6 +458,7 @@ export class SlashCommandParser {
             hljs.QUOTE_STRING_MODE,
         );
         CLOSURE.contains.push(
+            // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
             hljs.BACKSLASH_ESCAPE,
             BLOCK_COMMENT,
             COMMENT,
@@ -477,6 +509,7 @@ export class SlashCommandParser {
      * @param {*} text The text to parse.
      * @param {*} index Index to check for names (cursor position).
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'text' implicitly has an 'any' type.
     async getNameAt(text, index) {
         if (this.text != text) {
             try {
@@ -487,6 +520,7 @@ export class SlashCommandParser {
             }
         }
         const executor = this.commandIndex
+            // @ts-expect-error TS(7006) FIXME: Parameter 'it' implicitly has an 'any' type.
             .filter(it => it.start <= index && (it.end >= index || it.end == null))
             .slice(-1)[0]
             ?? null
@@ -494,11 +528,13 @@ export class SlashCommandParser {
 
         if (executor) {
             const childClosure = this.closureIndex
+                // @ts-expect-error TS(7006) FIXME: Parameter 'it' implicitly has an 'any' type.
                 .find(it => it.start <= index && (it.end >= index || it.end == null) && it.start > executor.start)
                 ?? null
             ;
             if (childClosure !== null) return null;
             // Check if cursor is inside a macro
+            // @ts-expect-error TS(7006) FIXME: Parameter 'it' implicitly has an 'any' type.
             const macroEntry = this.macroIndex.findLast(it => it.start <= index && it.end >= index);
             if (macroEntry) {
                 // Build macro info object for shared function
@@ -510,6 +546,7 @@ export class SlashCommandParser {
                 };
 
                 // Use the shared macro autocomplete builder
+                // @ts-expect-error TS(2322) FIXME: Type '{ start: any; end: any; content: any; }' is ... Remove this comment to see the full error message
                 const result = await buildMacroAutoCompleteResult(text, index, { macro });
                 if (result) return result;
             }
@@ -529,6 +566,7 @@ export class SlashCommandParser {
             if (executor.name == ':') {
                 const options = this.scopeIndex[this.commandIndex.indexOf(executor)]
                     ?.allVariableNames
+                    // @ts-expect-error TS(7006) FIXME: Parameter 'it' implicitly has an 'any' type.
                     ?.map(it => new SlashCommandVariableAutoCompleteOption(it))
                     ?? []
                 ;
@@ -542,11 +580,13 @@ export class SlashCommandParser {
                         );
                     }
                 } catch { /* empty */ }
+                // @ts-expect-error TS(7022) FIXME: 'result' implicitly has type 'any' because it does... Remove this comment to see the full error message
                 const result = new AutoCompleteNameResult(
                     executor.unnamedArgumentList[0]?.value.toString(),
                     executor.start,
                     options,
                     true,
+                    // @ts-expect-error TS(2345) FIXME: Argument of type '() => any' is not assignable to ... Remove this comment to see the full error message
                     () => `No matching variables in scope and no matching Quick Replies for "${result.name}"`,
                     () => 'No variables in scope and no Quick Replies found.',
                 );
@@ -587,8 +627,9 @@ export class SlashCommandParser {
      * @param {number} offset Offset from the current index (won't move the index if offset != 0).
      * @returns Whether the next characters are the indicated symbol.
      */
-    // @ts-expect-error TS(7030): Not all code paths return a value.
+    // @ts-expect-error TS(7006) FIXME: Parameter 'sequence' implicitly has an 'any' type.
     testSymbol(sequence, offset = 0) {
+        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         if (!this.flags[PARSER_FLAG.STRICT_ESCAPING]) return this.testSymbolLooseyGoosey(sequence, offset);
         // /echo abc | /echo def
         // -> TOAST: abc
@@ -609,7 +650,9 @@ export class SlashCommandParser {
         const escapeOffset = this.jumpedEscapeSequence ? -1 : 0;
         const escapes = this.text.slice(this.index + offset + escapeOffset).replace(/^(\\*).*$/s, '$1').length;
         const test = (sequence instanceof RegExp) ?
+            // @ts-expect-error TS(7006) FIXME: Parameter 'text' implicitly has an 'any' type.
             (text) => new RegExp(`^${sequence.source}`).test(text) :
+            // @ts-expect-error TS(7006) FIXME: Parameter 'text' implicitly has an 'any' type.
             (text) => text.startsWith(sequence)
         ;
         if (test(this.text.slice(this.index + offset + escapeOffset + escapes))) {
@@ -631,12 +674,14 @@ export class SlashCommandParser {
         }
     }
 
-    // @ts-expect-error TS(7030): Not all code paths return a value.
+    // @ts-expect-error TS(7006) FIXME: Parameter 'sequence' implicitly has an 'any' type.
     testSymbolLooseyGoosey(sequence, offset = 0) {
         const escapeOffset = this.jumpedEscapeSequence ? -1 : 0;
         const escapes = this.text[this.index + offset + escapeOffset] == '\\' ? 1 : 0;
         const test = (sequence instanceof RegExp) ?
+            // @ts-expect-error TS(7006) FIXME: Parameter 'text' implicitly has an 'any' type.
             (text) => new RegExp(`^${sequence.source}`).test(text) :
+            // @ts-expect-error TS(7006) FIXME: Parameter 'text' implicitly has an 'any' type.
             (text) => text.startsWith(sequence)
         ;
         if (test(this.text.slice(this.index + offset + escapeOffset + escapes))) {
@@ -653,11 +698,13 @@ export class SlashCommandParser {
         }
     }
 
+    // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
     replaceGetvar(value) {
         // Not needed with the new parser.
         if (power_user.experimental_macro_engine) {
             return value;
         }
+        // @ts-expect-error TS(7006) FIXME: Parameter 'match' implicitly has an 'any' type.
         return value.replace(/{{(get(?:global)?var)::([^}]+)}}/gi, (match, cmd, name, idx) => {
             name = name.trim();
             cmd = cmd.toLowerCase();
@@ -667,23 +714,26 @@ export class SlashCommandParser {
             const pipeName = `_PARSER_PIPE_${uuidv4()}`;
             const storePipe = new SlashCommandExecutor(startIdx); {
                 storePipe.end = endIdx;
-                // @ts-expect-error TS(2339): Property 'let' does not exist on type '{}'.
+                // @ts-expect-error TS(2339) FIXME: Property 'let' does not exist on type '{}'.
                 storePipe.command = this.commands.let;
                 storePipe.name = 'let';
                 const nameAss = new SlashCommandUnnamedArgumentAssignment();
                 nameAss.value = pipeName;
                 const valAss = new SlashCommandUnnamedArgumentAssignment();
                 valAss.value = '{{pipe}}';
+                // @ts-expect-error TS(2322) FIXME: Type 'SlashCommandUnnamedArgumentAssignment' is no... Remove this comment to see the full error message
                 storePipe.unnamedArgumentList = [nameAss, valAss];
                 this.closure.executorList.push(storePipe);
             }
             // getvar / getglobalvar
             const getvar = new SlashCommandExecutor(startIdx); {
                 getvar.end = endIdx;
+                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 getvar.command = this.commands[cmd];
                 getvar.name = cmd;
                 const nameAss = new SlashCommandUnnamedArgumentAssignment();
                 nameAss.value = name;
+                // @ts-expect-error TS(2322) FIXME: Type 'SlashCommandUnnamedArgumentAssignment' is no... Remove this comment to see the full error message
                 getvar.unnamedArgumentList = [nameAss];
                 this.closure.executorList.push(getvar);
             }
@@ -691,24 +741,26 @@ export class SlashCommandParser {
             const varName = `_PARSER_VAR_${uuidv4()}`;
             const setvar = new SlashCommandExecutor(startIdx); {
                 setvar.end = endIdx;
-                // @ts-expect-error TS(2339): Property 'let' does not exist on type '{}'.
+                // @ts-expect-error TS(2339) FIXME: Property 'let' does not exist on type '{}'.
                 setvar.command = this.commands.let;
                 setvar.name = 'let';
                 const nameAss = new SlashCommandUnnamedArgumentAssignment();
                 nameAss.value = varName;
                 const valAss = new SlashCommandUnnamedArgumentAssignment();
                 valAss.value = '{{pipe}}';
+                // @ts-expect-error TS(2322) FIXME: Type 'SlashCommandUnnamedArgumentAssignment' is no... Remove this comment to see the full error message
                 setvar.unnamedArgumentList = [nameAss, valAss];
                 this.closure.executorList.push(setvar);
             }
             // return pipe
             const returnPipe = new SlashCommandExecutor(startIdx); {
                 returnPipe.end = endIdx;
-                // @ts-expect-error TS(2339): Property 'return' does not exist on type '{}'.
+                // @ts-expect-error TS(2339) FIXME: Property 'return' does not exist on type '{}'.
                 returnPipe.command = this.commands.return;
                 returnPipe.name = 'return';
                 const varAss = new SlashCommandUnnamedArgumentAssignment();
                 varAss.value = `{{var::${pipeName}}}`;
+                // @ts-expect-error TS(2322) FIXME: Type 'SlashCommandUnnamedArgumentAssignment' is no... Remove this comment to see the full error message
                 returnPipe.unnamedArgumentList = [varAss];
                 this.closure.executorList.push(returnPipe);
             }
@@ -717,9 +769,11 @@ export class SlashCommandParser {
     }
 
 
+    // @ts-expect-error TS(7006) FIXME: Parameter 'text' implicitly has an 'any' type.
     parse(text, verifyCommandNames = true, flags = null, abortController = null, debugController = null) {
         this.verifyCommandNames = verifyCommandNames;
         for (const key of Object.keys(PARSER_FLAG)) {
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             this.flags[PARSER_FLAG[key]] = flags?.[PARSER_FLAG[key]] ?? power_user.stscript.parser.flags[PARSER_FLAG[key]] ?? false;
         }
         this.abortController = abortController;
@@ -769,6 +823,7 @@ export class SlashCommandParser {
         this.discardWhitespace();
         while (this.testNamedArgument()) {
             const arg = this.parseNamedArgument();
+            // @ts-expect-error TS(2345) FIXME: Argument of type 'SlashCommandNamedArgumentAssignm... Remove this comment to see the full error message
             closure.argumentList.push(arg);
             this.scope.variableNames.push(arg.name);
             this.discardWhitespace();
@@ -782,19 +837,23 @@ export class SlashCommandParser {
                 this.parseParserFlag();
             } else if (this.testRunShorthand()) {
                 const cmd = this.parseRunShorthand();
+                // @ts-expect-error TS(2345) FIXME: Argument of type 'SlashCommandExecutor' is not ass... Remove this comment to see the full error message
                 closure.executorList.push(cmd);
                 injectPipe = true;
             } else if (this.testBreakPoint()) {
                 const bp = this.parseBreakPoint();
                 if (this.debugController) {
+                    // @ts-expect-error TS(2345) FIXME: Argument of type 'SlashCommandBreakPoint' is not a... Remove this comment to see the full error message
                     closure.executorList.push(bp);
                 }
             } else if (this.testBreak()) {
                 const b = this.parseBreak();
+                // @ts-expect-error TS(2345) FIXME: Argument of type 'SlashCommandBreak' is not assign... Remove this comment to see the full error message
                 closure.executorList.push(b);
             } else if (this.testCommand()) {
                 const cmd = this.parseCommand();
                 cmd.injectPipe = injectPipe;
+                // @ts-expect-error TS(2345) FIXME: Argument of type 'SlashCommandExecutor' is not ass... Remove this comment to see the full error message
                 closure.executorList.push(cmd);
                 injectPipe = true;
             } else {
@@ -818,6 +877,7 @@ export class SlashCommandParser {
             this.take(2); // discard ()
             closure.executeNow = true;
         }
+        // @ts-expect-error TS(2322) FIXME: Type 'number' is not assignable to type 'null'.
         closureIndexEntry.end = this.index - 1;
         this.scope = closure.scope.parent;
         this.closure = oldClosure ?? closure;
@@ -828,10 +888,10 @@ export class SlashCommandParser {
         return this.testSymbol(/\/breakpoint\s*\|/);
     }
     parseBreakPoint() {
-        // @ts-expect-error TS(2554): Expected 1 arguments, but got 0.
+        // @ts-expect-error TS(2554) FIXME: Expected 1 arguments, but got 0.
         const cmd = new SlashCommandBreakPoint();
         cmd.name = 'breakpoint';
-        // @ts-expect-error TS(2339): Property 'breakpoint' does not exist on type '{}'.
+        // @ts-expect-error TS(2339) FIXME: Property 'breakpoint' does not exist on type '{}'.
         cmd.command = this.commands.breakpoint;
         cmd.start = this.index + 1;
         this.take('/breakpoint'.length);
@@ -845,16 +905,16 @@ export class SlashCommandParser {
         return this.testSymbol(/\/break(\s|\||$)/);
     }
     parseBreak() {
-        // @ts-expect-error TS(2554): Expected 1 arguments, but got 0.
+        // @ts-expect-error TS(2554) FIXME: Expected 1 arguments, but got 0.
         const cmd = new SlashCommandBreak();
         cmd.name = 'break';
-        // @ts-expect-error TS(2339): Property 'break' does not exist on type '{}'.
+        // @ts-expect-error TS(2339) FIXME: Property 'break' does not exist on type '{}'.
         cmd.command = this.commands.break;
         cmd.start = this.index + 1;
         this.take('/break'.length);
         this.discardWhitespace();
         if (this.testUnnamedArgument()) {
-            // @ts-expect-error TS(2554): Expected 1-3 arguments, but got 0.
+            // @ts-expect-error TS(2345) FIXME: Argument of type 'SlashCommandUnnamedArgumentAssig... Remove this comment to see the full error message
             cmd.unnamedArgumentList.push(...this.parseUnnamedArgument());
         }
         cmd.end = this.index;
@@ -877,6 +937,7 @@ export class SlashCommandParser {
     parseBlockComment() {
         const start = this.index + 1;
         const cmd = new SlashCommandExecutor(start);
+        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         cmd.command = this.commands['*'];
         this.commandIndex.push(cmd);
         this.scopeIndex.push(this.scope.getCopy());
@@ -906,6 +967,7 @@ export class SlashCommandParser {
     parseComment() {
         const start = this.index + 1;
         const cmd = new SlashCommandExecutor(start);
+        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         cmd.command = this.commands['/'];
         this.commandIndex.push(cmd);
         this.scopeIndex.push(this.scope.getCopy());
@@ -926,6 +988,7 @@ export class SlashCommandParser {
         const cmd = new SlashCommandExecutor(start);
         cmd.name = 'parser-flag';
         cmd.unnamedArgumentList = [];
+        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         cmd.command = this.commands[cmd.name];
         this.commandIndex.push(cmd);
         this.scopeIndex.push(this.scope.getCopy());
@@ -933,10 +996,13 @@ export class SlashCommandParser {
         cmd.startNamedArgs = -1;
         cmd.endNamedArgs = -1;
         cmd.startUnnamedArgs = this.index;
+        // @ts-expect-error TS(2322) FIXME: Type 'SlashCommandUnnamedArgumentAssignment[]' is ... Remove this comment to see the full error message
         cmd.unnamedArgumentList = this.parseUnnamedArgument(true);
         const [flag, state] = cmd.unnamedArgumentList ?? [null, null];
         cmd.endUnnamedArgs = this.index;
+        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         if (Object.keys(PARSER_FLAG).includes(flag.value.toString())) {
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             this.flags[PARSER_FLAG[flag.value.toString()]] = isTrueBoolean(state?.value.toString() ?? 'on');
         }
         cmd.end = this.index;
@@ -953,7 +1019,7 @@ export class SlashCommandParser {
         const cmd = new SlashCommandExecutor(start);
         cmd.name = ':';
         cmd.unnamedArgumentList = [];
-        // @ts-expect-error TS(2339): Property 'run' does not exist on type '{}'.
+        // @ts-expect-error TS(2339) FIXME: Property 'run' does not exist on type '{}'.
         cmd.command = this.commands.run;
         this.commandIndex.push(cmd);
         this.scopeIndex.push(this.scope.getCopy());
@@ -961,11 +1027,13 @@ export class SlashCommandParser {
         const assignment = new SlashCommandUnnamedArgumentAssignment();
         if (this.testQuotedValue()) assignment.value = this.parseQuotedValue();
         else assignment.value = this.parseValue();
+        // @ts-expect-error TS(2322) FIXME: Type 'SlashCommandUnnamedArgumentAssignment' is no... Remove this comment to see the full error message
         cmd.unnamedArgumentList = [assignment];
         this.discardWhitespace();
         cmd.startNamedArgs = this.index;
         while (this.testNamedArgument()) {
             const arg = this.parseNamedArgument();
+            // @ts-expect-error TS(2345) FIXME: Argument of type 'SlashCommandNamedArgumentAssignm... Remove this comment to see the full error message
             cmd.namedArgumentList.push(arg);
             this.discardWhitespace();
         }
@@ -1022,12 +1090,15 @@ export class SlashCommandParser {
         this.take(); // discard "/"
         while (!/\s/.test(this.char) && !this.testCommandEnd()) cmd.name += this.take(); // take chars until whitespace or end
         this.discardWhitespace();
+        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         if (this.verifyCommandNames && !this.commands[cmd.name]) throw new SlashCommandParserError(`Unknown command at position ${this.index - cmd.name.length}: "/${cmd.name}"`, this.text, this.index - cmd.name.length);
+        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         cmd.command = this.commands[cmd.name];
         cmd.startNamedArgs = this.index;
         cmd.endNamedArgs = this.index;
         while (this.testNamedArgument()) {
             const arg = this.parseNamedArgument();
+            // @ts-expect-error TS(2345) FIXME: Argument of type 'SlashCommandNamedArgumentAssignm... Remove this comment to see the full error message
             cmd.namedArgumentList.push(arg);
             cmd.endNamedArgs = this.index;
             this.discardWhitespace();
@@ -1036,18 +1107,26 @@ export class SlashCommandParser {
         cmd.startUnnamedArgs = this.index - (/\s(\s*)$/s.exec(this.behind)?.[1]?.length ?? 0);
         cmd.endUnnamedArgs = this.index;
         if (this.testUnnamedArgument()) {
+            // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
             const rawQuotesArg = cmd?.namedArgumentList?.find(a => a.name === 'raw');
+            // @ts-expect-error TS(2339) FIXME: Property 'value' does not exist on type 'never'.
             const rawQuotes = cmd?.command?.rawQuotes && rawQuotesArg ? !isFalseBoolean(rawQuotesArg?.value?.toString()) : cmd?.command?.rawQuotes;
+            // @ts-expect-error TS(2322) FIXME: Type 'SlashCommandUnnamedArgumentAssignment[]' is ... Remove this comment to see the full error message
             cmd.unnamedArgumentList = this.parseUnnamedArgument(cmd.command?.unnamedArgumentList?.length && cmd?.command?.splitUnnamedArgument, cmd?.command?.splitUnnamedArgumentCount, rawQuotes);
             cmd.endUnnamedArgs = this.index;
             if (cmd.name == 'let') {
+                // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
                 const keyArg = cmd.namedArgumentList.find(it => it.name == 'key');
                 if (keyArg) {
+                    // @ts-expect-error TS(2339) FIXME: Property 'value' does not exist on type 'never'.
                     this.scope.variableNames.push(keyArg.value.toString());
+                // @ts-expect-error TS(2339) FIXME: Property 'value' does not exist on type 'never'.
                 } else if (typeof cmd.unnamedArgumentList[0]?.value == 'string') {
+                    // @ts-expect-error TS(2339) FIXME: Property 'value' does not exist on type 'never'.
                     this.scope.variableNames.push(cmd.unnamedArgumentList[0].value);
                 }
             } else if (cmd.name == 'import') {
+                // @ts-expect-error TS(2339) FIXME: Property 'value' does not exist on type 'never'.
                 const value = /**@type {string[]}*/(cmd.unnamedArgumentList.map(it => it.value));
                 for (let i = 0; i < value.length; i++) {
                     const srcName = value[i];
@@ -1098,6 +1177,7 @@ export class SlashCommandParser {
     testUnnamedArgumentEnd() {
         return this.testCommandEnd();
     }
+    // @ts-expect-error TS(7006) FIXME: Parameter 'split' implicitly has an 'any' type.
     parseUnnamedArgument(split, splitCount = null, rawQuotes = false) {
         const wasSplit = split;
         /**@type {SlashCommandClosure|String}*/
@@ -1183,7 +1263,7 @@ export class SlashCommandParser {
                     listQuoted.push(false);
                     assignment = new SlashCommandUnnamedArgumentAssignment();
                 } else {
-                    // @ts-expect-error TS(2554): Expected 3 arguments, but got 1.
+                    // @ts-expect-error TS(2554) FIXME: Expected 3 arguments, but got 1.
                     throw new SlashCommandParserError(`Unexpected end of unnamed argument at index ${this.userIndex}.`);
                 }
                 this.discardWhitespace();
@@ -1225,11 +1305,15 @@ export class SlashCommandParser {
                 // -> should be result of quoting + additional (non-whitespace) text
                 // -> join the parts into one and restore quotes
                 const joined = new SlashCommandUnnamedArgumentAssignment();
+                // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
                 joined.start = listValues[splitCount].start;
+                // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
                 joined.end = listValues.slice(-1)[0].end;
                 joined.value = '';
                 for (let i = splitCount; i < listValues.length; i++) {
+                    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
                     if (listQuoted[i]) joined.value += `"${listValues[i].value}"`;
+                    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
                     else joined.value += listValues[i].value;
                 }
                 listValues = [
@@ -1241,6 +1325,7 @@ export class SlashCommandParser {
         }
         this.indexMacros(this.index - value.length, value);
         value = value.trim();
+        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         if (this.flags[PARSER_FLAG.REPLACE_GETVAR]) {
             value = this.replaceGetvar(value);
         }
@@ -1257,9 +1342,11 @@ export class SlashCommandParser {
             else return true;
         }
         if (!this.verifyCommandNames && this.testClosureEnd()) return true;
+        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         if (this.verifyCommandNames && !this.flags[PARSER_FLAG.STRICT_ESCAPING] && this.testCommandEnd()) {
             throw new SlashCommandParserError(`Unexpected end of quoted value at position ${this.index}`, this.text, this.index);
         }
+        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         return this.testSymbol('"') || (!this.flags[PARSER_FLAG.STRICT_ESCAPING] && this.testCommandEnd());
     }
     parseQuotedValue() {
@@ -1267,6 +1354,7 @@ export class SlashCommandParser {
         let value = '';
         while (!this.testQuotedValueEnd()) value += this.take(); // take all chars until closing quote
         this.take(); // discard closing quote
+        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         if (this.flags[PARSER_FLAG.REPLACE_GETVAR]) {
             value = this.replaceGetvar(value);
         }
@@ -1285,6 +1373,7 @@ export class SlashCommandParser {
         let value = this.take(); // take the already tested opening bracket
         while (!this.testListValueEnd()) value += this.take(); // take all chars until closing bracket
         value += this.take(); // take closing bracket
+        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         if (this.flags[PARSER_FLAG.REPLACE_GETVAR]) {
             value = this.replaceGetvar(value);
         }
@@ -1302,6 +1391,7 @@ export class SlashCommandParser {
     parseValue() {
         let value = this.jumpedEscapeSequence ? this.take() : ''; // take the first, already tested, char if it is an escaped one
         while (!this.testValueEnd()) value += this.take(); // take all chars until value end
+        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         if (this.flags[PARSER_FLAG.REPLACE_GETVAR]) {
             value = this.replaceGetvar(value);
         }
@@ -1309,6 +1399,7 @@ export class SlashCommandParser {
         return value;
     }
 
+    // @ts-expect-error TS(7006) FIXME: Parameter 'offset' implicitly has an 'any' type.
     indexMacros(offset, text) {
         // Index all macros including nested ones
         // We need to track brace depth to properly handle nested macros like {{reverse::Hey {{user}}}}

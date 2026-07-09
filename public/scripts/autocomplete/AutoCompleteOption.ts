@@ -1,4 +1,3 @@
-// @ts-expect-error TS(6133): 'AutoCompleteFuzzyScore' is declared but its value... Remove this comment to see the full error message
 import { AutoCompleteFuzzyScore } from './AutoCompleteFuzzyScore.js';
 
 
@@ -7,10 +6,15 @@ export class AutoCompleteOption {
     /** @type {string} */ typeIcon;
     /** @type {string} */ type;
     /** @type {number} */ nameOffset = 0;
+    // @ts-expect-error TS(7008) FIXME: Member 'score' implicitly has an 'any' type.
     /** @type {AutoCompleteFuzzyScore} */ score;
+    // @ts-expect-error TS(7008) FIXME: Member 'replacer' implicitly has an 'any' type.
     /** @type {string} */ replacer;
+    // @ts-expect-error TS(7008) FIXME: Member 'dom' implicitly has an 'any' type.
     /** @type {HTMLElement} */ dom;
+    // @ts-expect-error TS(7008) FIXME: Member 'matchProvider' implicitly has an 'any' typ... Remove this comment to see the full error message
     /** @type {(input:string)=>boolean} */ matchProvider;
+    // @ts-expect-error TS(7008) FIXME: Member 'valueProvider' implicitly has an 'any' typ... Remove this comment to see the full error message
     /** @type {(input:string)=>string} */ valueProvider;
     /** @type {boolean} */ makeSelectable = false;
     /** @type {boolean} */ forceFullNameMatch = false;
@@ -52,6 +56,7 @@ export class AutoCompleteOption {
      * @param valueProvider
      * @param makeSelectable
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
     constructor(name, typeIcon = ' ', type = '', matchProvider = null, valueProvider = null, makeSelectable = false) {
         this.name = name;
         this.typeIcon = typeIcon;
@@ -62,6 +67,7 @@ export class AutoCompleteOption {
     }
 
 
+    // @ts-expect-error TS(7006) FIXME: Parameter 'key' implicitly has an 'any' type.
     makeItem(key, typeIcon, noSlash, namedArguments = [], unnamedArguments = [], returnType = 'void', helpString = '', aliasList = []) {
         const li = document.createElement('li'); {
             li.classList.add('item');
@@ -77,6 +83,7 @@ export class AutoCompleteOption {
                     name.classList.add('name');
                     name.classList.add('monospace');
                     name.textContent = noSlash ? '' : '/';
+                    // @ts-expect-error TS(7006) FIXME: Parameter 'char' implicitly has an 'any' type.
                     key.split('').forEach(char => {
                         const span = document.createElement('span'); {
                             span.textContent = char;
@@ -93,16 +100,21 @@ export class AutoCompleteOption {
                             const argItem = document.createElement('span'); {
                                 argItem.classList.add('argument');
                                 argItem.classList.add('namedArgument');
+                                // @ts-expect-error TS(2339) FIXME: Property 'isRequired' does not exist on type 'neve... Remove this comment to see the full error message
                                 if (!arg.isRequired || (arg.defaultValue ?? false)) argItem.classList.add('optional');
+                                // @ts-expect-error TS(2339) FIXME: Property 'acceptsMultiple' does not exist on type ... Remove this comment to see the full error message
                                 if (arg.acceptsMultiple) argItem.classList.add('multiple');
                                 const name = document.createElement('span'); {
                                     name.classList.add('argument-name');
+                                    // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
                                     name.textContent = arg.name;
                                     argItem.append(name);
                                 }
+                                // @ts-expect-error TS(2339) FIXME: Property 'enumList' does not exist on type 'never'... Remove this comment to see the full error message
                                 if (arg.enumList.length > 0) {
                                     const enums = document.createElement('span'); {
                                         enums.classList.add('argument-enums');
+                                        // @ts-expect-error TS(2339) FIXME: Property 'enumList' does not exist on type 'never'... Remove this comment to see the full error message
                                         for (const e of arg.enumList) {
                                             const enumItem = document.createElement('span'); {
                                                 enumItem.classList.add('argument-enum');
@@ -115,6 +127,7 @@ export class AutoCompleteOption {
                                 } else {
                                     const types = document.createElement('span'); {
                                         types.classList.add('argument-types');
+                                        // @ts-expect-error TS(2339) FIXME: Property 'typeList' does not exist on type 'never'... Remove this comment to see the full error message
                                         for (const t of arg.typeList) {
                                             const type = document.createElement('span'); {
                                                 type.classList.add('argument-type');
@@ -132,11 +145,15 @@ export class AutoCompleteOption {
                             const argItem = document.createElement('span'); {
                                 argItem.classList.add('argument');
                                 argItem.classList.add('unnamedArgument');
+                                // @ts-expect-error TS(2339) FIXME: Property 'isRequired' does not exist on type 'neve... Remove this comment to see the full error message
                                 if (!arg.isRequired || (arg.defaultValue ?? false)) argItem.classList.add('optional');
+                                // @ts-expect-error TS(2339) FIXME: Property 'acceptsMultiple' does not exist on type ... Remove this comment to see the full error message
                                 if (arg.acceptsMultiple) argItem.classList.add('multiple');
+                                // @ts-expect-error TS(2339) FIXME: Property 'enumList' does not exist on type 'never'... Remove this comment to see the full error message
                                 if (arg.enumList.length > 0) {
                                     const enums = document.createElement('span'); {
                                         enums.classList.add('argument-enums');
+                                        // @ts-expect-error TS(2339) FIXME: Property 'enumList' does not exist on type 'never'... Remove this comment to see the full error message
                                         for (const e of arg.enumList) {
                                             const enumItem = document.createElement('span'); {
                                                 enumItem.classList.add('argument-enum');
@@ -149,6 +166,7 @@ export class AutoCompleteOption {
                                 } else {
                                     const types = document.createElement('span'); {
                                         types.classList.add('argument-types');
+                                        // @ts-expect-error TS(2339) FIXME: Property 'typeList' does not exist on type 'never'... Remove this comment to see the full error message
                                         for (const t of arg.typeList) {
                                             const type = document.createElement('span'); {
                                                 type.classList.add('argument-type');

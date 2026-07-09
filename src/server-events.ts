@@ -1,4 +1,6 @@
+// @ts-expect-error TS(1259) FIXME: Module '"node:events"' can only be default-importe... Remove this comment to see the full error message
 import EventEmitter from 'node:events';
+// @ts-expect-error TS(1259) FIXME: Module '"node:process"' can only be default-import... Remove this comment to see the full error message
 import process from 'node:process';
 
 /**
@@ -6,7 +8,6 @@ import process from 'node:process';
  * @type {EventEmitter<ServerEventMap>} The default event source.
  */
 export const serverEvents = new EventEmitter();
-// @ts-expect-error TS(2322): Type 'EventEmitter<DefaultEventMap>' is not assign... Remove this comment to see the full error message
 process.serverEvents = serverEvents;
 export default serverEvents;
 

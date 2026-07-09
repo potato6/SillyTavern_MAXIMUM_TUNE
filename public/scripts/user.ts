@@ -18,18 +18,19 @@ const SESSION_EXTEND_INTERVAL = 10 * 60 * 1000;
  * @param {boolean} isEnabled User account controls enabled
  * @returns {Promise<void>}
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'isEnabled' implicitly has an 'any' type... Remove this comment to see the full error message
 export async function setUserControls(isEnabled) {
     accountsEnabled = isEnabled;
 
     if (!isEnabled) {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#logout_button').hide();
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#admin_button').hide();
         return;
     }
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#logout_button').show();
     await getCurrentUser();
 }
@@ -47,6 +48,7 @@ export function isAdmin() {
         return false;
     }
 
+    // @ts-expect-error TS(2339) FIXME: Property 'admin' does not exist on type 'never'.
     return Boolean(currentUser.admin);
 }
 
@@ -55,6 +57,7 @@ export function isAdmin() {
  * @returns {string} User handle
  */
 export function getCurrentUserHandle() {
+    // @ts-expect-error TS(2339) FIXME: Property 'handle' does not exist on type 'never'.
     return currentUser?.handle || 'default-user';
 }
 
@@ -73,7 +76,7 @@ async function getCurrentUser() {
         }
 
         currentUser = await response.json();
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#admin_button').toggle(accountsEnabled && isAdmin());
     } catch (error) {
         console.error('Error getting current user:', error);
@@ -107,6 +110,7 @@ async function getUsers() {
  * @param {function} callback Success callback
  * @returns {Promise<void>}
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'handle' implicitly has an 'any' type.
 async function enableUser(handle, callback) {
     try {
         const response = await fetch('/api/users/enable', {
@@ -117,7 +121,7 @@ async function enableUser(handle, callback) {
 
         if (!response.ok) {
             const data = await response.json();
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.error(data.error || 'Unknown error', 'Failed to enable user');
             throw new Error('Failed to enable user');
         }
@@ -133,6 +137,7 @@ async function enableUser(handle, callback) {
  * @param handle
  * @param callback
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'handle' implicitly has an 'any' type.
 async function disableUser(handle, callback) {
     try {
         const response = await fetch('/api/users/disable', {
@@ -143,7 +148,7 @@ async function disableUser(handle, callback) {
 
         if (!response.ok) {
             const data = await response.json();
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.error(data?.error || 'Unknown error', 'Failed to disable user');
             throw new Error('Failed to disable user');
         }
@@ -160,6 +165,7 @@ async function disableUser(handle, callback) {
  * @param {function} callback Success callback
  * @returns {Promise<void>}
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'handle' implicitly has an 'any' type.
 async function promoteUser(handle, callback) {
     try {
         const response = await fetch('/api/users/promote', {
@@ -170,7 +176,7 @@ async function promoteUser(handle, callback) {
 
         if (!response.ok) {
             const data = await response.json();
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.error(data.error || 'Unknown error', 'Failed to promote user');
             throw new Error('Failed to promote user');
         }
@@ -186,6 +192,7 @@ async function promoteUser(handle, callback) {
  * @param {string} handle User handle
  * @param {function} callback Success callback
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'handle' implicitly has an 'any' type.
 async function demoteUser(handle, callback) {
     try {
         const response = await fetch('/api/users/demote', {
@@ -196,7 +203,7 @@ async function demoteUser(handle, callback) {
 
         if (!response.ok) {
             const data = await response.json();
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.error(data.error || 'Unknown error', 'Failed to demote user');
             throw new Error('Failed to demote user');
         }
@@ -212,6 +219,7 @@ async function demoteUser(handle, callback) {
  * @param {HTMLFormElement} form Form element
  * @param callback
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'form' implicitly has an 'any' type.
 async function createUser(form, callback) {
     const errors = [];
     const formData = new FormData(form);
@@ -225,12 +233,13 @@ async function createUser(form, callback) {
     }
 
     if (errors.length) {
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.error(errors.join(', '), 'Failed to create user');
         return;
     }
 
     const body = {};
+    // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
     formData.forEach(function (value, key) {
         if (key === 'confirm') {
             return;
@@ -238,6 +247,7 @@ async function createUser(form, callback) {
         if (key.startsWith('_')) {
             key = key.substring(1);
         }
+        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         body[key] = value;
     });
 
@@ -250,7 +260,7 @@ async function createUser(form, callback) {
 
         if (!response.ok) {
             const data = await response.json();
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.error(data.error || 'Unknown error', 'Failed to create user');
             throw new Error('Failed to create user');
         }
@@ -268,9 +278,10 @@ async function createUser(form, callback) {
  * @param {function} callback Success callback
  * @returns {Promise<void>}
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'handle' implicitly has an 'any' type.
 async function backupUserData(handle, callback) {
     try {
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.info('Please wait for the download to start.', 'Backup Requested');
         const response = await fetch('/api/users/backup', {
             method: 'POST',
@@ -280,20 +291,22 @@ async function backupUserData(handle, callback) {
 
         if (!response.ok) {
             const data = await response.json();
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.error(data.error || 'Unknown error', 'Failed to backup user data');
             throw new Error('Failed to backup user data');
         }
 
         const includesSecrets = await canViewSecrets();
         if (includesSecrets === false) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.warning('The backup will not include secrets due to a server configuration.', 'Secrets Not Included');
         }
 
         const blob = await response.blob();
         const header = response.headers.get('Content-Disposition');
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         const parts = header.split(';');
+        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         const filename = parts[1].split('=')[1].replaceAll('"', '');
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -312,24 +325,29 @@ async function backupUserData(handle, callback) {
  * @param {string} handle User handle
  * @param {function} callback Success callback
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'handle' implicitly has an 'any' type.
 async function changePassword(handle, callback) {
     try {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const template = $(await renderTemplateAsync('changePassword'));
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(template[0].querySelector('.currentPasswordBlock')).toggle(!isAdmin());
         let newPassword = '';
         let confirmPassword = '';
         let oldPassword = '';
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(template[0].querySelector('input[name="current"]')).on('input', function () {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             oldPassword = String($(this).val());
         });
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(template[0].querySelector('input[name="password"]')).on('input', function () {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             newPassword = String($(this).val());
         });
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(template[0].querySelector('input[name="confirm"]')).on('input', function () {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             confirmPassword = String($(this).val());
         });
         const result = await callGenericPopup(template, POPUP_TYPE.CONFIRM, '', { okButton: 'Change', cancelButton: 'Cancel', wide: false, large: false });
@@ -338,7 +356,7 @@ async function changePassword(handle, callback) {
         }
 
         if (newPassword !== confirmPassword) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.error('Passwords do not match', 'Failed to change password');
             throw new Error('Passwords do not match');
         }
@@ -351,12 +369,12 @@ async function changePassword(handle, callback) {
 
         if (!response.ok) {
             const data = await response.json();
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.error(data.error || 'Unknown error', 'Failed to change password');
             throw new Error('Failed to change password');
         }
 
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.success('Password changed successfully', 'Password Changed');
         callback();
     } catch (error) {
@@ -369,10 +387,12 @@ async function changePassword(handle, callback) {
  * @param {string} handle User handle
  * @param {function} callback Success callback
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'handle' implicitly has an 'any' type.
 async function deleteUser(handle, callback) {
     try {
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         if (handle === currentUser.handle) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.error('Cannot delete yourself', 'Failed to delete user');
             throw new Error('Cannot delete yourself');
         }
@@ -380,15 +400,18 @@ async function deleteUser(handle, callback) {
         let purge = false;
         let confirmHandle = '';
 
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const template = $(await renderTemplateAsync('deleteUser'));
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(template[0].querySelector('#deleteUserName')).text(handle);
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(template[0].querySelector('input[name="deleteUserData"]')).on('input', function () {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             purge = $(this).is(':checked');
         });
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(template[0].querySelector('input[name="deleteUserHandle"]')).on('input', function () {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             confirmHandle = String($(this).val());
         });
 
@@ -399,7 +422,7 @@ async function deleteUser(handle, callback) {
         }
 
         if (handle !== confirmHandle) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.error('Handles do not match', 'Failed to delete user');
             throw new Error('Handles do not match');
         }
@@ -412,12 +435,12 @@ async function deleteUser(handle, callback) {
 
         if (!response.ok) {
             const data = await response.json();
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.error(data.error || 'Unknown error', 'Failed to delete user');
             throw new Error('Failed to delete user');
         }
 
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.success('User deleted successfully', 'User Deleted');
         callback();
     } catch (error) {
@@ -430,13 +453,15 @@ async function deleteUser(handle, callback) {
  * @param {string} handle User handle
  * @param {function} callback Success callback
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'handle' implicitly has an 'any' type.
 async function resetSettings(handle, callback) {
     try {
         let password = '';
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const template = $(await renderTemplateAsync('resetSettings'));
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(template[0].querySelector('input[name="password"]')).on('input', function () {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             password = String($(this).val());
         });
         const result = await callGenericPopup(template, POPUP_TYPE.CONFIRM, '', { okButton: 'Reset', cancelButton: 'Cancel', wide: false, large: false });
@@ -453,12 +478,12 @@ async function resetSettings(handle, callback) {
 
         if (!response.ok) {
             const data = await response.json();
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.error(data.error || 'Unknown error', 'Failed to reset settings');
             throw new Error('Failed to reset settings');
         }
 
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.success('Settings reset successfully', 'Settings Reset');
         callback();
     } catch (error) {
@@ -472,9 +497,10 @@ async function resetSettings(handle, callback) {
  * @param {string} name Current name
  * @param {function} callback Success callback
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'handle' implicitly has an 'any' type.
 async function changeName(handle, name, callback) {
     try {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const template = $(await renderTemplateAsync('changeName'));
         const result = await callGenericPopup(template, POPUP_TYPE.INPUT, name, { okButton: 'Change', cancelButton: 'Cancel', wide: false, large: false });
 
@@ -492,12 +518,12 @@ async function changeName(handle, name, callback) {
 
         if (!response.ok) {
             const data = await response.json();
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.error(data.error || 'Unknown error', 'Failed to change name');
             throw new Error('Failed to change name');
         }
 
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.success('Name changed successfully', 'Name Changed');
         callback();
     } catch (error) {
@@ -510,6 +536,7 @@ async function changeName(handle, name, callback) {
  * @param {string} name Snapshot name
  * @param {function} callback Success callback
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
 async function restoreSnapshot(name, callback) {
     try {
         const confirm = await callGenericPopup(
@@ -531,7 +558,7 @@ async function restoreSnapshot(name, callback) {
 
         if (!response.ok) {
             const data = await response.json();
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.error(data.error || 'Unknown error', 'Failed to restore snapshot');
             throw new Error('Failed to restore snapshot');
         }
@@ -547,7 +574,7 @@ async function restoreSnapshot(name, callback) {
  * @param {string} name Snapshot name
  * @returns {Promise<string>} Snapshot content
  */
-// @ts-expect-error TS(7030): Not all code paths return a value.
+// @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
 async function loadSnapshotContent(name) {
     try {
         const response = await fetch('/api/settings/load-snapshot', {
@@ -558,7 +585,7 @@ async function loadSnapshotContent(name) {
 
         if (!response.ok) {
             const data = await response.json();
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.error(data.error || 'Unknown error', 'Failed to load snapshot content');
             throw new Error('Failed to load snapshot content');
         }
@@ -586,7 +613,7 @@ async function getSnapshots() {
 
         if (!response.ok) {
             const data = await response.json();
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.error(data.error || 'Unknown error', 'Failed to get settings snapshots');
             throw new Error('Failed to get settings snapshots');
         }
@@ -604,6 +631,7 @@ async function getSnapshots() {
  * @param {function} callback Success callback
  * @returns {Promise<void>}
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'callback' implicitly has an 'any' type.
 async function makeSnapshot(callback) {
     try {
         const response = await fetch('/api/settings/make-snapshot', {
@@ -613,12 +641,12 @@ async function makeSnapshot(callback) {
 
         if (!response.ok) {
             const data = await response.json();
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.error(data.error || 'Unknown error', 'Failed to make snapshot');
             throw new Error('Failed to make snapshot');
         }
 
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.success('Snapshot created successfully', 'Snapshot Created');
         callback();
     } catch (error) {
@@ -630,36 +658,47 @@ async function makeSnapshot(callback) {
  * Open the settings snapshots view.
  */
 async function viewSettingsSnapshots() {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const template = $(await renderTemplateAsync('snapshotsView'));
     /**
      *
      */
     async function renderSnapshots() {
         const snapshots = await getSnapshots();
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(template[0].querySelector('.snapshotList')).empty();
 
+        // @ts-expect-error TS(7006) FIXME: Parameter 'a' implicitly has an 'any' type.
         for (const snapshot of snapshots.sort((a, b) => b.date - a.date)) {
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const snapshotBlock = $(template[0].querySelector('.snapshotTemplate .snapshot')).clone();
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(snapshotBlock[0].querySelector('.snapshotName')).text(snapshot.name);
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(snapshotBlock[0].querySelector('.snapshotDate')).text(new Date(snapshot.date).toLocaleString());
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(snapshotBlock[0].querySelector('.snapshotSize')).text(humanFileSize(snapshot.size));
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(snapshotBlock[0].querySelector('.snapshotRestoreButton')).on('click', async (e) => {
                 e.stopPropagation();
                 restoreSnapshot(snapshot.name, () => location.reload());
             });
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(snapshotBlock[0].querySelector('.inline-drawer-toggle')).on('click', async () => {
+                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 const contentBlock = $(snapshotBlock[0].querySelector('.snapshotContent'));
                 if (!contentBlock.val()) {
                     const content = await loadSnapshotContent(snapshot.name);
                     contentBlock.val(content);
                 }
             });
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(template[0].querySelector('.snapshotList')).append(snapshotBlock);
         }
     }
 
     callGenericPopup(template, POPUP_TYPE.TEXT, '', { okButton: 'Close', wide: false, large: false, allowVerticalScrolling: true });
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(template[0].querySelector('.makeSnapshotButton')).on('click', () => makeSnapshot(renderSnapshots));
     renderSnapshots();
 }
@@ -668,6 +707,7 @@ async function viewSettingsSnapshots() {
  * Reset everything to default.
  * @param {function} callback Success callback
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'callback' implicitly has an 'any' type.
 async function resetEverything(callback) {
     try {
         const step1Response = await fetch('/api/users/reset-step1', {
@@ -677,7 +717,7 @@ async function resetEverything(callback) {
 
         if (!step1Response.ok) {
             const data = await step1Response.json();
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.error(data.error || 'Unknown error', 'Failed to reset');
             throw new Error('Failed to reset everything');
         }
@@ -685,14 +725,16 @@ async function resetEverything(callback) {
         let password = '';
         let code = '';
 
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const template = $(await renderTemplateAsync('userReset'));
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(template[0].querySelector('input[name="password"]')).on('input', function () {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             password = String($(this).val());
         });
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(template[0].querySelector('input[name="code"]')).on('input', function () {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             code = String($(this).val());
         });
         const confirm = await callGenericPopup(
@@ -714,12 +756,12 @@ async function resetEverything(callback) {
 
         if (!step2Response.ok) {
             const data = await step2Response.json();
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.error(data.error || 'Unknown error', 'Failed to reset');
             throw new Error('Failed to reset everything');
         }
 
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.success('Everything reset successfully', 'Reset Everything');
         callback();
     } catch (error) {
@@ -732,58 +774,86 @@ async function resetEverything(callback) {
  */
 async function openUserProfile() {
     await getCurrentUser();
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const template = $(await renderTemplateAsync('userProfile'));
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(template[0].querySelector('.userName')).text(currentUser.name);
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(template[0].querySelector('.userHandle')).text(currentUser.handle);
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(template[0].querySelector('.avatar img')).attr('src', currentUser.avatar);
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(template[0].querySelector('.userRole')).text(currentUser.admin ? 'Admin' : 'User');
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(template[0].querySelector('.userCreated')).text(new Date(currentUser.created).toLocaleString());
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(template[0].querySelector('.hasPassword')).toggle(currentUser.password);
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(template[0].querySelector('.noPassword')).toggle(!currentUser.password);
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(template[0].querySelector('.userSettingsSnapshotsButton')).on('click', () => viewSettingsSnapshots());
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(template[0].querySelector('.userChangeNameButton')).on('click', async () => changeName(currentUser.handle, currentUser.name, async () => {
         await getCurrentUser();
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(template[0].querySelector('.userName')).text(currentUser.name);
     }));
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(template[0].querySelector('.userChangePasswordButton')).on('click', () => changePassword(currentUser.handle, async () => {
         await getCurrentUser();
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(template[0].querySelector('.hasPassword')).toggle(currentUser.password);
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(template[0].querySelector('.noPassword')).toggle(!currentUser.password);
     }));
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(template[0].querySelector('.userBackupButton')).on('click', function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(this).addClass('disabled');
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         backupUserData(currentUser.handle, () => {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(this).removeClass('disabled');
         });
     });
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(template[0].querySelector('.userResetSettingsButton')).on('click', () => resetSettings(currentUser.handle, () => location.reload()));
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(template[0].querySelector('.userResetAllButton')).on('click', () => resetEverything(() => location.reload()));
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(template[0].querySelector('.userAvatarChange')).on('click', () => $(template[0].querySelector('.avatarUpload')).trigger('click'));
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(template[0].querySelector('.avatarUpload')).on('change', async function () {
+        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
         if (!(this instanceof HTMLInputElement)) {
             return;
         }
 
+        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
         const file = this.files[0];
         if (!file) {
             return;
         }
 
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         await cropAndUploadAvatar(currentUser.handle, file);
         await getCurrentUser();
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(template[0].querySelector('.avatar img')).attr('src', currentUser.avatar);
     });
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(template[0].querySelector('.userAvatarRemove')).on('click', async function () {
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         await changeAvatar(currentUser.handle, '');
         await getCurrentUser();
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(template[0].querySelector('.avatar img')).attr('src', currentUser.avatar);
     });
 
     if (!accountsEnabled) {
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(template[0].querySelectorAll('[data-require-accounts]')).hide();
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(template[0].querySelector('.accountsDisabledHint')).show();
     }
 
@@ -803,11 +873,11 @@ async function openUserProfile() {
  * @param {File} file Avatar file
  * @returns {Promise<string>}
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'handle' implicitly has an 'any' type.
 async function cropAndUploadAvatar(handle, file) {
     const dataUrl = await getBase64Async(await ensureImageFormatSupported(file));
     const croppedImage = await callGenericPopup('Set the crop position of the avatar image', POPUP_TYPE.CROP, '', { cropAspect: 1, cropImage: dataUrl });
     if (!croppedImage) {
-        // @ts-expect-error TS(7030): Not all code paths return a value.
         return;
     }
 
@@ -822,6 +892,7 @@ async function cropAndUploadAvatar(handle, file) {
  * @param {string} avatar File to upload or base64 string
  * @returns {Promise<void>} Avatar URL
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'handle' implicitly has an 'any' type.
 async function changeAvatar(handle, avatar) {
     try {
         const response = await fetch('/api/users/change-avatar', {
@@ -832,7 +903,7 @@ async function changeAvatar(handle, avatar) {
 
         if (!response.ok) {
             const data = await response.json();
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.error(data.error || 'Unknown error', 'Failed to change avatar');
             return;
         }
@@ -850,35 +921,57 @@ async function openAdminPanel() {
      */
     async function renderUsers() {
         const users = await getUsers();
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(template[0].querySelector('.usersList')).empty();
         for (const user of users) {
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const userBlock = $(template[0].querySelector('.userAccountTemplate .userAccount')).clone();
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(userBlock[0].querySelector('.userName')).text(user.name);
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(userBlock[0].querySelector('.userHandle')).text(user.handle);
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(userBlock[0].querySelector('.userStatus')).text(user.enabled ? 'Enabled' : 'Disabled');
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(userBlock[0].querySelector('.userRole')).text(user.admin ? 'Admin' : 'User');
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(userBlock[0].querySelector('.avatar img')).attr('src', user.avatar);
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(userBlock[0].querySelector('.hasPassword')).toggle(user.password);
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(userBlock[0].querySelector('.noPassword')).toggle(!user.password);
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(userBlock[0].querySelector('.userCreated')).text(new Date(user.created).toLocaleString());
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(userBlock[0].querySelector('.userEnableButton')).toggle(!user.enabled).on('click', () => enableUser(user.handle, renderUsers));
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(userBlock[0].querySelector('.userDisableButton')).toggle(user.enabled).on('click', () => disableUser(user.handle, renderUsers));
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(userBlock[0].querySelector('.userPromoteButton')).toggle(!user.admin).on('click', () => promoteUser(user.handle, renderUsers));
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(userBlock[0].querySelector('.userDemoteButton')).toggle(user.admin).on('click', () => demoteUser(user.handle, renderUsers));
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(userBlock[0].querySelector('.userChangePasswordButton')).on('click', () => changePassword(user.handle, renderUsers));
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(userBlock[0].querySelector('.userDelete')).on('click', () => deleteUser(user.handle, renderUsers));
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(userBlock[0].querySelector('.userChangeNameButton')).on('click', async () => changeName(user.handle, user.name, renderUsers));
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(userBlock[0].querySelector('.userBackupButton')).on('click', function () {
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $(this).addClass('disabled').off('click');
                 backupUserData(user.handle, renderUsers);
             });
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(userBlock[0].querySelector('.userAvatarChange')).on('click', () => $(userBlock[0].querySelector('.avatarUpload')).trigger('click'));
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(userBlock[0].querySelector('.avatarUpload')).on('change', async function () {
+                // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
                 if (!(this instanceof HTMLInputElement)) {
                     return;
                 }
 
+                // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
                 const file = this.files[0];
                 if (!file) {
                     return;
@@ -887,31 +980,39 @@ async function openAdminPanel() {
                 await cropAndUploadAvatar(user.handle, file);
                 renderUsers();
             });
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(userBlock[0].querySelector('.userAvatarRemove')).on('click', async function () {
                 await changeAvatar(user.handle, '');
                 renderUsers();
             });
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(template[0].querySelector('.usersList')).append(userBlock);
         }
     }
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const template = $(await renderTemplateAsync('admin'));
 
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(template[0].querySelectorAll('.adminNav > button')).on('click', function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const target = String($(this).data('target-tab'));
+        // @ts-expect-error TS(7006) FIXME: Parameter 'el' implicitly has an 'any' type.
         template[0].querySelectorAll('.navTab').forEach(el => {
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(el).toggle(el.classList.contains(target));
         });
     });
 
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(template[0].querySelector('.createUserDisplayName')).on('input', async function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const slug = await slugify(String($(this).val()));
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(template[0].querySelector('.createUserHandle')).val(slug);
     });
 
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(template[0].querySelector('.userCreateForm')).on('submit', function (event) {
         if (!(event.target instanceof HTMLFormElement)) {
             return;
@@ -919,6 +1020,7 @@ async function openAdminPanel() {
 
         event.preventDefault();
         createUser(event.target, () => {
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(template[0].querySelector('.manageUsersButton')).trigger('click');
             renderUsers();
         });
@@ -953,6 +1055,7 @@ async function logout() {
  * @param {string} text Text to slugify
  * @returns {Promise<string>} Slugified text
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'text' implicitly has an 'any' type.
 async function slugify(text) {
     try {
         const response = await fetch('/api/users/slugify', {
@@ -983,7 +1086,7 @@ async function extendUserSession() {
         });
 
         if (!response.ok) {
-            // @ts-expect-error TS(2322): Type 'number' is not assignable to type 'Error'.
+            // @ts-expect-error TS(2769) FIXME: No overload matches this call.
             throw new Error('Ping did not succeed', { cause: response.status });
         }
     } catch (error) {
@@ -991,17 +1094,17 @@ async function extendUserSession() {
     }
 }
 
-// @ts-expect-error TS(2304): Cannot find name 'jQuery'.
+// @ts-expect-error TS(2304) FIXME: Cannot find name 'jQuery'.
 jQuery(() => {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#logout_button').on('click', () => {
         logout();
     });
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#admin_button').on('click', () => {
         openAdminPanel();
     });
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#account_button').on('click', () => {
         openUserProfile();
     });

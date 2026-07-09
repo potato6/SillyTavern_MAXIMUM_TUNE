@@ -1,7 +1,8 @@
 import { name1, name2, characters, getCharacterCardFieldsLazy, getGeneratingModel } from '../../../script.js';
+// @ts-expect-error TS(7034) FIXME: Variable 'groups' implicitly has type 'any[]' in s... Remove this comment to see the full error message
 import { groups, selected_group } from '../../../scripts/group-chats.js';
 import { logMacroGeneralError } from './MacroDiagnostics.js';
-// @ts-expect-error TS(2792): Cannot find module '/scripts/utils.js'. Did you me... Remove this comment to see the full error message
+// @ts-expect-error TS(2792) FIXME: Cannot find module '/scripts/utils.js'. Did you me... Remove this comment to see the full error message
 import { getStringHash } from '/scripts/utils.js';
 /**
  * MacroEnvBuilder is responsible for constructing the MacroEnv object
@@ -45,10 +46,12 @@ export const env_provider_order = {
 
 
 class MacroEnvBuilder {
+    // @ts-expect-error TS(7008) FIXME: Member '#instance' implicitly has an 'any' type.
     /** @type {MacroEnvBuilder} */ static #instance;
     /** @type {MacroEnvBuilder} */ static get instance() { return MacroEnvBuilder.#instance ?? (MacroEnvBuilder.#instance = new MacroEnvBuilder()); }
 
     /** @type {{ fn: MacroEnvProvider, order: env_provider_order }[]} */
+    // @ts-expect-error TS(7008) FIXME: Member '#providers' implicitly has an 'any[]' type... Remove this comment to see the full error message
     #providers;
 
     constructor() {
@@ -64,6 +67,7 @@ class MacroEnvBuilder {
      * @param {env_provider_order} [order]
      * @returns {void}
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'provider' implicitly has an 'any' type.
     registerProvider(provider, order = env_provider_order.NORMAL) {
         if (typeof provider !== 'function') throw new Error('Provider must be a function');
         this.#providers.push({ fn: provider, order });
@@ -75,6 +79,7 @@ class MacroEnvBuilder {
      * @param {MacroEnvRawContext} ctx
      * @returns {MacroEnv}
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'ctx' implicitly has an 'any' type.
     buildFromRawEnv(ctx) {
         // Create the env first, we will populate it step by step.
         // Some fields are marked as required, so we have to fill them with dummy fields here
@@ -85,6 +90,7 @@ class MacroEnvBuilder {
             names: { user: '', char: '', group: '', groupNotMuted: '', notChar: '' },
             character: {},
             system: { model: '' },
+            // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
             functions: { postProcess: (x) => x },
             dynamicMacros: {},
             extra: {},
@@ -110,8 +116,10 @@ class MacroEnvBuilder {
                     ['alternateGreetings', 'alternateGreetings'],
                 ]);
                 for (const [envKey, fieldKey] of fieldMappings) {
+                    // @ts-expect-error TS(2345) FIXME: Argument of type 'string | undefined' is not assig... Remove this comment to see the full error message
                     Object.defineProperty(env.character, envKey, {
                         get() {
+                            // @ts-expect-error TS(2538) FIXME: Type 'undefined' cannot be used as an index type.
                             const value = fields[fieldKey];
                             // alternateGreetings should default to [] instead of ''
                             if (envKey === 'alternateGreetings') {
@@ -129,19 +137,22 @@ class MacroEnvBuilder {
         // Names
         env.names.user = ctx.name1Override ?? name1 ?? '';
         env.names.char = ctx.name2Override ?? name2 ?? '';
+        // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'null | un... Remove this comment to see the full error message
         env.names.group = getGroupValue(ctx, { currentChar: env.names.char, includeMuted: true });
+        // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'null | un... Remove this comment to see the full error message
         env.names.groupNotMuted = getGroupValue(ctx, { currentChar: env.names.char, includeMuted: false });
+        // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'null | un... Remove this comment to see the full error message
         env.names.notChar = getGroupValue(ctx, { currentChar: env.names.char, filterOutChar: true, includeUser: env.names.user });
 
         // System
-        // @ts-expect-error TS(2554): Expected 1 arguments, but got 0.
+        // @ts-expect-error TS(2554) FIXME: Expected 1 arguments, but got 0.
         env.system.model = getGeneratingModel();
 
         // Functions
         // original (one-shot) and arbitrary additional values
         if (typeof ctx.original === 'string') {
             let originalSubstituted = false;
-            // @ts-expect-error TS(2339): Property 'original' does not exist on type '{ post... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'original' does not exist on type '{ post... Remove this comment to see the full error message
             env.functions.original = () => {
                 if (originalSubstituted) return '';
                 originalSubstituted = true;
@@ -154,6 +165,7 @@ class MacroEnvBuilder {
         // Keys are normalized to lowercase for case-insensitive matching.
         if (ctx.dynamicMacros && typeof ctx.dynamicMacros === 'object') {
             for (const [key, value] of Object.entries(ctx.dynamicMacros)) {
+                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 env.dynamicMacros[key.toLowerCase()] = value;
             }
         }
@@ -183,13 +195,16 @@ class MacroEnvBuilder {
  * @param {string|null} [options.includeUser]
  * @returns {string}
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'ctx' implicitly has an 'any' type.
 function getGroupValue(ctx, { currentChar = null, includeMuted = false, filterOutChar = false, includeUser = null }) {
     if (typeof ctx.groupOverride === 'string') {
         return ctx.groupOverride;
     }
 
+    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
     if (!selected_group) return filterOutChar ? (includeUser || '') : (currentChar ?? '');
 
+    // @ts-expect-error TS(7005) FIXME: Variable 'groups' implicitly has an 'any[]' type.
     const groupEntry = Array.isArray(groups) ? groups.find(x => x && x.id === selected_group) : null;
     const members = /** @type {string[]} */ (groupEntry?.members ?? []);
     const disabledMembers = /** @type {string[]} */ (groupEntry?.disabled_members ?? []);
@@ -197,9 +212,13 @@ function getGroupValue(ctx, { currentChar = null, includeMuted = false, filterOu
     const names = Array.isArray(members)
         ? members
             .filter(((id) => includeMuted ? true : !disabledMembers.includes(id)))
+            // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
             .map(m => Array.isArray(characters) ? characters.find(c => c && c.avatar === m) : null)
+            // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
             .filter(c => !!c && typeof c.name === 'string')
+            // @ts-expect-error TS(2533) FIXME: Object is possibly 'null' or 'undefined'.
             .filter(c => !filterOutChar || c.name !== currentChar)
+            // @ts-expect-error TS(2533) FIXME: Object is possibly 'null' or 'undefined'.
             .map(c => c.name)
             .join(', ')
         : '';

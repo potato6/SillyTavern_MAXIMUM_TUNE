@@ -1,7 +1,12 @@
+// @ts-expect-error TS(1192) FIXME: Module '"node:crypto"' has no default export.
 import crypto from 'node:crypto';
+// @ts-expect-error TS(1192) FIXME: Module '"node:fs"' has no default export.
 import fs from 'node:fs';
+// @ts-expect-error TS(1259) FIXME: Module '"node:path"' can only be default-imported ... Remove this comment to see the full error message
 import path from 'node:path';
+// @ts-expect-error TS(1259) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import express from 'express';
+// @ts-expect-error TS(1192) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import mime from 'mime-types';
 import { getSettingsBackupFilePrefix } from './settings.js';
 import { CHAT_BACKUPS_PREFIX } from './chats.js';
@@ -84,6 +89,7 @@ export class DataMaidService {
      */
     static TOKENS = new Map();
 
+    // @ts-expect-error TS(2694) FIXME: Namespace '"/mnt/DISCO/downloads/some_git_projects... Remove this comment to see the full error message
     directories: import('../users.js').UserDirectoryList;
     handle: string;
 
@@ -92,6 +98,7 @@ export class DataMaidService {
      * @param {string} handle - The user's handle.
      * @param {import('../users.js').UserDirectoryList} directories - List of user directories to scan for loose data.
      */
+    // @ts-expect-error TS(2694) FIXME: Namespace '"/mnt/DISCO/downloads/some_git_projects... Remove this comment to see the full error message
     constructor(handle: string, directories: import('../users.js').UserDirectoryList) {
         this.handle = handle;
         this.directories = directories;
@@ -202,11 +209,10 @@ export class DataMaidService {
             }
             const knownImageFullPaths = new Set();
             knownImages.forEach(image => {
-                // @ts-expect-error TS(2339): Property 'startsWith' does not exist on type 'unkn... Remove this comment to see the full error message
+                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 if (image.startsWith('http') || image.startsWith('data:')) {
                     return; // Skip URLs and data URIs
                 }
-                // @ts-expect-error TS(2345): Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
                 knownImageFullPaths.add(path.normalize(path.join(this.directories.root, image)));
             });
             const images = await fs.promises.readdir(this.directories.userImages, { withFileTypes: true });
@@ -242,6 +248,7 @@ export class DataMaidService {
         const result = [];
 
         try {
+            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             const messages = await this.#parseAllChats((x: DataMaidMessage) => !!x?.extra?.file?.url || (Array.isArray(x?.extra?.files) && x.extra.files.length > 0));
             const knownFiles = new Set();
             for (const message of messages) {
@@ -296,7 +303,6 @@ export class DataMaidService {
             }
             const knownFileFullPaths = new Set();
             knownFiles.forEach(file => {
-                // @ts-expect-error TS(2345): Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
                 knownFileFullPaths.add(path.normalize(path.join(this.directories.root, file)));
             });
             const files = await fs.promises.readdir(this.directories.files, { withFileTypes: true });
@@ -581,6 +587,7 @@ export class DataMaidService {
                         }
                         if (groupData?.past_metadata) {
                             console.warn('Found group past chat metadata in group definition - this is deprecated behavior.');
+                            // @ts-expect-error TS(2769) FIXME: No overload matches this call.
                             allMetadata.push(...Object.values(groupData.past_metadata).filter(filterFn));
                         }
                     } catch (error) {
@@ -667,6 +674,7 @@ export class DataMaidService {
 
 export const router = express.Router();
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
 router.post('/report', async (req, res) => {
     try {
         if (!req.user || !req.user.directories) {
@@ -686,6 +694,7 @@ router.post('/report', async (req, res) => {
     }
 });
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
 router.post('/finalize', async (req, res) => {
     try {
         if (!req.user || !req.user.directories) {
@@ -715,20 +724,18 @@ router.post('/finalize', async (req, res) => {
     }
 });
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
 router.get('/view', async (req, res) => {
     try {
         if (!req.user || !req.user.directories) {
             return res.sendStatus(403);
         }
 
-        // @ts-expect-error TS(4111): Property 'token' comes from an index signature, so... Remove this comment to see the full error message
         if (!req.query.token || !req.query.hash) {
             return res.sendStatus(400);
         }
 
-        // @ts-expect-error TS(4111): Property 'token' comes from an index signature, so... Remove this comment to see the full error message
         const token = req.query.token.toString();
-        // @ts-expect-error TS(4111): Property 'hash' comes from an index signature, so ... Remove this comment to see the full error message
         const hash = req.query.hash.toString();
 
         if (!DataMaidService.TOKENS.has(token)) {
@@ -767,6 +774,7 @@ router.get('/view', async (req, res) => {
     }
 });
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
 router.post('/delete', async (req, res) => {
     try {
         if (!req.user || !req.user.directories) {

@@ -61,24 +61,31 @@ const tabItemSelectors = [
 
 /** @type {Record<string, (element: Element) => void>} */
 const a11yRules = {
+    // @ts-expect-error TS(7006) FIXME: Parameter 'element' implicitly has an 'any' type.
     [buttonSelectors]: (element) => {
         element.setAttribute('role', 'button');
     },
+    // @ts-expect-error TS(7006) FIXME: Parameter 'element' implicitly has an 'any' type.
     [listSelectors]: (element) => {
         element.setAttribute('role', 'list');
     },
+    // @ts-expect-error TS(7006) FIXME: Parameter 'element' implicitly has an 'any' type.
     [listItemSelectors]: (element) => {
         element.setAttribute('role', 'listitem');
     },
+    // @ts-expect-error TS(7006) FIXME: Parameter 'element' implicitly has an 'any' type.
     [toolbarSelectors]: (element) => {
         element.setAttribute('role', 'toolbar');
     },
+    // @ts-expect-error TS(7006) FIXME: Parameter 'element' implicitly has an 'any' type.
     [tabListSelectors]: (element) => {
         element.setAttribute('role', 'tablist');
     },
+    // @ts-expect-error TS(7006) FIXME: Parameter 'element' implicitly has an 'any' type.
     [tabItemSelectors]: (element) => {
         element.setAttribute('role', 'tab');
     },
+    // @ts-expect-error TS(7006) FIXME: Parameter 'element' implicitly has an 'any' type.
     '#toast-container .toast': (element) => {
         element.setAttribute('role', 'status');
     },
@@ -88,6 +95,7 @@ const a11yRules = {
  * Apply accessibility rules to an element.
  * @param {Element} element Element to process.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'element' implicitly has an 'any' type.
 function applyA11yRules(element) {
     try {
         for (const [selector, rule] of Object.entries(a11yRules)) {

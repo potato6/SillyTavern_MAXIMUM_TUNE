@@ -30,7 +30,9 @@ const default_presets = {
     'llama-3-erato-v1': 'Erato-Dragonfruit',
 };
 
+// @ts-expect-error TS(7005) FIXME: Variable 'novelai_settings' implicitly has an 'any... Remove this comment to see the full error message
 export let novelai_settings;
+// @ts-expect-error TS(7005) FIXME: Variable 'novelai_setting_names' implicitly has an... Remove this comment to see the full error message
 export let novelai_setting_names;
 
 export const nai_settings = {
@@ -81,6 +83,7 @@ const samplers = {
     min_p: 10,
 };
 
+// @ts-expect-error TS(7034) FIXME: Variable 'novel_data' implicitly has type 'any' in... Remove this comment to see the full error message
 let novel_data = null;
 const badWordsCache = {};
 const BIAS_KEY = '#range_block_novel';
@@ -89,6 +92,7 @@ const BIAS_KEY = '#range_block_novel';
  *
  * @param data
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
 export function setNovelData(data) {
     novel_data = data;
 }
@@ -97,6 +101,7 @@ export function setNovelData(data) {
  *
  */
 export function getKayraMaxContextTokens() {
+    // @ts-expect-error TS(7005) FIXME: Variable 'novel_data' implicitly has an 'any' type... Remove this comment to see the full error message
     switch (novel_data?.tier) {
         case 1:
             return 4096;
@@ -113,6 +118,7 @@ export function getKayraMaxContextTokens() {
  *
  */
 export function getNovelMaxResponseTokens() {
+    // @ts-expect-error TS(7005) FIXME: Variable 'novel_data' implicitly has an 'any' type... Remove this comment to see the full error message
     switch (novel_data?.tier) {
         case 1:
             return 150;
@@ -129,6 +135,7 @@ export function getNovelMaxResponseTokens() {
  *
  * @param data
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
 export function convertNovelPreset(data) {
     if (!data || typeof data !== 'object' || data.presetVersion !== 3 || !data.parameters || typeof data.parameters !== 'object') {
         return data;
@@ -156,6 +163,7 @@ export function convertNovelPreset(data) {
         math1_quad: data.parameters.math1_quad,
         math1_quad_entropy_scale: data.parameters.math1_quad_entropy_scale,
         min_p: data.parameters.min_p,
+        // @ts-expect-error TS(7006) FIXME: Parameter 's' implicitly has an 'any' type.
         order: Array.isArray(data.parameters.order) ? data.parameters.order.filter(s => s.enabled && Object.keys(samplers).includes(s.id)).map(s => samplers[s.id]) : default_order,
         extensions: {},
     };
@@ -165,6 +173,7 @@ export function convertNovelPreset(data) {
  *
  */
 export function getNovelTier() {
+    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     return nai_tiers[novel_data?.tier] ?? 'no_connection';
 }
 
@@ -172,6 +181,7 @@ export function getNovelTier() {
  *
  */
 export function getNovelAnlas() {
+    // @ts-expect-error TS(7005) FIXME: Variable 'novel_data' implicitly has an 'any' type... Remove this comment to see the full error message
     return novel_data?.trainingStepsLeft?.fixedTrainingStepsLeft ?? 0;
 }
 
@@ -179,6 +189,7 @@ export function getNovelAnlas() {
  *
  */
 export function getNovelUnlimitedImageGeneration() {
+    // @ts-expect-error TS(7005) FIXME: Variable 'novel_data' implicitly has an 'any' type... Remove this comment to see the full error message
     return novel_data?.perks?.unlimitedImageGeneration ?? false;
 }
 
@@ -204,14 +215,15 @@ export async function loadNovelSubscriptionData() {
  *
  * @param preset
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'preset' implicitly has an 'any' type.
 export function loadNovelPreset(preset) {
     if (preset.genamt === undefined) {
         const needsUnlock = preset.max_context > MAX_CONTEXT_DEFAULT || preset.max_length > MAX_RESPONSE_DEFAULT;
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#amount_gen').val(preset.max_length).trigger('input');
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#max_context_unlocked').prop('checked', needsUnlock).trigger('change');
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#max_context').val(preset.max_context).trigger('input');
     } else {
         setGenerationParamsFromPreset(preset);
@@ -229,11 +241,11 @@ export function loadNovelPreset(preset) {
     nai_settings.top_a = preset.top_a;
     nai_settings.typical_p = preset.typical_p;
     nai_settings.min_length = preset.min_length;
-    // @ts-expect-error TS(2339): Property 'phrase_rep_pen' does not exist on type '... Remove this comment to see the full error message
+    // @ts-expect-error TS(2339) FIXME: Property 'phrase_rep_pen' does not exist on type '... Remove this comment to see the full error message
     nai_settings.phrase_rep_pen = preset.phrase_rep_pen;
-    // @ts-expect-error TS(2339): Property 'mirostat_lr' does not exist on type '{ t... Remove this comment to see the full error message
+    // @ts-expect-error TS(2339) FIXME: Property 'mirostat_lr' does not exist on type '{ t... Remove this comment to see the full error message
     nai_settings.mirostat_lr = preset.mirostat_lr;
-    // @ts-expect-error TS(2339): Property 'mirostat_tau' does not exist on type '{ ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2339) FIXME: Property 'mirostat_tau' does not exist on type '{ ... Remove this comment to see the full error message
     nai_settings.mirostat_tau = preset.mirostat_tau;
     nai_settings.prefix = preset.prefix;
     nai_settings.banned_tokens = preset.banned_tokens || '';
@@ -253,30 +265,32 @@ export function loadNovelPreset(preset) {
  * @param data
  * @param settings
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
 export function loadNovelSettings(data, settings) {
     novelai_setting_names = data.novelai_setting_names;
     novelai_settings = data.novelai_settings;
-    // @ts-expect-error TS(6133): 'arr' is declared but its value is never read.
+    // @ts-expect-error TS(7006) FIXME: Parameter 'item' implicitly has an 'any' type.
     novelai_settings.forEach(function (item, i, arr) {
         novelai_settings[i] = JSON.parse(item);
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#settings_preset_novel').empty();
     const presetNames = {};
-    // @ts-expect-error TS(6133): 'arr' is declared but its value is never read.
+    // @ts-expect-error TS(7006) FIXME: Parameter 'item' implicitly has an 'any' type.
     novelai_setting_names.forEach(function (item, i, arr) {
+        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         presetNames[item] = i;
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#settings_preset_novel').append(`<option value=${i}>${item}</option>`);
     });
     novelai_setting_names = presetNames;
 
     //load the rest of the Novel settings without any checks
     nai_settings.model_novel = settings.model_novel;
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#model_novel_select').val(nai_settings.model_novel);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(`#model_novel_select option[value=${nai_settings.model_novel}]`).prop('selected', true);
 
     if (settings.nai_preamble !== undefined) {
@@ -296,11 +310,11 @@ export function loadNovelSettings(data, settings) {
     nai_settings.top_a = settings.top_a;
     nai_settings.typical_p = settings.typical_p;
     nai_settings.min_length = settings.min_length;
-    // @ts-expect-error TS(2339): Property 'phrase_rep_pen' does not exist on type '... Remove this comment to see the full error message
+    // @ts-expect-error TS(2339) FIXME: Property 'phrase_rep_pen' does not exist on type '... Remove this comment to see the full error message
     nai_settings.phrase_rep_pen = settings.phrase_rep_pen;
-    // @ts-expect-error TS(2339): Property 'mirostat_lr' does not exist on type '{ t... Remove this comment to see the full error message
+    // @ts-expect-error TS(2339) FIXME: Property 'mirostat_lr' does not exist on type '{ t... Remove this comment to see the full error message
     nai_settings.mirostat_lr = settings.mirostat_lr;
-    // @ts-expect-error TS(2339): Property 'mirostat_tau' does not exist on type '{ ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2339) FIXME: Property 'mirostat_tau' does not exist on type '{ ... Remove this comment to see the full error message
     nai_settings.mirostat_tau = settings.mirostat_tau;
     nai_settings.streaming_novel = !!settings.streaming_novel;
     nai_settings.preamble = settings.preamble || default_preamble;
@@ -320,91 +334,92 @@ export function loadNovelSettings(data, settings) {
  *
  * @param ui_settings
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'ui_settings' implicitly has an 'any' ty... Remove this comment to see the full error message
 function loadNovelSettingsUi(ui_settings) {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#temp_novel').val(ui_settings.temperature);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#temp_counter_novel').val(Number(ui_settings.temperature).toFixed(2));
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#rep_pen_novel').val(ui_settings.repetition_penalty);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#rep_pen_counter_novel').val(Number(ui_settings.repetition_penalty).toFixed(3));
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#rep_pen_size_novel').val(ui_settings.repetition_penalty_range);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#rep_pen_size_counter_novel').val(Number(ui_settings.repetition_penalty_range).toFixed(0));
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#rep_pen_slope_novel').val(ui_settings.repetition_penalty_slope);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#rep_pen_slope_counter_novel').val(Number(`${ui_settings.repetition_penalty_slope}`).toFixed(2));
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#rep_pen_freq_novel').val(ui_settings.repetition_penalty_frequency);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#rep_pen_freq_counter_novel').val(Number(ui_settings.repetition_penalty_frequency).toFixed(3));
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#rep_pen_presence_novel').val(ui_settings.repetition_penalty_presence);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#rep_pen_presence_counter_novel').val(Number(ui_settings.repetition_penalty_presence).toFixed(3));
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#tail_free_sampling_novel').val(ui_settings.tail_free_sampling);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#tail_free_sampling_counter_novel').val(Number(ui_settings.tail_free_sampling).toFixed(3));
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#top_k_novel').val(ui_settings.top_k);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#top_k_counter_novel').val(Number(ui_settings.top_k).toFixed(0));
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#top_p_novel').val(ui_settings.top_p);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#top_p_counter_novel').val(Number(ui_settings.top_p).toFixed(3));
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#top_a_novel').val(ui_settings.top_a);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#top_a_counter_novel').val(Number(ui_settings.top_a).toFixed(3));
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#typical_p_novel').val(ui_settings.typical_p);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#typical_p_counter_novel').val(Number(ui_settings.typical_p).toFixed(3));
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#phrase_rep_pen_novel').val(ui_settings.phrase_rep_pen || 'off');
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#mirostat_lr_novel').val(ui_settings.mirostat_lr);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#mirostat_lr_counter_novel').val(Number(ui_settings.mirostat_lr).toFixed(2));
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#mirostat_tau_novel').val(ui_settings.mirostat_tau);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#mirostat_tau_counter_novel').val(Number(ui_settings.mirostat_tau).toFixed(2));
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#min_length_novel').val(ui_settings.min_length);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#min_length_counter_novel').val(Number(ui_settings.min_length).toFixed(0));
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#nai_preamble_textarea').val(ui_settings.preamble);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#nai_prefix').val(ui_settings.prefix || 'vanilla');
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#nai_banned_tokens').val(ui_settings.banned_tokens || '');
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#min_p_novel').val(ui_settings.min_p);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#min_p_counter_novel').val(Number(ui_settings.min_p).toFixed(3));
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#math1_temp_novel').val(ui_settings.math1_temp);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#math1_temp_counter_novel').val(Number(ui_settings.math1_temp).toFixed(2));
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#math1_quad_novel').val(ui_settings.math1_quad);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#math1_quad_counter_novel').val(Number(ui_settings.math1_quad).toFixed(2));
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#math1_quad_entropy_scale_novel').val(ui_settings.math1_quad_entropy_scale);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#math1_quad_entropy_scale_counter_novel').val(Number(ui_settings.math1_quad_entropy_scale).toFixed(2));
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(`#settings_preset_novel option[value=${novelai_setting_names[nai_settings.preset_settings_novel]}]`).prop('selected', true);
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#streaming_novel').prop('checked', ui_settings.streaming_novel);
     sortItemsByOrder(ui_settings.order);
     displayLogitBias(ui_settings.logit_bias, BIAS_KEY);
@@ -414,117 +429,153 @@ const sliders = [
     {
         sliderId: '#temp_novel',
         counterId: '#temp_counter_novel',
+        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
         format: (val) => Number(val).toFixed(2),
+        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
         setValue: (val) => { nai_settings.temperature = Number(val); },
     },
     {
         sliderId: '#rep_pen_novel',
         counterId: '#rep_pen_counter_novel',
+        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
         format: (val) => Number(val).toFixed(3),
+        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
         setValue: (val) => { nai_settings.repetition_penalty = Number(val); },
     },
     {
         sliderId: '#rep_pen_size_novel',
         counterId: '#rep_pen_size_counter_novel',
+        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
         format: (val) => `${val}`,
+        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
         setValue: (val) => { nai_settings.repetition_penalty_range = Number(val); },
     },
     {
         sliderId: '#rep_pen_slope_novel',
         counterId: '#rep_pen_slope_counter_novel',
+        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
         format: (val) => `${val}`,
+        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
         setValue: (val) => { nai_settings.repetition_penalty_slope = Number(val); },
     },
     {
         sliderId: '#rep_pen_freq_novel',
         counterId: '#rep_pen_freq_counter_novel',
+        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
         format: (val) => Number(val).toFixed(2),
+        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
         setValue: (val) => { nai_settings.repetition_penalty_frequency = Number(val); },
     },
     {
         sliderId: '#rep_pen_presence_novel',
         counterId: '#rep_pen_presence_counter_novel',
+        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
         format: (val) => `${val}`,
+        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
         setValue: (val) => { nai_settings.repetition_penalty_presence = Number(val); },
     },
     {
         sliderId: '#tail_free_sampling_novel',
         counterId: '#tail_free_sampling_counter_novel',
+        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
         format: (val) => `${val}`,
+        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
         setValue: (val) => { nai_settings.tail_free_sampling = Number(val); },
     },
     {
         sliderId: '#top_k_novel',
         counterId: '#top_k_counter_novel',
+        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
         format: (val) => `${val}`,
+        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
         setValue: (val) => { nai_settings.top_k = Number(val); },
     },
     {
         sliderId: '#top_p_novel',
         counterId: '#top_p_counter_novel',
+        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
         format: (val) => Number(val).toFixed(3),
+        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
         setValue: (val) => { nai_settings.top_p = Number(val); },
     },
     {
         sliderId: '#top_a_novel',
         counterId: '#top_a_counter_novel',
+        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
         format: (val) => Number(val).toFixed(2),
+        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
         setValue: (val) => { nai_settings.top_a = Number(val); },
     },
     {
         sliderId: '#typical_p_novel',
         counterId: '#typical_p_counter_novel',
+        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
         format: (val) => Number(val).toFixed(3),
+        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
         setValue: (val) => { nai_settings.typical_p = Number(val); },
     },
     {
         sliderId: '#mirostat_tau_novel',
         counterId: '#mirostat_tau_counter_novel',
+        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
         format: (val) => Number(val).toFixed(2),
-        // @ts-expect-error TS(2339): Property 'mirostat_tau' does not exist on type '{ ... Remove this comment to see the full error message
+        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
         setValue: (val) => { nai_settings.mirostat_tau = Number(val); },
     },
     {
         sliderId: '#mirostat_lr_novel',
         counterId: '#mirostat_lr_counter_novel',
+        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
         format: (val) => Number(val).toFixed(2),
-        // @ts-expect-error TS(2339): Property 'mirostat_lr' does not exist on type '{ t... Remove this comment to see the full error message
+        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
         setValue: (val) => { nai_settings.mirostat_lr = Number(val); },
     },
     {
         sliderId: '#min_length_novel',
         counterId: '#min_length_counter_novel',
+        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
         format: (val) => `${val}`,
+        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
         setValue: (val) => { nai_settings.min_length = Number(val); },
     },
     {
         sliderId: '#nai_banned_tokens',
         counterId: '#nai_banned_tokens_counter',
+        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
         format: (val) => val,
+        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
         setValue: (val) => { nai_settings.banned_tokens = val; },
     },
     {
         sliderId: '#min_p_novel',
         counterId: '#min_p_counter_novel',
+        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
         format: (val) => Number(val).toFixed(3),
+        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
         setValue: (val) => { nai_settings.min_p = Number(val); },
     },
     {
         sliderId: '#math1_temp_novel',
         counterId: '#math1_temp_counter_novel',
+        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
         format: (val) => Number(val).toFixed(2),
+        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
         setValue: (val) => { nai_settings.math1_temp = Number(val); },
     },
     {
         sliderId: '#math1_quad_novel',
         counterId: '#math1_quad_counter_novel',
+        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
         format: (val) => Number(val).toFixed(2),
+        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
         setValue: (val) => { nai_settings.math1_quad = Number(val); },
     },
     {
         sliderId: '#math1_quad_entropy_scale_novel',
         counterId: '#math1_quad_entropy_scale_counter_novel',
+        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
         format: (val) => Number(val).toFixed(2),
+        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
         setValue: (val) => { nai_settings.math1_quad_entropy_scale = Number(val); },
     },
 ];
@@ -534,6 +585,7 @@ const sliders = [
  * @param banned_tokens
  * @param tokenizerType
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'banned_tokens' implicitly has an 'any' ... Remove this comment to see the full error message
 function getBadWordIds(banned_tokens, tokenizerType) {
     if (tokenizerType === tokenizers.NONE) {
         return [];
@@ -541,8 +593,11 @@ function getBadWordIds(banned_tokens, tokenizerType) {
 
     const cacheKey = `${getStringHash(banned_tokens)}-${tokenizerType}`;
 
+    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     if (cacheKey in badWordsCache && Array.isArray(badWordsCache[cacheKey])) {
+        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         console.debug(`Bad words ids cache hit for "${banned_tokens}"`, badWordsCache[cacheKey]);
+        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         return badWordsCache[cacheKey];
     }
 
@@ -583,6 +638,7 @@ function getBadWordIds(banned_tokens, tokenizerType) {
 
     // Cache the result
     console.debug(`Bad words ids for "${banned_tokens}"`, result);
+    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     badWordsCache[cacheKey] = result;
 
     return result;
@@ -592,6 +648,7 @@ function getBadWordIds(banned_tokens, tokenizerType) {
  *
  * @param text
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'text' implicitly has an 'any' type.
 function getBadWordPermutations(text) {
     const result = [];
 
@@ -629,6 +686,7 @@ function getBadWordPermutations(text) {
  * @param _cfgValues
  * @param type
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'finalPrompt' implicitly has an 'any' ty... Remove this comment to see the full error message
 export function getNovelGenerationData(finalPrompt, settings, maxLength, isImpersonate, isContinue, _cfgValues, type) {
     console.debug('NovelAI generation data for', type);
     const isKayra = nai_settings.model_novel.includes('kayra');
@@ -708,11 +766,11 @@ export function getNovelGenerationData(finalPrompt, settings, maxLength, isImper
         'math1_quad': Number(nai_settings.math1_quad),
         'math1_quad_entropy_scale': Number(nai_settings.math1_quad_entropy_scale),
         'typical_p': Number(nai_settings.typical_p),
-        // @ts-expect-error TS(2339): Property 'mirostat_lr' does not exist on type '{ t... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'mirostat_lr' does not exist on type '{ t... Remove this comment to see the full error message
         'mirostat_lr': Number(nai_settings.mirostat_lr),
-        // @ts-expect-error TS(2339): Property 'mirostat_tau' does not exist on type '{ ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'mirostat_tau' does not exist on type '{ ... Remove this comment to see the full error message
         'mirostat_tau': Number(nai_settings.mirostat_tau),
-        // @ts-expect-error TS(2339): Property 'phrase_rep_pen' does not exist on type '... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'phrase_rep_pen' does not exist on type '... Remove this comment to see the full error message
         'phrase_rep_pen': nai_settings.phrase_rep_pen,
         'stop_sequences': stopSequences,
         'bad_words_ids': badWordIds,
@@ -732,6 +790,7 @@ export function getNovelGenerationData(finalPrompt, settings, maxLength, isImper
  * @param selected_prefix
  * @param finalPrompt
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'selected_prefix' implicitly has an 'any... Remove this comment to see the full error message
 function selectPrefix(selected_prefix, finalPrompt) {
     let useInstruct = false;
     const clio = nai_settings.model_novel.includes('clio');
@@ -753,6 +812,7 @@ function selectPrefix(selected_prefix, finalPrompt) {
  *
  * @param model
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'model' implicitly has an 'any' type.
 function getTokenizerTypeForModel(model) {
     if (model.includes('clio')) {
         return tokenizers.NERD;
@@ -771,21 +831,28 @@ function getTokenizerTypeForModel(model) {
  *
  * @param orderArray
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'orderArray' implicitly has an 'any' typ... Remove this comment to see the full error message
 function sortItemsByOrder(orderArray) {
     console.debug('Preset samplers order: ' + orderArray);
     const draggableItems = document.getElementById('novel_order');
 
     for (let i = 0; i < orderArray.length; i++) {
         const index = orderArray[i];
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         const item = draggableItems.querySelector(`[data-id="${index}"]`);
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         draggableItems.appendChild(item);
     }
 
+    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     Array.from(draggableItems.children).forEach(function (child) {
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const isEnabled = orderArray.includes(parseInt($(child).data('id')));
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(child).toggleClass('disabled', !isEnabled);
 
         if (!isEnabled) {
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             draggableItems.appendChild(child);
         }
     });
@@ -795,13 +862,18 @@ function sortItemsByOrder(orderArray) {
  *
  */
 function saveSamplingOrder() {
+    // @ts-expect-error TS(7034) FIXME: Variable 'order' implicitly has type 'any[]' in so... Remove this comment to see the full error message
     const order = [];
+    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     Array.from(document.getElementById('novel_order').children).forEach(function (child) {
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const isEnabled = !$(child).hasClass('disabled');
         if (isEnabled) {
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             order.push($(child).data('id'));
         }
     });
+    // @ts-expect-error TS(7005) FIXME: Variable 'order' implicitly has an 'any[]' type.
     nai_settings.order = order;
     console.log('Samplers reordered:', nai_settings.order);
     saveSettingsDebounced();
@@ -825,6 +897,7 @@ function calculateLogitBias() {
      * @param {number} bias Bias value
      * @param {number[]} sequence Sequence of token ids
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'bias' implicitly has an 'any' type.
     function getBiasObject(bias, sequence) {
         return {
             bias: bias,
@@ -845,6 +918,7 @@ function calculateLogitBias() {
  * @param {string} prompt Original instruction prompt
  * @returns Processed prompt
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'prompt' implicitly has an 'any' type.
 export function adjustNovelInstructionPrompt(prompt) {
     const stripedPrompt = prompt.replace(/[[\]]/g, '').trim();
     if (!stripedPrompt.includes('{ ')) {
@@ -858,6 +932,7 @@ export function adjustNovelInstructionPrompt(prompt) {
  * @param response
  * @param decoded
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'response' implicitly has an 'any' type.
 function tryParseStreamingError(response, decoded) {
     try {
         const data = JSON.parse(decoded);
@@ -867,7 +942,7 @@ function tryParseStreamingError(response, decoded) {
         }
 
         if (data.message || data.error) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.error(data.message || data.error?.message || response.statusText, 'NovelAI API');
             throw new Error(data);
         }
@@ -881,6 +956,7 @@ function tryParseStreamingError(response, decoded) {
  * @param generate_data
  * @param signal
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'generate_data' implicitly has an 'any' ... Remove this comment to see the full error message
 export async function generateNovelWithStreaming(generate_data, signal) {
     generate_data.streaming = nai_settings.streaming_novel;
 
@@ -895,7 +971,9 @@ export async function generateNovelWithStreaming(generate_data, signal) {
         throw new Error(`Got response status ${response.status}`);
     }
     const eventStream = getEventSourceStream();
+    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     response.body.pipeThrough(eventStream);
+    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     const reader = eventStream.readable.getReader();
 
     return async function* streamData() {
@@ -943,17 +1021,22 @@ export async function generateNovelWithStreaming(generate_data, signal) {
  * @param {NAITokenLogprobs} data - NAI logprobs object for one token
  * @returns {import('./logprobs.js').TokenLogprobs | null} converted logprobs
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
 export function parseNovelAILogprobs(data) {
     if (!data) {
         return null;
     }
+    // @ts-expect-error TS(7031) FIXME: Binding element 'tokenId' implicitly has an 'any' ... Remove this comment to see the full error message
     const befores = data.before.map(([[tokenId], [before, _]]) => [tokenId, before]);
+    // @ts-expect-error TS(7031) FIXME: Binding element 'tokenId' implicitly has an 'any' ... Remove this comment to see the full error message
     const afters = data.after.map(([[tokenId], [_, after]]) => [tokenId, after]);
 
     // Find any tokens in `befores` that are missing from `afters`. Then add
     // them with a logprob of -Infinity (0% probability)
     const notInAfter = befores
+        // @ts-expect-error TS(7031) FIXME: Binding element 'id' implicitly has an 'any' type.
         .filter(([id]) => !afters.some(([aid]) => aid === id))
+        // @ts-expect-error TS(7031) FIXME: Binding element 'id' implicitly has an 'any' type.
         .map(([id]) => [id, -Infinity]);
     const merged = afters.concat(notInAfter);
 
@@ -962,6 +1045,7 @@ export function parseNovelAILogprobs(data) {
      
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [[chosenId], [_, chosenAfter]] = data.chosen[0];
+    // @ts-expect-error TS(7031) FIXME: Binding element 'id' implicitly has an 'any' type.
     if (!merged.some(([id]) => id === chosenId)) {
         merged.push([chosenId, chosenAfter]);
     }
@@ -974,17 +1058,17 @@ export function parseNovelAILogprobs(data) {
     return { token: chosenId, topLogprobs: merged };
 }
 
-// @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+// @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
 $('#nai_preamble_textarea').on('input', function () {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     nai_settings.preamble = String($('#nai_preamble_textarea').val());
     saveSettingsDebounced();
 });
 
-// @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+// @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
 $('#nai_preamble_restore').on('click', function () {
     nai_settings.preamble = default_preamble;
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#nai_preamble_textarea').val(nai_settings.preamble);
     saveSettingsDebounced();
 });
@@ -1013,29 +1097,30 @@ export async function getStatusNovel() {
  */
 export function initNovelAISettings() {
     sliders.forEach(slider => {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(document).on('input', slider.sliderId, function () {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const value = $(this).val();
             const formattedValue = slider.format(value);
             slider.setValue(value);
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(slider.counterId).val(formattedValue);
             saveSettingsDebounced();
         });
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#api_button_novel').on('click', async function (e) {
         e.stopPropagation();
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const api_key_novel = String($('#api_key_novel').val()).trim();
 
         if (api_key_novel.length) {
-            // @ts-expect-error TS(2554): Expected 3-4 arguments, but got 2.
+            // @ts-expect-error TS(2554) FIXME: Expected 3-4 arguments, but got 2.
             await writeSecret(SECRET_KEYS.NOVEL, api_key_novel);
         }
 
+        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         if (!secret_state[SECRET_KEYS.NOVEL]) {
             console.log('No secret key saved for NovelAI');
             return;
@@ -1045,8 +1130,9 @@ export function initNovelAISettings() {
         await getStatusNovel();
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#settings_preset_novel').on('change', async function () {
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         nai_settings.preset_settings_novel = document.getElementById('settings_preset_novel').options[document.getElementById('settings_preset_novel').selectedIndex].text;
         const preset = novelai_settings[novelai_setting_names[nai_settings.preset_settings_novel]];
         loadNovelPreset(preset);
@@ -1054,50 +1140,54 @@ export function initNovelAISettings() {
         await eventSource.emit(event_types.PRESET_CHANGED, { apiId: 'novel', name: nai_settings.preset_settings_novel });
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#streaming_novel').on('input', function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const value = !!$(this).prop('checked');
         nai_settings.streaming_novel = value;
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#model_novel_select').on('change', function () {
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         nai_settings.model_novel = String(document.getElementById('model_novel_select').options[document.getElementById('model_novel_select').selectedIndex].value);
         saveSettingsDebounced();
 
         // Update the selected preset to something appropriate
+        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         const default_preset = default_presets[nai_settings.model_novel];
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#settings_preset_novel').val(novelai_setting_names[default_preset]);
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(`#settings_preset_novel option[value=${novelai_setting_names[default_preset]}]`).attr('selected', 'true');
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#settings_preset_novel').trigger('change');
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#nai_prefix').on('change', function () {
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         nai_settings.prefix = String(document.getElementById('nai_prefix').options[document.getElementById('nai_prefix').selectedIndex].value);
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#phrase_rep_pen_novel').on('change', function () {
-        // @ts-expect-error TS(2339): Property 'phrase_rep_pen' does not exist on type '... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'phrase_rep_pen' does not exist on type '... Remove this comment to see the full error message
         nai_settings.phrase_rep_pen = String(document.getElementById('phrase_rep_pen_novel').options[document.getElementById('phrase_rep_pen_novel').selectedIndex].value);
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#novel_order').sortable({
         delay: getSortableDelay(),
         stop: saveSamplingOrder,
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#novel_order .toggle_button').on('click', function () {
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const $item = $(this.closest('[data-id]'));
         const isEnabled = !$item.hasClass('disabled');
         $item.toggleClass('disabled', isEnabled);
@@ -1105,6 +1195,6 @@ export function initNovelAISettings() {
         saveSamplingOrder();
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#novelai_logit_bias_new_entry').on('click', () => createNewLogitBiasEntry(nai_settings.logit_bias, BIAS_KEY));
 }

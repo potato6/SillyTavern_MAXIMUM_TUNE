@@ -1,9 +1,12 @@
+// @ts-expect-error TS(1259) FIXME: Module '"node:path"' can only be default-imported ... Remove this comment to see the full error message
 import path from 'node:path';
+// @ts-expect-error TS(1192) FIXME: Module '"node:fs"' has no default export.
 import fs from 'node:fs';
 import type { Request, Response, NextFunction } from 'express';
 import { getIpAddress } from '../express-common.js';
 import { color, getConfigValue } from '../util.js';
 
+// @ts-expect-error TS(2345) FIXME: Argument of type 'true' is not assignable to param... Remove this comment to see the full error message
 const enableAccessLog = getConfigValue('logging.enableAccessLog', true, 'boolean');
 
 const knownIPs = new Set();
@@ -35,7 +38,6 @@ export function migrateAccessLog() {
  * @returns {import('express').RequestHandler} Express request handler middleware
  */
 export default function accessLoggerMiddleware() {
-    // @ts-expect-error TS(6133): 'res' is declared but its value is never read.
     return function (req: Request, res: Response, next: NextFunction) {
         const clientIp = getIpAddress(req, true);
         const userAgent = req.headers['user-agent'];
@@ -51,6 +53,7 @@ export default function accessLoggerMiddleware() {
                 const timestamp = new Date().toISOString();
                 const log = `${timestamp} ${clientIp} ${userAgent}\n`;
 
+                // @ts-expect-error TS(7006) FIXME: Parameter 'err' implicitly has an 'any' type.
                 fs.appendFile(logPath, log, (err) => {
                     if (err) {
                         console.error('Failed to write access log:', err);

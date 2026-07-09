@@ -83,6 +83,7 @@ export class TextCompletionService {
      * @param {Record<string, any> & TextCompletionRequestBase & {prompt: string}} custom
      * @returns {TextCompletionPayload}
      */
+    // @ts-expect-error TS(7031) FIXME: Binding element 'prompt' implicitly has an 'any' t... Remove this comment to see the full error message
     static createRequestData({ stream = false, prompt, max_tokens, model, api_type, api_server, temperature, min_p, ...props }) {
         const payload = {
             stream,
@@ -99,7 +100,9 @@ export class TextCompletionService {
 
         // Remove undefined values to avoid API errors
         Object.keys(payload).forEach(key => {
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             if (payload[key] === undefined) {
+                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 delete payload[key];
             }
         });
@@ -115,6 +118,7 @@ export class TextCompletionService {
      * @returns {Promise<ExtractedData | (() => AsyncGenerator<StreamResponse>)>} If not streaming, returns extracted data; if streaming, returns a function that creates an AsyncGenerator
      * @throws {Error}
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
     static async sendRequest(data, extractData = true, signal = null) {
         if (!data.stream) {
             const response = await fetch(getGenerateUrl(this.TYPE), {
@@ -135,8 +139,10 @@ export class TextCompletionService {
             }
 
             return {
+                // @ts-expect-error TS(2345) FIXME: Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
                 content: extractMessageFromData(json, this.TYPE),
                 reasoning: extractReasoningFromData(json, {
+                    // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'null | un... Remove this comment to see the full error message
                     mainApi: this.TYPE,
                     textGenType: data.api_type,
                     ignoreShowThoughts: true,
@@ -160,10 +166,13 @@ export class TextCompletionService {
         }
 
         const eventStream = new EventSourceStream();
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         response.body.pipeThrough(eventStream);
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         const reader = eventStream.readable.getReader();
         return async function* streamData() {
             let text = '';
+            // @ts-expect-error TS(7034) FIXME: Variable 'swipes' implicitly has type 'any[]' in s... Remove this comment to see the full error message
             const swipes = [];
             const state = { reasoning: '' };
             while (true) {
@@ -177,6 +186,7 @@ export class TextCompletionService {
 
                 if (data?.choices?.[0]?.index > 0) {
                     const swipeIndex = data.choices[0].index - 1;
+                    // @ts-expect-error TS(7005) FIXME: Variable 'swipes' implicitly has an 'any[]' type.
                     swipes[swipeIndex] = (swipes[swipeIndex] || '') + data.choices[0].text;
                 } else {
                     const newText = data?.choices?.[0]?.text || data?.content || '';
@@ -195,6 +205,7 @@ export class TextCompletionService {
      * @param {InstructSettings|string} instructPreset Either the name of an instruct preset or the instruct preset object itself.
      * @param {Partial<InstructSettings>} instructSettings Optional instruct settings
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'prompt' implicitly has an 'any' type.
     static constructPrompt(prompt, instructPreset, instructSettings) {
         // InstructPreset may either be a name or itself a preset
         if (typeof instructPreset === 'string') {
@@ -210,7 +221,6 @@ export class TextCompletionService {
 
         // Make the type check shut up. We 100% don't have a string here.
         if (typeof instructPreset === 'string') {
-            // @ts-expect-error TS(7030): Not all code paths return a value.
             return;
         }
 
@@ -281,8 +291,9 @@ export class TextCompletionService {
      * @returns {Promise<ExtractedData | (() => AsyncGenerator<StreamResponse>)>} If not streaming, returns extracted data; if streaming, returns a function that creates an AsyncGenerator
      * @throws {Error}
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'requestData' implicitly has an 'any' ty... Remove this comment to see the full error message
     static async processRequest(requestData, options = {}, extractData = true, signal = null) {
-        // @ts-expect-error TS(2339): Property 'presetName' does not exist on type '{}'.
+        // @ts-expect-error TS(2339) FIXME: Property 'presetName' does not exist on type '{}'.
         const { presetName, instructName } = options;
 
         // remove any undefined params in given request data
@@ -297,8 +308,9 @@ export class TextCompletionService {
                 const instructPresetManager = getPresetManager('instruct');
                 instructPreset = instructPresetManager?.getCompletionPresetByName(instructName);
                 if (instructPreset) {
-                    // @ts-expect-error TS(2339): Property 'instructSettings' does not exist on type... Remove this comment to see the full error message
+                    // @ts-expect-error TS(2339) FIXME: Property 'instructSettings' does not exist on type... Remove this comment to see the full error message
                     requestData.prompt = this.constructPrompt(prompt, instructPreset, options.instructSettings);
+                    // @ts-expect-error TS(2322) FIXME: Type 'false' is not assignable to type 'null | und... Remove this comment to see the full error message
                     const stoppingStrings = getInstructStoppingSequences({ customInstruct: instructPreset, useStopStrings: false });
                     requestData.stop = stoppingStrings;
                     requestData.stopping_strings = stoppingStrings;
@@ -372,7 +384,9 @@ export class TextCompletionService {
                 ].forEach(sequences => {
                     if (sequences) {
                         sequences.split('\n')
+                            // @ts-expect-error TS(7006) FIXME: Parameter 'line' implicitly has an 'any' type.
                             .filter(line => line.trim() !== '')
+                            // @ts-expect-error TS(7006) FIXME: Parameter 'line' implicitly has an 'any' type.
                             .forEach(line => {
                                 message = message.replaceAll(line, '');
                             });
@@ -394,6 +408,7 @@ export class TextCompletionService {
      * @param {object} overridePayload - Additional parameters to override payload values
      * @returns {object} - Formatted payload for text completion API
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'preset' implicitly has an 'any' type.
     static presetToGeneratePayload(preset, overridePreset = {}, overridePayload = {}) {
         if (!preset || typeof preset !== 'object') {
             throw new Error('Invalid preset: must be an object');
@@ -406,11 +421,12 @@ export class TextCompletionService {
         const settings = structuredClone(textgenerationwebui_settings);
         for (const [key, value] of Object.entries(preset)) {
             if (!setting_names.includes(key)) continue;
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             settings[key] = value;
         }
 
         // convert to a generation payload
-        // @ts-expect-error TS(2339): Property 'model' does not exist on type '{}'.
+        // @ts-expect-error TS(2339) FIXME: Property 'model' does not exist on type '{}'.
         const payload = createTextGenGenerationData(settings, overridePayload.model, overridePayload.prompt, preset.genamt);
 
         // apply overrides
@@ -428,6 +444,7 @@ export class ChatCompletionService {
      * @param {ChatCompletionPayload} custom
      * @returns {ChatCompletionPayload}
      */
+    // @ts-expect-error TS(7031) FIXME: Binding element 'messages' implicitly has an 'any'... Remove this comment to see the full error message
     static createRequestData({ stream = false, messages, model, chat_completion_source, max_tokens, temperature, custom_url, reverse_proxy, proxy_password, custom_prompt_post_processing, ...props }) {
         const payload = {
             stream,
@@ -446,7 +463,9 @@ export class ChatCompletionService {
 
         // Remove undefined values to avoid API errors
         Object.keys(payload).forEach(key => {
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             if (payload[key] === undefined) {
+                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 delete payload[key];
             }
         });
@@ -462,6 +481,7 @@ export class ChatCompletionService {
      * @returns {Promise<ExtractedData | (() => AsyncGenerator<StreamResponse>)>} If not streaming, returns extracted data; if streaming, returns a function that creates an AsyncGenerator
      * @throws {Error}
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
     static async sendRequest(data, extractData = true, signal = null) {
         const response = await fetch('/api/backends/chat-completions/generate', {
             method: 'POST',
@@ -482,8 +502,10 @@ export class ChatCompletionService {
             }
 
             const result = {
+                // @ts-expect-error TS(2345) FIXME: Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
                 content: extractMessageFromData(json, this.TYPE),
                 reasoning: extractReasoningFromData(json, {
+                    // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'null | un... Remove this comment to see the full error message
                     mainApi: this.TYPE,
                     textGenType: data.chat_completion_source,
                     ignoreShowThoughts: true,
@@ -491,6 +513,7 @@ export class ChatCompletionService {
             };
             // Try parse JSON
             if (data.json_schema) {
+                // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'null | un... Remove this comment to see the full error message
                 result.content = JSON.parse(extractJsonFromData(json, { mainApi: this.TYPE, chatCompletionSource: data.chat_completion_source }));
             }
             return result;
@@ -504,10 +527,13 @@ export class ChatCompletionService {
         }
 
         const eventStream = new EventSourceStream();
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         response.body.pipeThrough(eventStream);
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         const reader = eventStream.readable.getReader();
         return async function* streamData() {
             let text = '';
+            // @ts-expect-error TS(7034) FIXME: Variable 'swipes' implicitly has type 'any[]' in s... Remove this comment to see the full error message
             const swipes = [];
             const state = { reasoning: '', images: [], signature: '', toolSignatures: {} };
             while (true) {
@@ -520,10 +546,12 @@ export class ChatCompletionService {
 
                 const reply = getStreamingReply(parsed, state, {
                     chatCompletionSource: data.chat_completion_source,
+                    // @ts-expect-error TS(2322) FIXME: Type 'true' is not assignable to type 'null | unde... Remove this comment to see the full error message
                     overrideShowThoughts: true,
                 });
                 if (Array.isArray(parsed?.choices) && parsed?.choices?.[0]?.index > 0) {
                     const swipeIndex = parsed.choices[0].index - 1;
+                    // @ts-expect-error TS(7005) FIXME: Variable 'swipes' implicitly has an 'any[]' type.
                     swipes[swipeIndex] = (swipes[swipeIndex] || '') + reply;
                 } else {
                     text += reply;
@@ -544,6 +572,7 @@ export class ChatCompletionService {
      * @returns {Promise<ExtractedData | (() => AsyncGenerator<StreamResponse>)>} If not streaming, returns extracted data; if streaming, returns a function that creates an AsyncGenerator
      * @throws {Error}
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'requestData' implicitly has an 'any' ty... Remove this comment to see the full error message
     static async processRequest(requestData, options, extractData = true, signal = null) {
         const { presetName } = options;
         requestData = this.createRequestData(requestData);
@@ -575,6 +604,7 @@ export class ChatCompletionService {
      * @param {object} overridePayload - Additional parameters to override payload values
      * @returns {Promise<any>} - Formatted payload for chat completion API
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'preset' implicitly has an 'any' type.
     static async presetToGeneratePayload(preset, overridePreset = {}, overridePayload = {}) {
         if (!preset || typeof preset !== 'object') {
             throw new Error('Invalid preset: must be an object');
@@ -589,24 +619,27 @@ export class ChatCompletionService {
         // Convert from preset to ChatCompletionSettings
         const settings = structuredClone(oai_settings);
         for (const [key, value] of Object.entries(preset)) {
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             const settingToUpdate = settingsToUpdate[key];
             if (!settingToUpdate) continue;
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             settings[settingToUpdate[1]] = value;
         }
 
         // Ensure api-url is properly applied for all sources that accept it
         ['custom_url', 'vertexai_region', 'zai_endpoint', 'siliconflow_endpoint', 'minimax_endpoint'].forEach(field => {
             // The order is: connection profile => CC preset => CC settings
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             overridePayload[field] = overridePayload[field] || settings[field] || oai_settings[field];
         });
 
         // Convert from settings to generation payload
-        // @ts-expect-error TS(2339): Property 'model' does not exist on type '{}'.
+        // @ts-expect-error TS(2339) FIXME: Property 'model' does not exist on type '{}'.
         const data = await createGenerationParameters(settings, overridePayload.model, 'quiet', overridePayload.messages);
         const payload = data.generate_data;
 
         // apply overrides
-        // @ts-expect-error TS(2345): Argument of type '{ type: any; messages: any; mode... Remove this comment to see the full error message
+        // @ts-expect-error TS(2345) FIXME: Argument of type '{ type: any; messages: any; mode... Remove this comment to see the full error message
         return this.createRequestData({ ...payload, ...overridePayload });
     }
 }

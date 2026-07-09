@@ -15,8 +15,10 @@ export function registerInstructMacros() {
      * @param {string} description
      * @param {string} [category]
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'names' implicitly has an 'any' type.
     function registerSimple(names, getValue, isEnabled, description, category = MacroCategory.PROMPTS) {
         const [primary, ...aliasNames] = names;
+        // @ts-expect-error TS(7006) FIXME: Parameter 'alias' implicitly has an 'any' type.
         const aliases = aliasNames.map(alias => ({ alias }));
 
         MacroRegistry.registerMacro(primary, {
@@ -59,6 +61,7 @@ export function registerInstructMacros() {
     MacroRegistry.registerMacro('systemPrompt', {
         category: MacroCategory.PROMPTS,
         description: 'Active system prompt text (optionally overridden by character prompt)',
+        // @ts-expect-error TS(7031) FIXME: Binding element 'env' implicitly has an 'any' type... Remove this comment to see the full error message
         handler: ({ env }) => {
             const isEnabled = !!power_user.sysprompt.enabled;
             if (!isEnabled) return '';

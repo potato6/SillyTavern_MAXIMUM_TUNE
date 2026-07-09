@@ -4,7 +4,6 @@ import { DOMPurify } from '../lib.js';
 
 import { event_types, eventSource, is_send_press, main_api, substituteParams } from '../script.js';
 import { is_group_generating } from './group-chats.js';
-// @ts-expect-error TS(6133): 'MessageCollection' is declared but its value is n... Remove this comment to see the full error message
 import { Message, MessageCollection, TokenHandler } from './openai.js';
 import { power_user } from './power-user.js';
 import { debounce, waitUntilCondition, escapeHtml, uuidv4 } from './utils.js';
@@ -19,10 +18,14 @@ import { isMobile } from './RossAscends-mods.js';
  * @param func
  * @param delay
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'func' implicitly has an 'any' type.
 function debouncePromise(func, delay) {
+    // @ts-expect-error TS(7034) FIXME: Variable 'timeoutId' implicitly has type 'any' in ... Remove this comment to see the full error message
     let timeoutId;
 
+    // @ts-expect-error TS(7019) FIXME: Rest parameter 'args' implicitly has an 'any[]' ty... Remove this comment to see the full error message
     return (...args) => {
+        // @ts-expect-error TS(7005) FIXME: Variable 'timeoutId' implicitly has an 'any' type.
         clearTimeout(timeoutId);
 
         return new Promise((resolve) => {
@@ -49,6 +52,7 @@ export const INJECTION_POSITION = {
  * Register migrations for the prompt manager when settings are loaded or an Open AI preset is loaded.
  */
 const registerPromptManagerMigration = () => {
+    // @ts-expect-error TS(7006) FIXME: Parameter 'settings' implicitly has an 'any' type.
     const migrate = (settings, savePreset = null, presetName = null) => {
         if ('Default' === presetName) return;
 
@@ -56,6 +60,7 @@ const registerPromptManagerMigration = () => {
             console.log('Running prompt manager configuration migration');
             if (settings.prompts === undefined || settings.prompts.length === 0) settings.prompts = structuredClone(chatCompletionDefaultPrompts.prompts);
 
+            // @ts-expect-error TS(7006) FIXME: Parameter 'identifier' implicitly has an 'any' typ... Remove this comment to see the full error message
             const findPrompt = (identifier) => settings.prompts.find(prompt => identifier === prompt.identifier);
             if (settings.main_prompt) {
                 findPrompt('main').content = settings.main_prompt;
@@ -72,11 +77,14 @@ const registerPromptManagerMigration = () => {
                 delete settings.jailbreak_prompt;
             }
 
+            // @ts-expect-error TS(2349) FIXME: This expression is not callable.
             if (savePreset && presetName) savePreset(presetName, settings, false);
         }
     };
 
+    // @ts-expect-error TS(7006) FIXME: Parameter 'settings' implicitly has an 'any' type.
     eventSource.on(event_types.SETTINGS_LOADED_BEFORE, settings => migrate(settings));
+    // @ts-expect-error TS(7006) FIXME: Parameter 'event' implicitly has an 'any' type.
     eventSource.on(event_types.OAI_PRESET_CHANGED_BEFORE, event => migrate(event.preset, event.savePreset, event.presetName));
 };
 
@@ -88,6 +96,7 @@ class Prompt {
      * Indicates if the prompt is enabled.
      * @type {boolean}
      */
+    // @ts-expect-error TS(7008) FIXME: Member 'enabled' implicitly has an 'any' type.
     enabled;
 
     /**
@@ -166,6 +175,7 @@ class Prompt {
      * Indicates if the prompt is a marker prompt.
      * @type {boolean}
      */
+    // @ts-expect-error TS(7008) FIXME: Member 'marker' implicitly has an 'any' type.
     marker;
 
     /**
@@ -213,6 +223,7 @@ class Prompt {
         extension,
         injection_order,
         injection_trigger
+    // @ts-expect-error TS(2304) FIXME: Cannot find name 'PromptConstructorParams'.
     }: PromptConstructorParams = {}) {
         this.identifier = identifier;
         this.role = role;
@@ -249,6 +260,7 @@ export class PromptCollection {
      * Create a new PromptCollection instance.
      * @param {...Prompt} prompts - An array of Prompt instances.
      */
+    // @ts-expect-error TS(7019) FIXME: Rest parameter 'prompts' implicitly has an 'any[]'... Remove this comment to see the full error message
     constructor(...prompts) {
         this.add(...prompts);
     }
@@ -258,6 +270,7 @@ export class PromptCollection {
      * @param {...Prompt} prompts - Instances to check.
      * @throws Will throw an error if one or more instances are not of the Prompt class.
      */
+    // @ts-expect-error TS(7019) FIXME: Rest parameter 'prompts' implicitly has an 'any[]'... Remove this comment to see the full error message
     checkPromptInstance(...prompts) {
         for (const prompt of prompts) {
             if (!(prompt instanceof Prompt)) {
@@ -270,8 +283,10 @@ export class PromptCollection {
      * Adds new Prompt instances to the collection.
      * @param {...Prompt} prompts - An array of Prompt instances.
      */
+    // @ts-expect-error TS(7019) FIXME: Rest parameter 'prompts' implicitly has an 'any[]'... Remove this comment to see the full error message
     add(...prompts) {
         this.checkPromptInstance(...prompts);
+        // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
         this.collection.push(...prompts);
     }
 
@@ -280,8 +295,10 @@ export class PromptCollection {
      * @param {Prompt} prompt - The Prompt instance to set.
      * @param {number} position - The position in the collection to set the Prompt instance.
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'prompt' implicitly has an 'any' type.
     set(prompt, position) {
         this.checkPromptInstance(prompt);
+        // @ts-expect-error TS(2322) FIXME: Type 'any' is not assignable to type 'never'.
         this.collection[position] = prompt;
     }
 
@@ -290,7 +307,9 @@ export class PromptCollection {
      * @param {string} identifier - The identifier of the Prompt instance to retrieve.
      * @returns {Prompt} The Prompt instance with the provided identifier, or undefined if not found.
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'identifier' implicitly has an 'any' typ... Remove this comment to see the full error message
     get(identifier) {
+        // @ts-expect-error TS(2339) FIXME: Property 'identifier' does not exist on type 'neve... Remove this comment to see the full error message
         return this.collection.find(prompt => prompt.identifier === identifier);
     }
 
@@ -299,7 +318,9 @@ export class PromptCollection {
      * @param {string} identifier - The identifier of the Prompt instance to find.
      * @returns {number} The index of the Prompt instance in the collection, or -1 if not found.
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'identifier' implicitly has an 'any' typ... Remove this comment to see the full error message
     index(identifier) {
+        // @ts-expect-error TS(2339) FIXME: Property 'identifier' does not exist on type 'neve... Remove this comment to see the full error message
         return this.collection.findIndex(prompt => prompt.identifier === identifier);
     }
 
@@ -308,6 +329,7 @@ export class PromptCollection {
      * @param {string} identifier - The identifier of the Prompt instance to check.
      * @returns {boolean} true if the Prompt instance exists in the collection, false otherwise.
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'identifier' implicitly has an 'any' typ... Remove this comment to see the full error message
     has(identifier) {
         return this.index(identifier) !== -1;
     }
@@ -317,8 +339,10 @@ export class PromptCollection {
      * @param {Prompt} prompt - The Prompt instance to override.
      * @param {number} position - The position in the collection to override the Prompt instance.
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'prompt' implicitly has an 'any' type.
     override(prompt, position) {
         this.set(prompt, position);
+        // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
         this.overriddenPrompts.push(prompt.identifier);
     }
 }
@@ -482,20 +506,25 @@ class PromptManager {
      * @param {object} moduleConfiguration - Configuration object for the PromptManager.
      * @param {object} serviceSettings - Service settings object for the PromptManager.
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'moduleConfiguration' implicitly has an ... Remove this comment to see the full error message
     init(moduleConfiguration, serviceSettings) {
         this.configuration = Object.assign(this.configuration, moduleConfiguration);
         this.tokenHandler = this.tokenHandler || new TokenHandler(() => { throw new Error('Token handler not set'); });
         this.serviceSettings = serviceSettings;
+        // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
         this.containerElement = document.getElementById(this.configuration.containerIdentifier);
 
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         if ('global' === this.configuration.promptOrder.strategy) this.activeCharacter = { id: this.configuration.promptOrder.dummyId };
 
         this.sanitizeServiceSettings();
 
         // Enable and disable prompts
         this.handleToggle = (event) => {
+            // @ts-expect-error TS(2339) FIXME: Property 'target' does not exist on type 'string'.
             const promptID = event.target.closest('.' + this.configuration.prefix + 'prompt_manager_prompt').dataset.pmIdentifier;
             const promptOrderEntry = this.getPromptOrderEntry(this.activeCharacter, promptID);
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             const counts = this.tokenHandler.getCounts();
 
             counts[promptID] = null;
@@ -509,6 +538,7 @@ class PromptManager {
             this.clearEditForm();
             this.clearInspectForm();
 
+            // @ts-expect-error TS(2339) FIXME: Property 'target' does not exist on type 'string'.
             const promptID = event.target.closest('.' + this.configuration.prefix + 'prompt_manager_prompt').dataset.pmIdentifier;
             const prompt = this.getPromptById(promptID);
 
@@ -518,12 +548,15 @@ class PromptManager {
         };
 
         // Open edit form and load selected prompt
+        // @ts-expect-error TS(2322) FIXME: Type '(event: any) => void' is not assignable to t... Remove this comment to see the full error message
         this.handleInspect = (event) => {
             this.clearEditForm();
             this.clearInspectForm();
 
             const promptID = event.target.closest('.' + this.configuration.prefix + 'prompt_manager_prompt').dataset.pmIdentifier;
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             if (true === this.messages.hasItemWithIdentifier(promptID)) {
+                // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
                 const messages = this.messages.getItemByIdentifier(promptID);
 
                 this.loadMessagesIntoInspectForm(messages);
@@ -533,6 +566,7 @@ class PromptManager {
         };
 
         // Detach selected prompt from list form and close edit form
+        // @ts-expect-error TS(2322) FIXME: Type '(event: any) => void' is not assignable to t... Remove this comment to see the full error message
         this.handleDetach = (event) => {
             if (null === this.activeCharacter) return;
             const promptID = event.target.closest('.' + this.configuration.prefix + 'prompt_manager_prompt').dataset.pmIdentifier;
@@ -546,6 +580,7 @@ class PromptManager {
         };
 
         // Save prompt edit form to settings and close form.
+        // @ts-expect-error TS(2322) FIXME: Type '(event: any) => void' is not assignable to t... Remove this comment to see the full error message
         this.handleSavePrompt = (event) => {
             const promptId = event.target.dataset.pmPrompt;
             const prompt = this.getPromptById(promptId);
@@ -571,6 +606,7 @@ class PromptManager {
         };
 
         // Reset prompt should it be a system prompt
+        // @ts-expect-error TS(2322) FIXME: Type '(event: any) => void' is not assignable to t... Remove this comment to see the full error message
         this.handleResetPrompt = (event) => {
             const promptId = event.target.dataset.pmPrompt;
             const prompt = this.getPromptById(promptId);
@@ -579,20 +615,24 @@ class PromptManager {
             switch (promptId) {
                 case 'main':
                     prompt.name = 'Main Prompt';
+                    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                     prompt.content = this.configuration.defaultPrompts.main;
                     prompt.forbid_overrides = false;
                     break;
                 case 'nsfw':
                     prompt.name = 'Nsfw Prompt';
+                    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                     prompt.content = this.configuration.defaultPrompts.nsfw;
                     break;
                 case 'jailbreak':
                     prompt.name = 'Jailbreak Prompt';
+                    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                     prompt.content = this.configuration.defaultPrompts.jailbreak;
                     prompt.forbid_overrides = false;
                     break;
                 case 'enhanceDefinitions':
                     prompt.name = 'Enhance Definitions';
+                    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                     prompt.content = this.configuration.defaultPrompts.enhanceDefinitions;
                     break;
             }
@@ -611,44 +651,51 @@ class PromptManager {
             const entrySourceBlock = /** @type {HTMLDivElement} */(document.getElementById(this.configuration.prefix + 'prompt_manager_popup_entry_source_block'));
             const entrySource = /** @type {HTMLSpanElement} */(document.getElementById(this.configuration.prefix + 'prompt_manager_popup_entry_source'));
 
-            // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             nameField.value = prompt.name;
-            // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             roleField.value = 'system';
-            // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             promptField.value = prompt.content ?? '';
-            // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             injectionPositionField.value = (prompt.injection_position ?? 0).toString();
-            // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             injectionDepthField.value = (prompt.injection_depth ?? DEFAULT_DEPTH).toString();
-            // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             injectionOrderField.value = (prompt.injection_order ?? DEFAULT_ORDER).toString();
-            // @ts-expect-error TS(2339): Property 'options' does not exist on type 'HTMLEle... Remove this comment to see the full error message
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             Array.from(injectionTriggerField.options).forEach(option => {
-                // @ts-expect-error TS(2339): Property 'selected' does not exist on type 'unknow... Remove this comment to see the full error message
+                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 option.selected = false;
             });
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             injectionTriggerField.dispatchEvent(new Event('change', { bubbles: true }));
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             depthBlock.style.visibility = prompt.injection_position === INJECTION_POSITION.ABSOLUTE ? 'visible' : 'hidden';
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             orderBlock.style.visibility = prompt.injection_position === INJECTION_POSITION.ABSOLUTE ? 'visible' : 'hidden';
-            // @ts-expect-error TS(2339): Property 'checked' does not exist on type 'HTMLEle... Remove this comment to see the full error message
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             forbidOverridesField.checked = prompt.forbid_overrides ?? false;
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             forbidOverridesBlock.style.visibility = this.overridablePrompts.includes(prompt.identifier) ? 'visible' : 'hidden';
-            // @ts-expect-error TS(2339): Property 'disabled' does not exist on type 'HTMLEl... Remove this comment to see the full error message
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             promptField.disabled = prompt.marker ?? false;
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             entrySourceBlock.style.display = isPulledPrompt ? '' : 'none';
 
             if (isPulledPrompt) {
+                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 const sourceName = this.promptSources[promptId];
+                // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
                 entrySource.textContent = sourceName;
             }
         };
 
         // Append prompt to selected character
-        // @ts-expect-error TS(6133): 'event' is declared but its value is never read.
+        // @ts-expect-error TS(2322) FIXME: Type '(event: any) => void' is not assignable to t... Remove this comment to see the full error message
         this.handleAppendPrompt = (event) => {
             const appendPromptFooter = /** @type {HTMLSelectElement} */(document.getElementById(this.configuration.prefix + 'prompt_manager_footer_append_prompt'));
-            // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             const promptID = appendPromptFooter.value;
             const prompt = this.getPromptById(promptID);
 
@@ -660,17 +707,17 @@ class PromptManager {
         };
 
         // Delete selected prompt from list form and close edit form
-        // @ts-expect-error TS(6133): 'event' is declared but its value is never read.
         this.handleDeletePrompt = async (event) => {
             Popup.show.confirm(t`Are you sure you want to delete this prompt?`, null).then((userChoice) => {
                 if (!userChoice) return;
                 const appendPromptFooter = /** @type {HTMLSelectElement} */(document.getElementById(this.configuration.prefix + 'prompt_manager_footer_append_prompt'));
-                // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
+                // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
                 const promptID = appendPromptFooter.value;
                 const prompt = this.getPromptById(promptID);
 
                 if (prompt && true === this.isPromptDeletionAllowed(prompt)) {
                     const promptIndex = this.getPromptIndexById(promptID);
+                    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
                     this.serviceSettings.prompts.splice(Number(promptIndex), 1);
 
                     this.log('Deleted prompt: ' + prompt.identifier);
@@ -684,7 +731,7 @@ class PromptManager {
         };
 
         // Create new prompt, then save it to settings and close form.
-        // @ts-expect-error TS(6133): 'event' is declared but its value is never read.
+        // @ts-expect-error TS(2322) FIXME: Type '(event: any) => void' is not assignable to t... Remove this comment to see the full error message
         this.handleNewPrompt = (event) => {
             const prompt = {
                 identifier: this.getUuidv4(),
@@ -699,14 +746,18 @@ class PromptManager {
 
         // Export all user prompts
         this.handleFullExport = () => {
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             const prompts = this.serviceSettings.prompts.reduce((userPrompts, prompt) => {
                 if (false === prompt.system_prompt && false === prompt.marker) userPrompts.push(prompt);
                 return userPrompts;
             }, []);
 
             let promptOrder = [];
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             if ('global' === this.configuration.promptOrder.strategy) {
+                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 promptOrder = this.getPromptOrderForCharacter({ id: this.configuration.promptOrder.dummyId });
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             } else if ('character' === this.configuration.promptOrder.strategy) {
                 promptOrder = [];
             } else {
@@ -723,6 +774,7 @@ class PromptManager {
 
         // Export user prompts and order for this character
         this.handleCharacterExport = () => {
+            // @ts-expect-error TS(7006) FIXME: Parameter 'userPrompts' implicitly has an 'any' ty... Remove this comment to see the full error message
             const characterPrompts = this.getPromptsForCharacter(this.activeCharacter).reduce((userPrompts, prompt) => {
                 if (false === prompt.system_prompt && !prompt.marker) userPrompts.push(prompt);
                 return userPrompts;
@@ -735,6 +787,7 @@ class PromptManager {
                 prompt_order: characterList,
             };
 
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             const name = this.activeCharacter.name + '-prompts';
             this.export(exportPrompts, 'character', name);
         };
@@ -751,21 +804,25 @@ class PromptManager {
 
                     fileOpener.addEventListener('change', (event) => {
                         if (!(event.target instanceof HTMLInputElement)) return;
+                        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
                         const file = event.target.files[0];
                         if (!file) return;
 
                         const reader = new FileReader();
 
                         reader.onload = (event) => {
+                            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
                             const fileContent = event.target.result;
 
                             try {
+                                // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
                                 const data = JSON.parse(fileContent.toString());
                                 this.import(data);
                             } catch (err) {
-                                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+                                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                                 toastr.error(t`An error occurred while importing prompts. More info available in console.`);
                                 console.log('An error occurred while importing prompts');
+                                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                                 console.log(err.toString());
                             }
                         };
@@ -792,7 +849,9 @@ class PromptManager {
         };
 
         // Fill quick edit fields for the first time
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         if ('global' === this.configuration.promptOrder.strategy) {
+            // @ts-expect-error TS(7006) FIXME: Parameter 'event' implicitly has an 'any' type.
             const handleQuickEditSave = (event) => {
                 const promptId = event.target.dataset.pmPrompt;
                 const prompt = this.getPromptById(promptId);
@@ -802,8 +861,9 @@ class PromptManager {
                 // Update edit form if present
                 // @see https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/offsetParent
                 const popupEditFormPrompt = /** @type {HTMLTextAreaElement} */(document.getElementById(this.configuration.prefix + 'prompt_manager_popup_entry_form_prompt'));
+                // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
                 if (popupEditFormPrompt.offsetParent) {
-                    // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
+                    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
                     popupEditFormPrompt.value = prompt.content;
                 }
 
@@ -813,14 +873,17 @@ class PromptManager {
 
             const mainPrompt = this.getPromptById('main');
             const mainElementId = this.updateQuickEdit('main', mainPrompt);
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             document.getElementById(mainElementId).addEventListener('blur', handleQuickEditSave);
 
             const nsfwPrompt = this.getPromptById('nsfw');
             const nsfwElementId = this.updateQuickEdit('nsfw', nsfwPrompt);
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             document.getElementById(nsfwElementId).addEventListener('blur', handleQuickEditSave);
 
             const jailbreakPrompt = this.getPromptById('jailbreak');
             const jailbreakElementId = this.updateQuickEdit('jailbreak', jailbreakPrompt);
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             document.getElementById(jailbreakElementId).addEventListener('blur', handleQuickEditSave);
         }
 
@@ -835,43 +898,51 @@ class PromptManager {
         eventSource.on(event_types.CHATCOMPLETION_MODEL_CHANGED, () => this.renderDebounced());
 
         // Re-render when the character changes.
+        // @ts-expect-error TS(7006) FIXME: Parameter 'event' implicitly has an 'any' type.
         eventSource.on(event_types.CHAT_LOADED, (event) => {
             this.handleCharacterSelected(event);
             this.saveServiceSettings().then(() => this.renderDebounced());
         });
 
         // Re-render when the character gets edited.
+        // @ts-expect-error TS(7006) FIXME: Parameter 'event' implicitly has an 'any' type.
         eventSource.on(event_types.CHARACTER_EDITED, (event) => {
             this.handleCharacterUpdated(event);
             this.saveServiceSettings().then(() => this.renderDebounced());
         });
 
         // Re-render when the group changes.
+        // @ts-expect-error TS(7006) FIXME: Parameter 'event' implicitly has an 'any' type.
         eventSource.on('groupSelected', (event) => {
             this.handleGroupSelected(event);
             this.saveServiceSettings().then(() => this.renderDebounced());
         });
 
         // Sanitize settings after character has been deleted.
+        // @ts-expect-error TS(7006) FIXME: Parameter 'event' implicitly has an 'any' type.
         eventSource.on(event_types.CHARACTER_DELETED, (event) => {
             this.handleCharacterDeleted(event);
             this.saveServiceSettings().then(() => this.renderDebounced());
         });
 
         // Trigger re-render when token settings are changed
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         document.getElementById('openai_max_context').addEventListener('change', (event) => {
             if (!(event.target instanceof HTMLInputElement)) return;
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             this.serviceSettings.openai_max_context = event.target.value;
             if (this.activeCharacter) this.renderDebounced();
         });
 
-        // @ts-expect-error TS(6133): 'event' is declared but its value is never read.
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         document.getElementById('openai_max_tokens').addEventListener('change', (event) => {
             if (this.activeCharacter) this.renderDebounced();
         });
 
         // Prepare prompt edit form buttons
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         document.getElementById(this.configuration.prefix + 'prompt_manager_popup_entry_form_save').addEventListener('click', this.handleSavePrompt);
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         document.getElementById(this.configuration.prefix + 'prompt_manager_popup_entry_form_reset').addEventListener('click', this.handleResetPrompt);
 
         const closeAndClearPopup = () => {
@@ -881,7 +952,9 @@ class PromptManager {
         };
 
         // Clear forms on closing the popup
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         document.getElementById(this.configuration.prefix + 'prompt_manager_popup_entry_form_close').addEventListener('click', closeAndClearPopup);
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         document.getElementById(this.configuration.prefix + 'prompt_manager_popup_close_button').addEventListener('click', closeAndClearPopup);
         closeAndClearPopup();
 
@@ -920,6 +993,7 @@ class PromptManager {
      * Set the scroll position of the prompt manager
      * @param {number} scrollPosition - The scroll position to set
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'scrollPosition' implicitly has an 'any'... Remove this comment to see the full error message
     #setScrollPosition(scrollPosition) {
         if (scrollPosition === undefined || scrollPosition === null) return;
         document.getElementById(this.configuration.prefix + 'prompt_manager')?.closest('.scrollableInner')?.scrollTo(0, scrollPosition);
@@ -932,6 +1006,7 @@ class PromptManager {
     render(afterTryGenerate = true) {
         if (main_api !== 'openai') return;
 
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         if ('character' === this.configuration.promptOrder.strategy && null === this.activeCharacter) return;
         this.error = null;
 
@@ -969,6 +1044,7 @@ class PromptManager {
      * @param {Partial<Prompt>} prompt - The prompt to be updated.
      * @returns {void}
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'prompt' implicitly has an 'any' type.
     updatePromptWithPromptEditForm(prompt) {
         const nameField = /** @type {HTMLInputElement} */(document.getElementById(this.configuration.prefix + 'prompt_manager_popup_entry_form_name'));
         const roleField = /** @type {HTMLSelectElement} */(document.getElementById(this.configuration.prefix + 'prompt_manager_popup_entry_form_role'));
@@ -979,21 +1055,21 @@ class PromptManager {
         const injectionTriggerField = /** @type {HTMLSelectElement} */(document.getElementById(this.configuration.prefix + 'prompt_manager_popup_entry_form_injection_trigger'));
         const forbidOverridesField = /** @type {HTMLInputElement} */(document.getElementById(this.configuration.prefix + 'prompt_manager_popup_entry_form_forbid_overrides'));
 
-        // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         prompt.name = nameField.value;
-        // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         prompt.role = roleField.value;
-        // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         prompt.content = promptField.value;
-        // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         prompt.injection_position = Number(injectionPositionField.value);
-        // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         prompt.injection_depth = Number(injectionDepthField.value);
-        // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         prompt.injection_order = Number(injectionOrderField.value);
-        // @ts-expect-error TS(2339): Property 'selectedOptions' does not exist on type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         prompt.injection_trigger = Array.from(injectionTriggerField.selectedOptions).map(option => option.value);
-        // @ts-expect-error TS(2339): Property 'checked' does not exist on type 'HTMLEle... Remove this comment to see the full error message
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         prompt.forbid_overrides = forbidOverridesField.checked;
     }
 
@@ -1003,7 +1079,9 @@ class PromptManager {
      * @param {Prompt} updatePrompt - An object with properties to be updated in the prompt.
      * @returns {void}
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'identifier' implicitly has an 'any' typ... Remove this comment to see the full error message
     updatePromptByIdentifier(identifier, updatePrompt) {
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         let prompt = this.serviceSettings.prompts.find((item) => identifier === item.identifier);
         if (prompt) prompt = Object.assign(prompt, updatePrompt);
     }
@@ -1013,7 +1091,9 @@ class PromptManager {
      * @param {Prompt[]} prompts - An array of prompt updates.
      * @returns {void}
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'prompts' implicitly has an 'any' type.
     updatePrompts(prompts) {
+        // @ts-expect-error TS(7006) FIXME: Parameter 'update' implicitly has an 'any' type.
         prompts.forEach((update) => {
             const prompt = this.getPromptById(update.identifier);
             if (prompt) Object.assign(prompt, update);
@@ -1024,6 +1104,7 @@ class PromptManager {
         return this.tokenHandler;
     }
 
+    // @ts-expect-error TS(7006) FIXME: Parameter 'identifier' implicitly has an 'any' typ... Remove this comment to see the full error message
     isPromptDisabledForActiveCharacter(identifier) {
         const promptOrderEntry = this.getPromptOrderEntry(this.activeCharacter, identifier);
         if (promptOrderEntry) return !promptOrderEntry.enabled;
@@ -1036,8 +1117,10 @@ class PromptManager {
      * @param {object} character - The character whose prompt list will be updated.
      * @returns {void}
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'prompt' implicitly has an 'any' type.
     appendPrompt(prompt, character) {
         const promptOrder = this.getPromptOrderForCharacter(character);
+        // @ts-expect-error TS(7006) FIXME: Parameter 'entry' implicitly has an 'any' type.
         const index = promptOrder.findIndex(entry => entry.identifier === prompt.identifier);
 
         if (-1 === index) promptOrder.unshift({ identifier: prompt.identifier, enabled: false });
@@ -1050,8 +1133,10 @@ class PromptManager {
      * @returns {void}
      */
     // Remove a prompt from the current characters prompt list
+    // @ts-expect-error TS(7006) FIXME: Parameter 'prompt' implicitly has an 'any' type.
     detachPrompt(prompt, character) {
         const promptOrder = this.getPromptOrderForCharacter(character);
+        // @ts-expect-error TS(7006) FIXME: Parameter 'entry' implicitly has an 'any' type.
         const index = promptOrder.findIndex(entry => entry.identifier === prompt.identifier);
         if (-1 === index) return;
         promptOrder.splice(index, 1);
@@ -1063,6 +1148,7 @@ class PromptManager {
      * @param {string} identifier - The identifier for the new prompt.
      * @returns {void}
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'prompt' implicitly has an 'any' type.
     addPrompt(prompt, identifier) {
         if (typeof prompt !== 'object' || prompt === null) throw new Error('Object is not a prompt');
 
@@ -1074,6 +1160,7 @@ class PromptManager {
             ...prompt,
         };
 
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         this.serviceSettings.prompts.push(newPrompt);
     }
 
@@ -1082,10 +1169,14 @@ class PromptManager {
      * @returns {void}
      */
     sanitizeServiceSettings() {
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         this.serviceSettings.prompts = this.serviceSettings.prompts ?? [];
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         this.serviceSettings.prompt_order = this.serviceSettings.prompt_order ?? [];
 
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         if ('global' === this.configuration.promptOrder.strategy) {
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             const dummyCharacter = { id: this.configuration.promptOrder.dummyId };
             const promptOrder = this.getPromptOrderForCharacter(dummyCharacter);
 
@@ -1093,19 +1184,23 @@ class PromptManager {
         }
 
         // Check whether the referenced prompts are present.
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         if (this.serviceSettings.prompts.length === 0) {
             this.setPrompts(chatCompletionDefaultPrompts.prompts);
         } else {
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             this.checkForMissingPrompts(this.serviceSettings.prompts);
         }
 
         // Add identifiers if there are none assigned to a prompt
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         this.serviceSettings.prompts.forEach(prompt => prompt && (prompt.identifier = prompt.identifier ?? this.getUuidv4()));
 
         if (this.activeCharacter) {
             const promptReferences = this.getPromptOrderForCharacter(this.activeCharacter);
             for (let i = promptReferences.length - 1; i >= 0; i--) {
                 const reference = promptReferences[i];
+                // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
                 if (reference && -1 === this.serviceSettings.prompts.findIndex(prompt => prompt.identifier === reference.identifier)) {
                     promptReferences.splice(i, 1);
                     this.log('Removed unused reference: ' + reference.identifier);
@@ -1119,10 +1214,13 @@ class PromptManager {
      * and if all mandatory system prompts for a character are present.
      * @param prompts
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'prompts' implicitly has an 'any' type.
     checkForMissingPrompts(prompts) {
+        // @ts-expect-error TS(2345) FIXME: Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
         const defaultPromptIdentifiers = chatCompletionDefaultPrompts.prompts.reduce((list, prompt) => { list.push(prompt.identifier); return list; }, []);
 
         const missingIdentifiers = defaultPromptIdentifiers.filter(identifier =>
+            // @ts-expect-error TS(7006) FIXME: Parameter 'prompt' implicitly has an 'any' type.
             !prompts.some(prompt => prompt.identifier === identifier),
         );
 
@@ -1140,7 +1238,7 @@ class PromptManager {
      * @param {Prompt} prompt - The prompt to check.
      * @returns {boolean} True if the prompt is a marker, false otherwise.
      */
-    // @ts-expect-error TS(6133): 'prompt' is declared but its value is never read.
+    // @ts-expect-error TS(7006) FIXME: Parameter 'prompt' implicitly has an 'any' type.
     isPromptInspectionAllowed(prompt) {
         return true;
     }
@@ -1150,6 +1248,7 @@ class PromptManager {
      * @param {Prompt} prompt - The prompt to check.
      * @returns {boolean} True if the prompt can be deleted, false otherwise.
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'prompt' implicitly has an 'any' type.
     isPromptDeletionAllowed(prompt) {
         return false === prompt.system_prompt;
     }
@@ -1159,6 +1258,7 @@ class PromptManager {
      * @param {Prompt} prompt - The prompt to check.
      * @returns {boolean} True if the prompt can be edited, false otherwise.
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'prompt' implicitly has an 'any' type.
     isPromptEditAllowed(prompt) {
         const forceEditPrompts = [
             'charDescription',
@@ -1176,6 +1276,7 @@ class PromptManager {
      * @param {Prompt} prompt - The prompt to check.
      * @returns {boolean} True if the prompt can be deleted, false otherwise.
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'prompt' implicitly has an 'any' type.
     isPromptToggleAllowed(prompt) {
         const forceTogglePrompts = [
             'charDescription',
@@ -1188,6 +1289,7 @@ class PromptManager {
             'chatHistory',
             'dialogueExamples',
         ];
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         return prompt.marker && !forceTogglePrompts.includes(prompt.identifier) ? false : !this.configuration.toggleDisabled.includes(prompt.identifier);
     }
 
@@ -1196,9 +1298,12 @@ class PromptManager {
      * @param {object} event - The event object containing the character's ID.
      * @returns void
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'event' implicitly has an 'any' type.
     handleCharacterDeleted(event) {
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         if ('global' === this.configuration.promptOrder.strategy) return;
         this.removePromptOrderForCharacter(this.activeCharacter);
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         if (this.activeCharacter.id === event.detail.id) this.activeCharacter = null;
     }
 
@@ -1207,9 +1312,13 @@ class PromptManager {
      * @param {object} event - The event object containing the character's ID and character data.
      * @returns {void}
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'event' implicitly has an 'any' type.
     handleCharacterSelected(event) {
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         if ('global' === this.configuration.promptOrder.strategy) {
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             this.activeCharacter = { id: this.configuration.promptOrder.dummyId };
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         } else if ('character' === this.configuration.promptOrder.strategy) {
             console.log('FOO');
             this.activeCharacter = { id: event.detail.id, ...event.detail.character };
@@ -1227,9 +1336,13 @@ class PromptManager {
      * Set the most recently selected character
      * @param event
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'event' implicitly has an 'any' type.
     handleCharacterUpdated(event) {
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         if ('global' === this.configuration.promptOrder.strategy) {
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             this.activeCharacter = { id: this.configuration.promptOrder.dummyId };
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         } else if ('character' === this.configuration.promptOrder.strategy) {
             this.activeCharacter = { id: event.detail.id, ...event.detail.character };
         } else {
@@ -1241,9 +1354,13 @@ class PromptManager {
      * Set the most recently selected character group
      * @param event
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'event' implicitly has an 'any' type.
     handleGroupSelected(event) {
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         if ('global' === this.configuration.promptOrder.strategy) {
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             this.activeCharacter = { id: this.configuration.promptOrder.dummyId };
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         } else if ('character' === this.configuration.promptOrder.strategy) {
             const characterDummy = { id: event.detail.id, group: event.detail.group };
             this.activeCharacter = characterDummy;
@@ -1261,6 +1378,7 @@ class PromptManager {
      */
     getActiveGroupCharacters() {
         // ToDo: Ideally, this should return the actual characters.
+        // @ts-expect-error TS(2339) FIXME: Property 'group' does not exist on type 'object'.
         return (this.activeCharacter?.group?.members || []).map(member => member && member.substring(0, member.lastIndexOf('.')));
     }
 
@@ -1270,9 +1388,12 @@ class PromptManager {
      * @param character
      * @param onlyEnabled
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'character' implicitly has an 'any' type... Remove this comment to see the full error message
     getPromptsForCharacter(character, onlyEnabled = false) {
         return this.getPromptOrderForCharacter(character)
+            // @ts-expect-error TS(7006) FIXME: Parameter 'item' implicitly has an 'any' type.
             .map(item => true === onlyEnabled ? (true === item.enabled ? this.getPromptById(item.identifier) : null) : this.getPromptById(item.identifier))
+            // @ts-expect-error TS(7006) FIXME: Parameter 'prompt' implicitly has an 'any' type.
             .filter(prompt => null !== prompt);
     }
 
@@ -1281,7 +1402,9 @@ class PromptManager {
      * @param {object|null} character - The character to get the prompt list for.
      * @returns {Partial<Prompt>[]} The prompt list for the character, or an empty array.
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'character' implicitly has an 'any' type... Remove this comment to see the full error message
     getPromptOrderForCharacter(character) {
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         return !character ? [] : (this.serviceSettings.prompt_order.find(list => String(list.character_id) === String(character.id))?.order ?? []);
     }
 
@@ -1290,7 +1413,9 @@ class PromptManager {
      * @param {Partial<Prompt>[]} prompts - The prompts to be set.
      * @returns {void}
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'prompts' implicitly has an 'any' type.
     setPrompts(prompts) {
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         this.serviceSettings.prompts = prompts;
     }
 
@@ -1299,8 +1424,11 @@ class PromptManager {
      * @param {object} character - The character whose prompt list will be removed.
      * @returns {void}
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'character' implicitly has an 'any' type... Remove this comment to see the full error message
     removePromptOrderForCharacter(character) {
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         const index = this.serviceSettings.prompt_order.findIndex(list => String(list.character_id) === String(character.id));
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         if (-1 !== index) this.serviceSettings.prompt_order.splice(index, 1);
     }
 
@@ -1309,7 +1437,9 @@ class PromptManager {
      * @param {object} character - Object with at least an `id` property
      * @param {Array<object>} promptOrder - Array of prompt objects
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'character' implicitly has an 'any' type... Remove this comment to see the full error message
     addPromptOrderForCharacter(character, promptOrder) {
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         this.serviceSettings.prompt_order.push({
             character_id: character.id,
             order: JSON.parse(JSON.stringify(promptOrder)),
@@ -1322,7 +1452,9 @@ class PromptManager {
      * @param {string} identifier - Identifier of the prompt list entry
      * @returns {object | null} The prompt list entry object, or null if not found
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'character' implicitly has an 'any' type... Remove this comment to see the full error message
     getPromptOrderEntry(character, identifier) {
+        // @ts-expect-error TS(7006) FIXME: Parameter 'entry' implicitly has an 'any' type.
         return this.getPromptOrderForCharacter(character).find(entry => entry.identifier === identifier) ?? null;
     }
 
@@ -1331,7 +1463,9 @@ class PromptManager {
      * @param {string} identifier - Identifier of the prompt
      * @returns {Prompt|null} The prompt object, or null if not found
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'identifier' implicitly has an 'any' typ... Remove this comment to see the full error message
     getPromptById(identifier) {
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         return this.serviceSettings.prompts.find(item => item && item.identifier === identifier) ?? null;
     }
 
@@ -1340,7 +1474,9 @@ class PromptManager {
      * @param {string} identifier - Identifier of the prompt
      * @returns {number|null} Index of the prompt, or null if not found
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'identifier' implicitly has an 'any' typ... Remove this comment to see the full error message
     getPromptIndexById(identifier) {
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         return this.serviceSettings.prompts.findIndex(item => item.identifier === identifier) ?? null;
     }
 
@@ -1350,6 +1486,7 @@ class PromptManager {
      * @param original
      * @returns {Prompt} An object with "role" and "content" properties
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'prompt' implicitly has an 'any' type.
     preparePrompt(prompt, original = null) {
         const groupMembers = this.getActiveGroupCharacters();
         const preparedPrompt = new Prompt(prompt);
@@ -1373,6 +1510,7 @@ class PromptManager {
      * @param identifier
      * @param title
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'identifier' implicitly has an 'any' typ... Remove this comment to see the full error message
     createQuickEdit(identifier, title) {
         const prompt = this.getPromptById(identifier);
         const textareaIdentifier = `${identifier}_prompt_quick_edit_textarea`;
@@ -1384,13 +1522,15 @@ class PromptManager {
                     </div>`;
 
         const quickEditContainer = document.getElementById('quick-edit-container');
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         quickEditContainer.insertAdjacentHTML('afterbegin', html);
 
         const debouncedSaveServiceSettings = debouncePromise(() => this.saveServiceSettings(), 300);
 
         const textarea = /** @type {HTMLTextAreaElement} */(document.getElementById(textareaIdentifier));
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         textarea.addEventListener('blur', () => {
-            // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             prompt.content = textarea.value;
             this.updatePromptByIdentifier(identifier, prompt);
             debouncedSaveServiceSettings().then(() => this.render());
@@ -1403,10 +1543,11 @@ class PromptManager {
      * @param {Prompt} prompt - The updated prompt object.
      * @returns {string} The ID of the updated textarea element.
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'identifier' implicitly has an 'any' typ... Remove this comment to see the full error message
     updateQuickEdit(identifier, prompt) {
         const elementId = `${identifier}_prompt_quick_edit_textarea`;
         const textarea = /** @type {HTMLTextAreaElement} */(document.getElementById(elementId));
-        // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         textarea.value = prompt.content;
 
         return elementId;
@@ -1418,12 +1559,14 @@ class PromptManager {
      * @param name
      * @returns {boolean}
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
     isValidName(name) {
         const regex = /^[a-zA-Z0-9_]{1,64}$/;
 
         return regex.test(name);
     }
 
+    // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
     sanitizeName(name) {
         return name.replace(/[^a-zA-Z0-9_]/g, '_').substring(0, 64);
     }
@@ -1432,6 +1575,7 @@ class PromptManager {
      * Loads a given prompt into the edit form fields.
      * @param {Partial<Prompt>} prompt - Prompt object with properties 'name', 'role', 'content', and 'system_prompt'
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'prompt' implicitly has an 'any' type.
     loadPromptIntoEditForm(prompt) {
         const nameField = /** @type {HTMLInputElement} */(document.getElementById(this.configuration.prefix + 'prompt_manager_popup_entry_form_name'));
         const roleField = /** @type {HTMLSelectElement} */(document.getElementById(this.configuration.prefix + 'prompt_manager_popup_entry_form_role'));
@@ -1448,65 +1592,82 @@ class PromptManager {
         const entrySource = /** @type {HTMLSpanElement} */(document.getElementById(this.configuration.prefix + 'prompt_manager_popup_entry_source'));
         const isPulledPrompt = Object.keys(this.promptSources).includes(prompt.identifier);
 
-        // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         nameField.value = prompt.name ?? '';
-        // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         roleField.value = prompt.role || 'system';
-        // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         promptField.value = prompt.content ?? '';
-        // @ts-expect-error TS(2339): Property 'disabled' does not exist on type 'HTMLEl... Remove this comment to see the full error message
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         promptField.disabled = prompt.marker ?? false;
-        // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         injectionPositionField.value = (prompt.injection_position ?? INJECTION_POSITION.RELATIVE).toString();
-        // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         injectionDepthField.value = (prompt.injection_depth ?? DEFAULT_DEPTH).toString();
-        // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         injectionOrderField.value = (prompt.injection_order ?? DEFAULT_ORDER).toString();
-        // @ts-expect-error TS(2339): Property 'options' does not exist on type 'HTMLEle... Remove this comment to see the full error message
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         Array.from(injectionTriggerField.options).forEach(option => {
-            // @ts-expect-error TS(2339): Property 'selected' does not exist on type 'unknow... Remove this comment to see the full error message
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             option.selected = Array.isArray(prompt.injection_trigger) && prompt.injection_trigger.includes(option.value);
         });
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         injectionTriggerField.dispatchEvent(new Event('change', { bubbles: true }));
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         injectionDepthBlock.style.visibility = prompt.injection_position === INJECTION_POSITION.ABSOLUTE ? 'visible' : 'hidden';
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         injectionOrderBlock.style.visibility = prompt.injection_position === INJECTION_POSITION.ABSOLUTE ? 'visible' : 'hidden';
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         injectionPositionField.removeAttribute('disabled');
-        // @ts-expect-error TS(2339): Property 'checked' does not exist on type 'HTMLEle... Remove this comment to see the full error message
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         forbidOverridesField.checked = prompt.forbid_overrides ?? false;
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         forbidOverridesBlock.style.visibility = this.overridablePrompts.includes(prompt.identifier) ? 'visible' : 'hidden';
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         entrySourceBlock.style.display = isPulledPrompt ? '' : 'none';
 
         if (isPulledPrompt) {
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             const sourceName = this.promptSources[prompt.identifier];
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             entrySource.textContent = sourceName;
         }
 
         const resetPromptButton = document.getElementById(this.configuration.prefix + 'prompt_manager_popup_entry_form_reset');
         if (true === prompt.system_prompt) {
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             resetPromptButton.style.display = 'block';
-            // @ts-expect-error TS(4111): Property 'pmPrompt' comes from an index signature,... Remove this comment to see the full error message
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             resetPromptButton.dataset.pmPrompt = prompt.identifier;
         } else {
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             resetPromptButton.style.display = 'none';
         }
 
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         injectionPositionField.removeEventListener('change', (e) => this.handleInjectionPositionChange(e));
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         injectionPositionField.addEventListener('change', (e) => this.handleInjectionPositionChange(e));
 
         const savePromptButton = document.getElementById(this.configuration.prefix + 'prompt_manager_popup_entry_form_save');
-        // @ts-expect-error TS(4111): Property 'pmPrompt' comes from an index signature,... Remove this comment to see the full error message
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         savePromptButton.dataset.pmPrompt = prompt.identifier;
     }
 
+    // @ts-expect-error TS(7006) FIXME: Parameter 'event' implicitly has an 'any' type.
     handleInjectionPositionChange(event) {
         const injectionDepthBlock = document.getElementById(this.configuration.prefix + 'prompt_manager_depth_block');
         const injectionOrderBlock = document.getElementById(this.configuration.prefix + 'prompt_manager_order_block');
         const injectionPosition = Number(event.target.value);
         if (injectionPosition === INJECTION_POSITION.ABSOLUTE) {
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             injectionDepthBlock.style.visibility = 'visible';
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             injectionOrderBlock.style.visibility = 'visible';
         } else {
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             injectionDepthBlock.style.visibility = 'hidden';
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             injectionOrderBlock.style.visibility = 'hidden';
         }
     }
@@ -1515,9 +1676,11 @@ class PromptManager {
      * Loads a given prompt into the inspect form
      * @param {MessageCollection} messages - Prompt object with properties 'name', 'role', 'content', and 'system_prompt'
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'messages' implicitly has an 'any' type.
     loadMessagesIntoInspectForm(messages) {
         if (!messages) return;
 
+        // @ts-expect-error TS(7006) FIXME: Parameter 'message' implicitly has an 'any' type.
         const createInlineDrawer = (message) => {
             const truncatedTitle = message.content.length > 32 ? message.content.slice(0, 32) + '...' : message.content;
             const title = message.identifier || truncatedTitle;
@@ -1544,9 +1707,12 @@ class PromptManager {
 
         const messagesCollection = messages instanceof Message ? [messages] : messages.getCollection();
 
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         if (0 === messagesCollection.length) messageList.innerHTML = '<span>This marker does not contain any prompts.</span>';
 
+        // @ts-expect-error TS(7006) FIXME: Parameter 'message' implicitly has an 'any' type.
         messagesCollection.forEach(message => {
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             messageList.append(createInlineDrawer(message));
         });
     }
@@ -1556,6 +1722,7 @@ class PromptManager {
      */
     clearEditForm() {
         const editArea = document.getElementById(this.configuration.prefix + 'prompt_manager_popup_edit');
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         editArea.style.display = 'none';
 
         const nameField = /** @type {HTMLInputElement} */(document.getElementById(this.configuration.prefix + 'prompt_manager_popup_entry_form_name'));
@@ -1572,39 +1739,47 @@ class PromptManager {
         const entrySourceBlock = /** @type {HTMLDivElement} */(document.getElementById(this.configuration.prefix + 'prompt_manager_popup_entry_source_block'));
         const entrySource = /** @type {HTMLSpanElement} */(document.getElementById(this.configuration.prefix + 'prompt_manager_popup_entry_source'));
 
-        // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         nameField.value = '';
-        // @ts-expect-error TS(2339): Property 'selectedIndex' does not exist on type 'H... Remove this comment to see the full error message
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         roleField.selectedIndex = 0;
-        // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         promptField.value = '';
-        // @ts-expect-error TS(2339): Property 'disabled' does not exist on type 'HTMLEl... Remove this comment to see the full error message
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         promptField.disabled = false;
-        // @ts-expect-error TS(2339): Property 'selectedIndex' does not exist on type 'H... Remove this comment to see the full error message
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         injectionPositionField.selectedIndex = 0;
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         injectionPositionField.removeAttribute('disabled');
-        // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         injectionDepthField.value = DEFAULT_DEPTH.toString();
-        // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         injectionOrderField.value = DEFAULT_ORDER.toString();
-        // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         injectionTriggerField.value = '';
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         injectionDepthBlock.style.visibility = 'unset';
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         injectionOrderBlock.style.visibility = 'unset';
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         forbidOverridesBlock.style.visibility = 'unset';
-        // @ts-expect-error TS(2339): Property 'checked' does not exist on type 'HTMLEle... Remove this comment to see the full error message
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         forbidOverridesField.checked = false;
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         entrySourceBlock.style.display = 'none';
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         entrySource.textContent = '';
 
-        // @ts-expect-error TS(2339): Property 'disabled' does not exist on type 'HTMLEl... Remove this comment to see the full error message
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         roleField.disabled = false;
     }
 
     clearInspectForm() {
         const inspectArea = document.getElementById(this.configuration.prefix + 'prompt_manager_popup_inspect');
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         inspectArea.style.display = 'none';
         const messageList = document.getElementById(this.configuration.prefix + 'prompt_manager_popup_entry_form_inspect_list');
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         messageList.innerHTML = '';
     }
 
@@ -1613,11 +1788,13 @@ class PromptManager {
      * @param {string} generationType - The type of generation, e.g., 'continue' or 'quiet'.
      * @returns {PromptCollection} A PromptCollection object
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'generationType' implicitly has an 'any'... Remove this comment to see the full error message
     getPromptCollection(generationType) {
         generationType = String(generationType || 'normal').toLowerCase().trim();
         const promptCollection = new PromptCollection();
         const promptOrder = this.getPromptOrderForCharacter(this.activeCharacter);
 
+        // @ts-expect-error TS(7006) FIXME: Parameter 'entry' implicitly has an 'any' type.
         promptOrder.forEach(entry => {
             const prompt = this.getPromptById(entry.identifier);
             const allowedTrigger = entry.enabled && this.shouldTrigger(prompt, generationType);
@@ -1646,6 +1823,7 @@ class PromptManager {
      * @param {string} generationType - The type of generation to check against.
      * @returns {boolean} True if the prompt should be triggered, false otherwise.
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'prompt' implicitly has an 'any' type.
     shouldTrigger(prompt, generationType) {
         if (!Array.isArray(prompt?.injection_trigger)) return true;
         if (!prompt.injection_trigger.length) return true;
@@ -1656,6 +1834,7 @@ class PromptManager {
      * Setter for messages property
      * @param {import('./openai.js').MessageCollection} messages
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'messages' implicitly has an 'any' type.
     setMessages(messages) {
         this.messages = messages;
     }
@@ -1664,6 +1843,7 @@ class PromptManager {
      * Set and process a finished chat completion object
      * @param {import('./openai.js').ChatCompletion} chatCompletion
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'chatCompletion' implicitly has an 'any'... Remove this comment to see the full error message
     setChatCompletion(chatCompletion) {
         const messages = chatCompletion.getMessages();
 
@@ -1676,13 +1856,18 @@ class PromptManager {
      * Populates the token handler
      * @param {import('./openai.js').MessageCollection} messages
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'messages' implicitly has an 'any' type.
     populateTokenCounts(messages) {
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         this.tokenHandler.resetCounts();
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         const counts = this.tokenHandler.getCounts();
+        // @ts-expect-error TS(7006) FIXME: Parameter 'message' implicitly has an 'any' type.
         messages.getCollection().forEach(message => {
             counts[message.identifier] = message.getTokens();
         });
 
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         this.tokenUsage = this.tokenHandler.getTotal();
 
         this.log('Updated token usage with ' + this.tokenUsage);
@@ -1698,6 +1883,7 @@ class PromptManager {
             selectedPromptIndex = existingAppendSelect.selectedIndex;
         }
         const promptManagerDiv = this.containerElement;
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         promptManagerDiv.innerHTML = '';
 
         const errorDiv = this.error ? `
@@ -1709,11 +1895,14 @@ class PromptManager {
         const totalActiveTokens = this.tokenUsage;
 
         const headerHtml = await renderTemplateAsync('promptManagerHeader', { error: this.error, errorDiv, prefix: this.configuration.prefix, totalActiveTokens });
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         promptManagerDiv.insertAdjacentHTML('beforeend', headerHtml);
 
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         this.listElement = promptManagerDiv.querySelector(`#${this.configuration.prefix}prompt_manager_list`);
 
         if (null !== this.activeCharacter) {
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             const prompts = [...this.serviceSettings.prompts]
                 .filter(prompt => prompt && !prompt?.system_prompt)
                 .sort((promptA, promptB) => promptA.name.localeCompare(promptB.name));
@@ -1727,20 +1916,31 @@ class PromptManager {
                 selectedPromptIndex = 0;
             }
 
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             const rangeBlockDiv = promptManagerDiv.querySelector('.range-block');
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             const headerDiv = promptManagerDiv.querySelector('.completion_prompt_manager_header');
             const footerHtml = await renderTemplateAsync('promptManagerFooter', { promptsHtml, prefix: this.configuration.prefix });
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             headerDiv.insertAdjacentHTML('afterend', footerHtml);
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             rangeBlockDiv.querySelector('#prompt-manager-reset-character').addEventListener('click', this.handleCharacterReset);
 
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             const footerDiv = rangeBlockDiv.querySelector(`.${this.configuration.prefix}prompt_manager_footer`);
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             footerDiv.querySelector('.menu_button:nth-child(2)').addEventListener('click', this.handleAppendPrompt);
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             footerDiv.querySelector('.caution').addEventListener('click', this.handleDeletePrompt);
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             footerDiv.querySelector('.menu_button:last-child').addEventListener('click', this.handleNewPrompt);
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             footerDiv.querySelector('select').selectedIndex = selectedPromptIndex;
 
             // Add prompt export dialogue and options
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             footerDiv.querySelector('#prompt-manager-import').addEventListener('click', this.handleImport);
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             footerDiv.querySelector('#prompt-manager-export').addEventListener('click', this.handleFullExport);
         }
     }
@@ -1749,15 +1949,18 @@ class PromptManager {
      * Empties, then re-assembles the prompt list
      */
     async renderPromptManagerListItems() {
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         if (!this.serviceSettings.prompts) return;
 
         const promptManagerList = this.listElement;
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         promptManagerList.innerHTML = '';
 
         const { prefix } = this.configuration;
 
         let listItemHtml = await renderTemplateAsync('promptManagerListHeader', { prefix });
 
+        // @ts-expect-error TS(7006) FIXME: Parameter 'prompt' implicitly has an 'any' type.
         this.getPromptsForCharacter(this.activeCharacter).forEach(prompt => {
             if (!prompt) return;
 
@@ -1765,21 +1968,25 @@ class PromptManager {
             const enabledClass = listEntry.enabled ? '' : `${prefix}prompt_manager_prompt_disabled`;
             const draggableClass = `${prefix}prompt_manager_prompt_draggable`;
             const markerClass = prompt.marker ? `${prefix}prompt_manager_marker` : '';
+            // @ts-expect-error TS(2339) FIXME: Property 'getCounts' does not exist on type 'objec... Remove this comment to see the full error message
             const tokens = this.tokenHandler?.getCounts()[prompt.identifier] ?? 0;
 
             // Warn the user if the chat history goes below certain token thresholds.
             let warningClass = '';
             let warningTitle = '';
 
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             const tokenBudget = this.serviceSettings.openai_max_context - this.serviceSettings.openai_max_tokens;
             if (this.tokenUsage > tokenBudget * 0.8 &&
                 'chatHistory' === prompt.identifier) {
                 const warningThreshold = this.configuration.warningTokenThreshold;
                 const dangerThreshold = this.configuration.dangerTokenThreshold;
 
+                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 if (tokens <= dangerThreshold) {
                     warningClass = 'fa-solid tooltip fa-triangle-exclamation text_danger';
                     warningTitle = 'Very little of your chat history is being sent, consider deactivating some other prompts.';
+                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 } else if (tokens <= warningThreshold) {
                     warningClass = 'fa-solid tooltip fa-triangle-exclamation text_warning';
                     warningTitle = 'Only a few messages worth chat history are being sent.';
@@ -1830,7 +2037,9 @@ class PromptManager {
                 assistant: { roleIcon: 'fa-robot', roleTitle: 'Prompt will be sent as Assistant' },
                 user: { roleIcon: 'fa-user', roleTitle: 'Prompt will be sent as User' },
             };
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             const roleIcon = promptRoles[iconLookup]?.roleIcon || '';
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             const roleTitle = promptRoles[iconLookup]?.roleTitle || '';
 
             listItemHtml += `
@@ -1860,26 +2069,29 @@ class PromptManager {
             `;
         });
 
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         promptManagerList.insertAdjacentHTML('beforeend', listItemHtml);
 
         // Now that the new elements are in the DOM, you can add the event listeners.
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         Array.from(promptManagerList.getElementsByClassName('prompt-manager-detach-action')).forEach(el => {
-            // @ts-expect-error TS(2339): Property 'addEventListener' does not exist on type... Remove this comment to see the full error message
             el.addEventListener('click', this.handleDetach);
         });
 
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         Array.from(promptManagerList.getElementsByClassName('prompt-manager-inspect-action')).forEach(el => {
-            // @ts-expect-error TS(2339): Property 'addEventListener' does not exist on type... Remove this comment to see the full error message
             el.addEventListener('click', this.handleInspect);
         });
 
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         Array.from(promptManagerList.getElementsByClassName('prompt-manager-edit-action')).forEach(el => {
-            // @ts-expect-error TS(2339): Property 'addEventListener' does not exist on type... Remove this comment to see the full error message
+            // @ts-expect-error TS(2769) FIXME: No overload matches this call.
             el.addEventListener('click', this.handleEdit);
         });
 
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         Array.from(promptManagerList.querySelectorAll('.prompt-manager-toggle-action')).forEach(el => {
-            // @ts-expect-error TS(2339): Property 'addEventListener' does not exist on type... Remove this comment to see the full error message
+            // @ts-expect-error TS(2769) FIXME: No overload matches this call.
             el.addEventListener('click', this.handleToggle);
         });
     }
@@ -1890,6 +2102,7 @@ class PromptManager {
      * @param type
      * @param name
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
     export(data, type, name = 'export') {
         const promptExport = {
             version: this.configuration.version,
@@ -1915,7 +2128,9 @@ class PromptManager {
      * Imports a json file with prompts and an optional prompt list for the active character
      * @param importData
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'importData' implicitly has an 'any' typ... Remove this comment to see the full error message
     import(importData) {
+        // @ts-expect-error TS(7006) FIXME: Parameter 'prompts' implicitly has an 'any' type.
         const mergeKeepNewer = (prompts, newPrompts) => {
             let merged = [...prompts, ...newPrompts];
 
@@ -1939,31 +2154,36 @@ class PromptManager {
         };
 
         if (false === this.validateObject(controlObj, importData)) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.warning(t`Could not import prompts. Export failed validation.`);
             return;
         }
 
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         const prompts = mergeKeepNewer(this.serviceSettings.prompts, importData.data.prompts);
 
         this.setPrompts(prompts);
         this.log('Prompt import succeeded');
 
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         if ('global' === this.configuration.promptOrder.strategy) {
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             const promptOrder = this.getPromptOrderForCharacter({ id: this.configuration.promptOrder.dummyId });
             Object.assign(promptOrder, importData.data.prompt_order);
             this.log('Prompt order import succeeded');
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         } else if ('character' === this.configuration.promptOrder.strategy) {
             if ('character' === importData.type) {
                 const promptOrder = this.getPromptOrderForCharacter(this.activeCharacter);
                 Object.assign(promptOrder, importData.data.prompt_order);
+                // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
                 this.log(`Prompt order import for character ${this.activeCharacter.name} succeeded`);
             }
         } else {
             throw new Error('Prompt order strategy not supported.');
         }
 
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.success(t`Prompt import complete.`);
         this.saveServiceSettings().then(() => this.render());
     }
@@ -1974,6 +2194,7 @@ class PromptManager {
      * @param object
      * @returns {boolean}
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'controlObj' implicitly has an 'any' typ... Remove this comment to see the full error message
     validateObject(controlObj, object) {
         for (const key in controlObj) {
             if (!Object.hasOwn(object, key)) {
@@ -2015,22 +2236,25 @@ class PromptManager {
      * @returns {void}
      */
     makeDraggable() {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(`#${this.configuration.prefix}prompt_manager_list`).sortable({
             delay: this.configuration.sortableDelay,
             handle: isMobile() ? '.drag-handle' : null,
             items: `.${this.configuration.prefix}prompt_manager_prompt_draggable`,
-            // @ts-expect-error TS(6133): 'event' is declared but its value is never read.
+            // @ts-expect-error TS(7006) FIXME: Parameter 'event' implicitly has an 'any' type.
             update: (event, ui) => {
                 const promptOrder = this.getPromptOrderForCharacter(this.activeCharacter);
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 const promptListElement = $(`#${this.configuration.prefix}prompt_manager_list`).sortable('toArray', { attribute: 'data-pm-identifier' });
+                // @ts-expect-error TS(7006) FIXME: Parameter 'prompt' implicitly has an 'any' type.
                 const idToObjectMap = new Map(promptOrder.map(prompt => [prompt.identifier, prompt]));
+                // @ts-expect-error TS(7006) FIXME: Parameter 'identifier' implicitly has an 'any' typ... Remove this comment to see the full error message
                 const updatedPromptOrder = promptListElement.map(identifier => idToObjectMap.get(identifier));
 
                 this.removePromptOrderForCharacter(this.activeCharacter);
                 this.addPromptOrderForCharacter(this.activeCharacter, updatedPromptOrder);
 
+                // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
                 this.log(`Prompt order updated for ${this.activeCharacter.name}.`);
 
                 this.saveServiceSettings();
@@ -2045,9 +2269,10 @@ class PromptManager {
      */
     showPopup(area = 'edit') {
         const areaElement = document.getElementById(this.configuration.prefix + 'prompt_manager_popup_' + area);
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         areaElement.style.display = 'flex';
 
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#' + this.configuration.prefix + 'prompt_manager_popup')
             .slideDown(200, 'swing')
             .addClass('openDrawer');
@@ -2058,7 +2283,7 @@ class PromptManager {
      * @returns {void}
      */
     hidePopup() {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#' + this.configuration.prefix + 'prompt_manager_popup')
             .slideUp(200, 'swing')
             .removeClass('openDrawer');
@@ -2076,6 +2301,7 @@ class PromptManager {
      * Write to console with prefix
      * @param output
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'output' implicitly has an 'any' type.
     log(output) {
         if (power_user.console_log_prompts) console.log('[PromptManager] ' + output);
     }
@@ -2084,6 +2310,7 @@ class PromptManager {
      * Start a profiling task
      * @param identifier
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'identifier' implicitly has an 'any' typ... Remove this comment to see the full error message
     profileStart(identifier) {
         if (power_user.console_log_prompts) console.time(identifier);
     }
@@ -2092,6 +2319,7 @@ class PromptManager {
      * End a profiling task
      * @param identifier
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'identifier' implicitly has an 'any' typ... Remove this comment to see the full error message
     profileEnd(identifier) {
         if (power_user.console_log_prompts) {
             this.log('Profiling of "' + identifier + '" finished. Result below.');

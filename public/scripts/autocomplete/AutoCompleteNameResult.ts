@@ -1,5 +1,4 @@
 import { AutoCompleteNameResultBase } from './AutoCompleteNameResultBase.js';
-// @ts-expect-error TS(6133): 'AutoCompleteSecondaryNameResult' is declared but ... Remove this comment to see the full error message
 import { AutoCompleteSecondaryNameResult } from './AutoCompleteSecondaryNameResult.js';
 
 
@@ -11,7 +10,7 @@ export class AutoCompleteNameResult extends AutoCompleteNameResultBase {
      * @param {boolean} isSelect Whether autocomplete was triggered by selecting an autocomplete option
      * @returns {AutoCompleteSecondaryNameResult}
      */
-    // @ts-expect-error TS(6133): 'text' is declared but its value is never read.
+    // @ts-expect-error TS(7006) FIXME: Parameter 'text' implicitly has an 'any' type.
     getSecondaryNameAt(text, index, isSelect) {
         return null;
     }

@@ -1,6 +1,8 @@
+// @ts-expect-error TS(1192) FIXME: Module '"node:fs"' has no default export.
 import fs from 'node:fs';
+// @ts-expect-error TS(1259) FIXME: Module '"node:path"' can only be default-imported ... Remove this comment to see the full error message
 import path from 'node:path';
-// @ts-expect-error TS(2792): Cannot find module 'sanitize-filename'. Did you me... Remove this comment to see the full error message
+// @ts-expect-error TS(2792) FIXME: Cannot find module 'sanitize-filename'. Did you me... Remove this comment to see the full error message
 import sanitize from 'sanitize-filename';
 import { sync as writeFileAtomicSync } from 'write-file-atomic';
 import { extractFileFromZipBuffer, extractFilesFromZipBuffer, normalizeZipEntryPath, ensureDirectory } from './util.js';
@@ -65,6 +67,7 @@ export class CharXParser {
      */
     async parse() {
         console.info('Importing from CharX');
+        // @ts-expect-error TS(2345) FIXME: Argument of type 'Buffer' is not assignable to par... Remove this comment to see the full error message
         const cardBuffer = await extractFileFromZipBuffer(this.#data, 'card.json');
 
         if (!cardBuffer) {
@@ -94,7 +97,7 @@ export class CharXParser {
 
         let extractedBuffers = new Map();
         if (archivePaths.size > 0) {
-            // @ts-expect-error TS(2740): Type '{}' is missing the following properties from... Remove this comment to see the full error message
+            // @ts-expect-error TS(2345) FIXME: Argument of type 'Buffer' is not assignable to par... Remove this comment to see the full error message
             extractedBuffers = await extractFilesFromZipBuffer(this.#data, [...archivePaths]);
         }
 
@@ -171,6 +174,7 @@ export class CharXParser {
     }
 
     collectCharXAssets(card: object) {
+        // @ts-expect-error TS(2339) FIXME: Property 'data' does not exist on type 'object'.
         const assets = card?.data?.assets;
         if (!Array.isArray(assets)) {
             return [];
@@ -200,12 +204,15 @@ export class CharXParser {
         }).filter(Boolean);
     }
 
+    // @ts-expect-error TS(2304) FIXME: Cannot find name 'CharXAsset'.
     pickCharXIconAsset(assets: Array<CharXAsset>) {
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'CharXAsset'.
         const iconAssets = assets.filter((asset: CharXAsset) => asset.type === 'icon' && CHARX_IMAGE_EXTENSIONS.has(asset.ext) && asset.zipPath);
         if (iconAssets.length === 0) {
             return null;
         }
 
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'CharXAsset'.
         const mainIcon = iconAssets.find((asset: CharXAsset) => asset.name?.toLowerCase() === 'main');
         return mainIcon || iconAssets[0];
     }
@@ -238,7 +245,9 @@ export class CharXParser {
         return (sanitized || fallback).toLowerCase();
     }
 
+    // @ts-expect-error TS(2304) FIXME: Cannot find name 'CharXAsset'.
     mapCharXAssetsForStorage(assets: Array<CharXAsset>) {
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'CharXAsset'.
         return assets.reduce((acc: Array<CharXAsset>, asset: CharXAsset) => {
             if (!asset?.zipPath) {
                 return acc;
@@ -287,6 +296,7 @@ export class CharXParser {
  */
 function deleteExistingByBaseName(dirPath: string, baseName: string) {
     try {
+        // @ts-expect-error TS(7006) FIXME: Parameter 'f' implicitly has an 'any' type.
         const files = fs.readdirSync(dirPath, { withFileTypes: true }).filter(f => f.isFile()).map(f => f.name);
         for (const file of files) {
             if (path.parse(file).name === baseName) {
@@ -307,6 +317,7 @@ function deleteExistingByBaseName(dirPath: string, baseName: string) {
  * @param {string} characterFolder - Character folder name (sanitized)
  * @returns {{sprites: number, backgrounds: number, misc: number}}
  */
+// @ts-expect-error TS(2304) FIXME: Cannot find name 'CharXAsset'.
 export function persistCharXAssets(assets: Array<CharXAsset>, bufferMap: Map<string, Buffer>, directories: Record<string, string>, characterFolder: string) {
     /** @type {{sprites: number, backgrounds: number, misc: number}} */
     const summary = { sprites: 0, backgrounds: 0, misc: 0 };
@@ -392,6 +403,7 @@ export function persistCharXAssets(assets: Array<CharXAsset>, bufferMap: Map<str
                 summary.misc += 1;
             }
         } catch (error) {
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             console.warn(`CharX: Failed to save asset "${asset.name}": ${error.message}`);
         }
     }

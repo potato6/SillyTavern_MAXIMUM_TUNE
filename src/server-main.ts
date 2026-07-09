@@ -1,23 +1,38 @@
 // native node modules
+// @ts-expect-error TS(1192) FIXME: Module '"node:fs"' has no default export.
 import fs from 'node:fs';
+// @ts-expect-error TS(1259) FIXME: Module '"node:path"' can only be default-imported ... Remove this comment to see the full error message
 import path from 'node:path';
+// @ts-expect-error TS(1192) FIXME: Module '"node:util"' has no default export.
 import util from 'node:util';
+// @ts-expect-error TS(1192) FIXME: Module '"node:net"' has no default export.
 import net from 'node:net';
+// @ts-expect-error TS(1192) FIXME: Module '"node:dns"' has no default export.
 import dns from 'node:dns';
+// @ts-expect-error TS(1259) FIXME: Module '"node:process"' can only be default-import... Remove this comment to see the full error message
 import process from 'node:process';
+// @ts-expect-error TS(1192) FIXME: Module '"node:http"' has no default export.
 import http from 'node:http';
+// @ts-expect-error TS(1192) FIXME: Module '"node:https"' has no default export.
 import https from 'node:https';
 
+// @ts-expect-error TS(1259) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import cors from 'cors';
-// @ts-expect-error TS(2792): Cannot find module 'csrf-sync'. Did you mean to se... Remove this comment to see the full error message
+// @ts-expect-error TS(2792) FIXME: Cannot find module 'csrf-sync'. Did you mean to se... Remove this comment to see the full error message
 import { csrfSync } from 'csrf-sync';
+// @ts-expect-error TS(1259) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import express from 'express';
+// @ts-expect-error TS(1259) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import compression from 'compression';
+// @ts-expect-error TS(1259) FIXME: Module '"cookie-session"' can only be default-impo... Remove this comment to see the full error message
 import cookieSession from 'cookie-session';
+// @ts-expect-error TS(1259) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import multer from 'multer';
+// @ts-expect-error TS(1259) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import responseTime from 'response-time';
-// @ts-expect-error TS(2792): Cannot find module 'helmet'. Did you mean to set t... Remove this comment to see the full error message
+// @ts-expect-error TS(2792) FIXME: Cannot find module 'helmet'. Did you mean to set t... Remove this comment to see the full error message
 import helmet from 'helmet';
+// @ts-expect-error TS(1259) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import bodyParser from 'body-parser';
 
 // local library imports
@@ -81,7 +96,6 @@ import { migrateGroupChatsMetadataFormat } from './endpoints/groups.js';
 // https://github.com/nodejs/node/issues/47822#issuecomment-1564708870
 // Safe to remove once support for Node v20 is dropped.
 if (process.versions && process.versions.node && process.versions.node.match(/20\.[0-2]\.0/)) {
-    // @ts-expect-error TS(2339): Property 'setDefaultAutoSelectFamily' does not exi... Remove this comment to see the full error message
     if (net.setDefaultAutoSelectFamily) net.setDefaultAutoSelectFamily(false);
 }
 
@@ -113,13 +127,20 @@ app.use(bodyParser.json({ limit: '500mb' }));
 app.use(bodyParser.urlencoded({ extended: true, limit: '500mb' }));
 
 // CORS Settings //
+// @ts-expect-error TS(2345) FIXME: Argument of type 'true' is not assignable to param... Remove this comment to see the full error message
 const corsEnabled = getConfigValue('cors.enabled', true, 'boolean');
 if (corsEnabled) {
+    // @ts-expect-error TS(2345) FIXME: Argument of type '"null"' is not assignable to par... Remove this comment to see the full error message
     const corsOrigin = getConfigValue('cors.origin', 'null');
+    // @ts-expect-error TS(2345) FIXME: Argument of type 'string[]' is not assignable to p... Remove this comment to see the full error message
     const corsMethods = getConfigValue('cors.methods', ['OPTIONS']);
+    // @ts-expect-error TS(2345) FIXME: Argument of type 'never[]' is not assignable to pa... Remove this comment to see the full error message
     const corsAllowedHeaders = getConfigValue('cors.allowedHeaders', []);
+    // @ts-expect-error TS(2345) FIXME: Argument of type 'never[]' is not assignable to pa... Remove this comment to see the full error message
     const corsExposedHeaders = getConfigValue('cors.exposedHeaders', []);
+    // @ts-expect-error TS(2345) FIXME: Argument of type 'false' is not assignable to para... Remove this comment to see the full error message
     const corsCredentials = getConfigValue('cors.credentials', false, 'boolean');
+    // @ts-expect-error TS(2345) FIXME: Argument of type '"number"' is not assignable to p... Remove this comment to see the full error message
     const corsMaxAge = getConfigValue('cors.maxAge', null, 'number');
 
     /** @type {cors.CorsOptions} */
@@ -129,15 +150,15 @@ if (corsEnabled) {
         credentials: corsCredentials,
     };
     if (Array.isArray(corsAllowedHeaders) && corsAllowedHeaders.length > 0) {
-        // @ts-expect-error TS(2339): Property 'allowedHeaders' does not exist on type '... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'allowedHeaders' does not exist on type '... Remove this comment to see the full error message
         corsOptions.allowedHeaders = corsAllowedHeaders;
     }
     if (Array.isArray(corsExposedHeaders) && corsExposedHeaders.length > 0) {
-        // @ts-expect-error TS(2339): Property 'exposedHeaders' does not exist on type '... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'exposedHeaders' does not exist on type '... Remove this comment to see the full error message
         corsOptions.exposedHeaders = corsExposedHeaders;
     }
     if (corsMaxAge !== null && Number.isInteger(corsMaxAge)) {
-        // @ts-expect-error TS(2339): Property 'maxAge' does not exist on type '{ origin... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'maxAge' does not exist on type '{ origin... Remove this comment to see the full error message
         corsOptions.maxAge = corsMaxAge;
     }
     app.use(cors(corsOptions));
@@ -168,6 +189,7 @@ app.use(setUserDataMiddleware);
 // CSRF Protection //
 if (!cliArgs.disableCsrf) {
     const csrfSyncProtection = csrfSync({
+        // @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
         getTokenFromState: (req) => {
             if (!req.session) {
                 console.error('(CSRF error) getTokenFromState: Session object not initialized');
@@ -175,9 +197,11 @@ if (!cliArgs.disableCsrf) {
             }
             return req.session.csrfToken;
         },
+        // @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
         getTokenFromRequest: (req) => {
             return req.headers['x-csrf-token']?.toString();
         },
+        // @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
         storeTokenInState: (req, token) => {
             if (!req.session) {
                 console.error('(CSRF error) storeTokenInState: Session object not initialized');
@@ -185,12 +209,14 @@ if (!cliArgs.disableCsrf) {
             }
             req.session.csrfToken = token;
         },
+        // @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
         skipCsrfProtection: (req) => {
             return cliArgs.enableCorsProxy ? /^\/proxy\//.test(req.path) : false;
         },
         size: 32,
     });
 
+    // @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
     app.get('/csrf-token', (req, res) => {
         res.json({
             'token': csrfSyncProtection.generateToken(req),
@@ -204,7 +230,7 @@ if (!cliArgs.disableCsrf) {
     app.use(csrfSyncProtection.csrfSynchronisedProtection);
 } else {
     console.warn('\nCSRF protection is disabled. This will make your server vulnerable to CSRF attacks.\n');
-    // @ts-expect-error TS(6133): 'req' is declared but its value is never read.
+    // @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
     app.get('/csrf-token', (req, res) => {
         res.json({
             'token': 'disabled',
@@ -214,6 +240,7 @@ if (!cliArgs.disableCsrf) {
 
 // Static files
 // Host index page
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 app.get('/', cacheBuster.middleware, (request, response) => {
     if (shouldRedirectToLogin(request)) {
         const query = request.url.split('?')[1];
@@ -225,6 +252,7 @@ app.get('/', cacheBuster.middleware, (request, response) => {
 });
 
 // Callback endpoint for OAuth PKCE flows (e.g. OpenRouter)
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 app.get('/callback{/:source}', (request, response) => {
     const source = request.params.source;
     const query = request.url.split('?')[1];
@@ -252,8 +280,8 @@ app.use('/api/users', usersPublicRouter);
 
 // Everything below this line requires authentication
 app.use(requireLoginMiddleware);
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 app.post('/api/ping', (request, response) => {
-    // @ts-expect-error TS(4111): Property 'extend' comes from an index signature, s... Remove this comment to see the full error message
     if (request.query.extend && request.session) {
         request.session.touch = Date.now();
     }
@@ -264,6 +292,7 @@ app.post('/api/ping', (request, response) => {
 if (cliArgs.enableCorsProxy) {
     app.use('/proxy', corsProxyMiddleware);
 } else {
+    // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
     app.use('/proxy', async (_, res) => {
         const message = 'CORS proxy is disabled. Enable it in config.yaml or use the --corsProxy flag.';
         console.log(message);
@@ -276,6 +305,7 @@ const uploadsPath = path.join(cliArgs.dataRoot, UPLOADS_DIRECTORY);
 app.use(multer({ dest: uploadsPath, limits: { fieldSize: 500 * 1024 * 1024 } }).single('avatar'));
 app.use(multerMonkeyPatch);
 
+// @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
 app.get('/version', async function (_, response) {
     const data = await getVersion();
     response.send(data);
@@ -340,6 +370,7 @@ async function preSetupTasks() {
     // Set up event listeners for a graceful shutdown
     process.on('SIGINT', exitProcess);
     process.on('SIGTERM', exitProcess);
+    // @ts-expect-error TS(7006) FIXME: Parameter 'err' implicitly has an 'any' type.
     process.on('uncaughtException', (err) => {
         console.error('Uncaught exception:', err);
         exitProcess();
@@ -348,10 +379,15 @@ async function preSetupTasks() {
     // Add private request filter.
     const requestFilterOptions = {
         listen: cliArgs.listen,
+        // @ts-expect-error TS(2345) FIXME: Argument of type 'false' is not assignable to para... Remove this comment to see the full error message
         enabled: !!getConfigValue('privateAddressWhitelist.enabled', false, 'boolean'),
+        // @ts-expect-error TS(2345) FIXME: Argument of type 'string[]' is not assignable to p... Remove this comment to see the full error message
         privateAddressWhitelist: getConfigValue('privateAddressWhitelist.allowedRanges', ['127.0.0.0/8', '::1/128']),
+        // @ts-expect-error TS(2345) FIXME: Argument of type 'true' is not assignable to param... Remove this comment to see the full error message
         logBlocked: !!getConfigValue('privateAddressWhitelist.log.blockedRequests', true, 'boolean'),
+        // @ts-expect-error TS(2345) FIXME: Argument of type 'false' is not assignable to para... Remove this comment to see the full error message
         logAllowed: !!getConfigValue('privateAddressWhitelist.log.allowedRequests', false, 'boolean'),
+        // @ts-expect-error TS(2345) FIXME: Argument of type 'false' is not assignable to para... Remove this comment to see the full error message
         allowUnresolvedHosts: !!getConfigValue('privateAddressWhitelist.allowUnresolvedHosts', false, 'boolean'),
         enableKeepAlive: cliArgs.enableKeepAlive,
     };
@@ -361,7 +397,7 @@ async function preSetupTasks() {
     initRequestProxy({ enabled: cliArgs.requestProxyEnabled, url: cliArgs.requestProxyUrl, bypass: cliArgs.requestProxyBypass, enableKeepAlive: cliArgs.enableKeepAlive, privateRequestFilterEnabled: requestFilterOptions.enabled });
 
     // Wait for frontend libs to compile
-    // @ts-expect-error TS(2345): Argument of type '{ pruneCache: boolean; }' is not... Remove this comment to see the full error message
+    // @ts-expect-error TS(2345) FIXME: Argument of type '{ pruneCache: boolean; }' is not... Remove this comment to see the full error message
     await libMiddleware.runBunBuild({ pruneCache: true });
 }
 
@@ -370,15 +406,17 @@ async function preSetupTasks() {
  * @param {import('./server-startup.js').ServerStartupResult} result The result of the server startup
  * @returns {Promise<void>}
  */
+// @ts-expect-error TS(2694) FIXME: Namespace '"/mnt/DISCO/downloads/some_git_projects... Remove this comment to see the full error message
 async function postSetupTasks(result: import('./server-startup.js').ServerStartupResult) {
     const browserLaunchHostname = await cliArgs.getBrowserLaunchHostname(result);
     const browserLaunchUrl = cliArgs.getBrowserLaunchUrl(browserLaunchHostname);
+    // @ts-expect-error TS(2345) FIXME: Argument of type '"default"' is not assignable to ... Remove this comment to see the full error message
     const browserLaunchApp = String(getConfigValue('browserLaunch.browser', 'default') ?? '');
 
     if (cliArgs.browserLaunchEnabled) {
         try {
             // TODO: This should be converted to a regular import when support for Node 18 is dropped
-            // @ts-expect-error TS(2792): Cannot find module 'open'. Did you mean to set the... Remove this comment to see the full error message
+            // @ts-expect-error TS(1323) FIXME: Dynamic imports are only supported when the '--mod... Remove this comment to see the full error message
             const openModule = await import('open');
             const { default: open, apps } = openModule;
 
@@ -400,6 +438,7 @@ async function postSetupTasks(result: import('./server-startup.js').ServerStartu
             }
 
             const validBrowsers = getBrowsers();
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             const appName = validBrowsers[browserLaunchApp.trim().toLowerCase()];
             const openOptions = appName ? { app: { name: appName } } : {};
 
@@ -421,6 +460,7 @@ async function postSetupTasks(result: import('./server-startup.js').ServerStartu
             try {
                 fs.writeFileSync(heartbeatPath, JSON.stringify({ timestamp: Date.now() }));
             } catch (err) {
+                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 console.error(`Failed to write heartbeat file at ${color.green(heartbeatPath)}:`, err.message);
             }
         };
@@ -470,7 +510,7 @@ async function postSetupTasks(result: import('./server-startup.js').ServerStartu
  */
 function apply404Middleware() {
     const notFoundWebpage = safeReadFileSync(path.join(globalThis.DATA_ROOT, '_errors', 'url-not-found.html')) ?? '';
-    // @ts-expect-error TS(6133): 'req' is declared but its value is never read.
+    // @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
     app.use((req, res) => {
         res.status(404).send(notFoundWebpage);
     });
@@ -482,7 +522,6 @@ function apply404Middleware() {
 function setDnsResolutionOrder() {
     try {
         if (cliArgs.dnsPreferIPv6) {
-            // @ts-expect-error TS(2345): Argument of type '"ipv6first"' is not assignable t... Remove this comment to see the full error message
             dns.setDefaultResultOrder('ipv6first');
             console.log('Preferring IPv6 for DNS resolution');
         } else {

@@ -103,6 +103,7 @@ const showPopupHelper = {
      * @param {PopupOptions} [popupOptions] - Options for the popup.
      * @returns {Promise<string?>} A Promise that resolves with the user's input.
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'header' implicitly has an 'any' type.
     input: async (header, text, defaultValue = '', popupOptions = {}) => {
         const content = PopupUtils.BuildTextWithHeader(header, text);
         const popup = new Popup(content, POPUP_TYPE.INPUT, defaultValue, popupOptions);
@@ -120,8 +121,10 @@ const showPopupHelper = {
      * @param {PopupOptions} [popupOptions] - Options for the popup.
      * @returns {Promise<POPUP_RESULT?>} A Promise that resolves with the result of the user's interaction.
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'header' implicitly has an 'any' type.
     confirm: async (header, text, popupOptions = {}) => {
         const content = PopupUtils.BuildTextWithHeader(header, text);
+        // @ts-expect-error TS(2345) FIXME: Argument of type 'null' is not assignable to param... Remove this comment to see the full error message
         const popup = new Popup(content, POPUP_TYPE.CONFIRM, null, popupOptions);
         const result = await popup.show();
         if (typeof result === 'string' || typeof result === 'boolean') throw new Error(`Invalid popup result. CONFIRM popups only support numbers, or null. Result: ${result}`);
@@ -134,8 +137,10 @@ const showPopupHelper = {
      * @param {PopupOptions} [popupOptions] - Options for the popup.
      * @returns {Promise<POPUP_RESULT?>} A Promise that resolves with the result of the user's interaction.
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'header' implicitly has an 'any' type.
     text: async (header, text, popupOptions = {}) => {
         const content = PopupUtils.BuildTextWithHeader(header, text);
+        // @ts-expect-error TS(2345) FIXME: Argument of type 'null' is not assignable to param... Remove this comment to see the full error message
         const popup = new Popup(content, POPUP_TYPE.TEXT, null, popupOptions);
         const result = await popup.show();
         if (typeof result === 'string' || typeof result === 'boolean') throw new Error(`Invalid popup result. TEXT popups only support numbers, or null. Result: ${result}`);
@@ -160,24 +165,37 @@ export class Popup {
     /** @readonly */ cropWrap;
     /** @readonly */ cropImage;
     /** @readonly */ defaultResult;
+    // @ts-expect-error TS(7008) FIXME: Member 'customButtons' implicitly has an 'any' typ... Remove this comment to see the full error message
     /** @readonly */ customButtons;
+    // @ts-expect-error TS(7008) FIXME: Member 'customInputs' implicitly has an 'any' type... Remove this comment to see the full error message
     /** @readonly */ customInputs;
 
+    // @ts-expect-error TS(7008) FIXME: Member 'onClosing' implicitly has an 'any' type.
     /** @type {(popup: Popup) => Promise<boolean?>|boolean?} */ onClosing;
+    // @ts-expect-error TS(7008) FIXME: Member 'onClose' implicitly has an 'any' type.
     /** @type {(popup: Popup) => Promise<void?>|void?} */ onClose;
+    // @ts-expect-error TS(7008) FIXME: Member 'onOpen' implicitly has an 'any' type.
     /** @type {(popup: Popup) => Promise<void?>|void?} */ onOpen;
 
+    // @ts-expect-error TS(7008) FIXME: Member 'result' implicitly has an 'any' type.
     /** @type {POPUP_RESULT|number} */ result;
+    // @ts-expect-error TS(7008) FIXME: Member 'value' implicitly has an 'any' type.
     /** @type {any} */ value;
+    // @ts-expect-error TS(7008) FIXME: Member 'inputResults' implicitly has an 'any' type... Remove this comment to see the full error message
     /** @type {Map<string,string|boolean>?} */ inputResults;
+    // @ts-expect-error TS(7008) FIXME: Member 'cropData' implicitly has an 'any' type.
     /** @type {any} */ cropData;
 
+    // @ts-expect-error TS(7008) FIXME: Member 'lastFocus' implicitly has an 'any' type.
     /** @type {HTMLElement} */ lastFocus;
 
+    // @ts-expect-error TS(7008) FIXME: Member '#promise' implicitly has an 'any' type.
     /** @type {Promise<any>} */ #promise;
+    // @ts-expect-error TS(7008) FIXME: Member '#resolver' implicitly has an 'any' type.
     /** @type {(result: any) => any} */ #resolver;
 
     /** @type {boolean} */ #allowEscapeClose;
+    // @ts-expect-error TS(7008) FIXME: Member '#isClosingPrevented' implicitly has an 'an... Remove this comment to see the full error message
     /** @type {boolean} */ #isClosingPrevented;
     /** @type {number} */ #lastEscapePress = 0;
     /** @type {boolean} */ #isShowingForceCloseConfirm = false;
@@ -189,6 +207,7 @@ export class Popup {
      * @param {string} [inputValue] - The initial value of the input field
      * @param {PopupOptions} [options] - Additional options for the popup
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'content' implicitly has an 'any' type.
     constructor(content, type, inputValue = '', {
         okButton = null,
         cancelButton = null,
@@ -213,6 +232,7 @@ export class Popup {
         cropAspect = null,
         cropImage = null,
     } = {}) {
+        // @ts-expect-error TS(2345) FIXME: Argument of type 'this' is not assignable to param... Remove this comment to see the full error message
         Popup.util.popups.push(this);
 
         // Make this popup uniquely identifiable
@@ -229,7 +249,7 @@ export class Popup {
 
         /**@type {HTMLTemplateElement}*/
         const template = document.querySelector('#popup_template');
-        // @ts-expect-error TS(2339): Property 'content' does not exist on type 'Element... Remove this comment to see the full error message
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         this.dlg = template.content.cloneNode(true).querySelector('.popup');
         if (!this.dlg.showModal) {
             this.dlg.classList.add('poly_dialog');
@@ -267,6 +287,7 @@ export class Popup {
         // If custom button captions are provided, we set them beforehand
         this.okButton.textContent = typeof okButton === 'string' ? okButton : 'OK';
         this.okButton.dataset.i18n = this.okButton.textContent;
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         this.cancelButton.textContent = typeof cancelButton === 'string' ? cancelButton : template.getAttribute('popup-button-cancel');
         this.cancelButton.dataset.i18n = this.cancelButton.textContent;
 
@@ -274,6 +295,7 @@ export class Popup {
          * @param {HTMLElement} control @param {string} text Sets the title attribute and translation, if text is provided
          * @param text
          */
+        // @ts-expect-error TS(7006) FIXME: Parameter 'control' implicitly has an 'any' type.
         function setTitleFromTooltip(control, text) {
             if (!text) return;
             control.title = text;
@@ -284,6 +306,7 @@ export class Popup {
 
         this.defaultResult = defaultResult;
         this.customButtons = customButtons;
+        // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
         this.customButtons?.forEach((x, index) => {
             /** @type {CustomPopupButton} */
             const button = typeof x === 'string' ? { text: x, result: index + 2 } : x;
@@ -291,7 +314,6 @@ export class Popup {
             const buttonElement = document.createElement('div');
             buttonElement.classList.add('menu_button', 'popup-button-custom', 'result-control');
             buttonElement.classList.add(...(button.classes ?? []));
-            // @ts-expect-error TS(4111): Property 'result' comes from an index signature, s... Remove this comment to see the full error message
             buttonElement.dataset.result = String(button.result); // This is expected to also write 'null' or 'staging', to indicate cancel and no action respectively
             buttonElement.tabIndex = 0;
 
@@ -301,13 +323,12 @@ export class Popup {
                 buttonElement.appendChild(icon);
                 const textSpan = document.createElement('span');
                 textSpan.textContent = button.text;
-                // @ts-expect-error TS(4111): Property 'i18n' comes from an index signature, so ... Remove this comment to see the full error message
                 textSpan.dataset.i18n = button.text;
                 buttonElement.classList.add('menu_button_icon');
                 buttonElement.appendChild(textSpan);
             } else {
                 buttonElement.textContent = button.text;
-                // @ts-expect-error TS(4111): Property 'i18n' comes from an index signature, so ... Remove this comment to see the full error message
+                // @ts-expect-error TS(2322) FIXME: Type 'string | null' is not assignable to type 'st... Remove this comment to see the full error message
                 buttonElement.dataset.i18n = buttonElement.textContent;
             }
             setTitleFromTooltip(buttonElement, button.tooltip);
@@ -324,6 +345,7 @@ export class Popup {
         });
 
         this.customInputs = customInputs;
+        // @ts-expect-error TS(7006) FIXME: Parameter 'input' implicitly has an 'any' type.
         this.customInputs?.forEach(input => {
             if (!input.id || !(typeof input.id === 'string')) {
                 console.warn('Given custom input does not have a valid id set');
@@ -342,7 +364,6 @@ export class Popup {
                 label.appendChild(inputElement);
                 const labelText = document.createElement('span');
                 labelText.innerText = input.label;
-                // @ts-expect-error TS(4111): Property 'i18n' comes from an index signature, so ... Remove this comment to see the full error message
                 labelText.dataset.i18n = input.label;
                 label.appendChild(labelText);
 
@@ -370,7 +391,6 @@ export class Popup {
 
                 const labelText = document.createElement('span');
                 labelText.innerText = input.label;
-                // @ts-expect-error TS(4111): Property 'i18n' comes from an index signature, so ... Remove this comment to see the full error message
                 labelText.dataset.i18n = input.label;
 
                 label.appendChild(labelText);
@@ -393,7 +413,6 @@ export class Popup {
 
                 const labelText = document.createElement('span');
                 labelText.innerText = input.label;
-                // @ts-expect-error TS(4111): Property 'i18n' comes from an index signature, so ... Remove this comment to see the full error message
                 labelText.dataset.i18n = input.label;
 
                 label.appendChild(labelText);
@@ -427,14 +446,13 @@ export class Popup {
 
                     if (clamped !== value) {
                         inputElement.value = String(clamped);
-                        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+                        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                         toastr.warning(t`Value must be between ${min} and ${max}. Clamped to ${clamped}.`);
                     }
                 });
 
                 const labelText = document.createElement('span');
                 labelText.innerText = input.label;
-                // @ts-expect-error TS(4111): Property 'i18n' comes from an index signature, so ... Remove this comment to see the full error message
                 labelText.dataset.i18n = input.label;
 
                 label.appendChild(labelText);
@@ -470,7 +488,9 @@ export class Popup {
                 if (okButton === false) this.okButton.style.display = 'none';
                 if (cancelButton === false) this.cancelButton.style.display = 'none';
                 // Override default captions for confirm on OK->Yes, CANCEL->No
+                // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
                 if (!okButton) this.okButton.textContent = template.getAttribute('popup-button-yes');
+                // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
                 if (!cancelButton) this.cancelButton.textContent = template.getAttribute('popup-button-no');
                 break;
             }
@@ -480,6 +500,7 @@ export class Popup {
                 if (okButton === false) this.okButton.style.display = 'none';
                 if (cancelButton === false) this.cancelButton.style.display = 'none';
                 // Override default captions for input on OK->Save
+                // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
                 if (!okButton) this.okButton.textContent = template.getAttribute('popup-button-save');
                 break;
             }
@@ -492,12 +513,13 @@ export class Popup {
             case POPUP_TYPE.CROP: {
                 this.cropWrap.style.display = 'block';
                 this.cropImage.src = cropImage;
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $(this.cropImage).cropper({
                     aspectRatio: cropAspect ?? 2 / 3,
                     autoCropArea: 1,
                     viewMode: 2,
                     rotatable: false,
+                    // @ts-expect-error TS(7006) FIXME: Parameter 'event' implicitly has an 'any' type.
                     crop: (event) => {
                         this.cropData = event.detail;
                         this.cropData.want_resize = !power_user.never_resize_avatars;
@@ -507,6 +529,7 @@ export class Popup {
                 if (okButton === false) this.okButton.style.display = 'none';
                 if (cancelButton === false) this.cancelButton.style.display = 'none';
                 // Override default captions for crop on OK->Crop
+                // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
                 if (!okButton) this.okButton.textContent = template.getAttribute('popup-button-crop');
                 break;
             }
@@ -530,7 +553,7 @@ export class Popup {
         }
 
         this.content.innerHTML = '';
-        // @ts-expect-error TS(2304): Cannot find name 'jQuery'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'jQuery'.
         if (content instanceof jQuery) {
             const contentElement = content[0];
             if (contentElement instanceof HTMLElement) {
@@ -548,29 +571,27 @@ export class Popup {
         this.setAutoFocus({ applyAutoFocus: true });
 
         // Set focus event that remembers the focused element
+        // @ts-expect-error TS(7006) FIXME: Parameter 'evt' implicitly has an 'any' type.
         this.dlg.addEventListener('focusin', (evt) => { if (evt.target instanceof HTMLElement && evt.target != this.dlg) this.lastFocus = evt.target; });
 
         // Bind event listeners for all result controls to their defined event type
+        // @ts-expect-error TS(7006) FIXME: Parameter 'resultControl' implicitly has an 'any' ... Remove this comment to see the full error message
         this.dlg.querySelectorAll('[data-result]').forEach(resultControl => {
             if (!(resultControl instanceof HTMLElement)) return;
             // If no value was set, we exit out and don't bind an action
-            // @ts-expect-error TS(4111): Property 'result' comes from an index signature, s... Remove this comment to see the full error message
             if (String(resultControl.dataset.result) === String(undefined)) return;
 
             // Make sure that both `POPUP_RESULT` numbers and also `null` as 'cancelled' are supported
-            // @ts-expect-error TS(4111): Property 'result' comes from an index signature, s... Remove this comment to see the full error message
             const result = String(resultControl.dataset.result) === String(null) ? null
-                // @ts-expect-error TS(4111): Property 'result' comes from an index signature, s... Remove this comment to see the full error message
                 : Number(resultControl.dataset.result);
 
-            // @ts-expect-error TS(4111): Property 'result' comes from an index signature, s... Remove this comment to see the full error message
             if (result !== null && isNaN(result)) throw new Error('Invalid result control. Result must be a number. ' + resultControl.dataset.result);
-            // @ts-expect-error TS(4111): Property 'resultEvent' comes from an index signatu... Remove this comment to see the full error message
             const type = resultControl.dataset.resultEvent || 'click';
             resultControl.addEventListener(type, async () => await this.complete(result));
         });
 
         // Bind dialog listeners manually, so we can be sure context is preserved
+        // @ts-expect-error TS(7006) FIXME: Parameter 'evt' implicitly has an 'any' type.
         const cancelListener = async (evt) => {
             if (!this.#allowEscapeClose) {
                 evt.preventDefault();
@@ -601,7 +622,7 @@ export class Popup {
 
                         // If the the main popup closes while the force-close popup is still being displayed, we gracefully cancel that.
                         const originalOnClose = this.onClose;
-                        // @ts-expect-error TS(6133): 'x' is declared but its value is never read.
+                        // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
                         this.onClose = async (x) => {
                             if (originalOnClose) await originalOnClose;
                             await confirmPopup.completeCancelled();
@@ -630,6 +651,7 @@ export class Popup {
         // We make sure that the modal on its own doesn't hide. Dunno why, if onClosing is triggered multiple times through the cancel event, and stopped,
         // it seems to just call 'close' on the dialog even if the 'cancel' event was prevented.
         // So here we just say that close should not happen if it was prevented.
+        // @ts-expect-error TS(7006) FIXME: Parameter 'evt' implicitly has an 'any' type.
         const closeListener = async (evt) => {
             if (this.#isClosingPrevented) {
                 evt.preventDefault();
@@ -639,6 +661,7 @@ export class Popup {
         };
         this.dlg.addEventListener('close', closeListener.bind(this));
 
+        // @ts-expect-error TS(7006) FIXME: Parameter 'evt' implicitly has an 'any' type.
         const keyListener = async (evt) => {
             switch (evt.key) {
                 case 'Enter': {
@@ -672,6 +695,7 @@ export class Popup {
 
                     evt.preventDefault();
                     evt.stopPropagation();
+                    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
                     const result = Number(document.activeElement.getAttribute('data-result') ?? this.defaultResult);
 
                     // Call complete on the popup. Make sure that we handle `onClosing` cancels correctly and don't remove the listener then.
@@ -709,7 +733,7 @@ export class Popup {
                     await this.onOpen(this);
                 } catch (error) {
                     console.error('Error in Popup.onOpen handler:', error);
-                    // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+                    // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                     toastr.error(t`An error occurred during popup initialization. Check console for details.`, t`Popup Init Error`);
                 }
             }
@@ -769,6 +793,7 @@ export class Popup {
      * @param {POPUP_RESULT|number} result - The result of the popup (either an existing `POPUP_RESULT` or a custom result value)
      * @returns {Promise<string|number|boolean|undefined?>} A promise that resolves with the value of the popup when it is completed. <b>Returns `undefined` if the closing action was cancelled.</b>
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'result' implicitly has an 'any' type.
     async complete(result) {
         // In all cases besides INPUT the popup value should be the result
         /** @type {POPUP_RESULT|number|boolean|string?} */
@@ -784,12 +809,13 @@ export class Popup {
         // Cropped image should be returned as a data URL
         if (this.type === POPUP_TYPE.CROP) {
             value = result >= POPUP_RESULT.AFFIRMATIVE
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 ? $(this.cropImage).data('cropper').getCroppedCanvas().toDataURL('image/jpeg')
                 : null;
         }
 
         if (this.customInputs?.length) {
+            // @ts-expect-error TS(7006) FIXME: Parameter 'input' implicitly has an 'any' type.
             this.inputResults = new Map(this.customInputs.map(input => {
                 /** @type {HTMLInputElement} */
                 const inputControl = this.dlg.querySelector(`#${input.id}`);
@@ -814,6 +840,7 @@ export class Popup {
         }
         this.#isClosingPrevented = false;
 
+        // @ts-expect-error TS(2322) FIXME: Type '{ value: any; result: any; inputResults: any... Remove this comment to see the full error message
         Popup.util.lastResult = { value, result, inputResults: this.inputResults };
         this.#hide();
 
@@ -859,9 +886,12 @@ export class Popup {
             if (Popup.util.popups.length > 0) {
                 const activeDialog = document.activeElement?.closest('.popup');
                 const id = activeDialog?.getAttribute('data-id');
+                // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
                 const popup = Popup.util.popups.find(x => x.id == id);
                 if (popup) {
+                    // @ts-expect-error TS(2339) FIXME: Property 'lastFocus' does not exist on type 'never... Remove this comment to see the full error message
                     if (popup.lastFocus) popup.lastFocus.focus();
+                    // @ts-expect-error TS(2339) FIXME: Property 'setAutoFocus' does not exist on type 'ne... Remove this comment to see the full error message
                     else popup.setAutoFocus();
                 }
             }
@@ -889,6 +919,7 @@ export class Popup {
 
         /** @returns {boolean} Checks if any modal popup dialog is open */
         isPopupOpen() {
+            // @ts-expect-error TS(2339) FIXME: Property 'dlg' does not exist on type 'never'.
             return Popup.util.popups.filter(x => x.dlg.hasAttribute('open')).length > 0;
         },
 
@@ -909,6 +940,7 @@ export class PopupUtils {
      * @param {string?} header - The header to be added to the text
      * @param {string?} text - The main text content
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'header' implicitly has an 'any' type.
     static BuildTextWithHeader(header, text) {
         if (!header) {
             return text;
@@ -926,6 +958,7 @@ export class PopupUtils {
  * @param {PopupOptions} [popupOptions] - Options for the popup
  * @returns {Promise<POPUP_RESULT|string|boolean?>} The value for this popup, which can either be the popup retult or the input value if chosen
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'content' implicitly has an 'any' type.
 export function callGenericPopup(content, type, inputValue = '', popupOptions = {}) {
     try {
         const popup = new Popup(
@@ -937,7 +970,7 @@ export function callGenericPopup(content, type, inputValue = '', popupOptions = 
         return popup.show();
     } catch (error) {
         console.error('Error showing generic popup:', error);
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.error(t`An error occurred while opening the popup. Check console for details.`, t`Popup Error`);
         return Promise.resolve(POPUP_RESULT.CANCELLED);
     }
@@ -966,7 +999,7 @@ export function fixToastrForDialogs() {
     if (!toastContainer) {
         toastContainer = document.createElement('div');
         toastContainer.setAttribute('id', 'toast-container');
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         if (toastr.options.positionClass) toastContainer.classList.add(toastr.options.positionClass);
     }
 
@@ -987,7 +1020,7 @@ export function fixToastrForDialogs() {
         } else {
             document.body.appendChild(toastContainer);
             toastContainer.classList.remove(...toastPositionClasses);
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastContainer.classList.add(toastr.options.positionClass);
         }
     }

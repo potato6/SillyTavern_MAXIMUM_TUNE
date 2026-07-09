@@ -110,6 +110,7 @@ class DataMaidDialog {
         this.container.innerHTML = template;
 
         const startButton = this.container.querySelector('.dataMaidStartButton');
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         startButton.addEventListener('click', () => this.handleScanClick());
     }
 
@@ -119,13 +120,15 @@ class DataMaidDialog {
      */
     async handleScanClick() {
         if (this.isScanning) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.warning(t`The scan is already running. Please wait for it to finish.`);
             return;
         }
 
         try {
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             const resultsList = this.container.querySelector('.dataMaidResultsList');
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             resultsList.innerHTML = '';
             this.showSpinner();
             this.isScanning = true;
@@ -137,7 +140,7 @@ class DataMaidDialog {
             this.token = report.token;
         } catch (error) {
             this.hideSpinner();
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.error(t`An error has occurred. Check the console for details.`);
             console.error('Error generating Data Maid report:', error);
         } finally {
@@ -150,9 +153,13 @@ class DataMaidDialog {
      * @private
      */
     showSpinner() {
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         const spinner = this.container.querySelector('.dataMaidSpinner');
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         const placeholder = this.container.querySelector('.dataMaidPlaceholder');
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         placeholder.classList.add('displayNone');
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         spinner.classList.remove('displayNone');
     }
 
@@ -161,7 +168,9 @@ class DataMaidDialog {
      * @private
      */
     hideSpinner() {
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         const spinner = this.container.querySelector('.dataMaidSpinner');
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         spinner.classList.add('displayNone');
     }
 
@@ -171,9 +180,10 @@ class DataMaidDialog {
      * @param {Element} resultsList
      * @private
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'report' implicitly has an 'any' type.
     async renderReport(report, resultsList) {
         for (const [prop, data] of Object.entries(this.DATA_MAID_CATEGORIES)) {
-            // @ts-expect-error TS(2339): Property 'name' does not exist on type 'unknown'.
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             const category = await this.renderCategory(prop, data.name, data.description, report.report[prop]);
             if (!category) {
                 continue;
@@ -188,10 +198,15 @@ class DataMaidDialog {
      * @private
      */
     displayEmptyPlaceholder() {
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         const resultsList = this.container.querySelector('.dataMaidResultsList');
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         if (resultsList.children.length === 0) {
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             const placeholder = this.container.querySelector('.dataMaidPlaceholder');
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             placeholder.classList.remove('displayNone');
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             placeholder.textContent = t`No items found to clean up. Come back later!`;
         }
     }
@@ -205,6 +220,7 @@ class DataMaidDialog {
      * @returns {Promise<Element|null>} A promise that resolves to a DOM element containing the rendered category
      * @private
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'prop' implicitly has an 'any' type.
     async renderCategory(prop, name, description, items) {
         if (!Array.isArray(items) || items.length === 0) {
             return null;
@@ -269,6 +285,7 @@ class DataMaidDialog {
                         return;
                     }
                     if (await this.delete([hash])) {
+                        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
                         item.remove();
                         items.splice(items.findIndex(i => i.hash === hash), 1);
                         if (items.length === 0) {
@@ -288,7 +305,9 @@ class DataMaidDialog {
      * @returns {string} URL to view the item
      * @private
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'hash' implicitly has an 'any' type.
     getViewUrl(hash) {
+        // @ts-expect-error TS(2345) FIXME: Argument of type 'AbortController | null' is not a... Remove this comment to see the full error message
         return `/api/data-maid/view?hash=${encodeURIComponent(hash)}&token=${encodeURIComponent(this.token)}`;
     }
 
@@ -298,7 +317,9 @@ class DataMaidDialog {
      * @param {string} hash Hash of the item to download
      * @private
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'items' implicitly has an 'any' type.
     async download(items, hash) {
+        // @ts-expect-error TS(7006) FIXME: Parameter 'i' implicitly has an 'any' type.
         const item = items.find(i => i.hash === hash);
         if (!item) {
             return;
@@ -319,6 +340,7 @@ class DataMaidDialog {
      * @param {string} name Name of the item to view
      * @private
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'prop' implicitly has an 'any' type.
     async view(prop, hash, name) {
         const url = this.getViewUrl(hash);
         const isImage = ['images', 'avatarThumbnails', 'backgroundThumbnails'].includes(prop);
@@ -334,6 +356,7 @@ class DataMaidDialog {
      * @returns {Promise<boolean>} True if the deletion was successful, false otherwise
      * @private
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'hashes' implicitly has an 'any' type.
     async delete(hashes) {
         try {
             const response = await fetch('/api/data-maid/delete', {
@@ -360,6 +383,7 @@ class DataMaidDialog {
      * @returns {Promise<HTMLElement>} Image element
      * @private
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'url' implicitly has an 'any' type.
     async getViewElement(url, name) {
         const isVideo = VIDEO_EXTENSIONS.includes(name.split('.').pop());
         const mediaElement = document.createElement(isVideo ? 'video' : 'img');
@@ -377,6 +401,7 @@ class DataMaidDialog {
      * @returns {Promise<HTMLTextAreaElement>} Frame element
      * @private
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'url' implicitly has an 'any' type.
     async getTextViewElement(url) {
         const response = await fetch(url);
         const text = await response.text();

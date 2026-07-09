@@ -26,7 +26,7 @@ import { MacroFlagDefinitions, MacroFlagType } from '../macros/engine/MacroFlags
 import { MacroParser } from '../macros/engine/MacroParser.js';
 import { MacroCstWalker } from '../macros/engine/MacroCstWalker.js';
 import { onboardingExperimentalMacroEngine } from '../macros/engine/MacroDiagnostics.js';
-// @ts-expect-error TS(2792): Cannot find module '/script.js'. Did you mean to s... Remove this comment to see the full error message
+// @ts-expect-error TS(2792) FIXME: Cannot find module '/script.js'. Did you mean to s... Remove this comment to see the full error message
 import { chat_metadata } from '/script.js';
 import { extension_settings } from '../extensions.js';
 
@@ -67,6 +67,7 @@ import { extension_settings } from '../extensions.js';
  * @param {string} textUpToCursor - The document text up to the cursor position.
  * @returns {Array<{ name: string, startOffset: number, endOffset: number, paddingBefore: string, paddingAfter: string }>}
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'textUpToCursor' implicitly has an 'any'... Remove this comment to see the full error message
 export function findUnclosedScopes(textUpToCursor) {
     if (!textUpToCursor) return [];
 
@@ -89,6 +90,7 @@ export function findUnclosedScopes(textUpToCursor) {
  * @param {string} text - The text to analyze.
  * @returns {Array<{ name: string, startOffset: number, endOffset: number, paddingBefore: string, paddingAfter: string }>}
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'text' implicitly has an 'any' type.
 export function findUnclosedScopesRegex(text) {
     // Regex to find macro openings and closings, capturing whitespace padding
     // Group 1: padding after {{, Group 2: optional /, Group 3: macro name
@@ -104,7 +106,7 @@ export function findUnclosedScopesRegex(text) {
         if (isClosing) {
             // Find matching opener in stack (case-insensitive)
             // When closing an outer scope, all inner unclosed scopes are implicitly closed
-            // @ts-expect-error TS(2339): Property 'findLastIndex' does not exist on type 'a... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'findLastIndex' does not exist on type '{... Remove this comment to see the full error message
             const matchIndex = stack.findLastIndex(s => s.name.toLowerCase() === name.toLowerCase());
             if (matchIndex !== -1) {
                 // Pop everything from matchIndex to end (inclusive) - closes the matched scope and all nested ones
@@ -117,6 +119,7 @@ export function findUnclosedScopesRegex(text) {
             if (macroDef && macroDef.maxArgs > 0 && macroDef.list === null) {
                 // Try to find closing }} to extract trailing whitespace
                 let paddingAfter = '';
+                // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
                 const afterMatch = text.slice(match.index + match[0].length);
                 const closingMatch = afterMatch.match(/^[^}]*?(\s*)\}\}/);
                 if (closingMatch) {
@@ -126,6 +129,7 @@ export function findUnclosedScopesRegex(text) {
                 stack.push({
                     name,
                     startOffset: match.index,
+                    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
                     endOffset: match.index + match[0].length,
                     paddingBefore,
                     paddingAfter,
@@ -144,6 +148,7 @@ export function findUnclosedScopesRegex(text) {
  * @param {string} textUpToCursor - The text up to cursor to parse the macro content.
  * @returns {boolean} - True if the scope content is optional.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'scope' implicitly has an 'any' type.
 function isScopeOptional(scope, textUpToCursor) {
     const def = macroSystem.registry.getPrimaryMacro(scope.name);
     if (!def) {
@@ -189,6 +194,7 @@ function isScopeOptional(scope, textUpToCursor) {
  * @param {boolean} isForced - Whether autocomplete was force-triggered.
  * @returns {UnclosedScope[]} - Filtered scopes (excludes optional scopes unless forced).
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'unclosedScopes' implicitly has an 'any'... Remove this comment to see the full error message
 function filterOptionalScopes(unclosedScopes, textUpToCursor, isForced) {
     if (isForced) {
         // When forced, show all scopes including optional ones
@@ -196,6 +202,7 @@ function filterOptionalScopes(unclosedScopes, textUpToCursor, isForced) {
     }
 
     // Filter out scopes where the scope content is optional
+    // @ts-expect-error TS(7006) FIXME: Parameter 'scope' implicitly has an 'any' type.
     return unclosedScopes.filter(scope => !isScopeOptional(scope, textUpToCursor));
 }
 
@@ -207,8 +214,9 @@ function filterOptionalScopes(unclosedScopes, textUpToCursor, isForced) {
  * @param {string} [opts.paddingAfter] - Whitespace to add before closing }}.
  * @returns {AnyMacroAutoCompleteOption[]}
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'context' implicitly has an 'any' type.
 export function buildVariableShorthandOptions(context, opts = {}) {
-    // @ts-expect-error TS(2339): Property 'forIfCondition' does not exist on type '... Remove this comment to see the full error message
+    // @ts-expect-error TS(2339) FIXME: Property 'forIfCondition' does not exist on type '... Remove this comment to see the full error message
     const { forIfCondition = false, paddingAfter = '' } = opts;
     /** @type {AnyMacroAutoCompleteOption[]} */
     const options = [];
@@ -457,7 +465,7 @@ export function buildVariableShorthandOptions(context, opts = {}) {
  * @param {boolean} [opts.isForced] - Whether autocomplete was force-triggered (Ctrl+Space).
  * @returns {AnyMacroAutoCompleteOption[]}
  */
-// @ts-expect-error TS(6133): 'isForced' is declared but its value is never read... Remove this comment to see the full error message
+// @ts-expect-error TS(7006) FIXME: Parameter 'context' implicitly has an 'any' type.
 export function buildEnhancedMacroOptions(context, textUpToCursor, { isForced = false } = {}) {
     /** @type {AnyMacroAutoCompleteOption[]} */
     const options = [];
@@ -576,6 +584,7 @@ export function buildEnhancedMacroOptions(context, textUpToCursor, { isForced = 
     const shouldShowMatchingMacroDetails = isTypingArgs || isTypingClosingBrace;
 
     // Check if we're inside a scoped {{if}} for {{else}} selectability
+    // @ts-expect-error TS(7006) FIXME: Parameter 'scope' implicitly has an 'any' type.
     const isInsideScopedIf = unclosedScopes.some(scope => scope.name === 'if');
 
     // Track if any macro matches the identifier (for "no match" message)
@@ -655,6 +664,7 @@ export function buildEnhancedMacroOptions(context, textUpToCursor, { isForced = 
                 name: context.identifier,
                 symbol: '❌',
                 description: `No macro found: "${context.identifier}"`,
+                // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'null | un... Remove this comment to see the full error message
                 detailedDescription: `The macro name <code>${context.identifier}</code> does not exist.<br><br>Check spelling or use a different macro name.`,
                 type: 'error',
             });
@@ -676,6 +686,7 @@ export function buildEnhancedMacroOptions(context, textUpToCursor, { isForced = 
  * @param {string} macroInnerText - The text inside the macro braces (e.g., "  if  pers" from "{{  if  pers").
  * @returns {AutoCompleteOption[]}
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'context' implicitly has an 'any' type.
 export function buildIfConditionOptions(context, allMacros, macroInnerText) {
     /** @type {AutoCompleteOption[]} */
     const options = [];
@@ -696,6 +707,7 @@ export function buildIfConditionOptions(context, allMacros, macroInnerText) {
         name: '!',
         symbol: '🔁',
         description: 'Invert condition (NOT)',
+        // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'null | un... Remove this comment to see the full error message
         detailedDescription: 'Inverts the condition result. If the condition is truthy, it becomes falsy, and vice versa.<br><br>Example: <code>{{if !myVar}}</code> executes when <code>myVar</code> is empty or zero.',
         type: 'inverse',
     });
@@ -774,6 +786,7 @@ export function buildIfConditionOptions(context, allMacros, macroInnerText) {
         // Skip internal/utility macros that don't make sense as conditions
         if (['else', 'noop', 'trim', '//'].includes(macro.name)) continue;
 
+        // @ts-expect-error TS(2345) FIXME: Argument of type '{ noBraces: boolean; paddingAfte... Remove this comment to see the full error message
         const option = new EnhancedMacroAutoCompleteOption(macro, {
             noBraces: true,
             paddingAfter,
@@ -792,6 +805,7 @@ export function buildIfConditionOptions(context, allMacros, macroInnerText) {
  * @param {number} cursorPos - The cursor position in the text.
  * @returns {{ start: number, end: number, content: string } | null}
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'text' implicitly has an 'any' type.
 export function findMacroAtCursor(text, cursorPos) {
     // Search backwards for opening {{ while tracking nesting depth for nested macros
     let openPos = -1;
@@ -876,6 +890,7 @@ export function findMacroAtCursor(text, cursorPos) {
  * @param {'local'|'global'} scope - The variable scope.
  * @returns {string[]} Array of variable names.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'scope' implicitly has an 'any' type.
 export function getVariableNames(scope) {
     try {
         // Import chat_metadata and extension_settings dynamically to avoid circular deps
@@ -907,6 +922,7 @@ export function getVariableNames(scope) {
  * @param {BuildMacroAutoCompleteOptions} [options] - Optional pre-computed values.
  * @returns {Promise<AutoCompleteNameResult|null>}
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'text' implicitly has an 'any' type.
 export async function buildMacroAutoCompleteResult(text, cursorPos, {
     macro = null,
     textUpToCursor = null,
@@ -954,6 +970,7 @@ export async function buildMacroAutoCompleteResult(text, cursorPos, {
 
                 const macroDef = macroSystem.registry.getPrimaryMacro(scopedMacro.name);
                 if (macroDef) {
+                    // @ts-expect-error TS(2345) FIXME: Argument of type '{ currentArgIndex: number; isInS... Remove this comment to see the full error message
                     const scopedOption = new EnhancedMacroAutoCompleteOption(macroDef, scopedContext);
                     scopedOption.valueProvider = () => '';
                     scopedOption.makeSelectable = false;
@@ -961,6 +978,7 @@ export async function buildMacroAutoCompleteResult(text, cursorPos, {
                     return new AutoCompleteNameResult(
                         scopedMacro.name,
                         scopedMacro.startOffset + 2,
+                        // @ts-expect-error TS(2322) FIXME: Type 'EnhancedMacroAutoCompleteOption' is not assi... Remove this comment to see the full error message
                         [scopedOption],
                         false,
                     );
@@ -971,11 +989,15 @@ export async function buildMacroAutoCompleteResult(text, cursorPos, {
     }
 
     // Cursor is inside a macro - parse context
+    // @ts-expect-error TS(2339) FIXME: Property 'start' does not exist on type 'never'.
     const cursorInMacro = cursorPos - macro.start - 2;
+    // @ts-expect-error TS(2339) FIXME: Property 'content' does not exist on type 'never'.
     const context = parseMacroContext(macro.content, cursorInMacro);
 
     // Check if cursor is at/after closing }}
+    // @ts-expect-error TS(2339) FIXME: Property 'end' does not exist on type 'never'.
     const macroEndsBrackets = text.slice(macro.end - 2, macro.end) === '}}';
+    // @ts-expect-error TS(2339) FIXME: Property 'end' does not exist on type 'never'.
     const isCursorAtClosing = macroEndsBrackets && cursorPos >= macro.end - 1;
 
     if (isCursorAtClosing) {
@@ -983,6 +1005,7 @@ export async function buildMacroAutoCompleteResult(text, cursorPos, {
         if (filteredScopes.length > 0) {
             const scopedMacro = filteredScopes[filteredScopes.length - 1];
             // Check if the current macro IS the unclosed scoped macro
+            // @ts-expect-error TS(2339) FIXME: Property 'start' does not exist on type 'never'.
             if (scopedMacro.startOffset === macro.start) {
                 // Show scoped context - cursor is right at the end of the opening tag
                 // Check if this scope is optional (for display purposes)
@@ -998,13 +1021,16 @@ export async function buildMacroAutoCompleteResult(text, cursorPos, {
 
                 const macroDef = macroSystem.registry.getPrimaryMacro(scopedMacro.name);
                 if (macroDef) {
+                    // @ts-expect-error TS(2345) FIXME: Argument of type '{ currentArgIndex: number; isInS... Remove this comment to see the full error message
                     const scopedOption = new EnhancedMacroAutoCompleteOption(macroDef, scopedContext);
                     scopedOption.valueProvider = () => '';
                     scopedOption.makeSelectable = false;
 
                     return new AutoCompleteNameResult(
                         scopedMacro.name,
+                        // @ts-expect-error TS(2339) FIXME: Property 'start' does not exist on type 'never'.
                         macro.start + 2,
+                        // @ts-expect-error TS(2322) FIXME: Type 'EnhancedMacroAutoCompleteOption' is not assi... Remove this comment to see the full error message
                         [scopedOption],
                         false,
                     );
@@ -1025,13 +1051,16 @@ export async function buildMacroAutoCompleteResult(text, cursorPos, {
                     currentArgIndex: -1, // No argument highlight
                     isClosingTag: true,
                 });
+                // @ts-expect-error TS(2345) FIXME: Argument of type '{ identifier: any; currentArgInd... Remove this comment to see the full error message
                 const closingOption = new EnhancedMacroAutoCompleteOption(macroDef, closingContext);
                 closingOption.valueProvider = () => '';
                 closingOption.makeSelectable = false;
 
                 return new AutoCompleteNameResult(
                     macroDef.name,
+                    // @ts-expect-error TS(2339) FIXME: Property 'start' does not exist on type 'never'.
                     macro.start + 2,
+                    // @ts-expect-error TS(2322) FIXME: Type 'EnhancedMacroAutoCompleteOption' is not assi... Remove this comment to see the full error message
                     [closingOption],
                     false,
                 );
@@ -1046,6 +1075,7 @@ export async function buildMacroAutoCompleteResult(text, cursorPos, {
     // Start position must be where the identifier actually begins (after whitespace/flags)
     // so that the autocomplete range calculation works correctly
     const identifier = context.identifier;
+    // @ts-expect-error TS(2339) FIXME: Property 'start' does not exist on type 'never'.
     const identifierStartInText = macro.start + 2 + context.identifierStart;
 
     // Special case for {{if}} condition: use the condition text for matching/replacement
@@ -1054,7 +1084,9 @@ export async function buildMacroAutoCompleteResult(text, cursorPos, {
         // Get the typed condition text and calculate its start position
         const conditionText = context.args[0] || '';
         // Find where the condition argument starts in the macro text
+        // @ts-expect-error TS(2339) FIXME: Property 'content' does not exist on type 'never'.
         const separatorMatch = macro.content.match(/^.*?if\s*(?:::?)\s*/);
+        // @ts-expect-error TS(2339) FIXME: Property 'content' does not exist on type 'never'.
         const spaceMatch = macro.content.match(/^.*?if\s+/);
         let conditionStartOffset;
         if (separatorMatch) {
@@ -1064,10 +1096,12 @@ export async function buildMacroAutoCompleteResult(text, cursorPos, {
         } else {
             conditionStartOffset = context.identifierStart + identifier.length;
         }
+        // @ts-expect-error TS(2339) FIXME: Property 'start' does not exist on type 'never'.
         const conditionStartInText = macro.start + 2 + conditionStartOffset;
 
         // Build if-condition options using macroContent for padding calculation
         const allMacros = macroSystem.registry.getAllMacros({ excludeHiddenAliases: true });
+        // @ts-expect-error TS(2339) FIXME: Property 'content' does not exist on type 'never'.
         const options = buildIfConditionOptions(context, allMacros, macro.content);
 
         // For variable shorthand in {{if}} condition, adjust identifier and start position
@@ -1086,6 +1120,7 @@ export async function buildMacroAutoCompleteResult(text, cursorPos, {
             resultIdentifier = conditionAfterInversion.slice(1);
             // Start = after the ! (if any) and the prefix
             const prefixChar = conditionAfterInversion[0];
+            // @ts-expect-error TS(2345) FIXME: Argument of type 'string | undefined' is not assig... Remove this comment to see the full error message
             const prefixPosInCondition = conditionText.indexOf(prefixChar, hasInversion ? 1 : 0);
             resultStart = conditionStartInText + prefixPosInCondition + 1;
         } else if (hasInversion && conditionAfterInversion.length === 0) {
@@ -1107,6 +1142,7 @@ export async function buildMacroAutoCompleteResult(text, cursorPos, {
         return new AutoCompleteNameResult(
             resultIdentifier,
             resultStart,
+            // @ts-expect-error TS(2345) FIXME: Argument of type '(VariableShorthandAutoCompleteOp... Remove this comment to see the full error message
             options,
             false,
             () => isTypingVarShorthand
@@ -1132,18 +1168,21 @@ export async function buildMacroAutoCompleteResult(text, cursorPos, {
     let resultStart = identifierStartInText;
     if (context.isVariableShorthand && context.variablePrefix) {
         // Find where the prefix is in the macro content
+        // @ts-expect-error TS(2339) FIXME: Property 'content' does not exist on type 'never'.
         const prefixIndex = macro.content.indexOf(context.variablePrefix);
 
         if (context.isTypingVariableName) {
             // Typing variable name: identifier = variableName, start = after prefix
             resultIdentifier = context.variableName;
             if (prefixIndex >= 0) {
+                // @ts-expect-error TS(2339) FIXME: Property 'start' does not exist on type 'never'.
                 resultStart = macro.start + 2 + prefixIndex + 1; // +1 to skip the prefix
             }
         } else if (context.isTypingOperator) {
             // Typing operator: identifier = partial operator or current operator, start = after variable name
             resultIdentifier = context.partialOperator || context.variableOperator || '';
             // Use actual variableNameEnd position from parsing (accounts for whitespace)
+            // @ts-expect-error TS(2339) FIXME: Property 'start' does not exist on type 'never'.
             resultStart = macro.start + 2 + context.variableNameEnd;
             // Skip whitespace between variable name and operator
             while (resultStart < cursorPos && /\s/.test(text[resultStart])) {
@@ -1157,11 +1196,13 @@ export async function buildMacroAutoCompleteResult(text, cursorPos, {
             // Invalid chars after variable name: show the invalid chars for warning
             resultIdentifier = context.invalidTrailingChars || '';
             // Use actual variableNameEnd position from parsing
+            // @ts-expect-error TS(2339) FIXME: Property 'start' does not exist on type 'never'.
             resultStart = macro.start + 2 + context.variableNameEnd;
         } else if (context.isTypingValue && !context.isTypingClosingBrace) {
             // Typing value: identifier = value being typed, start = after operator
             resultIdentifier = context.variableValue;
             // Use actual operatorEnd position from parsing (accounts for whitespace)
+            // @ts-expect-error TS(2339) FIXME: Property 'start' does not exist on type 'never'.
             resultStart = macro.start + 2 + context.variableOperatorEnd;
             // Skip any whitespace between operator and value
             while (resultStart < cursorPos && /\s/.test(text[resultStart])) {
@@ -1178,6 +1219,7 @@ export async function buildMacroAutoCompleteResult(text, cursorPos, {
             // Fallback: use variable name
             resultIdentifier = context.variableName;
             if (prefixIndex >= 0) {
+                // @ts-expect-error TS(2339) FIXME: Property 'start' does not exist on type 'never'.
                 resultStart = macro.start + 2 + prefixIndex + 1;
             }
         }
@@ -1191,6 +1233,7 @@ export async function buildMacroAutoCompleteResult(text, cursorPos, {
     return new AutoCompleteNameResult(
         resultIdentifier,
         resultStart,
+        // @ts-expect-error TS(2345) FIXME: Argument of type '(VariableShorthandAutoCompleteOp... Remove this comment to see the full error message
         options,
         false,
         makeNoMatchText,
@@ -1207,7 +1250,9 @@ export async function buildMacroAutoCompleteResult(text, cursorPos, {
  * @param {boolean} [options.isForced] - Whether autocomplete was force-triggered (Ctrl+Space).
  * @returns {Promise<AutoCompleteNameResult|null>}
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'text' implicitly has an 'any' type.
 export async function getMacroAutoCompleteAt(text, cursorPos, { isForced = false } = {}) {
     const macro = findMacroAtCursor(text, cursorPos);
+    // @ts-expect-error TS(2322) FIXME: Type '{ start: number; end: number; content: any; ... Remove this comment to see the full error message
     return buildMacroAutoCompleteResult(text, cursorPos, { macro, isForced });
 }

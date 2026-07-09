@@ -14,10 +14,12 @@ function sanitizeInlineQuotationOnCopy() {
         }
 
         const selection = window.getSelection();
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         if (!selection.anchorNode?.parentElement.closest('.mes_text')) {
             return;
         }
 
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         const range = selection.getRangeAt(0).cloneContents();
         const tempDOM = document.createDocumentFragment();
 
@@ -26,6 +28,7 @@ function sanitizeInlineQuotationOnCopy() {
          * @param {Node} node Input node
          * @returns {Node} Processed node
          */
+        // @ts-expect-error TS(7006) FIXME: Parameter 'node' implicitly has an 'any' type.
         function processNode(node) {
             if (node.nodeType === Node.ELEMENT_NODE && node.nodeName.toLowerCase() === 'q') {
                 // Transform <q> to <span>, preserve children
@@ -52,6 +55,7 @@ function sanitizeInlineQuotationOnCopy() {
         newRange.selectNodeContents(tempDOM);
 
         event.preventDefault();
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         event.clipboardData.setData('text/plain', newRange.toString());
     });
 }

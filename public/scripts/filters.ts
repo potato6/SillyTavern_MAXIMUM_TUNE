@@ -46,10 +46,13 @@ export const DEFAULT_FILTER_STATE = FILTER_STATES.UNDEFINED.key;
  * @param {FilterState|string} b Second state
  * @returns {boolean}
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'a' implicitly has an 'any' type.
 export function isFilterState(a, b) {
     const states = Object.keys(FILTER_STATES);
 
+    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     const aKey = typeof a == 'string' && states.includes(a) ? a : states.find(key => FILTER_STATES[key] === a);
+    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     const bKey = typeof b == 'string' && states.includes(b) ? b : states.find(key => FILTER_STATES[key] === b);
 
     return aKey === bKey;
@@ -95,6 +98,7 @@ export class FilterHelper {
      * Creates a new FilterHelper
      * @param {Function} onDataChanged Callback to trigger when the filter data changes
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'onDataChanged' implicitly has an 'any' ... Remove this comment to see the full error message
     constructor(onDataChanged) {
         this.onDataChanged = onDataChanged;
         this.scoreCache = new Map();
@@ -117,6 +121,7 @@ export class FilterHelper {
          * @param {object} obj The object to check for values
          * @returns {boolean} Whether the object has any values
          */
+        // @ts-expect-error TS(7006) FIXME: Parameter 'obj' implicitly has an 'any' type.
         function checkRecursive(obj) {
             if (typeof obj === 'string' && obj.length > 0 && obj !== 'UNDEFINED') {
                 return true;
@@ -170,6 +175,7 @@ export class FilterHelper {
      * @param {any[]} data The data to filter. Must have a uid property.
      * @returns {any[]} The filtered data.
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
     wiSearchFilter(data) {
         const term = this.filterData[FILTER_TYPES.WORLD_INFO_SEARCH];
 
@@ -177,9 +183,12 @@ export class FilterHelper {
             return data;
         }
 
+        // @ts-expect-error TS(2345) FIXME: Argument of type '{ characters: { resultMap: Map<a... Remove this comment to see the full error message
         const fuzzySearchResults = fuzzySearchWorldInfo(data, term, this.fuzzySearchCaches);
+        // @ts-expect-error TS(7006) FIXME: Parameter 'i' implicitly has an 'any' type.
         this.cacheScores(FILTER_TYPES.WORLD_INFO_SEARCH, new Map(fuzzySearchResults.map(i => [i.item?.uid, i.score])));
 
+        // @ts-expect-error TS(7006) FIXME: Parameter 'entity' implicitly has an 'any' type.
         const filteredData = data.filter(entity => fuzzySearchResults.find(x => x.item === entity));
         return filteredData;
     }
@@ -189,6 +198,7 @@ export class FilterHelper {
      * @param {string[]} data The data to filter.
      * @returns {string[]} The filtered data.
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
     personaSearchFilter(data) {
         const term = this.filterData[FILTER_TYPES.PERSONA_SEARCH];
 
@@ -196,9 +206,12 @@ export class FilterHelper {
             return data;
         }
 
+        // @ts-expect-error TS(2345) FIXME: Argument of type '{ characters: { resultMap: Map<a... Remove this comment to see the full error message
         const fuzzySearchResults = fuzzySearchPersonas(data, term, this.fuzzySearchCaches);
+        // @ts-expect-error TS(7006) FIXME: Parameter 'i' implicitly has an 'any' type.
         this.cacheScores(FILTER_TYPES.PERSONA_SEARCH, new Map(fuzzySearchResults.map(i => [i.item.key, i.score])));
 
+        // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
         const filteredData = data.filter(name => fuzzySearchResults.find(x => x.item.key === name));
         return filteredData;
     }
@@ -209,9 +222,11 @@ export class FilterHelper {
      * @param {string} tagId Tag ID to check
      * @returns {boolean} Whether the entity is tagged with the given tag ID
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'entity' implicitly has an 'any' type.
     isElementTagged(entity, tagId) {
         const isCharacter = entity.type === 'character';
         const lookupValue = isCharacter ? entity.item.avatar : String(entity.id);
+        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         const isTagged = Array.isArray(tag_map[lookupValue]) && tag_map[lookupValue].includes(tagId);
 
         return isTagged;
@@ -222,21 +237,26 @@ export class FilterHelper {
      * @param {any[]} data The data to filter.
      * @returns {any[]} The filtered data.
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
     tagFilter(data) {
         const TAG_LOGIC_AND = true; // switch to false to use OR logic for combining tags
-        // @ts-expect-error TS(2339): Property 'selected' does not exist on type 'string... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'selected' does not exist on type 'string... Remove this comment to see the full error message
         const { selected, excluded } = this.filterData[FILTER_TYPES.TAG];
 
         if (!selected.length && !excluded.length) {
             return data;
         }
 
+        // @ts-expect-error TS(7006) FIXME: Parameter 'entity' implicitly has an 'any' type.
         const getIsTagged = (entity) => {
             const isTag = entity.type === 'tag';
+            // @ts-expect-error TS(7006) FIXME: Parameter 'tagId' implicitly has an 'any' type.
             const tagFlags = selected.map(tagId => this.isElementTagged(entity, tagId));
+            // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
             const trueFlags = tagFlags.filter(x => x);
             const isTagged = TAG_LOGIC_AND ? tagFlags.length === trueFlags.length : trueFlags.length > 0;
 
+            // @ts-expect-error TS(7006) FIXME: Parameter 'tagId' implicitly has an 'any' type.
             const excludedTagFlags = excluded.map(tagId => this.isElementTagged(entity, tagId));
             const isExcluded = excludedTagFlags.includes(true);
 
@@ -251,6 +271,7 @@ export class FilterHelper {
             }
         };
 
+        // @ts-expect-error TS(7006) FIXME: Parameter 'entity' implicitly has an 'any' type.
         return data.filter(entity => getIsTagged(entity));
     }
 
@@ -259,8 +280,10 @@ export class FilterHelper {
      * @param {any[]} data The data to filter.
      * @returns {any[]} The filtered data.
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
     favFilter(data) {
         const state = this.filterData[FILTER_TYPES.FAV];
+        // @ts-expect-error TS(7006) FIXME: Parameter 'entity' implicitly has an 'any' type.
         const isFav = entity => entity.item.fav || entity.item.fav == 'true';
 
         return this.filterDataByState(data, state, isFav, { includeFolders: true });
@@ -271,8 +294,10 @@ export class FilterHelper {
      * @param {any[]} data The data to filter.
      * @returns {any[]} The filtered data.
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
     groupFilter(data) {
         const state = this.filterData[FILTER_TYPES.GROUP];
+        // @ts-expect-error TS(7006) FIXME: Parameter 'entity' implicitly has an 'any' type.
         const isGroup = entity => entity.type === 'group';
 
         return this.filterDataByState(data, state, isGroup, { includeFolders: true });
@@ -283,9 +308,11 @@ export class FilterHelper {
      * @param {any[]} data The data to filter.
      * @returns {any[]} The filtered data.
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
     folderFilter(data) {
         const state = this.filterData[FILTER_TYPES.FOLDER];
         // Filter directly on folder. Special rules on still displaying characters with active folder filter are implemented in 'getEntitiesList' directly.
+        // @ts-expect-error TS(7006) FIXME: Parameter 'entity' implicitly has an 'any' type.
         const isFolder = entity => entity.type === 'tag';
 
         return this.filterDataByState(data, state, isFolder);
@@ -301,11 +328,14 @@ export class FilterHelper {
      * @param {boolean} [options.includeFolders] If true, entities with type 'tag' always pass through
      * @returns {any[]} The filtered data
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
     filterDataByState(data, state, filterFunc, { includeFolders = false } = {}) {
         if (isFilterState(state, FILTER_STATES.SELECTED)) {
+            // @ts-expect-error TS(7006) FIXME: Parameter 'entity' implicitly has an 'any' type.
             return data.filter(entity => filterFunc(entity) || (includeFolders && entity.type == 'tag'));
         }
         if (isFilterState(state, FILTER_STATES.EXCLUDED)) {
+            // @ts-expect-error TS(7006) FIXME: Parameter 'entity' implicitly has an 'any' type.
             return data.filter(entity => !filterFunc(entity) || (includeFolders && entity.type == 'tag'));
         }
 
@@ -317,6 +347,7 @@ export class FilterHelper {
      * @param {any[]} data The data to filter.
      * @returns {any[]} The filtered data.
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
     searchFilter(data) {
         if (!this.filterData[FILTER_TYPES.SEARCH]) {
             return data;
@@ -326,11 +357,17 @@ export class FilterHelper {
 
         // Save fuzzy search results and scores if enabled
         if (power_user.fuzzy_search) {
+            // @ts-expect-error TS(2345) FIXME: Argument of type '{ characters: { resultMap: Map<a... Remove this comment to see the full error message
             const fuzzySearchCharactersResults = fuzzySearchCharacters(searchValue, this.fuzzySearchCaches);
+            // @ts-expect-error TS(2345) FIXME: Argument of type '{ characters: { resultMap: Map<a... Remove this comment to see the full error message
             const fuzzySearchGroupsResults = fuzzySearchGroups(searchValue, this.fuzzySearchCaches);
+            // @ts-expect-error TS(2345) FIXME: Argument of type '{ characters: { resultMap: Map<a... Remove this comment to see the full error message
             const fuzzySearchTagsResult = fuzzySearchTags(searchValue, this.fuzzySearchCaches);
+            // @ts-expect-error TS(7006) FIXME: Parameter 'i' implicitly has an 'any' type.
             this.cacheScores(FILTER_TYPES.SEARCH, new Map(fuzzySearchCharactersResults.map(i => [`character.${i.refIndex}`, i.score])));
+            // @ts-expect-error TS(7006) FIXME: Parameter 'i' implicitly has an 'any' type.
             this.cacheScores(FILTER_TYPES.SEARCH, new Map(fuzzySearchGroupsResults.map(i => [`group.${i.item.id}`, i.score])));
+            // @ts-expect-error TS(7006) FIXME: Parameter 'i' implicitly has an 'any' type.
             this.cacheScores(FILTER_TYPES.SEARCH, new Map(fuzzySearchTagsResult.map(i => [`tag.${i.item.id}`, i.score])));
         }
 
@@ -338,6 +375,7 @@ export class FilterHelper {
          *
          * @param entity
          */
+        // @ts-expect-error TS(7006) FIXME: Parameter 'entity' implicitly has an 'any' type.
         const getIsValidSearch = (entity) => {
             if (power_user.fuzzy_search) {
                 // We can filter easily by checking if we have saved a score
@@ -349,6 +387,7 @@ export class FilterHelper {
             }
         };
 
+        // @ts-expect-error TS(7006) FIXME: Parameter 'entity' implicitly has an 'any' type.
         return data.filter(entity => getIsValidSearch(entity));
     }
 
@@ -358,6 +397,7 @@ export class FilterHelper {
      * @param {any} data The data to set.
      * @param {boolean} suppressDataChanged Whether to suppress the data changed callback.
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'filterType' implicitly has an 'any' typ... Remove this comment to see the full error message
     setFilterData(filterType, data, suppressDataChanged = false) {
         const oldData = this.filterData[filterType];
         this.filterData[filterType] = data;
@@ -372,6 +412,7 @@ export class FilterHelper {
      * Gets the filter data for the given filter type.
      * @param {FilterType} filterType The filter type to get data for.
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'filterType' implicitly has an 'any' typ... Remove this comment to see the full error message
     getFilterData(filterType) {
         return this.filterData[filterType];
     }
@@ -385,8 +426,9 @@ export class FilterHelper {
      * @param {boolean} [options.clearFuzzySearchCaches] - Whether the fuzzy search caches should be cleared.
      * @returns {any[]} The filtered data.
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
     applyFilters(data, { clearScoreCache = true, tempOverrides = {}, clearFuzzySearchCaches = true } = {}) {
-        // @ts-expect-error TS(2554): Expected 1 arguments, but got 0.
+        // @ts-expect-error TS(2554) FIXME: Expected 1 arguments, but got 0.
         if (clearScoreCache) this.clearScoreCache();
 
         if (clearFuzzySearchCaches) this.clearFuzzySearchCaches();
@@ -394,7 +436,9 @@ export class FilterHelper {
         // Save original filter states
         const originalStates = {};
         for (const key in tempOverrides) {
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             originalStates[key] = this.filterData[key];
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             this.filterData[key] = tempOverrides[key];
         }
 
@@ -404,6 +448,7 @@ export class FilterHelper {
 
             // Restore original filter states
             for (const key in originalStates) {
+                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 this.filterData[key] = originalStates[key];
             }
 
@@ -411,6 +456,7 @@ export class FilterHelper {
         } catch (error) {
             // Restore original filter states in case of an error
             for (const key in originalStates) {
+                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 this.filterData[key] = originalStates[key];
             }
             throw error;
@@ -423,6 +469,7 @@ export class FilterHelper {
      * @param {FilterType} type - The type of data being cached
      * @param {Map<string|number, number>} results - The search results containing mapped item identifiers and their scores
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'type' implicitly has an 'any' type.
     cacheScores(type, results) {
         /** @type {Map<string|number, number>} */
         const typeScores = this.scoreCache.get(type) || new Map();
@@ -439,6 +486,7 @@ export class FilterHelper {
      * @param {string|number} uid The unique identifier for an item
      * @returns {number|undefined} The cached score, or `undefined` if no score is present
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'type' implicitly has an 'any' type.
     getScore(type, uid) {
         return this.scoreCache.get(type)?.get(uid) ?? undefined;
     }
@@ -447,6 +495,7 @@ export class FilterHelper {
      * Clear the score cache for a specific type, or completely if no type is specified
      * @param {FilterType} [type] The type of data to clear scores for. Clears all if unspecified.
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'type' implicitly has an 'any' type.
     clearScoreCache(type) {
         if (type) {
             this.scoreCache.set(type, new Map());
@@ -460,7 +509,6 @@ export class FilterHelper {
      */
     clearFuzzySearchCaches() {
         for (const cache of Object.values(this.fuzzySearchCaches)) {
-            // @ts-expect-error TS(2339): Property 'resultMap' does not exist on type 'unkno... Remove this comment to see the full error message
             cache.resultMap.clear();
         }
     }

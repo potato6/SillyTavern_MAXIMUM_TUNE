@@ -1,18 +1,22 @@
+// @ts-expect-error TS(1192) FIXME: Module '"node:fs"' has no default export.
 import fs from 'node:fs';
+// @ts-expect-error TS(1259) FIXME: Module '"node:path"' can only be default-imported ... Remove this comment to see the full error message
 import path from 'node:path';
 import { Buffer } from 'node:buffer';
+// @ts-expect-error TS(1192) FIXME: Module '"node:zlib"' has no default export.
 import zlib from 'node:zlib';
 import { promisify } from 'node:util';
 
+// @ts-expect-error TS(1259) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import express from 'express';
 import fetch from 'node-fetch';
 import { sync as writeFileAtomicSync } from 'write-file-atomic';
 
-// @ts-expect-error TS(2792): Cannot find module '@agnai/web-tokenizers'. Did yo... Remove this comment to see the full error message
+// @ts-expect-error TS(2792) FIXME: Cannot find module '@agnai/web-tokenizers'. Did yo... Remove this comment to see the full error message
 import { Tokenizer } from '@agnai/web-tokenizers';
-// @ts-expect-error TS(2792): Cannot find module '@agnai/sentencepiece-js'. Did ... Remove this comment to see the full error message
+// @ts-expect-error TS(2792) FIXME: Cannot find module '@agnai/sentencepiece-js'. Did ... Remove this comment to see the full error message
 import { SentencePieceProcessor } from '@agnai/sentencepiece-js';
-// @ts-expect-error TS(2792): Cannot find module 'tiktoken'. Did you mean to set... Remove this comment to see the full error message
+// @ts-expect-error TS(2792) FIXME: Cannot find module 'tiktoken'. Did you mean to set... Remove this comment to see the full error message
 import tiktoken from 'tiktoken';
 
 import { convertClaudePrompt } from '../prompt-converters.js';
@@ -61,6 +65,7 @@ export const TEXT_COMPLETION_MODELS = [
 ];
 
 const BYTES_PER_TOKEN = 3.35;
+// @ts-expect-error TS(2345) FIXME: Argument of type 'true' is not assignable to param... Remove this comment to see the full error message
 const IS_DOWNLOAD_ALLOWED = getConfigValue('enableDownloadableTokenizers', true, 'boolean');
 const gunzip = promisify(zlib.gunzip);
 
@@ -146,10 +151,12 @@ async function getPathToTokenizer(model: string, fallbackModel: string | undefin
     } catch (error) {
         const getLastSegment = (str: string) => str?.split('/')?.pop() || '';
         if (fallbackModel) {
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             console.error(`Could not get a tokenizer from ${getLastSegment(model)}. Reason: ${error.message}. Using a fallback model: ${getLastSegment(fallbackModel)}.`);
             return fallbackModel;
         }
 
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         throw new Error(`Failed to instantiate a tokenizer and fallback is not provided. Reason: ${error.message}`);
     }
 }
@@ -161,6 +168,7 @@ class SentencePieceTokenizer {
     /**
      * @type {import('@agnai/sentencepiece-js').SentencePieceProcessor} Sentencepiece tokenizer instance
      */
+    // @ts-expect-error TS(7008) FIXME: Member '#instance' implicitly has an 'any' type.
     #instance;
     /**
      * @type {string} Path to the tokenizer model
@@ -210,6 +218,7 @@ class WebTokenizer {
     /**
      * @type {Tokenizer} Web tokenizer instance
      */
+    // @ts-expect-error TS(7008) FIXME: Member '#instance' implicitly has an 'any' type.
     #instance;
     /**
      * @type {string} Path to the tokenizer model
@@ -252,23 +261,14 @@ class WebTokenizer {
     }
 }
 
-// @ts-expect-error TS(2554): Expected 2 arguments, but got 1.
 const spp_llama = new SentencePieceTokenizer('src/tokenizers/llama.model');
-// @ts-expect-error TS(2554): Expected 2 arguments, but got 1.
 const spp_nerd = new SentencePieceTokenizer('src/tokenizers/nerdstash.model');
-// @ts-expect-error TS(2554): Expected 2 arguments, but got 1.
 const spp_nerd_v2 = new SentencePieceTokenizer('src/tokenizers/nerdstash_v2.model');
-// @ts-expect-error TS(2554): Expected 2 arguments, but got 1.
 const spp_mistral = new SentencePieceTokenizer('src/tokenizers/mistral.model');
-// @ts-expect-error TS(2554): Expected 2 arguments, but got 1.
 const spp_yi = new SentencePieceTokenizer('src/tokenizers/yi.model');
-// @ts-expect-error TS(2554): Expected 2 arguments, but got 1.
 const spp_gemma = new SentencePieceTokenizer('src/tokenizers/gemma.model');
-// @ts-expect-error TS(2554): Expected 2 arguments, but got 1.
 const spp_jamba = new SentencePieceTokenizer('src/tokenizers/jamba.model');
-// @ts-expect-error TS(2554): Expected 2 arguments, but got 1.
 const claude_tokenizer = new WebTokenizer('src/tokenizers/claude.json');
-// @ts-expect-error TS(2554): Expected 2 arguments, but got 1.
 const llama3_tokenizer = new WebTokenizer('src/tokenizers/llama3.json');
 const commandRTokenizer = new WebTokenizer('https://github.com/SillyTavern/SillyTavern-Tokenizers/raw/main/command-r.json.gz', 'src/tokenizers/llama3.json');
 const commandATokenizer = new WebTokenizer('https://github.com/SillyTavern/SillyTavern-Tokenizers/raw/main/command-a.json.gz', 'src/tokenizers/llama3.json');
@@ -407,6 +407,7 @@ async function countSentencepieceTokens(tokenizer: SentencePieceTokenizer, text:
  * @param array
  */
 async function countSentencepieceArrayTokens(tokenizer: SentencePieceTokenizer, array: object[]) {
+    // @ts-expect-error TS(2345) FIXME: Argument of type '(x: Record<string, unknown>) => ... Remove this comment to see the full error message
     const jsonBody = array.flatMap((x: Record<string, unknown>) => Object.values(x)).join('\n\n');
     const result = await countSentencepieceTokens(tokenizer, jsonBody);
     const num_tokens = result.count;
@@ -419,12 +420,14 @@ async function countSentencepieceArrayTokens(tokenizer: SentencePieceTokenizer, 
  * @param {number[]} ids Token IDs
  * @returns {Promise<string[]>} Token chunks
  */
+// @ts-expect-error TS(2792) FIXME: Cannot find module 'tiktoken'. Did you mean to set... Remove this comment to see the full error message
 async function getTiktokenChunks(tokenizer: import('tiktoken').Tiktoken, ids: number[]) {
     const decoder = new TextDecoder();
     const chunks = [];
 
     for (let i = 0; i < ids.length; i++) {
         const id = ids[i];
+        // @ts-expect-error TS(2769) FIXME: No overload matches this call.
         const chunkTextBytes = await tokenizer.decode(new Uint32Array([id]));
         const chunkText = decoder.decode(chunkTextBytes);
         chunks.push(chunkText);
@@ -555,12 +558,15 @@ export function getTokenizerModel(requestModel: string) {
  * @returns {import('tiktoken').Tiktoken} Tiktoken tokenizer
  */
 export function getTiktokenTokenizer(model: string) {
+    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     if (tokenizersCache[model]) {
+        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         return tokenizersCache[model];
     }
 
     const tokenizer = tiktoken.encoding_for_model(model);
     console.info('Instantiated the tokenizer for', model);
+    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     tokenizersCache[model] = tokenizer;
     return tokenizer;
 }
@@ -573,6 +579,7 @@ export function getTiktokenTokenizer(model: string) {
  */
 export function countWebTokenizerTokens(tokenizer: Tokenizer | null, messages: object[]) {
     // Should be fine if we use the old conversion method instead of the messages API one i think?
+    // @ts-expect-error TS(2345) FIXME: Argument of type 'object[]' is not assignable to p... Remove this comment to see the full error message
     const convertedPrompt = convertClaudePrompt(messages, false, '', false, false, '', false);
 
     // Fallback to strlen estimation
@@ -589,6 +596,7 @@ export function countWebTokenizerTokens(tokenizer: Tokenizer | null, messages: o
  * @param {SentencePieceTokenizer} tokenizer Sentencepiece tokenizer
  * @returns {TokenizationHandler} Handler function
  */
+// @ts-expect-error TS(2304) FIXME: Cannot find name 'TokenizationHandler'.
 function createSentencepieceEncodingHandler(tokenizer: SentencePieceTokenizer): TokenizationHandler {
     /**
      * Request handler for encoding Sentencepiece tokens.
@@ -619,6 +627,7 @@ function createSentencepieceEncodingHandler(tokenizer: SentencePieceTokenizer): 
  * @param {SentencePieceTokenizer} tokenizer Sentencepiece tokenizer
  * @returns {TokenizationHandler} Handler function
  */
+// @ts-expect-error TS(2304) FIXME: Cannot find name 'TokenizationHandler'.
 function createSentencepieceDecodingHandler(tokenizer: SentencePieceTokenizer): TokenizationHandler {
     /**
      * Request handler for decoding Sentencepiece tokens.
@@ -651,6 +660,7 @@ function createSentencepieceDecodingHandler(tokenizer: SentencePieceTokenizer): 
  * @param {string} modelId Tiktoken model ID
  * @returns {TokenizationHandler} Handler function
  */
+// @ts-expect-error TS(2304) FIXME: Cannot find name 'TokenizationHandler'.
 function createTiktokenEncodingHandler(modelId: string): TokenizationHandler {
     /**
      * Request handler for encoding Tiktoken tokens.
@@ -667,6 +677,7 @@ function createTiktokenEncodingHandler(modelId: string): TokenizationHandler {
             const text = request.body.text || '';
             const tokenizer = getTiktokenTokenizer(modelId);
             const tokens = Object.values(tokenizer.encode(text));
+            // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown[]' is not assignable to ... Remove this comment to see the full error message
             const chunks = await getTiktokenChunks(tokenizer, tokens);
             return response.send({ ids: tokens, count: tokens.length, chunks });
         } catch (error) {
@@ -681,6 +692,7 @@ function createTiktokenEncodingHandler(modelId: string): TokenizationHandler {
  * @param {string} modelId Tiktoken model ID
  * @returns {TokenizationHandler} Handler function
  */
+// @ts-expect-error TS(2304) FIXME: Cannot find name 'TokenizationHandler'.
 function createTiktokenDecodingHandler(modelId: string): TokenizationHandler {
     /**
      * Request handler for decoding Tiktoken tokens.
@@ -711,6 +723,7 @@ function createTiktokenDecodingHandler(modelId: string): TokenizationHandler {
  * @param {WebTokenizer} tokenizer WebTokenizer instance
  * @returns {TokenizationHandler} Handler function
  */
+// @ts-expect-error TS(2304) FIXME: Cannot find name 'TokenizationHandler'.
 function createWebTokenizerEncodingHandler(tokenizer: WebTokenizer): TokenizationHandler {
     /**
      * Request handler for encoding WebTokenizer tokens.
@@ -728,6 +741,7 @@ function createWebTokenizerEncodingHandler(tokenizer: WebTokenizer): Tokenizatio
             const instance = await tokenizer?.get();
             if (!instance) throw new Error('Failed to load the Web tokenizer');
             const tokens = Array.from(instance.encode(text));
+            // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown[]' is not assignable to ... Remove this comment to see the full error message
             const chunks = getWebTokenizersChunks(instance, tokens);
             return response.send({ ids: tokens, count: tokens.length, chunks });
         } catch (error) {
@@ -742,6 +756,7 @@ function createWebTokenizerEncodingHandler(tokenizer: WebTokenizer): Tokenizatio
  * @param {WebTokenizer} tokenizer WebTokenizer instance
  * @returns {TokenizationHandler} Handler function
  */
+// @ts-expect-error TS(2304) FIXME: Cannot find name 'TokenizationHandler'.
 function createWebTokenizerDecodingHandler(tokenizer: WebTokenizer): TokenizationHandler {
     /**
      * Request handler for decoding WebTokenizer tokens.
@@ -801,9 +816,9 @@ router.post('/command-a/decode', createWebTokenizerDecodingHandler(commandAToken
 router.post('/nemo/decode', createWebTokenizerDecodingHandler(nemoTokenizer));
 router.post('/deepseek/decode', createWebTokenizerDecodingHandler(deepseekTokenizer));
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
 router.post('/openai/encode', async function (req, res) {
     try {
-        // @ts-expect-error TS(4111): Property 'model' comes from an index signature, so... Remove this comment to see the full error message
         const queryModel = String(req.query.model || '');
 
         if (queryModel.includes('llama3') || queryModel.includes('llama-3')) {
@@ -875,9 +890,9 @@ router.post('/openai/encode', async function (req, res) {
     }
 });
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
 router.post('/openai/decode', async function (req, res) {
     try {
-        // @ts-expect-error TS(4111): Property 'model' comes from an index signature, so... Remove this comment to see the full error message
         const queryModel = String(req.query.model || '');
 
         if (queryModel.includes('llama3') || queryModel.includes('llama-3')) {
@@ -949,13 +964,12 @@ router.post('/openai/decode', async function (req, res) {
     }
 });
 
-// @ts-expect-error TS(7030): Not all code paths return a value.
+// @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
 router.post('/openai/count', async function (req, res) {
     try {
         if (!req.body) return res.sendStatus(400);
 
         let num_tokens = 0;
-        // @ts-expect-error TS(4111): Property 'model' comes from an index signature, so... Remove this comment to see the full error message
         const queryModel = String(req.query.model || '');
         const model = getTokenizerModel(queryModel);
 
@@ -1072,6 +1086,7 @@ router.post('/openai/count', async function (req, res) {
     }
 });
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/remote/kobold/count', async function (request, response) {
     if (!request.body) {
         return response.sendStatus(400);
@@ -1106,6 +1121,7 @@ router.post('/remote/kobold/count', async function (request, response) {
     }
 });
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/remote/textgenerationwebui/encode', async function (request, response) {
     if (!request.body) {
         return response.sendStatus(400);
@@ -1128,32 +1144,32 @@ router.post('/remote/textgenerationwebui/encode', async function (request, respo
         switch (request.body.api_type) {
             case TEXTGEN_TYPES.TABBY:
                 url += '/v1/token/encode';
-                // @ts-expect-error TS(2339): Property 'body' does not exist on type '{ method: ... Remove this comment to see the full error message
+                // @ts-expect-error TS(2339) FIXME: Property 'body' does not exist on type '{ method: ... Remove this comment to see the full error message
                 args.body = JSON.stringify({ 'text': text, 'add_bos_token': false, 'encode_special_tokens': false });
                 break;
             case TEXTGEN_TYPES.KOBOLDCPP:
                 url += '/api/extra/tokencount';
-                // @ts-expect-error TS(2339): Property 'body' does not exist on type '{ method: ... Remove this comment to see the full error message
+                // @ts-expect-error TS(2339) FIXME: Property 'body' does not exist on type '{ method: ... Remove this comment to see the full error message
                 args.body = JSON.stringify({ 'prompt': text, 'special': false });
                 break;
             case TEXTGEN_TYPES.LLAMACPP:
                 url += '/tokenize';
-                // @ts-expect-error TS(2339): Property 'body' does not exist on type '{ method: ... Remove this comment to see the full error message
+                // @ts-expect-error TS(2339) FIXME: Property 'body' does not exist on type '{ method: ... Remove this comment to see the full error message
                 args.body = JSON.stringify({ 'model': model, 'content': text });
                 break;
             case TEXTGEN_TYPES.VLLM:
                 url += '/tokenize';
-                // @ts-expect-error TS(2339): Property 'body' does not exist on type '{ method: ... Remove this comment to see the full error message
+                // @ts-expect-error TS(2339) FIXME: Property 'body' does not exist on type '{ method: ... Remove this comment to see the full error message
                 args.body = JSON.stringify({ 'model': model, 'prompt': text });
                 break;
             case TEXTGEN_TYPES.APHRODITE:
                 url += '/v1/tokenize';
-                // @ts-expect-error TS(2339): Property 'body' does not exist on type '{ method: ... Remove this comment to see the full error message
+                // @ts-expect-error TS(2339) FIXME: Property 'body' does not exist on type '{ method: ... Remove this comment to see the full error message
                 args.body = JSON.stringify({ 'model': model, 'prompt': text });
                 break;
             default:
                 url += '/v1/internal/encode';
-                // @ts-expect-error TS(2339): Property 'body' does not exist on type '{ method: ... Remove this comment to see the full error message
+                // @ts-expect-error TS(2339) FIXME: Property 'body' does not exist on type '{ method: ... Remove this comment to see the full error message
                 args.body = JSON.stringify({ 'text': text });
                 break;
         }

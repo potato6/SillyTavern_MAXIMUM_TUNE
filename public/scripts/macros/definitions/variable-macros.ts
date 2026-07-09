@@ -25,8 +25,9 @@ export function registerVariableMacros() {
         description: 'Sets a local variable to the given value.',
         returns: '',
         exampleUsage: ['{{setvar::myvar::foo}}', '{{setvar::myintvar::3}}'],
+        // @ts-expect-error TS(7031) FIXME: Binding element 'name' implicitly has an 'any' typ... Remove this comment to see the full error message
         handler: ({ unnamedArgs: [name, value] }) => {
-            // @ts-expect-error TS(2339): Property 'variables' does not exist on type '() =>... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'variables' does not exist on type '() =>... Remove this comment to see the full error message
             ctx.variables.local.set(name, value);
             return '';
         },
@@ -50,8 +51,9 @@ export function registerVariableMacros() {
         description: 'Adds a value to an existing local variable (numeric or string append). If the variable does not exist, it will be created.',
         returns: '',
         exampleUsage: ['{{addvar::mystrvar::foo}}', '{{addvar::myintvar::3}}'],
+        // @ts-expect-error TS(7031) FIXME: Binding element 'name' implicitly has an 'any' typ... Remove this comment to see the full error message
         handler: ({ unnamedArgs: [name, value] }) => {
-            // @ts-expect-error TS(2339): Property 'variables' does not exist on type '() =>... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'variables' does not exist on type '() =>... Remove this comment to see the full error message
             ctx.variables.local.add(name, value);
             return '';
         },
@@ -71,8 +73,9 @@ export function registerVariableMacros() {
         returns: 'The new value of the local variable.',
         returnType: MacroValueType.NUMBER,
         exampleUsage: ['{{incvar::myintvar}}', '{{incvar some-local-int-var}}'],
+        // @ts-expect-error TS(7031) FIXME: Binding element 'name' implicitly has an 'any' typ... Remove this comment to see the full error message
         handler: ({ unnamedArgs: [name], normalize }) => {
-            // @ts-expect-error TS(2339): Property 'variables' does not exist on type '() =>... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'variables' does not exist on type '() =>... Remove this comment to see the full error message
             const result = ctx.variables.local.inc(name);
             return normalize(result);
         },
@@ -92,8 +95,9 @@ export function registerVariableMacros() {
         returns: 'The new value of the local variable.',
         returnType: MacroValueType.NUMBER,
         exampleUsage: ['{{decvar::myintvar}}', '{{decvar some-local-int-var}}'],
+        // @ts-expect-error TS(7031) FIXME: Binding element 'name' implicitly has an 'any' typ... Remove this comment to see the full error message
         handler: ({ unnamedArgs: [name], normalize }) => {
-            // @ts-expect-error TS(2339): Property 'variables' does not exist on type '() =>... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'variables' does not exist on type '() =>... Remove this comment to see the full error message
             const result = ctx.variables.local.dec(name);
             return normalize(result);
         },
@@ -113,8 +117,9 @@ export function registerVariableMacros() {
         returns: 'The value of the local variable.',
         returnType: [MacroValueType.STRING, MacroValueType.NUMBER],
         exampleUsage: ['{{getvar::myvar}}', '{{getvar myintvar}}'],
+        // @ts-expect-error TS(7031) FIXME: Binding element 'name' implicitly has an 'any' typ... Remove this comment to see the full error message
         handler: ({ unnamedArgs: [name], normalize }) => {
-            // @ts-expect-error TS(2339): Property 'variables' does not exist on type '() =>... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'variables' does not exist on type '() =>... Remove this comment to see the full error message
             const result = ctx.variables.local.get(name);
             return normalize(result);
         },
@@ -135,8 +140,9 @@ export function registerVariableMacros() {
         returns: '"true" if the variable exists, "false" otherwise.',
         returnType: MacroValueType.STRING,
         exampleUsage: ['{{hasvar::myvar}}', '{{hasvar some-local-var}}'],
+        // @ts-expect-error TS(7031) FIXME: Binding element 'name' implicitly has an 'any' typ... Remove this comment to see the full error message
         handler: ({ unnamedArgs: [name] }) => {
-            // @ts-expect-error TS(2339): Property 'variables' does not exist on type '() =>... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'variables' does not exist on type '() =>... Remove this comment to see the full error message
             return ctx.variables.local.has(name) ? 'true' : 'false';
         },
     });
@@ -155,8 +161,9 @@ export function registerVariableMacros() {
         description: 'Deletes a local variable.',
         returns: '',
         exampleUsage: ['{{deletevar::myvar}}', '{{deletevar some-local-var}}'],
+        // @ts-expect-error TS(7031) FIXME: Binding element 'name' implicitly has an 'any' typ... Remove this comment to see the full error message
         handler: ({ unnamedArgs: [name] }) => {
-            // @ts-expect-error TS(2339): Property 'variables' does not exist on type '() =>... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'variables' does not exist on type '() =>... Remove this comment to see the full error message
             ctx.variables.local.del(name);
             return '';
         },
@@ -180,8 +187,9 @@ export function registerVariableMacros() {
         description: 'Sets a global variable to the given value.',
         returns: '',
         exampleUsage: ['{{setglobalvar::myvar::foo}}', '{{setglobalvar::myintvar::3}}'],
+        // @ts-expect-error TS(7031) FIXME: Binding element 'name' implicitly has an 'any' typ... Remove this comment to see the full error message
         handler: ({ unnamedArgs: [name, value] }) => {
-            // @ts-expect-error TS(2339): Property 'variables' does not exist on type '() =>... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'variables' does not exist on type '() =>... Remove this comment to see the full error message
             ctx.variables.global.set(name, value);
             return '';
         },
@@ -205,8 +213,9 @@ export function registerVariableMacros() {
         description: 'Adds a value to an existing global variable (numeric or string append). If the variable does not exist, it will be created.',
         returns: '',
         exampleUsage: ['{{addglobalvar::mystrvar::foo}}', '{{addglobalvar::myintvar::3}}'],
+        // @ts-expect-error TS(7031) FIXME: Binding element 'name' implicitly has an 'any' typ... Remove this comment to see the full error message
         handler: ({ unnamedArgs: [name, value] }) => {
-            // @ts-expect-error TS(2339): Property 'variables' does not exist on type '() =>... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'variables' does not exist on type '() =>... Remove this comment to see the full error message
             ctx.variables.global.add(name, value);
             return '';
         },
@@ -226,8 +235,9 @@ export function registerVariableMacros() {
         returns: 'The new value of the global variable.',
         returnType: MacroValueType.NUMBER,
         exampleUsage: ['{{incglobalvar::myintvar}}', '{{incglobalvar some-global-int-var}}'],
+        // @ts-expect-error TS(7031) FIXME: Binding element 'name' implicitly has an 'any' typ... Remove this comment to see the full error message
         handler: ({ unnamedArgs: [name], normalize }) => {
-            // @ts-expect-error TS(2339): Property 'variables' does not exist on type '() =>... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'variables' does not exist on type '() =>... Remove this comment to see the full error message
             const result = ctx.variables.global.inc(name);
             return normalize(result);
         },
@@ -247,8 +257,9 @@ export function registerVariableMacros() {
         returns: 'The new value of the global variable.',
         returnType: MacroValueType.NUMBER,
         exampleUsage: ['{{decglobalvar::myintvar}}', '{{decglobalvar some-global-int-var}}'],
+        // @ts-expect-error TS(7031) FIXME: Binding element 'name' implicitly has an 'any' typ... Remove this comment to see the full error message
         handler: ({ unnamedArgs: [name], normalize }) => {
-            // @ts-expect-error TS(2339): Property 'variables' does not exist on type '() =>... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'variables' does not exist on type '() =>... Remove this comment to see the full error message
             const result = ctx.variables.global.dec(name);
             return normalize(result);
         },
@@ -268,8 +279,9 @@ export function registerVariableMacros() {
         returns: 'The value of the global variable.',
         returnType: [MacroValueType.STRING, MacroValueType.NUMBER],
         exampleUsage: ['{{getglobalvar::myvar}}', '{{getglobalvar myintvar}}'],
+        // @ts-expect-error TS(7031) FIXME: Binding element 'name' implicitly has an 'any' typ... Remove this comment to see the full error message
         handler: ({ unnamedArgs: [name], normalize }) => {
-            // @ts-expect-error TS(2339): Property 'variables' does not exist on type '() =>... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'variables' does not exist on type '() =>... Remove this comment to see the full error message
             const result = ctx.variables.global.get(name);
             return normalize(result);
         },
@@ -290,8 +302,9 @@ export function registerVariableMacros() {
         returns: '"true" if the variable exists, "false" otherwise.',
         returnType: MacroValueType.STRING,
         exampleUsage: ['{{hasglobalvar::myvar}}', '{{hasglobalvar some-global-var}}'],
+        // @ts-expect-error TS(7031) FIXME: Binding element 'name' implicitly has an 'any' typ... Remove this comment to see the full error message
         handler: ({ unnamedArgs: [name] }) => {
-            // @ts-expect-error TS(2339): Property 'variables' does not exist on type '() =>... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'variables' does not exist on type '() =>... Remove this comment to see the full error message
             return ctx.variables.global.has(name) ? 'true' : 'false';
         },
     });
@@ -310,8 +323,9 @@ export function registerVariableMacros() {
         description: 'Deletes a global variable.',
         returns: '',
         exampleUsage: ['{{deleteglobalvar::myvar}}', '{{deleteglobalvar some-global-var}}'],
+        // @ts-expect-error TS(7031) FIXME: Binding element 'name' implicitly has an 'any' typ... Remove this comment to see the full error message
         handler: ({ unnamedArgs: [name] }) => {
-            // @ts-expect-error TS(2339): Property 'variables' does not exist on type '() =>... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'variables' does not exist on type '() =>... Remove this comment to see the full error message
             ctx.variables.global.del(name);
             return '';
         },

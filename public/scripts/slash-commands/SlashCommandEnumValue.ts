@@ -32,18 +32,23 @@ export const enumTypes = {
      * @param {number?} index - The index used to retrieve the enum type
      * @returns {EnumType} The enum type corresponding to the index
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'index' implicitly has an 'any' type.
     getBasedOnIndex(index) {
         const keys = Object.keys(this);
+        // @ts-expect-error TS(2538) FIXME: Type 'undefined' cannot be used as an index type.
         return this[keys[(index ?? 0) % keys.length]];
     },
 };
 
 export class SlashCommandEnumValue {
     /**@type {string}*/ value;
+    // @ts-expect-error TS(7008) FIXME: Member 'description' implicitly has an 'any' type.
     /**@type {string}*/ description;
     /**@type {EnumType}*/ type = 'enum';
     /**@type {string}*/ typeIcon = '◊';
+    // @ts-expect-error TS(7008) FIXME: Member 'matchProvider' implicitly has an 'any' typ... Remove this comment to see the full error message
     /**@type {(input:string)=>boolean}*/ matchProvider;
+    // @ts-expect-error TS(7008) FIXME: Member 'valueProvider' implicitly has an 'any' typ... Remove this comment to see the full error message
     /**@type {(input:string)=>string}*/ valueProvider;
     /**@type {boolean}*/ makeSelectable = false;
 
@@ -57,6 +62,7 @@ export class SlashCommandEnumValue {
      * @param {(input:string)=>string?} valueProvider - A function returning a value to be used in autocomplete instead of the enum value. "input" is the part of the text that is getting auto completed. By default, values with a valueProvider will not be selectable in the autocomplete (with tab/enter).
      * @param {boolean?} makeSelectable - Set to true to make the value selectable (through tab/enter) even though a valueProvider exists.
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
     constructor(value, description = null, type = 'enum', typeIcon = '◊', matchProvider = null, valueProvider = null, makeSelectable = false) {
         this.value = value;
         this.description = description;

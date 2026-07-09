@@ -1,6 +1,8 @@
 import { Readable } from 'node:stream';
 import fetch from 'node-fetch';
+// @ts-expect-error TS(1259) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import express from 'express';
+// @ts-expect-error TS(2792) FIXME: Cannot find module 'es-toolkit/compat'. Did you me... Remove this comment to see the full error message
 import { pickBy } from 'es-toolkit/compat';
 
 import {
@@ -22,6 +24,7 @@ export const router = express.Router();
 /**
  * Special boy's steaming routine. Wrap this abomination into proper SSE stream.
  * @param {import('node-fetch').Response} jsonStream JSON stream
+ * @param jsonStream.body
  * @param {import('express').Request} request Express request
  * @param {import('express').Response} response Express response
  * @returns {Promise<any>} Nothing valuable
@@ -96,6 +99,7 @@ async function abortKoboldCppRequest(request: import('express').Request, url: st
 }
 
 //************** Ooba/OpenAI text completions API
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/status', async function (request, response) {
     if (!request.body) return response.sendStatus(400);
 
@@ -236,6 +240,7 @@ router.post('/status', async function (request, response) {
     }
 });
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/props', async function (request, response) {
     if (!request.body.api_server) return response.sendStatus(400);
 
@@ -274,7 +279,7 @@ router.post('/props', async function (request, response) {
     }
 });
 
-// @ts-expect-error TS(7030): Not all code paths return a value.
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/generate', async function (request, response) {
     if (!request.body) return response.sendStatus(400);
 
@@ -340,16 +345,19 @@ router.post('/generate', async function (request, response) {
         setAdditionalHeaders(request, args, baseUrl);
 
         if (request.body.api_type === TEXTGEN_TYPES.TOGETHERAI) {
+            // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
             request.body = pickBy(request.body, (_, key) => TOGETHERAI_KEYS.includes(key));
             args.body = JSON.stringify(request.body);
         }
 
         if (request.body.api_type === TEXTGEN_TYPES.INFERMATICAI) {
+            // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
             request.body = pickBy(request.body, (_, key) => INFERMATICAI_KEYS.includes(key));
             args.body = JSON.stringify(request.body);
         }
 
         if (request.body.api_type === TEXTGEN_TYPES.FEATHERLESS) {
+            // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
             request.body = pickBy(request.body, (_, key) => FEATHERLESS_KEYS.includes(key));
             args.body = JSON.stringify(request.body);
         }
@@ -359,6 +367,7 @@ router.post('/generate', async function (request, response) {
         }
 
         if (request.body.api_type === TEXTGEN_TYPES.GENERIC) {
+            // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
             request.body = pickBy(request.body, (_, key) => OPENAI_KEYS.includes(key));
             if (Array.isArray(request.body.stop)) { request.body.stop = request.body.stop.slice(0, 4); }
             args.body = JSON.stringify(request.body);
@@ -379,17 +388,21 @@ router.post('/generate', async function (request, response) {
                 request.body.provider.quantizations = request.body.quantizations;
             }
 
+            // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
             request.body = pickBy(request.body, (_, key) => OPENROUTER_KEYS.includes(key));
             args.body = JSON.stringify(request.body);
         }
 
         if (request.body.api_type === TEXTGEN_TYPES.VLLM) {
+            // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
             request.body = pickBy(request.body, (_, key) => VLLM_KEYS.includes(key));
             args.body = JSON.stringify(request.body);
         }
 
         if (request.body.api_type === TEXTGEN_TYPES.OLLAMA) {
+            // @ts-expect-error TS(2345) FIXME: Argument of type '-1' is not assignable to paramet... Remove this comment to see the full error message
             const keepAlive = Number(getConfigValue('ollama.keepAlive', -1, 'number'));
+            // @ts-expect-error TS(2345) FIXME: Argument of type '-1' is not assignable to paramet... Remove this comment to see the full error message
             const numBatch = Number(getConfigValue('ollama.batchSize', -1, 'number'));
             if (numBatch > 0) {
                 request.body.num_batch = numBatch;
@@ -400,12 +413,14 @@ router.post('/generate', async function (request, response) {
                 stream: request.body.stream ?? false,
                 keep_alive: keepAlive,
                 raw: true,
+                // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
                 options: pickBy(request.body, (_, key) => OLLAMA_KEYS.includes(key)),
             });
         }
 
         if (request.body.api_type === TEXTGEN_TYPES.OLLAMA && request.body.stream) {
             const stream = await fetch(url, args);
+            // @ts-expect-error TS(2345) FIXME: Argument of type 'Response' is not assignable to p... Remove this comment to see the full error message
             parseOllamaStream(stream, request, response);
         } else if (request.body.stream) {
             const completionsStream = await fetch(url, args);
@@ -439,7 +454,9 @@ router.post('/generate', async function (request, response) {
             }
         }
     } catch (error) {
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         const status = error?.status ?? error?.code ?? 'UNKNOWN';
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         const text = error?.error ?? error?.statusText ?? error?.message ?? 'Unknown error on /generate endpoint';
         const value = { error: true, status: status, response: text };
         console.error('Endpoint error:', error);
@@ -452,6 +469,7 @@ router.post('/generate', async function (request, response) {
 
 const ollama = express.Router();
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 ollama.post('/download', async function (request, response) {
     try {
         if (!request.body.name || !request.body.api_server) return response.sendStatus(400);
@@ -482,6 +500,7 @@ ollama.post('/download', async function (request, response) {
     }
 });
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 ollama.post('/caption-image', async function (request, response) {
     try {
         if (!request.body.server_url || !request.body.model) {
@@ -528,6 +547,7 @@ ollama.post('/caption-image', async function (request, response) {
 
 const llamacpp = express.Router();
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 llamacpp.post('/props', async function (request, response) {
     try {
         if (!request.body.server_url) {
@@ -556,6 +576,7 @@ llamacpp.post('/props', async function (request, response) {
     }
 });
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 llamacpp.post('/slots', async function (request, response) {
     try {
         if (!request.body.server_url) {
@@ -607,6 +628,7 @@ llamacpp.post('/slots', async function (request, response) {
 
 const tabby = express.Router();
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 tabby.post('/download', async function (request, response) {
     try {
         const baseUrl = String(request.body.api_server).replace(/\/$/, '');

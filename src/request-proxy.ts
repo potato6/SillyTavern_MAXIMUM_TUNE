@@ -1,7 +1,10 @@
+// @ts-expect-error TS(1259) FIXME: Module '"node:process"' can only be default-import... Remove this comment to see the full error message
 import process from 'node:process';
+// @ts-expect-error TS(1192) FIXME: Module '"node:http"' has no default export.
 import http from 'node:http';
+// @ts-expect-error TS(1192) FIXME: Module '"node:https"' has no default export.
 import https from 'node:https';
-// @ts-expect-error TS(2792): Cannot find module 'proxy-agent'. Did you mean to ... Remove this comment to see the full error message
+// @ts-expect-error TS(2792) FIXME: Cannot find module 'proxy-agent'. Did you mean to ... Remove this comment to see the full error message
 import { ProxyAgent } from 'proxy-agent';
 import { isValidUrl, color } from './util.js';
 
@@ -53,11 +56,9 @@ export default function initRequestProxy({
 
         // ProxyAgent uses proxy-from-env under the hood
         // Reference: https://github.com/Rob--W/proxy-from-env
-        // @ts-expect-error TS(4111): Property 'all_proxy' comes from an index signature... Remove this comment to see the full error message
         process.env.all_proxy = url;
 
         if (Array.isArray(bypass) && bypass.length > 0) {
-            // @ts-expect-error TS(4111): Property 'no_proxy' comes from an index signature,... Remove this comment to see the full error message
             process.env.no_proxy = bypass.join(',');
         }
 

@@ -167,6 +167,7 @@ export const MacroValueType = Object.freeze({
  * @type {MacroRegistry}
  */
 class MacroRegistry {
+    // @ts-expect-error TS(7008) FIXME: Member '#instance' implicitly has an 'any' type.
     /** @type {MacroRegistry} */ static #instance;
     /** @type {MacroRegistry} */ static get instance() { return MacroRegistry.#instance ?? (MacroRegistry.#instance = new MacroRegistry()); }
 
@@ -188,6 +189,7 @@ class MacroRegistry {
      * @param {MacroDefinitionOptions} options - Macro registration options including handler and metadata.
      * @returns {MacroDefinition|null} The registered definition, or null if registration failed.
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
     registerMacro(name, options) {
         // Extract name early for error logging
         name = typeof name === 'string' ? name.trim() : String(name);
@@ -198,6 +200,7 @@ class MacroRegistry {
 
             // Build the definition using the shared helper
             const definition = this.buildMacroDefFromOptions(name, options, {
+                // @ts-expect-error TS(2322) FIXME: Type '{ name: string; isExtension: boolean; isThir... Remove this comment to see the full error message
                 source: { name: source, isExtension, isThirdParty },
             });
 
@@ -206,6 +209,7 @@ class MacroRegistry {
 
             // Register alias entries pointing to the same definition
             for (const { alias, visible } of definition.aliases) {
+                // @ts-expect-error TS(2322) FIXME: Type 'boolean' is not assignable to type 'null | u... Remove this comment to see the full error message
                 this.#registerMacroEntry(alias, definition, { primaryMacroName: name, aliasVisible: visible });
             }
 
@@ -214,6 +218,7 @@ class MacroRegistry {
             logMacroRegisterError({
                 message: `Failed to register macro "${name}". The macro will not be available.`,
                 macroName: name,
+                // @ts-expect-error TS(2322) FIXME: Type 'unknown' is not assignable to type 'undefine... Remove this comment to see the full error message
                 error,
             });
             return null;
@@ -230,6 +235,7 @@ class MacroRegistry {
      * @param {boolean} [options.visible] - Whether this alias appears in documentation/autocomplete.
      * @returns {boolean} True if the alias was registered successfully, false if registration failed.
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'targetMacroName' implicitly has an 'any... Remove this comment to see the full error message
     registerMacroAlias(targetMacroName, aliasName, { visible = true } = {}) {
         // Extract names early for error logging
         targetMacroName = typeof targetMacroName === 'string' ? targetMacroName.trim() : String(targetMacroName);
@@ -268,6 +274,7 @@ class MacroRegistry {
             };
 
             // Register the alias using the shared utility
+            // @ts-expect-error TS(2322) FIXME: Type 'boolean' is not assignable to type 'null | u... Remove this comment to see the full error message
             this.#registerMacroEntry(aliasName, aliasDefinition, { primaryMacroName: primaryDefinition.name, aliasVisible: visible });
 
             return true;
@@ -275,6 +282,7 @@ class MacroRegistry {
             logMacroRegisterError({
                 message: `Failed to register alias "${aliasName}" for macro "${targetMacroName}". The alias will not be available.`,
                 macroName: aliasName,
+                // @ts-expect-error TS(2322) FIXME: Type 'unknown' is not assignable to type 'undefine... Remove this comment to see the full error message
                 error,
             });
             return false;
@@ -289,6 +297,7 @@ class MacroRegistry {
      * @param {string} [options.primaryMacroName] - For aliases, the primary macro name.
      * @param {boolean} [options.aliasVisible] - For aliases, visibility flag.
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
     #registerMacroEntry(name, definition, { primaryMacroName = null, aliasVisible = null } = {}) {
         const nameKey = name.toLowerCase();
 
@@ -314,6 +323,7 @@ class MacroRegistry {
      * @param {string} name - Macro name (identifier).
      * @returns {boolean} True if a macro was removed.
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
     unregisterMacro(name) {
         if (typeof name !== 'string' || !name.trim()) throw new Error('Macro name must be a non-empty string');
         name = name.trim();
@@ -325,6 +335,7 @@ class MacroRegistry {
      * @param {string} name - Macro name (identifier).
      * @returns {boolean}
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
     hasMacro(name) {
         if (typeof name !== 'string' || !name.trim()) return false;
         name = name.trim();
@@ -336,6 +347,7 @@ class MacroRegistry {
      * @param {string} name - Macro name (identifier).
      * @returns {MacroDefinition|undefined}
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
     getMacro(name) {
         if (typeof name !== 'string' || !name.trim()) return undefined;
         name = name.trim();
@@ -348,6 +360,7 @@ class MacroRegistry {
      * @param {string} name - Macro name or alias.
      * @returns {MacroDefinition|undefined}
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
     getPrimaryMacro(name) {
         const def = this.getMacro(name);
         if (!def) return undefined;
@@ -364,10 +377,8 @@ class MacroRegistry {
     getAllMacros({ excludeAliases = false, excludeHiddenAliases = false } = {}) {
         let macros = Array.from(this.#macros.values());
         if (excludeAliases) {
-            // @ts-expect-error TS(2339): Property 'aliasOf' does not exist on type 'unknown... Remove this comment to see the full error message
             macros = macros.filter(m => !m.aliasOf);
         } else if (excludeHiddenAliases) {
-            // @ts-expect-error TS(2339): Property 'aliasOf' does not exist on type 'unknown... Remove this comment to see the full error message
             macros = macros.filter(m => !m.aliasOf || m.aliasVisible !== false);
         }
         return macros;
@@ -380,6 +391,7 @@ class MacroRegistry {
      * @param {MacroDefinition} [options.defOverride] - Override the macro definition.
      * @returns {string}
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'call' implicitly has an 'any' type.
     executeMacro(call, {
         defOverride
     }: { defOverride?: object } = {}) {
@@ -405,10 +417,10 @@ class MacroRegistry {
 
             const message = `Macro "${def.name}" called with ${args.length} unnamed arguments but expects ${expectation}.`;
             if (def.strictArgs) {
-                // @ts-expect-error TS(2345): Argument of type '{ message: string; call: any; de... Remove this comment to see the full error message
+                // @ts-expect-error TS(2345) FIXME: Argument of type '{ message: string; call: any; de... Remove this comment to see the full error message
                 throw createMacroRuntimeError({ message, call, def });
             }
-            // @ts-expect-error TS(2345): Argument of type '{ message: string; call: any; de... Remove this comment to see the full error message
+            // @ts-expect-error TS(2345) FIXME: Argument of type '{ message: string; call: any; de... Remove this comment to see the full error message
             logMacroRuntimeWarning({ message, call, def });
         }
 
@@ -441,10 +453,11 @@ class MacroRegistry {
             globalOffset: call.globalOffset,
             normalize: MacroEngine.normalizeMacroResult.bind(MacroEngine),
             trimContent: MacroEngine.trimScopedContent.bind(MacroEngine),
+            // @ts-expect-error TS(7006) FIXME: Parameter 'text' implicitly has an 'any' type.
             resolve: (text, { offsetDelta = 0 } = {}) => MacroEngine.evaluate(text, call.env, {
                 contextOffset: call.globalOffset + offsetDelta,
             }),
-            // @ts-expect-error TS(2345): Argument of type '{ message: any; call: any; def: ... Remove this comment to see the full error message
+            // @ts-expect-error TS(7006) FIXME: Parameter 'message' implicitly has an 'any' type.
             warn: (message, error = undefined) => logMacroRuntimeWarning({ message, call, def, error }),
         };
 
@@ -472,6 +485,7 @@ class MacroRegistry {
      * @returns {MacroDefinition} The built macro definition.
      * @throws {Error} If validation fails.
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
     buildMacroDefFromOptions(name, options, {
         source
     }: { source?: string } = {}) {
@@ -521,6 +535,7 @@ class MacroRegistry {
         let minArgs = 0;
         let maxArgs = 0;
         /** @type {MacroUnnamedArgDef[]} */
+        // @ts-expect-error TS(7034) FIXME: Variable 'unnamedArgDefs' implicitly has type 'any... Remove this comment to see the full error message
         let unnamedArgDefs = [];
         if (rawUnnamedArgs !== undefined) {
             if (Array.isArray(rawUnnamedArgs)) {
@@ -654,6 +669,7 @@ class MacroRegistry {
             category,
             minArgs,
             maxArgs,
+            // @ts-expect-error TS(7005) FIXME: Variable 'unnamedArgDefs' implicitly has an 'any[]... Remove this comment to see the full error message
             unnamedArgDefs,
             list,
             strictArgs,
@@ -683,6 +699,7 @@ export { instance as MacroRegistry };
  * @param {boolean} [options.allowComment] - Whether return that the comment identifier '//' is valid.
  * @returns {boolean} True if the identifier is valid, false otherwise.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
 function isIdentifierValid(name, { allowComment = true } = {}) {
     if (typeof name !== 'string' || !name.trim()) return false;
     if (allowComment && name === '//') return true;
@@ -696,6 +713,7 @@ function isIdentifierValid(name, { allowComment = true } = {}) {
  * @param {any[]} args - Arguments to validate.
  * @returns {boolean} True if the arguments are valid, false otherwise.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'def' implicitly has an 'any' type.
 function isArgsValid(def, args) {
     const hasListArgs = def.list !== null;
 
@@ -724,6 +742,7 @@ function isArgsValid(def, args) {
  * @param {MacroDefinition} def
  * @param {string[]} unnamedArgs
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'call' implicitly has an 'any' type.
 function validateArgTypes(call, def, unnamedArgs) {
     if (def.unnamedArgDefs.length === 0) return;
 
@@ -738,15 +757,16 @@ function validateArgTypes(call, def, unnamedArgs) {
         }
 
         const types = Array.isArray(argDef.type) ? argDef.type : [argDef.type];
+        // @ts-expect-error TS(7006) FIXME: Parameter 'type' implicitly has an 'any' type.
         if (!types.some(type => isValueOfType(value, type))) {
             const argName = argDef.name || `Argument ${i + 1}`;
             const optionalLabel = argDef.optional ? ' (optional)' : '';
             const message = `Macro "${call.name}" (position ${i + 1}${optionalLabel}) argument "${argName}" expected type ${argDef.type} but got value "${value}".`;
             if (def.strictArgs) {
-                // @ts-expect-error TS(2345): Argument of type '{ message: string; call: any; de... Remove this comment to see the full error message
+                // @ts-expect-error TS(2345) FIXME: Argument of type '{ message: string; call: any; de... Remove this comment to see the full error message
                 throw createMacroRuntimeError({ message, call, def: def });
             }
-            // @ts-expect-error TS(2345): Argument of type '{ message: string; call: any; de... Remove this comment to see the full error message
+            // @ts-expect-error TS(2345) FIXME: Argument of type '{ message: string; call: any; de... Remove this comment to see the full error message
             logMacroRuntimeWarning({ message, call, def: def });
         }
     }
@@ -758,6 +778,7 @@ function validateArgTypes(call, def, unnamedArgs) {
  * @param {MacroValueType} type
  * @returns {boolean}
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
 function isValueOfType(value, type) {
     const trimmed = value.trim();
 
@@ -809,8 +830,10 @@ function detectMacroSource() {
         if (callerIdx >= 0 && callerIdx + 1 < stack.length) {
             const callerLine = stack[callerIdx + 1];
             // Extract script path from stack frame
+            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             const scriptMatch = callerLine.match(/\/((?:scripts\/)?(?:macros\/)?[^/]+\.js)/);
             if (scriptMatch) {
+                // @ts-expect-error TS(2322) FIXME: Type 'string | undefined' is not assignable to typ... Remove this comment to see the full error message
                 source = scriptMatch[1];
             }
         }

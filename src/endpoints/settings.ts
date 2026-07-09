@@ -1,9 +1,14 @@
+// @ts-expect-error TS(1192) FIXME: Module '"node:fs"' has no default export.
 import fs from 'node:fs';
+// @ts-expect-error TS(1259) FIXME: Module '"node:path"' can only be default-imported ... Remove this comment to see the full error message
 import path from 'node:path';
 
+// @ts-expect-error TS(1259) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import express from 'express';
+// @ts-expect-error TS(2792) FIXME: Cannot find module 'es-toolkit/compat'. Did you me... Remove this comment to see the full error message
 import { throttle } from 'es-toolkit/compat';
 import { sync as writeFileAtomicSync } from 'write-file-atomic';
+// @ts-expect-error TS(1259) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import bytes from 'bytes';
 
 import { SETTINGS_FILE } from '../constants.js';
@@ -11,12 +16,19 @@ import { getConfigValue, generateTimestamp, removeOldBackups } from '../util.js'
 import { getAllUserHandles, getUserDirectories } from '../users.js';
 import { getFileNameValidationFunction } from '../middleware/validateFileName.js';
 
+// @ts-expect-error TS(2345) FIXME: Argument of type 'true' is not assignable to param... Remove this comment to see the full error message
 const ENABLE_EXTENSIONS = !!getConfigValue('extensions.enabled', true, 'boolean');
+// @ts-expect-error TS(2345) FIXME: Argument of type 'true' is not assignable to param... Remove this comment to see the full error message
 const ENABLE_EXTENSIONS_AUTO_UPDATE = !!getConfigValue('extensions.autoUpdate', true, 'boolean');
+// @ts-expect-error TS(2345) FIXME: Argument of type 'false' is not assignable to para... Remove this comment to see the full error message
 const ENABLE_ACCOUNTS = !!getConfigValue('enableUserAccounts', false, 'boolean');
+// @ts-expect-error TS(2345) FIXME: Argument of type 'false' is not assignable to para... Remove this comment to see the full error message
 const ENABLE_REQUEST_COMPRESSION = !!getConfigValue('performance.requestCompression.enabled', false, 'boolean');
+// @ts-expect-error TS(2345) FIXME: Argument of type '"256kb"' is not assignable to pa... Remove this comment to see the full error message
 const REQUEST_COMPRESSION_MIN = bytes.parse(getConfigValue('performance.requestCompression.minPayloadSize', '256kb'));
+// @ts-expect-error TS(2345) FIXME: Argument of type '"8mb"' is not assignable to para... Remove this comment to see the full error message
 const REQUEST_COMPRESSION_MAX = bytes.parse(getConfigValue('performance.requestCompression.maxPayloadSize', '8mb'));
+// @ts-expect-error TS(2345) FIXME: Argument of type '3000' is not assignable to param... Remove this comment to see the full error message
 const REQUEST_COMPRESSION_TIMEOUT = Number(getConfigValue('performance.requestCompression.timeout', 3000, 'number'));
 
 // 10 minutes
@@ -54,11 +66,13 @@ function triggerAutoSave(handle: string) {
 function readAndParseFromDirectory(directoryPath: string, fileExtension = '.json') {
     const files = fs
         .readdirSync(directoryPath)
+        // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
         .filter(x => path.parse(x).ext == fileExtension)
         .sort();
 
     const parsedFiles: unknown[] = [];
 
+    // @ts-expect-error TS(7006) FIXME: Parameter 'item' implicitly has an 'any' type.
     files.forEach(item => {
         try {
             const file = fs.readFileSync(path.join(directoryPath, item), 'utf-8');
@@ -105,10 +119,12 @@ function readPresetsFromDirectory(directoryPath: string, options: { sortFunction
         fileExtension = '.json',
     } = options;
 
+    // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
     const files = fs.readdirSync(directoryPath).sort(sortFunction).filter(x => path.parse(x).ext == fileExtension);
     const fileContents: string[] = [];
     const fileNames: string[] = [];
 
+    // @ts-expect-error TS(7006) FIXME: Parameter 'item' implicitly has an 'any' type.
     files.forEach(item => {
         try {
             const file = fs.readFileSync(path.join(directoryPath, item), 'utf8');
@@ -205,8 +221,11 @@ function areFilesEqual(file1: string, file2: string) {
 function getLatestBackup(handle: string) {
     const userDirectories = getUserDirectories(handle);
     const backupFiles = fs.readdirSync(userDirectories.backups)
+        // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
         .filter(x => x.startsWith(getSettingsBackupFilePrefix(handle)))
+        // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
         .map(x => ({ name: x, ctime: fs.statSync(path.join(userDirectories.backups, x)).ctimeMs }));
+    // @ts-expect-error TS(7006) FIXME: Parameter 'a' implicitly has an 'any' type.
     const latestBackup = backupFiles.sort((a, b) => b.ctime - a.ctime)[0]?.name;
     if (!latestBackup) {
         return null;
@@ -216,6 +235,7 @@ function getLatestBackup(handle: string) {
 
 export const router = express.Router();
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/save', function (request, response) {
     try {
         const pathToSettings = path.join(request.user.directories.root, SETTINGS_FILE);
@@ -229,7 +249,7 @@ router.post('/save', function (request, response) {
 });
 
 // Wintermute's code
-// @ts-expect-error TS(7030): Not all code paths return a value.
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/get', (request, response) => {
     let settings;
     try {
@@ -266,8 +286,11 @@ router.post('/get', (request, response) => {
 
     const worldFiles = fs
         .readdirSync(request.user.directories.worlds)
+        // @ts-expect-error TS(7006) FIXME: Parameter 'file' implicitly has an 'any' type.
         .filter(file => path.extname(file).toLowerCase() === '.json')
+        // @ts-expect-error TS(7006) FIXME: Parameter 'a' implicitly has an 'any' type.
         .sort((a, b) => a.localeCompare(b));
+    // @ts-expect-error TS(7006) FIXME: Parameter 'item' implicitly has an 'any' type.
     const world_names = worldFiles.map(item => path.parse(item).name);
 
     const themes = readAndParseFromDirectory(request.user.directories.themes);
@@ -309,12 +332,15 @@ router.post('/get', (request, response) => {
     });
 });
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/get-snapshots', async (request, response) => {
     try {
         const snapshots = fs.readdirSync(request.user.directories.backups);
         const userFilesPattern = getSettingsBackupFilePrefix(request.user.profile.handle);
+        // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
         const userSnapshots = snapshots.filter(x => x.startsWith(userFilesPattern));
 
+        // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
         const result = userSnapshots.map(x => {
             const stat = fs.statSync(path.join(request.user.directories.backups, x));
             return { date: stat.ctimeMs, name: x, size: stat.size };
@@ -327,7 +353,7 @@ router.post('/get-snapshots', async (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7030): Not all code paths return a value.
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/load-snapshot', getFileNameValidationFunction('name'), async (request, response) => {
     try {
         const userFilesPattern = getSettingsBackupFilePrefix(request.user.profile.handle);
@@ -352,6 +378,7 @@ router.post('/load-snapshot', getFileNameValidationFunction('name'), async (requ
     }
 });
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/make-snapshot', async (request, response) => {
     try {
         backupUserSettings(request.user.profile.handle, false);
@@ -362,7 +389,7 @@ router.post('/make-snapshot', async (request, response) => {
     }
 });
 
-// @ts-expect-error TS(7030): Not all code paths return a value.
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/restore-snapshot', getFileNameValidationFunction('name'), async (request, response) => {
     try {
         const userFilesPattern = getSettingsBackupFilePrefix(request.user.profile.handle);

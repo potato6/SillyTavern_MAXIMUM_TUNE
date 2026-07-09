@@ -48,6 +48,7 @@ export class SlashCommandExecutionError extends Error {
     }
 
 
+    // @ts-expect-error TS(7006) FIXME: Parameter 'cause' implicitly has an 'any' type.
     constructor(cause, message, commandName, start, end, commandText, fullText) {
         super(message, { cause });
         this.commandName = commandName;

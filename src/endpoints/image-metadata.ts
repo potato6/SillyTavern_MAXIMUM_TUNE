@@ -4,11 +4,15 @@
  */
 
 import * as fs from 'node:fs/promises';
+// @ts-expect-error TS(1259) FIXME: Module '"node:path"' can only be default-imported ... Remove this comment to see the full error message
 import path from 'node:path';
+// @ts-expect-error TS(1192) FIXME: Module '"node:crypto"' has no default export.
 import crypto from 'node:crypto';
-// @ts-expect-error TS(2792): Cannot find module 'image-size'. Did you mean to s... Remove this comment to see the full error message
+// @ts-expect-error TS(2792) FIXME: Cannot find module 'image-size'. Did you mean to s... Remove this comment to see the full error message
 import { imageSize } from 'image-size';
+// @ts-expect-error TS(1259) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import writeFileAtomic from 'write-file-atomic';
+// @ts-expect-error TS(1259) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import express from 'express';
 import { inflateSync } from 'node:zlib';
 import { getConfigValue, isPathUnderParent, uuidv4 } from '../util.js';
@@ -40,8 +44,11 @@ export const METADATA_FILE = 'image-metadata.json';
 
 /** @type {Record<string, number[]>} */
 export const thumbnailDimensions = {
+    // @ts-expect-error TS(2345) FIXME: Argument of type 'number[]' is not assignable to p... Remove this comment to see the full error message
     'bg': getConfigValue('thumbnails.dimensions.bg', [160, 90]),
+    // @ts-expect-error TS(2345) FIXME: Argument of type 'number[]' is not assignable to p... Remove this comment to see the full error message
     'avatar': getConfigValue('thumbnails.dimensions.avatar', [96, 144]),
+    // @ts-expect-error TS(2345) FIXME: Argument of type 'number[]' is not assignable to p... Remove this comment to see the full error message
     'persona': getConfigValue('thumbnails.dimensions.persona', [96, 144]),
 };
 
@@ -50,7 +57,9 @@ export const thumbnailDimensions = {
  * @param {ThumbnailType} type Thumbnail type
  * @returns {number} Resolution (width * height)
  */
+// @ts-expect-error TS(2304) FIXME: Cannot find name 'ThumbnailType'.
 export function getThumbnailResolution(type: ThumbnailType): number {
+    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     const dims = thumbnailDimensions[type];
     if (Array.isArray(dims) && dims.length >= 2) {
         return Number(dims[0]) * Number(dims[1]);
@@ -90,17 +99,20 @@ async function getAverageColor(buffer: Buffer): Promise<string> {
         let offset = 8;
         while (offset < png.length) {
             const length = new DataView(png.buffer, offset, 4).getUint32(0);
+            // @ts-expect-error TS(2345) FIXME: Argument of type 'number | undefined' is not assig... Remove this comment to see the full error message
             const type = String.fromCharCode(png[offset + 4], png[offset + 5], png[offset + 6], png[offset + 7]);
             if (type === 'IDAT') {
                 const compressed = png.slice(offset + 8, offset + 8 + length);
                 const raw = inflateSync(compressed);
                 const toHex = (c: number) => c.toString(16).padStart(2, '0');
+                // @ts-expect-error TS(2345) FIXME: Argument of type 'number | undefined' is not assig... Remove this comment to see the full error message
                 return `#${toHex(raw[1])}${toHex(raw[2])}${toHex(raw[3])}`;
             }
             offset += 12 + length;
         }
         return '#808080';
     } catch (error) {
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         console.warn('[Bun.Image] Failed to calculate average color:', error.message);
         return '#808080';
     }
@@ -112,6 +124,7 @@ async function getAverageColor(buffer: Buffer): Promise<string> {
  * @param {ThumbnailType} type - The thumbnail type for resolution calculation.
  * @returns {Promise<ImageMetadata>} A metadata object. Throws an error if processing fails.
  */
+// @ts-expect-error TS(2304) FIXME: Cannot find name 'ThumbnailType'.
 export async function generateImageMetadata(filePath: string, type: ThumbnailType): Promise<ImageMetadata> {
     const buffer = await fs.readFile(filePath);
     const hash = crypto.createHash('sha256').update(buffer).digest('hex');
@@ -167,6 +180,7 @@ export async function generateImageMetadata(filePath: string, type: ThumbnailTyp
  * @param {string} userDataRoot - Path to the user data directory root
  * @returns {Promise<MetadataIndex>} The metadata index
  */
+// @ts-expect-error TS(2304) FIXME: Cannot find name 'MetadataIndex'.
 export async function readMetadataIndex(userDataRoot: string): Promise<MetadataIndex> {
     const indexPath = path.join(userDataRoot, METADATA_FILE);
     try {
@@ -182,6 +196,7 @@ export async function readMetadataIndex(userDataRoot: string): Promise<MetadataI
  * @param {string} userDataRoot - Path to the user data directory root
  * @param {MetadataIndex} metadata - The metadata to write
  */
+// @ts-expect-error TS(2304) FIXME: Cannot find name 'MetadataIndex'.
 export async function writeMetadataIndex(userDataRoot: string, metadata: MetadataIndex): Promise<void> {
     const indexPath = path.join(userDataRoot, METADATA_FILE);
     const jsonString = JSON.stringify(metadata, null, 4);
@@ -196,6 +211,7 @@ export async function writeMetadataIndex(userDataRoot: string, metadata: Metadat
  * @param {ThumbnailType} type - The thumbnail type for resolution calculation.
  * @returns {Promise<{results: {[key: string]: ImageMetadata}, generatedCount: number}>} Results map and count of newly generated
  */
+// @ts-expect-error TS(2304) FIXME: Cannot find name 'ThumbnailType'.
 export async function getOrGenerateMetadataBatch(userDataRoot: string, relativePaths: string[], type: ThumbnailType) {
     /** @type {{[key: string]: ImageMetadata}} */
     const results = {};
@@ -220,6 +236,7 @@ export async function getOrGenerateMetadataBatch(userDataRoot: string, relativeP
 
         // If cached and not modified, use cached
         if (cached && cached.mtime === currentMtime) {
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             results[relativePath] = cached;
             continue;
         }
@@ -227,7 +244,6 @@ export async function getOrGenerateMetadataBatch(userDataRoot: string, relativeP
         // Generate new metadata
         try {
             const metadata = await generateImageMetadata(fullPath, type);
-            // @ts-expect-error TS(2339): Property 'mtime' does not exist on type '{ hash: s... Remove this comment to see the full error message
             metadata.mtime = currentMtime;
 
             // Preserve folderIds if they existed
@@ -236,10 +252,12 @@ export async function getOrGenerateMetadataBatch(userDataRoot: string, relativeP
             }
 
             index.images[posixPath] = metadata;
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             results[relativePath] = metadata;
             indexModified = true;
             generatedCount++;
         } catch (error) {
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             console.warn(`[ImageMetadata] Failed to generate metadata for ${relativePath}:`, error.message);
         }
     }
@@ -284,6 +302,7 @@ export async function removeMetadata(userDataRoot: string, relativePath: string)
  * @param {string} newRelativePath - The new relative path
  * @returns {Promise<ImageMetadata|null>} The updated metadata
  */
+// @ts-expect-error TS(2304) FIXME: Cannot find name 'ImageMetadata'.
 export async function renameMetadata(userDataRoot: string, oldRelativePath: string, newRelativePath: string): Promise<ImageMetadata | null> {
     const posixOldPath = oldRelativePath.replaceAll(path.sep, path.posix.sep);
     const posixNewPath = newRelativePath.replaceAll(path.sep, path.posix.sep);
@@ -414,11 +433,11 @@ export async function deleteFolder(userDataRoot: string, folderId: string): Prom
     index.folders.splice(idx, 1);
     // Remove folderId from all images
     for (const meta of Object.values(index.images)) {
-        // @ts-expect-error TS(2339): Property 'folderIds' does not exist on type 'unkno... Remove this comment to see the full error message
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         if (Array.isArray(meta.folderIds)) {
-            // @ts-expect-error TS(2339): Property 'folderIds' does not exist on type 'unkno... Remove this comment to see the full error message
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             const fi = meta.folderIds.indexOf(folderId);
-            // @ts-expect-error TS(2339): Property 'folderIds' does not exist on type 'unkno... Remove this comment to see the full error message
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             if (fi !== -1) meta.folderIds.splice(fi, 1);
         }
     }
@@ -442,6 +461,7 @@ export async function assignImagesToFolder(userDataRoot: string, folderId: strin
 
         // Validate: must be a backgrounds/ path, and no path-traversal segments
         const normalized = path.posix.normalize(posixPath);
+        // @ts-expect-error TS(7006) FIXME: Parameter 'seg' implicitly has an 'any' type.
         if (!normalized.startsWith('backgrounds/') || normalized.split('/').some(seg => seg === '..')) {
             throw new Error(`Invalid background path: '${posixPath}'`);
         }
@@ -494,6 +514,7 @@ export const router = express.Router();
  * POST /api/image-metadata/folders/get
  * List all virtual folders.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/folders/get', async function (request, response) {
     try {
         const index = await readMetadataIndex(request.user.directories.root);
@@ -508,6 +529,7 @@ router.post('/folders/get', async function (request, response) {
  * POST /api/image-metadata/folders/create
  * Create a new folder. Body: { name: string }
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/folders/create', async function (request, response) {
     try {
         const { name } = request.body;
@@ -526,6 +548,7 @@ router.post('/folders/create', async function (request, response) {
  * POST /api/image-metadata/folders/set-thumbnails
  * Batch-set thumbnail files for multiple folders in one write. Body: { updates: [{id, thumbnailFile}] }
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/folders/set-thumbnails', async function (request, response) {
     try {
         const { updates } = request.body;
@@ -544,6 +567,7 @@ router.post('/folders/set-thumbnails', async function (request, response) {
  * POST /api/image-metadata/folders/update
  * Update a folder. Body: { id: string, name?: string, thumbnailFile?: string }
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/folders/update', async function (request, response) {
     try {
         const { id, ...updates } = request.body;
@@ -553,7 +577,9 @@ router.post('/folders/update', async function (request, response) {
         const folder = await updateFolder(request.user.directories.root, id, updates);
         return response.json(folder);
     } catch (error) {
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         if (error.message.includes('not found')) {
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             return response.status(404).json({ error: error.message });
         }
         console.error('[ImageMetadata] Folder update error:', error);
@@ -565,6 +591,7 @@ router.post('/folders/update', async function (request, response) {
  * POST /api/image-metadata/folders/delete
  * Delete a folder and unassign all images. Body: { id: string }
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/folders/delete', async function (request, response) {
     try {
         const { id } = request.body;
@@ -574,7 +601,9 @@ router.post('/folders/delete', async function (request, response) {
         await deleteFolder(request.user.directories.root, id);
         return response.json({ ok: true });
     } catch (error) {
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         if (error.message.includes('not found')) {
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             return response.status(404).json({ error: error.message });
         }
         console.error('[ImageMetadata] Folder delete error:', error);
@@ -586,6 +615,7 @@ router.post('/folders/delete', async function (request, response) {
  * POST /api/image-metadata/folders/assign
  * Assign images to a folder. Body: { id: string, paths: string[] }
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/folders/assign', async function (request, response) {
     try {
         const { id, paths } = request.body;
@@ -598,7 +628,9 @@ router.post('/folders/assign', async function (request, response) {
         await assignImagesToFolder(request.user.directories.root, id, paths);
         return response.json({ ok: true });
     } catch (error) {
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         if (error.message.includes('not found')) {
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             return response.status(404).json({ error: error.message });
         }
         console.error('[ImageMetadata] Folder assign error:', error);
@@ -610,6 +642,7 @@ router.post('/folders/assign', async function (request, response) {
  * POST /api/image-metadata/folders/unassign
  * Unassign images from a folder. Body: { id: string, paths: string[] }
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/folders/unassign', async function (request, response) {
     try {
         const { id, paths } = request.body;
@@ -631,6 +664,7 @@ router.post('/folders/unassign', async function (request, response) {
  * POST /api/image-metadata
  * Get metadata for image(s) by path.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/', async function (request, response) {
     try {
         const { path: singlePath, paths, type } = request.body;
@@ -662,6 +696,7 @@ router.post('/', async function (request, response) {
             }
 
             const { results: metadataResults } = await getOrGenerateMetadataBatch(userDataRoot, [relativePath], type);
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             const metadata = metadataResults[relativePath];
 
             if (!metadata) {
@@ -683,6 +718,7 @@ router.post('/', async function (request, response) {
                     validatePath(relativePath);
                     validPaths.push(relativePath);
                 } catch (error) {
+                    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                     results[relativePath] = { error: error.message };
                 }
             }
@@ -691,9 +727,12 @@ router.post('/', async function (request, response) {
             const { results: batchMetadata } = await getOrGenerateMetadataBatch(userDataRoot, validPaths, type);
 
             for (const relativePath of validPaths) {
+                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 if (batchMetadata[relativePath]) {
+                    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                     results[relativePath] = batchMetadata[relativePath];
                 } else {
+                    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                     results[relativePath] = { error: 'File not found or could not process.' };
                 }
             }
@@ -713,6 +752,7 @@ router.post('/', async function (request, response) {
  * Get all metadata from the index.
  * @param {string} [prefix] - Optional path prefix to filter results
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/all', async function (request, response) {
     try {
         const userDataRoot = request.user.directories.root;
@@ -724,6 +764,7 @@ router.post('/all', async function (request, response) {
             const filteredImages = {};
             for (const [key, value] of Object.entries(index.images)) {
                 if (key.startsWith(prefix)) {
+                    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                     filteredImages[key] = value;
                 }
             }
@@ -741,6 +782,7 @@ router.post('/all', async function (request, response) {
  * POST /api/image-metadata/cleanup
  * Clean up orphaned metadata entries (files that no longer exist).
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/cleanup', async function (request, response) {
     try {
         const userDataRoot = request.user.directories.root;

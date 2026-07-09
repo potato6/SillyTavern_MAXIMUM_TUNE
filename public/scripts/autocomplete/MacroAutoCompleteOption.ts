@@ -5,6 +5,7 @@ export class MacroAutoCompleteOption extends AutoCompleteOption {
     /**@type {string}*/ description;
 
 
+    // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
     constructor(name, fullName, description) {
         super(name, '{}');
         this.fullName = fullName;
@@ -13,8 +14,9 @@ export class MacroAutoCompleteOption extends AutoCompleteOption {
     }
 
 
-    // @ts-expect-error TS(4114): This member must have an 'override' modifier becau... Remove this comment to see the full error message
+    // @ts-expect-error TS(4114) FIXME: This member must have an 'override' modifier becau... Remove this comment to see the full error message
     renderItem() {
+        // @ts-expect-error TS(2345) FIXME: Argument of type 'null' is not assignable to param... Remove this comment to see the full error message
         const li = this.makeItem(`${this.fullName}`, '{}', true, [], [], null, this.description);
         li.setAttribute('data-name', this.name);
         li.setAttribute('data-option-type', 'macro');
@@ -22,7 +24,7 @@ export class MacroAutoCompleteOption extends AutoCompleteOption {
     }
 
 
-    // @ts-expect-error TS(4114): This member must have an 'override' modifier becau... Remove this comment to see the full error message
+    // @ts-expect-error TS(4114) FIXME: This member must have an 'override' modifier becau... Remove this comment to see the full error message
     renderDetails() {
         const frag = document.createDocumentFragment();
         const specs = document.createElement('div'); {

@@ -1,10 +1,8 @@
 import { power_user } from '../power-user.js';
 import { debounce, escapeRegex } from '../utils.js';
-// @ts-expect-error TS(6133): 'AutoCompleteOption' is declared but its value is ... Remove this comment to see the full error message
 import { AutoCompleteOption } from './AutoCompleteOption.js';
 import { AutoCompleteFuzzyScore } from './AutoCompleteFuzzyScore.js';
 import { BlankAutoCompleteOption } from './BlankAutoCompleteOption.js';
-// @ts-expect-error TS(6133): 'AutoCompleteNameResult' is declared but its value... Remove this comment to see the full error message
 import { AutoCompleteNameResult } from './AutoCompleteNameResult.js';
 import { AutoCompleteSecondaryNameResult } from './AutoCompleteSecondaryNameResult.js';
 
@@ -32,6 +30,7 @@ export const AUTOCOMPLETE_STATE = {
 };
 
 export class AutoComplete {
+    // @ts-expect-error TS(2564) FIXME: Property 'isShowForced' has no initializer and is ... Remove this comment to see the full error message
     isShowForced: boolean;
     /**@type {HTMLTextAreaElement|HTMLInputElement}*/ textarea;
     /**@type {boolean}*/ isFloating = false;
@@ -45,21 +44,30 @@ export class AutoComplete {
     /**@type {boolean}*/ isForceHidden = false;
     /**@type {boolean}*/ canBeAutoHidden = false;
 
+    // @ts-expect-error TS(7008) FIXME: Member 'text' implicitly has an 'any' type.
     /**@type {string}*/ text;
+    // @ts-expect-error TS(7008) FIXME: Member 'parserResult' implicitly has an 'any' type... Remove this comment to see the full error message
     /**@type {AutoCompleteNameResult}*/ parserResult;
+    // @ts-expect-error TS(7008) FIXME: Member 'secondaryParserResult' implicitly has an '... Remove this comment to see the full error message
     /**@type {AutoCompleteSecondaryNameResult}*/ secondaryParserResult;
     get effectiveParserResult() { return this.secondaryParserResult ?? this.parserResult; }
+    // @ts-expect-error TS(7008) FIXME: Member 'name' implicitly has an 'any' type.
     /**@type {string}*/ name;
 
+    // @ts-expect-error TS(7008) FIXME: Member 'startQuote' implicitly has an 'any' type.
     /**@type {boolean}*/ startQuote;
+    // @ts-expect-error TS(7008) FIXME: Member 'endQuote' implicitly has an 'any' type.
     /**@type {boolean}*/ endQuote;
+    // @ts-expect-error TS(7008) FIXME: Member 'selectionStart' implicitly has an 'any' ty... Remove this comment to see the full error message
     /**@type {number}*/ selectionStart;
 
+    // @ts-expect-error TS(7008) FIXME: Member 'fuzzyRegex' implicitly has an 'any' type.
     /**@type {RegExp}*/ fuzzyRegex;
 
     /**@type {AutoCompleteOption[]}*/ result = [];
     /**@type {AutoCompleteOption}*/ selectedItem = null;
 
+    // @ts-expect-error TS(7008) FIXME: Member 'clone' implicitly has an 'any' type.
     /**@type {HTMLElement}*/ clone;
     /**@type {HTMLElement}*/ domWrap;
     /**@type {HTMLElement}*/ dom;
@@ -72,6 +80,7 @@ export class AutoComplete {
     /**@type {function}*/ updateDetailsPositionDebounced;
     /**@type {function}*/ updateFloatingPositionDebounced;
 
+    // @ts-expect-error TS(7008) FIXME: Member 'onSelect' implicitly has an 'any' type.
     /**@type {(item:AutoCompleteOption)=>any}*/ onSelect;
 
     get matchType() {
@@ -89,6 +98,7 @@ export class AutoComplete {
      * @param {(text: string, index: number) => Promise<AutoCompleteNameResult>} getNameAt Function should return (unfiltered, matching against input is done in AutoComplete) information about name options at index in text.
      * @param {boolean} isFloating Whether autocomplete should float at the keyboard cursor.
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'textarea' implicitly has an 'any' type.
     constructor(textarea, checkIfActivate, getNameAt, isFloating = false) {
         this.textarea = textarea;
         this.checkIfActivate = checkIfActivate;
@@ -122,6 +132,7 @@ export class AutoComplete {
             this.selectionStart = this.textarea.selectionStart;
             if (this.text != this.textarea.value) this.show(true, this.wasForced);
         });
+        // @ts-expect-error TS(7006) FIXME: Parameter 'evt' implicitly has an 'any' type.
         textarea.addEventListener('keydown', (evt) => this.handleKeyDown(evt));
         textarea.addEventListener('click', () => {
             this.selectionStart = this.textarea.selectionStart;
@@ -138,11 +149,14 @@ export class AutoComplete {
      *
      * @param {AutoCompleteOption} option
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'option' implicitly has an 'any' type.
     makeItem(option) {
         const li = option.renderItem();
         // gotta listen to pointerdown (happens before textarea-blur)
+        // @ts-expect-error TS(7006) FIXME: Parameter 'evt' implicitly has an 'any' type.
         li.addEventListener('pointerdown', (evt) => {
             evt.preventDefault();
+            // @ts-expect-error TS(2322) FIXME: Type 'undefined' is not assignable to type 'null'.
             this.selectedItem = this.result.find(it => it.name == li.getAttribute('data-name'));
             this.select();
         });
@@ -154,10 +168,11 @@ export class AutoComplete {
      *
      * @param {AutoCompleteOption} item
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'item' implicitly has an 'any' type.
     updateName(item) {
         const chars = Array.from(item.dom.querySelector('.name').children);
         if (item.forceFullNameMatch) {
-            // @ts-expect-error TS(2339): Property 'classList' does not exist on type 'unkno... Remove this comment to see the full error message
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             chars.forEach(c => c.classList.toggle('matched', true));
             return;
         }
@@ -165,10 +180,10 @@ export class AutoComplete {
             case 'strict': {
                 chars.forEach((it, idx) => {
                     if (idx + item.nameOffset < item.name.length) {
-                        // @ts-expect-error TS(2339): Property 'classList' does not exist on type 'unkno... Remove this comment to see the full error message
+                        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                         it.classList.add('matched');
                     } else {
-                        // @ts-expect-error TS(2339): Property 'classList' does not exist on type 'unkno... Remove this comment to see the full error message
+                        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                         it.classList.remove('matched');
                     }
                 });
@@ -178,34 +193,34 @@ export class AutoComplete {
                 const start = item.name.toLowerCase().search(this.name);
                 chars.forEach((it, idx) => {
                     if (idx + item.nameOffset < start) {
-                        // @ts-expect-error TS(2339): Property 'classList' does not exist on type 'unkno... Remove this comment to see the full error message
+                        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                         it.classList.remove('matched');
                     } else if (idx + item.nameOffset < start + item.name.length) {
-                        // @ts-expect-error TS(2339): Property 'classList' does not exist on type 'unkno... Remove this comment to see the full error message
+                        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                         it.classList.add('matched');
                     } else {
-                        // @ts-expect-error TS(2339): Property 'classList' does not exist on type 'unkno... Remove this comment to see the full error message
+                        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                         it.classList.remove('matched');
                     }
                 });
                 break;
             }
             case 'fuzzy': {
+                // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
                 item.name.replace(this.fuzzyRegex, (_, ...parts) => {
                     parts.splice(-2, 2);
                     if (parts.length == 2) {
-                        // @ts-expect-error TS(2339): Property 'classList' does not exist on type 'unkno... Remove this comment to see the full error message
+                        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                         chars.forEach(c => c.classList.remove('matched'));
                     } else {
                         let cIdx = item.nameOffset;
-                        // @ts-expect-error TS(7030): Not all code paths return a value.
                         parts.forEach((it, idx) => {
                             if (it === null || it.length == 0) return '';
                             if (idx % 2 == 1) {
-                                // @ts-expect-error TS(2339): Property 'classList' does not exist on type 'unkno... Remove this comment to see the full error message
+                                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                                 chars.slice(cIdx, cIdx + it.length).forEach(c => c.classList.add('matched'));
                             } else {
-                                // @ts-expect-error TS(2339): Property 'classList' does not exist on type 'unkno... Remove this comment to see the full error message
+                                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                                 chars.slice(cIdx, cIdx + it.length).forEach(c => c.classList.remove('matched'));
                             }
                             cIdx += it.length;
@@ -223,6 +238,7 @@ export class AutoComplete {
      * @param {AutoCompleteOption} option
      * @returns The option.
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'option' implicitly has an 'any' type.
     fuzzyScore(option) {
         // might have been matched by the options matchProvider function instead
         if (!this.fuzzyRegex.test(option.name)) {
@@ -230,10 +246,12 @@ export class AutoComplete {
             return option;
         }
         const parts = this.fuzzyRegex.exec(option.name).slice(1, -1);
+        // @ts-expect-error TS(7034) FIXME: Variable 'start' implicitly has type 'any' in some... Remove this comment to see the full error message
         let start = null;
         const consecutive = [];
         let current = '';
         let offset = 0;
+        // @ts-expect-error TS(7006) FIXME: Parameter 'part' implicitly has an 'any' type.
         parts.forEach((part, idx) => {
             if (idx % 2 == 0) {
                 if (part.length > 0) {
@@ -243,6 +261,7 @@ export class AutoComplete {
                     current = '';
                 }
             } else {
+                // @ts-expect-error TS(7005) FIXME: Variable 'start' implicitly has an 'any' type.
                 if (start === null) {
                     start = offset;
                 }
@@ -263,6 +282,7 @@ export class AutoComplete {
      * @param {AutoCompleteOption} a
      * @param {AutoCompleteOption} b
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'a' implicitly has an 'any' type.
     fuzzyScoreCompare(a, b) {
         if (a.score.start < b.score.start) return -1;
         if (a.score.start > b.score.start) return 1;
@@ -367,25 +387,32 @@ export class AutoComplete {
 
         if (this.matchType == 'fuzzy') {
             // only build the fuzzy regex if match type is set to fuzzy
+            // @ts-expect-error TS(7006) FIXME: Parameter 'char' implicitly has an 'any' type.
             this.fuzzyRegex = new RegExp(`^(.*?)${this.name.split('').map(char => `(${escapeRegex(char)})`).join('(.*?)')}(.*?)$`, 'i');
         }
 
         //TODO maybe move the matchers somewhere else; a single match function? matchType is available as property
         const matchers = {
+            // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
             'strict': (name) => name.toLowerCase().startsWith(this.name),
+            // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
             'includes': (name) => name.toLowerCase().includes(this.name),
+            // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
             'fuzzy': (name) => this.fuzzyRegex.test(name),
         };
 
         this.result = this.effectiveParserResult.optionList
             // filter the list of options by the partial name according to the matching type
+            // @ts-expect-error TS(7006) FIXME: Parameter 'it' implicitly has an 'any' type.
             .filter(it => this.isReplaceable || it.name == '' ? (it.matchProvider ? it.matchProvider(this.name) : matchers[this.matchType](it.name)) : it.name.toLowerCase() == this.name)
             // remove aliases
+            // @ts-expect-error TS(7006) FIXME: Parameter 'it' implicitly has an 'any' type.
             .filter((it, idx, list) => list.findIndex(opt => opt.value == it.value) == idx);
 
         if (this.result.length == 0 && this.effectiveParserResult != this.parserResult && isForced) {
             // no matching secondary results and forced trigger -> show current command details
             this.secondaryParserResult = null;
+            // @ts-expect-error TS(2322) FIXME: Type 'any' is not assignable to type 'never'.
             this.result = [this.effectiveParserResult.optionList.find(it => it.name == this.effectiveParserResult.name)];
             this.name = this.effectiveParserResult.name;
             this.fuzzyRegex = /(.*)(.*)(.*)/;
@@ -395,12 +422,16 @@ export class AutoComplete {
             // update remaining options
             .map(option => {
                 // build element
+                // @ts-expect-error TS(2339) FIXME: Property 'dom' does not exist on type 'never'.
                 option.dom = this.makeItem(option);
                 // update replacer and add quotes if necessary
+                // @ts-expect-error TS(2339) FIXME: Property 'valueProvider' does not exist on type 'n... Remove this comment to see the full error message
                 const optionName = option.valueProvider ? option.valueProvider(this.name) : option.name;
                 if (this.effectiveParserResult.canBeQuoted) {
+                    // @ts-expect-error TS(2339) FIXME: Property 'replacer' does not exist on type 'never'... Remove this comment to see the full error message
                     option.replacer = optionName.includes(' ') || this.startQuote || this.endQuote ? `"${optionName.replace(/"/g, '\\"')}"` : `${optionName}`;
                 } else {
+                    // @ts-expect-error TS(2339) FIXME: Property 'replacer' does not exist on type 'never'... Remove this comment to see the full error message
                     option.replacer = optionName;
                 }
                 // calculate fuzzy score if matching is fuzzy
@@ -410,7 +441,7 @@ export class AutoComplete {
                 return option;
             })
             // sort by priority first, then by fuzzy score or alphabetical
-            // @ts-expect-error TS(2339): Property 'toSorted' does not exist on type 'any[]'... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'toSorted' does not exist on type 'never[... Remove this comment to see the full error message
             .toSorted((a, b) => {
                 // First compare by sortPriority (lower = higher priority)
                 const priorityA = a.sortPriority ?? 100;
@@ -450,7 +481,9 @@ export class AutoComplete {
                     : this.effectiveParserResult.makeNoOptionsText()
                 ,
             );
+            // @ts-expect-error TS(2345) FIXME: Argument of type 'BlankAutoCompleteOption' is not ... Remove this comment to see the full error message
             this.result.push(option);
+        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         } else if (this.result.length == 1 && this.effectiveParserResult && this.effectiveParserResult != this.secondaryParserResult && this.result[0].name == this.effectiveParserResult.name) {
             // only one result that is exactly the current value? just show hint, no autocomplete
             this.isReplaceable = false;
@@ -486,13 +519,18 @@ export class AutoComplete {
             const frag = document.createDocumentFragment();
             for (const item of this.result) {
                 if (item == this.selectedItem) {
+                    // @ts-expect-error TS(2339) FIXME: Property 'dom' does not exist on type 'never'.
                     item.dom.classList.add('selected');
                 } else {
+                    // @ts-expect-error TS(2339) FIXME: Property 'dom' does not exist on type 'never'.
                     item.dom.classList.remove('selected');
                 }
+                // @ts-expect-error TS(2339) FIXME: Property 'isSelectable' does not exist on type 'ne... Remove this comment to see the full error message
                 if (!item.isSelectable) {
+                    // @ts-expect-error TS(2339) FIXME: Property 'dom' does not exist on type 'never'.
                     item.dom.classList.add('not-selectable');
                 }
+                // @ts-expect-error TS(2339) FIXME: Property 'dom' does not exist on type 'never'.
                 frag.append(item.dom);
             }
             this.dom.append(frag);
@@ -511,6 +549,7 @@ export class AutoComplete {
         if (!this.isActive) return this.detailsWrap.remove();
         if (!this.isShowingDetails && this.isReplaceable) return this.detailsWrap.remove();
         this.detailsDom.innerHTML = '';
+        // @ts-expect-error TS(2339) FIXME: Property 'renderDetails' does not exist on type 'n... Remove this comment to see the full error message
         this.detailsDom.append(this.selectedItem?.renderDetails() ?? 'NO ITEM');
         this.getLayer().append(this.detailsWrap);
         this.updateDetailsPositionDebounced();
@@ -532,18 +571,28 @@ export class AutoComplete {
             this.updateFloatingPosition();
         } else {
             const rect = {};
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             rect[AUTOCOMPLETE_WIDTH.INPUT] = this.textarea.getBoundingClientRect();
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             rect[AUTOCOMPLETE_WIDTH.CHAT] = document.querySelector('#sheld').getBoundingClientRect();
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             rect[AUTOCOMPLETE_WIDTH.FULL] = this.getLayer().getBoundingClientRect();
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             this.domWrap.style.setProperty('--bottom', `${window.innerHeight - rect[AUTOCOMPLETE_WIDTH.INPUT].top}px`);
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             this.dom.style.setProperty('--bottom', `${window.innerHeight - rect[AUTOCOMPLETE_WIDTH.INPUT].top}px`);
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             this.domWrap.style.bottom = `${window.innerHeight - rect[AUTOCOMPLETE_WIDTH.INPUT].top}px`;
             if (this.isShowingDetails) {
                 this.domWrap.style.setProperty('--leftOffset', '1vw');
+                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 this.domWrap.style.setProperty('--leftOffset', `max(1vw, ${rect[power_user.stscript.autocomplete.width.left].left}px)`);
+                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 this.domWrap.style.setProperty('--rightOffset', `calc(100vw - min(${rect[power_user.stscript.autocomplete.width.right].right}px, ${this.isShowingDetails ? 74 : 0}vw)`);
             } else {
+                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 this.domWrap.style.setProperty('--leftOffset', `max(1vw, ${rect[power_user.stscript.autocomplete.width.left].left}px)`);
+                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 this.domWrap.style.setProperty('--rightOffset', `calc(100vw - min(99vw, ${rect[power_user.stscript.autocomplete.width.right].right}px)`);
             }
         }
@@ -559,21 +608,30 @@ export class AutoComplete {
                 this.updateFloatingDetailsPosition();
             } else {
                 const rect = {};
+                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 rect[AUTOCOMPLETE_WIDTH.INPUT] = this.textarea.getBoundingClientRect();
+                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 rect[AUTOCOMPLETE_WIDTH.CHAT] = document.querySelector('#sheld').getBoundingClientRect();
+                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 rect[AUTOCOMPLETE_WIDTH.FULL] = this.getLayer().getBoundingClientRect();
                 if (this.isReplaceable) {
                     this.detailsWrap.classList.remove('full');
+                    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
                     const selRect = this.selectedItem.dom.children[0].getBoundingClientRect();
                     this.detailsWrap.style.setProperty('--targetOffset', `${selRect.top}`);
                     this.detailsWrap.style.setProperty('--rightOffset', '1vw');
+                    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                     this.detailsWrap.style.setProperty('--bottomOffset', `calc(100vh - ${rect[AUTOCOMPLETE_WIDTH.INPUT].top}px)`);
                     this.detailsWrap.style.setProperty('--leftOffset', `calc(100vw - ${this.domWrap.style.getPropertyValue('--rightOffset')}`);
                 } else {
                     this.detailsWrap.classList.add('full');
+                    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                     this.detailsWrap.style.setProperty('--targetOffset', `${rect[AUTOCOMPLETE_WIDTH.INPUT].top}`);
+                    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                     this.detailsWrap.style.setProperty('--bottomOffset', `calc(100vh - ${rect[AUTOCOMPLETE_WIDTH.INPUT].top}px)`);
+                    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                     this.detailsWrap.style.setProperty('--leftOffset', `${rect[power_user.stscript.autocomplete.width.left].left}px`);
+                    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                     this.detailsWrap.style.setProperty('--rightOffset', `calc(100vw - ${rect[power_user.stscript.autocomplete.width.right].right}px)`);
                 }
             }
@@ -608,12 +666,15 @@ export class AutoComplete {
     }
 
     updateFloatingDetailsPosition(location = null) {
+        // @ts-expect-error TS(2322) FIXME: Type '{ left: number; top: number; bottom: number;... Remove this comment to see the full error message
         if (!location) location = this.getCursorPosition();
         const rect = this.textarea.getBoundingClientRect();
         const layerRect = this.getLayer().getBoundingClientRect();
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         if (location.bottom < rect.top || location.top > rect.bottom || location.left < rect.left || location.left > rect.right) {
             return this.hide();
         }
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         let left = Math.max(rect.left, location.left) - layerRect.left;
 
         // Check if the autocomplete list is constrained by the right edge of the viewport.
@@ -647,15 +708,20 @@ export class AutoComplete {
             this.detailsWrap.classList.remove('right');
             this.detailsWrap.classList.add('full');
         }
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         if (location.top <= window.innerHeight / 2) {
             // if cursor is in lower half of window, show list above line
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             this.detailsWrap.style.top = `${location.bottom - layerRect.top}px`;
             this.detailsWrap.style.bottom = 'auto';
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             this.detailsWrap.style.maxHeight = `calc(${location.bottom - layerRect.top}px - ${this.textarea.closest('dialog') ? '0' : '1vh'})`;
         } else {
             // if cursor is in upper half of window, show list below line
             this.detailsWrap.style.top = 'auto';
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             this.detailsWrap.style.bottom = `calc(${layerRect.height}px - ${location.top - layerRect.top}px)`;
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             this.detailsWrap.style.maxHeight = `calc(${location.top - layerRect.top}px - ${this.textarea.closest('dialog') ? '0' : '1vh'})`;
         }
     }
@@ -670,6 +736,7 @@ export class AutoComplete {
         if (!this.clone) {
             this.clone = document.createElement('div');
             for (const key of style) {
+                // @ts-expect-error TS(7015) FIXME: Element implicitly has an 'any' type because index... Remove this comment to see the full error message
                 this.clone.style[key] = style[key];
             }
             this.clone.style.position = 'fixed';
@@ -720,10 +787,14 @@ export class AutoComplete {
      * Select an item for autocomplete and put text into textarea.
      */
     async select() {
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         if (this.isReplaceable && this.selectedItem.value !== null) {
             // Apply per-option replacement offset (e.g., for closing tags that need to replace leading whitespace)
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             const effectiveStart = this.effectiveParserResult.start + (this.selectedItem.replacementStartOffset ?? 0);
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             this.textarea.value = `${this.text.slice(0, effectiveStart)}${this.selectedItem.replacer}${this.text.slice(this.effectiveParserResult.start + this.effectiveParserResult.name.length + (this.startQuote ? 1 : 0) + (this.endQuote ? 1 : 0))}`;
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             this.textarea.selectionStart = effectiveStart + this.selectedItem.replacer.length;
             this.textarea.selectionEnd = this.textarea.selectionStart;
             this.show(false, false, true);
@@ -746,10 +817,12 @@ export class AutoComplete {
      * @param {AutoCompleteOption[]} result The list of autocomplete options.
      * @returns {AutoCompleteOption} The item to select.
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'result' implicitly has an 'any' type.
     selectDefaultItem(result) {
         if (result.length === 0) return null;
 
         // Find first selectable item
+        // @ts-expect-error TS(7006) FIXME: Parameter 'it' implicitly has an 'any' type.
         const firstSelectable = result.find(it => it.isSelectable);
         if (firstSelectable) return firstSelectable;
 
@@ -761,10 +834,15 @@ export class AutoComplete {
      * Mark the item at newIdx in the autocomplete list as selected.
      * @param {number} newIdx
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'newIdx' implicitly has an 'any' type.
     selectItemAtIndex(newIdx) {
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         this.selectedItem.dom.classList.remove('selected');
+        // @ts-expect-error TS(2322) FIXME: Type 'undefined' is not assignable to type 'null'.
         this.selectedItem = this.result[newIdx];
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         this.selectedItem.dom.classList.add('selected');
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         const rect = this.selectedItem.dom.children[0].getBoundingClientRect();
         const rectParent = this.dom.getBoundingClientRect();
         if (rect.top < rectParent.top || rect.bottom > rectParent.bottom) {
@@ -777,6 +855,7 @@ export class AutoComplete {
      * Handle keyboard events.
      * @param {KeyboardEvent} evt The event.
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'evt' implicitly has an 'any' type.
     async handleKeyDown(evt) {
         // autocomplete is shown and cursor at end of current command name (or inside name and typed or forced)
         if (this.isActive && this.isReplaceable) {
@@ -787,6 +866,7 @@ export class AutoComplete {
                     if (evt.ctrlKey || evt.altKey || evt.shiftKey) return;
                     evt.preventDefault();
                     evt.stopPropagation();
+                    // @ts-expect-error TS(2345) FIXME: Argument of type 'null' is not assignable to param... Remove this comment to see the full error message
                     const idx = this.result.indexOf(this.selectedItem);
                     let newIdx;
                     if (idx == 0) newIdx = this.result.length - 1;
@@ -799,6 +879,7 @@ export class AutoComplete {
                     if (evt.ctrlKey || evt.altKey || evt.shiftKey) return;
                     evt.preventDefault();
                     evt.stopPropagation();
+                    // @ts-expect-error TS(2345) FIXME: Argument of type 'null' is not assignable to param... Remove this comment to see the full error message
                     const idx = this.result.indexOf(this.selectedItem);
                     const newIdx = (idx + 1) % this.result.length;
                     this.selectItemAtIndex(newIdx);
@@ -807,8 +888,11 @@ export class AutoComplete {
                 case 'Enter': {
                     // pick the selected item to autocomplete
                     if ((power_user.stscript.autocomplete.select & AUTOCOMPLETE_SELECT_KEY.ENTER) != AUTOCOMPLETE_SELECT_KEY.ENTER) break;
+                    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
                     if (evt.ctrlKey || evt.altKey || evt.shiftKey || this.selectedItem.value == '') break;
+                    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
                     if (this.selectedItem.name == this.name) break;
+                    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
                     if (!this.selectedItem.isSelectable) break;
                     evt.preventDefault();
                     evt.stopImmediatePropagation();
@@ -818,9 +902,11 @@ export class AutoComplete {
                 case 'Tab': {
                     // pick the selected item to autocomplete
                     if ((power_user.stscript.autocomplete.select & AUTOCOMPLETE_SELECT_KEY.TAB) != AUTOCOMPLETE_SELECT_KEY.TAB) break;
+                    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
                     if (evt.ctrlKey || evt.altKey || evt.shiftKey || this.selectedItem.value == '') break;
                     evt.preventDefault();
                     evt.stopImmediatePropagation();
+                    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
                     if (!this.selectedItem.isSelectable) break;
                     this.select();
                     return;

@@ -14,6 +14,7 @@ let charStats = {};
  * @param {number|string} statValue - The value of the stat to be displayed.
  * @returns {string} - An HTML string representing the stat block.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'statName' implicitly has an 'any' type.
 function createStatBlock(statName, statValue) {
     return `<div class="rm_stat_block">
                 <div class="rm_stat_name">${statName}:</div>
@@ -26,6 +27,7 @@ function createStatBlock(statName, statValue) {
  * @param {number|string} stat - The stat value to be checked and returned.
  * @returns {number} - The stat value if it is a number, otherwise 0.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'stat' implicitly has an 'any' type.
 function verifyStatValue(stat) {
     return isNaN(Number(stat)) ? 0 : Number(stat);
 }
@@ -47,38 +49,38 @@ function calculateTotalStats() {
     };
 
     for (const stats of Object.values(charStats)) {
-        // @ts-expect-error TS(2339): Property 'total_gen_time' does not exist on type '... Remove this comment to see the full error message
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         totalStats.total_gen_time += verifyStatValue(stats.total_gen_time);
-        // @ts-expect-error TS(2339): Property 'user_msg_count' does not exist on type '... Remove this comment to see the full error message
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         totalStats.user_msg_count += verifyStatValue(stats.user_msg_count);
         totalStats.non_user_msg_count += verifyStatValue(
-            // @ts-expect-error TS(2339): Property 'non_user_msg_count' does not exist on ty... Remove this comment to see the full error message
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             stats.non_user_msg_count,
         );
-        // @ts-expect-error TS(2339): Property 'user_word_count' does not exist on type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         totalStats.user_word_count += verifyStatValue(stats.user_word_count);
         totalStats.non_user_word_count += verifyStatValue(
-            // @ts-expect-error TS(2339): Property 'non_user_word_count' does not exist on t... Remove this comment to see the full error message
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             stats.non_user_word_count,
         );
         totalStats.total_swipe_count += verifyStatValue(
-            // @ts-expect-error TS(2339): Property 'total_swipe_count' does not exist on typ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             stats.total_swipe_count,
         );
 
-        // @ts-expect-error TS(2339): Property 'date_last_chat' does not exist on type '... Remove this comment to see the full error message
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         if (verifyStatValue(stats.date_last_chat) != 0) {
             totalStats.date_last_chat = Math.max(
                 totalStats.date_last_chat,
-                // @ts-expect-error TS(2339): Property 'date_last_chat' does not exist on type '... Remove this comment to see the full error message
+                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 stats.date_last_chat,
             );
         }
-        // @ts-expect-error TS(2339): Property 'date_first_chat' does not exist on type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         if (verifyStatValue(stats.date_first_chat) != 0) {
             totalStats.date_first_chat = Math.min(
                 totalStats.date_first_chat,
-                // @ts-expect-error TS(2339): Property 'date_first_chat' does not exist on type ... Remove this comment to see the full error message
+                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 stats.date_first_chat,
             );
         }
@@ -104,6 +106,7 @@ function calculateTotalStats() {
  *      non_user_word_count - count of words used by the non-user
  *      total_swipe_count - total swipe count
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'statsType' implicitly has an 'any' type... Remove this comment to see the full error message
 function createHtml(statsType, stats) {
     // Get time string
     const timeStirng = humanizeGenTime(stats.total_gen_time);
@@ -113,6 +116,7 @@ function createHtml(statsType, stats) {
             .duration(stats.date_last_chat - stats.date_first_chat)
             .humanize();
     }
+    // @ts-expect-error TS(2345) FIXME: Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
     const statsTypeTranslated = translate(statsType, `stats_header_${statsType}`);
 
     // Create popup HTML with stats
@@ -154,10 +158,12 @@ async function userStatsHandler() {
  * @param {object} characters - Object containing character data.
  * @param {string} this_chid - The character id.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'characters' implicitly has an 'any' typ... Remove this comment to see the full error message
 async function characterStatsHandler(characters, this_chid) {
     // Get stats from server
     await getStats();
     // Get character stats
+    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     let myStats = charStats[characters[this_chid].avatar];
     if (myStats === undefined) {
         myStats = {
@@ -170,6 +176,7 @@ async function characterStatsHandler(characters, this_chid) {
             date_last_chat: 0,
             date_first_chat: new Date('9999-12-31T23:59:59.999Z').getTime(),
         };
+        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         charStats[characters[this_chid].avatar] = myStats;
         updateStats();
     }
@@ -189,7 +196,7 @@ async function getStats() {
     });
 
     if (!response.ok) {
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.error('Stats could not be loaded. Try reloading the page.');
         throw new Error('Error getting stats');
     }
@@ -212,11 +219,11 @@ async function recreateStats() {
     });
 
     if (!response.ok) {
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.error('Stats could not be loaded. Try reloading the page.');
         throw new Error('Error getting stats');
     } else {
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.success('Stats file recreated successfully!');
     }
 }
@@ -228,6 +235,7 @@ async function recreateStats() {
  * @param {string} gen_finished - The finish time in ISO 8601 format.
  * @returns {number} - The difference in time in milliseconds.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'gen_started' implicitly has an 'any' ty... Remove this comment to see the full error message
 function calculateGenTime(gen_started, gen_finished) {
     if (gen_started === undefined || gen_finished === undefined) {
         return 0;
@@ -259,6 +267,7 @@ async function updateStats() {
  * @param {string} str - The string to count words in.
  * @returns {number} - Number of words.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'str' implicitly has an 'any' type.
 function countWords(str) {
     const match = str.match(/\b\w+\b/g);
     return match ? match.length : 0;
@@ -272,12 +281,14 @@ function countWords(str) {
  * @param {string} this_chid - The character id.
  * @param {string} oldMessage - The old message that's being processed.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'line' implicitly has an 'any' type.
 async function statMesProcess(line, type, characters, this_chid, oldMessage) {
     if (this_chid === undefined || characters[this_chid] === undefined) {
         return;
     }
     await getStats();
 
+    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     let stat = charStats[characters[this_chid].avatar];
 
     if (!stat) {
@@ -331,7 +342,7 @@ async function statMesProcess(line, type, characters, this_chid, oldMessage) {
  *
  */
 export function initStats() {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('.rm_stats_button').on('click', function () {
         characterStatsHandler(characters, this_chid);
     });

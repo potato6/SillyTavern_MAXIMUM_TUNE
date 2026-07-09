@@ -29,6 +29,7 @@ import { ELSE_MARKER } from '../definitions/core-macros.js';
  * @type {MacroEngine}
  */
 class MacroEngine {
+    // @ts-expect-error TS(7008) FIXME: Member '#instance' implicitly has an 'any' type.
     /** @type {MacroEngine} */ static #instance;
     /** @type {MacroEngine} */ static get instance() { return MacroEngine.#instance ?? (MacroEngine.#instance = new MacroEngine()); }
 
@@ -49,8 +50,11 @@ class MacroEngine {
      * @param {number} [options.priority] - Execution priority (lower = earlier).
      * @param {string} [options.source] - Identifier for debugging.
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'handler' implicitly has an 'any' type.
     addPreProcessor(handler, { priority = 100, source = 'unknown' } = {}) {
+        // @ts-expect-error TS(2322) FIXME: Type 'any' is not assignable to type 'never'.
         this.#preProcessors.push({ handler, priority, source });
+        // @ts-expect-error TS(2339) FIXME: Property 'priority' does not exist on type 'never'... Remove this comment to see the full error message
         this.#preProcessors.sort((a, b) => a.priority - b.priority);
     }
 
@@ -59,7 +63,9 @@ class MacroEngine {
      * @param {MacroProcessor} handler - The processor function to remove.
      * @returns {boolean} True if the processor was found and removed.
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'handler' implicitly has an 'any' type.
     removePreProcessor(handler) {
+        // @ts-expect-error TS(2339) FIXME: Property 'handler' does not exist on type 'never'.
         const index = this.#preProcessors.findIndex(p => p.handler === handler);
         if (index !== -1) {
             this.#preProcessors.splice(index, 1);
@@ -75,8 +81,11 @@ class MacroEngine {
      * @param {number} [options.priority] - Execution priority (lower = earlier).
      * @param {string} [options.source] - Identifier for debugging.
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'handler' implicitly has an 'any' type.
     addPostProcessor(handler, { priority = 100, source = 'unknown' } = {}) {
+        // @ts-expect-error TS(2322) FIXME: Type 'any' is not assignable to type 'never'.
         this.#postProcessors.push({ handler, priority, source });
+        // @ts-expect-error TS(2339) FIXME: Property 'priority' does not exist on type 'never'... Remove this comment to see the full error message
         this.#postProcessors.sort((a, b) => a.priority - b.priority);
     }
 
@@ -85,7 +94,9 @@ class MacroEngine {
      * @param {MacroProcessor} handler - The processor function to remove.
      * @returns {boolean} True if the processor was found and removed.
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'handler' implicitly has an 'any' type.
     removePostProcessor(handler) {
+        // @ts-expect-error TS(2339) FIXME: Property 'handler' does not exist on type 'never'.
         const index = this.#postProcessors.findIndex(p => p.handler === handler);
         if (index !== -1) {
             this.#postProcessors.splice(index, 1);
@@ -104,6 +115,7 @@ class MacroEngine {
      *        positioning for macros like {{pick}} that seed on position.
      * @returns {string} The resolved string.
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'input' implicitly has an 'any' type.
     evaluate(input, env, { contextOffset = 0 } = {}) {
         if (!input) {
             return '';
@@ -123,6 +135,7 @@ class MacroEngine {
         }
 
         // If the parser did not produce a valid CST, fall back to the original input.
+        // @ts-expect-error TS(2339) FIXME: Property 'children' does not exist on type 'object... Remove this comment to see the full error message
         if (!cst || typeof cst !== 'object' || !cst.children) {
             logMacroGeneralError({ message: 'Macro parser produced an invalid CST. Returning original input.', error: { input, lexingErrors, parserErrors } });
             return input;
@@ -153,6 +166,7 @@ class MacroEngine {
      * @param {MacroCall} call - The macro call to resolve.
      * @returns {string} The resolved macro.
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'call' implicitly has an 'any' type.
     #resolveMacro(call) {
         const { name, env } = call;
 
@@ -183,13 +197,13 @@ class MacroEngine {
                     defOverride = MacroRegistry.buildMacroDefFromOptions(name, options);
                 } catch (error) {
                     // If building fails, log warning and fall through to check registered macros
-                    // @ts-expect-error TS(2345): Argument of type '{ message: string; call: any; }'... Remove this comment to see the full error message
+                    // @ts-expect-error TS(2345) FIXME: Argument of type '{ message: string; call: any; }'... Remove this comment to see the full error message
                     logMacroRuntimeWarning({ message: `Dynamic macro "${name}" has invalid options: ${error.message}`, call });
                 }
             } else if (['string', 'number', 'boolean', 'function'].includes((typeof impl))) {
                 // Case 1 & 2: string or handler function
                 if (['number', 'boolean'].includes(typeof impl)) {
-                    // @ts-expect-error TS(2345): Argument of type '{ message: string; call: any; }'... Remove this comment to see the full error message
+                    // @ts-expect-error TS(2345) FIXME: Argument of type '{ message: string; call: any; }'... Remove this comment to see the full error message
                     logMacroRuntimeWarning({ message: `Dynamic macro "${name}" uses unsupported number/boolean format.`, call });
                 }
                 defOverride = MacroRegistry.buildMacroDefFromOptions(name, {
@@ -199,7 +213,7 @@ class MacroEngine {
                     returnType: MacroValueType.STRING,
                 });
             } else {
-                // @ts-expect-error TS(2345): Argument of type '{ message: string; call: any; }'... Remove this comment to see the full error message
+                // @ts-expect-error TS(2345) FIXME: Argument of type '{ message: string; call: any; }'... Remove this comment to see the full error message
                 logMacroRuntimeWarning({ message: `Dynamic macro "${name}" is not defined correctly (must be string, a handler function, or a macro def options object with handler property).`, call });
             }
         }
@@ -215,17 +229,18 @@ class MacroEngine {
             try {
                 return call.env.functions.postProcess(result);
             } catch (error) {
-                // @ts-expect-error TS(2345): Argument of type '{ message: string; call: any; er... Remove this comment to see the full error message
+                // @ts-expect-error TS(2345) FIXME: Argument of type '{ message: string; call: any; er... Remove this comment to see the full error message
                 logMacroInternalError({ message: `Macro "${name}" postProcess function failed.`, call, error });
                 return result;
             }
         } catch (error) {
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             const isRuntimeError = !!(error && (error.name === 'MacroRuntimeError' || error.isMacroRuntimeError));
             if (isRuntimeError) {
-                // @ts-expect-error TS(2345): Argument of type '{ message: any; call: any; error... Remove this comment to see the full error message
+                // @ts-expect-error TS(2345) FIXME: Argument of type '{ message: any; call: any; error... Remove this comment to see the full error message
                 logMacroRuntimeWarning({ message: (error.message || `Macro "${name}" execution failed.`), call, error });
             } else {
-                // @ts-expect-error TS(2345): Argument of type '{ message: string; call: any; er... Remove this comment to see the full error message
+                // @ts-expect-error TS(2345) FIXME: Argument of type '{ message: string; call: any; er... Remove this comment to see the full error message
                 logMacroInternalError({ message: `Macro "${name}" internal execution error.`, call, error });
             }
             return raw;
@@ -238,9 +253,11 @@ class MacroEngine {
      * @param {MacroEnv} env - The environment to pass to the macro handler.
      * @returns {string} The processed text.
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'text' implicitly has an 'any' type.
     #runPreProcessors(text, env) {
         let result = text;
         for (const { handler } of this.#preProcessors) {
+            // @ts-expect-error TS(2349) FIXME: This expression is not callable.
             result = handler(result, env);
         }
         return result;
@@ -252,9 +269,11 @@ class MacroEngine {
      * @param {MacroEnv} env - The environment to pass to the macro handler.
      * @returns {string} The processed text.
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'text' implicitly has an 'any' type.
     #runPostProcessors(text, env) {
         let result = text;
         for (const { handler } of this.#postProcessors) {
+            // @ts-expect-error TS(2349) FIXME: This expression is not callable.
             result = handler(result, env);
         }
         return result;
@@ -269,6 +288,7 @@ class MacroEngine {
         // This legacy macro will not be supported by the new macro parser, but rather regex-replaced beforehand
         // {{time_UTC-10}}   =>   {{time::UTC-10}}
         this.addPreProcessor(
+            // @ts-expect-error TS(7006) FIXME: Parameter 'text' implicitly has an 'any' type.
             text => text.replace(/{{time_(UTC[+-]\d+)}}/gi, (_match, utcOffset) => `{{time::${utcOffset}}}`),
             { priority: 10, source: 'core:legacy-time-syntax' },
         );
@@ -276,6 +296,7 @@ class MacroEngine {
         // Legacy non-curly markers like <USER>, <BOT>, <GROUP>, etc.
         // These are rewritten into their equivalent macro forms so they go through the normal engine pipeline.
         this.addPreProcessor(
+            // @ts-expect-error TS(7006) FIXME: Parameter 'text' implicitly has an 'any' type.
             text => text
                 .replace(/<USER>/gi, '{{user}}')
                 .replace(/<BOT>/gi, '{{char}}')
@@ -296,6 +317,7 @@ class MacroEngine {
         // Since \{\{ doesn't match {{ (MacroStart), it passes through as plain text.
         // We only need to remove the backslashes in post-processing.
         this.addPostProcessor(
+            // @ts-expect-error TS(7006) FIXME: Parameter 'text' implicitly has an 'any' type.
             text => text.replace(/\\([{}])/g, '$1'),
             { priority: 10, source: 'core:unescape-braces' },
         );
@@ -304,12 +326,14 @@ class MacroEngine {
         // To treat {{trim}} as it was before, we won't process it by the engine itself,
         // but doing a regex replace on {{trim}} and the surrounding area, after all other macros have been processed.
         this.addPostProcessor(
+            // @ts-expect-error TS(7006) FIXME: Parameter 'text' implicitly has an 'any' type.
             text => text.replace(/(?:\r?\n)*{{trim}}(?:\r?\n)*/gi, ''),
             { priority: 20, source: 'core:legacy-trim' },
         );
 
         // Remove any wrongly placed leftover ELSE_MARKER that might have been inserted during processing
         this.addPostProcessor(
+            // @ts-expect-error TS(7006) FIXME: Parameter 'text' implicitly has an 'any' type.
             text => text.replaceAll(ELSE_MARKER, ''),
             { priority: 30, source: 'core:cleanup-else-marker' },
         );
@@ -321,6 +345,7 @@ class MacroEngine {
      * @param {any} value
      * @returns {string}
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
     normalizeMacroResult(value) {
         if (value === null || value === undefined) {
             return '';
@@ -360,6 +385,7 @@ class MacroEngine {
      * @param {boolean} [options.trimIndent] - Whether to also dedent consistent indentation
      * @returns {string} The trimmed content
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'content' implicitly has an 'any' type.
     trimScopedContent(content, { trimIndent = true } = {}) {
         if (!content) return '';
 
@@ -388,6 +414,7 @@ class MacroEngine {
         }
 
         // Remove the base indentation from ALL lines
+        // @ts-expect-error TS(7006) FIXME: Parameter 'line' implicitly has an 'any' type.
         const dedentedLines = lines.map(line => {
             // Only remove indentation if the line has enough leading whitespace
             const match = line.match(/^[ \t]*/);

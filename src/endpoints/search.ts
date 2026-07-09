@@ -1,9 +1,10 @@
 import fetch from 'node-fetch';
+// @ts-expect-error TS(1259) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import express from 'express';
-// @ts-expect-error TS(2792): Cannot find module 'ip-regex'. Did you mean to set... Remove this comment to see the full error message
+// @ts-expect-error TS(2792) FIXME: Cannot find module 'ip-regex'. Did you mean to set... Remove this comment to see the full error message
 import ipRegex from 'ip-regex';
 
-// @ts-expect-error TS(2792): Cannot find module 'html-entities'. Did you mean t... Remove this comment to see the full error message
+// @ts-expect-error TS(2792) FIXME: Cannot find module 'html-entities'. Did you mean t... Remove this comment to see the full error message
 import { decode } from 'html-entities';
 import { readSecret, SECRET_KEYS } from './secrets.js';
 import { trimV1 } from '../util.js';
@@ -50,6 +51,7 @@ async function extractTranscript(videoPageBody: string, lang: string) {
 
     const captions = (() => {
         try {
+            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             return JSON.parse(splittedHTML[1].split(',"videoDetails')[0].replace('\n', ''));
         } catch {
             return undefined;
@@ -84,7 +86,9 @@ async function extractTranscript(videoPageBody: string, lang: string) {
     const results = [...transcriptBody.matchAll(RE_XML_TRANSCRIPT)];
     const transcript = results.map((result) => ({
         text: result[3],
+        // @ts-expect-error TS(2345) FIXME: Argument of type 'string | undefined' is not assig... Remove this comment to see the full error message
         duration: parseFloat(result[2]),
+        // @ts-expect-error TS(2345) FIXME: Argument of type 'string | undefined' is not assig... Remove this comment to see the full error message
         offset: parseFloat(result[1]),
         lang: lang ?? captions.captionTracks[0].languageCode,
     }));
@@ -93,6 +97,7 @@ async function extractTranscript(videoPageBody: string, lang: string) {
     return transcriptText;
 }
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/serpapi', async (request, response) => {
     try {
         const key = readSecret(request.user.directories, SECRET_KEYS.SERPAPI);
@@ -126,6 +131,7 @@ router.post('/serpapi', async (request, response) => {
  * Get the transcript of a YouTube video
  * @copyright https://github.com/Kakulukian/youtube-transcript (MIT License)
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/transcript', async (request, response) => {
     try {
         const id = request.body.id;
@@ -163,6 +169,7 @@ router.post('/transcript', async (request, response) => {
     }
 });
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/searxng', async (request, response) => {
     try {
         const { baseUrl, query, preferences, categories } = request.body;
@@ -217,6 +224,7 @@ router.post('/searxng', async (request, response) => {
     }
 });
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/tavily', async (request, response) => {
     try {
         const apiKey = readSecret(request.user.directories, SECRET_KEYS.TAVILY);
@@ -266,6 +274,7 @@ router.post('/tavily', async (request, response) => {
     }
 });
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/koboldcpp', async (request, response) => {
     try {
         const { query, url } = request.body;
@@ -302,6 +311,7 @@ router.post('/koboldcpp', async (request, response) => {
     }
 });
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/serper', async (request, response) => {
     try {
         const key = readSecret(request.user.directories, SECRET_KEYS.SERPER);
@@ -344,6 +354,7 @@ router.post('/serper', async (request, response) => {
     }
 });
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/zai', async (request, response) => {
     try {
         const key = readSecret(request.user.directories, SECRET_KEYS.ZAI);
@@ -390,6 +401,7 @@ router.post('/zai', async (request, response) => {
     }
 });
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/visit', async (request, response) => {
     try {
         const url = request.body.url;

@@ -29,6 +29,7 @@ import {
     updateRemoteChatName,
 } from '../script.js';
 import { getRegexedString, regex_placement } from './extensions/regex/engine.js';
+// @ts-expect-error TS(7034) FIXME: Variable 'groups' implicitly has type 'any[]' in s... Remove this comment to see the full error message
 import { deleteGroupChatByName, getGroupAvatar, groups, is_group_generating, openGroupById, openGroupChat } from './group-chats.js';
 import { t } from './i18n.js';
 import { callGenericPopup, POPUP_TYPE } from './popup.js';
@@ -69,6 +70,7 @@ function getRecentChatsSettings() {
  * Saves recent chats settings to account storage.
  * @param {{ maxDisplayed: number, collapsedDisplayed: number }} settings The settings to save
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'settings' implicitly has an 'any' type.
 function saveRecentChatsSettings(settings) {
     accountStorage.setItem(recentChatsSettingsKey, JSON.stringify(settings));
 }
@@ -89,6 +91,7 @@ class PinnedChatsManager {
      * Should be called once on app init.
      */
     static init() {
+        // @ts-expect-error TS(2322) FIXME: Type '{}' is not assignable to type 'null'.
         this.#cachedState = this.#loadFromStorage();
     }
 
@@ -114,6 +117,7 @@ class PinnedChatsManager {
      * @param {Partial<RecentChat>} recentChat Recent chat data
      * @returns {string} Key for pinned chat storage
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'recentChat' implicitly has an 'any' typ... Remove this comment to see the full error message
     static getKey(recentChat) {
         return `${recentChat.group ? 'group_' + recentChat.group : ''}${recentChat.avatar ? 'char_' + recentChat.avatar : ''}_${recentChat.file_name}`;
     }
@@ -124,6 +128,7 @@ class PinnedChatsManager {
      */
     static getState() {
         if (this.#cachedState === null) {
+            // @ts-expect-error TS(2322) FIXME: Type '{}' is not assignable to type 'null'.
             this.#cachedState = this.#loadFromStorage();
         }
         return this.#cachedState;
@@ -133,6 +138,7 @@ class PinnedChatsManager {
      * Saves the pinned chat state to storage and updates cache.
      * @param {Record<string, PinnedChat>} state The state to save
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'state' implicitly has an 'any' type.
     static #saveState(state) {
         this.#cachedState = state;
         accountStorage.setItem(pinnedChatsKey, JSON.stringify(state));
@@ -143,9 +149,11 @@ class PinnedChatsManager {
      * @param {RecentChat} recentChat Recent chat data
      * @returns {boolean} True if the chat is pinned, false otherwise
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'recentChat' implicitly has an 'any' typ... Remove this comment to see the full error message
     static isPinned(recentChat) {
         const pinKey = this.getKey(recentChat);
         const pinState = this.getState();
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         return pinKey in pinState;
     }
 
@@ -154,8 +162,10 @@ class PinnedChatsManager {
      * @param {RecentChat} recentChat Recent chat data
      * @param {boolean} pinned New pinned state
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'recentChat' implicitly has an 'any' typ... Remove this comment to see the full error message
     static toggle(recentChat, pinned) {
         const pinKey = this.getKey(recentChat);
+        // @ts-expect-error TS(2698) FIXME: Spread types may only be created from object types... Remove this comment to see the full error message
         const pinState = { ...this.getState() };
         if (pinned) {
             pinState[pinKey] = {
@@ -174,8 +184,10 @@ class PinnedChatsManager {
      * @param {Partial<RecentChat>} recentChat Recent chat data (with original file_name)
      * @param {string} newFileName New file name after rename
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'recentChat' implicitly has an 'any' typ... Remove this comment to see the full error message
     static rename(recentChat, newFileName) {
         const oldKey = this.getKey(recentChat);
+        // @ts-expect-error TS(2698) FIXME: Spread types may only be created from object types... Remove this comment to see the full error message
         const pinState = { ...this.getState() };
         if (!(oldKey in pinState)) {
             return;
@@ -197,6 +209,7 @@ class PinnedChatsManager {
      */
     static getAll() {
         const pinState = this.getState();
+        // @ts-expect-error TS(2769) FIXME: No overload matches this call.
         return Object.values(pinState);
     }
 }
@@ -211,6 +224,7 @@ export function getPermanentAssistantAvatar() {
         return defaultAssistantAvatar;
     }
 
+    // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
     const character = characters.find(x => x.avatar === assistantAvatar);
     if (character === undefined) {
         accountStorage.removeItem(assistantAvatarKey);
@@ -259,6 +273,7 @@ export async function openWelcomeScreen({ force = false, expand = false } = {}) 
  */
 async function unshallowPermanentAssistant() {
     const assistantAvatar = getPermanentAssistantAvatar();
+    // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
     const characterId = characters.findIndex(x => x.avatar === assistantAvatar);
     if (characterId === -1) {
         return;
@@ -272,6 +287,7 @@ async function unshallowPermanentAssistant() {
  * @param {Character} character Character data
  * @returns {string} Greeting message
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'character' implicitly has an 'any' type... Remove this comment to see the full error message
 function getAssistantGreeting(character) {
     const defaultGreeting = t`If you're connected to an API, try asking me something!` + '\n***\n' + t`**Hint:** Set any character as your welcome page assistant from their "More..." menu.`;
 
@@ -287,8 +303,11 @@ function getAssistantGreeting(character) {
  */
 function sendAssistantMessage() {
     const currentAssistantAvatar = getPermanentAssistantAvatar();
+    // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
     const character = characters.find(x => x.avatar === currentAssistantAvatar);
+    // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
     const name = character ? character.name : neutralCharacterName;
+    // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
     const avatar = character ? getThumbnailUrl('avatar', character.avatar) : system_avatar;
     const greeting = getAssistantGreeting(character);
 
@@ -305,6 +324,7 @@ function sendAssistantMessage() {
         },
     };
 
+    // @ts-expect-error TS(2345) FIXME: Argument of type '{ name: any; force_avatar: strin... Remove this comment to see the full error message
     chat.push(message);
     addOneMessage(message, { scroll: false });
 }
@@ -313,8 +333,9 @@ function sendAssistantMessage() {
  *
  */
 function sendWelcomePrompt() {
-    // @ts-expect-error TS(2554): Expected 2-3 arguments, but got 1.
+    // @ts-expect-error TS(2554) FIXME: Expected 2-3 arguments, but got 1.
     const message = getSystemMessageByType(system_message_types.WELCOME_PROMPT);
+    // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
     chat.push(message);
     addOneMessage(message, { scroll: false });
 }
@@ -324,6 +345,7 @@ function sendWelcomePrompt() {
  * @param {RecentChat[]} chats List of recent chats
  * @param {boolean} [expand] If true, expands the recent chats section
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'chats' implicitly has an 'any' type.
 async function sendWelcomePanel(chats, expand = false) {
     try {
         const chatElement = document.getElementById('chat');
@@ -336,6 +358,7 @@ async function sendWelcomePanel(chats, expand = false) {
             chats,
             empty: !chats.length,
             version: displayVersion,
+            // @ts-expect-error TS(7006) FIXME: Parameter 'chat' implicitly has an 'any' type.
             more: chats.some(chat => chat.hidden),
         };
         const template = await renderTemplateAsync('welcomePanel', templateData);
@@ -403,6 +426,7 @@ async function sendWelcomePanel(chats, expand = false) {
         });
         fragment.querySelectorAll('.recentChat.group').forEach((groupChat) => {
             const groupId = groupChat.getAttribute('data-group');
+            // @ts-expect-error TS(7005) FIXME: Variable 'groups' implicitly has an 'any[]' type.
             const group = groups.find(x => x.id === groupId);
             if (group) {
                 const avatar = groupChat.querySelector('.avatar');
@@ -459,6 +483,7 @@ async function sendWelcomePanel(chats, expand = false) {
                 const avatarId = chatItem.getAttribute('data-avatar');
                 const groupId = chatItem.getAttribute('data-group');
                 const fileName = chatItem.getAttribute('data-file');
+                // @ts-expect-error TS(7006) FIXME: Parameter 'c' implicitly has an 'any' type.
                 const recentChat = chats.find(c => c.chat_name === fileName && ((c.is_group && c.group === groupId) || (!c.is_group && c.avatar === avatarId)));
                 if (!recentChat) {
                     console.error('Recent chat not found for pinning.');
@@ -469,6 +494,7 @@ async function sendWelcomePanel(chats, expand = false) {
                 await refreshWelcomeScreen({ flashChat: recentChat });
             });
         });
+        // @ts-expect-error TS(2345) FIXME: Argument of type 'ChildNode | null' is not assigna... Remove this comment to see the full error message
         chatElement.append(fragment.firstChild);
         if (expand) {
             chatElement.querySelectorAll('button.showMoreChats').forEach((button) => {
@@ -487,7 +513,9 @@ async function sendWelcomePanel(chats, expand = false) {
  * @param {string} avatarId Avatar file name
  * @param {string} fileName Chat file name
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'avatarId' implicitly has an 'any' type.
 async function openRecentCharacterChat(avatarId, fileName) {
+    // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
     const characterId = characters.findIndex(x => x.avatar === avatarId);
     if (characterId === -1) {
         console.error(`Character not found for avatar ID: ${avatarId}`);
@@ -506,7 +534,7 @@ async function openRecentCharacterChat(avatarId, fileName) {
         await openCharacterChat(fileName);
     } catch (error) {
         console.error('Error opening recent chat:', error);
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.error(t`Failed to open recent chat. See console for details.`);
     }
 }
@@ -516,7 +544,9 @@ async function openRecentCharacterChat(avatarId, fileName) {
  * @param {string} groupId Group ID
  * @param {string} fileName Chat file name
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'groupId' implicitly has an 'any' type.
 async function openRecentGroupChat(groupId, fileName) {
+    // @ts-expect-error TS(7005) FIXME: Variable 'groups' implicitly has an 'any[]' type.
     const group = groups.find(x => x.id === groupId);
     if (!group) {
         console.error(`Group not found for ID: ${groupId}`);
@@ -535,7 +565,7 @@ async function openRecentGroupChat(groupId, fileName) {
         await openGroupChat(groupId, fileName);
     } catch (error) {
         console.error('Error opening recent group chat:', error);
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.error(t`Failed to open recent group chat. See console for details.`);
     }
 }
@@ -545,7 +575,9 @@ async function openRecentGroupChat(groupId, fileName) {
  * @param {string} avatarId Avatar file name
  * @param {string} fileName Chat file name
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'avatarId' implicitly has an 'any' type.
 async function renameRecentCharacterChat(avatarId, fileName) {
+    // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
     const characterId = characters.findIndex(x => x.avatar === avatarId);
     if (characterId === -1) {
         console.error(`Character not found for avatar ID: ${avatarId}`);
@@ -558,7 +590,7 @@ async function renameRecentCharacterChat(avatarId, fileName) {
             console.log('No new name provided, aborting');
             return;
         }
-        // @ts-expect-error TS(2345): Argument of type '{ characterId: string; oldFileNa... Remove this comment to see the full error message
+        // @ts-expect-error TS(2345) FIXME: Argument of type '{ characterId: string; oldFileNa... Remove this comment to see the full error message
         await renameGroupOrCharacterChat({
             characterId: String(characterId),
             oldFileName: fileName,
@@ -567,11 +599,11 @@ async function renameRecentCharacterChat(avatarId, fileName) {
         });
         await updateRemoteChatName(characterId, newName);
         await refreshWelcomeScreen();
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.success(t`Chat renamed.`);
     } catch (error) {
         console.error('Error renaming recent character chat:', error);
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.error(t`Failed to rename recent chat. See console for details.`);
     }
 }
@@ -581,7 +613,9 @@ async function renameRecentCharacterChat(avatarId, fileName) {
  * @param {string} groupId Group ID
  * @param {string} fileName Chat file name
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'groupId' implicitly has an 'any' type.
 async function renameRecentGroupChat(groupId, fileName) {
+    // @ts-expect-error TS(7005) FIXME: Variable 'groups' implicitly has an 'any[]' type.
     const group = groups.find(x => x.id === groupId);
     if (!group) {
         console.error(`Group not found for ID: ${groupId}`);
@@ -594,7 +628,7 @@ async function renameRecentGroupChat(groupId, fileName) {
             console.log('No new name provided, aborting');
             return;
         }
-        // @ts-expect-error TS(2345): Argument of type '{ groupId: string; oldFileName: ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2345) FIXME: Argument of type '{ groupId: string; oldFileName: ... Remove this comment to see the full error message
         await renameGroupOrCharacterChat({
             groupId: String(groupId),
             oldFileName: fileName,
@@ -602,11 +636,11 @@ async function renameRecentGroupChat(groupId, fileName) {
             loader: false,
         });
         await refreshWelcomeScreen();
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.success(t`Group chat renamed.`);
     } catch (error) {
         console.error('Error renaming recent group chat:', error);
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.error(t`Failed to rename recent group chat. See console for details.`);
     }
 }
@@ -616,7 +650,9 @@ async function renameRecentGroupChat(groupId, fileName) {
  * @param {string} avatarId Avatar file name
  * @param {string} fileName Chat file name
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'avatarId' implicitly has an 'any' type.
 async function deleteRecentCharacterChat(avatarId, fileName) {
+    // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
     const characterId = characters.findIndex(x => x.avatar === avatarId);
     if (characterId === -1) {
         console.error(`Character not found for avatar ID: ${avatarId}`);
@@ -630,11 +666,11 @@ async function deleteRecentCharacterChat(avatarId, fileName) {
         }
         await deleteCharacterChatByName(String(characterId), fileName);
         await refreshWelcomeScreen();
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.success(t`Chat deleted.`);
     } catch (error) {
         console.error('Error deleting recent character chat:', error);
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.error(t`Failed to delete recent chat. See console for details.`);
     }
 }
@@ -644,7 +680,9 @@ async function deleteRecentCharacterChat(avatarId, fileName) {
  * @param {string} groupId Group ID
  * @param {string} fileName Chat file name
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'groupId' implicitly has an 'any' type.
 async function deleteRecentGroupChat(groupId, fileName) {
+    // @ts-expect-error TS(7005) FIXME: Variable 'groups' implicitly has an 'any[]' type.
     const group = groups.find(x => x.id === groupId);
     if (!group) {
         console.error(`Group not found for ID: ${groupId}`);
@@ -658,11 +696,11 @@ async function deleteRecentGroupChat(groupId, fileName) {
         }
         await deleteGroupChatByName(groupId, fileName);
         await refreshWelcomeScreen();
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.success(t`Group chat deleted.`);
     } catch (error) {
         console.error('Error deleting recent group chat:', error);
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.error(t`Failed to delete recent group chat. See console for details.`);
     }
 }
@@ -693,7 +731,9 @@ async function refreshWelcomeScreen({ flashChat = null } = {}) {
             const file = el.getAttribute('data-file');
             const group = el.getAttribute('data-group');
             const avatar = el.getAttribute('data-avatar');
+            // @ts-expect-error TS(2339) FIXME: Property 'chat_name' does not exist on type 'never... Remove this comment to see the full error message
             return file === flashChat.chat_name &&
+                // @ts-expect-error TS(2339) FIXME: Property 'is_group' does not exist on type 'never'... Remove this comment to see the full error message
                 ((flashChat.is_group && group === flashChat.group) || (!flashChat.is_group && avatar === flashChat.avatar));
         });
         if (chatToFlash instanceof HTMLElement) {
@@ -741,10 +781,12 @@ async function openRecentChatsSettingsPopup() {
         step: 1,
     };
 
+    // @ts-expect-error TS(2345) FIXME: Argument of type 'null' is not assignable to param... Remove this comment to see the full error message
     await callGenericPopup(t`Recent Chats Settings`, POPUP_TYPE.CONFIRM, null, {
         okButton: t`Save`,
         cancelButton: t`Cancel`,
         customInputs: [maxRecentChatsInput, collapsedRecentChatsInput],
+        // @ts-expect-error TS(7006) FIXME: Parameter 'popup' implicitly has an 'any' type.
         onClose: (popup) => {
             if (!popup.result) {
                 return;
@@ -805,6 +847,7 @@ async function getRecentChats() {
     }
 
     const dataWithEntities = data
+        // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
         .map(chat => ({ chat, character: characters.find(x => x.avatar === chat.avatar), group: groups.find(x => x.id === chat.group) }))
         .filter(t => t.character || t.group)
         .sort((a, b) => {
@@ -824,10 +867,12 @@ async function getRecentChats() {
 
     dataWithEntities.forEach(({ chat, character, group }, index) => {
         const chatTimestamp = timestampToMoment(chat.last_mes);
+        // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
         chat.char_name = character?.name || group?.name || '';
         chat.date_short = chatTimestamp.format('l');
         chat.date_long = chatTimestamp.format('LL LT');
         chat.chat_name = chat.file_name.replace('.jsonl', '');
+        // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
         chat.char_thumbnail = character ? getThumbnailUrl('avatar', character.avatar) : system_avatar;
         chat.is_group = !!group;
         chat.hidden = index >= settings.collapsedDisplayed;
@@ -846,8 +891,10 @@ async function getRecentChats() {
  * @param {boolean} [options.created] Whether the assistant was just created.
  * @returns {Promise<void>}
  */
+// @ts-expect-error TS(7023) FIXME: 'openPermanentAssistantChat' implicitly has return... Remove this comment to see the full error message
 export async function openPermanentAssistantChat({ tryCreate = true, created = false } = {}) {
     const avatar = getPermanentAssistantAvatar();
+    // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
     const characterId = characters.findIndex(x => x.avatar === avatar);
     if (characterId === -1) {
         if (!tryCreate) {
@@ -861,7 +908,7 @@ export async function openPermanentAssistantChat({ tryCreate = true, created = f
             return openPermanentAssistantChat({ tryCreate: false, created: true });
         } catch (error) {
             console.error('Error creating permanent assistant:', error);
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.error(t`Failed to create ${neutralCharacterName}. See console for details.`);
             return;
         }
@@ -875,7 +922,7 @@ export async function openPermanentAssistantChat({ tryCreate = true, created = f
         console.log(`Opened permanent assistant chat for ${neutralCharacterName}.`, getCurrentChatId());
     } catch (error) {
         console.error('Error opening permanent assistant chat:', error);
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.error(t`Failed to open permanent assistant chat. See console for details.`);
     }
 }
@@ -920,9 +967,10 @@ async function createPermanentAssistant() {
  */
 export async function openPermanentAssistantCard() {
     const avatar = getPermanentAssistantAvatar();
+    // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
     const characterId = characters.findIndex(x => x.avatar === avatar);
     if (characterId === -1) {
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.info(t`Assistant not found. Try sending a chat message.`);
         return;
     }
@@ -934,6 +982,7 @@ export async function openPermanentAssistantCard() {
  * Assigns a character as the assistant.
  * @param {string?} characterId Character ID
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'characterId' implicitly has an 'any' ty... Remove this comment to see the full error message
 export function assignCharacterAsAssistant(characterId) {
     if (characterId === undefined) {
         return;
@@ -945,22 +994,25 @@ export function assignCharacterAsAssistant(characterId) {
     }
 
     const currentAssistantAvatar = getPermanentAssistantAvatar();
+    // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
     if (currentAssistantAvatar === character.avatar) {
+        // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
         if (character.avatar === defaultAssistantAvatar) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.info(t`${character.name} is a system assistant. Choose another character.`);
             return;
         }
 
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.info(t`${character.name} is no longer your assistant.`);
         accountStorage.removeItem(assistantAvatarKey);
         return;
     }
 
+    // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
     accountStorage.setItem(assistantAvatarKey, character.avatar);
     printCharactersDebounced();
-    // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+    // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
     toastr.success(t`Set ${character.name} as your assistant.`);
 }
 
@@ -975,6 +1027,7 @@ export function initWelcomeScreen() {
         eventSource.makeFirst(event, openWelcomeScreen);
     }
 
+    // @ts-expect-error TS(7006) FIXME: Parameter 'target' implicitly has an 'any' type.
     eventSource.on(event_types.CHARACTER_MANAGEMENT_DROPDOWN, (target) => {
         if (target !== 'set_as_assistant') {
             return;
@@ -982,12 +1035,14 @@ export function initWelcomeScreen() {
         assignCharacterAsAssistant(this_chid);
     });
 
+    // @ts-expect-error TS(7006) FIXME: Parameter 'oldAvatar' implicitly has an 'any' type... Remove this comment to see the full error message
     eventSource.on(event_types.CHARACTER_RENAMED, (oldAvatar, newAvatar) => {
         if (oldAvatar === getPermanentAssistantAvatar()) {
             accountStorage.setItem(assistantAvatarKey, newAvatar);
         }
     });
 
+    // @ts-expect-error TS(7031) FIXME: Binding element 'avatarId' implicitly has an 'any'... Remove this comment to see the full error message
     eventSource.on(event_types.CHAT_RENAMED, async ({ avatarId, groupId, oldFileName, newFileName }) => {
         PinnedChatsManager.rename({ avatar: avatarId, group: groupId, file_name: oldFileName }, newFileName);
     });

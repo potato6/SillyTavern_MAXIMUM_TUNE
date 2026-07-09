@@ -3,14 +3,17 @@ import { updateSecretDisplay } from './secrets.js';
 
 const storageKey = 'language';
 const overrideLanguage = localStorage.getItem(storageKey);
-// @ts-expect-error TS(2339): Property 'userLanguage' does not exist on type 'Na... Remove this comment to see the full error message
+// @ts-expect-error TS(2339) FIXME: Property 'userLanguage' does not exist on type 'Na... Remove this comment to see the full error message
 const localeFile = String(overrideLanguage || navigator.language || navigator.userLanguage || 'en').toLowerCase();
+// @ts-expect-error TS(7034) FIXME: Variable 'langs' implicitly has type 'any' in some... Remove this comment to see the full error message
 let langs;
 // Don't change to let/const! It will break module loading.
  
+// @ts-expect-error TS(7034) FIXME: Variable 'localeData' implicitly has type 'any' in... Remove this comment to see the full error message
 let localeData;
 
 /** @type {Set<string>|null} Array of translations keys if they should be tracked - if not tracked then null */
+// @ts-expect-error TS(7034) FIXME: Variable 'trackMissingDynamicTranslate' implicitly... Remove this comment to see the full error message
 let trackMissingDynamicTranslate = null;
 
 export const getCurrentLocale = () => localeFile;
@@ -20,7 +23,9 @@ export const getCurrentLocale = () => localeFile;
  * @param {string} localeId Locale ID (e.g. 'fr-fr' or 'zh-cn')
  * @param {Record<string, string>} data Localization data to add
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'localeId' implicitly has an 'any' type.
 export function addLocaleData(localeId, data) {
+    // @ts-expect-error TS(7005) FIXME: Variable 'localeData' implicitly has an 'any' type... Remove this comment to see the full error message
     if (!localeData) {
         console.warn('Localization data not loaded yet. Additional data will not be added.');
         return;
@@ -33,7 +38,9 @@ export function addLocaleData(localeId, data) {
 
     for (const [key, value] of Object.entries(data)) {
         // Overrides for default locale data are not allowed
+        // @ts-expect-error TS(7005) FIXME: Variable 'localeData' implicitly has an 'any' type... Remove this comment to see the full error message
         if (!Object.hasOwn(localeData, key)) {
+            // @ts-expect-error TS(7005) FIXME: Variable 'localeData' implicitly has an 'any' type... Remove this comment to see the full error message
             localeData[key] = value;
         }
     }
@@ -77,12 +84,14 @@ const observer = new MutationObserver(mutations => {
  * @param  {...any} values - Values for placeholders in the template string
  * @returns {string} Translated and formatted string
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'strings' implicitly has an 'any' type.
 export function t(strings, ...values) {
+    // @ts-expect-error TS(7006) FIXME: Parameter 'result' implicitly has an 'any' type.
     const str = strings.reduce((result, string, i) => result + string + (values[i] !== undefined ? `\${${i}}` : ''), '');
     const translatedStr = translate(str);
 
     // Replace indexed placeholders with actual values
-    // @ts-expect-error TS(6133): 'match' is declared but its value is never read.
+    // @ts-expect-error TS(7006) FIXME: Parameter 'match' implicitly has an 'any' type.
     return translatedStr.replace(/\$\{(\d+)\}/g, (match, index) => values[index]);
 }
 
@@ -97,15 +106,19 @@ export function t(strings, ...values) {
  * @param {string?} key - The key to use for translation. If not provided, text is used as the key.
  * @returns {string} - The translated text
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'text' implicitly has an 'any' type.
 export function translate(text, key = null) {
     const translationKey = key || text;
     if (translationKey === null || translationKey === undefined) {
         console.trace('WARN: No translation key provided');
         return '';
     }
+    // @ts-expect-error TS(7005) FIXME: Variable 'trackMissingDynamicTranslate' implicitly... Remove this comment to see the full error message
     if (trackMissingDynamicTranslate && localeData && !Object.hasOwn(localeData, translationKey)) {
+        // @ts-expect-error TS(7005) FIXME: Variable 'trackMissingDynamicTranslate' implicitly... Remove this comment to see the full error message
         trackMissingDynamicTranslate.add(translationKey);
     }
+    // @ts-expect-error TS(7005) FIXME: Variable 'localeData' implicitly has an 'any' type... Remove this comment to see the full error message
     return localeData?.[translationKey] || text;
 }
 
@@ -114,6 +127,7 @@ export function translate(text, key = null) {
  * @param {string} language Language code
  * @returns {Promise<Record<string, string>>} Locale data
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'language' implicitly has an 'any' type.
 async function getLocaleData(language) {
     const supportedLang = findLang(language);
     if (!supportedLang) {
@@ -135,7 +149,9 @@ async function getLocaleData(language) {
  * Gets a language object for the given language code.
  * @param {string} language Language code
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'language' implicitly has an 'any' type.
 function findLang(language) {
+    // @ts-expect-error TS(7005) FIXME: Variable 'langs' implicitly has an 'any' type.
     const supportedLang = langs.find(x => x.lang === language);
 
     const isEn = language.startsWith('en'); // includes 'en', and more specific locales like 'en-us', 'en-au', etc
@@ -149,16 +165,19 @@ function findLang(language) {
  * Translates a given element based on its data-i18n attribute.
  * @param {Element} element The element to translate
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'element' implicitly has an 'any' type.
 function translateElement(element) {
     const keys = element.getAttribute('data-i18n').split(';'); // Multi-key entries are ; delimited
     for (const key of keys) {
         const attributeMatch = key.match(/\[(\S+)\](.+)/); // [attribute]key
         if (attributeMatch) { // attribute-tagged key
+            // @ts-expect-error TS(7005) FIXME: Variable 'localeData' implicitly has an 'any' type... Remove this comment to see the full error message
             const localizedValue = localeData?.[attributeMatch[2]];
             if (localizedValue || localizedValue === '') {
                 element.setAttribute(attributeMatch[1], localizedValue);
             }
         } else { // No attribute tag, treat as 'text'
+            // @ts-expect-error TS(7005) FIXME: Variable 'localeData' implicitly has an 'any' type... Remove this comment to see the full error message
             const localizedValue = localeData?.[key];
             if (localizedValue || localizedValue === '') {
                 element.textContent = localizedValue;
@@ -184,27 +203,35 @@ async function getMissingTranslations() {
     /** @type {Array<{key: string, language: string, value: string}>} */
     const missingData = [];
 
+    // @ts-expect-error TS(7005) FIXME: Variable 'trackMissingDynamicTranslate' implicitly... Remove this comment to see the full error message
     if (trackMissingDynamicTranslate) {
+        // @ts-expect-error TS(7005) FIXME: Variable 'trackMissingDynamicTranslate' implicitly... Remove this comment to see the full error message
         missingData.push(...Array.from(trackMissingDynamicTranslate).map(key => ({ key, language: localeFile, value: key })));
     }
 
     // Determine locales to search for untranslated strings
+    // @ts-expect-error TS(7005) FIXME: Variable 'langs' implicitly has an 'any' type.
     const langsToProcess = isSupportedNonEnglish() ? [findLang(localeFile)] : langs;
 
     for (const language of langsToProcess) {
         const localeData = await getLocaleData(language.lang);
         document.querySelectorAll('[data-i18n]').forEach(function (el) {
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             const keys = el.getAttribute('data-i18n').split(';'); // Multi-key entries are ; delimited
             for (const key of keys) {
                 const attributeMatch = key.match(/\[(\S+)\](.+)/); // [attribute]key
                 if (attributeMatch) { // attribute-tagged key
+                    // @ts-expect-error TS(2538) FIXME: Type 'undefined' cannot be used as an index type.
                     const localizedValue = localeData?.[attributeMatch[2]];
                     if (!localizedValue) {
+                        // @ts-expect-error TS(2345) FIXME: Argument of type 'string | undefined' is not assig... Remove this comment to see the full error message
                         missingData.push({ key, language: language.lang, value: String(el.getAttribute(attributeMatch[1])) });
                     }
                 } else { // No attribute tag, treat as 'text'
+                    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                     const localizedValue = localeData?.[key];
                     if (!localizedValue) {
+                        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
                         missingData.push({ key, language: language.lang, value: el.textContent.trim() });
                     }
                 }
@@ -213,14 +240,17 @@ async function getMissingTranslations() {
     }
 
     // Remove duplicates
+    // @ts-expect-error TS(7034) FIXME: Variable 'uniqueMissingData' implicitly has type '... Remove this comment to see the full error message
     const uniqueMissingData = [];
     for (const { key, language, value } of missingData) {
+        // @ts-expect-error TS(7005) FIXME: Variable 'uniqueMissingData' implicitly has an 'an... Remove this comment to see the full error message
         if (!uniqueMissingData.some(x => x.key === key && x.language === language && x.value === value)) {
             uniqueMissingData.push({ key, language, value });
         }
     }
 
     // Sort by language, then key
+    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
     uniqueMissingData.sort((a, b) => a.language.localeCompare(b.language) || a.key.localeCompare(b.key));
 
     // Map to { language: { key: value } }
@@ -231,13 +261,15 @@ async function getMissingTranslations() {
     console.log(`Full map of missing data (${Object.keys(missingDataMap).length}):`);
     console.log(missingDataMap);
 
+    // @ts-expect-error TS(7005) FIXME: Variable 'trackMissingDynamicTranslate' implicitly... Remove this comment to see the full error message
     if (trackMissingDynamicTranslate) {
+        // @ts-expect-error TS(7005) FIXME: Variable 'trackMissingDynamicTranslate' implicitly... Remove this comment to see the full error message
         const trackMissingDynamicTranslateMap = Object.fromEntries(Array.from(trackMissingDynamicTranslate).map(key => [key, key]));
         console.log(`Dynamic translations missing (${Object.keys(trackMissingDynamicTranslateMap).length}):`);
         console.log(trackMissingDynamicTranslateMap);
     }
 
-    // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+    // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
     toastr.success(`Found ${uniqueMissingData.length} missing translations. See browser console for details.`);
 }
 
@@ -247,6 +279,7 @@ async function getMissingTranslations() {
  * @returns {Document|string} Translated root, in the same format as the input (Document or HTML string)
  */
 export function applyLocale(root = document) {
+    // @ts-expect-error TS(7005) FIXME: Variable 'localeData' implicitly has an 'any' type... Remove this comment to see the full error message
     if (!localeData || Object.keys(localeData).length === 0) {
         return root;
     }
@@ -267,6 +300,7 @@ export function applyLocale(root = document) {
  */
 function addLanguagesToDropdown() {
     const uiLanguageSelects = document.querySelectorAll('#ui_language_select, #onboarding_ui_language_select');
+    // @ts-expect-error TS(7005) FIXME: Variable 'langs' implicitly has an 'any' type.
     for (const langObj of langs) {
         for (const select of uiLanguageSelects) {
             const option = document.createElement('option');
@@ -279,6 +313,7 @@ function addLanguagesToDropdown() {
     const selectedLanguage = localStorage.getItem(storageKey);
     if (selectedLanguage) {
         for (const select of uiLanguageSelects) {
+            // @ts-expect-error TS(2339) FIXME: Property 'value' does not exist on type 'Element'.
             select.value = selectedLanguage;
         }
     }
@@ -297,6 +332,7 @@ export async function initLocales() {
 
     for (const select of document.querySelectorAll('#ui_language_select, #onboarding_ui_language_select')) {
         select.addEventListener('change', async function () {
+            // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
             const language = String(this.value);
 
             if (language) {
@@ -333,15 +369,15 @@ export async function initLocales() {
             localStorage.setItem('trackDynamicTranslate', isTracking ? 'true' : 'false');
             if (isTracking && isSupportedNonEnglish()) {
                 trackMissingDynamicTranslate = new Set();
-                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                 toastr.success('Dynamic translation tracking enabled.');
             } else if (isTracking) {
                 trackMissingDynamicTranslate = null;
-                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                 toastr.warning('Dynamic translation tracking enabled, but will not be tracked with locale English.');
             } else {
                 trackMissingDynamicTranslate = null;
-                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                 toastr.info('Dynamic translation tracking disabled.');
             }
         });

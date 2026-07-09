@@ -67,6 +67,7 @@ const elementAutoCompleteMap = new WeakMap();
  * @param {MACRO_AUTOCOMPLETE_MODE} [options.autocompleteMode] - The autocomplete mode.
  * @returns {boolean}
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'text' implicitly has an 'any' type.
 function shouldActivateMacroAutocomplete(text, cursorPos, { isForced = false, autocompleteMode = MACRO_AUTOCOMPLETE_MODE.DEFAULT } = {}) {
     // If mode is 'hide', never show autocomplete
     if (autocompleteMode === MACRO_AUTOCOMPLETE_MODE.HIDE) {
@@ -114,10 +115,12 @@ function shouldActivateMacroAutocomplete(text, cursorPos, { isForced = false, au
  * @param {MACRO_AUTOCOMPLETE_STYLE} [options.autocompleteStyle] - The autocomplete style.
  * @returns {AutoComplete} The autocomplete instance.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'textarea' implicitly has an 'any' type.
 export function setMacroAutoComplete(textarea, { autocompleteMode = MACRO_AUTOCOMPLETE_MODE.DEFAULT, autocompleteStyle = MACRO_AUTOCOMPLETE_STYLE.SMALL } = {}) {
     const ac = new AutoComplete(
         textarea,
         () => shouldActivateMacroAutocomplete(ac.text, textarea.selectionStart, { isForced: ac.isShowForced, autocompleteMode }),
+        // @ts-expect-error TS(7006) FIXME: Parameter 'text' implicitly has an 'any' type.
         (text, index) => getMacroAutoCompleteAt(text, index, { isForced: ac.isShowForced }),
         true, // isFloating - always use floating mode for free text macro autocomplete
     );
@@ -135,6 +138,7 @@ export function setMacroAutoComplete(textarea, { autocompleteMode = MACRO_AUTOCO
  * @param {Element} element - The element to check.
  * @returns {MACRO_AUTOCOMPLETE_MODE} The mode ('default', 'always', 'hide').
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'element' implicitly has an 'any' type.
 function getAutocompleteMode(element) {
     if (!element.hasAttribute(MACRO_AUTOCOMPLETE_MODE_ATTRIBUTE)) {
         return MACRO_AUTOCOMPLETE_MODE.DEFAULT;
@@ -151,6 +155,7 @@ function getAutocompleteMode(element) {
  * @param {Element} element - The element to check.
  * @returns {MACRO_AUTOCOMPLETE_STYLE} The style ('expanded', 'small').
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'element' implicitly has an 'any' type.
 function getAutocompleteStyle(element) {
     if (!element.hasAttribute(MACRO_AUTOCOMPLETE_STYLE_ATTRIBUTE)) {
         return MACRO_AUTOCOMPLETE_STYLE.SMALL; // Default for macro autocomplete is small
@@ -167,6 +172,7 @@ function getAutocompleteStyle(element) {
  * @param {HTMLTextAreaElement|HTMLInputElement} element - The element to initialize.
  * @returns {AutoComplete|null} The autocomplete instance, or null if already initialized.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'element' implicitly has an 'any' type.
 function initializeElement(element) {
     if (initializedElements.has(element)) {
         return null;
@@ -188,6 +194,7 @@ function initializeElement(element) {
  * @param {Element} element - The element to check.
  * @returns {boolean}
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'element' implicitly has an 'any' type.
 function hasMacroAttribute(element) {
     if (!element.hasAttribute(MACRO_AUTOCOMPLETE_ATTRIBUTE)) {
         return false;
@@ -201,6 +208,7 @@ function hasMacroAttribute(element) {
  * Handles node changes from MutationObserver - checks for macro autocomplete attribute.
  * @param {Node} node - The node to check.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'node' implicitly has an 'any' type.
 function handleNodeChange(node) {
     if (node.nodeType !== Node.ELEMENT_NODE || !(node instanceof Element)) {
         return;
@@ -283,6 +291,7 @@ export function initMacroAutoComplete() {
  * @param {string} elementId - The element ID (without #).
  * @returns {AutoComplete|null} The autocomplete instance, or null if element not found.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'elementId' implicitly has an 'any' type... Remove this comment to see the full error message
 export function enableMacroAutoCompleteById(elementId) {
     const element = /** @type {HTMLTextAreaElement|HTMLInputElement|null} */ (
         document.getElementById(elementId)

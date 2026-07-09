@@ -1,4 +1,5 @@
 import { sync as commandExistsSync } from 'command-exists';
+// @ts-expect-error TS(2792) FIXME: Cannot find module 'simple-git'. Did you mean to s... Remove this comment to see the full error message
 import simpleGit, { SimpleGit } from 'simple-git';
 
 /**

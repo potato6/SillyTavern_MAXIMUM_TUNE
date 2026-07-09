@@ -25,12 +25,14 @@ export function registerTimeMacros() {
         returns: 'A time string in the format HH:mm.',
         displayOverride: '{{time::[UTC±(offset)]}}',
         exampleUsage: ['{{time}}', '{{time::UTC+2}}', '{{time::UTC-7}}'],
+        // @ts-expect-error TS(7031) FIXME: Binding element 'offsetSpec' implicitly has an 'an... Remove this comment to see the full error message
         handler: ({ unnamedArgs: [offsetSpec] }) => {
             if (!offsetSpec) return moment().format('LT');
 
             const match = /^UTC([+-]\d+)$/.exec(offsetSpec);
             if (!match) return moment().format('LT');
 
+            // @ts-expect-error TS(2345) FIXME: Argument of type 'string | undefined' is not assig... Remove this comment to see the full error message
             const offset = Number.parseInt(match[1], 10);
             if (Number.isNaN(offset)) return moment().format('LT');
 
@@ -79,6 +81,7 @@ export function registerTimeMacros() {
         description: 'Formats the current date/time using the given moment.js format string.',
         returns: 'Formatted date/time string.',
         exampleUsage: ['{{datetimeformat::YYYY-MM-DD HH:mm:ss}}', '{{datetimeformat::LLLL}}'],
+        // @ts-expect-error TS(7031) FIXME: Binding element 'format' implicitly has an 'any' t... Remove this comment to see the full error message
         handler: ({ unnamedArgs: [format] }) => moment().format(format),
     });
 
@@ -111,6 +114,7 @@ export function registerTimeMacros() {
         returns: 'Human-readable difference between two times.',
         displayOverride: '{{timeDiff::left::right}}', // Shorten this, otherwise it's too long. Full dates don't really help for understanding the macro.
         exampleUsage: ['{{ timeDiff :: 2023-01-01 12:00:00 :: 2023-01-01 15:00:00 }}'],
+        // @ts-expect-error TS(7031) FIXME: Binding element 'left' implicitly has an 'any' typ... Remove this comment to see the full error message
         handler: ({ unnamedArgs: [left, right] }) => {
             const diff = moment.duration(moment(left).diff(moment(right)));
             return diff.humanize(true);
@@ -131,10 +135,12 @@ function getTimeSinceLastMessage() {
         for (let i = chat.length - 1; i >= 0; i--) {
             const message = chat[i];
 
+            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             if (message.is_system) {
                 continue;
             }
 
+            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             if (message.is_user && takeNext) {
                 lastMessage = message;
                 break;
@@ -143,7 +149,9 @@ function getTimeSinceLastMessage() {
             takeNext = true;
         }
 
+        // @ts-expect-error TS(2339) FIXME: Property 'send_date' does not exist on type 'never... Remove this comment to see the full error message
         if (lastMessage?.send_date) {
+            // @ts-expect-error TS(2339) FIXME: Property 'send_date' does not exist on type 'never... Remove this comment to see the full error message
             const lastMessageDate = timestampToMoment(lastMessage.send_date);
             const duration = moment.duration(now.diff(lastMessageDate));
             return duration.humanize();

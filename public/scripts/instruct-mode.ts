@@ -1,6 +1,7 @@
 'use strict';
 
 import { extension_prompt_types, name1, name2, online_status, saveSettingsDebounced, substituteParams } from '../script.js';
+// @ts-expect-error TS(7034) FIXME: Variable 'selected_group' implicitly has type 'any... Remove this comment to see the full error message
 import { selected_group } from './group-chats.js';
 import { parseExampleIntoIndividual } from './openai.js';
 import {
@@ -52,6 +53,7 @@ const controls = [
  * @param {object} settings Instruct mode settings.
  * @returns {void}
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'settings' implicitly has an 'any' type.
 function migrateInstructModeSettings(settings) {
     // Separator sequence => Output suffix
     if (settings.separator_sequence !== undefined) {
@@ -86,6 +88,7 @@ function migrateInstructModeSettings(settings) {
 
     for (const key in defaults) {
         if (settings[key] === undefined) {
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             settings[key] = defaults[key];
         }
     }
@@ -108,6 +111,7 @@ function migrateInstructModeSettings(settings) {
  * Loads instruct mode settings from the given data object.
  * @param {object} data Settings data object.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
 export async function loadInstructMode(data) {
     if (data.instruct !== undefined) {
         instruct_presets = data.instruct;
@@ -125,16 +129,21 @@ export async function loadInstructMode(data) {
         if (!element) return;
 
         if (control.isCheckbox) {
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             if (element instanceof HTMLInputElement) element.checked = power_user.instruct[control.property];
         } else if (element instanceof HTMLSelectElement) {
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             const value = power_user.instruct[control.property];
             element.value = value;
+            // @ts-expect-error TS(2339) FIXME: Property 'checked' does not exist on type 'HTMLSel... Remove this comment to see the full error message
             if (element.matches(`[value="${value}"]`)) element.checked = true;
         } else {
+            // @ts-expect-error TS(2339) FIXME: Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
             element.value = power_user.instruct[control.property];
         }
 
         element.addEventListener('input', async function () {
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             power_user.instruct[control.property] = control.isCheckbox ? !!this.checked : this.value;
             if (!CSS.supports('field-sizing', 'content') && this instanceof HTMLTextAreaElement) {
                 await resetScrollHeight(this);
@@ -148,6 +157,7 @@ export async function loadInstructMode(data) {
     });
 
     instruct_presets.forEach((preset) => {
+        // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
         const name = preset.name;
         const option = document.createElement('option');
         option.value = name;
@@ -161,6 +171,7 @@ export async function loadInstructMode(data) {
  * Updates the bind model template state based on the current model, instruct and context preset.
  */
 export function updateBindModelTemplatesState() {
+    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     const bindModelTemplates = power_user.model_templates_mappings[online_status] ?? power_user.model_templates_mappings[power_user.chat_template_hash];
     const bindingsMatch = (bindModelTemplates && power_user.context.preset === bindModelTemplates.context && (!power_user.instruct.enabled || power_user.instruct.preset === bindModelTemplates.instruct)) ?? false;
     const bmt = document.getElementById('bind_model_templates');
@@ -178,7 +189,9 @@ export function updateBindModelTemplatesState() {
  * @param {boolean} [options.quiet] Suppress toast messages.
  * @param {boolean} [options.isAuto] Is auto-select.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'preset' implicitly has an 'any' type.
 export function selectContextPreset(preset, { quiet = false, isAuto = false } = {}) {
+    // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
     const presetExists = context_presets.some(x => x.name === preset);
     if (!presetExists) {
         console.warn(`Context template "${preset}" not found`);
@@ -192,7 +205,7 @@ export function selectContextPreset(preset, { quiet = false, isAuto = false } = 
             cp.value = preset;
             cp.dispatchEvent(new Event('change'));
         }
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         if (!quiet) toastr.info(`Context Template: "${preset}" ${isAuto ? 'auto-' : ''}selected`);
     }
 
@@ -208,7 +221,9 @@ export function selectContextPreset(preset, { quiet = false, isAuto = false } = 
  * @param {boolean} [options.quiet] Suppress toast messages.
  * @param {boolean} [options.isAuto] Is auto-select.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'preset' implicitly has an 'any' type.
 export function selectInstructPreset(preset, { quiet = false, isAuto = false } = {}) {
+    // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
     const presetExists = instruct_presets.some(x => x.name === preset);
     if (!presetExists) {
         console.warn(`Instruct template "${preset}" not found`);
@@ -222,7 +237,7 @@ export function selectInstructPreset(preset, { quiet = false, isAuto = false } =
             ip.value = preset;
             ip.dispatchEvent(new Event('change'));
         }
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         if (!quiet) toastr.info(`Instruct Template: "${preset}" ${isAuto ? 'auto-' : ''}selected`);
     }
 
@@ -234,7 +249,7 @@ export function selectInstructPreset(preset, { quiet = false, isAuto = false } =
             ie.checked = true;
             ie.dispatchEvent(new Event('change'));
         }
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         if (!quiet) toastr.info('Instruct Mode enabled');
     }
 
@@ -249,7 +264,9 @@ export function selectInstructPreset(preset, { quiet = false, isAuto = false } =
  * @param {string} modelId Model name reported by the API.
  * @returns {boolean} True if instruct preset was activated by model id, false otherwise.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'modelId' implicitly has an 'any' type.
 export function autoSelectInstructPreset(modelId) {
+    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     const modelTemplatesMap = power_user.model_templates_mappings[modelId];
 
     if (modelTemplatesMap) {
@@ -275,18 +292,22 @@ export function autoSelectInstructPreset(modelId) {
 
     for (const preset of instruct_presets) {
         // If activation regex is set, check if it matches the model id
+        // @ts-expect-error TS(2339) FIXME: Property 'activation_regex' does not exist on type... Remove this comment to see the full error message
         if (preset.activation_regex) {
             try {
+                // @ts-expect-error TS(2339) FIXME: Property 'activation_regex' does not exist on type... Remove this comment to see the full error message
                 const regex = regexFromString(preset.activation_regex);
 
                 // Stop on first match so it won't cycle back and forth between presets if multiple regexes match
                 if (regex instanceof RegExp && regex.test(modelId)) {
+                    // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
                     selectInstructPreset(preset.name, { isAuto: true });
                     foundMatch = true;
                     break;
                 }
             } catch {
                 // If regex is invalid, ignore it
+                // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
                 console.warn(`Invalid instruct activation regex in preset "${preset.name}"`);
             }
         }
@@ -296,7 +317,9 @@ export function autoSelectInstructPreset(modelId) {
     if (!foundMatch && power_user.instruct.bind_to_context) {
         for (const instruct_preset of instruct_presets) {
             // If instruct preset matches the context template
+            // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
             if (instruct_preset.name === power_user.context.preset) {
+                // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
                 selectInstructPreset(instruct_preset.name, { isAuto: true });
                 foundMatch = true;
                 break;
@@ -322,9 +345,11 @@ export function getInstructStoppingSequences({ customInstruct = null, useStopStr
      * @param {string} sequence Sequence string.
      * @returns {void}
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'sequence' implicitly has an 'any' type.
     function addInstructSequence(sequence) {
         // Cohee: oobabooga's textgen always appends newline before the sequence as a stopping string
         // But it's a problem for Metharme which doesn't use newlines to separate them.
+        // @ts-expect-error TS(7006) FIXME: Parameter 's' implicitly has an 'any' type.
         const wrap = (s) => instruct.wrap ? '\n' + s : s;
         // Sequence must be a non-empty string
         if (typeof sequence === 'string' && sequence.length > 0) {
@@ -400,10 +425,12 @@ export const force_output_sequence = {
  * @param {InstructSettings} customInstruct Custom instruct mode settings.
  * @returns {string} Formatted instruct mode chat message.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
 export function formatInstructModeChat(name, mes, isUser, isNarrator, forceAvatar, name1, name2, forceOutputSequence, customInstruct = null) {
     const instruct = structuredClone(customInstruct ?? power_user.instruct);
     let includeNames = isNarrator ? false : instruct.names_behavior === names_behavior_types.ALWAYS;
 
+    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
     if (!isNarrator && instruct.names_behavior === names_behavior_types.FORCE && ((selected_group && name !== name1) || (forceAvatar && name !== name1))) {
         includeNames = true;
     }
@@ -485,6 +512,7 @@ export function formatInstructModeChat(name, mes, isUser, isNarrator, forceAvata
  * @returns {string} Formatted instruct mode system prompt.
  * @deprecated Currently doesn't do anything useful.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'systemPrompt' implicitly has an 'any' t... Remove this comment to see the full error message
 export function formatInstructModeSystemPrompt(systemPrompt, _customInstruct = null) {
     return systemPrompt || '';
 }
@@ -497,6 +525,7 @@ export function formatInstructModeSystemPrompt(systemPrompt, _customInstruct = n
  * @param {InstructSettings} [params.customInstruct] Custom instruct mode settings.
  * @returns {string} Formatted instruct mode story string.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'storyString' implicitly has an 'any' ty... Remove this comment to see the full error message
 export function formatInstructModeStoryString(storyString, { customContext = null, customInstruct = null } = {}) {
     if (!storyString) {
         return '';
@@ -530,15 +559,18 @@ export function formatInstructModeStoryString(storyString, { customContext = nul
  * @param {string} name2 Character name.
  * @returns {string[]} Formatted example messages string.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'mesExamplesArray' implicitly has an 'an... Remove this comment to see the full error message
 export function formatInstructModeExamples(mesExamplesArray, name1, name2) {
     const blockHeading = power_user.context.example_separator ? `${substituteParams(power_user.context.example_separator)}\n` : '';
 
-    // @ts-expect-error TS(2339): Property 'skip_examples' does not exist on type '{... Remove this comment to see the full error message
+    // @ts-expect-error TS(2339) FIXME: Property 'skip_examples' does not exist on type '{... Remove this comment to see the full error message
     if (power_user.instruct.skip_examples) {
+        // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
         return mesExamplesArray.map(x => x.replace(/<START>\n/i, blockHeading));
     }
 
     const includeNames = power_user.instruct.names_behavior === names_behavior_types.ALWAYS;
+    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
     const includeGroupNames = selected_group && [names_behavior_types.ALWAYS, names_behavior_types.FORCE].includes(power_user.instruct.names_behavior);
 
     let inputPrefix = power_user.instruct.input_sequence || '';
@@ -596,6 +628,7 @@ export function formatInstructModeExamples(mesExamplesArray, name1, name2) {
     }
 
     if (formattedExamples.length === 0) {
+        // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
         return mesExamplesArray.map(x => x.replace(/<START>\n/i, blockHeading));
     }
     return formattedExamples;
@@ -613,8 +646,10 @@ export function formatInstructModeExamples(mesExamplesArray, name1, name2) {
  * @param {InstructSettings} customInstruct Custom instruct settings.
  * @returns {string} Formatted instruct mode last prompt line.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
 export function formatInstructModePrompt(name, isImpersonate, promptBias, name1, name2, isQuiet, isQuietToLoud, customInstruct = null) {
     const instruct = structuredClone(customInstruct ?? power_user.instruct);
+    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
     const includeNames = name && (instruct.names_behavior === names_behavior_types.ALWAYS || (!!selected_group && instruct.names_behavior === names_behavior_types.FORCE)) && !(isQuiet && !isQuietToLoud);
 
     /**
@@ -680,10 +715,13 @@ export function formatInstructModePrompt(name, isImpersonate, promptBias, name1,
  * Select context template matching instruct preset.
  * @param {string} name Preset name.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
 function selectMatchingContextTemplate(name) {
     for (const context_preset of context_presets) {
         // If context template matches the instruct preset
+        // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
         if (context_preset.name === name) {
+            // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
             selectContextPreset(context_preset.name, { isAuto: true });
             break;
         }
@@ -696,6 +734,7 @@ function selectMatchingContextTemplate(name) {
  * values are functions, those functions will be called and their return values are used.
  * @returns {import('./macros.js').Macro[]} Macro objects.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'env' implicitly has an 'any' type.
 export function getInstructMacros(env) {
     /** @type {{ key: string,value: string, enabled: boolean }[]} */
     const instructMacros = [
@@ -812,6 +851,7 @@ export function getInstructMacros(env) {
 
 document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('instruct_system_same_as_user')?.addEventListener('input', function () {
+        // @ts-expect-error TS(2339) FIXME: Property 'checked' does not exist on type 'HTMLEle... Remove this comment to see the full error message
         const state = !!this.checked;
         if (state) {
             document.getElementById('instruct_system_sequence_block')?.classList.add('disabled');
@@ -852,7 +892,9 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     document.getElementById('instruct_presets')?.addEventListener('change', function () {
+        // @ts-expect-error TS(2339) FIXME: Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
         const name = String(this.value);
+        // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
         const preset = instruct_presets.find(x => x.name === name);
 
         if (!preset) {
@@ -864,21 +906,26 @@ document.addEventListener('DOMContentLoaded', () => {
         power_user.instruct.preset = String(name);
         controls.forEach(control => {
             if (preset[control.property] !== undefined) {
+                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 power_user.instruct[control.property] = preset[control.property];
                 const element = document.getElementById(control.id);
                 if (!element) return;
 
                 if (control.isCheckbox) {
+                    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                     if (element instanceof HTMLInputElement) element.checked = power_user.instruct[control.property];
                     element.dispatchEvent(new Event('input'));
                 } else if (element instanceof HTMLSelectElement) {
+                    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                     const value = power_user.instruct[control.property];
                     element.value = value;
                     if (element.matches(`[value="${value}"]`)) {
+                        // @ts-expect-error TS(2339) FIXME: Property 'checked' does not exist on type 'HTMLSel... Remove this comment to see the full error message
                         element.checked = true;
                         element.dispatchEvent(new Event('input'));
                     }
                 } else {
+                    // @ts-expect-error TS(2339) FIXME: Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
                     element.value = power_user.instruct[control.property];
                     element.dispatchEvent(new Event('input'));
                 }
@@ -895,7 +942,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!CSS.supports('field-sizing', 'content')) {
         for (const details of document.querySelectorAll('#InstructSequencesColumn details')) {
             details.addEventListener('toggle', function () {
+                // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
                 if (this.open) {
+                    // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
                     resetScrollHeight(this.querySelector('textarea'));
                 }
             });

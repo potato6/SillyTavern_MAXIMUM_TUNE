@@ -5,7 +5,7 @@
 
 import { MacroRegistry, MacroCategory } from './MacroRegistry.js';
 import { performFuzzySearch } from '../../power-user.js';
-// @ts-expect-error TS(2792): Cannot find module '/scripts/utils.js'. Did you me... Remove this comment to see the full error message
+// @ts-expect-error TS(2792) FIXME: Cannot find module '/scripts/utils.js'. Did you me... Remove this comment to see the full error message
 import { escapeRegex } from '/scripts/utils.js';
 
 /** @typedef {import('./MacroRegistry.js').MacroDefinition} MacroDefinition */
@@ -36,12 +36,15 @@ export class MacroBrowser {
     macrosByCategory = new Map();
 
     /** @type {HTMLElement} */
+    // @ts-expect-error TS(7008) FIXME: Member 'dom' implicitly has an 'any' type.
     dom;
 
     /** @type {HTMLInputElement} */
+    // @ts-expect-error TS(7008) FIXME: Member 'searchInput' implicitly has an 'any' type.
     searchInput;
 
     /** @type {HTMLElement} */
+    // @ts-expect-error TS(7008) FIXME: Member 'detailsPanel' implicitly has an 'any' type... Remove this comment to see the full error message
     detailsPanel;
 
     /** @type {Map<string, HTMLElement>} */
@@ -73,6 +76,7 @@ export class MacroBrowser {
      */
     #sortMacros() {
         for (const [, macros] of this.macrosByCategory) {
+            // @ts-expect-error TS(7006) FIXME: Parameter 'a' implicitly has an 'any' type.
             macros.sort((a, b) => a.name.localeCompare(b.name));
         }
     }
@@ -91,6 +95,7 @@ export class MacroBrowser {
      * @param {HTMLElement} parent
      * @returns {HTMLElement}
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'parent' implicitly has an 'any' type.
     renderInto(parent) {
         this.#loadMacros();
 
@@ -151,6 +156,7 @@ export class MacroBrowser {
      * Renders the macro list grouped by category.
      * @param {HTMLElement} listPanel
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'listPanel' implicitly has an 'any' type... Remove this comment to see the full error message
     #renderList(listPanel) {
         listPanel.innerHTML = '';
         this.itemMap.clear();
@@ -163,7 +169,6 @@ export class MacroBrowser {
             const categoryHeader = document.createElement('div');
             categoryHeader.classList.add('macro-category-header');
             categoryHeader.textContent = getCategoryConfig(category).label;
-            // @ts-expect-error TS(4111): Property 'category' comes from an index signature,... Remove this comment to see the full error message
             categoryHeader.dataset.category = category;
             listPanel.appendChild(categoryHeader);
 
@@ -182,8 +187,10 @@ export class MacroBrowser {
      * @param {MacroDefinition} macro
      * @param {HTMLElement} item
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'macro' implicitly has an 'any' type.
     #showDetails(macro, item) {
         // Clear previous selection
+        // @ts-expect-error TS(7006) FIXME: Parameter 'el' implicitly has an 'any' type.
         this.dom.querySelectorAll('.macro-item.selected').forEach(el => el.classList.remove('selected'));
         item.classList.add('selected');
 
@@ -196,11 +203,13 @@ export class MacroBrowser {
      * Handles search input using fuzzy search.
      * @param {string} query
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'query' implicitly has an 'any' type.
     #handleSearch(query) {
         query = query.trim();
 
         // Clear details on search
         this.detailsPanel.innerHTML = '<div class="macro-details-placeholder">Select a macro to view details</div>';
+        // @ts-expect-error TS(7006) FIXME: Parameter 'el' implicitly has an 'any' type.
         this.dom.querySelectorAll('.macro-item.selected').forEach(el => el.classList.remove('selected'));
 
         // If empty query, show all
@@ -208,6 +217,7 @@ export class MacroBrowser {
             for (const item of this.itemMap.values()) {
                 item.classList.remove('isFiltered');
             }
+            // @ts-expect-error TS(7006) FIXME: Parameter 'h' implicitly has an 'any' type.
             this.dom.querySelectorAll('.macro-category-header').forEach(h => h.classList.remove('isFiltered'));
             return;
         }
@@ -217,12 +227,16 @@ export class MacroBrowser {
 
         // Build searchable data array from all macros
         const allMacros = MacroRegistry.getAllMacros();
+        // @ts-expect-error TS(7006) FIXME: Parameter 'macro' implicitly has an 'any' type.
         const searchData = allMacros.map(macro => ({
             name: macro.name,
+            // @ts-expect-error TS(7006) FIXME: Parameter 'a' implicitly has an 'any' type.
             aliases: macro.aliases?.map(a => a.alias).join(' '),
             description: macro.description || '',
             category: getCategoryConfig(macro.category).label,
+            // @ts-expect-error TS(7006) FIXME: Parameter 'd' implicitly has an 'any' type.
             argNames: macro.unnamedArgDefs.map(d => d.name).join(' '),
+            // @ts-expect-error TS(7006) FIXME: Parameter 'd' implicitly has an 'any' type.
             argDescriptions: macro.unnamedArgDefs.map(d => d.description || '').join(' '),
         }));
 
@@ -237,6 +251,7 @@ export class MacroBrowser {
         ];
 
         const results = performFuzzySearch('macro-browser', searchData, keys, query);
+        // @ts-expect-error TS(7006) FIXME: Parameter 'r' implicitly has an 'any' type.
         const matchedNames = new Set(results.map(r => r.item.name));
 
         // Filter items based on fuzzy results
@@ -245,9 +260,9 @@ export class MacroBrowser {
         }
 
         // Hide empty category headers
+        // @ts-expect-error TS(7006) FIXME: Parameter 'header' implicitly has an 'any' type.
         this.dom.querySelectorAll('.macro-category-header').forEach(header => {
             if (!(header instanceof HTMLElement)) return;
-            // @ts-expect-error TS(4111): Property 'category' comes from an index signature,... Remove this comment to see the full error message
             const category = header.dataset.category;
             const hasVisible = Array.from(this.itemMap.values())
                 .filter(item => item.dataset.macroName)
@@ -289,7 +304,7 @@ export class MacroBrowser {
      * Handles keyboard shortcuts.
      * @param {KeyboardEvent} evt
      */
-    // @ts-expect-error TS(6133): '#handleKeyDown' is declared but its value is neve... Remove this comment to see the full error message
+    // @ts-expect-error TS(7006) FIXME: Parameter 'evt' implicitly has an 'any' type.
     #handleKeyDown(evt) {
         if (!evt.shiftKey && !evt.altKey && evt.ctrlKey && evt.key.toLowerCase() === 'f') {
             if (!this.dom.closest('body')) return;
@@ -318,7 +333,9 @@ export function getMacrosHelp() {
  * @param {string} category
  * @returns {{ label: string, order: number }}
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'category' implicitly has an 'any' type.
 function getCategoryConfig(category) {
+    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     return CATEGORY_CONFIG[category] ?? { label: category, order: 100 };
 }
 
@@ -329,6 +346,7 @@ function getCategoryConfig(category) {
  * @param {MacroDefinition} macro
  * @returns {string}
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'macro' implicitly has an 'any' type.
 export function formatMacroSignature(macro) {
     // Use displayOverride if provided
     if (macro.displayOverride) {
@@ -373,6 +391,7 @@ export function formatMacroSignature(macro) {
  * @param {MacroDefinition} macro
  * @returns {HTMLElement}
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'macro' implicitly has an 'any' type.
 export function createSourceIndicator(macro) {
     const src = document.createElement('span');
     src.classList.add('macro-source', 'fa-solid');
@@ -399,6 +418,7 @@ export function createSourceIndicator(macro) {
  * @param {MacroDefinition} macro
  * @returns {HTMLElement|null}
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'macro' implicitly has an 'any' type.
 export function createAliasIndicator(macro) {
     if (!macro.aliasOf) return null;
 
@@ -413,6 +433,7 @@ export function createAliasIndicator(macro) {
  * @param {MacroValueType|MacroValueType[]} type - Single type or array of accepted types.
  * @returns {HTMLElement}
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'type' implicitly has an 'any' type.
 export function createTypeBadge(type) {
     const badge = document.createElement('span');
     badge.classList.add('macro-arg-type');
@@ -433,11 +454,11 @@ export function createTypeBadge(type) {
  * @param {MacroDefinition} macro
  * @returns {HTMLElement}
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'macro' implicitly has an 'any' type.
 function renderMacroItem(macro) {
     const item = document.createElement('div');
     item.classList.add('macro-item');
     if (macro.aliasOf) item.classList.add('isAlias');
-    // @ts-expect-error TS(4111): Property 'macroName' comes from an index signature... Remove this comment to see the full error message
     item.dataset.macroName = macro.name;
 
     // Signature (fixed width, truncates if too long)
@@ -471,8 +492,9 @@ function renderMacroItem(macro) {
  * @param {boolean} [options.showCategory] - Whether to show category badge.
  * @returns {HTMLElement}
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'macro' implicitly has an 'any' type.
 export function renderMacroDetails(macro, options = {}) {
-    // @ts-expect-error TS(2339): Property 'currentArgIndex' does not exist on type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2339) FIXME: Property 'currentArgIndex' does not exist on type ... Remove this comment to see the full error message
     const { currentArgIndex = -1, showCategory = true } = options;
     const details = document.createElement('div');
     details.classList.add('macro-details');

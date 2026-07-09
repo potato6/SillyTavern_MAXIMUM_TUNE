@@ -3,15 +3,15 @@
 /** @typedef {import('chevrotain').ILexingError} ILexingError */
 /** @typedef {import('chevrotain').IRecognitionException} IRecognitionException */
 
-// @ts-expect-error TS(2792): Cannot find module '/scripts/i18n.js'. Did you mea... Remove this comment to see the full error message
+// @ts-expect-error TS(2792) FIXME: Cannot find module '/scripts/i18n.js'. Did you mea... Remove this comment to see the full error message
 import { t } from '/scripts/i18n.js';
-// @ts-expect-error TS(2792): Cannot find module '/scripts/popup.js'. Did you me... Remove this comment to see the full error message
+// @ts-expect-error TS(2792) FIXME: Cannot find module '/scripts/popup.js'. Did you me... Remove this comment to see the full error message
 import { Popup, POPUP_RESULT } from '/scripts/popup.js';
-// @ts-expect-error TS(2792): Cannot find module '/scripts/power-user.js'. Did y... Remove this comment to see the full error message
+// @ts-expect-error TS(2792) FIXME: Cannot find module '/scripts/power-user.js'. Did y... Remove this comment to see the full error message
 import { power_user } from '/scripts/power-user.js';
-// @ts-expect-error TS(2792): Cannot find module '/scripts/util/AccountStorage.j... Remove this comment to see the full error message
+// @ts-expect-error TS(2792) FIXME: Cannot find module '/scripts/util/AccountStorage.j... Remove this comment to see the full error message
 import { accountStorage } from '/scripts/util/AccountStorage.js';
-// @ts-expect-error TS(2792): Cannot find module '/scripts/util/SimpleMutex.js'.... Remove this comment to see the full error message
+// @ts-expect-error TS(2792) FIXME: Cannot find module '/scripts/util/SimpleMutex.js'.... Remove this comment to see the full error message
 import { SimpleMutex } from '/scripts/util/SimpleMutex.js';
 
 /**
@@ -66,7 +66,7 @@ async function onboardingExperimentalMacroEngineUnsafe(feature = null) {
         <p>${t`Would you like to enable it now?`}</p>`);
     if (result == POPUP_RESULT.AFFIRMATIVE) {
         power_user.experimental_macro_engine = true;
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#experimental_macro_engine').prop('checked', power_user.experimental_macro_engine).trigger('input');
     }
 
@@ -82,20 +82,21 @@ async function onboardingExperimentalMacroEngineUnsafe(feature = null) {
  * @param {MacroRuntimeErrorOptions} options
  * @returns {Error}
  */
+// @ts-expect-error TS(7031) FIXME: Binding element 'message' implicitly has an 'any' ... Remove this comment to see the full error message
 export function createMacroRuntimeError({ message, call, def, macroName }) {
     const inferredName = inferMacroName(call, def, macroName);
 
     const error = new Error(message);
     error.name = 'MacroRuntimeError';
-    // @ts-expect-error TS(2339): Property 'isMacroRuntimeError' does not exist on t... Remove this comment to see the full error message
+    // @ts-expect-error TS(2339) FIXME: Property 'isMacroRuntimeError' does not exist on t... Remove this comment to see the full error message
     error.isMacroRuntimeError = true;
-    // @ts-expect-error TS(2339): Property 'macroName' does not exist on type 'Error... Remove this comment to see the full error message
+    // @ts-expect-error TS(2339) FIXME: Property 'macroName' does not exist on type 'Error... Remove this comment to see the full error message
     error.macroName = inferredName;
-    // @ts-expect-error TS(2339): Property 'macroRange' does not exist on type 'Erro... Remove this comment to see the full error message
+    // @ts-expect-error TS(2339) FIXME: Property 'macroRange' does not exist on type 'Erro... Remove this comment to see the full error message
     error.macroRange = call && call.range ? call.range : null;
-    // @ts-expect-error TS(2339): Property 'macroCall' does not exist on type 'Error... Remove this comment to see the full error message
+    // @ts-expect-error TS(2339) FIXME: Property 'macroCall' does not exist on type 'Error... Remove this comment to see the full error message
     if (call) error.macroCall = call;
-    // @ts-expect-error TS(2339): Property 'macroDefinition' does not exist on type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2339) FIXME: Property 'macroDefinition' does not exist on type ... Remove this comment to see the full error message
     if (def) error.macroDefinition = def;
 
     return error;
@@ -107,6 +108,7 @@ export function createMacroRuntimeError({ message, call, def, macroName }) {
  * arguments), not bugs in macro definitions or the engine itself.
  * @param {MacroLogOptions} options
  */
+// @ts-expect-error TS(7031) FIXME: Binding element 'message' implicitly has an 'any' ... Remove this comment to see the full error message
 export function logMacroRuntimeWarning({ message, call, def, macroName, error }) {
     const payload = buildMacroPayload({ call, def, macroName, error });
     console.warn('[Macro] Warning:', message, payload);
@@ -117,6 +119,7 @@ export function logMacroRuntimeWarning({ message, call, def, macroName, error })
  * schema. These are surfaced as red errors in the console.
  * @param {MacroLogOptions} options
  */
+// @ts-expect-error TS(7031) FIXME: Binding element 'message' implicitly has an 'any' ... Remove this comment to see the full error message
 export function logMacroInternalError({ message, call, macroName, error }) {
     const payload = buildMacroPayload({ call, def: undefined, macroName, error });
     console.error('[Macro] Error:', message, payload);
@@ -126,8 +129,9 @@ export function logMacroInternalError({ message, call, macroName, error }) {
  * Logs a warning during macro registration.
  * @param {{ message: string, macroName?: string, error?: any }} options
  */
+// @ts-expect-error TS(7031) FIXME: Binding element 'message' implicitly has an 'any' ... Remove this comment to see the full error message
 export function logMacroRegisterWarning({ message, macroName, error = undefined }) {
-    // @ts-expect-error TS(2345): Argument of type '{ macroName: any; error: any; }'... Remove this comment to see the full error message
+    // @ts-expect-error TS(2345) FIXME: Argument of type '{ macroName: any; error: undefin... Remove this comment to see the full error message
     const payload = buildMacroPayload({ macroName, error });
     console.warn('[Macro] Warning:', message, payload);
 }
@@ -137,8 +141,9 @@ export function logMacroRegisterWarning({ message, macroName, error = undefined 
  * and the macro will not be available.
  * @param {{ message: string, macroName?: string, error?: any }} options
  */
+// @ts-expect-error TS(7031) FIXME: Binding element 'message' implicitly has an 'any' ... Remove this comment to see the full error message
 export function logMacroRegisterError({ message, macroName, error = undefined }) {
-    // @ts-expect-error TS(2345): Argument of type '{ macroName: any; error: any; }'... Remove this comment to see the full error message
+    // @ts-expect-error TS(2345) FIXME: Argument of type '{ macroName: any; error: undefin... Remove this comment to see the full error message
     const payload = buildMacroPayload({ macroName, error });
     console.error('[Macro] Registration Error:', message, payload);
 }
@@ -147,6 +152,7 @@ export function logMacroRegisterError({ message, macroName, error = undefined })
  * Logs a macro error with a consistent schema.
  * @param {{ message: string, error?: any }} options
  */
+// @ts-expect-error TS(7031) FIXME: Binding element 'message' implicitly has an 'any' ... Remove this comment to see the full error message
 export function logMacroGeneralError({ message, error }) {
     console.error('[Macro] Error:', message, error);
 }
@@ -156,12 +162,14 @@ export function logMacroGeneralError({ message, error }) {
  * human-readable payload.
  * @param {{ phase: 'lexing', input: string, errors: ILexingError[] }|{ phase: 'parsing', input: string, errors: IRecognitionException[] }} options
  */
+// @ts-expect-error TS(7031) FIXME: Binding element 'phase' implicitly has an 'any' ty... Remove this comment to see the full error message
 export function logMacroSyntaxWarning({ phase, input, errors }) {
     if (!errors || errors.length === 0) {
         return;
     }
 
     /** @type {{ message: string, line: number|null, column: number|null, length: number|null }[]} */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'err' implicitly has an 'any' type.
     const issues = errors.map((err) => {
         const hasOwnLine = typeof err.line === 'number';
         const hasOwnColumn = typeof err.column === 'number';
@@ -204,6 +212,7 @@ export function logMacroSyntaxWarning({ phase, input, errors }) {
  * Builds a structured payload for macro logging.
  * @param {MacroErrorContext & { error?: any }} ctx
  */
+// @ts-expect-error TS(7031) FIXME: Binding element 'call' implicitly has an 'any' typ... Remove this comment to see the full error message
 function buildMacroPayload({ call, def, macroName, error }) {
     const inferredName = inferMacroName(call, def, macroName);
 
@@ -212,15 +221,15 @@ function buildMacroPayload({ call, def, macroName, error }) {
         macroName: inferredName,
     };
 
-    // @ts-expect-error TS(2339): Property 'range' does not exist on type '{ macroNa... Remove this comment to see the full error message
+    // @ts-expect-error TS(2339) FIXME: Property 'range' does not exist on type '{ macroNa... Remove this comment to see the full error message
     if (call && call.range) payload.range = call.range;
-    // @ts-expect-error TS(2339): Property 'raw' does not exist on type '{ macroName... Remove this comment to see the full error message
+    // @ts-expect-error TS(2339) FIXME: Property 'raw' does not exist on type '{ macroName... Remove this comment to see the full error message
     if (call && typeof call.rawInner === 'string') payload.raw = call.rawInner;
-    // @ts-expect-error TS(2339): Property 'call' does not exist on type '{ macroNam... Remove this comment to see the full error message
+    // @ts-expect-error TS(2339) FIXME: Property 'call' does not exist on type '{ macroNam... Remove this comment to see the full error message
     if (call) payload.call = call;
-    // @ts-expect-error TS(2339): Property 'def' does not exist on type '{ macroName... Remove this comment to see the full error message
+    // @ts-expect-error TS(2339) FIXME: Property 'def' does not exist on type '{ macroName... Remove this comment to see the full error message
     if (def) payload.def = def;
-    // @ts-expect-error TS(2339): Property 'error' does not exist on type '{ macroNa... Remove this comment to see the full error message
+    // @ts-expect-error TS(2339) FIXME: Property 'error' does not exist on type '{ macroNa... Remove this comment to see the full error message
     if (error) payload.error = error;
 
     return payload;
@@ -233,6 +242,7 @@ function buildMacroPayload({ call, def, macroName, error }) {
  * @param {string} [explicit]
  * @returns {string}
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'call' implicitly has an 'any' type.
 function inferMacroName(call, def, explicit) {
     if (typeof explicit === 'string' && explicit.trim()) {
         return explicit.trim();

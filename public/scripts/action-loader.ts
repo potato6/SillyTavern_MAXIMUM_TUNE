@@ -61,7 +61,7 @@ function generateLoaderId() {
  */
 function hasBlockingLoaders() {
     for (const handle of activeHandles) {
-        // @ts-expect-error TS(2339): Property 'isBlocking' does not exist on type 'unkn... Remove this comment to see the full error message
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         if (handle.isBlocking && handle.isActive) {
             return true;
         }
@@ -167,17 +167,15 @@ export class ActionLoaderHandle {
      * @param {ActionLoaderToastMode} toastMode - Toast mode
      * @param {string} stopTooltip - Tooltip for stop button
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'message' implicitly has an 'any' type.
     #createToast(message, title, toastMode, stopTooltip) {
         const toastContent = document.createElement('div');
         toastContent.className = 'action-loader-toast';
 
         if (this.#slug) {
-            // @ts-expect-error TS(4111): Property 'slug' comes from an index signature, so ... Remove this comment to see the full error message
             toastContent.dataset.slug = this.#slug;
         }
-        // @ts-expect-error TS(4111): Property 'loaderId' comes from an index signature,... Remove this comment to see the full error message
         toastContent.dataset.loaderId = this.#id;
-        // @ts-expect-error TS(4111): Property 'blocking' comes from an index signature,... Remove this comment to see the full error message
         toastContent.dataset.blocking = this.#blocking.toString();
 
         const messageSpan = document.createElement('span');
@@ -199,7 +197,7 @@ export class ActionLoaderHandle {
         }
 
         // Show toast with no timeout (sticky)
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         this.#toast = toastr.info($(toastContent), title, {
             timeOut: 0,
             extendedTimeOut: 0,
@@ -213,7 +211,7 @@ export class ActionLoaderHandle {
      */
     #clearToast() {
         if (this.#toast) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.clear(this.#toast, { force: true }); // Need to force as the toast might have focus/hover
             this.#toast = null;
         }
@@ -278,6 +276,7 @@ export class ActionLoaderHandle {
         // Call custom stop handler or default
         if (this.#onStop) {
             try {
+                // @ts-expect-error TS(2349) FIXME: This expression is not callable.
                 await this.#onStop();
             } catch (e) {
                 console.error('Error executing onStop handler', e);
@@ -300,6 +299,7 @@ export class ActionLoaderHandle {
         // Call custom hide handler if provided
         if (this.#onHide) {
             try {
+                // @ts-expect-error TS(2349) FIXME: This expression is not callable.
                 await this.#onHide();
             } catch (e) {
                 console.error('Error executing onHide handler', e);
@@ -427,8 +427,11 @@ export function showActionLoader(options = {}) {
  * @returns {Promise<boolean>} Whether any loader was hidden
  */
 export async function hideActionLoader(handle = null) {
+    // @ts-expect-error TS(2358) FIXME: The left-hand side of an 'instanceof' expression m... Remove this comment to see the full error message
     if (handle instanceof ActionLoaderHandle) {
+        // @ts-expect-error TS(2339) FIXME: Property 'isActive' does not exist on type 'never'... Remove this comment to see the full error message
         if (handle.isActive) {
+            // @ts-expect-error TS(2339) FIXME: Property 'hide' does not exist on type 'never'.
             await handle.hide();
             return true;
         }
@@ -438,7 +441,7 @@ export async function hideActionLoader(handle = null) {
     // No handle provided - hide all active loaders
     const handles = getActiveLoaderHandles();
     for (const h of handles) {
-        // @ts-expect-error TS(2339): Property 'hide' does not exist on type 'unknown'.
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         await h.hide();
     }
     return handles.length > 0;
@@ -457,9 +460,10 @@ export function getActiveLoaderHandles() {
  * @param {string} id - The handle ID
  * @returns {ActionLoaderHandle|undefined} The handle, or undefined if not found
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'id' implicitly has an 'any' type.
 export function getLoaderHandleById(id) {
     for (const handle of activeHandles) {
-        // @ts-expect-error TS(2339): Property 'id' does not exist on type 'unknown'.
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         if (handle.id === id) {
             return handle;
         }
@@ -472,6 +476,7 @@ export function getLoaderHandleById(id) {
 // ============================================================================
 
 /** @type {Popup|null} The current loader overlay popup */
+// @ts-expect-error TS(7034) FIXME: Variable 'loaderPopup' implicitly has type 'any' i... Remove this comment to see the full error message
 let loaderPopup = null;
 
 /** Whether the initial HTML preloader has been removed */
@@ -500,6 +505,7 @@ export function createDefaultLoaderOverlay() {
  * @param {string|HTMLElement|null} customContent - Custom overlay content
  * @returns {string|HTMLElement} Content for Popup
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'customContent' implicitly has an 'any' ... Remove this comment to see the full error message
 function getOverlayContent(customContent) {
     if (typeof customContent === 'string') {
         return customContent;
@@ -517,6 +523,7 @@ function getOverlayContent(customContent) {
  * @returns {boolean} True if overlay is shown
  */
 function isOverlayDisplayed() {
+    // @ts-expect-error TS(7005) FIXME: Variable 'loaderPopup' implicitly has an 'any' typ... Remove this comment to see the full error message
     return !!loaderPopup;
 }
 
@@ -527,10 +534,12 @@ function isOverlayDisplayed() {
  */
 function showOverlay(customContent = null) {
     // Two loaders don't make sense. Don't await, we can overlay the old loader while it closes
+    // @ts-expect-error TS(7005) FIXME: Variable 'loaderPopup' implicitly has an 'any' typ... Remove this comment to see the full error message
     if (loaderPopup) loaderPopup.complete(POPUP_RESULT.CANCELLED);
 
     const content = getOverlayContent(customContent);
 
+    // @ts-expect-error TS(2345) FIXME: Argument of type 'null' is not assignable to param... Remove this comment to see the full error message
     loaderPopup = new Popup(content, POPUP_TYPE.DISPLAY, null, {
         allowEscapeClose: false,
         transparent: true,
@@ -551,14 +560,15 @@ function showOverlay(customContent = null) {
  * @returns {Promise<void>}
  */
 async function hideOverlay() {
+    // @ts-expect-error TS(7005) FIXME: Variable 'loaderPopup' implicitly has an 'any' typ... Remove this comment to see the full error message
     if (!loaderPopup) {
         return Promise.resolve();
     }
 
     return new Promise((resolve) => {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const loaderElement = $('#loader');
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const spinner = $('#load-spinner');
 
         if (!loaderElement.length) {
@@ -589,11 +599,13 @@ async function hideOverlay() {
             // If it's present, we remove it once and then it's gone.
             yoinkPreloader();
 
+            // @ts-expect-error TS(7005) FIXME: Variable 'loaderPopup' implicitly has an 'any' typ... Remove this comment to see the full error message
             loaderPopup.complete(POPUP_RESULT.AFFIRMATIVE)
+                // @ts-expect-error TS(7006) FIXME: Parameter 'err' implicitly has an 'any' type.
                 .catch((err) => console.error('Error completing loaderPopup:', err))
                 .finally(() => {
                     loaderPopup = null;
-                    // @ts-expect-error TS(2794): Expected 1 arguments, but got 0. Did you forget to... Remove this comment to see the full error message
+                    // @ts-expect-error TS(2794) FIXME: Expected 1 arguments, but got 0. Did you forget to... Remove this comment to see the full error message
                     resolve();
                 });
         }

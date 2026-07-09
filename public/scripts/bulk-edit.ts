@@ -8,9 +8,10 @@ const enableBulkEdit = () => {
     enableBulkSelect();
     characterGroupOverlay.selectState();
     // show the bulk edit option buttons
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('.bulkEditOptionElement').show();
     is_bulk_edit = true;
+    // @ts-expect-error TS(2345) FIXME: Argument of type '0' is not assignable to paramete... Remove this comment to see the full error message
     characterGroupOverlay.updateSelectedCount(0);
 };
 
@@ -18,12 +19,14 @@ const disableBulkEdit = () => {
     disableBulkSelect();
     characterGroupOverlay.browseState();
     // hide the bulk edit option buttons
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('.bulkEditOptionElement').hide();
     is_bulk_edit = false;
+    // @ts-expect-error TS(2345) FIXME: Argument of type '0' is not assignable to paramete... Remove this comment to see the full error message
     characterGroupOverlay.updateSelectedCount(0);
 };
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'isBulkEdit' implicitly has an 'any' typ... Remove this comment to see the full error message
 const toggleBulkEditMode = (isBulkEdit) => {
     if (isBulkEdit) {
         disableBulkEdit();
@@ -93,14 +96,14 @@ function enableBulkSelect() {
         });
         el.prepend(checkbox);
     });
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#rm_print_characters_block.group_overlay_mode_select .bogus_folder_select, #rm_print_characters_block.group_overlay_mode_select .group_select')
         .addClass('disabled');
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#rm_print_characters_block').addClass('bulk_select');
     // We also need to disable the default click event for the character_select divs
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.bulk_select_checkbox', function (event) {
         event.stopImmediatePropagation();
     });
@@ -110,12 +113,12 @@ function enableBulkSelect() {
  * Disables bulk selection by removing the checkboxes.
  */
 function disableBulkSelect() {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('.bulk_select_checkbox').remove();
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#rm_print_characters_block.group_overlay_mode_select .bogus_folder_select, #rm_print_characters_block.group_overlay_mode_select .group_select')
         .removeClass('disabled');
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#rm_print_characters_block').removeClass('bulk_select');
 }
 
@@ -123,16 +126,17 @@ function disableBulkSelect() {
  * Entry point that runs on page load.
  */
 export function initBulkEdit() {
+    // @ts-expect-error TS(7006) FIXME: Parameter 'state' implicitly has an 'any' type.
     characterGroupOverlay.addStateChangeCallback((state) => {
         if (state === BulkEditOverlayState.select) enableBulkEdit();
         if (state === BulkEditOverlayState.browse) disableBulkEdit();
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#bulkEditButton').on('click', onEditButtonClick);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#bulkSelectAllButton').on('click', onSelectAllButtonClick);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#bulkDeleteButton').on('click', onDeleteButtonClick);
 
     const characterContextMenu = new CharacterContextMenu(characterGroupOverlay);

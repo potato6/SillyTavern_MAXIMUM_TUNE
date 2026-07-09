@@ -96,6 +96,7 @@ function renderAlternativeTokensView() {
     }
 
     const prefix = continueFrom || '';
+    // @ts-expect-error TS(7034) FIXME: Variable 'tokenSpans' implicitly has type 'any[]' ... Remove this comment to see the full error message
     const tokenSpans = [];
     if (REROLL_BUTTON) {
         REROLL_BUTTON.style.display = prefix ? '' : 'none';
@@ -103,10 +104,14 @@ function renderAlternativeTokensView() {
 
     if (prefix) {
         if (REROLL_BUTTON) {
+            // @ts-expect-error TS(2339) FIXME: Property '_rerollHandler' does not exist on type '... Remove this comment to see the full error message
             if (REROLL_BUTTON._rerollHandler) {
+                // @ts-expect-error TS(2339) FIXME: Property '_rerollHandler' does not exist on type '... Remove this comment to see the full error message
                 REROLL_BUTTON.removeEventListener('click', REROLL_BUTTON._rerollHandler);
             }
+            // @ts-expect-error TS(2339) FIXME: Property '_rerollHandler' does not exist on type '... Remove this comment to see the full error message
             REROLL_BUTTON._rerollHandler = () => onPrefixClicked(prefix.length);
+            // @ts-expect-error TS(2339) FIXME: Property '_rerollHandler' does not exist on type '... Remove this comment to see the full error message
             REROLL_BUTTON.addEventListener('click', REROLL_BUTTON._rerollHandler);
         }
 
@@ -114,6 +119,7 @@ function renderAlternativeTokensView() {
         const words = prefix.split(/\s+/);
         const delimiters = prefix.match(/\s+/g) || [];
 
+        // @ts-expect-error TS(7006) FIXME: Parameter 'word' implicitly has an 'any' type.
         words.forEach((word, i) => {
             const span = document.createElement('span');
             span.textContent = `${word} `;
@@ -122,6 +128,7 @@ function renderAlternativeTokensView() {
             span.setAttribute('title', t`Reroll from this point`);
 
             const offset = cumulativeOffset;
+            // @ts-expect-error TS(2345) FIXME: Argument of type 'number' is not assignable to par... Remove this comment to see the full error message
             span.addEventListener('click', () => onPrefixClicked(offset));
             addKeyboardProps(span);
 
@@ -135,6 +142,7 @@ function renderAlternativeTokensView() {
         });
     }
 
+    // @ts-expect-error TS(7006) FIXME: Parameter 'tokenData' implicitly has an 'any' type... Remove this comment to see the full error message
     messageLogprobs.forEach((tokenData, i) => {
         const { token } = tokenData;
         const span = document.createElement('span');
@@ -147,13 +155,16 @@ function renderAlternativeTokensView() {
         tokenSpans.push(...withVirtualWhitespace(token, span));
     });
 
+    // @ts-expect-error TS(7005) FIXME: Variable 'tokenSpans' implicitly has an 'any[]' ty... Remove this comment to see the full error message
     view?.append(...tokenSpans);
 
     // scroll past long prior context
     if (prefix) {
         const element = view.querySelector('.logprobs_output_token');
         if (element) {
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             const scrollOffset = element.getBoundingClientRect().top - element.parentElement.getBoundingClientRect().top;
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             element.parentElement.scrollTop = scrollOffset;
         }
     }
@@ -163,9 +174,11 @@ function renderAlternativeTokensView() {
  *
  * @param element
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'element' implicitly has an 'any' type.
 function addKeyboardProps(element) {
     element.setAttribute('role', 'button');
     element.setAttribute('tabindex', '0');
+    // @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
     element.addEventListener('keydown', function (e) {
         if (e.key === 'Enter' || e.key === ' ') {
             element.click();
@@ -196,7 +209,9 @@ function renderTopLogprobs() {
     let sum = 0;
     const nodes = [];
     const candidates = topLogprobs
+        // @ts-expect-error TS(2339) FIXME: Property 'sort' does not exist on type 'never'.
         .sort(([, logA], [, logB]) => logB - logA)
+        // @ts-expect-error TS(7031) FIXME: Binding element 'text' implicitly has an 'any' typ... Remove this comment to see the full error message
         .map(([text, log]) => {
             if (log <= 0) {
                 const probability = Math.exp(log);
@@ -239,6 +254,7 @@ function renderTopLogprobs() {
     // Highlight the <others> node if the selected token was not included in the
     // top logprobs
     if (!matched) {
+        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         nodes[nodes.length - 1].style.backgroundColor = 'rgba(255, 0, 0, 0.1)';
     }
 
@@ -251,6 +267,7 @@ function renderTopLogprobs() {
  * @param {TokenLogprobs} logprobs - logprob data for the selected token
  * @param {HTMLElement} span - target span node that was clicked
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'logprobs' implicitly has an 'any' type.
 function onSelectedTokenChanged(logprobs, span) {
     document.querySelectorAll('.logprobs_output_token.selected').forEach((el) => el.classList.remove('selected'));
     if (state.selectedTokenLogprobs === logprobs) {
@@ -270,10 +287,9 @@ function onSelectedTokenChanged(logprobs, span) {
  * @param {TokenLogprobs} tokenLogprobs - logprob data for selected alternative
  * @param {string} alternative - selected alternative token's text
  */
-// @ts-expect-error TS(7030): Not all code paths return a value.
+// @ts-expect-error TS(7006) FIXME: Parameter 'tokenLogprobs' implicitly has an 'any' ... Remove this comment to see the full error message
 function onAlternativeClicked(tokenLogprobs, alternative) {
     if (!checkGenerateReady()) {
-        // @ts-expect-error TS(7030): Not all code paths return a value.
         return;
     }
 
@@ -285,8 +301,10 @@ function onAlternativeClicked(tokenLogprobs, alternative) {
     }
 
     const { messageLogprobs, continueFrom } = getActiveMessageLogprobData();
+    // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
     const replaceIndex = messageLogprobs.findIndex(x => x === tokenLogprobs);
 
+    // @ts-expect-error TS(7031) FIXME: Binding element 'token' implicitly has an 'any' ty... Remove this comment to see the full error message
     const tokens = messageLogprobs.slice(0, replaceIndex + 1).map(({ token }) => token);
     tokens[replaceIndex] = String(alternative).replace(/^[▁Ġ]/g, ' ').replace(/Ċ/g, '\n');
 
@@ -321,7 +339,7 @@ function onPrefixClicked(offset = undefined) {
  */
 function checkGenerateReady() {
     if (is_send_press) {
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.warning('Please wait for the current generation to complete.');
         return false;
     }
@@ -333,6 +351,7 @@ function checkGenerateReady() {
  * an alternative token or rerolls from a prefix.
  * @param prompt
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'prompt' implicitly has an 'any' type.
 function addGeneration(prompt) {
     const messageId = chat.length - 1;
     const triggerSwipe = () => {
@@ -403,6 +422,7 @@ function onToggleLogprobsPanel() {
  * @param {number} messageId - target chat message ID
  * @param {string} prompt - initial prompt text which will be continued
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'messageId' implicitly has an 'any' type... Remove this comment to see the full error message
 function createSwipe(messageId, prompt) {
     // need to call `cleanUpMessage` on our new prompt, because we were working
     // with raw model output and our new prompt is missing trimming/macro replacements
@@ -418,6 +438,7 @@ function createSwipe(messageId, prompt) {
     const reasoningPrefix = substituteParamsExtended(power_user.reasoning.prefix);
     const reasoningSuffix = substituteParamsExtended(power_user.reasoning.suffix);
     const isReasoningAutoParsed = power_user.reasoning.auto_parse;
+    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
     const msgHasParsedReasoning = msg.extra?.reasoning?.length > 0;
     let shouldRerollReasoning = false;
 
@@ -425,6 +446,7 @@ function createSwipe(messageId, prompt) {
     if (isReasoningAutoParsed && msgHasParsedReasoning) {
         console.debug('saw autoparse on with reasoning in message');
         //but the reroll prompt does not include the end of reasoning
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         if (cleanedPrompt.includes(reasoningPrefix) && !cleanedPrompt.includes(reasoningSuffix)) {
             //we need to send the results to the reasoning block
             //this will involve the ReasoningHandler from reasoning.js
@@ -432,7 +454,9 @@ function createSwipe(messageId, prompt) {
             shouldRerollReasoning = true;
         }
 
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         const hasReasoningPrefix = cleanedPrompt.includes(reasoningPrefix);
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         const hasReasoningSuffix = cleanedPrompt.includes(reasoningSuffix);
 
         //..with both the start and end think tags
@@ -441,13 +465,16 @@ function createSwipe(messageId, prompt) {
         if (hasReasoningPrefix && hasReasoningSuffix) {
             //we need to send the results to the response block without reasoning attached
             console.debug('...incl. end tag...rerolling response');
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             const endOfThink = cleanedPrompt.indexOf(reasoningSuffix) + reasoningSuffix.length;
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             cleanedPrompt = cleanedPrompt.substring(endOfThink);
         }
 
         //if cleanedprompt includes the think prefix, but no suffix..
         if (hasReasoningPrefix && !hasReasoningSuffix) {
             console.debug('..no end tag...rerolling reasoning, so removing prefix');
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             cleanedPrompt = cleanedPrompt.replace(reasoningPrefix, '');
         }
     }
@@ -456,13 +483,19 @@ function createSwipe(messageId, prompt) {
 
     /** @type {SwipeInfo} */
     const newSwipeInfo = {
+        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         send_date: msg.send_date,
+        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         gen_started: msg.gen_started,
+        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         gen_finished: msg.gen_finished,
+        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         extra: { ...structuredClone(msg.extra), from_logprobs: new Date().getTime() },
     };
 
+    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
     msg.swipes = msg.swipes || [];
+    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
     msg.swipe_info = msg.swipe_info || [];
 
     // Add our new swipe, then make sure the active swipe is the one just before
@@ -473,13 +506,17 @@ function createSwipe(messageId, prompt) {
         //cleaned prompt goes into reasoning
         newSwipeInfo.extra.reasoning = cleanedPrompt;
         //mes_text becomes empty, causing the reasoning handler to parse the reasoning first
+        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         msg.swipes.push('');
     } else {
         //otherwise just add the cleaned prompt to the message and continue
+        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         msg.swipes.push(cleanedPrompt);
     }
 
+    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
     msg.swipe_info.push(newSwipeInfo);
+    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
     msg.swipe_id = Math.max(0, msg.swipes.length - 2);
 }
 
@@ -489,6 +526,7 @@ function createSwipe(messageId, prompt) {
  * @param {string} input
  * @returns {string}
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'input' implicitly has an 'any' type.
 function toVisibleWhitespace(input) {
     return input.replace(/ /g, '·').replace(/[▁Ġ]/g, '·').replace(/[Ċ\n]/g, '↵');
 }
@@ -501,6 +539,7 @@ function toVisibleWhitespace(input) {
  * @param {Node} span - target span node to be wrapped
  * @returns {Node[]} - array of nodes to be appended to the parent element
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'text' implicitly has an 'any' type.
 function withVirtualWhitespace(text, span) {
     /** @type {Node[]} */
     const result = [span];
@@ -542,6 +581,7 @@ function withVirtualWhitespace(text, span) {
  * @param {TokenLogprobs[]} logprobs - array of logprobs data for each token
  * @param {string | null} continueFrom  - for 'continue' generations, the prompt
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'logprobs' implicitly has an 'any' type.
 export function saveLogprobsForActiveMessage(logprobs, continueFrom) {
     if (!logprobs) {
         // non-streaming APIs could return null data
@@ -559,6 +599,7 @@ export function saveLogprobsForActiveMessage(logprobs, continueFrom) {
         created: new Date().getTime(),
         api: getGeneratingApi(),
         messageId: msgId,
+        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         swipeId: chat[msgId].swipe_id,
         messageLogprobs: logprobs,
         continueFrom,
@@ -580,11 +621,13 @@ export function saveLogprobsForActiveMessage(logprobs, continueFrom) {
  *
  * @param message
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'message' implicitly has an 'any' type.
 function getMessageHash(message) {
     // We don't use the swipe ID as a hash component because it's not stable,
     // deleting a swipe will change the ID of all subsequent swipes.
     const hashParams = {
         name: message.name,
+        // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
         mid: chat.indexOf(message),
         text: message.mes,
     };
@@ -611,6 +654,7 @@ function getActiveMessageLogprobData() {
  * for APIs that return token IDs instead of text tokens, to wit: NovelAI.
  * @param {TokenLogprobs[]} input - logprobs data with numeric token IDs
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'input' implicitly has an 'any' type.
 function convertTokenIdLogprobsToText(input) {
     const api = getGeneratingApi();
     if (api !== 'novel') {
@@ -621,7 +665,9 @@ function convertTokenIdLogprobsToText(input) {
     const tokenizerId = getTokenizerBestMatch(api);
 
     /** @type {any[]} Flatten unique token IDs across all logprobs */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'logprobs' implicitly has an 'any' type.
     const tokenIds = Array.from(new Set(input.flatMap(logprobs =>
+        // @ts-expect-error TS(7031) FIXME: Binding element 'token' implicitly has an 'any' ty... Remove this comment to see the full error message
         logprobs.topLogprobs.map(([token]) => token).concat(logprobs.token),
     )));
 
@@ -631,8 +677,10 @@ function convertTokenIdLogprobsToText(input) {
     const tokenIdText = new Map(tokenIds.map((id, i) => [id, chunks[i]]));
 
     // Fixup logprobs data with token text
+    // @ts-expect-error TS(7006) FIXME: Parameter 'logprobs' implicitly has an 'any' type.
     input.forEach(logprobs => {
         logprobs.token = tokenIdText.get(logprobs.token);
+        // @ts-expect-error TS(7031) FIXME: Binding element 'token' implicitly has an 'any' ty... Remove this comment to see the full error message
         logprobs.topLogprobs = logprobs.topLogprobs.map(([token, logprob]) =>
             [tokenIdText.get(token), logprob],
         );

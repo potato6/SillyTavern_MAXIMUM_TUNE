@@ -1,12 +1,18 @@
+// @ts-expect-error TS(1192) FIXME: Module '"node:fs"' has no default export.
 import fs from 'node:fs';
+// @ts-expect-error TS(1259) FIXME: Module '"node:path"' can only be default-imported ... Remove this comment to see the full error message
 import path from 'node:path';
+// @ts-expect-error TS(1192) FIXME: Module '"node:readline"' has no default export.
 import readline from 'node:readline';
+// @ts-expect-error TS(1259) FIXME: Module '"node:process"' can only be default-import... Remove this comment to see the full error message
 import process from 'node:process';
 
+// @ts-expect-error TS(1259) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import express from 'express';
-// @ts-expect-error TS(2792): Cannot find module 'sanitize-filename'. Did you me... Remove this comment to see the full error message
+// @ts-expect-error TS(2792) FIXME: Cannot find module 'sanitize-filename'. Did you me... Remove this comment to see the full error message
 import sanitize from 'sanitize-filename';
 import { sync as writeFileAtomicSync } from 'write-file-atomic';
+// @ts-expect-error TS(2792) FIXME: Cannot find module 'es-toolkit/compat'. Did you me... Remove this comment to see the full error message
 import { throttle, isObjectLike } from 'es-toolkit/compat';
 
 import validateAvatarUrlMiddleware from '../middleware/validateFileName.js';
@@ -24,9 +30,13 @@ import {
     isPathUnderParent,
 } from '../util.js';
 
+// @ts-expect-error TS(2345) FIXME: Argument of type 'true' is not assignable to param... Remove this comment to see the full error message
 const isBackupEnabled = !!getConfigValue('backups.chat.enabled', true, 'boolean');
+// @ts-expect-error TS(2345) FIXME: Argument of type '-1' is not assignable to paramet... Remove this comment to see the full error message
 const maxTotalChatBackups = Number(getConfigValue('backups.chat.maxTotalBackups', -1, 'number'));
+// @ts-expect-error TS(2345) FIXME: Argument of type '10000' is not assignable to para... Remove this comment to see the full error message
 const throttleInterval = Number(getConfigValue('backups.chat.throttleInterval', 10_000, 'number'));
+// @ts-expect-error TS(2345) FIXME: Argument of type 'true' is not assignable to param... Remove this comment to see the full error message
 const checkIntegrity = !!getConfigValue('backups.chat.checkIntegrity', true, 'boolean');
 
 export const CHAT_BACKUPS_PREFIX = 'chat_';
@@ -54,6 +64,7 @@ function backupChat(directory: string, name: string, data: string, backupPrefix 
         if (isNaN(maxTotalChatBackups) || maxTotalChatBackups < 0) {
             return;
         }
+        // @ts-expect-error TS(2345) FIXME: Argument of type 'number' is not assignable to par... Remove this comment to see the full error message
         removeOldBackups(directory, backupPrefix, maxTotalChatBackups);
     } catch (err) {
         console.error(`Could not backup chat for ${name}`, err);
@@ -115,6 +126,7 @@ function importOobaChat(userName: string, characterName: string, jsonData: objec
         character_name: 'unused',
     }];
 
+    // @ts-expect-error TS(2339) FIXME: Property 'data_visible' does not exist on type 'ob... Remove this comment to see the full error message
     for (const arr of jsonData.data_visible) {
         if (arr[0]) {
             const userMessage = {
@@ -124,7 +136,7 @@ function importOobaChat(userName: string, characterName: string, jsonData: objec
                 mes: arr[0],
                 extra: {},
             };
-            // @ts-expect-error TS(2345): Argument of type '{ name: any; is_user: boolean; s... Remove this comment to see the full error message
+            // @ts-expect-error TS(2345) FIXME: Argument of type '{ name: string; is_user: boolean... Remove this comment to see the full error message
             chat.push(userMessage);
         }
         if (arr[1]) {
@@ -135,7 +147,7 @@ function importOobaChat(userName: string, characterName: string, jsonData: objec
                 mes: arr[1],
                 extra: {},
             };
-            // @ts-expect-error TS(2345): Argument of type '{ name: any; is_user: boolean; s... Remove this comment to see the full error message
+            // @ts-expect-error TS(2345) FIXME: Argument of type '{ name: string; is_user: boolean... Remove this comment to see the full error message
             chat.push(charMessage);
         }
     }
@@ -158,10 +170,11 @@ function importAgnaiChat(userName: string, characterName: string, jsonData: obje
         character_name: 'unused',
     }];
 
+    // @ts-expect-error TS(2339) FIXME: Property 'messages' does not exist on type 'object... Remove this comment to see the full error message
     for (const message of jsonData.messages) {
         const isUser = !!message.userId;
         chat.push({
-            // @ts-expect-error TS(2345): Argument of type '{ name: any; is_user: boolean; s... Remove this comment to see the full error message
+            // @ts-expect-error TS(2345) FIXME: Argument of type '{ name: string; is_user: boolean... Remove this comment to see the full error message
             name: isUser ? userName : characterName,
             is_user: isUser,
             send_date: new Date().toISOString(),
@@ -193,6 +206,7 @@ function importCAIChat(userName: string, characterName: string, jsonData: object
             character_name: 'unused',
         };
 
+        // @ts-expect-error TS(2339) FIXME: Property 'msgs' does not exist on type 'object'.
         const historyData = history.msgs.map((msg: { src: { is_human: boolean }; text: string }) => ({
             name: msg.src.is_human ? userName : characterName,
             is_user: msg.src.is_human,
@@ -204,6 +218,7 @@ function importCAIChat(userName: string, characterName: string, jsonData: object
         return [starter, ...historyData];
     }
 
+    // @ts-expect-error TS(2339) FIXME: Property 'histories' does not exist on type 'objec... Remove this comment to see the full error message
     const newChats = (jsonData.histories.histories ?? []).map((history: object) => newChats.push(convert(history).map(obj => JSON.stringify(obj)).join('\n')));
     return newChats;
 }
@@ -232,7 +247,9 @@ function importKoboldLiteChat(_userName: string, _characterName: string, data: o
     }
 
     // Create the header
+    // @ts-expect-error TS(2339) FIXME: Property 'savedsettings' does not exist on type 'o... Remove this comment to see the full error message
     const userName = String(data.savedsettings.chatname);
+    // @ts-expect-error TS(2339) FIXME: Property 'savedsettings' does not exist on type 'o... Remove this comment to see the full error message
     const characterName = String(data.savedsettings.chatopponent).split('||$||')[0];
     const header = {
         chat_metadata: {},
@@ -240,9 +257,12 @@ function importKoboldLiteChat(_userName: string, _characterName: string, data: o
         character_name: 'unused',
     };
     // Format messages
+    // @ts-expect-error TS(2339) FIXME: Property 'actions' does not exist on type 'object'... Remove this comment to see the full error message
     const formattedMessages = data.actions.map(processKoboldMessage);
     // Add prompt if available
+    // @ts-expect-error TS(2339) FIXME: Property 'prompt' does not exist on type 'object'.
     if (data.prompt) {
+        // @ts-expect-error TS(2339) FIXME: Property 'prompt' does not exist on type 'object'.
         formattedMessages.unshift(processKoboldMessage(data.prompt));
     }
     // Combine header and messages
@@ -258,7 +278,6 @@ function importKoboldLiteChat(_userName: string, _characterName: string, data: o
  * @param {string[]} lines serialised JSONL data
  * @returns {string} Converted data
  */
-// @ts-expect-error TS(6133): 'userName' is declared but its value is never read... Remove this comment to see the full error message
 function flattenChubChat(userName: string, characterName: string, lines: string[]): string {
     /**
      * Flattens a swipe entry
@@ -307,10 +326,11 @@ function importRisuChat(userName: string, characterName: string, jsonData: objec
         character_name: 'unused',
     }];
 
+    // @ts-expect-error TS(2339) FIXME: Property 'data' does not exist on type 'object'.
     for (const message of jsonData.data.message) {
         const isUser = message.role === 'user';
         chat.push({
-            // @ts-expect-error TS(2345): Argument of type '{ name: any; is_user: boolean; s... Remove this comment to see the full error message
+            // @ts-expect-error TS(2345) FIXME: Argument of type '{ name: any; is_user: boolean; s... Remove this comment to see the full error message
             name: message.name ?? (isUser ? userName : characterName),
             is_user: isUser,
             send_date: new Date(Number(message.time ?? Date.now())).toISOString(),
@@ -336,6 +356,7 @@ async function checkChatIntegrity(filePath: string, integritySlug: string): Prom
 
     // Parse the first line of the chat file as JSON
     const firstLine = await readFirstLine(filePath);
+    // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
     const jsonData = tryParse(firstLine);
     const chatIntegrity = jsonData?.chat_metadata?.integrity;
 
@@ -370,6 +391,7 @@ async function checkChatIntegrity(filePath: string, integritySlug: string): Prom
  * @returns {Promise<ChatInfo>} Chat information
  * @typedef {(textArray: string[]) => boolean} ChatMatchFunction
  */
+// @ts-expect-error TS(2304) FIXME: Cannot find name 'ChatMatchFunction'.
 export async function getChatInfo(pathToFile: string, additionalData: Record<string, unknown> = {}, withMetadata = false, matcher: ChatMatchFunction | null = null) {
     return new Promise(async (res) => {
         const parsedPath = path.parse(pathToFile);
@@ -402,11 +424,12 @@ export async function getChatInfo(pathToFile: string, additionalData: Record<str
         let itemCounter = 0;
         let hasAnyMatch = false;
         let matchBuffer: string[] = [];
+        // @ts-expect-error TS(7006) FIXME: Parameter 'line' implicitly has an 'any' type.
         rl.on('line', (line) => {
             if (withMetadata && itemCounter === 0) {
                 const jsonData = tryParse(line);
                 if (jsonData && isObjectLike(jsonData.chat_metadata)) {
-                    // @ts-expect-error TS(2339): Property 'chat_metadata' does not exist on type '{... Remove this comment to see the full error message
+                    // @ts-expect-error TS(2339) FIXME: Property 'chat_metadata' does not exist on type '{... Remove this comment to see the full error message
                     chatData.chat_metadata = jsonData.chat_metadata;
                 }
             }
@@ -452,6 +475,7 @@ class IntegrityMismatchError extends Error {
     date: Date;
     constructor(...params: unknown[]) {
         // Pass remaining arguments (including vendor specific ones) to parent constructor
+        // @ts-expect-error TS(2769) FIXME: No overload matches this call.
         super(...params);
         // Maintains proper stack trace for where our error was thrown (non-standard)
         if (Error.captureStackTrace) {
@@ -483,6 +507,7 @@ export async function trySaveChat(chatData: { chat_metadata?: { integrity?: stri
     getBackupFunction(handle)(backupDirectory, cardName, jsonlData);
 }
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/save', validateAvatarUrlMiddleware, async function (request, response) {
     try {
         const handle = request.user.profile.handle;
@@ -522,6 +547,7 @@ export function getChatData(chatFilePath: string): object[] {
     if (chatJSON.length > 0) {
         const lines = chatJSON.split('\n');
         // Iterate through the array of strings and parse each line as JSON
+        // @ts-expect-error TS(7006) FIXME: Parameter 'line' implicitly has an 'any' type.
         chatData = lines.map(line => tryParse(line)).filter(x => x);
     } else {
         console.warn(`File not found: ${chatFilePath}. The chat does not exist or is empty.`);
@@ -530,6 +556,7 @@ export function getChatData(chatFilePath: string): object[] {
     return chatData;
 }
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/get', validateAvatarUrlMiddleware, function (request, response) {
     try {
         const dirName = String(request.body.avatar_url).replace('.png', '');
@@ -559,6 +586,7 @@ router.post('/get', validateAvatarUrlMiddleware, function (request, response) {
     }
 });
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/rename', validateAvatarUrlMiddleware, async function (request, response) {
     try {
         if (!request.body || !request.body.original_file || !request.body.renamed_file) {
@@ -592,6 +620,7 @@ router.post('/rename', validateAvatarUrlMiddleware, async function (request, res
     }
 });
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/delete', validateAvatarUrlMiddleware, function (request, response) {
     try {
         if (!path.extname(request.body.chatfile)) {
@@ -617,7 +646,7 @@ router.post('/delete', validateAvatarUrlMiddleware, function (request, response)
     }
 });
 
-// @ts-expect-error TS(7030): Not all code paths return a value.
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/export', validateAvatarUrlMiddleware, async function (request, response) {
     if (!request.body.file || (!request.body.avatar_url && request.body.is_group === false)) {
         return response.sendStatus(400);
@@ -664,6 +693,7 @@ router.post('/export', validateAvatarUrlMiddleware, async function (request, res
             input: readStream,
         });
         let buffer = '';
+        // @ts-expect-error TS(7006) FIXME: Parameter 'line' implicitly has an 'any' type.
         rl.on('line', (line) => {
             const data = JSON.parse(line);
             // Skip non-printable/prompt-hidden messages
@@ -690,6 +720,7 @@ router.post('/export', validateAvatarUrlMiddleware, async function (request, res
     }
 });
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/group/import', function (request, response) {
     try {
         const filedata = request.file;
@@ -710,7 +741,7 @@ router.post('/group/import', function (request, response) {
     }
 });
 
-// @ts-expect-error TS(7030): Not all code paths return a value.
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/import', validateAvatarUrlMiddleware, function (request, response) {
     if (!request.body) return response.sendStatus(400);
 
@@ -812,6 +843,7 @@ router.post('/import', validateAvatarUrlMiddleware, function (request, response)
     }
 });
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/group/get', (request, response) => {
     if (!request.body || !request.body.id) {
         return response.sendStatus(400);
@@ -823,6 +855,7 @@ router.post('/group/get', (request, response) => {
     return response.send(getChatData(chatFilePath));
 });
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/group/info', async (request, response) => {
     try {
         if (!request.body || !request.body.id) {
@@ -840,6 +873,7 @@ router.post('/group/info', async (request, response) => {
     }
 });
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/group/delete', (request, response) => {
     try {
         if (!request.body || !request.body.id) {
@@ -862,6 +896,7 @@ router.post('/group/delete', (request, response) => {
     }
 });
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/group/save', async function (request, response) {
     try {
         if (!request.body || !request.body.id) {
@@ -889,6 +924,7 @@ router.post('/group/save', async function (request, response) {
     }
 });
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/search', validateAvatarUrlMiddleware, async function (request, response) {
     try {
         const { query, avatar_url, group_id } = request.body;
@@ -900,6 +936,7 @@ router.post('/search', validateAvatarUrlMiddleware, async function (request, res
             // Find group's chat IDs first
             const groupDir = path.join(request.user.directories.groups);
             const groupFiles = fs.readdirSync(groupDir)
+                // @ts-expect-error TS(7006) FIXME: Parameter 'file' implicitly has an 'any' type.
                 .filter(file => path.extname(file) === '.json');
 
             let targetGroup;
@@ -934,7 +971,9 @@ router.post('/search', validateAvatarUrlMiddleware, async function (request, res
             }
 
             chatFiles = fs.readdirSync(directoryPath)
+                // @ts-expect-error TS(7006) FIXME: Parameter 'file' implicitly has an 'any' type.
                 .filter(file => path.extname(file) === '.jsonl')
+                // @ts-expect-error TS(7006) FIXME: Parameter 'fileName' implicitly has an 'any' type.
                 .map(fileName => path.join(directoryPath, fileName));
         }
 
@@ -963,17 +1002,17 @@ router.post('/search', validateAvatarUrlMiddleware, async function (request, res
         for (const chatFile of chatFiles) {
             const matcher = query ? hasTextMatch : null;
             const chatInfo = await getChatInfo(chatFile, {}, false, matcher);
-            // @ts-expect-error TS(2339): Property 'match' does not exist on type 'unknown'.
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             const hasMatch = chatInfo.match || hasTextMatch([chatInfo.file_id ?? '']);
 
             // Skip corrupted or invalid chat files
-            // @ts-expect-error TS(2339): Property 'file_name' does not exist on type 'unkno... Remove this comment to see the full error message
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             if (!chatInfo.file_name) {
                 continue;
             }
 
             // Empty chats without a file name match are skipped when searching with a query
-            // @ts-expect-error TS(2339): Property 'chat_items' does not exist on type 'unkn... Remove this comment to see the full error message
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             if (query && chatInfo.chat_items === 0 && !hasMatch) {
                 continue;
             }
@@ -981,15 +1020,15 @@ router.post('/search', validateAvatarUrlMiddleware, async function (request, res
             // If no search query or a match was found, include the chat in results
             if (!query || hasMatch) {
                 results.push({
-                    // @ts-expect-error TS(2339): Property 'file_id' does not exist on type 'unknown... Remove this comment to see the full error message
+                    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                     file_name: chatInfo.file_id,
-                    // @ts-expect-error TS(2339): Property 'file_size' does not exist on type 'unkno... Remove this comment to see the full error message
+                    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                     file_size: chatInfo.file_size,
-                    // @ts-expect-error TS(2339): Property 'chat_items' does not exist on type 'unkn... Remove this comment to see the full error message
+                    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                     message_count: chatInfo.chat_items,
-                    // @ts-expect-error TS(2339): Property 'last_mes' does not exist on type 'unknow... Remove this comment to see the full error message
+                    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                     last_mes: chatInfo.last_mes,
-                    // @ts-expect-error TS(2339): Property 'mes' does not exist on type 'unknown'.
+                    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                     preview_message: getPreviewMessage(chatInfo.mes),
                 });
             }
@@ -1002,6 +1041,7 @@ router.post('/search', validateAvatarUrlMiddleware, async function (request, res
     }
 });
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/recent', async function (request, response) {
     try {
         /** @typedef {{pngFile?: string, groupId?: string, filePath: string, mtime: number}} ChatFile */
@@ -1012,6 +1052,7 @@ router.post('/recent', async function (request, response) {
 
         const getCharacterChatFiles = async () => {
             const pngDirents = await fs.promises.readdir(request.user.directories.characters, { withFileTypes: true });
+            // @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
             const pngFiles = pngDirents.filter(e => e.isFile() && path.extname(e.name) === '.png').map(e => e.name);
 
             for (const pngFile of pngFiles) {
@@ -1023,11 +1064,13 @@ router.post('/recent', async function (request, response) {
                 const pathStats = await fs.promises.stat(pathToChats);
                 if (pathStats.isDirectory()) {
                     const chatFiles = await fs.promises.readdir(pathToChats);
+                    // @ts-expect-error TS(7006) FIXME: Parameter 'file' implicitly has an 'any' type.
                     const jsonlFiles = chatFiles.filter(file => path.extname(file) === '.jsonl');
 
                     for (const file of jsonlFiles) {
                         const filePath = path.join(pathToChats, file);
                         const stats = await fs.promises.stat(filePath);
+                        // @ts-expect-error TS(2345) FIXME: Argument of type '{ pngFile: any; filePath: any; m... Remove this comment to see the full error message
                         allChatFiles.push({ pngFile, filePath, mtime: stats.mtimeMs });
                     }
                 }
@@ -1036,6 +1079,7 @@ router.post('/recent', async function (request, response) {
 
         const getGroupChatFiles = async () => {
             const groupDirents = await fs.promises.readdir(request.user.directories.groups, { withFileTypes: true });
+            // @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
             const groups = groupDirents.filter(e => e.isFile() && path.extname(e.name) === '.json').map(e => e.name);
 
             for (const group of groups) {
@@ -1051,6 +1095,7 @@ router.post('/recent', async function (request, response) {
                                 continue;
                             }
                             const stats = await fs.promises.stat(filePath);
+                            // @ts-expect-error TS(2345) FIXME: Argument of type '{ groupId: any; filePath: any; m... Remove this comment to see the full error message
                             allChatFiles.push({ groupId: groupData.id, filePath, mtime: stats.mtimeMs });
                         }
                     }
@@ -1063,11 +1108,13 @@ router.post('/recent', async function (request, response) {
 
         const getRootChatFiles = async () => {
             const dirents = await fs.promises.readdir(request.user.directories.chats, { withFileTypes: true });
+            // @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
             const chatFiles = dirents.filter(e => e.isFile() && path.extname(e.name) === '.jsonl').map(e => e.name);
 
             for (const file of chatFiles) {
                 const filePath = path.join(request.user.directories.chats, file);
                 const stats = await fs.promises.stat(filePath);
+                // @ts-expect-error TS(2345) FIXME: Argument of type '{ filePath: any; mtime: any; }' ... Remove this comment to see the full error message
                 allChatFiles.push({ filePath, mtime: stats.mtimeMs });
             }
         };
@@ -1075,6 +1122,7 @@ router.post('/recent', async function (request, response) {
         await Promise.allSettled([getCharacterChatFiles(), getGroupChatFiles(), getRootChatFiles()]);
 
         const max = parseInt(request.body.max ?? Number.MAX_SAFE_INTEGER) + pinnedChats.length;
+        // @ts-expect-error TS(7006) FIXME: Parameter 'p' implicitly has an 'any' type.
         const isPinned = (chatFile: ChatFile) => pinnedChats.some((p) => p.file_name === path.basename(chatFile.filePath) && (p.avatar === chatFile.pngFile || p.group === chatFile.groupId));
         const recentChats = allChatFiles.sort((a, b) => {
             const isAPinned = isPinned(a);
@@ -1083,16 +1131,20 @@ router.post('/recent', async function (request, response) {
             if (isAPinned && !isBPinned) return -1;
             if (!isAPinned && isBPinned) return 1;
 
+            // @ts-expect-error TS(2339) FIXME: Property 'mtime' does not exist on type 'ChatFile'... Remove this comment to see the full error message
             return b.mtime - a.mtime;
         }).slice(0, max);
         const jsonFilesPromise = recentChats.map((file) => {
             const withMetadata = !!request.body.metadata;
+            // @ts-expect-error TS(2339) FIXME: Property 'groupId' does not exist on type 'ChatFil... Remove this comment to see the full error message
             return file.groupId
+                // @ts-expect-error TS(2339) FIXME: Property 'filePath' does not exist on type 'ChatFi... Remove this comment to see the full error message
                 ? getChatInfo(file.filePath, { group: file.groupId }, withMetadata)
+                // @ts-expect-error TS(2339) FIXME: Property 'filePath' does not exist on type 'ChatFi... Remove this comment to see the full error message
                 : getChatInfo(file.filePath, { avatar: file.pngFile }, withMetadata);
         });
 
-        // @ts-expect-error TS(2339): Property 'value' does not exist on type 'PromiseSe... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'value' does not exist on type 'PromiseSe... Remove this comment to see the full error message
         const chatData = (await Promise.allSettled(jsonFilesPromise)).filter(x => x.status === 'fulfilled').map(x => x.value);
         const validFiles = chatData.filter(i => i.file_name);
 

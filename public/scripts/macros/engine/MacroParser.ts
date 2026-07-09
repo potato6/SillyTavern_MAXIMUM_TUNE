@@ -19,16 +19,26 @@ let instance: MacroParser;
 export { instance as MacroParser };
 
 class MacroParser extends CstParser {
+    // @ts-expect-error TS(2564) FIXME: Property 'document' has no initializer and is not ... Remove this comment to see the full error message
     document: () => unknown;
+    // @ts-expect-error TS(2564) FIXME: Property 'macro' has no initializer and is not def... Remove this comment to see the full error message
     macro: () => unknown;
+    // @ts-expect-error TS(2564) FIXME: Property 'macroBody' has no initializer and is not... Remove this comment to see the full error message
     macroBody: () => unknown;
+    // @ts-expect-error TS(2564) FIXME: Property 'variableExpr' has no initializer and is ... Remove this comment to see the full error message
     variableExpr: () => unknown;
+    // @ts-expect-error TS(2564) FIXME: Property 'variableOperator' has no initializer and... Remove this comment to see the full error message
     variableOperator: () => unknown;
+    // @ts-expect-error TS(2564) FIXME: Property 'variableValue' has no initializer and is... Remove this comment to see the full error message
     variableValue: () => unknown;
+    // @ts-expect-error TS(2564) FIXME: Property 'arguments' has no initializer and is not... Remove this comment to see the full error message
     arguments: () => unknown;
+    // @ts-expect-error TS(2564) FIXME: Property 'argument' has no initializer and is not ... Remove this comment to see the full error message
     argument: () => unknown;
+    // @ts-expect-error TS(2564) FIXME: Property 'argumentAllowingColons' has no initializ... Remove this comment to see the full error message
     argumentAllowingColons: () => unknown;
 
+    // @ts-expect-error TS(2694) FIXME: Namespace '"/mnt/DISCO/downloads/some_git_projects... Remove this comment to see the full error message
     lexerInstance: import('./MacroLexer.js').MacroLexer | null; // Used to cache the Lexer locally
 
     /** @type {MacroParser} */ static #instance: MacroParser;
@@ -201,6 +211,7 @@ class MacroParser extends CstParser {
             });
         });
 
+        // @ts-expect-error TS(2339) FIXME: Property 'performSelfAnalysis' does not exist on t... Remove this comment to see the full error message
         this.performSelfAnalysis();
     }
 
@@ -238,14 +249,17 @@ class MacroParser extends CstParser {
 
         const lexingResult = this.tokenizeInput(input);
 
+        // @ts-expect-error TS(2339) FIXME: Property 'input' does not exist on type 'MacroPars... Remove this comment to see the full error message
         this.input = lexingResult.tokens;
         const cst = this.document();
 
         const errors = [
             ...lexingResult.errors,
+            // @ts-expect-error TS(2339) FIXME: Property 'errors' does not exist on type 'MacroPar... Remove this comment to see the full error message
             ...this.errors,
         ];
 
+        // @ts-expect-error TS(2339) FIXME: Property 'errors' does not exist on type 'MacroPar... Remove this comment to see the full error message
         return { cst, errors, lexingErrors: lexingResult.errors, parserErrors: this.errors };
     }
 
@@ -253,6 +267,7 @@ class MacroParser extends CstParser {
         const lexingResult = this.tokenizeInput(input);
 
         // "input" is a setter which will reset the parser's state.
+        // @ts-expect-error TS(2339) FIXME: Property 'input' does not exist on type 'MacroPars... Remove this comment to see the full error message
         this.input = lexingResult.tokens;
         return this.macro();
 

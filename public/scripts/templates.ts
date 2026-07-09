@@ -12,6 +12,7 @@ const TEMPLATE_CACHE = new Map();
  * @param {string} url URL to load synchronously
  * @returns {string} Response text
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'url' implicitly has an 'any' type.
 function getUrlSync(url) {
     console.debug('Loading URL synchronously', url);
     const request = new XMLHttpRequest();
@@ -30,6 +31,7 @@ function getUrlSync(url) {
  * @param {string} url URL to load asynchronously
  * @returns {Promise<string>} Response text
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'url' implicitly has an 'any' type.
 function getUrlAsync(url) {
     return new Promise((resolve, reject) => {
         const request = new XMLHttpRequest();
@@ -57,11 +59,13 @@ function getUrlAsync(url) {
  * @param {boolean} fullPath Should the template ID be treated as a full path or a relative path
  * @returns {Promise<string>} Rendered template
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'templateId' implicitly has an 'any' typ... Remove this comment to see the full error message
 export async function renderTemplateAsync(templateId, templateData = {}, sanitize = true, localize = true, fullPath = false) {
     /**
      *
      * @param pathToTemplate
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'pathToTemplate' implicitly has an 'any'... Remove this comment to see the full error message
     async function fetchTemplateAsync(pathToTemplate) {
         let template = TEMPLATE_CACHE.get(pathToTemplate);
         if (!template) {
@@ -88,7 +92,7 @@ export async function renderTemplateAsync(templateId, templateData = {}, sanitiz
         return result;
     } catch (err) {
         console.error('Error rendering template', templateId, templateData, err);
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.error('Check the DevTools console for more information.', 'Error rendering template');
     }
 }
@@ -103,11 +107,13 @@ export async function renderTemplateAsync(templateId, templateData = {}, sanitiz
  * @returns {string} Rendered template
  * @deprecated Use renderTemplateAsync instead.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'templateId' implicitly has an 'any' typ... Remove this comment to see the full error message
 export function renderTemplate(templateId, templateData = {}, sanitize = true, localize = true, fullPath = false) {
     /**
      *
      * @param pathToTemplate
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'pathToTemplate' implicitly has an 'any'... Remove this comment to see the full error message
     function fetchTemplateSync(pathToTemplate) {
         let template = TEMPLATE_CACHE.get(pathToTemplate);
         if (!template) {
@@ -134,7 +140,7 @@ export function renderTemplate(templateId, templateData = {}, sanitize = true, l
         return result;
     } catch (err) {
         console.error('Error rendering template', templateId, templateData, err);
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.error('Check the DevTools console for more information.', 'Error rendering template');
     }
 }

@@ -59,14 +59,15 @@ export const scan_state = {
     MIN_ACTIVATIONS: 3,
 };
 
-// @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+// @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
 const WI_ENTRY_HEADER_TEMPLATE = $('#entry_edit_template .world_entry');
-// @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+// @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
 const WI_ENTRY_EDIT_TEMPLATE = $('#entry_edit_template .world_entry_edit');
 
 export let world_info = {};
 export let selected_world_info = [];
 /** @type {string[]} */
+// @ts-expect-error TS(7005) FIXME: Variable 'world_names' implicitly has an 'any' typ... Remove this comment to see the full error message
 export let world_names;
 export let world_info_depth = 2;
 export let world_info_min_activations = 0; // if > 0, will continue seeking chat until minimum world infos are activated
@@ -82,16 +83,19 @@ export let world_info_use_group_scoring = false;
 export let world_info_character_strategy = world_info_insertion_strategy.character_first;
 export let world_info_budget_cap = 0;
 export let world_info_max_recursion_steps = 0;
+// @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
 const saveWorldDebounced = debounce(async (name, data) => await _save(name, data), debounce_timeout.relaxed);
 const saveSettingsDebounced = debounce(() => {
     Object.assign(world_info, { globalSelect: selected_world_info });
     saveSettings();
 }, debounce_timeout.relaxed);
+// @ts-expect-error TS(7006) FIXME: Parameter 'a' implicitly has an 'any' type.
 const sortFn = (a, b) => b.order - a.order;
+// @ts-expect-error TS(7006) FIXME: Parameter 'navigation' implicitly has an 'any' typ... Remove this comment to see the full error message
 let updateEditor = (navigation, flashOnNav = true) => { console.debug('Triggered WI navigation', navigation, flashOnNav); };
 
 // Do not optimize. updateEditor is a function that is updated by the displayWorldEntries with new data.
-// @ts-expect-error TS(2554): Expected 1-2 arguments, but got 0.
+// @ts-expect-error TS(2554) FIXME: Expected 1-2 arguments, but got 0.
 export const worldInfoFilter = new FilterHelper(() => updateEditor());
 export const SORT_ORDER_KEY = 'world_info_sort_order';
 export const METADATA_KEY = 'world_info';
@@ -240,6 +244,7 @@ class WorldInfoBuffer {
      * @param {string[]} messages Array of messages to add to the buffer
      * @param {WIGlobalScanData} globalScanData Chat independent context to be scanned
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'messages' implicitly has an 'any' type.
     constructor(messages, globalScanData) {
         this.#initDepthBuffer(messages);
         this.#globalScanData = globalScanData;
@@ -250,9 +255,11 @@ class WorldInfoBuffer {
      * @param {string[]} messages Array of messages to add to the buffer
      * @returns {void} Hardly seen nothing down here
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'messages' implicitly has an 'any' type.
     #initDepthBuffer(messages) {
         for (let depth = 0; depth < MAX_SCAN_DEPTH; depth++) {
             if (messages[depth]) {
+                // @ts-expect-error TS(2322) FIXME: Type 'any' is not assignable to type 'never'.
                 this.#depthBuffer[depth] = messages[depth].trim();
             }
             // break if last message is reached
@@ -268,6 +275,7 @@ class WorldInfoBuffer {
      * @param {WIScanEntry} entry The entry that triggered the scan
      * @returns {string} The transformed string
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'str' implicitly has an 'any' type.
     #transformString(str, entry) {
         const caseSensitive = entry.caseSensitive ?? world_info_case_sensitive;
         return caseSensitive ? str : str.toLowerCase();
@@ -279,6 +287,7 @@ class WorldInfoBuffer {
      * @param {number} scanState The state of the scan
      * @returns {string} A slice of buffer until the given depth (inclusive)
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'entry' implicitly has an 'any' type.
     get(entry, scanState) {
         let depth = entry.scanDepth ?? this.getDepth();
         if (depth <= this.#startDepth) {
@@ -299,22 +308,34 @@ class WorldInfoBuffer {
         const JOINER = '\n' + MATCHER;
         let result = MATCHER + this.#depthBuffer.slice(this.#startDepth, depth).join(JOINER);
 
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         if (entry.matchPersonaDescription && this.#globalScanData.personaDescription) {
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             result += JOINER + this.#globalScanData.personaDescription;
         }
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         if (entry.matchCharacterDescription && this.#globalScanData.characterDescription) {
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             result += JOINER + this.#globalScanData.characterDescription;
         }
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         if (entry.matchCharacterPersonality && this.#globalScanData.characterPersonality) {
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             result += JOINER + this.#globalScanData.characterPersonality;
         }
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         if (entry.matchCharacterDepthPrompt && this.#globalScanData.characterDepthPrompt) {
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             result += JOINER + this.#globalScanData.characterDepthPrompt;
         }
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         if (entry.matchScenario && this.#globalScanData.scenario) {
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             result += JOINER + this.#globalScanData.scenario;
         }
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         if (entry.matchCreatorNotes && this.#globalScanData.creatorNotes) {
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             result += JOINER + this.#globalScanData.creatorNotes;
         }
 
@@ -337,6 +358,7 @@ class WorldInfoBuffer {
      * @param {WIScanEntry} entry The entry that triggered the scan
      * @returns {boolean} True if the string was found in the buffer
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'haystack' implicitly has an 'any' type.
     matchKeys(haystack, needle, entry) {
         // If the needle is a regex, we do regex pattern matching and override all the other options
         const keyRegex = parseRegexFromString(needle);
@@ -372,7 +394,9 @@ class WorldInfoBuffer {
      * Adds a message to the recursion buffer.
      * @param {string} message The message to add
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'message' implicitly has an 'any' type.
     addRecurse(message) {
+        // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
         this.#recurseBuffer.push(message);
     }
 
@@ -380,7 +404,9 @@ class WorldInfoBuffer {
      * Adds an injection to the buffer.
      * @param {string} message The injection to add
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'message' implicitly has an 'any' type.
     addInject(message) {
+        // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
         this.#injectBuffer.push(message);
     }
 
@@ -411,6 +437,7 @@ class WorldInfoBuffer {
      * @param {object} entry WI entry to check
      * @returns {object|undefined} the external version if the entry is forcefully activated, undefined otherwise
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'entry' implicitly has an 'any' type.
     getExternallyActivated(entry) {
         return WorldInfoBuffer.externalActivations.get(`${entry.world}.${entry.uid}`);
     }
@@ -428,6 +455,7 @@ class WorldInfoBuffer {
      * @param {number} scanState The state of the scan
      * @returns {number} The number of key activations for the given entry
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'entry' implicitly has an 'any' type.
     getScore(entry, scanState) {
         const bufferState = this.get(entry, scanState);
         let numberOfPrimaryKeys = 0;
@@ -518,6 +546,7 @@ class WorldInfoTimedEffects {
          * Sets an entry on cooldown immediately if it has a cooldown.
          * @param {WIScanEntry} entry Entry that ended sticky
          */
+        // @ts-expect-error TS(7006) FIXME: Parameter 'entry' implicitly has an 'any' type.
         'sticky': (entry) => {
             if (!entry.cooldown) {
                 return;
@@ -525,10 +554,11 @@ class WorldInfoTimedEffects {
 
             const key = this.#getEntryKey(entry);
             const effect = this.#getEntryTimedEffect('cooldown', entry, true);
-            // @ts-expect-error TS(2339): Property 'timedWorldInfo' does not exist on type '... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'timedWorldInfo' does not exist on type '... Remove this comment to see the full error message
             chat_metadata.timedWorldInfo.cooldown[key] = effect;
             console.log(`[WI] Adding cooldown entry ${key} on ended sticky: start=${effect.start}, end=${effect.end}, protected=${effect.protected}`);
             // Set the cooldown immediately for this evaluation
+            // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
             this.#buffer.cooldown.push(entry);
         },
 
@@ -537,6 +567,7 @@ class WorldInfoTimedEffects {
          * No-op, essentially.
          * @param {WIScanEntry} entry Entry that ended cooldown
          */
+        // @ts-expect-error TS(7006) FIXME: Parameter 'entry' implicitly has an 'any' type.
         'cooldown': (entry) => {
             console.debug('[WI] Cooldown ended for entry', entry.uid);
         },
@@ -550,6 +581,7 @@ class WorldInfoTimedEffects {
      * @param {WIScanEntry[]} entries Array of entries
      * @param {boolean} isDryRun Whether the operation is a dry run
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'chat' implicitly has an 'any' type.
     constructor(chat, entries, isDryRun = false) {
         this.#chat = chat;
         this.#entries = entries;
@@ -561,25 +593,25 @@ class WorldInfoTimedEffects {
      * Verify correct structure of chat metadata.
      */
     #ensureChatMetadata() {
-        // @ts-expect-error TS(2339): Property 'timedWorldInfo' does not exist on type '... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'timedWorldInfo' does not exist on type '... Remove this comment to see the full error message
         if (!chat_metadata.timedWorldInfo) {
-            // @ts-expect-error TS(2339): Property 'timedWorldInfo' does not exist on type '... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'timedWorldInfo' does not exist on type '... Remove this comment to see the full error message
             chat_metadata.timedWorldInfo = {};
         }
 
         ['sticky', 'cooldown'].forEach(type => {
             // Ensure the property exists and is an object
-            // @ts-expect-error TS(2339): Property 'timedWorldInfo' does not exist on type '... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'timedWorldInfo' does not exist on type '... Remove this comment to see the full error message
             if (!chat_metadata.timedWorldInfo[type] || typeof chat_metadata.timedWorldInfo[type] !== 'object') {
-                // @ts-expect-error TS(2339): Property 'timedWorldInfo' does not exist on type '... Remove this comment to see the full error message
+                // @ts-expect-error TS(2339) FIXME: Property 'timedWorldInfo' does not exist on type '... Remove this comment to see the full error message
                 chat_metadata.timedWorldInfo[type] = {};
             }
 
             // Clean up invalid entries
-            // @ts-expect-error TS(2339): Property 'timedWorldInfo' does not exist on type '... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'timedWorldInfo' does not exist on type '... Remove this comment to see the full error message
             Object.entries(chat_metadata.timedWorldInfo[type]).forEach(([key, value]) => {
                 if (!value || typeof value !== 'object') {
-                    // @ts-expect-error TS(2339): Property 'timedWorldInfo' does not exist on type '... Remove this comment to see the full error message
+                    // @ts-expect-error TS(2339) FIXME: Property 'timedWorldInfo' does not exist on type '... Remove this comment to see the full error message
                     delete chat_metadata.timedWorldInfo[type][key];
                 }
             });
@@ -591,6 +623,7 @@ class WorldInfoTimedEffects {
      * @param {WIScanEntry} entry WI entry
      * @returns {number} String hash
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'entry' implicitly has an 'any' type.
     #getEntryHash(entry) {
         return entry.hash;
     }
@@ -600,6 +633,7 @@ class WorldInfoTimedEffects {
      * @param {WIScanEntry} entry WI entry
      * @returns {string} String key for the entry
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'entry' implicitly has an 'any' type.
     #getEntryKey(entry) {
         return `${entry.world}.${entry.uid}`;
     }
@@ -611,6 +645,7 @@ class WorldInfoTimedEffects {
      * @param {boolean} isProtected If the effect should be protected
      * @returns {WITimedEffect} Timed effect for the entry
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'type' implicitly has an 'any' type.
     #getEntryTimedEffect(type, entry, isProtected) {
         return {
             hash: this.#getEntryHash(entry),
@@ -626,29 +661,30 @@ class WorldInfoTimedEffects {
      * @param {WIScanEntry[]} buffer Buffer to store the entries
      * @param {(entry: WIScanEntry) => void} onEnded Callback for when a timed effect ends
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'type' implicitly has an 'any' type.
     #checkTimedEffectOfType(type, buffer, onEnded) {
         /** @type {[string, WITimedEffect][]} */
-        // @ts-expect-error TS(2339): Property 'timedWorldInfo' does not exist on type '... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'timedWorldInfo' does not exist on type '... Remove this comment to see the full error message
         const effects = Object.entries(chat_metadata.timedWorldInfo[type]);
         for (const [key, value] of effects) {
             console.log(`[WI] Processing ${type} entry ${key}`, value);
-            // @ts-expect-error TS(2339): Property 'hash' does not exist on type 'unknown'.
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             const entry = this.#entries.find(x => String(this.#getEntryHash(x)) === String(value.hash));
 
-            // @ts-expect-error TS(2339): Property 'start' does not exist on type 'unknown'.
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             if (this.#chat.length <= Number(value.start) && !value.protected) {
                 console.log(`[WI] Removing ${type} entry ${key} from timedWorldInfo: chat not advanced`, value);
-                // @ts-expect-error TS(2339): Property 'timedWorldInfo' does not exist on type '... Remove this comment to see the full error message
+                // @ts-expect-error TS(2339) FIXME: Property 'timedWorldInfo' does not exist on type '... Remove this comment to see the full error message
                 delete chat_metadata.timedWorldInfo[type][key];
                 continue;
             }
 
             // Missing entries (they could be from another character's lorebook)
             if (!entry) {
-                // @ts-expect-error TS(2339): Property 'end' does not exist on type 'unknown'.
+                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 if (this.#chat.length >= Number(value.end)) {
                     console.log(`[WI] Removing ${type} entry from timedWorldInfo: entry not found and interval passed`, entry);
-                    // @ts-expect-error TS(2339): Property 'timedWorldInfo' does not exist on type '... Remove this comment to see the full error message
+                    // @ts-expect-error TS(2339) FIXME: Property 'timedWorldInfo' does not exist on type '... Remove this comment to see the full error message
                     delete chat_metadata.timedWorldInfo[type][key];
                 }
                 continue;
@@ -657,15 +693,15 @@ class WorldInfoTimedEffects {
             // Ignore invalid entries (not configured for timed effects)
             if (!entry[type]) {
                 console.log(`[WI] Removing ${type} entry from timedWorldInfo: entry not ${type}`, entry);
-                // @ts-expect-error TS(2339): Property 'timedWorldInfo' does not exist on type '... Remove this comment to see the full error message
+                // @ts-expect-error TS(2339) FIXME: Property 'timedWorldInfo' does not exist on type '... Remove this comment to see the full error message
                 delete chat_metadata.timedWorldInfo[type][key];
                 continue;
             }
 
-            // @ts-expect-error TS(2339): Property 'end' does not exist on type 'unknown'.
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             if (this.#chat.length >= Number(value.end)) {
                 console.log(`[WI] Removing ${type} entry from timedWorldInfo: ${type} interval passed`, entry);
-                // @ts-expect-error TS(2339): Property 'timedWorldInfo' does not exist on type '... Remove this comment to see the full error message
+                // @ts-expect-error TS(2339) FIXME: Property 'timedWorldInfo' does not exist on type '... Remove this comment to see the full error message
                 delete chat_metadata.timedWorldInfo[type][key];
                 if (typeof onEnded === 'function') {
                     onEnded(entry);
@@ -682,12 +718,15 @@ class WorldInfoTimedEffects {
      * Processes entries for the "delay" timed effect.
      * @param {WIScanEntry[]} buffer Buffer to store the entries
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'buffer' implicitly has an 'any' type.
     #checkDelayEffect(buffer) {
         for (const entry of this.#entries) {
+            // @ts-expect-error TS(2339) FIXME: Property 'delay' does not exist on type 'never'.
             if (!entry.delay) {
                 continue;
             }
 
+            // @ts-expect-error TS(2339) FIXME: Property 'delay' does not exist on type 'never'.
             if (this.#chat.length < entry.delay) {
                 buffer.push(entry);
                 console.log('[WI] Timed effect "delay" applied to entry', entry);
@@ -712,13 +751,14 @@ class WorldInfoTimedEffects {
      * @param {WIScanEntry} entry WI entry
      * @returns {WITimedEffect} Timed effect for the entry
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'type' implicitly has an 'any' type.
     getEffectMetadata(type, entry) {
         if (!this.isValidEffectType(type)) {
             return null;
         }
 
         const key = this.#getEntryKey(entry);
-        // @ts-expect-error TS(2339): Property 'timedWorldInfo' does not exist on type '... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'timedWorldInfo' does not exist on type '... Remove this comment to see the full error message
         return chat_metadata.timedWorldInfo[type][key];
     }
 
@@ -727,6 +767,7 @@ class WorldInfoTimedEffects {
      * @param {TimedEffectType} type Type of timed effect
      * @param {WIScanEntry} entry WI entry to check
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'type' implicitly has an 'any' type.
     #setTimedEffectOfType(type, entry) {
         // Skip if entry does not have the type (sticky or cooldown)
         if (!entry[type]) {
@@ -735,10 +776,10 @@ class WorldInfoTimedEffects {
 
         const key = this.#getEntryKey(entry);
 
-        // @ts-expect-error TS(2339): Property 'timedWorldInfo' does not exist on type '... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'timedWorldInfo' does not exist on type '... Remove this comment to see the full error message
         if (!chat_metadata.timedWorldInfo[type][key]) {
             const effect = this.#getEntryTimedEffect(type, entry, false);
-            // @ts-expect-error TS(2339): Property 'timedWorldInfo' does not exist on type '... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'timedWorldInfo' does not exist on type '... Remove this comment to see the full error message
             chat_metadata.timedWorldInfo[type][key] = effect;
 
             console.log(`[WI] Adding ${type} entry ${key}: start=${effect.start}, end=${effect.end}, protected=${effect.protected}`);
@@ -749,6 +790,7 @@ class WorldInfoTimedEffects {
      * Sets timed effects on chat messages.
      * @param {WIScanEntry[]} activatedEntries Entries that were activated
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'activatedEntries' implicitly has an 'an... Remove this comment to see the full error message
     setTimedEffects(activatedEntries) {
         if (this.#isDryRun) return;
         for (const entry of activatedEntries) {
@@ -763,6 +805,7 @@ class WorldInfoTimedEffects {
      * @param {WIScanEntry} entry WI entry
      * @param {boolean} newState The state of the effect
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'type' implicitly has an 'any' type.
     setTimedEffect(type, entry, newState) {
         if (!this.isValidEffectType(type)) {
             return;
@@ -772,12 +815,12 @@ class WorldInfoTimedEffects {
         }
 
         const key = this.#getEntryKey(entry);
-        // @ts-expect-error TS(2339): Property 'timedWorldInfo' does not exist on type '... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'timedWorldInfo' does not exist on type '... Remove this comment to see the full error message
         delete chat_metadata.timedWorldInfo[type][key];
 
         if (newState) {
             const effect = this.#getEntryTimedEffect(type, entry, false);
-            // @ts-expect-error TS(2339): Property 'timedWorldInfo' does not exist on type '... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'timedWorldInfo' does not exist on type '... Remove this comment to see the full error message
             chat_metadata.timedWorldInfo[type][key] = effect;
             console.log(`[WI] Adding ${type} entry ${key}: start=${effect.start}, end=${effect.end}, protected=${effect.protected}`);
         }
@@ -788,6 +831,7 @@ class WorldInfoTimedEffects {
      * @param {string} type Name of the timed effect
      * @returns {boolean} Is recognized type
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'type' implicitly has an 'any' type.
     isValidEffectType(type) {
         return typeof type === 'string' && ['sticky', 'cooldown', 'delay'].includes(type.trim().toLowerCase());
     }
@@ -798,11 +842,13 @@ class WorldInfoTimedEffects {
      * @param {WIScanEntry} entry WI entry to check
      * @returns {boolean} True if the entry is active
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'type' implicitly has an 'any' type.
     isEffectActive(type, entry) {
         if (!this.isValidEffectType(type)) {
             return false;
         }
 
+        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         return this.#buffer[type]?.some(x => this.#getEntryHash(x) === this.#getEntryHash(entry)) ?? false;
     }
 
@@ -843,25 +889,40 @@ export function getWorldInfoSettings() {
  * @param {WorldInfoSettings} settings - Settings object
  * @param {string[]} [activeWorldInfo] - Optional array of active world info names
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'settings' implicitly has an 'any' type.
 export function updateWorldInfoSettings(settings, activeWorldInfo) {
     console.debug('[WI] Updating world info settings', settings, activeWorldInfo);
 
     /** @type {Record<keyof WorldInfoSettings, (value: unknown) => void>} */
     const fields = {
+        // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
         world_info_depth: (value) => world_info_depth = Number(value),
+        // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
         world_info_min_activations: (value) => world_info_min_activations = Number(value),
+        // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
         world_info_min_activations_depth_max: (value) => world_info_min_activations_depth_max = Number(value),
+        // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
         world_info_budget: (value) => world_info_budget = Number(value),
+        // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
         world_info_include_names: (value) => world_info_include_names = Boolean(value),
+        // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
         world_info_recursive: (value) => world_info_recursive = Boolean(value),
+        // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
         world_info_overflow_alert: (value) => world_info_overflow_alert = Boolean(value),
+        // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
         world_info_case_sensitive: (value) => world_info_case_sensitive = Boolean(value),
+        // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
         world_info_match_whole_words: (value) => world_info_match_whole_words = Boolean(value),
+        // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
         world_info_character_strategy: (value) => world_info_character_strategy = Number(value),
+        // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
         world_info_budget_cap: (value) => world_info_budget_cap = Number(value),
+        // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
         world_info_use_group_scoring: (value) => world_info_use_group_scoring = Boolean(value),
+        // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
         world_info_max_recursion_steps: (value) => world_info_max_recursion_steps = Number(value),
         // Unused
+        // @ts-expect-error TS(7006) FIXME: Parameter '_value' implicitly has an 'any' type.
         world_info: (_value) => { },
     };
 
@@ -873,6 +934,7 @@ export function updateWorldInfoSettings(settings, activeWorldInfo) {
 
     if (Array.isArray(activeWorldInfo)) {
         delete settings.world_info;
+        // @ts-expect-error TS(2322) FIXME: Type 'any[]' is not assignable to type 'never[]'.
         selected_world_info = activeWorldInfo;
     }
 
@@ -915,6 +977,7 @@ export const worldInfoCache = new StructuredCloneMap({ cloneOnGet: true, cloneOn
  * @param {WIGlobalScanData} globalScanData Chat independent context to be scanned
  * @returns {Promise<WIPromptResult>} The world info string and depth.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'chat' implicitly has an 'any' type.
 export async function getWorldInfoPrompt(chat, maxContext, isDryRun, globalScanData) {
     let worldInfoString = '', worldInfoBefore = '', worldInfoAfter = '';
 
@@ -945,6 +1008,7 @@ export async function getWorldInfoPrompt(chat, maxContext, isDryRun, globalScanD
  * @param {object} data - Data object
  * @returns {void}
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'settings' implicitly has an 'any' type.
 export function setWorldInfoSettings(settings, data) {
     if (settings.world_info_depth !== undefined)
         world_info_depth = Number(settings.world_info_depth);
@@ -987,93 +1051,100 @@ export function setWorldInfoSettings(settings, data) {
     const existingWorldInfo = settings.world_info;
     if (typeof existingWorldInfo === 'string') {
         delete settings.world_info;
+        // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'never'.
         selected_world_info = [existingWorldInfo];
     } else if (Array.isArray(existingWorldInfo)) {
         delete settings.world_info;
+        // @ts-expect-error TS(2322) FIXME: Type 'any[]' is not assignable to type 'never[]'.
         selected_world_info = existingWorldInfo;
     }
 
     world_info = settings.world_info ?? {};
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_info_depth_counter').val(world_info_depth);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_info_depth').val(world_info_depth);
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_info_min_activations_counter').val(world_info_min_activations);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_info_min_activations').val(world_info_min_activations);
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_info_min_activations_depth_max_counter').val(world_info_min_activations_depth_max);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_info_min_activations_depth_max').val(world_info_min_activations_depth_max);
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_info_budget_counter').val(world_info_budget);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_info_budget').val(world_info_budget);
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_info_include_names').prop('checked', world_info_include_names);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_info_recursive').prop('checked', world_info_recursive);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_info_overflow_alert').prop('checked', world_info_overflow_alert);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_info_case_sensitive').prop('checked', world_info_case_sensitive);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_info_match_whole_words').prop('checked', world_info_match_whole_words);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_info_use_group_scoring').prop('checked', world_info_use_group_scoring);
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(`#world_info_character_strategy option[value='${world_info_character_strategy}']`).prop('selected', true);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_info_character_strategy').val(world_info_character_strategy);
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_info_budget_cap').val(world_info_budget_cap);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_info_budget_cap_counter').val(world_info_budget_cap);
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_info_max_recursion_steps').val(world_info_max_recursion_steps);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_info_max_recursion_steps_counter').val(world_info_max_recursion_steps);
 
     world_names = data.world_names?.length ? data.world_names : [];
 
     // Add to existing selected WI if it exists
+    // @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
     selected_world_info = selected_world_info.concat(settings.world_info?.globalSelect?.filter((e) => world_names.includes(e)) ?? []);
 
     if (world_names.length > 0) {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#world_info').empty();
     }
 
+    // @ts-expect-error TS(7006) FIXME: Parameter 'item' implicitly has an 'any' type.
     world_names.forEach((item, i) => {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#world_info').append(`<option value='${i}'${selected_world_info.includes(item) ? ' selected' : ''}>${item}</option>`);
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#world_editor_select').append(`<option value='${i}'>${item}</option>`);
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_info_sort_order').val(accountStorage.getItem(SORT_ORDER_KEY) || '0');
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_info').trigger('change');
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_editor_select').trigger('change');
 
     eventSource.on(event_types.CHAT_CHANGED, async () => {
+        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         const hasWorldInfo = !!chat_metadata[METADATA_KEY] && world_names.includes(chat_metadata[METADATA_KEY]);
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         document.querySelector('.chat_lorebook_button').classList.toggle('world_set', hasWorldInfo);
         // Pre-cache the world info data for the chat for quicker first prompt generation
         await getSortedEntries();
     });
 
+    // @ts-expect-error TS(7006) FIXME: Parameter 'entries' implicitly has an 'any' type.
     eventSource.on(event_types.WORLDINFO_FORCE_ACTIVATE, (entries) => {
         for (const entry of entries) {
             if (!Object.hasOwn(entry, 'world') || !Object.hasOwn(entry, 'uid')) {
@@ -1094,12 +1165,13 @@ export function setWorldInfoSettings(settings, data) {
  * @param {string} file - The file to load in the editor
  * @param {boolean} [loadIfNotSelected] - Indicates whether to load the file even if it's not currently selected
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'file' implicitly has an 'any' type.
 export function reloadEditor(file, loadIfNotSelected = false) {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const currentIndex = Number($('#world_editor_select').val());
     const selectedIndex = world_names.indexOf(file);
     if (selectedIndex !== -1 && (loadIfNotSelected || currentIndex === selectedIndex)) {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#world_editor_select').val(selectedIndex).trigger('change');
     }
 }
@@ -1116,6 +1188,7 @@ function registerWorldInfoSlashCommands() {
      * @returns {string[]} Array of chat messages
      */
     function getScanningChat() {
+        // @ts-expect-error TS(2339) FIXME: Property 'is_system' does not exist on type 'never... Remove this comment to see the full error message
         return getContext().chat.filter(x => !x.is_system).map(x => x.mes);
     }
 
@@ -1127,9 +1200,10 @@ function registerWorldInfoSlashCommands() {
      * @param {string} [root0.callbackName] - Callback name for logging
      * @returns {Promise<string|object[]>} Entries from file or empty string
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'file' implicitly has an 'any' type.
     async function getEntriesFromFile(file, { args = {}, unnamed = null, callbackName = 'getEntriesFromFile' } = {}) {
         if (!file || !world_names.includes(file)) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.warning(t`Valid World Info file name is required`);
             logSlashCommandWarn(`${callbackName}: Valid World Info file name is required`, args, unnamed);
             return '';
@@ -1138,7 +1212,7 @@ function registerWorldInfoSlashCommands() {
         const data = await loadWorldInfo(file);
 
         if (!data || !('entries' in data)) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.warning(t`World Info file has an invalid format`);
             logSlashCommandWarn(`${callbackName}: World Info file has an invalid format`, args, unnamed);
             return '';
@@ -1147,7 +1221,7 @@ function registerWorldInfoSlashCommands() {
         const entries = Object.values(data.entries);
 
         if (!entries || entries.length === 0) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.warning(t`World Info file has no entries`);
             logSlashCommandWarn(`${callbackName}: World Info file has no entries`, args, unnamed);
             return '';
@@ -1162,6 +1236,7 @@ function registerWorldInfoSlashCommands() {
      * @param {string} _unnamedArg not used
      * @returns {Promise<string>} The name of the persona-bound lorebook
      */
+    // @ts-expect-error TS(7031) FIXME: Binding element 'name' implicitly has an 'any' typ... Remove this comment to see the full error message
     async function getPersonaBookCallback({ name, create }, _unnamedArg) {
         const bookName = power_user.persona_description_lorebook || '';
         if (bookName) {
@@ -1169,6 +1244,7 @@ function registerWorldInfoSlashCommands() {
         }
 
         if (isTrueBoolean(String(create))) {
+            // @ts-expect-error TS(2345) FIXME: Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
             const newName = await createWorldWithName(name, `Persona Book ${name1}`.replace(/[^a-z0-9 -]/gi, '_').replace(/_{2,}/g, '_').substring(0, 64));
             power_user.persona_description_lorebook = newName;
             setPersonaDescription();
@@ -1185,15 +1261,18 @@ function registerWorldInfoSlashCommands() {
      * @param {string} characterIdentifier Character name
      * @returns {Promise<string>} The name of the character-bound lorebook, a JSON string of the character's lorebooks, or an empty string
      */
+    // @ts-expect-error TS(7031) FIXME: Binding element 'type' implicitly has an 'any' typ... Remove this comment to see the full error message
     async function getCharBookCallback({ type, name, create }, characterIdentifier) {
         const context = getContext();
         if (context.groupId && !characterIdentifier) throw new Error('This command is not available in groups without providing a character name');
         type = String(type ?? '').trim().toLowerCase() || 'primary';
+        // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
         characterIdentifier = String(characterIdentifier ?? '') || context.characters[context.characterId]?.avatar || null;
         const character = findChar({ name: characterIdentifier });
         if (!character) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.error(t`Character not found.`);
+            // @ts-expect-error TS(2345) FIXME: Argument of type '{ characterIdentifier: any; }' i... Remove this comment to see the full error message
             logSlashCommandWarn('getCharBookCallback: Character not found', { type, name, create }, { characterIdentifier });
             return '';
         }
@@ -1202,8 +1281,9 @@ function registerWorldInfoSlashCommands() {
             books.push(character.data.extensions.world);
         }
         if (type === 'all' || type === 'additional') {
+            // @ts-expect-error TS(2345) FIXME: Argument of type 'number' is not assignable to par... Remove this comment to see the full error message
             const fileName = getCharaFilename(context.characters.indexOf(character));
-            // @ts-expect-error TS(2339): Property 'charLore' does not exist on type '{}'.
+            // @ts-expect-error TS(2339) FIXME: Property 'charLore' does not exist on type '{}'.
             const extraCharLore = world_info.charLore?.find((e) => e.name === fileName);
             if (extraCharLore && Array.isArray(extraCharLore.extraBooks)) {
                 books.push(...extraCharLore.extraBooks.filter(onlyUnique).filter(Boolean));
@@ -1211,6 +1291,7 @@ function registerWorldInfoSlashCommands() {
         }
 
         if (isTrueBoolean(String(create)) && books.length === 0) {
+            // @ts-expect-error TS(2345) FIXME: Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
             const newName = await createWorldWithName(name, `Character Book ${character.name}`.replace(/[^a-z0-9 -]/gi, '_').replace(/_{2,}/g, '_').substring(0, 64));
             // Also assign the book now - additional if requested, otherwise as primary
             if (type === 'additional') {
@@ -1231,17 +1312,20 @@ function registerWorldInfoSlashCommands() {
      * @param {import('./slash-commands/SlashCommand.js').NamedArguments} args Named arguments
      * @returns {Promise<string>} The name of the chat-bound lorebook
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
     async function getChatBookCallback(args) {
         const chatId = getCurrentChatId();
 
         if (!chatId) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.warning(t`Open a chat to get a name of the chat-bound lorebook`);
             logSlashCommandWarn('getChatBookCallback: Open a chat to get a name of the chat-bound lorebook', args);
             return '';
         }
 
+        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         if (chat_metadata[METADATA_KEY] && world_names.includes(chat_metadata[METADATA_KEY])) {
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             return chat_metadata[METADATA_KEY];
         }
 
@@ -1249,10 +1333,13 @@ function registerWorldInfoSlashCommands() {
             return '';
         }
 
+        // @ts-expect-error TS(2345) FIXME: Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
         const name = await createWorldWithName(args.name, `Chat Book ${getCurrentChatId()}`.replace(/[^a-z0-9 -]/gi, '_').replace(/_{2,}/g, '_').substring(0, 64));
 
+        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         chat_metadata[METADATA_KEY] = name;
         await saveMetadata();
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         document.querySelector('.chat_lorebook_button').classList.add('world_set');
         return name;
     }
@@ -1289,10 +1376,12 @@ function registerWorldInfoSlashCommands() {
      * @param {string} value - Search value
      * @returns {Promise<string>} The matching entry UID or empty string
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
     async function findBookEntryCallback(args, value) {
         const file = args.file;
         const field = args.field || 'key';
 
+        // @ts-expect-error TS(2322) FIXME: Type '{ value: any; }' is not assignable to type '... Remove this comment to see the full error message
         const entries = await getEntriesFromFile(file, { args, unnamed: { value }, callbackName: 'findBookEntryCallback' });
 
         if (!entries) {
@@ -1338,31 +1427,35 @@ function registerWorldInfoSlashCommands() {
      * @param {string} uid - Entry UID
      * @returns {Promise<string>} The entry field value or empty string
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
     async function getEntryFieldCallback(args, uid) {
         const file = args.file;
         const field = args.field || 'content';
         const tags = getContext().tags;
 
+        // @ts-expect-error TS(2322) FIXME: Type '{ uid: any; }' is not assignable to type 'nu... Remove this comment to see the full error message
         const entries = await getEntriesFromFile(file, { args, unnamed: { uid }, callbackName: 'getEntryFieldCallback' });
 
         if (!entries) {
             return '';
         }
 
-        // @ts-expect-error TS(2339): Property 'uid' does not exist on type 'unknown'.
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         const entry = entries.find(x => String(x.uid) === String(uid));
 
         if (!entry) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.warning('Valid UID is required');
+            // @ts-expect-error TS(2345) FIXME: Argument of type '{ uid: any; }' is not assignable... Remove this comment to see the full error message
             logSlashCommandWarn('getEntryFieldCallback: Valid UID is required', args, { uid });
             console.warn();
             return '';
         }
 
         if (!Object.hasOwn(newWorldInfoEntryDefinition, field)) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.warning('Valid field name is required');
+            // @ts-expect-error TS(2345) FIXME: Argument of type '{ uid: any; }' is not assignable... Remove this comment to see the full error message
             logSlashCommandWarn('getEntryFieldCallback: Valid field name is required', args, { uid });
             return '';
         }
@@ -1371,32 +1464,33 @@ function registerWorldInfoSlashCommands() {
         let fieldValue;
         switch (field) {
             case 'characterFilterNames':
-                // @ts-expect-error TS(2339): Property 'characterFilter' does not exist on type ... Remove this comment to see the full error message
+                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 if (entry.characterFilter) {
-                    // @ts-expect-error TS(2339): Property 'characterFilter' does not exist on type ... Remove this comment to see the full error message
+                    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                     fieldValue = entry.characterFilter.names;
                 }
                 break;
             case 'characterFilterTags':
-                // @ts-expect-error TS(2339): Property 'characterFilter' does not exist on type ... Remove this comment to see the full error message
+                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 if (entry.characterFilter) {
-                    // @ts-expect-error TS(2339): Property 'characterFilter' does not exist on type ... Remove this comment to see the full error message
+                    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                     if (!entry.characterFilter.tags) {
                         return '';
                     }
                     //Find the tag objects corresponding to each ID in the array, then return the names
-                    // @ts-expect-error TS(2339): Property 'characterFilter' does not exist on type ... Remove this comment to see the full error message
+                    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                     fieldValue = tags.filter((tag) => entry.characterFilter.tags.includes(tag.id)).map((tag) => tag.name);
                 }
                 break;
             case 'characterFilterExclude':
-                // @ts-expect-error TS(2339): Property 'characterFilter' does not exist on type ... Remove this comment to see the full error message
+                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 if (entry.characterFilter) {
-                    // @ts-expect-error TS(2339): Property 'characterFilter' does not exist on type ... Remove this comment to see the full error message
+                    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                     fieldValue = entry.characterFilter.isExclude;
                 }
                 break;
             default:
+                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 fieldValue = entry[field] ?? newWorldInfoEntryDefinition[field]?.default;
         }
 
@@ -1416,6 +1510,7 @@ function registerWorldInfoSlashCommands() {
      * @param {string} [content] - Entry content
      * @returns {Promise<string>} The created entry UID or empty string
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
     async function createEntryCallback(args, content) {
         const file = args.file;
         const key = args.key;
@@ -1423,7 +1518,7 @@ function registerWorldInfoSlashCommands() {
         const data = await loadWorldInfo(file);
 
         if (!data || !('entries' in data)) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.warning('Valid World Info file name is required');
             logSlashCommandWarn('createEntryCallback: Valid World Info file name is required', args);
             return '';
@@ -1432,22 +1527,23 @@ function registerWorldInfoSlashCommands() {
         const entry = createWorldInfoEntry(file, data);
 
         if (key) {
-            // @ts-expect-error TS(2339): Property 'key' does not exist on type '{ uid: numb... Remove this comment to see the full error message
+            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             entry.key.push(key);
-            // @ts-expect-error TS(2339): Property 'addMemo' does not exist on type '{ uid: ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             entry.addMemo = true;
-            // @ts-expect-error TS(2339): Property 'comment' does not exist on type '{ uid: ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             entry.comment = key;
         }
 
         if (content) {
-            // @ts-expect-error TS(2339): Property 'content' does not exist on type '{ uid: ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             entry.content = content;
         }
 
         await saveWorldInfo(file, data);
         reloadEditor(file);
 
+        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         return String(entry.uid);
     }
 
@@ -1456,6 +1552,7 @@ function registerWorldInfoSlashCommands() {
      * @param {string} value - New field value
      * @returns {Promise<string>} Empty string on success
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
     async function setEntryFieldCallback(args, value) {
         const file = args.file;
         const uid = args.uid;
@@ -1463,6 +1560,7 @@ function registerWorldInfoSlashCommands() {
         const tags = getContext().tags;
 
         // characterFilter is an object with internal fields we need to access, which may also may be null and need to be populated
+        // @ts-expect-error TS(7006) FIXME: Parameter 'currentEntry' implicitly has an 'any' t... Remove this comment to see the full error message
         const createCharacterFilterFieldObjectIfNeeded = (currentEntry) => {
             if (!currentEntry.characterFilter) {
                 Object.assign(
@@ -1479,8 +1577,9 @@ function registerWorldInfoSlashCommands() {
         };
 
         if (value === undefined) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.warning('Value is required');
+            // @ts-expect-error TS(2345) FIXME: Argument of type '{ value: any; }' is not assignab... Remove this comment to see the full error message
             logSlashCommandWarn('setEntryFieldCallback: Value is required', args, { value });
             return '';
         }
@@ -1490,8 +1589,9 @@ function registerWorldInfoSlashCommands() {
         const data = await loadWorldInfo(file);
 
         if (!data || !('entries' in data)) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.warning('Valid World Info file name is required');
+            // @ts-expect-error TS(2345) FIXME: Argument of type '{ value: any; }' is not assignab... Remove this comment to see the full error message
             logSlashCommandWarn('setEntryFieldCallback: Valid World Info file name is required', args, { value });
             return '';
         }
@@ -1499,28 +1599,33 @@ function registerWorldInfoSlashCommands() {
         const entry = data.entries[uid];
 
         if (!entry) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.warning('Valid UID is required');
+            // @ts-expect-error TS(2345) FIXME: Argument of type '{ value: any; }' is not assignab... Remove this comment to see the full error message
             logSlashCommandWarn('setEntryFieldCallback: Valid UID is required', args, { value });
             return '';
         }
 
         if (!Object.hasOwn(newWorldInfoEntryDefinition, field)) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.warning('Valid field name is required');
+            // @ts-expect-error TS(2345) FIXME: Argument of type '{ value: any; }' is not assignab... Remove this comment to see the full error message
             logSlashCommandWarn('setEntryFieldCallback: Valid field name is required', args, { value });
             return '';
         }
 
         // Init a default value for the field if it does not exist
         if (!Object.hasOwn(entry, field)) {
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             entry[field] = newWorldInfoEntryDefinition[field].default;
         }
 
         // Use an array filter if it exists for the field
+        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         const arrayFilter = newWorldInfoEntryDefinition[field]?.arrayFilter || (() => true);
 
         // handle special cases, otherwise execute default logic
+        // @ts-expect-error TS(7034) FIXME: Variable 'tagNames' implicitly has type 'any' in s... Remove this comment to see the full error message
         let tagNames;
         let charNames;
         switch (field) {
@@ -1528,6 +1633,7 @@ function registerWorldInfoSlashCommands() {
                 createCharacterFilterFieldObjectIfNeeded(entry);
                 charNames = parseStringArray(value);
                 entry.characterFilter.names = charNames
+                    // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'null | un... Remove this comment to see the full error message
                     .map((name) => getCharaFilename(null, { manualAvatarKey: findChar({ name, allowAvatar: true, preferCurrentChar: false, quiet: true })?.avatar }))
                     .filter(Boolean)
                     .filter(onlyUnique);
@@ -1537,6 +1643,7 @@ function registerWorldInfoSlashCommands() {
                 createCharacterFilterFieldObjectIfNeeded(entry);
                 tagNames = parseStringArray(value);
                 //Find the tag objects corresponding to each name in the user array, then return an array of the corresponding IDs
+                // @ts-expect-error TS(7005) FIXME: Variable 'tagNames' implicitly has an 'any' type.
                 entry.characterFilter.tags = tags.filter((tag) => tagNames.includes(tag.name)).map((tag) => tag.id);
                 setWIOriginalDataValue(data, uid, 'character_filter', entry.characterFilter);
                 break;
@@ -1556,7 +1663,9 @@ function registerWorldInfoSlashCommands() {
                     entry[field] = value;
                 }
 
+                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 if (originalWIDataKeyMap[field]) {
+                    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                     setWIOriginalDataValue(data, uid, originalWIDataKeyMap[field], entry[field]);
                 }
         }
@@ -1571,6 +1680,7 @@ function registerWorldInfoSlashCommands() {
      * @param {string} value - Entry UID
      * @returns {Promise<string>} Timed effect data or empty string
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
     async function getTimedEffectCallback(args, value) {
         if (!getCurrentChatId()) {
             throw new Error('This command can only be used in chat');
@@ -1580,6 +1690,7 @@ function registerWorldInfoSlashCommands() {
         const uid = value;
         const effect = args.effect;
 
+        // @ts-expect-error TS(2322) FIXME: Type '{ uid: any; }' is not assignable to type 'nu... Remove this comment to see the full error message
         const entries = await getEntriesFromFile(file, { args, unnamed: { uid }, callbackName: 'getTimedEffectCallback' });
 
         if (!entries) {
@@ -1587,24 +1698,26 @@ function registerWorldInfoSlashCommands() {
         }
 
         /** @type {WIScanEntry} */
-        // @ts-expect-error TS(2339): Property 'uid' does not exist on type 'unknown'.
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         const entry = structuredClone(entries.find(x => String(x.uid) === String(uid)));
 
         if (!entry) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.warning('Valid UID is required');
+            // @ts-expect-error TS(2345) FIXME: Argument of type '{ uid: any; }' is not assignable... Remove this comment to see the full error message
             logSlashCommandWarn('getTimedEffectCallback: Valid UID is required', args, { uid });
             return '';
         }
 
-        // @ts-expect-error TS(2339): Property 'world' does not exist on type 'unknown'.
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         entry.world = file; // Required by the timed effects manager
         const chat = getScanningChat();
         const timedEffects = new WorldInfoTimedEffects(chat, [entry]);
 
         if (!timedEffects.isValidEffectType(effect)) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.warning('Valid effect type is required');
+            // @ts-expect-error TS(2345) FIXME: Argument of type '{ uid: any; }' is not assignable... Remove this comment to see the full error message
             logSlashCommandWarn('getTimedEffectCallback: Valid effect type is required', args, { uid });
             return '';
         }
@@ -1623,6 +1736,7 @@ function registerWorldInfoSlashCommands() {
      * @param {string} value - New effect state
      * @returns {Promise<string>} Empty string on success
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
     async function setTimedEffectCallback(args, value) {
         if (!getCurrentChatId()) {
             throw new Error('This command can only be used in chat');
@@ -1633,12 +1747,14 @@ function registerWorldInfoSlashCommands() {
         const effect = args.effect;
 
         if (value === undefined) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.warning('New state is required');
+            // @ts-expect-error TS(2345) FIXME: Argument of type '{ value: any; }' is not assignab... Remove this comment to see the full error message
             logSlashCommandWarn('setTimedEffectCallback: New state is required', args, { value });
             return '';
         }
 
+        // @ts-expect-error TS(2322) FIXME: Type '{ value: any; }' is not assignable to type '... Remove this comment to see the full error message
         const entries = await getEntriesFromFile(file, { args, unnamed: { value }, callbackName: 'setTimedEffectCallback' });
 
         if (!entries) {
@@ -1646,31 +1762,35 @@ function registerWorldInfoSlashCommands() {
         }
 
         /** @type {WIScanEntry} */
-        // @ts-expect-error TS(2339): Property 'uid' does not exist on type 'unknown'.
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         const entry = structuredClone(entries.find(x => String(x.uid) === String(uid)));
 
         if (!entry) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.warning('Valid UID is required');
+            // @ts-expect-error TS(2345) FIXME: Argument of type '{ value: any; }' is not assignab... Remove this comment to see the full error message
             logSlashCommandWarn('setTimedEffectCallback: Valid UID is required', args, { value });
             return '';
         }
 
-        // @ts-expect-error TS(2339): Property 'world' does not exist on type 'unknown'.
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         entry.world = file; // Required by the timed effects manager
         const chat = getScanningChat();
         const timedEffects = new WorldInfoTimedEffects(chat, [entry]);
 
         if (!timedEffects.isValidEffectType(effect)) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.warning('Valid effect type is required');
+            // @ts-expect-error TS(2345) FIXME: Argument of type '{ value: any; }' is not assignab... Remove this comment to see the full error message
             logSlashCommandWarn('setTimedEffectCallback: Valid effect type is required', args, { value });
             return '';
         }
 
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         if (!entry[effect]) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.warning('This entry does not have the selected effect. Configure it in the editor first.');
+            // @ts-expect-error TS(2345) FIXME: Argument of type '{ value: any; }' is not assignab... Remove this comment to see the full error message
             logSlashCommandWarn('setTimedEffectCallback: This entry does not have the selected effect', args, { value });
             return '';
         }
@@ -1697,7 +1817,7 @@ function registerWorldInfoSlashCommands() {
         timedEffects.setTimedEffect(effect, entry, newEffectState);
 
         await saveMetadata();
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.success(`Timed effect "${effect}" for entry ${entry.uid} is now ${newEffectState ? 'active' : 'inactive'}`);
 
         return '';
@@ -1710,6 +1830,7 @@ function registerWorldInfoSlashCommands() {
          * @returns {SlashCommandEnumValue[]} Array of enum values for WI entry fields
          */
         wiEntryFields: () => Object.entries(newWorldInfoEntryDefinition).map(([key, value]) =>
+            // @ts-expect-error TS(2345) FIXME: Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
             new SlashCommandEnumValue(key, `[${value.type}] default: ${(typeof value.default === 'string' ? `'${value.default}'` : JSON.stringify(value.default))}`,
                 enumTypes.enum, enumIcons.getDataTypeIcon(value.type))),
 
@@ -1718,7 +1839,9 @@ function registerWorldInfoSlashCommands() {
          * @param {import('./slash-commands/SlashCommandExecutor.js').SlashCommandExecutor} executor - The slash command executor
          * @returns {SlashCommandEnumValue[]} Array of enum values for WI entry UIDs
          */
+        // @ts-expect-error TS(7006) FIXME: Parameter 'executor' implicitly has an 'any' type.
         wiUids: (/** @type {import('./slash-commands/SlashCommandExecutor.js').SlashCommandExecutor} */ executor) => {
+            // @ts-expect-error TS(7006) FIXME: Parameter 'it' implicitly has an 'any' type.
             const file = executor.namedArgumentList.find(it => it.name == 'file')?.value;
             if (file instanceof SlashCommandClosure) throw new Error('Argument \'file\' does not support closures');
             // Try find world from cache
@@ -1726,7 +1849,7 @@ function registerWorldInfoSlashCommands() {
             const world = worldInfoCache.get(file);
             if (!world) return [];
             return Object.entries(world.entries).map(([uid, data]) =>
-                // @ts-expect-error TS(2339): Property 'comment' does not exist on type 'unknown... Remove this comment to see the full error message
+                // @ts-expect-error TS(2345) FIXME: Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
                 new SlashCommandEnumValue(uid, `${data.comment ? `${data.comment}: ` : ''}${data.key.join(', ')}${data.keysecondary?.length ? ` [${Object.entries(world_info_logic).find(([_, value]) => value == data.selectiveLogic)[0]}] ${data.keysecondary.join(', ')}` : ''} [${getWiPositionString(data)}]`,
                     enumTypes.enum, enumIcons.getWiStatusIcon(data)));
         },
@@ -1735,7 +1858,9 @@ function registerWorldInfoSlashCommands() {
          * @returns {SlashCommandEnumValue[]} Array of enum values for timed effects
          */
         timedEffects: () => [
+            // @ts-expect-error TS(2345) FIXME: Argument of type '"Stays active for N messages"' i... Remove this comment to see the full error message
             new SlashCommandEnumValue('sticky', 'Stays active for N messages', enumTypes.enum, '📌'),
+            // @ts-expect-error TS(2345) FIXME: Argument of type '"Cooldown for N messages"' is no... Remove this comment to see the full error message
             new SlashCommandEnumValue('cooldown', 'Cooldown for N messages', enumTypes.enum, '⌛'),
         ],
     };
@@ -1744,6 +1869,7 @@ function registerWorldInfoSlashCommands() {
      * @param {object} entry - WI entry object
      * @returns {string} Position string representation
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'entry' implicitly has an 'any' type.
     function getWiPositionString(entry) {
         switch (entry.position) {
             case world_info_position.before: return '↑Char';
@@ -1777,6 +1903,7 @@ function registerWorldInfoSlashCommands() {
         callback: onWorldInfoChange,
         namedArgumentList: [
             new SlashCommandNamedArgument(
+                // @ts-expect-error TS(2345) FIXME: Argument of type 'SlashCommandEnumValue[]' is not ... Remove this comment to see the full error message
                 'state', 'set world state', [ARGUMENT_TYPE.STRING], false, false, null, commonEnumProviders.boolean('onOffToggle')(),
             ),
             new SlashCommandNamedArgument(
@@ -2173,6 +2300,7 @@ function registerWorldInfoSlashCommands() {
  * @param {string} name - The name of the world
  * @returns {Promise<void>} A promise that resolves when the world editor is loaded
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
 export async function showWorldEditor(name) {
     if (!name) {
         await hideWorldEditor();
@@ -2190,6 +2318,7 @@ export async function showWorldEditor(name) {
  * @param {string} name - The name of the world to load
  * @returns {Promise<object | null>} A promise that resolves to the loaded world information, or null if the request fails.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
 export async function loadWorldInfo(name) {
     if (!name) {
         return;
@@ -2227,21 +2356,24 @@ export async function updateWorldInfoList() {
 
     if (result.ok) {
         const data = await result.json();
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         const editorSelected = String(document.getElementById('world_editor_select').options[document.getElementById('world_editor_select').selectedIndex].text);
         world_names = data.world_names?.length ? data.world_names : [];
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         document.getElementById('world_info').querySelectorAll('option[value!=""]').forEach(el => el.remove());
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         document.getElementById('world_editor_select').querySelectorAll('option[value!=""]').forEach(el => el.remove());
 
+        // @ts-expect-error TS(7006) FIXME: Parameter 'item' implicitly has an 'any' type.
         world_names.forEach((item, i) => {
             const globalListOption = new Option(item, i.toString());
+            // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
             globalListOption.selected = selected_world_info.includes(item);
             const editorListOption = new Option(item, i.toString());
             editorListOption.selected = editorSelected === item;
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#world_info').append(globalListOption);
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#world_editor_select').append(editorListOption);
         });
     }
@@ -2258,8 +2390,11 @@ async function hideWorldEditor() {
  * @param {string} name - World info name to find
  * @returns {JQuery<HTMLElement>} The matching element
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
 function getWIElement(name) {
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const wiElement = $(Array.from(document.getElementById('world_info').children).filter(function (child) {
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         return child.textContent.toLowerCase() === name.toLowerCase();
     }));
 
@@ -2272,7 +2407,9 @@ function getWIElement(name) {
  * @param {object[]} data WI entries
  * @returns {object[]} Data with backfilled fields
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
 function addMissingWorldInfoFields(data) {
+    // @ts-expect-error TS(7006) FIXME: Parameter 'entry' implicitly has an 'any' type.
     data.forEach((entry) => {
         // Add missing fields from the template
         Object.entries(newWorldInfoEntryTemplate).forEach(([key, value]) => {
@@ -2313,25 +2450,34 @@ function addMissingWorldInfoFields(data) {
  * @param {{sortField?: string, sortOrder?: string, sortRule?: string}} [options.customSort] - Custom sort options, instead of the chosen UI sort
  * @returns {object[]} Sorted data
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
 export function sortWorldInfoEntries(data, { customSort = null } = {}) {
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const option = $(document.getElementById('world_info_sort_order').options[document.getElementById('world_info_sort_order').selectedIndex]);
+    // @ts-expect-error TS(2339) FIXME: Property 'sortField' does not exist on type 'never... Remove this comment to see the full error message
     const sortField = customSort?.sortField ?? option.data('field');
+    // @ts-expect-error TS(2339) FIXME: Property 'sortOrder' does not exist on type 'never... Remove this comment to see the full error message
     const sortOrder = customSort?.sortOrder ?? option.data('order');
+    // @ts-expect-error TS(2339) FIXME: Property 'sortRule' does not exist on type 'never'... Remove this comment to see the full error message
     const sortRule = customSort?.sortRule ?? option.data('rule');
     const orderSign = sortOrder === 'asc' ? 1 : -1;
 
     if (!data.length) return data;
 
     /** @type {(a: object, b: object) => number} */
+    // @ts-expect-error TS(7034) FIXME: Variable 'primarySort' implicitly has type 'any' i... Remove this comment to see the full error message
     let primarySort;
 
     // Secondary and tertiary it will always be sorted by Order descending, and last UID ascending
     // This is the most sensible approach for sorts where the primary sort has a lot of equal values
+    // @ts-expect-error TS(7006) FIXME: Parameter 'a' implicitly has an 'any' type.
     const secondarySort = (a, b) => b.order - a.order;
+    // @ts-expect-error TS(7006) FIXME: Parameter 'a' implicitly has an 'any' type.
     const tertiarySort = (a, b) => a.uid - b.uid;
 
     // If we have a search term for WI, we are sorting by weighting scores
     if (sortRule === 'search') {
+        // @ts-expect-error TS(7006) FIXME: Parameter 'a' implicitly has an 'any' type.
         primarySort = (a, b) => {
             const aScore = worldInfoFilter.getScore(FILTER_TYPES.WORLD_INFO_SEARCH, a.uid);
             const bScore = worldInfoFilter.getScore(FILTER_TYPES.WORLD_INFO_SEARCH, b.uid);
@@ -2339,6 +2485,7 @@ export function sortWorldInfoEntries(data, { customSort = null } = {}) {
         };
     } else if (sortRule === 'custom') {
         // First by display index
+        // @ts-expect-error TS(7006) FIXME: Parameter 'a' implicitly has an 'any' type.
         primarySort = (a, b) => {
             const aValue = a.displayIndex;
             const bValue = b.displayIndex;
@@ -2346,12 +2493,14 @@ export function sortWorldInfoEntries(data, { customSort = null } = {}) {
         };
     } else if (sortRule === 'priority') {
         // First constant, then normal, then disabled.
+        // @ts-expect-error TS(7006) FIXME: Parameter 'a' implicitly has an 'any' type.
         primarySort = (a, b) => {
             const aValue = a.disable ? 2 : a.constant ? 0 : 1;
             const bValue = b.disable ? 2 : b.constant ? 0 : 1;
             return aValue - bValue;
         };
     } else {
+        // @ts-expect-error TS(7006) FIXME: Parameter 'a' implicitly has an 'any' type.
         primarySort = (a, b) => {
             const aValue = a[sortField];
             const bValue = b[sortField];
@@ -2372,7 +2521,9 @@ export function sortWorldInfoEntries(data, { customSort = null } = {}) {
         };
     }
 
+    // @ts-expect-error TS(7006) FIXME: Parameter 'a' implicitly has an 'any' type.
     data.sort((a, b) => {
+        // @ts-expect-error TS(7005) FIXME: Variable 'primarySort' implicitly has an 'any' typ... Remove this comment to see the full error message
         return primarySort(a, b) || secondarySort(a, b) || tertiarySort(a, b);
     });
 
@@ -2383,11 +2534,12 @@ export function sortWorldInfoEntries(data, { customSort = null } = {}) {
  *
  */
 function nullWorldInfo() {
-    // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+    // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
     toastr.info('Create or import a new World Info file first.', 'World Info is not set', { timeOut: 10000, preventDuplicates: true });
 }
 
 /** @type {Select2Option[]} Cache all keys as selectable dropdown option */
+// @ts-expect-error TS(7034) FIXME: Variable 'worldEntryKeyOptionsCache' implicitly ha... Remove this comment to see the full error message
 const worldEntryKeyOptionsCache = [];
 
 /**
@@ -2397,13 +2549,17 @@ const worldEntryKeyOptionsCache = [];
  * @param {boolean?} [options.remove] - Whether the option was removed, so the count should be reduced - otherwise it'll be increased
  * @param {boolean?} [options.reset] - Whether the cache should be reset. Reset will also not trigger update of the controls, as we expect them to be redrawn anyway
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'keyOptions' implicitly has an 'any' typ... Remove this comment to see the full error message
 function updateWorldEntryKeyOptionsCache(keyOptions, { remove = false, reset = false } = {}) {
     if (!keyOptions.length) return;
     /** @type {Select2Option[]} */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
     const options = keyOptions.map(x => typeof x === 'string' ? { id: getSelect2OptionId(x), text: x } : x);
     if (reset) worldEntryKeyOptionsCache.length = 0;
+    // @ts-expect-error TS(7006) FIXME: Parameter 'option' implicitly has an 'any' type.
     options.forEach(option => {
         // Update the cache list
+        // @ts-expect-error TS(7005) FIXME: Variable 'worldEntryKeyOptionsCache' implicitly ha... Remove this comment to see the full error message
         let cachedEntry = worldEntryKeyOptionsCache.find(x => x.id == option.id);
         if (cachedEntry) {
             cachedEntry.count += !remove ? 1 : -1;
@@ -2415,6 +2571,7 @@ function updateWorldEntryKeyOptionsCache(keyOptions, { remove = false, reset = f
     });
 
     // Sort by count DESC and then alphabetically
+    // @ts-expect-error TS(7005) FIXME: Variable 'worldEntryKeyOptionsCache' implicitly ha... Remove this comment to see the full error message
     worldEntryKeyOptionsCache.sort((a, b) => b.count - a.count || a.text.localeCompare(b.text));
 }
 
@@ -2422,6 +2579,7 @@ function updateWorldEntryKeyOptionsCache(keyOptions, { remove = false, reset = f
  * @param {JQuery<HTMLElement>} $list - The list element to clear
  * @returns {void}
  */
+// @ts-expect-error TS(7006) FIXME: Parameter '$list' implicitly has an 'any' type.
 function clearEntryList($list) {
     console.time('clearEntryList');
 
@@ -2432,16 +2590,22 @@ function clearEntryList($list) {
         return;
     }
 
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(listElement.querySelectorAll('.inline-drawer')).off('inline-drawer-toggle');
 
+    // @ts-expect-error TS(7006) FIXME: Parameter 'option' implicitly has an 'any' type.
     listElement.querySelectorAll('option').forEach(function (option) {
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const $option = $(option);
         $option.off();
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $.cleanData([$option[0]]);
         $option.remove();
     });
 
+    // @ts-expect-error TS(7006) FIXME: Parameter 'select' implicitly has an 'any' type.
     listElement.querySelectorAll('select').forEach(function (select) {
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const $select = $(select);
         if ($select.data('select2')) {
             try {
@@ -2450,20 +2614,27 @@ function clearEntryList($list) {
                 console.debug('Select2 destroy failed:', e);
             }
         }
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const $container = $($select[0].parentElement);
         if ($container.length) {
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $($container[0].querySelectorAll('*')).off();
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $.cleanData(Array.from($container[0].querySelectorAll('*')));
             $container.remove();
         }
 
         $select.off();
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $.cleanData([$select[0]]);
     });
 
+    // @ts-expect-error TS(7006) FIXME: Parameter 'elem' implicitly has an 'any' type.
     listElement.querySelectorAll('div, span, input').forEach(function (elem) {
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const $elem = $(elem);
         $elem.off();
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $.cleanData([$elem[0]]);
         $elem.remove();
     });
@@ -2488,48 +2659,50 @@ function clearEntryList($list) {
  * @param {boolean} [flashOnNav] - Whether to flash highlight on navigation
  * @returns {Promise<void>}
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
 async function displayWorldEntries(name, data, navigation = navigation_option.none, flashOnNav = true) {
     updateEditor = async (navigation, flashOnNav = true) => await displayWorldEntries(name, data, navigation, flashOnNav);
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const worldEntriesList = $('#world_popup_entries_list');
     clearEntryList(worldEntriesList);
     worldEntriesList.show();
 
     if (!data || !('entries' in data)) {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#world_popup_new').off('click').on('click', nullWorldInfo);
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#world_popup_name_button').off('click').on('click', nullWorldInfo);
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#world_popup_export').off('click').on('click', nullWorldInfo);
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#world_popup_delete').off('click').on('click', nullWorldInfo);
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#world_duplicate').off('click').on('click', nullWorldInfo);
         worldEntriesList.hide();
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#world_info_pagination').html('');
         return;
     }
 
     // Regardless of whether success is displayed or not. Make sure the delete button is available.
     // Do not put this code behind.
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_popup_delete').off('click').on('click', async () => {
         const confirmation = await Popup.show.confirm(`Delete the World/Lorebook: "${name}"?`, 'This action is irreversible!');
         if (!confirmation) {
             return;
         }
 
-        // @ts-expect-error TS(2339): Property 'charLore' does not exist on type '{}'.
+        // @ts-expect-error TS(2339) FIXME: Property 'charLore' does not exist on type '{}'.
         if (world_info.charLore) {
-            // @ts-expect-error TS(2339): Property 'charLore' does not exist on type '{}'.
+            // @ts-expect-error TS(2339) FIXME: Property 'charLore' does not exist on type '{}'.
             world_info.charLore.forEach((charLore, index) => {
                 if (charLore.extraBooks?.includes(name)) {
+                    // @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
                     const tempCharLore = charLore.extraBooks.filter((e) => e !== name);
                     if (tempCharLore.length === 0) {
-                        // @ts-expect-error TS(2339): Property 'charLore' does not exist on type '{}'.
+                        // @ts-expect-error TS(2339) FIXME: Property 'charLore' does not exist on type '{}'.
                         world_info.charLore.splice(index, 1);
                     } else {
                         charLore.extraBooks = tempCharLore;
@@ -2551,6 +2724,7 @@ async function displayWorldEntries(name, data, navigation = navigation_option.no
      * @param {(entries: object[]) => void} callback - Callback to process the entries array
      * @returns {object[]} Array of entry objects
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'callback' implicitly has an 'any' type.
     function getDataArray(callback) {
         // Convert the data.entries object into an array
         let entriesArray = Object.keys(data.entries).map(uid => {
@@ -2581,19 +2755,19 @@ async function displayWorldEntries(name, data, navigation = navigation_option.no
     let startPage = 1;
 
     if (navigation === navigation_option.previous) {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         startPage = $('#world_info_pagination').pagination('getCurrentPageNum');
     }
 
     if (typeof navigation === 'number' && Number(navigation) >= 0) {
-        // @ts-expect-error TS(2554): Expected 1 arguments, but got 0.
+        // @ts-expect-error TS(2554) FIXME: Expected 1 arguments, but got 0.
         const data = getDataArray();
         const uidIndex = data.findIndex(x => x.uid === navigation);
         const perPage = Number(accountStorage.getItem(storageKey)) || perPageDefault;
         startPage = Math.floor(uidIndex / perPage) + 1;
     }
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_info_pagination').pagination({
         dataSource: getDataArray,
         pageSize: Number(accountStorage.getItem(storageKey)) || perPageDefault,
@@ -2607,6 +2781,7 @@ async function displayWorldEntries(name, data, navigation = navigation_option.no
         nextText: '>',
         formatNavigator: PAGINATION_TEMPLATE,
         showNavigator: true,
+        // @ts-expect-error TS(7006) FIXME: Parameter 'page' implicitly has an 'any' type.
         callback: async function (/** @type {object[]} */ page) {
             try {
                 clearEntryList(worldEntriesList);
@@ -2625,7 +2800,7 @@ async function displayWorldEntries(name, data, navigation = navigation_option.no
                     }
                 }
 
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+                // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
                 const isCustomOrder = document.getElementById('world_info_sort_order').options[document.getElementById('world_info_sort_order').selectedIndex]?.getAttribute('data-rule') === 'custom';
                 if (!isCustomOrder) {
                     blocks.forEach(block => {
@@ -2639,12 +2814,13 @@ async function displayWorldEntries(name, data, navigation = navigation_option.no
                 console.error('Error while rendering WI entries:', error);
             }
         },
+        // @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
         afterSizeSelectorChange: function (e) {
             accountStorage.setItem(storageKey, e.target.value);
         },
         afterPaging: function () {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             document.querySelectorAll('#world_popup_entries_list textarea[name="comment"]').forEach(function (el) {
+                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 initScrollHeight($(el));
             });
         },
@@ -2653,7 +2829,7 @@ async function displayWorldEntries(name, data, navigation = navigation_option.no
     if (typeof navigation === 'number' && Number(navigation) >= 0) {
         const selector = `#world_popup_entries_list [uid="${navigation}"]`;
         waitUntilCondition(() => document.querySelector(selector) !== null).finally(() => {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const element = $(selector);
 
             if (element.length === 0) {
@@ -2662,48 +2838,49 @@ async function displayWorldEntries(name, data, navigation = navigation_option.no
             }
 
             const elementOffset = element.offset();
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const parentOffset = $(element[0].parentElement).offset();
             const scrollOffset = elementOffset.top - parentOffset.top;
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#WorldInfo').scrollTop(scrollOffset);
             if (flashOnNav) flashHighlight(element[0]);
         });
     }
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_popup_new').off('click').on('click', () => {
         const entry = createWorldInfoEntry(name, data);
         if (entry) updateEditor(entry.uid);
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_popup_name_button').off('click').on('click', async () => {
         await renameWorldInfo(name, data);
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_backfill_memos').off('click').on('click', async () => {
         let counter = 0;
         for (const entry of Object.values(data.entries)) {
-            // @ts-expect-error TS(2339): Property 'comment' does not exist on type 'unknown... Remove this comment to see the full error message
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             if (!entry.comment && Array.isArray(entry.key) && entry.key.length > 0) {
-                // @ts-expect-error TS(2339): Property 'comment' does not exist on type 'unknown... Remove this comment to see the full error message
+                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 entry.comment = entry.key.join(', ').slice(0, MAX_COMMENT_LENGTH);
-                // @ts-expect-error TS(2339): Property 'uid' does not exist on type 'unknown'.
+                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 setWIOriginalDataValue(data, entry.uid, 'comment', entry.comment);
                 counter++;
             }
         }
 
         if (counter > 0) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.info(`Backfilled ${counter} titles`);
             await saveWorldInfo(name, data);
             updateEditor(navigation_option.previous);
         }
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_apply_current_sorting').off('click').on('click', async () => {
         const entryCount = Object.keys(data.entries).length;
         const moreThan100 = entryCount > 100;
@@ -2718,12 +2895,12 @@ async function displayWorldEntries(name, data, navigation = navigation_option.no
 
         const start = Number(result);
         if (isNaN(start) || start < 0) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.error(t`Invalid number: ${result}`, t`Apply Current Sorting`);
             return;
         }
         if (start < entryCount) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.warning(t`A number lower than the entry count has been chosen. All entries below that will default to 0.`, t`Apply Current Sorting`);
         }
 
@@ -2734,28 +2911,28 @@ async function displayWorldEntries(name, data, navigation = navigation_option.no
         let updated = 0, current = start;
         for (const entry of entries) {
             const newOrder = Math.max(current--, 0);
-            // @ts-expect-error TS(2339): Property 'order' does not exist on type 'unknown'.
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             if (entry.order === newOrder) continue;
 
-            // @ts-expect-error TS(2339): Property 'order' does not exist on type 'unknown'.
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             entry.order = newOrder;
-            // @ts-expect-error TS(2339): Property 'order' does not exist on type 'unknown'.
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             setWIOriginalDataValue(data, entry.order, 'order', entry.order);
             updated++;
         }
 
         if (updated > 0) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.info(`Updated ${updated} Order values`, 'Apply Custom Sorting');
             await saveWorldInfo(name, data, true);
             updateEditor(navigation_option.previous);
         } else {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.info('All values up to date', 'Apply Custom Sorting');
         }
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_popup_export').off('click').on('click', () => {
         if (name && data) {
             const jsonValue = JSON.stringify(data);
@@ -2764,10 +2941,10 @@ async function displayWorldEntries(name, data, navigation = navigation_option.no
         }
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_duplicate').off('click').on('click', async () => {
         // Find current name for the world selected
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         const selectedIndex = String(document.getElementById('world_editor_select').options[document.getElementById('world_editor_select').selectedIndex].value);
         const worldName = world_names[selectedIndex] || null;
 
@@ -2781,7 +2958,7 @@ async function displayWorldEntries(name, data, navigation = navigation_option.no
 
             const selectedIndex = world_names.indexOf(finalName);
             if (selectedIndex !== -1) {
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $('#world_editor_select').val(selectedIndex).trigger('change');
             } else {
                 await hideWorldEditor();
@@ -2799,10 +2976,13 @@ async function displayWorldEntries(name, data, navigation = navigation_option.no
         items: '.world_entry',
         delay: getSortableDelay(),
         handle: '.drag-handle',
+        // @ts-expect-error TS(7006) FIXME: Parameter '_event' implicitly has an 'any' type.
         stop: async function (_event, _ui) {
+                // @ts-expect-error TS(2339) FIXME: Property 'dataset' does not exist on type 'Element... Remove this comment to see the full error message
                 const firstEntryUid = document.querySelector('#world_popup_entries_list .world_entry')?.dataset.uid;
             const minDisplayIndex = data?.entries[firstEntryUid]?.displayIndex ?? 0;
             document.querySelectorAll('#world_popup_entries_list .world_entry').forEach(function (el, index) {
+                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 const uid = $(el).data('uid');
 
                 // Update the display index in the data array
@@ -2868,9 +3048,9 @@ export const originalWIDataKeyMap = {
 /** Checks the state of the current search, and adds/removes the search sorting option accordingly */
 function verifyWorldInfoSearchSortRule() {
     const searchTerm = worldInfoFilter.getFilterData(FILTER_TYPES.WORLD_INFO_SEARCH);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const searchOption = $('#world_info_sort_order option[data-rule="search"]');
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const selector = $('#world_info_sort_order');
     const isHidden = searchOption.attr('hidden') !== undefined;
 
@@ -2896,8 +3076,10 @@ function verifyWorldInfoSearchSortRule() {
  * @param {string} key - The key of the value to be set.
  * @param {unknown} value - The value to be set.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
 export function setWIOriginalDataValue(data, uid, key, value) {
     if (data.originalData && Array.isArray(data.originalData.entries)) {
+        // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
         const originalEntry = data.originalData.entries.find(x => x.uid === uid);
 
         if (!originalEntry) {
@@ -2913,10 +3095,12 @@ export function setWIOriginalDataValue(data, uid, key, value) {
  * @param {object} data - The data object containing the original data entries
  * @param {string} uid - The unique identifier of the data entry to be deleted
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
 export function deleteWIOriginalDataValue(data, uid) {
     if (data.originalData && Array.isArray(data.originalData.entries)) {
         // Non-strict equality is used here to allow for both string and number comparisons
         // @eslint-disable-next-line eqeqeq
+        // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
         const originalIndex = data.originalData.entries.findIndex(x => x.uid == uid);
 
         if (originalIndex >= 0) {
@@ -2935,13 +3119,16 @@ export function deleteWIOriginalDataValue(data, uid) {
  * @param {string} input - One or multiple keywords or regexes, separated by commas
  * @returns {string[]} An array of keywords and regexes
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'input' implicitly has an 'any' type.
 export function splitKeywordsAndRegexes(input) {
     /** @type {string[]} */
+    // @ts-expect-error TS(7034) FIXME: Variable 'keywordsAndRegexes' implicitly has type ... Remove this comment to see the full error message
     const keywordsAndRegexes = [];
 
     // We can make this easy. Instead of writing another function to find and parse regexes,
     // we gonna utilize the custom tokenizer that also handles the input.
     // No need for validation here
+    // @ts-expect-error TS(7006) FIXME: Parameter 'item' implicitly has an 'any' type.
     const addFindCallback = (/** @type {Select2Option} */ item) => {
         keywordsAndRegexes.push(item.text);
     };
@@ -2952,6 +3139,7 @@ export function splitKeywordsAndRegexes(input) {
         addFindCallback({ id: getSelect2OptionId(finalTerm), text: finalTerm });
     }
 
+    // @ts-expect-error TS(7005) FIXME: Variable 'keywordsAndRegexes' implicitly has an 'a... Remove this comment to see the full error message
     return keywordsAndRegexes;
 }
 
@@ -2962,6 +3150,7 @@ export function splitKeywordsAndRegexes(input) {
  * @param {function(Select2Option):void} callback - The original callback function to call if an item should be inserted
  * @returns {{term: string}} - The remaining part that is untokenized in the textbox
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'input' implicitly has an 'any' type.
 function customTokenizer(input, _selection, callback) {
     let current = input.term;
 
@@ -2998,7 +3187,9 @@ function customTokenizer(input, _selection, callback) {
 
                 // Last chance to check for valid regex again. Because it might have been valid while typing, but now is not valid anymore and contains commas we need to split.
                 if (token.startsWith('/') && !isRegex) {
+                    // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
                     const tokens = token.split(',').map(x => x.trim());
+                    // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
                     tokens.forEach(x => callback({ id: getSelect2OptionId(x), text: x }));
                 } else {
                     callback({ id: getSelect2OptionId(token), text: token });
@@ -3024,6 +3215,7 @@ function customTokenizer(input, _selection, callback) {
  * @param {string} input - A delimited regex string
  * @returns {boolean} Whether this would be a valid regex that can be parsed and executed
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'input' implicitly has an 'any' type.
 function isValidRegex(input) {
     return parseRegexFromString(input) !== null;
 }
@@ -3036,6 +3228,7 @@ function isValidRegex(input) {
  * @param {string} input - A delimited regex string
  * @returns {RegExp|null} The regex object, or null if not a valid regex
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'input' implicitly has an 'any' type.
 export function parseRegexFromString(input) {
     // Extracting the regex pattern and flags
     const match = input.match(/^\/([\w\W]+?)\/([gimsuy]*)$/);
@@ -3075,12 +3268,14 @@ export function parseRegexFromString(input) {
  * @param {object} params.data - The data object containing entries.
  * @returns {void}
  */
+// @ts-expect-error TS(7031) FIXME: Binding element 'template' implicitly has an 'any'... Remove this comment to see the full error message
 function enableKeysInputHelper({ template, entry, entryPropName, originalDataValueName, name, data }) {
-    // @ts-expect-error TS(2339): Property 'wi_key_input_plaintext' does not exist o... Remove this comment to see the full error message
+    // @ts-expect-error TS(2339) FIXME: Property 'wi_key_input_plaintext' does not exist o... Remove this comment to see the full error message
     const isFancyInput = !isMobile() && !power_user.wi_key_input_plaintext;
     const input = isFancyInput ? template.find(`select[name="${entryPropName}"]`) : template.find(`textarea[name="${entryPropName}"]`);
     input.data('uid', entry.uid);
     input[0].dataset.macros = ''; // active
+    // @ts-expect-error TS(7006) FIXME: Parameter 'event' implicitly has an 'any' type.
     input.on('click', function (event) {
         event.stopPropagation();
     });
@@ -3091,6 +3286,7 @@ function enableKeysInputHelper({ template, entry, entryPropName, originalDataVal
      * @param {boolean} [root0.searchStyle] - Whether to apply search style
      * @returns {JQuery<HTMLElement>|Element} The styled element
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'item' implicitly has an 'any' type.
     function templateStyling(item, { searchStyle = false } = {}) {
         const content = document.createElement('span');
         content.classList.add('item');
@@ -3121,14 +3317,18 @@ function enableKeysInputHelper({ template, entry, entryPropName, originalDataVal
     }
 
     if (isFancyInput) {
+        // @ts-expect-error TS(2322) FIXME: Type '{ skipReset: true; noSave: true; }' is not a... Remove this comment to see the full error message
         select2ModifyOptions(input, entry[entryPropName], { select: true, changeEventArgs: { skipReset: true, noSave: true } });
         input.select2({
+            // @ts-expect-error TS(7005) FIXME: Variable 'worldEntryKeyOptionsCache' implicitly ha... Remove this comment to see the full error message
             ajax: dynamicSelect2DataViaAjax(() => worldEntryKeyOptionsCache),
             tags: true,
             tokenSeparators: [','],
             tokenizer: customTokenizer,
             placeholder: input.attr('placeholder'),
+            // @ts-expect-error TS(7006) FIXME: Parameter 'item' implicitly has an 'any' type.
             templateResult: item => templateStyling(item, { searchStyle: true }),
+            // @ts-expect-error TS(7006) FIXME: Parameter 'item' implicitly has an 'any' type.
             templateSelection: item => templateStyling(item),
         });
 
@@ -3137,34 +3337,40 @@ function enableKeysInputHelper({ template, entry, entryPropName, originalDataVal
          * @param {Event} _event
          * @param {{ skipReset?: boolean, noSave?: boolean }} [arg]
          */
+        // @ts-expect-error TS(7006) FIXME: Parameter '_event' implicitly has an 'any' type.
         input.on('change', async function (_event, arg) {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const uid = $(this).data('uid');
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const keys = ($(this).select2('data')).map(x => x.text);
             const skipReset = arg?.skipReset ?? false;
             const noSave = arg?.noSave ?? false;
+            // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
             if (!skipReset) await resetScrollHeight(this);
             if (!noSave) {
                 data.entries[uid][entryPropName] = keys;
                 setWIOriginalDataValue(data, uid, originalDataValueName, data.entries[uid][entryPropName]);
                 await saveWorldInfo(name, data);
             }
+            // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
             this.classList.toggle('empty', !data.entries[uid][entryPropName].length);
             // Update the commentInput's placeholder for primary keys
             if (entryPropName === 'key') {
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 const commentInput = $(_event.currentTarget.closest('.world_entry_form').querySelector('textarea[name="comment"]'));
                 setCommentPlaceholder(data.entries[uid][entryPropName].join(', '), commentInput);
             }
         });
 
         input[0].classList.toggle('empty', !entry[entryPropName].length);
+        // @ts-expect-error TS(7006) FIXME: Parameter 'event' implicitly has an 'any' type.
         input.on('select2:select', event => updateWorldEntryKeyOptionsCache([event.params.data]));
+        // @ts-expect-error TS(7006) FIXME: Parameter 'event' implicitly has an 'any' type.
         input.on('select2:unselect', event => updateWorldEntryKeyOptionsCache([event.params.data], { remove: true }));
 
+        // @ts-expect-error TS(7006) FIXME: Parameter 'target' implicitly has an 'any' type.
         select2ChoiceClickSubscribe(input, target => {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const key = $(target.closest('.regex-highlight, .item')).text();
             const selected = input.val();
             if (!Array.isArray(selected)) return;
@@ -3181,23 +3387,26 @@ function enableKeysInputHelper({ template, entry, entryPropName, originalDataVal
          * @param {Event} _event
          * @param {{ skipReset?: boolean, noSave?: boolean }} [arg]
          */
+        // @ts-expect-error TS(7006) FIXME: Parameter '_event' implicitly has an 'any' type.
         input.on('change', async function (_event, arg) {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const uid = $(this).data('uid');
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const value = String($(this).val());
             const skipReset = arg?.skipReset ?? false;
             const noSave = arg?.noSave ?? false;
+            // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
             if (!skipReset) await resetScrollHeight(this);
             if (!noSave) {
                 data.entries[uid][entryPropName] = splitKeywordsAndRegexes(value);
                 setWIOriginalDataValue(data, uid, originalDataValueName, data.entries[uid][entryPropName]);
                 await saveWorldInfo(name, data);
+                // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
                 this.classList.toggle('empty', !data.entries[uid][entryPropName].length);
             }
             // Update the commentInput's placeholder for primary keys
             if (entryPropName === 'key') {
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 const commentInput = $(_event.currentTarget.closest('.world_entry_form').querySelector('textarea[name="comment"]'));
                 setCommentPlaceholder(value, commentInput);
             }
@@ -3216,14 +3425,17 @@ function enableKeysInputHelper({ template, entry, entryPropName, originalDataVal
  * @param {object} params.data - The data object containing entries.
  * @param {string} params.name - The name of the world info to save changes to.
  */
+// @ts-expect-error TS(7031) FIXME: Binding element 'template' implicitly has an 'any'... Remove this comment to see the full error message
 function handleMatchCheckboxHelper({ template, entry, fieldName, data, name }) {
+    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     const key = originalWIDataKeyMap[fieldName];
     const checkBoxElem = template.find(`input[type="checkbox"][name="${fieldName}"]`);
     checkBoxElem.data('uid', entry.uid);
+    // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
     checkBoxElem.on('input', async function (_, { noSave = false } = {}) {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const uid = $(this).data('uid');
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const value = $(this).prop('checked');
         data.entries[uid][fieldName] = value;
         setWIOriginalDataValue(data, uid, key, data.entries[uid][fieldName]);
@@ -3239,6 +3451,7 @@ function handleMatchCheckboxHelper({ template, entry, fieldName, data, name }) {
  * @param {object} params.data - The data object containing entries.
  * @param {string} params.uid - The unique identifier of the entry to update.
  */
+// @ts-expect-error TS(7031) FIXME: Binding element 'template' implicitly has an 'any'... Remove this comment to see the full error message
 function updatePosOrdDisplayHelper({ template, data, uid }) {
     const entry = data.entries[uid];
     let posText = entry.position;
@@ -3256,9 +3469,10 @@ function updatePosOrdDisplayHelper({ template, data, uid }) {
  * Helper to initialize character filter select2.
  * @param {JQuery<HTMLElement>} characterFilter - The select element for character filter.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'characterFilter' implicitly has an 'any... Remove this comment to see the full error message
 function initCharacterFilterSelect2Helper(characterFilter) {
     if (!isMobile()) {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(characterFilter).select2({
             width: '100%',
             placeholder: t`Tie this entry to specific characters or characters with specific tags`,
@@ -3274,10 +3488,12 @@ function initCharacterFilterSelect2Helper(characterFilter) {
  * @param {JQuery<HTMLElement>} params.characterFilter - The select element to fill with options.
  * @param {object} params.entry - The entry object containing character filter data.
  */
+// @ts-expect-error TS(7031) FIXME: Binding element 'characterFilter' implicitly has a... Remove this comment to see the full error message
 function fillCharacterAndTagOptionsHelper({ characterFilter, entry }) {
     const characters = getContext().characters;
     characters.forEach((character) => {
         const option = document.createElement('option');
+        // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
         const name = character.avatar.replace(/\.[^/.]+$/, '') ?? character.name;
         option.innerText = name;
         option.selected = entry.characterFilter?.names?.includes(name);
@@ -3303,20 +3519,24 @@ function fillCharacterAndTagOptionsHelper({ characterFilter, entry }) {
  * @param {object} params.entry - The entry object to update.
  * @param {string} params.name - The name of the world info to save changes to.
  */
-// @ts-expect-error TS(6133): 'entry' is declared but its value is never read.
+// @ts-expect-error TS(7031) FIXME: Binding element 'characterFilter' implicitly has a... Remove this comment to see the full error message
 function handleCharacterFilterChangeHelper({ characterFilter, data, entry, name }) {
+    // @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
     characterFilter.on('mousedown change', async function (e) {
         if (world_names.length === 0) {
             e.preventDefault();
             return;
         }
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const uid = $(this).data('uid');
+        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
         const selectedOptions = this.selectedOptions;
         if ((!selectedOptions || selectedOptions?.length === 0) && !data.entries[uid].characterFilter?.isExclude) {
             delete data.entries[uid].characterFilter;
         } else {
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             const names = Array.from(selectedOptions).filter(o => o.matches('[data-type="character"]')).map(o => o instanceof HTMLOptionElement && o.innerText);
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             const tags = Array.from(selectedOptions).filter(o => o.matches('[data-type="tag"]')).map(o => o instanceof HTMLOptionElement && o.value);
             Object.assign(
                 data.entries[uid],
@@ -3342,18 +3562,20 @@ function handleCharacterFilterChangeHelper({ characterFilter, data, entry, name 
  * @param {object} params.entry - The entry object to update.
  * @param {string} params.name - The name of the world info to save changes to.
  */
+// @ts-expect-error TS(7031) FIXME: Binding element 'probabilityInput' implicitly has ... Remove this comment to see the full error message
 function handleProbabilityInputHelper({ probabilityInput, data, entry, name }) {
     probabilityInput.data('uid', entry.uid);
+    // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
     probabilityInput.on('input', async function (_, { noSave = false } = {}) {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const uid = $(this).data('uid');
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const value = Number($(this).val());
         data.entries[uid].probability = !isNaN(value) ? value : null;
         if (data.entries[uid].probability !== null) {
             data.entries[uid].probability = Math.min(100, Math.max(0, data.entries[uid].probability));
             if (data.entries[uid].probability !== value) {
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $(this).val(data.entries[uid].probability);
             }
         }
@@ -3373,14 +3595,17 @@ function handleProbabilityInputHelper({ probabilityInput, data, entry, name }) {
  * @param {string} params.name - The name of the world info to save changes to.
  * @param {JQuery<HTMLElement>} params.probabilityInput - The input element for probability.
  */
+// @ts-expect-error TS(7031) FIXME: Binding element 'probabilityToggle' implicitly has... Remove this comment to see the full error message
 function handleProbabilityToggleHelper({ probabilityToggle, data, entry, name, probabilityInput }) {
     probabilityToggle.data('uid', entry.uid);
+    // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
     probabilityToggle.on('input', async function (_, { noSave = false } = {}) {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const uid = $(this).data('uid');
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const value = $(this).prop('checked');
         data.entries[uid].useProbability = value;
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const probabilityContainer = $(this.closest('.world_entry').querySelector('.probabilityContainer'));
         if (!noSave) await saveWorldInfo(name, data);
         if (value) probabilityContainer.show(); else probabilityContainer.hide();
@@ -3393,6 +3618,7 @@ function handleProbabilityToggleHelper({ probabilityToggle, data, entry, name, p
         probabilityInput.val(data.entries[uid].probability).trigger('input', { noSave });
     });
     probabilityToggle.prop('checked', true).trigger('input', { noSave: true });
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(probabilityToggle[0].parentElement).hide();
 }
 
@@ -3405,14 +3631,17 @@ function handleProbabilityToggleHelper({ probabilityToggle, data, entry, name, p
  * @param {object} params.data - The data object containing entries.
  * @param {string} params.name - The name of the world info to save changes to.
  */
+// @ts-expect-error TS(7031) FIXME: Binding element 'selectElem' implicitly has an 'an... Remove this comment to see the full error message
 function handleBooleanSelectHelper({ selectElem, entry, entryKey, data, name }) {
     selectElem.data('uid', entry.uid);
+    // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
     selectElem.on('input', async function (_, { noSave = false } = {}) {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const uid = $(this).data('uid');
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const value = $(this).val();
         data.entries[uid][entryKey] = value === 'null' ? null : value === 'true';
+        // @ts-expect-error TS(7006) FIXME: Parameter 'm' implicitly has an 'any' type.
         setWIOriginalDataValue(data, uid, `extensions.${entryKey.replace(/[A-Z]/g, m => `_${m.toLowerCase()}`)}`, data.entries[uid][entryKey]);
         if (!noSave) await saveWorldInfo(name, data);
     });
@@ -3431,25 +3660,28 @@ function handleBooleanSelectHelper({ selectElem, entry, entryKey, data, name }) 
  * @param {number} params.max - The maximum value for the number input.
  * @param {boolean} [params.clamp] - Whether to clamp the value within the min and max range.
  */
+// @ts-expect-error TS(7031) FIXME: Binding element 'inputElem' implicitly has an 'any... Remove this comment to see the full error message
 function handleNumberInputHelper({ inputElem, entry, entryKey, data, name, min, max, clamp = false }) {
     inputElem.data('uid', entry.uid);
+    // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
     inputElem.on('input', async function (_, { noSave = false } = {}) {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const uid = $(this).data('uid');
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         let value = Number($(this).val());
         if (clamp) {
             if (value < min) {
                 value = min;
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $(this).val(min);
             } else if (value > max) {
                 value = max;
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $(this).val(max);
             }
         }
         data.entries[uid][entryKey] = !isNaN(value) ? value : null;
+        // @ts-expect-error TS(7006) FIXME: Parameter 'm' implicitly has an 'any' type.
         setWIOriginalDataValue(data, uid, `extensions.${entryKey.replace(/[A-Z]/g, m => `_${m.toLowerCase()}`)}`, data.entries[uid][entryKey]);
         if (!noSave) await saveWorldInfo(name, data);
     });
@@ -3464,14 +3696,17 @@ function handleNumberInputHelper({ inputElem, entry, entryKey, data, name, min, 
  * @param {object} params.data - The data object containing entries.
  * @param {string} params.name - The name of the world info to save changes to.
  */
+// @ts-expect-error TS(7031) FIXME: Binding element 'entryStateSelector' implicitly ha... Remove this comment to see the full error message
 function handleEntryStateSelectorHelper({ entryStateSelector, entry, data, name }) {
     entryStateSelector.data('uid', entry.uid);
+    // @ts-expect-error TS(7006) FIXME: Parameter 'event' implicitly has an 'any' type.
     entryStateSelector.on('click', function (event) {
         event.stopPropagation();
     });
+    // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
     entryStateSelector.on('input', async function (_, { noSave = false } = {}) {
         const uid = entry.uid;
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const value = $(this).val();
         switch (value) {
             case 'constant':
@@ -3508,6 +3743,7 @@ function handleEntryStateSelectorHelper({ entryStateSelector, entry, data, name 
  * @param {string} params.name - The name of the world info to save changes to.
  * @param {JQuery<HTMLElement>} params.template - The template element for the entry.
  */
+// @ts-expect-error TS(7031) FIXME: Binding element 'entryKillSwitch' implicitly has a... Remove this comment to see the full error message
 function handleEntryKillSwitchHelper({ entryKillSwitch, entry, data, name, template }) {
     entryKillSwitch.data('uid', entry.uid);
     entryKillSwitch.on('click', async function () {
@@ -3531,6 +3767,7 @@ function handleEntryKillSwitchHelper({ entryKillSwitch, entry, data, name, templ
  * @param {string} keys Text to display in commentInput's placeholder.
  * @param {JQuery<HTMLElement>} commentInput The comment input element.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'keys' implicitly has an 'any' type.
 function setCommentPlaceholder(keys, commentInput) {
     // Limit placeholder text to avoid performance issues.
     keys = keys.slice(0, MAX_COMMENT_LENGTH);
@@ -3544,6 +3781,7 @@ function setCommentPlaceholder(keys, commentInput) {
  * @param {object} entry - The entry object to be edited.
  * @returns {Promise<JQuery<HTMLElement>>} The entry header template element
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
 export async function getWorldEntry(name, data, entry) {
     if (!data.entries[entry.uid]) return;
 
@@ -3551,7 +3789,7 @@ export async function getWorldEntry(name, data, entry) {
     headerTemplate.data('uid', entry.uid);
     headerTemplate.attr('uid', entry.uid);
 
-    // @ts-expect-error TS(2339): Property 'wi_key_input_plaintext' does not exist o... Remove this comment to see the full error message
+    // @ts-expect-error TS(2339) FIXME: Property 'wi_key_input_plaintext' does not exist o... Remove this comment to see the full error message
     if (typeof power_user.wi_key_input_plaintext === 'undefined') power_user.wi_key_input_plaintext = true;
 
     // Comment
@@ -3562,11 +3800,13 @@ export async function getWorldEntry(name, data, entry) {
     setCommentPlaceholder(keys, commentInput);
 
     commentInput.data('uid', entry.uid);
+    // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
     commentInput.on('input', async function (_, { skipReset = false, noSave = false } = {}) {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const uid = $(this).data('uid');
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const value = $(this).val();
+        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
         if (!skipReset) await resetScrollHeight(this);
         data.entries[uid].comment = value;
         setWIOriginalDataValue(data, uid, 'comment', data.entries[uid].comment);
@@ -3577,10 +3817,11 @@ export async function getWorldEntry(name, data, entry) {
     // Order
     const orderInput = headerTemplate.find('input[name="order"]');
     orderInput.data('uid', entry.uid);
+    // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
     orderInput.on('input', async function (_, { noSave = false } = {}) {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const uid = $(this).data('uid');
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const value = Number($(this).val());
         data.entries[uid].order = !isNaN(value) ? value : 0;
         updatePosOrdDisplayHelper({ template: headerTemplate, data, uid });
@@ -3604,18 +3845,20 @@ export async function getWorldEntry(name, data, entry) {
     if (entry.position === undefined) entry.position = 0;
     const positionInput = headerTemplate.find('select[name="position"]');
     positionInput.data('uid', entry.uid);
+    // @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
     positionInput.on('click', e => e.stopPropagation());
+    // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
     positionInput.on('input', async function (_, { noSave = false } = {}) {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const uid = $(this).data('uid');
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const value = Number($(this).val());
         data.entries[uid].position = !isNaN(value) ? value : 0;
         const depthInput = headerTemplate.find('input[name="depth"]');
         if (value === world_info_position.atDepth) {
             depthInput.prop('disabled', false);
             depthInput.css('visibility', 'visible');
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
             const role = Number(this.options[this.selectedIndex]?.getAttribute('data-role'));
             data.entries[uid].role = role;
         } else {
@@ -3646,7 +3889,7 @@ export async function getWorldEntry(name, data, entry) {
 
     // Duplicate/delete/move buttons
     headerTemplate.find('.duplicate_entry_button').data('uid', entry.uid).on('click', async function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const uid = $(this).data('uid');
         const entryDup = duplicateWorldInfoEntry(data, uid);
         if (entryDup) {
@@ -3654,9 +3897,10 @@ export async function getWorldEntry(name, data, entry) {
             updateEditor(entryDup.uid);
         }
     });
+    // @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
     headerTemplate.find('.delete_entry_button').data('uid', entry.uid).on('click', async function (e) {
         e.stopPropagation();
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const uid = $(this).data('uid');
         const deleted = await deleteWorldInfoEntry(data, uid);
         if (!deleted) return;
@@ -3664,11 +3908,12 @@ export async function getWorldEntry(name, data, entry) {
         await saveWorldInfo(name, data);
         updateEditor(navigation_option.previous);
     });
+    // @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
     headerTemplate.find('.move_entry_button').attr('data-uid', entry.uid).attr('data-current-world', name).on('click', async function (e) {
         e.stopPropagation();
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const sourceUid = $(this).attr('data-uid');
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const sourceWorld = $(this).attr('data-current-world');
         const sourceWorldInfo = await loadWorldInfo(sourceWorld);
         if (!sourceWorldInfo) return;
@@ -3682,6 +3927,7 @@ export async function getWorldEntry(name, data, entry) {
         defaultOption.textContent = `-- ${t`Select Target Lorebook`} --`;
         select.appendChild(defaultOption);
         let selectableWorldCount = 0;
+        // @ts-expect-error TS(7006) FIXME: Parameter 'worldName' implicitly has an 'any' type... Remove this comment to see the full error message
         world_names.forEach(worldName => {
             if (worldName !== sourceWorld) {
                 const option = document.createElement('option');
@@ -3692,7 +3938,7 @@ export async function getWorldEntry(name, data, entry) {
             }
         });
         if (selectableWorldCount === 0) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.warning(t`There are no other lorebooks to move to.`);
             return;
         }
@@ -3707,6 +3953,7 @@ export async function getWorldEntry(name, data, entry) {
         });
         const popup = new Popup(container, POPUP_TYPE.CONFIRM, '', {
             cancelButton: t`Cancel`,
+            // @ts-expect-error TS(2322) FIXME: Type '{ text: any; result: number; }[]' is not ass... Remove this comment to see the full error message
             customButtons: [
                 { text: t`Move`, result: POPUP_RESULT.CUSTOM1 },
                 { text: t`Copy`, result: POPUP_RESULT.CUSTOM2 },
@@ -3718,7 +3965,7 @@ export async function getWorldEntry(name, data, entry) {
         if (selectedWorldIndex === -1) return;
         const selectedValue = world_names[selectedWorldIndex];
         if (!selectedValue) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.warning(t`Please select a target lorebook.`);
             return;
         }
@@ -3727,9 +3974,12 @@ export async function getWorldEntry(name, data, entry) {
     });
 
     let drawerInitialized = false;
+    // @ts-expect-error TS(7034) FIXME: Variable 'drawerDestroyTimeout' implicitly has typ... Remove this comment to see the full error message
     let drawerDestroyTimeout = null;
     headerTemplate.find('.inline-drawer').on('inline-drawer-toggle', function () {
+        // @ts-expect-error TS(7005) FIXME: Variable 'drawerDestroyTimeout' implicitly has an ... Remove this comment to see the full error message
         if (drawerDestroyTimeout) {
+            // @ts-expect-error TS(7005) FIXME: Variable 'drawerDestroyTimeout' implicitly has an ... Remove this comment to see the full error message
             clearTimeout(drawerDestroyTimeout);
             drawerDestroyTimeout = null;
         }
@@ -3768,18 +4018,19 @@ export async function getWorldEntry(name, data, entry) {
 
         // Key input switch
         editTemplate.find('.switch_input_type_icon').on('click', function () {
-            // @ts-expect-error TS(2339): Property 'wi_key_input_plaintext' does not exist o... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'wi_key_input_plaintext' does not exist o... Remove this comment to see the full error message
             power_user.wi_key_input_plaintext = !power_user.wi_key_input_plaintext;
             saveSettingsDebounced();
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const uid = $(this.closest('.world_entry')).data('uid');
             updateEditor(uid, false);
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(`.world_entry[uid="${uid}"] .inline-drawer-icon`).trigger('click');
+        // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
         }).each((_, icon) => {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(icon).attr('title', $(icon).data(power_user.wi_key_input_plaintext ? 'tooltip-on' : 'tooltip-off'));
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(icon).text($(icon).data(power_user.wi_key_input_plaintext ? 'icon-on' : 'icon-off'));
         });
 
@@ -3793,28 +4044,32 @@ export async function getWorldEntry(name, data, entry) {
         // Comment toggle
         const commentToggle = editTemplate.find('input[name="addMemo"]');
         commentToggle.data('uid', entry.uid);
+        // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
         commentToggle.on('input', async function (_, { noSave = false } = {}) {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const uid = $(this).data('uid');
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const value = $(this).prop('checked');
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const commentContainer = $(this.closest('.world_entry').querySelector('.commentContainer'));
             data.entries[uid].addMemo = value;
             if (!noSave) await saveWorldInfo(name, data);
             if (value) commentContainer.show(); else commentContainer.hide();
         });
         commentToggle.prop('checked', true).trigger('input', { noSave: true });
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(commentToggle[0].parentElement).hide();
 
         // Logic AND/NOT
         const selectiveLogicDropdown = editTemplate.find('select[name="entryLogicType"]');
         selectiveLogicDropdown.data('uid', entry.uid);
+        // @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
         selectiveLogicDropdown.on('click', e => e.stopPropagation());
+        // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
         selectiveLogicDropdown.on('input', async function (_, { noSave = false } = {}) {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const uid = $(this).data('uid');
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const value = Number($(this).val());
             data.entries[uid].selectiveLogic = !isNaN(value) ? value : world_info_logic.AND_ANY;
             setWIOriginalDataValue(data, uid, 'selectiveLogic', data.entries[uid].selectiveLogic);
@@ -3825,23 +4080,27 @@ export async function getWorldEntry(name, data, entry) {
         // Selective
         const selectiveInput = editTemplate.find('input[name="selective"]');
         selectiveInput.data('uid', entry.uid);
+        // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
         selectiveInput.on('input', async function (_, { noSave = false } = {}) {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const uid = $(this).data('uid');
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const value = $(this).prop('checked');
             data.entries[uid].selective = value;
             setWIOriginalDataValue(data, uid, 'selective', data.entries[uid].selective);
             if (!noSave) await saveWorldInfo(name, data);
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const keysecondary = $(this.closest('.world_entry').querySelector('.keysecondary'));
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const keysecondarytextpole = $(this.closest('.world_entry').querySelector('.keysecondarytextpole'));
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const keyprimaryselect = $(this.closest('.world_entry').querySelector('.keyprimaryselect'));
             const keyprimaryHeight = keyprimaryselect.outerHeight();
             keysecondarytextpole.css('height', keyprimaryHeight + 'px');
             if (value) keysecondary.show(); else keysecondary.hide();
         });
         selectiveInput.prop('checked', true).trigger('input', { noSave: true });
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(selectiveInput[0].parentElement).hide();
 
         // Character filter
@@ -3849,10 +4108,11 @@ export async function getWorldEntry(name, data, entry) {
         characterFilterLabel.text(entry.characterFilter?.isExclude ? 'Exclude Character(s)' : 'Filter to Character(s)');
         const characterExclusionInput = editTemplate.find('input[name="character_exclusion"]');
         characterExclusionInput.data('uid', entry.uid);
+        // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
         characterExclusionInput.on('input', async function (_, { noSave = false } = {}) {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const uid = $(this).data('uid');
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const value = $(this).prop('checked');
             characterFilterLabel.text(value ? 'Exclude Character(s)' : 'Filter to Character(s)');
             if (data.entries[uid].characterFilter) {
@@ -3866,7 +4126,9 @@ export async function getWorldEntry(name, data, entry) {
             }
             if (data.entries[uid]?.characterFilter?.names?.length > 0) {
                 for (const name of [...data.entries[uid].characterFilter.names]) {
+                    // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
                     if (!getContext().characters.find(x => x.avatar.replace(/\.[^/.]+$/, '') === name)) {
+                        // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
                         data.entries[uid].characterFilter.names = data.entries[uid].characterFilter.names.filter(x => x !== name);
                     }
                 }
@@ -3884,9 +4146,10 @@ export async function getWorldEntry(name, data, entry) {
 
         // Content
         const counter = editTemplate.find('.world_entry_form_token_counter');
+        // @ts-expect-error TS(7006) FIXME: Parameter 'counter' implicitly has an 'any' type.
         const countTokensDebounced = debounce(async function (counter, value) {
             const numberOfTokens = await getTokenCountAsync(value);
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(counter).text(numberOfTokens);
         }, debounce_timeout.relaxed);
         const contentInputId = `world_entry_content_${entry.uid}`;
@@ -3894,13 +4157,14 @@ export async function getWorldEntry(name, data, entry) {
         contentInput.data('uid', entry.uid);
         contentInput.attr('id', contentInputId);
         contentInput[0].dataset.macros = ''; // active
+        // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
         contentInput.on('input', async function (_, {
             skipCount,
             noSave
         }: { skipCount?: boolean; noSave?: boolean } = {}) {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const uid = $(this).data('uid');
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const value = $(this).val();
             data.entries[uid].content = value;
             setWIOriginalDataValue(data, uid, 'content', data.entries[uid].content);
@@ -3913,10 +4177,11 @@ export async function getWorldEntry(name, data, entry) {
         // Outlet name
         const outletNameInput = editTemplate.find('input[name="outletName"]');
         outletNameInput.data('uid', entry.uid);
+        // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
         outletNameInput.on('input', async function (_, { noSave = false } = {}) {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const uid = $(this).data('uid');
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const value = $(this).val();
             data.entries[uid].outletName = value;
             setWIOriginalDataValue(data, uid, 'extensions.outlet_name', data.entries[uid].outletName);
@@ -3928,24 +4193,25 @@ export async function getWorldEntry(name, data, entry) {
         // Scan depth
         const scanDepthInput = editTemplate.find('input[name="scanDepth"]');
         scanDepthInput.data('uid', entry.uid);
+        // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
         scanDepthInput.on('input', async function (_, { noSave = false } = {}) {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const uid = $(this).data('uid');
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const isEmpty = $(this).val() === '';
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const value = Number($(this).val());
             if (value < 0) {
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $(this).val(0).trigger('input');
-                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                 toastr.warning('Scan depth cannot be negative');
                 return;
             }
             if (value > MAX_SCAN_DEPTH) {
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $(this).val(MAX_SCAN_DEPTH).trigger('input');
-                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                 toastr.warning(`Scan depth cannot exceed ${MAX_SCAN_DEPTH}`);
                 return;
             }
@@ -3958,10 +4224,11 @@ export async function getWorldEntry(name, data, entry) {
         // Group
         const groupInput = editTemplate.find('input[name="group"]');
         groupInput.data('uid', entry.uid);
+        // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
         groupInput.on('input', async function (_, { noSave = false } = {}) {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const uid = $(this).data('uid');
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const value = String($(this).val()).trim();
             data.entries[uid].group = value;
             setWIOriginalDataValue(data, uid, 'extensions.group', data.entries[uid].group);
@@ -3973,10 +4240,11 @@ export async function getWorldEntry(name, data, entry) {
         // Inclusion priority
         const groupOverrideInput = editTemplate.find('input[name="groupOverride"]');
         groupOverrideInput.data('uid', entry.uid);
+        // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
         groupOverrideInput.on('input', async function (_, { noSave = false } = {}) {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const uid = $(this).data('uid');
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const value = $(this).prop('checked');
             data.entries[uid].groupOverride = value;
             setWIOriginalDataValue(data, uid, 'extensions.group_override', data.entries[uid].groupOverride);
@@ -4013,10 +4281,11 @@ export async function getWorldEntry(name, data, entry) {
         delayUntilRecursionInput.data('uid', entry.uid);
         const delayUntilRecursionLevelInput = editTemplate.find('input[name="delayUntilRecursionLevel"]');
         delayUntilRecursionLevelInput.data('uid', entry.uid);
+        // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
         delayUntilRecursionInput.on('input', async function (_, { noSave = false } = {}) {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const uid = $(this).data('uid');
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const toggled = $(this).prop('checked');
             const value = toggled ? data.entries[uid].delayUntilRecursion || true : false;
             if (!toggled) delayUntilRecursionLevelInput.val('');
@@ -4025,10 +4294,11 @@ export async function getWorldEntry(name, data, entry) {
             if (!noSave) await saveWorldInfo(name, data);
         });
         delayUntilRecursionInput.prop('checked', entry.delayUntilRecursion).trigger('input', { noSave: true });
+        // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
         delayUntilRecursionLevelInput.on('input', async function (_, { noSave = false } = {}) {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const uid = $(this).data('uid');
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const content = $(this).val();
             const value = content === '' ? (typeof data.entries[uid].delayUntilRecursion === 'boolean' ? data.entries[uid].delayUntilRecursion : true)
                 : content === 1 ? true
@@ -4056,10 +4326,11 @@ export async function getWorldEntry(name, data, entry) {
         // Automation ID
         const automationIdInput = editTemplate.find('input[name="automationId"]');
         automationIdInput.data('uid', entry.uid);
+        // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
         automationIdInput.on('input', async function (_, { noSave = false } = {}) {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const uid = $(this).data('uid');
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const value = $(this).val();
             data.entries[uid].automationId = value;
             setWIOriginalDataValue(data, uid, 'extensions.automation_id', data.entries[uid].automationId);
@@ -4071,10 +4342,11 @@ export async function getWorldEntry(name, data, entry) {
         // Generation Type Triggers
         const generationTypeTriggers = editTemplate.find('select[name="triggers"]');
         generationTypeTriggers.data('uid', entry.uid);
+        // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
         generationTypeTriggers.on('input', async function (_, { noSave = false } = {}) {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const uid = $(this).data('uid');
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const value = $(this).val();
             data.entries[uid].triggers = Array.isArray(value) ? value : [];
             setWIOriginalDataValue(data, uid, 'extensions.triggers', data.entries[uid].triggers);
@@ -4096,10 +4368,11 @@ export async function getWorldEntry(name, data, entry) {
         // Ignore budget
         const ignoreBudgetInput = editTemplate.find('input[name="ignoreBudget"]');
         ignoreBudgetInput.data('uid', entry.uid);
+        // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
         ignoreBudgetInput.on('input', async function (_, { noSave = false } = {}) {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const uid = $(this).data('uid');
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const value = $(this).prop('checked');
             data.entries[uid].ignoreBudget = value;
             setWIOriginalDataValue(data, uid, 'extensions.ignore_budget', data.entries[uid].ignoreBudget);
@@ -4133,16 +4406,20 @@ function buildAutocompleteCallback({
     collectValues,
     includeExtras = () => [],
     postFilter
+// @ts-expect-error TS(2315) FIXME: Type 'JQuery' is not generic.
 }: { data?: { entries: Record<string, unknown> }; collectValues?: (entry: unknown) => string | string[] | null | undefined; includeExtras?: () => Iterable<string>; postFilter?: (ctx: { result: string[]; control: JQuery<HTMLElement>; input: unknown; haystack: string[] }) => string[] } = {}) {
+    // @ts-expect-error TS(7006) FIXME: Parameter 'control' implicitly has an 'any' type.
     return function (control, input, output) {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const uid = $(control).data('uid');
 
         // Collect unique values from all *other* entries
         const values = new Set();
+        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         for (const entry of Object.values(data.entries ?? {})) {
-            // @ts-expect-error TS(2339): Property 'uid' does not exist on type 'unknown'.
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             if (entry?.uid == uid) continue;
+            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             const raw = collectValues(entry);
             if (raw == null) continue;
             const arr = Array.isArray(raw) ? raw : [raw];
@@ -4159,17 +4436,17 @@ function buildAutocompleteCallback({
         }
 
         // Sort stable & locale-aware
-        // @ts-expect-error TS(2339): Property 'localeCompare' does not exist on type 'u... Remove this comment to see the full error message
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         const haystack = Array.from(values).sort((a, b) => a.localeCompare(b));
 
         // Case-insensitive contains
         const needle = String(input.term ?? '').toLowerCase();
-        // @ts-expect-error TS(2339): Property 'toLowerCase' does not exist on type 'unk... Remove this comment to see the full error message
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         let result = haystack.filter(x => x.toLowerCase().includes(needle));
 
         // Optional final-pass semantics
         if (postFilter) {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2322) FIXME: Type 'unknown[]' is not assignable to type 'string... Remove this comment to see the full error message
             result = postFilter({ result, control: $(control), input, haystack });
         }
 
@@ -4182,6 +4459,7 @@ function buildAutocompleteCallback({
  * @param {string} s - The string to split
  * @returns {string[]} An array of strings, separated by commas and trimmed
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 's' implicitly has an 'any' type.
 const splitCsv = s => String(s ?? '').split(/,\s*/).filter(Boolean);
 
 /**
@@ -4189,13 +4467,16 @@ const splitCsv = s => String(s ?? '').split(/,\s*/).filter(Boolean);
  * @param {object} data WI data
  * @returns {(input: {term: string}, output: (data: string[]) => void) => void} Callback function for the autocomplete
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
 function getInclusionGroupCallback(data) {
     return buildAutocompleteCallback({
         data,
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         collectValues: entry => entry.group ? splitCsv(entry.group) : [],
         postFilter: ({ result, control, input, haystack }) => {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const thisGroups = splitCsv(String($(control).val()));
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             const needle = String(input.term ?? '').toLowerCase();
             const hasExactMatch = haystack.some(x => x.toLowerCase() === needle);
 
@@ -4213,9 +4494,11 @@ function getInclusionGroupCallback(data) {
  * @param {object} data - WI data
  * @returns {(input: {term: string}, output: (data: string[]) => void) => void} Autocomplete callback
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
 function getAutomationIdCallback(data) {
     return buildAutocompleteCallback({
         data,
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         collectValues: entry => entry.automationId != null ? [String(entry.automationId)] : [],
         includeExtras: () =>
             ('quickReplyApi' in globalThis && globalThis.quickReplyApi?.listAutomationIds)
@@ -4228,9 +4511,11 @@ function getAutomationIdCallback(data) {
  * @param {object} data - WI data
  * @returns {(input: {term: string}, output: (data: string[]) => void) => void} Autocomplete callback
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
 function getOutletNameCallback(data) {
     return buildAutocompleteCallback({
         data,
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         collectValues: entry => entry.position === world_info_position.outlet && entry.outletName ? [entry.outletName] : [],
     });
 }
@@ -4242,26 +4527,29 @@ function getOutletNameCallback(data) {
  * @param {object} [options] - Optional arguments
  * @param {boolean} [options.allowMultiple] - Whether to allow multiple comma-separated values
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'input' implicitly has an 'any' type.
 function createEntryInputAutocomplete(input, callback, { allowMultiple = false } = {}) {
+    // @ts-expect-error TS(7006) FIXME: Parameter 'event' implicitly has an 'any' type.
     const handleSelect = (event, ui) => {
         // Prevent default autocomplete select, so we can manually set the value
         event.preventDefault();
         if (!allowMultiple) {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(input).val(ui.item.value).trigger('input').trigger('blur');
         } else {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const terms = String($(input).val()).split(/,\s*/);
             terms.pop(); // remove the current input
             terms.push(ui.item.value); // add the selected item
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(input).val(terms.filter(x => x).join(', ')).trigger('input').trigger('blur');
         }
     };
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(input).autocomplete({
         minLength: 0,
+        // @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
         source: function (request, response) {
             if (!allowMultiple) {
                 callback(input, request, response);
@@ -4274,9 +4562,9 @@ function createEntryInputAutocomplete(input, callback, { allowMultiple = false }
         select: handleSelect,
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(input).on('focus click', function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(input).autocomplete('search', allowMultiple ? String($(input).val()).split(/,\s*/).pop() : String($(input).val()));
     });
 }
@@ -4288,9 +4576,9 @@ function createEntryInputAutocomplete(input, callback, { allowMultiple = false }
  * @param {number} uid - The uid of the entry to copy in this book
  * @returns {object|undefined} The new WI duplicated entry
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
 export function duplicateWorldInfoEntry(data, uid) {
     if (!data || !('entries' in data) || !data.entries[uid]) {
-        // @ts-expect-error TS(7030): Not all code paths return a value.
         return;
     }
 
@@ -4300,6 +4588,7 @@ export function duplicateWorldInfoEntry(data, uid) {
 
     // Create new entry and copy over data
     const entry = createWorldInfoEntry(data.name, data);
+    // @ts-expect-error TS(2769) FIXME: No overload matches this call.
     Object.assign(entry, originalData);
 
     return entry;
@@ -4313,9 +4602,9 @@ export function duplicateWorldInfoEntry(data, uid) {
  * @param {boolean} [options.silent] - Whether to prompt the user for deletion or just do it
  * @returns {Promise<boolean>} Whether the entry deletion was successful
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
 export async function deleteWorldInfoEntry(data, uid, { silent = false } = {}) {
     if (!data || !('entries' in data)) {
-        // @ts-expect-error TS(7030): Not all code paths return a value.
         return;
     }
 
@@ -4328,6 +4617,7 @@ export async function deleteWorldInfoEntry(data, uid, { silent = false } = {}) {
     if (entry.comment && entry.comment.trim()) {
         previewText = entry.comment.trim();
     } else if (entry.content) {
+        // @ts-expect-error TS(7006) FIXME: Parameter 'line' implicitly has an 'any' type.
         const lines = entry.content.split(/\r?\n/).filter(line => line.trim());
         previewText = lines.slice(0, 2).join('\n');
     }
@@ -4394,11 +4684,12 @@ export const newWorldInfoEntryDefinition = {
     characterFilterNames: { default: [], type: 'array', excludeFromTemplate: true },
     characterFilterTags: { default: [], type: 'array', excludeFromTemplate: true },
     characterFilterExclude: { default: false, type: 'boolean', excludeFromTemplate: true },
+    // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
     triggers: { default: [], type: 'array', arrayFilter: (value) => GENERATION_TYPE_TRIGGERS.includes(value) },
 };
 
 export const newWorldInfoEntryTemplate = Object.fromEntries(
-    // @ts-expect-error TS(2339): Property 'excludeFromTemplate' does not exist on t... Remove this comment to see the full error message
+    // @ts-expect-error TS(2339) FIXME: Property 'excludeFromTemplate' does not exist on t... Remove this comment to see the full error message
     Object.entries(newWorldInfoEntryDefinition).filter(([_, value]) => !value.excludeFromTemplate).map(([key, value]) => [key, value.default]),
 );
 
@@ -4408,16 +4699,17 @@ export const newWorldInfoEntryTemplate = Object.fromEntries(
  * @param {object} data WI data
  * @returns {object | undefined} New entry object or undefined if failed
  */
+// @ts-expect-error TS(7006) FIXME: Parameter '_name' implicitly has an 'any' type.
 export function createWorldInfoEntry(_name, data) {
     const newUid = getFreeWorldEntryUid(data);
 
     if (!Number.isInteger(newUid)) {
         console.error('Couldn\'t assign UID to a new entry');
-        // @ts-expect-error TS(7030): Not all code paths return a value.
         return;
     }
 
     const newEntry = { uid: newUid, ...structuredClone(newWorldInfoEntryTemplate) };
+    // @ts-expect-error TS(2538) FIXME: Type 'null' cannot be used as an index type.
     data.entries[newUid] = newEntry;
 
     return newEntry;
@@ -4428,6 +4720,7 @@ export function createWorldInfoEntry(_name, data) {
  * @param {object} data - World info data to save
  * @returns {Promise<void>}
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
 async function _save(name, data) {
     // Prevent double saving if both immediate and debounced save are called
     cancelDebounce(saveWorldDebounced);
@@ -4453,6 +4746,7 @@ async function _save(name, data) {
  * @param {boolean} [immediately] - Whether to save immediately or use debouncing
  * @returns {Promise<void>} A promise that resolves when the world info is saved
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
 export async function saveWorldInfo(name, data, immediately = false) {
     if (!name || !data) {
         return;
@@ -4473,6 +4767,7 @@ export async function saveWorldInfo(name, data, immediately = false) {
  * @param {object} data - World info data
  * @returns {Promise<void>}
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
 async function renameWorldInfo(name, data) {
     const oldName = name;
     const newName = await Popup.show.input('Rename World Info', 'Enter a new name:', oldName);
@@ -4482,7 +4777,7 @@ async function renameWorldInfo(name, data) {
         return;
     }
     if (equalsIgnoreCaseAndAccents(oldName, newName)) {
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.warning(t`Name not accepted, as it is the same as before (ignoring case and accents).`, t`Rename World Info`);
         return;
     }
@@ -4497,13 +4792,13 @@ async function renameWorldInfo(name, data) {
     if (entryPreviouslySelected !== -1) {
         const wiElement = getWIElement(newName);
         wiElement.prop('selected', true);
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#world_info').trigger('change');
     }
 
     const selectedIndex = world_names.indexOf(newName);
     if (selectedIndex !== -1) {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#world_editor_select').val(selectedIndex).trigger('change');
     }
 }
@@ -4514,11 +4809,14 @@ async function renameWorldInfo(name, data) {
  * @param {string} newName New WI file name
  * @returns {Promise<void>}
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'oldName' implicitly has an 'any' type.
 async function updateWorldInfoLinks(oldName, newName) {
-    // @ts-expect-error TS(2339): Property 'charLore' does not exist on type '{}'.
+    // @ts-expect-error TS(2339) FIXME: Property 'charLore' does not exist on type '{}'.
     const existingCharLores = world_info.charLore?.filter((e) => e.extraBooks.includes(oldName));
     if (existingCharLores && existingCharLores.length > 0) {
+        // @ts-expect-error TS(7006) FIXME: Parameter 'charLore' implicitly has an 'any' type.
         existingCharLores.forEach((charLore) => {
+            // @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
             const tempCharLore = charLore.extraBooks.filter((e) => e !== oldName);
             tempCharLore.push(newName);
             charLore.extraBooks = tempCharLore;
@@ -4527,8 +4825,10 @@ async function updateWorldInfoLinks(oldName, newName) {
     }
 
     // find all characters using the old lorebook name as their primary world
+    // @ts-expect-error TS(7034) FIXME: Variable 'linkedChIDs' implicitly has type 'any[]'... Remove this comment to see the full error message
     const linkedChIDs = [];
     characters.forEach((character, chid) => {
+        // @ts-expect-error TS(2339) FIXME: Property 'data' does not exist on type 'never'.
         if (character.data?.extensions?.world === oldName) {
             linkedChIDs.push(chid);
         }
@@ -4547,6 +4847,7 @@ async function updateWorldInfoLinks(oldName, newName) {
     if (updatePastLinksConfirm) {
         let activeCharacterUpdated = false;
 
+        // @ts-expect-error TS(7005) FIXME: Variable 'linkedChIDs' implicitly has an 'any[]' t... Remove this comment to see the full error message
         for (const chid of linkedChIDs) {
             const character = characters[chid];
 
@@ -4556,6 +4857,7 @@ async function updateWorldInfoLinks(oldName, newName) {
                     method: 'POST',
                     headers: getRequestHeaders(),
                     body: JSON.stringify({
+                        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
                         avatar: character.avatar,
                         data: {
                             extensions: {
@@ -4570,6 +4872,7 @@ async function updateWorldInfoLinks(oldName, newName) {
                 }
 
                 // used to update the data in the browser's memory
+                // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
                 await getOneCharacter(character.avatar);
 
                 // Flag if the currently open character was affected
@@ -4577,11 +4880,12 @@ async function updateWorldInfoLinks(oldName, newName) {
                     activeCharacterUpdated = true;
                 }
 
-                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                 toastr.success(`Successfully updated link for ${character.name}.`);
             } catch (e) {
-                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                 toastr.error(`Failed to update link for ${character.name}.`);
+                // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
                 console.error(`Backend update for character ${character.name} failed:`, e);
             }
         }
@@ -4590,6 +4894,7 @@ async function updateWorldInfoLinks(oldName, newName) {
         // only required if the currently selected character was changed
         if (activeCharacterUpdated) {
             select_selected_character(this_chid, { switchMenu: false });
+            // @ts-expect-error TS(2345) FIXME: Argument of type 'true' is not assignable to param... Remove this comment to see the full error message
             setWorldInfoButtonClass(this_chid, true);
         }
     }
@@ -4600,6 +4905,7 @@ async function updateWorldInfoLinks(oldName, newName) {
  * @param {string} worldInfoName - The name of the world info to delete
  * @returns {Promise<boolean>} A promise that resolves to true if the world info was successfully deleted, false otherwise
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'worldInfoName' implicitly has an 'any' ... Remove this comment to see the full error message
 export async function deleteWorldInfo(worldInfoName) {
     if (!world_names.includes(worldInfoName)) {
         return false;
@@ -4626,13 +4932,14 @@ export async function deleteWorldInfo(worldInfoName) {
     }
 
     await updateWorldInfoList();
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_editor_select').trigger('change');
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     if ($('#character_world').val() === worldInfoName) {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#character_world').val('').trigger('change');
+        // @ts-expect-error TS(2345) FIXME: Argument of type 'false' is not assignable to para... Remove this comment to see the full error message
         setWorldInfoButtonClass(undefined, false);
         if (menu_type != 'create') {
             saveCharacterDebounced();
@@ -4641,10 +4948,12 @@ export async function deleteWorldInfo(worldInfoName) {
 
     if (power_user.persona_description_lorebook === worldInfoName) {
         power_user.persona_description_lorebook = '';
+        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         if (power_user.personas[user_avatar]) {
             const object = getOrCreatePersonaDescriptor();
             object.lorebook = '';
         }
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         document.getElementById('persona_lore_button').classList.toggle('world_set', false);
         saveSettingsDebounced();
     }
@@ -4656,6 +4965,7 @@ export async function deleteWorldInfo(worldInfoName) {
  * @param {object} data - World info data containing entries
  * @returns {number|null} A free UID or null if none available
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
 export function getFreeWorldEntryUid(data) {
     if (!data || !('entries' in data)) {
         return null;
@@ -4685,6 +4995,7 @@ export function getFreeWorldEntryUid(data) {
 export function getFreeWorldName(worldName = null, { stripIndex = true } = {}) {
     worldName ??= t`New World`;
     if (stripIndex) {
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         worldName = worldName.replace(/\s*\(\d+\)$/, '');
     }
     const MAX_FREE_NAME = 100_000;
@@ -4707,6 +5018,7 @@ export function getFreeWorldName(worldName = null, { stripIndex = true } = {}) {
  * @param {boolean} [options.interactive] - Whether to show a confirmation dialog when overwriting an existing world
  * @returns {Promise<boolean>} - True if the world info was successfully created, false otherwise
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'worldName' implicitly has an 'any' type... Remove this comment to see the full error message
 export async function createNewWorldInfo(worldName, { interactive = false } = {}) {
     const worldInfoTemplate = { entries: {} };
 
@@ -4716,6 +5028,7 @@ export async function createNewWorldInfo(worldName, { interactive = false } = {}
 
     const sanitizedWorldName = await getSanitizedFilename(worldName);
 
+    // @ts-expect-error TS(2322) FIXME: Type '(existingName: any) => Promise<boolean>' is ... Remove this comment to see the full error message
     const allowed = await checkOverwriteExistingData('World Info', world_names, sanitizedWorldName, { interactive: interactive, actionName: 'Create', deleteAction: (existingName) => deleteWorldInfo(existingName) });
     if (!allowed) {
         return false;
@@ -4726,7 +5039,7 @@ export async function createNewWorldInfo(worldName, { interactive = false } = {}
 
     const selectedIndex = world_names.indexOf(worldName);
     if (selectedIndex !== -1) {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#world_editor_select').val(selectedIndex).trigger('change');
     } else {
         await hideWorldEditor();
@@ -4740,10 +5053,12 @@ export async function createNewWorldInfo(worldName, { interactive = false } = {}
  */
 async function getCharacterLore() {
     const character = characters[this_chid];
+    // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
     const name = character?.name;
     /** @type {Set<string>} */
     let worldsToSearch = new Set();
 
+    // @ts-expect-error TS(2339) FIXME: Property 'data' does not exist on type 'never'.
     const baseWorldName = character?.data?.extensions?.world;
     if (baseWorldName) {
         worldsToSearch.add(baseWorldName);
@@ -4751,7 +5066,7 @@ async function getCharacterLore() {
 
     // TODO: Maybe make the utility function not use the window context?
     const fileName = getCharaFilename(this_chid);
-    // @ts-expect-error TS(2339): Property 'charLore' does not exist on type '{}'.
+    // @ts-expect-error TS(2339) FIXME: Property 'charLore' does not exist on type '{}'.
     const extraCharLore = world_info.charLore?.find((e) => e.name === fileName);
     if (extraCharLore) {
         worldsToSearch = new Set([...worldsToSearch, ...extraCharLore.extraBooks]);
@@ -4761,13 +5076,16 @@ async function getCharacterLore() {
         return [];
     }
 
+    // @ts-expect-error TS(7034) FIXME: Variable 'entries' implicitly has type 'any[]' in ... Remove this comment to see the full error message
     let entries = [];
     for (const worldName of worldsToSearch) {
+        // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
         if (selected_world_info.includes(worldName)) {
             console.debug(`[WI] Character ${name}'s world ${worldName} is already activated in global world info! Skipping...`);
             continue;
         }
 
+        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         if (chat_metadata[METADATA_KEY] === worldName) {
             console.debug(`[WI] Character ${name}'s world ${worldName} is already activated in chat lore! Skipping...`);
             continue;
@@ -4780,6 +5098,7 @@ async function getCharacterLore() {
 
         const data = await loadWorldInfo(worldName);
         const newEntries = data ? Object.keys(data.entries).map((x) => data.entries[x]).map(({ uid, ...rest }) => ({ uid, world: worldName, ...rest })) : [];
+        // @ts-expect-error TS(7005) FIXME: Variable 'entries' implicitly has an 'any[]' type.
         entries = entries.concat(newEntries);
 
         if (!newEntries.length) {
@@ -4799,10 +5118,12 @@ async function getGlobalLore() {
         return [];
     }
 
+    // @ts-expect-error TS(7034) FIXME: Variable 'entries' implicitly has type 'any[]' in ... Remove this comment to see the full error message
     let entries = [];
     for (const worldName of selected_world_info) {
         const data = await loadWorldInfo(worldName);
         const newEntries = data ? Object.keys(data.entries).map((x) => data.entries[x]).map(({ uid, ...rest }) => ({ uid, world: worldName, ...rest })) : [];
+        // @ts-expect-error TS(7005) FIXME: Variable 'entries' implicitly has an 'any[]' type.
         entries = entries.concat(newEntries);
     }
 
@@ -4815,12 +5136,14 @@ async function getGlobalLore() {
  * @returns {Promise<object[]>} Array of chat lore entries
  */
 async function getChatLore() {
+    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     const chatWorld = chat_metadata[METADATA_KEY];
 
     if (!chatWorld) {
         return [];
     }
 
+    // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
     if (selected_world_info.includes(chatWorld)) {
         console.debug(`[WI] Chat world ${chatWorld} is already activated in global world info! Skipping...`);
         return [];
@@ -4838,6 +5161,7 @@ async function getChatLore() {
  * @returns {Promise<object[]>} Array of persona lore entries
  */
 async function getPersonaLore() {
+    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     const chatWorld = chat_metadata[METADATA_KEY];
     const personaWorld = power_user.persona_description_lorebook;
 
@@ -4850,6 +5174,7 @@ async function getPersonaLore() {
         return [];
     }
 
+    // @ts-expect-error TS(2345) FIXME: Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
     if (selected_world_info.includes(personaWorld)) {
         console.debug(`[WI] Persona world ${personaWorld} is already activated in global world info! Skipping...`);
         return [];
@@ -4928,12 +5253,14 @@ export async function getSortedEntries() {
  * @param {string} content The content to parse
  * @returns {[string[],string]} The decorators found in the content and the content without decorators
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'content' implicitly has an 'any' type.
 function parseDecorators(content) {
     /**
      * Check if the decorator is known
      * @param {string} data string to check
      * @returns {boolean} true if the decorator is known
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
     const isKnownDecorator = (data) => {
         if (data.startsWith('@@@')) {
             data = data.substring(1);
@@ -4985,6 +5312,7 @@ function parseDecorators(content) {
  * @returns {Promise<WIActivated>} The world info activated.
  */
 //MARK: checkWorldInfo
+// @ts-expect-error TS(7006) FIXME: Parameter 'chat' implicitly has an 'any' type.
 export async function checkWorldInfo(chat, maxContext, isDryRun, globalScanData = defaultGlobalScanData) {
     const context = getContext();
     const buffer = new WorldInfoBuffer(chat, globalScanData);
@@ -4996,6 +5324,7 @@ export async function checkWorldInfo(chat, maxContext, isDryRun, globalScanData 
     // Add the depth or AN if enabled
     // Put this code here since otherwise, the chat reference is modified
     for (const key of Object.keys(context.extensionPrompts)) {
+        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         if (context.extensionPrompts[key]?.scan) {
             const prompt = await getExtensionPromptByName(key);
             if (prompt) {
@@ -5033,7 +5362,6 @@ export async function checkWorldInfo(chat, maxContext, isDryRun, globalScanData 
     const availableRecursionDelayLevels = [...new Set(sortedEntries
         .filter(entry => entry.delayUntilRecursion)
         .map(entry => entry.delayUntilRecursion === true ? 1 : entry.delayUntilRecursion),
-    // @ts-expect-error TS(2362): The left-hand side of an arithmetic operation must... Remove this comment to see the full error message
     )].sort((a, b) => a - b);
     // Already preset with the first level
     let currentRecursionDelayLevel = availableRecursionDelayLevels.shift() ?? 0;
@@ -5069,6 +5397,7 @@ export async function checkWorldInfo(chat, maxContext, isDryRun, globalScanData 
              * @param {...unknown} args - Arguments to log
              * @returns {void}
              */
+            // @ts-expect-error TS(7019) FIXME: Rest parameter 'args' implicitly has an 'any[]' ty... Remove this comment to see the full error message
             function log(...args) {
                 if (!headerLogged) {
                     console.debug(`[WI] Entry ${entry.uid}`, `from '${entry.world}' processing`, entry);
@@ -5111,6 +5440,7 @@ export async function checkWorldInfo(chat, maxContext, isDryRun, globalScanData 
                 const tagKey = getTagKeyForEntity(this_chid);
 
                 if (tagKey) {
+                    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                     const tagMapEntry = context.tagMap[tagKey];
 
                     if (Array.isArray(tagMapEntry)) {
@@ -5195,6 +5525,7 @@ export async function checkWorldInfo(chat, maxContext, isDryRun, globalScanData 
             const textToScan = buffer.get(entry, scanState);
 
             // PRIMARY KEYWORDS
+            // @ts-expect-error TS(7006) FIXME: Parameter 'key' implicitly has an 'any' type.
             const primaryKeyMatch = entry.key.find(key => {
                 const substituted = substituteParams(key);
                 return substituted && buffer.matchKeys(textToScan, substituted.trim(), entry);
@@ -5291,13 +5622,13 @@ export async function checkWorldInfo(chat, maxContext, isDryRun, globalScanData 
         console.debug('[WI] --- PROBABILITY CHECKS ---');
         if (!newEntries.length) console.debug('[WI] No probability checks to do');
 
-        // @ts-expect-error TS(2339): Property 'ignoreBudget' does not exist on type 'un... Remove this comment to see the full error message
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         let ignoresBudget = newEntries.filter(e => e.ignoreBudget).length;
 
         for (const entry of newEntries) {
-            // @ts-expect-error TS(2339): Property 'ignoreBudget' does not exist on type 'un... Remove this comment to see the full error message
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             ignoresBudget -= (entry.ignoreBudget ? 1 : 0);
-            // @ts-expect-error TS(2339): Property 'ignoreBudget' does not exist on type 'un... Remove this comment to see the full error message
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             if (token_budget_overflowed && !entry.ignoreBudget) {
                 if (ignoresBudget > 0) {
                     continue;
@@ -5310,24 +5641,24 @@ export async function checkWorldInfo(chat, maxContext, isDryRun, globalScanData 
              */
             function verifyProbability() {
                 // If we don't need to roll, it's always true
-                // @ts-expect-error TS(2339): Property 'useProbability' does not exist on type '... Remove this comment to see the full error message
+                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 if (!entry.useProbability || entry.probability === 100) {
-                    // @ts-expect-error TS(2339): Property 'uid' does not exist on type 'unknown'.
+                    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                     console.debug(`WI entry ${entry.uid} does not use probability`);
                     return true;
                 }
 
                 const isSticky = timedEffects.isEffectActive('sticky', entry);
                 if (isSticky) {
-                    // @ts-expect-error TS(2339): Property 'uid' does not exist on type 'unknown'.
+                    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                     console.debug(`WI entry ${entry.uid} is sticky, does not need to re-roll probability`);
                     return true;
                 }
 
                 const rollValue = Math.random() * 100;
-                // @ts-expect-error TS(2339): Property 'probability' does not exist on type 'unk... Remove this comment to see the full error message
+                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 if (rollValue <= entry.probability) {
-                    // @ts-expect-error TS(2339): Property 'uid' does not exist on type 'unknown'.
+                    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                     console.debug(`WI entry ${entry.uid} passed probability check of ${entry.probability}%`);
                     return true;
                 }
@@ -5338,24 +5669,24 @@ export async function checkWorldInfo(chat, maxContext, isDryRun, globalScanData 
 
             const success = verifyProbability();
             if (!success) {
-                // @ts-expect-error TS(2339): Property 'uid' does not exist on type 'unknown'.
+                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 console.debug(`WI entry ${entry.uid} failed probability check, removing from activated entries`, entry);
                 continue;
             }
 
             // Substitute macros inline, for both this checking and also future processing
-            // @ts-expect-error TS(2339): Property 'content' does not exist on type 'unknown... Remove this comment to see the full error message
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             entry.content = substituteParams(entry.content);
-            // @ts-expect-error TS(2339): Property 'content' does not exist on type 'unknown... Remove this comment to see the full error message
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             newContent += `${entry.content}\n`;
 
-            // @ts-expect-error TS(2339): Property 'ignoreBudget' does not exist on type 'un... Remove this comment to see the full error message
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             if (!entry.ignoreBudget && (textToScanTokens + (await getTokenCountAsync(newContent))) >= budget) {
                 if (!token_budget_overflowed) {
                     console.debug('[WI] --- BUDGET OVERFLOW CHECK ---');
                     if (world_info_overflow_alert) {
                         console.warn(`[WI] budget of ${budget} reached, stopping after ${allActivatedEntries.size} entries`);
-                        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+                        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                         toastr.warning(`World info budget reached after ${allActivatedEntries.size} entries.`, 'World Info');
                     } else {
                         console.debug(`[WI] budget of ${budget} reached, stopping after ${allActivatedEntries.size} entries`);
@@ -5365,14 +5696,14 @@ export async function checkWorldInfo(chat, maxContext, isDryRun, globalScanData 
                 continue;
             }
 
-            // @ts-expect-error TS(2339): Property 'world' does not exist on type 'unknown'.
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             allActivatedEntries.set(`${entry.world}.${entry.uid}`, entry);
-            // @ts-expect-error TS(2339): Property 'uid' does not exist on type 'unknown'.
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             console.debug(`[WI] Entry ${entry.uid} activation successful, adding to prompt`, entry);
         }
 
         const successfulNewEntries = newEntries.filter(x => !failedProbabilityChecks.has(x));
-        // @ts-expect-error TS(2339): Property 'preventRecursion' does not exist on type... Remove this comment to see the full error message
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         const successfulNewEntriesForRecursion = successfulNewEntries.filter(x => !x.preventRecursion);
 
         console.debug(`[WI] --- LOOP #${count} RESULT ---`);
@@ -5388,6 +5719,7 @@ export async function checkWorldInfo(chat, maxContext, isDryRun, globalScanData 
          * @param {...unknown} args - Arguments to log
          * @returns {void}
          */
+        // @ts-expect-error TS(7019) FIXME: Rest parameter 'args' implicitly has an 'any[]' ty... Remove this comment to see the full error message
         function logNextState(...args) {
             if (args.length) console.debug(args.shift(), ...args);
             console.debug('[WI] Setting scan state', Object.entries(scan_state).find(x => x[1] === scanState));
@@ -5437,7 +5769,7 @@ export async function checkWorldInfo(chat, maxContext, isDryRun, globalScanData 
         scanState = nextScanState;
         if (scanState) {
             const text = successfulNewEntriesForRecursion
-                // @ts-expect-error TS(2339): Property 'content' does not exist on type 'unknown... Remove this comment to see the full error message
+                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 .map(x => x.content).join('\n');
             if (text) {
                 buffer.addRecurse(text);
@@ -5448,6 +5780,7 @@ export async function checkWorldInfo(chat, maxContext, isDryRun, globalScanData 
         }
 
         // Fire an event after each scan loop, so extensions can hook into the current scanning state
+        // @ts-expect-error TS(7022) FIXME: 'args' implicitly has type 'any' because it does n... Remove this comment to see the full error message
         const args = {
             state: {
                 current: curScanState,
@@ -5490,11 +5823,17 @@ export async function checkWorldInfo(chat, maxContext, isDryRun, globalScanData 
     console.debug('[WI] --- BUILDING PROMPT ---');
 
     // Forward-sorted list of entries for joining
+    // @ts-expect-error TS(7034) FIXME: Variable 'WIBeforeEntries' implicitly has type 'an... Remove this comment to see the full error message
     const WIBeforeEntries = [];
+    // @ts-expect-error TS(7034) FIXME: Variable 'WIAfterEntries' implicitly has type 'any... Remove this comment to see the full error message
     const WIAfterEntries = [];
+    // @ts-expect-error TS(7034) FIXME: Variable 'EMEntries' implicitly has type 'any[]' i... Remove this comment to see the full error message
     const EMEntries = [];
+    // @ts-expect-error TS(7034) FIXME: Variable 'ANTopEntries' implicitly has type 'any[]... Remove this comment to see the full error message
     const ANTopEntries = [];
+    // @ts-expect-error TS(7034) FIXME: Variable 'ANBottomEntries' implicitly has type 'an... Remove this comment to see the full error message
     const ANBottomEntries = [];
+    // @ts-expect-error TS(7034) FIXME: Variable 'WIDepthEntries' implicitly has type 'any... Remove this comment to see the full error message
     const WIDepthEntries = [];
     /** @type {{[key: string]: string[]}} */
     const WIOutletEntries = {};
@@ -5534,8 +5873,10 @@ export async function checkWorldInfo(chat, maxContext, isDryRun, globalScanData 
                 ANBottomEntries.unshift(content);
                 break;
             case world_info_position.atDepth: {
+                // @ts-expect-error TS(7005) FIXME: Variable 'WIDepthEntries' implicitly has an 'any[]... Remove this comment to see the full error message
                 const existingDepthIndex = WIDepthEntries.findIndex((e) => e.depth === (entry.depth ?? DEFAULT_DEPTH) && e.role === (entry.role ?? extension_prompt_roles.SYSTEM));
                 if (existingDepthIndex !== -1) {
+                    // @ts-expect-error TS(7005) FIXME: Variable 'WIDepthEntries' implicitly has an 'any[]... Remove this comment to see the full error message
                     WIDepthEntries[existingDepthIndex].entries.unshift(content);
                 } else {
                     WIDepthEntries.push({
@@ -5551,9 +5892,12 @@ export async function checkWorldInfo(chat, maxContext, isDryRun, globalScanData 
                     console.warn(`[WI] Entry ${entry.uid} has position 'outlet' but no outlet name. Skipping.`);
                     break;
                 }
+                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 if (Array.isArray(WIOutletEntries[entry.outletName])) {
+                    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                     WIOutletEntries[entry.outletName].push(content);
                 } else {
+                    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                     WIOutletEntries[entry.outletName] = [content];
                 }
                 break;
@@ -5563,13 +5907,17 @@ export async function checkWorldInfo(chat, maxContext, isDryRun, globalScanData 
         }
     });
 
+    // @ts-expect-error TS(7005) FIXME: Variable 'WIBeforeEntries' implicitly has an 'any[... Remove this comment to see the full error message
     const worldInfoBefore = WIBeforeEntries.length ? WIBeforeEntries.join('\n') : '';
+    // @ts-expect-error TS(7005) FIXME: Variable 'WIAfterEntries' implicitly has an 'any[]... Remove this comment to see the full error message
     const worldInfoAfter = WIAfterEntries.length ? WIAfterEntries.join('\n') : '';
 
     if (shouldWIAddPrompt) {
+        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         const originalAN = context.extensionPrompts[NOTE_MODULE_NAME].value;
+        // @ts-expect-error TS(7005) FIXME: Variable 'ANTopEntries' implicitly has an 'any[]' ... Remove this comment to see the full error message
         const ANWithWI = `${ANTopEntries.join('\n')}\n${originalAN}\n${ANBottomEntries.join('\n')}`.replace(/(^\n)|(\n$)/g, '');
-        // @ts-expect-error TS(2339): Property 'allowWIScan' does not exist on type '{ d... Remove this comment to see the full error message
+        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         context.setExtensionPrompt(NOTE_MODULE_NAME, ANWithWI, chat_metadata[metadata_keys.position], chat_metadata[metadata_keys.depth], extension_settings.note.allowWIScan, chat_metadata[metadata_keys.role]);
     }
 
@@ -5580,6 +5928,7 @@ export async function checkWorldInfo(chat, maxContext, isDryRun, globalScanData 
     console.log(`[WI] ${isDryRun ? 'Hypothetically adding' : 'Adding'} ${allActivatedEntries.size} entries to prompt`, Array.from(allActivatedEntries.values()));
     console.debug(`[WI] --- DONE${isDryRun ? ' (DRY RUN)' : ''} ---`);
 
+    // @ts-expect-error TS(7005) FIXME: Variable 'EMEntries' implicitly has an 'any[]' typ... Remove this comment to see the full error message
     return { worldInfoBefore, worldInfoAfter, EMEntries, WIDepthEntries, ANBeforeEntries: ANTopEntries, ANAfterEntries: ANBottomEntries, outletEntries: WIOutletEntries, allActivatedEntries: new Set(allActivatedEntries.values()) };
 }
 
@@ -5591,10 +5940,11 @@ export async function checkWorldInfo(chat, maxContext, isDryRun, globalScanData 
  * @param {number} scanState The current scan state
  * @param {Map<string, boolean>} hasStickyMap The sticky entries map
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'groups' implicitly has an 'any' type.
 function filterGroupsByScoring(groups, buffer, removeEntry, scanState, hasStickyMap) {
     for (const [key, group] of Object.entries(groups)) {
         // Group scoring is disabled both globally and for the group entries
-        // @ts-expect-error TS(2339): Property 'some' does not exist on type 'unknown'.
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         if (!world_info_use_group_scoring && !group.some(x => x.useGroupScoring)) {
             console.debug(`[WI] Skipping group scoring for group '${key}'`);
             continue;
@@ -5607,14 +5957,15 @@ function filterGroupsByScoring(groups, buffer, removeEntry, scanState, hasSticky
             continue;
         }
 
-        // @ts-expect-error TS(2339): Property 'map' does not exist on type 'unknown'.
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         const scores = group.map(entry => buffer.getScore(entry, scanState));
         const maxScore = Math.max(...scores);
         console.debug(`[WI] Group '${key}' max score:`, maxScore);
         //console.table(group.map((entry, i) => ({ uid: entry.uid, key: JSON.stringify(entry.key), score: scores[i] })));
 
-        // @ts-expect-error TS(2339): Property 'length' does not exist on type 'unknown'... Remove this comment to see the full error message
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         for (let i = 0; i < group.length; i++) {
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             const isScored = group[i].useGroupScoring ?? world_info_use_group_scoring;
 
             if (!isScored) {
@@ -5622,9 +5973,11 @@ function filterGroupsByScoring(groups, buffer, removeEntry, scanState, hasSticky
             }
 
             if (scores[i] < maxScore) {
+                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 console.debug(`[WI] Entry ${group[i].uid}`, `removed as score loser from inclusion group '${key}'`, group[i]);
+                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 removeEntry(group[i]);
-                // @ts-expect-error TS(2339): Property 'splice' does not exist on type 'unknown'... Remove this comment to see the full error message
+                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 group.splice(i, 1);
                 scores.splice(i, 1);
                 i--;
@@ -5640,6 +5993,7 @@ function filterGroupsByScoring(groups, buffer, removeEntry, scanState, hasSticky
  * @param {(entry: WIScanEntry) => void} removeEntry The function to remove an entry
  * @returns {Map<string, boolean>} If any sticky entries were found
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'groups' implicitly has an 'any' type.
 function filterGroupsByTimedEffects(groups, timedEffects, removeEntry) {
     /** @type {Map<string, boolean>} */
     const hasStickyMap = new Map();
@@ -5648,10 +6002,10 @@ function filterGroupsByTimedEffects(groups, timedEffects, removeEntry) {
         hasStickyMap.set(key, false);
 
         // If the group has any sticky entries, leave only the sticky entries
-        // @ts-expect-error TS(2339): Property 'filter' does not exist on type 'unknown'... Remove this comment to see the full error message
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         const stickyEntries = group.filter(x => timedEffects.isEffectActive('sticky', x));
         if (stickyEntries.length) {
-            // @ts-expect-error TS(2488): Type 'unknown' must have a '[Symbol.iterator]()' m... Remove this comment to see the full error message
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             for (const entry of group) {
                 if (stickyEntries.includes(entry)) {
                     continue;
@@ -5665,7 +6019,7 @@ function filterGroupsByTimedEffects(groups, timedEffects, removeEntry) {
         }
 
         // It should not be possible for an entry on cooldown/delay to event get into the grouping phase but @Wolfsblvt told me to leave it here.
-        // @ts-expect-error TS(2339): Property 'filter' does not exist on type 'unknown'... Remove this comment to see the full error message
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         const cooldownEntries = group.filter(x => timedEffects.isEffectActive('cooldown', x));
         if (cooldownEntries.length) {
             console.debug(`[WI] Inclusion group '${key}' has entries on cooldown. They will be removed.`, cooldownEntries);
@@ -5674,7 +6028,7 @@ function filterGroupsByTimedEffects(groups, timedEffects, removeEntry) {
             }
         }
 
-        // @ts-expect-error TS(2339): Property 'filter' does not exist on type 'unknown'... Remove this comment to see the full error message
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         const delayEntries = group.filter(x => timedEffects.isEffectActive('delay', x));
         if (delayEntries.length) {
             console.debug(`[WI] Inclusion group '${key}' has entries with delay. They will be removed.`, delayEntries);
@@ -5695,10 +6049,13 @@ function filterGroupsByTimedEffects(groups, timedEffects, removeEntry) {
  * @param {number} scanState The current scan state
  * @param {WorldInfoTimedEffects} timedEffects The timed effects currently active
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'newEntries' implicitly has an 'any' typ... Remove this comment to see the full error message
 function filterByInclusionGroups(newEntries, allActivatedEntries, buffer, scanState, timedEffects) {
     console.debug('[WI] --- INCLUSION GROUP CHECKS ---');
 
+    // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
     const grouped = newEntries.filter(x => x.group).reduce((acc, item) => {
+        // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
         item.group.split(/,\s*/).filter(x => x).forEach(group => {
             if (!acc[group]) {
                 acc[group] = [];
@@ -5713,6 +6070,7 @@ function filterByInclusionGroups(newEntries, allActivatedEntries, buffer, scanSt
         return;
     }
 
+    // @ts-expect-error TS(7006) FIXME: Parameter 'entry' implicitly has an 'any' type.
     const removeEntry = (entry) => newEntries.splice(newEntries.indexOf(entry), 1);
     /**
      * @param {object[]} group - Array of entries in the group
@@ -5720,6 +6078,7 @@ function filterByInclusionGroups(newEntries, allActivatedEntries, buffer, scanSt
      * @param {boolean} [logging] - Whether to log removed entries
      * @returns {void}
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'group' implicitly has an 'any' type.
     function removeAllBut(group, chosen, logging = true) {
         for (const entry of group) {
             if (entry === chosen) {
@@ -5735,7 +6094,7 @@ function filterByInclusionGroups(newEntries, allActivatedEntries, buffer, scanSt
     filterGroupsByScoring(grouped, buffer, removeEntry, scanState, hasStickyMap);
 
     for (const [key, group] of Object.entries(grouped)) {
-        // @ts-expect-error TS(2339): Property 'length' does not exist on type 'unknown'... Remove this comment to see the full error message
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         console.debug(`[WI] Checking inclusion group '${key}' with ${group.length} entries`, group);
 
         // If the group has any sticky entries, the rest are already removed by the timed effects filter
@@ -5745,7 +6104,7 @@ function filterByInclusionGroups(newEntries, allActivatedEntries, buffer, scanSt
             continue;
         }
 
-        // @ts-expect-error TS(2339): Property 'group' does not exist on type 'unknown'.
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         if (Array.from(allActivatedEntries.values()).some(x => x.group === key)) {
             console.debug(`[WI] Skipping inclusion group check, group '${key}' was already activated`);
             // We need to forcefully deactivate all other entries in the group
@@ -5796,10 +6155,13 @@ function filterByInclusionGroups(newEntries, allActivatedEntries, buffer, scanSt
  * @param {object} inputObj - Agnai memory book data
  * @returns {{entries: Record<string, object>}} Converted WI entries
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'inputObj' implicitly has an 'any' type.
 function convertAgnaiMemoryBook(inputObj) {
     const outputObj = { entries: {} };
 
+    // @ts-expect-error TS(7006) FIXME: Parameter 'entry' implicitly has an 'any' type.
     inputObj.entries.forEach((entry, index) => {
+        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         outputObj.entries[index] = {
             ...newWorldInfoEntryTemplate,
             uid: index,
@@ -5845,14 +6207,19 @@ function convertAgnaiMemoryBook(inputObj) {
  * @param {object} inputObj - Risu lorebook data
  * @returns {{entries: Record<string, object>}} Converted WI entries
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'inputObj' implicitly has an 'any' type.
 function convertRisuLorebook(inputObj) {
     const outputObj = { entries: {} };
 
+    // @ts-expect-error TS(7006) FIXME: Parameter 'entry' implicitly has an 'any' type.
     inputObj.data.forEach((entry, index) => {
+        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         outputObj.entries[index] = {
             ...newWorldInfoEntryTemplate,
             uid: index,
+            // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
             key: entry.key.split(',').map(x => x.trim()),
+            // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
             keysecondary: entry.secondkey ? entry.secondkey.split(',').map(x => x.trim()) : [],
             comment: entry.comment,
             content: entry.content,
@@ -5894,15 +6261,18 @@ function convertRisuLorebook(inputObj) {
  * @param {object} inputObj - Novel lorebook data
  * @returns {{entries: Record<string, object>}} Converted WI entries
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'inputObj' implicitly has an 'any' type.
 function convertNovelLorebook(inputObj) {
     const outputObj = {
         entries: {},
     };
 
+    // @ts-expect-error TS(7006) FIXME: Parameter 'entry' implicitly has an 'any' type.
     inputObj.entries.forEach((entry, index) => {
         const displayName = entry.displayName;
         const addMemo = displayName !== undefined && displayName.trim() !== '';
 
+        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         outputObj.entries[index] = {
             ...newWorldInfoEntryTemplate,
             uid: index,
@@ -5948,15 +6318,18 @@ function convertNovelLorebook(inputObj) {
  * @param {object} characterBook - Character book data
  * @returns {{entries: Record<string, object>, originalData: object}} Converted WI data
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'characterBook' implicitly has an 'any' ... Remove this comment to see the full error message
 export function convertCharacterBook(characterBook) {
     const result = { entries: {}, originalData: characterBook };
 
+    // @ts-expect-error TS(7006) FIXME: Parameter 'entry' implicitly has an 'any' type.
     characterBook.entries.forEach((entry, index) => {
         // Not in the spec, but this is needed to find the entry in the original data
         if (entry.id === undefined) {
             entry.id = index;
         }
 
+        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         result.entries[entry.id] = {
             ...newWorldInfoEntryTemplate,
             uid: entry.id,
@@ -6012,6 +6385,7 @@ export function convertCharacterBook(characterBook) {
  * @param {boolean} [forceValue] - Force a specific state
  * @returns {void}
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'chid' implicitly has an 'any' type.
 export function setWorldInfoButtonClass(chid, forceValue = undefined) {
     if (forceValue !== undefined) {
         document.querySelectorAll('#set_character_world, #world_button').forEach(el => el.classList.toggle('world_set', forceValue));
@@ -6022,6 +6396,7 @@ export function setWorldInfoButtonClass(chid, forceValue = undefined) {
         return;
     }
 
+    // @ts-expect-error TS(2339) FIXME: Property 'data' does not exist on type 'never'.
     const world = characters[chid]?.data?.extensions?.world;
     const worldSet = Boolean(world && world_names.includes(world));
     document.querySelectorAll('#set_character_world, #world_button').forEach(el => el.classList.toggle('world_set', worldSet));
@@ -6031,20 +6406,24 @@ export function setWorldInfoButtonClass(chid, forceValue = undefined) {
  * @param {number|undefined} chid - Character ID
  * @returns {boolean} Whether the character has an embedded world
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'chid' implicitly has an 'any' type.
 export function checkEmbeddedWorld(chid) {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#import_character_info').hide();
 
     if (chid === undefined) {
         return false;
     }
 
+    // @ts-expect-error TS(2339) FIXME: Property 'data' does not exist on type 'never'.
     if (characters[chid]?.data?.character_book) {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#import_character_info').data('chid', chid).show();
 
         // Only show the alert once per character
+        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         const checkKey = `AlertWI_${characters[chid].avatar}`;
+        // @ts-expect-error TS(2339) FIXME: Property 'data' does not exist on type 'never'.
         const worldName = characters[chid]?.data?.extensions?.world;
         if (!accountStorage.getItem(checkKey) && (!worldName || !world_names.includes(worldName))) {
             accountStorage.setItem(checkKey, 'true');
@@ -6053,6 +6432,7 @@ export function checkEmbeddedWorld(chid) {
                 const html = `<h3>This character has an embedded World/Lorebook.</h3>
                 <h3>Would you like to import it now?</h3>
                 <div class="m-b-1">If you want to import it later, select "Import Card Lore" in the "More..." dropdown menu on the character panel.</div>`;
+                // @ts-expect-error TS(7006) FIXME: Parameter 'result' implicitly has an 'any' type.
                 const checkResult = (result) => {
                     if (result) {
                         importEmbeddedWorldInfo(true);
@@ -6060,9 +6440,10 @@ export function checkEmbeddedWorld(chid) {
                 };
                 callGenericPopup(html, POPUP_TYPE.CONFIRM, '', { okButton: 'Yes' }).then(checkResult);
             } else {
-                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                 toastr.info(
                     'To import and use it, select "Import Card Lore" in the "More..." dropdown menu on the character panel.',
+                    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
                     `${characters[chid].name} has an embedded World/Lorebook`,
                     { timeOut: 5000, extendedTimeOut: 10000 },
                 );
@@ -6079,7 +6460,7 @@ export function checkEmbeddedWorld(chid) {
  * @returns {Promise<void>}
  */
 export async function importEmbeddedWorldInfo(skipPopup = false) {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const chid = $('#import_character_info').data('chid');
 
     if (chid === undefined || chid === -1) {
@@ -6092,6 +6473,7 @@ export async function importEmbeddedWorldInfo(skipPopup = false) {
         return;
     }
 
+    // @ts-expect-error TS(2339) FIXME: Property 'data' does not exist on type 'never'.
     const bookName = characters[chid]?.data?.character_book?.name || `${characters[chid]?.name}'s Lorebook`;
 
     if (!skipPopup) {
@@ -6101,26 +6483,28 @@ export async function importEmbeddedWorldInfo(skipPopup = false) {
         }
     }
 
+    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
     const convertedBook = convertCharacterBook(characters[chid].data.character_book);
 
     await saveWorldInfo(bookName, convertedBook, true);
     await updateWorldInfoList();
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#character_world').val(bookName).trigger('change');
 
-    // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+    // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
     toastr.success(t`The world '${bookName}' has been imported and linked to the character successfully.`, t`World/Lorebook imported`);
 
     const newIndex = world_names.indexOf(bookName);
     if (newIndex >= 0) {
         //show&draw the WI panel before..
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#WIDrawerIcon').trigger('click');
         //..auto-opening the new imported WI
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#world_editor_select').val(newIndex).trigger('change');
     }
 
+    // @ts-expect-error TS(2345) FIXME: Argument of type 'true' is not assignable to param... Remove this comment to see the full error message
     setWorldInfoButtonClass(chid, true);
 }
 
@@ -6129,68 +6513,77 @@ export async function importEmbeddedWorldInfo(skipPopup = false) {
  * @param {string} [text] - World info names to toggle
  * @returns {string} Empty string
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
 export function onWorldInfoChange(args, text) {
     if (args !== '__notSlashCommand__') { // if it's a slash command
         const silent = isTrueBoolean(args.silent);
         if (text.trim() !== '') { // and args are provided
             const slashInputSplitText = text.trim().toLowerCase().split(',');
 
+            // @ts-expect-error TS(7006) FIXME: Parameter 'worldName' implicitly has an 'any' type... Remove this comment to see the full error message
             slashInputSplitText.forEach((worldName) => {
                 const wiElement = getWIElement(worldName);
                 if (wiElement.length > 0) {
                     const name = wiElement.text();
                     switch (args.state) {
                         case 'off': {
+                            // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
                             if (selected_world_info.includes(name)) {
+                                // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
                                 selected_world_info.splice(selected_world_info.indexOf(name), 1);
                                 wiElement.prop('selected', false);
-                                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+                                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                                 if (!silent) toastr.success(t`Deactivated world: ${name}`);
                             } else {
-                                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+                                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                                 if (!silent) toastr.error(t`World was not active: ${name}`);
                             }
                             break;
                         }
                         case 'toggle': {
+                            // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
                             if (selected_world_info.includes(name)) {
+                                // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
                                 selected_world_info.splice(selected_world_info.indexOf(name), 1);
                                 wiElement.prop('selected', false);
-                                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+                                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                                 if (!silent) toastr.success(t`Deactivated world: ${name}`);
                             } else {
+                                // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
                                 selected_world_info.push(name);
                                 wiElement.prop('selected', true);
-                                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+                                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                                 if (!silent) toastr.success(t`Activated world: ${name}`);
                             }
                             break;
                         }
                         case 'on':
                         default: {
+                            // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
                             selected_world_info.push(name);
                             wiElement.prop('selected', true);
-                            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+                            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                             if (!silent) toastr.success(t`Activated world: ${name}`);
                         }
                     }
                 } else {
-                    // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+                    // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                     if (!silent) toastr.error(t`No world found named: ${worldName}`);
                 }
             });
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#world_info').trigger('change');
         } else { // if no args, unset all worlds
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             if (!silent) toastr.success(t`Deactivated all worlds`);
             selected_world_info = [];
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#world_info').val(null).trigger('change');
         }
     } else { //if it's a pointer selection
+        // @ts-expect-error TS(7034) FIXME: Variable 'tempWorldInfo' implicitly has type 'any[... Remove this comment to see the full error message
         const tempWorldInfo = [];
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const val = $('#world_info').val();
         const selectedWorlds = (Array.isArray(val) ? val : [val]).map((e) => Number(e)).filter((e) => !isNaN(e));
         if (selectedWorlds.length > 0) {
@@ -6201,11 +6594,12 @@ export function onWorldInfoChange(args, text) {
                 } else {
                     const wiElement = getWIElement(existingWorldName);
                     wiElement.prop('selected', false);
-                    // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+                    // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                     toastr.error(t`The world with ${existingWorldName} is invalid or corrupted.`);
                 }
             });
         }
+        // @ts-expect-error TS(2322) FIXME: Type 'any[]' is not assignable to type 'never[]'.
         selected_world_info = tempWorldInfo;
     }
 
@@ -6219,10 +6613,9 @@ export function onWorldInfoChange(args, text) {
  * @param {File} file File to import
  * @returns {Promise<void>}
  */
-// @ts-expect-error TS(7030): Not all code paths return a value.
+// @ts-expect-error TS(7006) FIXME: Parameter 'file' implicitly has an 'any' type.
 export async function importWorldInfo(file) {
     if (!file) {
-        // @ts-expect-error TS(7030): Not all code paths return a value.
         return;
     }
 
@@ -6233,7 +6626,7 @@ export async function importWorldInfo(file) {
         let jsonData;
 
         if (file.name.endsWith('.png')) {
-            // @ts-expect-error TS(2769): No overload matches this call.
+            // @ts-expect-error TS(2769) FIXME: No overload matches this call.
             const buffer = new Uint8Array(await getFileBuffer(file));
             jsonData = extractDataFromPng(buffer, 'naidata');
         } else {
@@ -6242,9 +6635,8 @@ export async function importWorldInfo(file) {
         }
 
         if (jsonData === undefined || jsonData === null) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.error(t`File is not valid: ${file.name}`);
-            // @ts-expect-error TS(7030): Not all code paths return a value.
             return;
         }
 
@@ -6266,14 +6658,14 @@ export async function importWorldInfo(file) {
             formData.append('convertedData', JSON.stringify(convertRisuLorebook(jsonData)));
         }
     } catch (error) {
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.error(`Error parsing file: ${error}`);
-        // @ts-expect-error TS(7030): Not all code paths return a value.
         return;
     }
 
     const worldName = file.name.substr(0, file.name.lastIndexOf('.'));
     const sanitizedWorldName = await getSanitizedFilename(worldName);
+    // @ts-expect-error TS(2322) FIXME: Type '(existingName: any) => Promise<boolean>' is ... Remove this comment to see the full error message
     const allowed = await checkOverwriteExistingData('World Info', world_names, sanitizedWorldName, { interactive: true, actionName: 'Import', deleteAction: (existingName) => deleteWorldInfo(existingName) });
     if (!allowed) {
         return false;
@@ -6298,16 +6690,16 @@ export async function importWorldInfo(file) {
 
             const newIndex = world_names.indexOf(data.name);
             if (newIndex >= 0) {
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $('#world_editor_select').val(newIndex).trigger('change');
             }
 
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.success(t`World Info "${data.name}" imported successfully!`);
         }
     } catch (error) {
         console.error('Error importing world info:', error);
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.error(t`Failed to import World Info`);
     }
 }
@@ -6316,15 +6708,16 @@ export async function importWorldInfo(file) {
  * Forces the world info editor to open on a specific world.
  * @param {string} worldName The name of the world to open
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'worldName' implicitly has an 'any' type... Remove this comment to see the full error message
 export function openWorldInfoEditor(worldName) {
     console.log(`Opening lorebook for ${worldName}`);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     if (!$('#WorldInfo').is(':visible')) {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#WIDrawerIcon').trigger('click');
     }
     const index = world_names.indexOf(worldName);
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_editor_select').val(index).trigger('change');
 }
 
@@ -6333,7 +6726,9 @@ export function openWorldInfoEditor(worldName) {
  * @param {Pick<JQuery.ClickEvent, 'shiftKey' | 'altKey'>} event Click event
  * @returns {Promise<void>}
  */
+// @ts-expect-error TS(7031) FIXME: Binding element 'shiftKey' implicitly has an 'any'... Remove this comment to see the full error message
 export async function assignLorebookToChat({ shiftKey, altKey }) {
+    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     const selectedName = chat_metadata[METADATA_KEY];
 
     if (selectedName && !shiftKey && !altKey) {
@@ -6341,7 +6736,7 @@ export async function assignLorebookToChat({ shiftKey, altKey }) {
         return;
     }
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const template = $(await renderTemplateAsync('chatLorebook'));
 
     const worldSelect = template.find('select');
@@ -6357,14 +6752,18 @@ export async function assignLorebookToChat({ shiftKey, altKey }) {
     }
 
     worldSelect.on('change', function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const worldName = $(this).val();
 
         if (worldName) {
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             chat_metadata[METADATA_KEY] = worldName;
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             document.querySelector('.chat_lorebook_button').classList.add('world_set');
         } else {
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             delete chat_metadata[METADATA_KEY];
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             document.querySelector('.chat_lorebook_button').classList.remove('world_set');
         }
 
@@ -6383,20 +6782,21 @@ export async function assignLorebookToChat({ shiftKey, altKey }) {
  * @param {boolean} [options.deleteOriginal] - Whether to delete the original entry from the source lorebook after moving it.
  * @returns {Promise<boolean>} True if the move was successful, false otherwise.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'sourceName' implicitly has an 'any' typ... Remove this comment to see the full error message
 export async function moveWorldInfoEntry(sourceName, targetName, uid, { deleteOriginal = true } = {}) {
     if (sourceName === targetName) {
         return false;
     }
 
     if (!world_names.includes(sourceName)) {
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.error(t`Source lorebook '${sourceName}' not found.`);
         console.error(`[WI Move] Source lorebook '${sourceName}' does not exist.`);
         return false;
     }
 
     if (!world_names.includes(targetName)) {
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.error(t`Target lorebook '${targetName}' not found.`);
         console.error(`[WI Move] Target lorebook '${targetName}' does not exist.`);
         return false;
@@ -6409,20 +6809,20 @@ export async function moveWorldInfoEntry(sourceName, targetName, uid, { deleteOr
         const targetData = await loadWorldInfo(targetName);
 
         if (!sourceData || !sourceData.entries) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.error(t`Failed to load data for source lorebook '${sourceName}'.`);
             console.error(`[WI Move] Could not load source data for '${sourceName}'.`);
             return false;
         }
         if (!targetData || !targetData.entries) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.error(t`Failed to load data for target lorebook '${targetName}'.`);
             console.error(`[WI Move] Could not load target data for '${targetName}'.`);
             return false;
         }
 
         if (!sourceData.entries[entryUidString]) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.error(t`Entry not found in source lorebook '${sourceName}'.`);
             console.error(`[WI Move] Entry UID ${entryUidString} not found in '${sourceName}'.`);
             return false;
@@ -6438,9 +6838,9 @@ export async function moveWorldInfoEntry(sourceName, targetName, uid, { deleteOr
 
         entryToMove.uid = newUid;
         // Place the entry at the end of the target lorebook
-        // @ts-expect-error TS(2345): Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
+        // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
         const maxDisplayIndex = Object.values(targetData.entries).reduce((max, entry) => Math.max(max, entry.displayIndex ?? -1), -1);
-        // @ts-expect-error TS(2365): Operator '+' cannot be applied to types 'unknown' ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         entryToMove.displayIndex = maxDisplayIndex + 1;
 
         targetData.entries[newUid] = entryToMove;
@@ -6461,7 +6861,7 @@ export async function moveWorldInfoEntry(sourceName, targetName, uid, { deleteOr
         console.log(`[WI Move] ${entryToMove.comment} ${deleteOriginal ? 'moved' : 'copied'} successfully to '${targetName}'.`);
 
         // Check if the currently viewed book in the editor is the source or target and reload it
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const currentEditorBookIndex = Number($('#world_editor_select').val());
         if (!isNaN(currentEditorBookIndex)) {
             const currentEditorBookName = world_names[currentEditorBookIndex];
@@ -6470,14 +6870,14 @@ export async function moveWorldInfoEntry(sourceName, targetName, uid, { deleteOr
             }
         }
 
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.success(deleteOriginal
             ? t`Entry moved successfully from '${sourceName}' to '${targetName}'.`
             : t`Entry copied successfully to '${targetName}'.`);
 
         return true;
     } catch (error) {
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.error(t`An unexpected error occurred while moving the entry: ${error.message}`);
         console.error('[WI Move] Unexpected error:', error);
         return false;
@@ -6490,10 +6890,11 @@ export async function moveWorldInfoEntry(sourceName, targetName, uid, { deleteOr
  * Can also unset it to null.
  * @param {string} name - The name of the world info to link to the character.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
 export async function charUpdatePrimaryWorld(name) {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const previousValue = $('#character_world').val();
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#character_world').val(name);
 
     console.debug('Character world selected:', name);
@@ -6506,25 +6907,26 @@ export async function charUpdatePrimaryWorld(name) {
     if (previousValue && !name) {
         try {
             // Dirty hack to remove embedded lorebook from character JSON data.
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const data = JSON.parse(String($('#character_json_data').val()));
 
             if (data?.data?.character_book) {
                 data.data.character_book = undefined;
             }
 
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#character_json_data').val(JSON.stringify(data));
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.info(t`Embedded lorebook will be removed from this character.`);
         } catch {
             console.error('Failed to parse character JSON data.');
         }
     }
 
-    // @ts-expect-error TS(2554): Expected 1 arguments, but got 0.
+    // @ts-expect-error TS(2554) FIXME: Expected 1 arguments, but got 0.
     await createOrEditCharacter();
 
+    // @ts-expect-error TS(2345) FIXME: Argument of type 'boolean' is not assignable to pa... Remove this comment to see the full error message
     setWorldInfoButtonClass(undefined, !!name);
 }
 
@@ -6533,9 +6935,11 @@ export async function charUpdatePrimaryWorld(name) {
  * @param {string} characterKey - The key of the character to add auxiliary world books to
  * @param {string|string[]} nameOrNames - The name or names of the auxiliary world books to add
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'characterKey' implicitly has an 'any' t... Remove this comment to see the full error message
 export async function charUpdateAddAuxWorld(characterKey, nameOrNames) {
     const fileName = getCharaFilename(null, { manualAvatarKey: characterKey });
     const toAdd = Array.isArray(nameOrNames) ? nameOrNames : [nameOrNames];
+    // @ts-expect-error TS(7006) FIXME: Parameter 'curr' implicitly has an 'any' type.
     updateAuxBooks(fileName, curr => [...curr, ...toAdd]);
 }
 
@@ -6544,7 +6948,9 @@ export async function charUpdateAddAuxWorld(characterKey, nameOrNames) {
  * @param {string} fileName - The filename of the character to update
  * @param {string[]} books - The new list of auxiliary world books to replace the existing list with
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'fileName' implicitly has an 'any' type.
 export function charSetAuxWorlds(fileName, books) {
+    // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
     updateAuxBooks(fileName, _ => Array.isArray(books) ? books : []);
 }
 
@@ -6553,17 +6959,20 @@ export function charSetAuxWorlds(fileName, books) {
  * @param {(books: string[]) => string[]} computeNext - Function to compute the next list of books
  * @returns {void}
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'fileName' implicitly has an 'any' type.
 function updateAuxBooks(fileName, computeNext) {
     if (!fileName) return;
 
     if (menu_type === 'create') {
         const current = create_save.extra_books ?? [];
+        // @ts-expect-error TS(2322) FIXME: Type 'unknown[]' is not assignable to type 'never[... Remove this comment to see the full error message
         create_save.extra_books = normalizeArray(computeNext(current));
         return; // no debounced save in create flow
     }
 
-    // @ts-expect-error TS(2339): Property 'charLore' does not exist on type '{}'.
+    // @ts-expect-error TS(2339) FIXME: Property 'charLore' does not exist on type '{}'.
     const charLore = world_info.charLore ?? [];
+    // @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
     const idx = charLore.findIndex(e => e.name === fileName);
     const current = idx !== -1 ? (charLore[idx].extraBooks ?? []) : [];
     const next = normalizeArray(computeNext(current));
@@ -6584,7 +6993,7 @@ function updateAuxBooks(fileName, computeNext) {
  *
  */
 export function initWorldInfo() {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_info').on('mousedown change', async function (e) {
         // If there's no world names, don't do anything
         if (world_names.length === 0) {
@@ -6592,18 +7001,18 @@ export function initWorldInfo() {
             return;
         }
 
-        // @ts-expect-error TS(2554): Expected 2 arguments, but got 1.
+        // @ts-expect-error TS(2554) FIXME: Expected 2 arguments, but got 1.
         onWorldInfoChange('__notSlashCommand__');
     });
 
     //**************************WORLD INFO IMPORT EXPORT*************************//
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_import_button').on('click', function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#world_import_file').trigger('click');
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_import_file').on('change', async function (e) {
         if (!(e.target instanceof HTMLInputElement)) {
             return;
@@ -6617,7 +7026,7 @@ export function initWorldInfo() {
         e.target.value = '';
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_create_button').on('click', async () => {
         const tempName = getFreeWorldName();
         const finalName = await Popup.show.input(t`Create a new World Info`, t`Enter a name for the new file:`, tempName);
@@ -6627,12 +7036,12 @@ export function initWorldInfo() {
         }
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_editor_select').on('change', async () => {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#world_info_search').val('');
         worldInfoFilter.setFilterData(FILTER_TYPES.WORLD_INFO_SEARCH, '', true);
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         const selectedIndex = String(document.getElementById('world_editor_select').options[document.getElementById('world_editor_select').selectedIndex].value);
 
         if (selectedIndex === '') {
@@ -6648,26 +7057,26 @@ export function initWorldInfo() {
         eventSource.emit(event_types.WORLDINFO_SETTINGS_UPDATED);
     };
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_info_depth').on('input', function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         world_info_depth = Number($(this).val());
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#world_info_depth_counter').val($(this).val());
         saveSettings();
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_info_min_activations').on('input', function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         world_info_min_activations = Number($(this).val());
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#world_info_min_activations_counter').val(world_info_min_activations);
 
         if (world_info_min_activations !== 0 && world_info_max_recursion_steps !== 0) {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#world_info_max_recursion_steps').val(0).trigger('input');
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             flashHighlight(document.getElementById('world_info_max_recursion_steps').parentElement); // flash the other control to show it has changed
             console.info('[WI] Max recursion steps set to 0, as min activations is set to', world_info_min_activations);
         } else {
@@ -6675,92 +7084,92 @@ export function initWorldInfo() {
         }
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_info_min_activations_depth_max').on('input', function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         world_info_min_activations_depth_max = Number($(this).val());
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#world_info_min_activations_depth_max_counter').val($(this).val());
         saveSettings();
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_info_budget').on('input', function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         world_info_budget = Number($(this).val());
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#world_info_budget_counter').val($(this).val());
         saveSettings();
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_info_include_names').on('input', function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         world_info_include_names = !!$(this).prop('checked');
         saveSettings();
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_info_recursive').on('input', function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         world_info_recursive = !!$(this).prop('checked');
         saveSettings();
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_info_case_sensitive').on('input', function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         world_info_case_sensitive = !!$(this).prop('checked');
         saveSettings();
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_info_match_whole_words').on('input', function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         world_info_match_whole_words = !!$(this).prop('checked');
         saveSettings();
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_info_character_strategy').on('change', function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         world_info_character_strategy = Number($(this).val());
         saveSettings();
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_info_overflow_alert').on('change', function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         world_info_overflow_alert = !!$(this).prop('checked');
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_info_use_group_scoring').on('change', function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         world_info_use_group_scoring = !!$(this).prop('checked');
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_info_budget_cap').on('input', function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         world_info_budget_cap = Number($(this).val());
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#world_info_budget_cap_counter').val(world_info_budget_cap);
         saveSettings();
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_info_max_recursion_steps').on('input', function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         world_info_max_recursion_steps = Number($(this).val());
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#world_info_max_recursion_steps_counter').val(world_info_max_recursion_steps);
         if (world_info_max_recursion_steps !== 0 && world_info_min_activations !== 0) {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#world_info_min_activations').val(0).trigger('input');
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             flashHighlight(document.getElementById('world_info_min_activations').parentElement); // flash the other control to show it has changed
             console.info('[WI] Min activations set to 0, as max recursion steps is set to', world_info_max_recursion_steps);
         } else {
@@ -6768,11 +7177,11 @@ export function initWorldInfo() {
         }
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_button').on('click', async function (event) {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const openSetWorldMenu = () => $('#char-management-dropdown').val($('#set_character_world').val()).trigger('change');
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const chid = $('#set_character_world').data('chid');
 
         if (chid === -1) {
@@ -6780,6 +7189,7 @@ export function initWorldInfo() {
             return;
         }
 
+        // @ts-expect-error TS(2339) FIXME: Property 'data' does not exist on type 'never'.
         const worldName = characters[chid]?.data?.extensions?.world;
         const hasEmbed = checkEmbeddedWorld(chid);
         if (worldName && world_names.includes(worldName) && !event.shiftKey && !event.altKey) {
@@ -6792,50 +7202,51 @@ export function initWorldInfo() {
         }
     });
     addLongPressEvent('#world_button', function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(this).trigger($.Event('click', { shiftKey: true }));
     });
 
+    // @ts-expect-error TS(7006) FIXME: Parameter 'searchQuery' implicitly has an 'any' ty... Remove this comment to see the full error message
     const debouncedWorldInfoSearch = debounce((searchQuery) => {
         worldInfoFilter.setFilterData(FILTER_TYPES.WORLD_INFO_SEARCH, searchQuery);
     });
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_info_search').on('input', function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const searchQuery = $(this).val();
         debouncedWorldInfoSearch(searchQuery);
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_refresh').on('click', () => {
         updateEditor(navigation_option.previous);
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#world_info_sort_order').on('change', function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
         const value = String(this.options[this.selectedIndex].value);
         // Save sort order, but do not save search sorting, as this is a temporary sorting option
         if (value !== 'search') accountStorage.setItem(SORT_ORDER_KEY, value);
         updateEditor(navigation_option.none);
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.chat_lorebook_button', assignLorebookToChat);
     addLongPressEvent('.chat_lorebook_button', function () {
         assignLorebookToChat({ shiftKey: true, altKey: false });
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#group-chat-lorebook-dropdown').on('change', async function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(this).prop('selectedIndex', 0);
         await assignLorebookToChat({ shiftKey: true, altKey: false });
     });
 
     // Not needed on mobile
     if (!isMobile()) {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#world_editor_select').select2({
             placeholder: t`--- Pick to Edit ---`,
             searchInputPlaceholder: t`Search...`,
@@ -6844,7 +7255,7 @@ export function initWorldInfo() {
             multiple: false,
         });
 
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#world_info').select2({
             width: '100%',
             placeholder: t`No Worlds active. Click here to select.`,
@@ -6853,15 +7264,15 @@ export function initWorldInfo() {
         });
 
         // Subscribe world loading to the select2 multiselect items (We need to target the specific select2 control)
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         select2ChoiceClickSubscribe($('#world_info'), target => {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const name = $(target).text();
             const selectedIndex = world_names.indexOf(name);
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const alreadySelectedInEditor = $('#world_editor_select option:selected').text() === name;
             if (selectedIndex !== -1 && !alreadySelectedInEditor) {
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $('#world_editor_select').val(selectedIndex).trigger('change');
                 console.log('Quick selection of world', name);
             } else {
@@ -6870,14 +7281,14 @@ export function initWorldInfo() {
         }, { buttonStyle: true, closeDrawer: true });
     }
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#WorldInfo').on('scroll', () => {
         document.querySelectorAll('.world_entry input[name="group"], .world_entry input[name="automationId"]').forEach(el => {
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const instance = $(el).autocomplete('instance');
 
             if (instance !== undefined) {
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $(el).autocomplete('close');
             }
         });

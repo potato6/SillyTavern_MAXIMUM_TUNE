@@ -84,6 +84,7 @@ export class EnhancedMacroAutoCompleteOption extends AutoCompleteOption {
      * @param {MacroDefinition} macro - The macro definition from MacroRegistry.
      * @param {MacroAutoCompleteContext|EnhancedMacroAutoCompleteOptions|null} [contextOrOptions] - Context for argument hints, or options object.
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'macro' implicitly has an 'any' type.
     constructor(macro, contextOrOptions = null) {
         // Use the macro name as the autocomplete key
         super(macro.name, enumIcons.macro);
@@ -95,10 +96,13 @@ export class EnhancedMacroAutoCompleteOption extends AutoCompleteOption {
             if ('noBraces' in contextOrOptions || 'paddingAfter' in contextOrOptions || 'closeWithBraces' in contextOrOptions) {
                 // It's an options object
                 this.#options = /** @type {EnhancedMacroAutoCompleteOptions} */ (contextOrOptions);
+                // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
                 this.#noBraces = this.#options.noBraces ?? false;
+                // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
                 this.#paddingAfter = this.#options.paddingAfter ?? '';
 
                 // If noBraces mode with closeWithBraces, complete with name + padding + }}
+                // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
                 if (this.#options.closeWithBraces) {
                     this.valueProvider = () => `${macro.name}${this.#paddingAfter}}}`;
                     this.makeSelectable = true;
@@ -123,6 +127,7 @@ export class EnhancedMacroAutoCompleteOption extends AutoCompleteOption {
         }
 
         // {{//}} needs special handling. If we autocomplete right after **one** slash is already typed, we need to replace that, as it's treated as a flag otherwise.
+        // @ts-expect-error TS(2339) FIXME: Property 'fullText' does not exist on type 'never'... Remove this comment to see the full error message
         const fullText = this.#options?.fullText ?? this.#context?.fullText ?? '';
         if (macro.name === '//' && fullText.endsWith('/')) {
             this.replacementStartOffset = (this.replacementStartOffset ?? 0) - 1; // Cut the leading slash
@@ -139,7 +144,7 @@ export class EnhancedMacroAutoCompleteOption extends AutoCompleteOption {
      * Tight display: [icon] [signature] [description] [alias icon?] [source icon]
      * @returns {HTMLElement}
      */
-    // @ts-expect-error TS(4114): This member must have an 'override' modifier becau... Remove this comment to see the full error message
+    // @ts-expect-error TS(4114) FIXME: This member must have an 'override' modifier becau... Remove this comment to see the full error message
     renderItem() {
         const li = document.createElement('li');
         li.classList.add('item', 'macro-ac-item');
@@ -205,7 +210,7 @@ export class EnhancedMacroAutoCompleteOption extends AutoCompleteOption {
      * Reuses renderMacroDetails from MacroBrowser with autocomplete-specific options.
      * @returns {DocumentFragment}
      */
-    // @ts-expect-error TS(4114): This member must have an 'override' modifier becau... Remove this comment to see the full error message
+    // @ts-expect-error TS(4114) FIXME: This member must have an 'override' modifier becau... Remove this comment to see the full error message
     renderDetails() {
         const frag = document.createDocumentFragment();
 
@@ -217,12 +222,14 @@ export class EnhancedMacroAutoCompleteOption extends AutoCompleteOption {
         }
 
         // Show scoped content info banner if we're in scoped content
+        // @ts-expect-error TS(2339) FIXME: Property 'isInScopedContent' does not exist on typ... Remove this comment to see the full error message
         if (this.#context?.isInScopedContent) {
             const scopedInfo = this.#renderScopedContentInfo();
             if (scopedInfo) frag.append(scopedInfo);
         }
 
         // Determine current argument index for highlighting
+        // @ts-expect-error TS(2339) FIXME: Property 'currentArgIndex' does not exist on type ... Remove this comment to see the full error message
         const currentArgIndex = this.#context?.currentArgIndex ?? -1;
 
         // For most warnings, we can still highlight which argument we are currently at.
@@ -254,6 +261,7 @@ export class EnhancedMacroAutoCompleteOption extends AutoCompleteOption {
     #getArityWarning() {
         if (!this.#context) return null;
 
+        // @ts-expect-error TS(2339) FIXME: Property 'args' does not exist on type 'never'.
         const argCount = this.#context.args.length;
         const maxArgs = this.#macro.maxArgs;
         //const minArgs = this.#macro.minArgs;
@@ -267,6 +275,7 @@ export class EnhancedMacroAutoCompleteOption extends AutoCompleteOption {
         // Check for space-separated arg on macro that doesn't support it
         // Space-separated syntax provides 1 arg; with scoped content you can provide a 2nd arg
         // So it's valid for macros with maxArgs <= 2 (or with list args)
+        // @ts-expect-error TS(2339) FIXME: Property 'hasSpaceArgContent' does not exist on ty... Remove this comment to see the full error message
         if (this.#context.hasSpaceArgContent) {
             if (maxArgs === 0 && !hasList) {
                 return 'This macro does not accept any arguments. Remove the space or use a different macro.';
@@ -278,6 +287,7 @@ export class EnhancedMacroAutoCompleteOption extends AutoCompleteOption {
 
         // Check if trying to add args to a no-arg macro via ::
         // List-arg macros can accept args even if maxArgs === 0
+        // @ts-expect-error TS(2339) FIXME: Property 'separatorCount' does not exist on type '... Remove this comment to see the full error message
         if (this.#context.separatorCount > 0 && maxArgs === 0 && !hasList) {
             return 'This macro does not accept any arguments.';
         }
@@ -306,6 +316,7 @@ export class EnhancedMacroAutoCompleteOption extends AutoCompleteOption {
      * @param {string} message - The warning message.
      * @returns {HTMLElement}
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'message' implicitly has an 'any' type.
     #renderWarning(message) {
         const warning = document.createElement('div');
         warning.classList.add('macro-ac-warning');
@@ -327,12 +338,14 @@ export class EnhancedMacroAutoCompleteOption extends AutoCompleteOption {
      * @returns {HTMLElement|null}
      */
     #renderScopedContentInfo() {
+        // @ts-expect-error TS(2339) FIXME: Property 'isInScopedContent' does not exist on typ... Remove this comment to see the full error message
         if (!this.#context?.isInScopedContent) return null;
 
         const info = document.createElement('div');
         info.classList.add('macro-ac-scoped-info');
 
         // If the scoped content is optional, show a prominent OPTIONAL badge
+        // @ts-expect-error TS(2339) FIXME: Property 'isScopedContentOptional' does not exist ... Remove this comment to see the full error message
         if (this.#context.isScopedContentOptional) {
             const optionalBadge = document.createElement('span');
             optionalBadge.classList.add('macro-ac-optional-badge');
@@ -345,9 +358,13 @@ export class EnhancedMacroAutoCompleteOption extends AutoCompleteOption {
         info.append(icon);
 
         const text = document.createElement('span');
+        // @ts-expect-error TS(2339) FIXME: Property 'isScopedContentOptional' does not exist ... Remove this comment to see the full error message
         const closingHint = this.#context.isScopedContentOptional
+            // @ts-expect-error TS(2339) FIXME: Property 'scopedMacroName' does not exist on type ... Remove this comment to see the full error message
             ? `Can optionally close with <code>{{/${this.#context.scopedMacroName}}}</code>`
+            // @ts-expect-error TS(2339) FIXME: Property 'scopedMacroName' does not exist on type ... Remove this comment to see the full error message
             : `Close with <code>{{/${this.#context.scopedMacroName}}}</code>`;
+        // @ts-expect-error TS(2339) FIXME: Property 'scopedMacroName' does not exist on type ... Remove this comment to see the full error message
         text.innerHTML = `Typing <strong>scoped content</strong> for <code>{{${this.#context.scopedMacroName}}}</code>. ${closingHint}`;
         info.append(text);
 
@@ -359,8 +376,10 @@ export class EnhancedMacroAutoCompleteOption extends AutoCompleteOption {
      * @returns {HTMLElement|null}
      */
     #renderArgumentHint() {
+        // @ts-expect-error TS(2339) FIXME: Property 'currentArgIndex' does not exist on type ... Remove this comment to see the full error message
         if (!this.#context || this.#context.currentArgIndex < 0) return null;
 
+        // @ts-expect-error TS(2339) FIXME: Property 'currentArgIndex' does not exist on type ... Remove this comment to see the full error message
         const argIndex = this.#context.currentArgIndex;
         const isListArg = argIndex >= this.#macro.maxArgs;
 
@@ -377,6 +396,7 @@ export class EnhancedMacroAutoCompleteOption extends AutoCompleteOption {
         if (isListArg) {
             // List argument hint
             const listIndex = argIndex - this.#macro.maxArgs + 1;
+            // @ts-expect-error TS(2339) FIXME: Property 'args' does not exist on type 'never'.
             const totalListItems = this.#context.args.length - this.#macro.maxArgs;
 
             const text = document.createElement('span');
@@ -450,6 +470,7 @@ export class MacroFlagAutoCompleteOption extends AutoCompleteOption {
     /**
      * @param {import('../macros/engine/MacroFlags.js').MacroFlagDefinition} flagDef - The flag definition.
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'flagDef' implicitly has an 'any' type.
     constructor(flagDef) {
         // Use the flag symbol as the name, with a flag icon
         // Display name includes both symbol and name for clarity
@@ -467,7 +488,7 @@ export class MacroFlagAutoCompleteOption extends AutoCompleteOption {
      * Uses the same structure as other autocomplete options for consistent styling.
      * @returns {HTMLElement}
      */
-    // @ts-expect-error TS(4114): This member must have an 'override' modifier becau... Remove this comment to see the full error message
+    // @ts-expect-error TS(4114) FIXME: This member must have an 'override' modifier becau... Remove this comment to see the full error message
     renderItem() {
         // Use base class makeItem for consistent styling
         const li = this.makeItem(
@@ -488,7 +509,7 @@ export class MacroFlagAutoCompleteOption extends AutoCompleteOption {
      * Renders the details panel for this flag.
      * @returns {DocumentFragment}
      */
-    // @ts-expect-error TS(4114): This member must have an 'override' modifier becau... Remove this comment to see the full error message
+    // @ts-expect-error TS(4114) FIXME: This member must have an 'override' modifier becau... Remove this comment to see the full error message
     renderDetails() {
         const frag = document.createDocumentFragment();
 
@@ -585,6 +606,7 @@ const VARIABLE_SHORTHAND_NAME_PATTERN = new RegExp(`^${MACRO_VARIABLE_SHORTHAND_
  * @param {string} name - The variable name to validate.
  * @returns {boolean} True if the name is valid for shorthand syntax.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
 export function isValidVariableShorthandName(name) {
     if (!name || typeof name !== 'string') return false;
     return VARIABLE_SHORTHAND_NAME_PATTERN.test(name);
@@ -602,6 +624,7 @@ export class VariableShorthandAutoCompleteOption extends AutoCompleteOption {
     /**
      * @param {VariableShorthandDefinition} varDef - The variable shorthand definition.
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'varDef' implicitly has an 'any' type.
     constructor(varDef) {
         // Use the prefix symbol as the name, with a variable icon
         super(varDef.type, '📦');
@@ -617,7 +640,7 @@ export class VariableShorthandAutoCompleteOption extends AutoCompleteOption {
      * Renders the autocomplete list item for this variable shorthand.
      * @returns {HTMLElement}
      */
-    // @ts-expect-error TS(4114): This member must have an 'override' modifier becau... Remove this comment to see the full error message
+    // @ts-expect-error TS(4114) FIXME: This member must have an 'override' modifier becau... Remove this comment to see the full error message
     renderItem() {
         const li = this.makeItem(
             `${this.#varDef.type} ${this.#varDef.name}`,
@@ -637,7 +660,7 @@ export class VariableShorthandAutoCompleteOption extends AutoCompleteOption {
      * Renders the details panel for this variable shorthand.
      * @returns {DocumentFragment}
      */
-    // @ts-expect-error TS(4114): This member must have an 'override' modifier becau... Remove this comment to see the full error message
+    // @ts-expect-error TS(4114) FIXME: This member must have an 'override' modifier becau... Remove this comment to see the full error message
     renderDetails() {
         const frag = document.createDocumentFragment();
 
@@ -731,6 +754,7 @@ export class VariableNameAutoCompleteOption extends AutoCompleteOption {
      * @param {boolean} [isNewVariable] - Whether this is a "create new variable" option.
      * @param {boolean} [isInvalidName] - Whether this name is invalid for shorthand syntax.
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'varName' implicitly has an 'any' type.
     constructor(varName, scope, isNewVariable = false, isInvalidName = false) {
         const icon = scope === 'local' ? 'L' : 'G';
         super(varName, icon);
@@ -764,7 +788,7 @@ export class VariableNameAutoCompleteOption extends AutoCompleteOption {
      * Renders the autocomplete list item for this variable.
      * @returns {HTMLElement}
      */
-    // @ts-expect-error TS(4114): This member must have an 'override' modifier becau... Remove this comment to see the full error message
+    // @ts-expect-error TS(4114) FIXME: This member must have an 'override' modifier becau... Remove this comment to see the full error message
     renderItem() {
         const scopeLabel = this.#scope === 'local' ? 'Local' : 'Global';
         let description;
@@ -800,7 +824,7 @@ export class VariableNameAutoCompleteOption extends AutoCompleteOption {
      * Renders the details panel for this variable.
      * @returns {DocumentFragment}
      */
-    // @ts-expect-error TS(4114): This member must have an 'override' modifier becau... Remove this comment to see the full error message
+    // @ts-expect-error TS(4114) FIXME: This member must have an 'override' modifier becau... Remove this comment to see the full error message
     renderDetails() {
         const frag = document.createDocumentFragment();
 
@@ -897,6 +921,7 @@ export class VariableNameAutoCompleteOption extends AutoCompleteOption {
  * @param {string} op - The operator to check.
  * @returns {boolean} True if the operator could be a prefix of a longer operator.
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'op' implicitly has an 'any' type.
 function isShortOperatorPrefix(op) {
     // These operators could have longer variants typed after them
     const shortPrefixes = ['>', '<', '=', '|', '?', '+', '-', '!'];
@@ -1011,6 +1036,7 @@ export class VariableOperatorAutoCompleteOption extends AutoCompleteOption {
     /**
      * @param {{ symbol: string, name: string, description: string, needsValue: boolean }} operatorDef - The operator definition.
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'operatorDef' implicitly has an 'any' ty... Remove this comment to see the full error message
     constructor(operatorDef) {
         super(operatorDef.symbol, '⚡');
         this.#operatorDef = operatorDef;
@@ -1025,7 +1051,7 @@ export class VariableOperatorAutoCompleteOption extends AutoCompleteOption {
      * Renders the autocomplete list item for this operator.
      * @returns {HTMLElement}
      */
-    // @ts-expect-error TS(4114): This member must have an 'override' modifier becau... Remove this comment to see the full error message
+    // @ts-expect-error TS(4114) FIXME: This member must have an 'override' modifier becau... Remove this comment to see the full error message
     renderItem() {
         const li = this.makeItem(
             `${this.#operatorDef.symbol} ${this.#operatorDef.name}`,
@@ -1045,7 +1071,7 @@ export class VariableOperatorAutoCompleteOption extends AutoCompleteOption {
      * Renders the details panel for this operator.
      * @returns {DocumentFragment}
      */
-    // @ts-expect-error TS(4114): This member must have an 'override' modifier becau... Remove this comment to see the full error message
+    // @ts-expect-error TS(4114) FIXME: This member must have an 'override' modifier becau... Remove this comment to see the full error message
     renderDetails() {
         const frag = document.createDocumentFragment();
 
@@ -1089,6 +1115,7 @@ export class VariableValueContextAutoCompleteOption extends AutoCompleteOption {
      * @param {{ symbol: string, name: string, description: string, needsValue: boolean }} operatorDef - The operator definition.
      * @param {string} [currentValue] - The value currently being typed.
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'operatorDef' implicitly has an 'any' ty... Remove this comment to see the full error message
     constructor(operatorDef, currentValue = '') {
         super('value', '📝');
         this.#operatorDef = operatorDef;
@@ -1105,7 +1132,7 @@ export class VariableValueContextAutoCompleteOption extends AutoCompleteOption {
      * Renders the autocomplete list item for this value context.
      * @returns {HTMLElement}
      */
-    // @ts-expect-error TS(4114): This member must have an 'override' modifier becau... Remove this comment to see the full error message
+    // @ts-expect-error TS(4114) FIXME: This member must have an 'override' modifier becau... Remove this comment to see the full error message
     renderItem() {
         const li = this.makeItem(
             '<value>',
@@ -1125,7 +1152,7 @@ export class VariableValueContextAutoCompleteOption extends AutoCompleteOption {
      * Renders the details panel for this value context.
      * @returns {DocumentFragment}
      */
-    // @ts-expect-error TS(4114): This member must have an 'override' modifier becau... Remove this comment to see the full error message
+    // @ts-expect-error TS(4114) FIXME: This member must have an 'override' modifier becau... Remove this comment to see the full error message
     renderDetails() {
         const frag = document.createDocumentFragment();
 
@@ -1189,23 +1216,24 @@ export class MacroClosingTagAutoCompleteOption extends AutoCompleteOption {
      * @param {boolean} [options.isOptional] - Whether this closing tag is for an optional scope.
      * @param {number} [options.nestingLevel] - Nesting level (0 = innermost).
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'macroName' implicitly has an 'any' type... Remove this comment to see the full error message
     constructor(macroName, options = {}) {
         // The closing tag is what we're suggesting - use /macroName as the name for matching
         const closingTag = `/${macroName}`;
         super(closingTag, '{/');
         this.#macroName = macroName;
-        // @ts-expect-error TS(2339): Property 'paddingBefore' does not exist on type '{... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'paddingBefore' does not exist on type '{... Remove this comment to see the full error message
         this.#paddingBefore = options.paddingBefore ?? '';
-        // @ts-expect-error TS(2339): Property 'paddingAfter' does not exist on type '{}... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'paddingAfter' does not exist on type '{}... Remove this comment to see the full error message
         this.#paddingAfter = options.paddingAfter ?? '';
-        // @ts-expect-error TS(2339): Property 'isOptional' does not exist on type '{}'.
+        // @ts-expect-error TS(2339) FIXME: Property 'isOptional' does not exist on type '{}'.
         this.#isOptional = options.isOptional ?? false;
-        // @ts-expect-error TS(2339): Property 'nestingLevel' does not exist on type '{}... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'nestingLevel' does not exist on type '{}... Remove this comment to see the full error message
         this.#nestingLevel = options.nestingLevel ?? 0;
 
         // Calculate the replacement offset to replace any existing whitespace the user typed
         // This allows us to normalize the whitespace to match the opening tag's style
-        // @ts-expect-error TS(2339): Property 'currentPadding' does not exist on type '... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'currentPadding' does not exist on type '... Remove this comment to see the full error message
         const currentPadding = options.currentPadding ?? '';
         // Negative offset to start replacement earlier (eating the user's whitespace)
         this.replacementStartOffset = -currentPadding.length;
@@ -1238,7 +1266,7 @@ export class MacroClosingTagAutoCompleteOption extends AutoCompleteOption {
      * Uses the same structure as other macro options for consistent styling.
      * @returns {HTMLElement}
      */
-    // @ts-expect-error TS(4114): This member must have an 'override' modifier becau... Remove this comment to see the full error message
+    // @ts-expect-error TS(4114) FIXME: This member must have an 'override' modifier becau... Remove this comment to see the full error message
     renderItem() {
         const li = document.createElement('li');
         li.classList.add('item', 'macro-ac-item');
@@ -1301,7 +1329,7 @@ export class MacroClosingTagAutoCompleteOption extends AutoCompleteOption {
      * Renders the details panel for this closing tag.
      * @returns {DocumentFragment}
      */
-    // @ts-expect-error TS(4114): This member must have an 'override' modifier becau... Remove this comment to see the full error message
+    // @ts-expect-error TS(4114) FIXME: This member must have an 'override' modifier becau... Remove this comment to see the full error message
     renderDetails() {
         const frag = document.createDocumentFragment();
 
@@ -1343,6 +1371,7 @@ export class MacroClosingTagAutoCompleteOption extends AutoCompleteOption {
  * @param {number} cursorOffset - Cursor position within macroText.
  * @returns {MacroAutoCompleteContext}
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'macroText' implicitly has an 'any' type... Remove this comment to see the full error message
 export function parseMacroContext(macroText, cursorOffset) {
     let i = 0;
 
@@ -1384,6 +1413,7 @@ export function parseMacroContext(macroText, cursorOffset) {
         // If cursor is at or after the last flag position but before identifier starts,
         // the last flag is the "current" one (just typed)
         const lastFlagEnd = flagEndPositions[flagEndPositions.length - 1];
+        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         if (cursorOffset >= lastFlagEnd - 1) {
             currentFlag = flags[flags.length - 1];
         }
@@ -1712,6 +1742,7 @@ export function parseMacroContext(macroText, cursorOffset) {
         // Find which argument we're in based on separator positions
         for (let sepIdx = 0; sepIdx < separatorPositions.length; sepIdx++) {
             const sep = separatorPositions[sepIdx];
+            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             if (cursorOffset >= sep.end) {
                 // We're past this separator, so we're in at least this argument
                 currentArgIndex = sepIdx;
@@ -1790,6 +1821,7 @@ export class SimpleAutoCompleteOption extends AutoCompleteOption {
     #description;
 
     /** @type {string|null} */
+    // @ts-expect-error TS(7008) FIXME: Member '#detailedDescription' implicitly has an 'a... Remove this comment to see the full error message
     #detailedDescription;
 
     /**
@@ -1800,6 +1832,7 @@ export class SimpleAutoCompleteOption extends AutoCompleteOption {
      * @param {string} [config.detailedDescription] - Longer description for details panel (supports HTML). Falls back to description if not provided.
      * @param {string} [config.type] - Type identifier for CSS/data attributes.
      */
+    // @ts-expect-error TS(7031) FIXME: Binding element 'name' implicitly has an 'any' typ... Remove this comment to see the full error message
     constructor({ name, symbol = ' ', description = '', detailedDescription = null, type = 'simple' }) {
         super(name, symbol, type);
         this.#description = description;
@@ -1819,7 +1852,7 @@ export class SimpleAutoCompleteOption extends AutoCompleteOption {
     /**
      * @returns {HTMLElement}
      */
-    // @ts-expect-error TS(4114): This member must have an 'override' modifier becau... Remove this comment to see the full error message
+    // @ts-expect-error TS(4114) FIXME: This member must have an 'override' modifier becau... Remove this comment to see the full error message
     renderItem() {
         const li = document.createElement('li');
         li.classList.add('item');
@@ -1837,6 +1870,7 @@ export class SimpleAutoCompleteOption extends AutoCompleteOption {
         specs.classList.add('specs');
         const nameSpan = document.createElement('span');
         nameSpan.classList.add('name', 'monospace');
+        // @ts-expect-error TS(7006) FIXME: Parameter 'char' implicitly has an 'any' type.
         this.name.split('').forEach(char => {
             const span = document.createElement('span');
             span.textContent = char;
@@ -1865,7 +1899,7 @@ export class SimpleAutoCompleteOption extends AutoCompleteOption {
     /**
      * @returns {DocumentFragment}
      */
-    // @ts-expect-error TS(4114): This member must have an 'override' modifier becau... Remove this comment to see the full error message
+    // @ts-expect-error TS(4114) FIXME: This member must have an 'override' modifier becau... Remove this comment to see the full error message
     renderDetails() {
         const frag = document.createDocumentFragment();
 

@@ -1,3 +1,4 @@
+// @ts-expect-error TS(2792) FIXME: Cannot find module 'es-toolkit/compat'. Did you me... Remove this comment to see the full error message
 import { merge } from 'es-toolkit/compat';
 import { addOneMessage, chat, displayVersion, setSendButtonState, system_avatar, systemUserName } from '../script.js';
 import { t } from './i18n.js';
@@ -109,6 +110,7 @@ export async function initSystemMessages() {
         send_date: getMessageTimeStamp(),
         mes: t`You deleted a character/chat and arrived back here for safety reasons! Pick another character!`,
     };
+    // @ts-expect-error TS(2345) FIXME: Argument of type '{ name: string; force_avatar: st... Remove this comment to see the full error message
     SAFETY_CHAT.splice(0, SAFETY_CHAT.length, safetyMessage);
 }
 
@@ -122,7 +124,9 @@ export async function initSystemMessages() {
  * @param {ChatMessageExtra} [extra] Additional data to be added to the message
  * @returns {ChatMessage} System message object
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'type' implicitly has an 'any' type.
 export function getSystemMessageByType(type, text, extra = {}) {
+    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     const systemMessage = system_messages[type];
 
     if (!systemMessage) {
@@ -158,15 +162,19 @@ export function getSystemMessageByType(type, text, extra = {}) {
  * @param {string} [text] Text to be sent
  * @param {ChatMessageExtra} [extra] Additional data to be added to the message
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'type' implicitly has an 'any' type.
 export function sendSystemMessage(type, text, extra = {}) {
     const newMessage = getSystemMessageByType(type, text, extra);
+    // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
     chat.push(newMessage);
     addOneMessage(newMessage);
     setSendButtonState(false);
     if (type === system_message_types.SLASH_COMMANDS) {
         const browser = new SlashCommandBrowser();
         const spinner = document.querySelector('#chat .last_mes .custom-slashHelp');
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         const parent = spinner.parentElement;
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         spinner.remove();
         browser.renderInto(parent);
         browser.search.focus();

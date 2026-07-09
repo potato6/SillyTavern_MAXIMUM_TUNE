@@ -1,6 +1,9 @@
 /* eslint-disable dot-notation */
+// @ts-expect-error TS(1259) FIXME: Module '"node:process"' can only be default-import... Remove this comment to see the full error message
 import process from 'node:process';
+// @ts-expect-error TS(1192) FIXME: Module '"node:util"' has no default export.
 import util from 'node:util';
+// @ts-expect-error TS(1259) FIXME: Module '"/mnt/DISCO/downloads/some_git_projects/Si... Remove this comment to see the full error message
 import express from 'express';
 import fetch from 'node-fetch';
 
@@ -98,12 +101,16 @@ const API_WORKERS_AI = 'https://api.cloudflare.com/client/v4/accounts';
 /**
  * Module-scoped Claude caching configuration values.
  */
+// @ts-expect-error TS(2345) FIXME: Argument of type 'false' is not assignable to para... Remove this comment to see the full error message
 const cacheTTL = getConfigValue('claude.extendedTTL', false, 'boolean') ? '1h' : '5m';
+// @ts-expect-error TS(2345) FIXME: Argument of type 'false' is not assignable to para... Remove this comment to see the full error message
 const enableSystemPromptCache = getConfigValue('claude.enableSystemPromptCache', false, 'boolean');
 const cachingAtDepth = (() => {
+    // @ts-expect-error TS(2345) FIXME: Argument of type '-1' is not assignable to paramet... Remove this comment to see the full error message
     const value = getConfigValue('claude.cachingAtDepth', -1, 'number');
     return Number.isInteger(value) && value >= 0 ? value : -1;
 })();
+// @ts-expect-error TS(2345) FIXME: Argument of type 'true' is not assignable to param... Remove this comment to see the full error message
 const enableAdaptiveThinking = getConfigValue('claude.enableAdaptiveThinking', true, 'boolean');
 
 /**
@@ -127,7 +134,6 @@ async function isOpenRouterModelCacheable(modelId: string) {
         const response = await fetch(`${API_OPENROUTER}/models`, {
             method: 'GET',
             headers: { 'Accept': 'application/json' },
-            // @ts-expect-error TS(2339): Property 'timeout' does not exist on type '{ new (... Remove this comment to see the full error message
             signal: AbortSignal.timeout(5000),
         });
 
@@ -145,6 +151,7 @@ async function isOpenRouterModelCacheable(modelId: string) {
         }
 
         const model = (data.data as Array<Record<string, unknown>>).find((m) => m.id === modelId);
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         const supportsCache = model?.pricing?.input_cache_write != null;
 
         if (supportsCache) {
@@ -153,6 +160,7 @@ async function isOpenRouterModelCacheable(modelId: string) {
 
         return supportsCache;
     } catch (error) {
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         console.warn(`Failed to check OpenRouter cache support for ${modelId}:`, error.message);
         return false;
     }
@@ -163,7 +171,6 @@ async function isOpenRouterModelCacheable(modelId: string) {
  * @param {import('express').Request} request Express request
  * @returns {string[] | undefined} OpenRouter transforms
  */
-// @ts-expect-error TS(7030): Not all code paths return a value.
 function getOpenRouterTransforms(request: express.Request) {
     switch (request.body.middleout) {
         case 'on':
@@ -262,30 +269,35 @@ async function sendClaudeRequest(request: express.Request, response: express.Res
         };
         if (useSystemPrompt) {
             if (enableSystemPromptCache && Array.isArray(convertedPrompt.systemPrompt) && convertedPrompt.systemPrompt.length) {
+                // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
                 convertedPrompt.systemPrompt[convertedPrompt.systemPrompt.length - 1].cache_control = { type: 'ephemeral', ttl: cacheTTL };
             }
 
+            // @ts-expect-error TS(2322) FIXME: Type 'Message[]' is not assignable to type 'never[... Remove this comment to see the full error message
             requestBody.system = convertedPrompt.systemPrompt;
         } else {
+            // @ts-expect-error TS(2790) FIXME: The operand of a 'delete' operator must be optiona... Remove this comment to see the full error message
             delete requestBody.system;
         }
         if (useTools) {
             betaHeaders.push('tools-2024-05-16');
-            // @ts-expect-error TS(2339): Property 'tool_choice' does not exist on type '{ s... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'tool_choice' does not exist on type '{ s... Remove this comment to see the full error message
             requestBody.tool_choice = { type: request.body.tool_choice };
-            // @ts-expect-error TS(2339): Property 'tools' does not exist on type '{ system:... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'tools' does not exist on type '{ system:... Remove this comment to see the full error message
             requestBody.tools = request.body.tools
                 .filter((tool: { type: string; function: { name: string; description: string; parameters: Record<string, unknown> } }) => tool.type === 'function')
+                // @ts-expect-error TS(7006) FIXME: Parameter 'tool' implicitly has an 'any' type.
                 .map((tool) => tool.function)
+                // @ts-expect-error TS(7006) FIXME: Parameter 'fn' implicitly has an 'any' type.
                 .map((fn) => ({
                 name: fn.name,
                 description: fn.description,
                 input_schema: flattenSchema(fn.parameters, request.body.chat_completion_source)
             }));
 
-            // @ts-expect-error TS(2339): Property 'tools' does not exist on type '{ system:... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'tools' does not exist on type '{ system:... Remove this comment to see the full error message
             if (enableSystemPromptCache && requestBody.tools.length) {
-                // @ts-expect-error TS(2339): Property 'tools' does not exist on type '{ system:... Remove this comment to see the full error message
+                // @ts-expect-error TS(2339) FIXME: Property 'tools' does not exist on type '{ system:... Remove this comment to see the full error message
                 requestBody.tools[requestBody.tools.length - 1].cache_control = { type: 'ephemeral', ttl: cacheTTL };
             }
         }
@@ -297,9 +309,9 @@ async function sendClaudeRequest(request: express.Request, response: express.Res
                 description: request.body.json_schema.description || 'Well-formed JSON object',
                 input_schema: request.body.json_schema.value,
             };
-            // @ts-expect-error TS(2339): Property 'tools' does not exist on type '{ system:... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'tools' does not exist on type '{ system:... Remove this comment to see the full error message
             requestBody.tools = [...(requestBody.tools || []), jsonTool];
-            // @ts-expect-error TS(2339): Property 'tool_choice' does not exist on type '{ s... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'tool_choice' does not exist on type '{ s... Remove this comment to see the full error message
             requestBody.tool_choice = { type: 'tool', name: request.body.json_schema.name };
         }
 
@@ -308,7 +320,7 @@ async function sendClaudeRequest(request: express.Request, response: express.Res
                 'type': 'web_search_20250305',
                 'name': 'web_search',
             }];
-            // @ts-expect-error TS(2339): Property 'tools' does not exist on type '{ system:... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'tools' does not exist on type '{ system:... Remove this comment to see the full error message
             requestBody.tools = [...webSearchTool, ...(requestBody.tools || [])];
         }
 
@@ -341,16 +353,16 @@ async function sendClaudeRequest(request: express.Request, response: express.Res
         // Adaptive thinking: returns a string effort level (like Gemini 3)
         if (useThinking && typeof budgetTokens === 'string') {
             fixThinkingPrefill = true;
-            // @ts-expect-error TS(2339): Property 'thinking' does not exist on type '{ syst... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'thinking' does not exist on type '{ syst... Remove this comment to see the full error message
             requestBody.thinking = { type: 'adaptive' };
             const includeReasoning = Boolean(request.body.include_reasoning);
             if (noSamplingModel && includeReasoning) {
-                // @ts-expect-error TS(2339): Property 'thinking' does not exist on type '{ syst... Remove this comment to see the full error message
+                // @ts-expect-error TS(2339) FIXME: Property 'thinking' does not exist on type '{ syst... Remove this comment to see the full error message
                 requestBody.thinking.display = 'summarized';
             }
-            // @ts-expect-error TS(2339): Property 'output_config' does not exist on type '{... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'output_config' does not exist on type '{... Remove this comment to see the full error message
             requestBody.output_config ??= {};
-            // @ts-expect-error TS(2339): Property 'output_config' does not exist on type '{... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'output_config' does not exist on type '{... Remove this comment to see the full error message
             requestBody.output_config.effort = budgetTokens;
             // top_k is not allowed in adaptive mode
             delete requestBody.top_k;
@@ -364,7 +376,7 @@ async function sendClaudeRequest(request: express.Request, response: express.Res
                 console.info(color.blue(`Increasing response length to ${newValue}.`));
                 requestBody.max_tokens = newValue;
             }
-            // @ts-expect-error TS(2339): Property 'thinking' does not exist on type '{ syst... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'thinking' does not exist on type '{ syst... Remove this comment to see the full error message
             requestBody.thinking = {
                 type: 'enabled',
                 budget_tokens: budgetTokens,
@@ -376,21 +388,24 @@ async function sendClaudeRequest(request: express.Request, response: express.Res
             delete requestBody.top_k;
         }
 
+        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         if ((fixThinkingPrefill || noPrefillModel) && convertedPrompt.messages.length && convertedPrompt.messages[convertedPrompt.messages.length - 1].role === 'assistant') {
+            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             convertedPrompt.messages[convertedPrompt.messages.length - 1].role = 'user';
         }
 
         // Verbosity = 'effort' (same values as OpenAI) - only if not already set by adaptive thinking
-        // @ts-expect-error TS(2339): Property 'output_config' does not exist on type '{... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'output_config' does not exist on type '{... Remove this comment to see the full error message
         if (useVerbosity && request.body.verbosity && !requestBody.output_config?.effort) {
             betaHeaders.push('effort-2025-11-24');
-            // @ts-expect-error TS(2339): Property 'output_config' does not exist on type '{... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'output_config' does not exist on type '{... Remove this comment to see the full error message
             requestBody.output_config ??= {};
-            // @ts-expect-error TS(2339): Property 'output_config' does not exist on type '{... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'output_config' does not exist on type '{... Remove this comment to see the full error message
             requestBody.output_config.effort = request.body.verbosity;
         }
 
         if (betaHeaders.length) {
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             additionalHeaders['anthropic-beta'] = betaHeaders.join(',');
         }
 
@@ -459,7 +474,9 @@ async function sendMakerSuiteRequest(request: express.Request, response: express
             authType = auth.authType;
             console.debug(`Using Vertex AI authentication type: ${authType}`);
         } catch (error) {
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             console.warn(`${apiName} authentication failed: ${error.message}`);
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             return response.status(400).send({ error: true, message: error.message });
         }
     } else {
@@ -534,17 +551,17 @@ async function sendMakerSuiteRequest(request: express.Request, response: express
         const enableImageModality = requestImages && imageGenerationModels.includes(model);
         const enableImageConfig = enableImageModality && (aspectRatio || imageSize);
         if (enableImageModality) {
-            // @ts-expect-error TS(2339): Property 'responseModalities' does not exist on ty... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'responseModalities' does not exist on ty... Remove this comment to see the full error message
             generationConfig.responseModalities = ['text', 'image'];
             if (enableImageConfig) {
-                // @ts-expect-error TS(2339): Property 'imageConfig' does not exist on type '{ s... Remove this comment to see the full error message
+                // @ts-expect-error TS(2339) FIXME: Property 'imageConfig' does not exist on type '{ s... Remove this comment to see the full error message
                 generationConfig.imageConfig = {};
                 if (imageSize && isImageSizeModel(model)) {
-                    // @ts-expect-error TS(2339): Property 'imageConfig' does not exist on type '{ s... Remove this comment to see the full error message
+                    // @ts-expect-error TS(2339) FIXME: Property 'imageConfig' does not exist on type '{ s... Remove this comment to see the full error message
                     generationConfig.imageConfig.imageSize = imageSize;
                 }
                 if (aspectRatio) {
-                    // @ts-expect-error TS(2339): Property 'imageConfig' does not exist on type '{ s... Remove this comment to see the full error message
+                    // @ts-expect-error TS(2339) FIXME: Property 'imageConfig' does not exist on type '{ s... Remove this comment to see the full error message
                     generationConfig.imageConfig.aspectRatio = aspectRatio;
                 }
             }
@@ -593,12 +610,12 @@ async function sendMakerSuiteRequest(request: express.Request, response: express
 
             const thinkingBudget = calculateGoogleBudgetTokens(generationConfig.maxOutputTokens, reasoningEffort, model);
             if (typeof thinkingBudget === 'number' && Number.isInteger(thinkingBudget)) {
-                // @ts-expect-error TS(2339): Property 'thinkingBudget' does not exist on type '... Remove this comment to see the full error message
+                // @ts-expect-error TS(2339) FIXME: Property 'thinkingBudget' does not exist on type '... Remove this comment to see the full error message
                 thinkingConfig.thinkingBudget = thinkingBudget;
             }
 
             if (typeof thinkingBudget === 'string' && thinkingBudget.length > 0) {
-                // @ts-expect-error TS(2339): Property 'thinkingLevel' does not exist on type '{... Remove this comment to see the full error message
+                // @ts-expect-error TS(2339) FIXME: Property 'thinkingLevel' does not exist on type '{... Remove this comment to see the full error message
                 thinkingConfig.thinkingLevel = thinkingBudget;
             }
 
@@ -608,7 +625,7 @@ async function sendMakerSuiteRequest(request: express.Request, response: express
                 thinkingConfig.includeThoughts = false;
             }
 
-            // @ts-expect-error TS(2339): Property 'thinkingConfig' does not exist on type '... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'thinkingConfig' does not exist on type '... Remove this comment to see the full error message
             generationConfig.thinkingConfig = thinkingConfig;
         }
 
@@ -619,12 +636,12 @@ async function sendMakerSuiteRequest(request: express.Request, response: express
         };
 
         if (useSystemPrompt && Array.isArray(prompt.system_instruction.parts) && prompt.system_instruction.parts.length) {
-            // @ts-expect-error TS(2339): Property 'systemInstruction' does not exist on typ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'systemInstruction' does not exist on typ... Remove this comment to see the full error message
             body.systemInstruction = prompt.system_instruction;
         }
 
         if (tools.length) {
-            // @ts-expect-error TS(2339): Property 'tools' does not exist on type '{ content... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'tools' does not exist on type '{ content... Remove this comment to see the full error message
             body.tools = tools;
 
             const toolChoice = request.body.tool_choice;
@@ -652,7 +669,7 @@ async function sendMakerSuiteRequest(request: express.Request, response: express
             }
 
             if (functionCallingConfig) {
-                // @ts-expect-error TS(2339): Property 'toolConfig' does not exist on type '{ co... Remove this comment to see the full error message
+                // @ts-expect-error TS(2339) FIXME: Property 'toolConfig' does not exist on type '{ co... Remove this comment to see the full error message
                 body.toolConfig = { functionCallingConfig };
             }
         }
@@ -670,6 +687,7 @@ async function sendMakerSuiteRequest(request: express.Request, response: express
             controller.abort();
         });
 
+        // @ts-expect-error TS(2345) FIXME: Argument of type '"v1beta"' is not assignable to p... Remove this comment to see the full error message
         const apiVersion = getConfigValue('gemini.apiVersion', 'v1beta');
         const responseType = (stream ? 'streamGenerateContent' : 'generateContent');
 
@@ -714,10 +732,12 @@ async function sendMakerSuiteRequest(request: express.Request, response: express
                 } else {
                     url = `https://${region}-aiplatform.googleapis.com/v1/projects/${projectId}/locations/${region}/publishers/google/models/${model}:${responseType}${stream ? '?alt=sse' : ''}`;
                 }
+                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 headers['Authorization'] = authHeader;
             } else {
                 // For proxy mode, use the original URL with Authorization header
                 url = `${apiUrl.toString().replace(/\/$/, '')}/v1/publishers/google/models/${model}:${responseType}${stream ? '?alt=sse' : ''}`;
+                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 headers['Authorization'] = authHeader;
             }
         } else {
@@ -809,7 +829,7 @@ async function sendAI21Request(request: express.Request, response: express.Respo
     });
     // Hack to support JSON schema
     if (request.body.json_schema) {
-        // @ts-expect-error TS(2339): Property 'response_format' does not exist on type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'response_format' does not exist on type ... Remove this comment to see the full error message
         bodyParams.response_format = {
             type: 'json_object',
         };
@@ -907,11 +927,14 @@ async function sendMistralAIRequest(request: express.Request, response: express.
         };
 
         if (Array.isArray(request.body.tools) && request.body.tools.length > 0) {
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             requestBody['tools'] = request.body.tools;
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             requestBody['tool_choice'] = request.body.tool_choice;
         }
 
         if (request.body.json_schema) {
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             requestBody['response_format'] = {
                 type: 'json_schema',
                 json_schema: {
@@ -1011,12 +1034,12 @@ async function sendCohereRequest(request: express.Request, response: express.Res
 
         const canDoSafetyMode = String(request.body.model).endsWith('08-2024');
         if (canDoSafetyMode) {
-            // @ts-expect-error TS(2339): Property 'safety_mode' does not exist on type '{ s... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'safety_mode' does not exist on type '{ s... Remove this comment to see the full error message
             requestBody.safety_mode = 'OFF';
         }
 
         if (request.body.json_schema) {
-            // @ts-expect-error TS(2339): Property 'response_format' does not exist on type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'response_format' does not exist on type ... Remove this comment to see the full error message
             requestBody.response_format = {
                 type: 'json_schema',
                 schema: request.body.json_schema.value,
@@ -1088,19 +1111,24 @@ async function sendDeepSeekRequest(request: express.Request, response: express.R
         const bodyParams = {};
 
         if (request.body.logprobs > 0) {
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             bodyParams['top_logprobs'] = request.body.logprobs;
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             bodyParams['logprobs'] = true;
         }
 
         if (Array.isArray(request.body.tools) && request.body.tools.length > 0) {
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             bodyParams['tools'] = request.body.tools;
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             bodyParams['tool_choice'] = request.body.tool_choice;
 
             // DeepSeek doesn't permit empty required arrays
-            // @ts-expect-error TS(2339): Property 'tools' does not exist on type '{}'.
+            // @ts-expect-error TS(2339) FIXME: Property 'tools' does not exist on type '{}'.
             (bodyParams.tools as Array<{ function?: { parameters?: { required?: unknown } } }>).forEach((tool) => {
                 const required = tool?.function?.parameters?.required;
                 if (Array.isArray(required) && required.length === 0) {
+                    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
                     delete tool.function.parameters.required;
                 }
             });
@@ -1108,7 +1136,7 @@ async function sendDeepSeekRequest(request: express.Request, response: express.R
 
         // Hack to support JSON schema
         if (request.body.json_schema) {
-            // @ts-expect-error TS(2339): Property 'response_format' does not exist on type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'response_format' does not exist on type ... Remove this comment to see the full error message
             bodyParams.response_format = {
                 type: 'json_object',
             };
@@ -1119,11 +1147,12 @@ async function sendDeepSeekRequest(request: express.Request, response: express.R
             request.body.messages.push(message);
         }
 
-        // @ts-expect-error TS(2339): Property 'tools' does not exist on type '{}'.
+        // @ts-expect-error TS(2339) FIXME: Property 'tools' does not exist on type '{}'.
         const processedMessages = addAssistantPrefix(postProcessPrompt(request.body.messages, PROMPT_PROCESSING_TYPE.SEMI_TOOLS, getPromptNames(request)), bodyParams.tools, 'prefix');
         addReasoningContentToToolCalls(processedMessages);
 
         if (request.body.include_reasoning && request.body.reasoning_effort) {
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             bodyParams['reasoning_effort'] = request.body.reasoning_effort;
         }
 
@@ -1204,24 +1233,31 @@ async function sendXaiRequest(request: express.Request, response: express.Respon
         const bodyParams = {};
 
         if (request.body.logprobs > 0) {
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             bodyParams['top_logprobs'] = request.body.logprobs;
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             bodyParams['logprobs'] = true;
         }
 
         if (Array.isArray(request.body.tools) && request.body.tools.length > 0) {
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             bodyParams['tools'] = request.body.tools;
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             bodyParams['tool_choice'] = request.body.tool_choice;
         }
 
         if (Array.isArray(request.body.stop) && request.body.stop.length > 0) {
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             bodyParams['stop'] = request.body.stop;
         }
 
         if (request.body.reasoning_effort) {
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             bodyParams['reasoning_effort'] = request.body.reasoning_effort === 'high' ? 'high' : 'low';
         }
 
         if (request.body.json_schema) {
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             bodyParams['response_format'] = {
                 type: 'json_schema',
                 json_schema: {
@@ -1311,24 +1347,31 @@ async function sendAimlapiRequest(request: express.Request, response: express.Re
         const bodyParams = {};
 
         if (request.body.logprobs > 0) {
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             bodyParams['top_logprobs'] = request.body.logprobs;
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             bodyParams['logprobs'] = true;
         }
 
         if (Array.isArray(request.body.tools) && request.body.tools.length > 0) {
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             bodyParams['tools'] = request.body.tools;
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             bodyParams['tool_choice'] = request.body.tool_choice;
         }
 
         if (Array.isArray(request.body.stop) && request.body.stop.length > 0) {
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             bodyParams['stop'] = request.body.stop;
         }
 
         if (request.body.reasoning_effort) {
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             bodyParams['reasoning_effort'] = request.body.reasoning_effort;
         }
 
         if (request.body.json_schema) {
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             bodyParams['response_format'] = {
                 type: 'json_schema',
                 json_schema: {
@@ -1417,19 +1460,24 @@ async function sendElectronHubRequest(request: express.Request, response: expres
         const bodyParams = {};
 
         if (request.body.enable_web_search) {
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             bodyParams['web_search'] = true;
         }
 
         if (Array.isArray(request.body.tools) && request.body.tools.length > 0) {
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             bodyParams['tools'] = request.body.tools;
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             bodyParams['tool_choice'] = request.body.tool_choice;
         }
 
         if (request.body.reasoning_effort) {
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             bodyParams['reasoning_effort'] = request.body.reasoning_effort;
         }
 
         if (request.body.json_schema) {
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             bodyParams['response_format'] = {
                 type: 'json_schema',
                 json_schema: {
@@ -1530,16 +1578,21 @@ async function sendChutesRequest(request: express.Request, response: express.Res
         const bodyParams = {};
 
         if (Array.isArray(request.body.tools) && request.body.tools.length > 0) {
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             bodyParams['tools'] = request.body.tools;
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             bodyParams['tool_choice'] = request.body.tool_choice;
         }
 
         if (request.body.logprobs > 0) {
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             bodyParams['top_logprobs'] = request.body.logprobs;
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             bodyParams['logprobs'] = true;
         }
 
         if (request.body.json_schema) {
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             bodyParams['response_format'] = {
                 type: 'json_schema',
                 json_schema: {
@@ -1637,7 +1690,9 @@ async function sendMinimaxRequest(request: express.Request, response: express.Re
         const bodyParams = {};
 
         if (Array.isArray(request.body.tools) && request.body.tools.length > 0) {
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             bodyParams['tools'] = request.body.tools;
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             bodyParams['tool_choice'] = request.body.tool_choice;
         }
 
@@ -1715,12 +1770,14 @@ async function sendAzureOpenAIRequest(request: express.Request, response: expres
     const apiRequestBody = /** @type {Record<string, unknown>} */ ({});
     for (const key of AZURE_OPENAI_KEYS) {
         if (Object.hasOwn(request.body, key)) {
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             apiRequestBody[key] = request.body[key];
         }
     }
 
     // Handle Structured Output (JSON Mode) by translating the custom `json_schema` object.
     if (request.body.json_schema) {
+        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         apiRequestBody['response_format'] = {
             type: 'json_schema',
             json_schema: {
@@ -1732,16 +1789,18 @@ async function sendAzureOpenAIRequest(request: express.Request, response: expres
     }
 
     // Adjust logprobs for Azure OpenAI, which follows the OpenAI Chat Completions API spec.
-    // @ts-expect-error TS(2339): Property 'logprobs' does not exist on type '{}'.
+    // @ts-expect-error TS(2339) FIXME: Property 'logprobs' does not exist on type '{}'.
     if (typeof apiRequestBody.logprobs === 'number' && apiRequestBody.logprobs > 0) {
-        // @ts-expect-error TS(2339): Property 'top_logprobs' does not exist on type '{}... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'top_logprobs' does not exist on type '{}... Remove this comment to see the full error message
         apiRequestBody.top_logprobs = apiRequestBody.logprobs;
-        // @ts-expect-error TS(2339): Property 'logprobs' does not exist on type '{}'.
+        // @ts-expect-error TS(2339) FIXME: Property 'logprobs' does not exist on type '{}'.
         apiRequestBody.logprobs = true;
     }
 
     // Do not send reasoning effort to models which do not support it
+    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     apiRequestBody['reasoning_effort'] = OPENAI_REASONING_EFFORT_MODELS.includes(request.body.model)
+        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         ? OPENAI_FIXED_REASONING_EFFORT[request.body.model] ?? OPENAI_REASONING_EFFORT_MAP[request.body.reasoning_effort] ?? request.body.reasoning_effort
         : undefined;
 
@@ -1779,16 +1838,19 @@ async function sendAzureOpenAIRequest(request: express.Request, response: expres
         const data = tryParse(text) || { error: { message: fetchResponse.statusText || 'Unknown error occurred' } };
         return response.status(500).send(data);
     } catch (error) {
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         const message = error.name === 'AbortError'
             ? 'Request was aborted by the client.'
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             : (error.message || 'An unknown network error occurred.');
+        // @ts-expect-error TS(2698) FIXME: Spread types may only be created from object types... Remove this comment to see the full error message
         return response.status(500).send({ error: { message, ...error } });
     }
 }
 
 export const router = express.Router();
 
-// @ts-expect-error TS(7030): Not all code paths return a value.
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/status', async function (request, statusResponse) {
     try {
         if (!request.body) return statusResponse.sendStatus(400);
@@ -1869,6 +1931,7 @@ router.post('/status', async function (request, statusResponse) {
         } else if (request.body.chat_completion_source === CHAT_COMPLETION_SOURCES.MAKERSUITE) {
             apiKey = request.body.reverse_proxy ? request.body.proxy_password : readSecret(request.user.directories, SECRET_KEYS.MAKERSUITE, request.body.secret_id);
             apiUrl = trimTrailingSlash(request.body.reverse_proxy || API_MAKERSUITE);
+            // @ts-expect-error TS(2345) FIXME: Argument of type '"v1beta"' is not assignable to p... Remove this comment to see the full error message
             const apiVersion = getConfigValue('gemini.apiVersion', 'v1beta');
             const modelsUrl = !apiKey && request.body.reverse_proxy
                 ? `${apiUrl}/${apiVersion}/models`
@@ -1890,6 +1953,7 @@ router.post('/status', async function (request, statusResponse) {
                     ?.filter((model) => (model.supportedGenerationMethods as string[])?.includes('generateContent'))
                     ?.map((model) => ({
                         ...model,
+                        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                         id: model.name.replace('models/', '')
                     })) || [];
 
@@ -1941,6 +2005,7 @@ router.post('/status', async function (request, statusResponse) {
                     console.warn('Azure OpenAI GET /models failed:', apiConfigTest.status, apiConfigTest.statusText, errText || '');
 
                     const defaultMessage = `Azure Models endpoint error: ${apiConfigTest.statusText}`;
+                    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                     const message = azureStatusErrorMap[apiConfigTest.status] ?? defaultMessage;
                     return statusResponse.status(apiConfigTest.status).send({ error: true, message });
                 }
@@ -2024,6 +2089,7 @@ router.post('/status', async function (request, statusResponse) {
                 }))
                     : [];
 
+                // @ts-expect-error TS(2345) FIXME: Argument of type '(m: {    id: string;}) => string... Remove this comment to see the full error message
                 console.debug('Available Cloudflare Workers AI models:', models.map((m: { id: string }) => m.id));
                     return statusResponse.send({ data: models });
                 } else {
@@ -2046,6 +2112,7 @@ router.post('/status', async function (request, statusResponse) {
 
         const modelsUrl = new URL(apiUrl.replace(/\/+$/, '') + '/models');
         Object.keys(queryParams).forEach(key => {
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             modelsUrl.searchParams.append(key, queryParams[key]);
         });
         const response = await fetch(modelsUrl, {
@@ -2068,12 +2135,16 @@ router.post('/status', async function (request, statusResponse) {
                 data.data = (data.data as Array<Record<string, unknown>>)
                     .filter((model) => model?.id)
                     .map((model) => {
+                        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                         if (model.pricing?.prompt !== undefined && model.pricing?.completion !== undefined) {
                             return {
                                 ...model,
                                 pricing: {
+                                    // @ts-expect-error TS(2698) FIXME: Spread types may only be created from object types... Remove this comment to see the full error message
                                     ...model.pricing,
+                                    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                                     input: model.pricing.prompt,
+                                    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                                     output: model.pricing.completion,
                                 },
                             };
@@ -2096,8 +2167,10 @@ router.post('/status', async function (request, statusResponse) {
 
                 (data.data as Array<Record<string, unknown>>).forEach((model) => {
                     const context_length = model.context_length;
+                    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                     const tokens_dollar = Number(1 / (1000 * model.pricing?.prompt));
                     const tokens_rounded = (Math.round(tokens_dollar * 1000) / 1000).toFixed(0);
+                    // @ts-expect-error TS(2538) FIXME: Type 'unknown' cannot be used as an index type.
                     models[model.id] = {
                         tokens_per_dollar: tokens_rounded + 'k',
                         context_length: context_length,
@@ -2133,13 +2206,13 @@ router.post('/status', async function (request, statusResponse) {
     }
 });
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/bias', async function (request, response) {
     if (!request.body || !Array.isArray(request.body))
         return response.sendStatus(400);
 
     try {
         const result = {};
-        // @ts-expect-error TS(4111): Property 'model' comes from an index signature, so... Remove this comment to see the full error message
         const model = getTokenizerModel(String(request.query.model || ''));
 
         // no bias for claude
@@ -2179,6 +2252,7 @@ router.post('/bias', async function (request, response) {
                 const tokens = getEntryTokens(entry.text, encodeFunction);
 
                 for (const token of tokens) {
+                    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                     result[token] = entry.value;
                 }
             } catch {
@@ -2218,6 +2292,7 @@ router.post('/bias', async function (request, response) {
     }
 });
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/generate', async function (request, response) {
     try {
         if (!request.body) return response.status(400).send({ error: true });
@@ -2272,11 +2347,13 @@ router.post('/generate', async function (request, response) {
                 bodyParams.logprobs = true;
             }
 
+            // @ts-expect-error TS(2345) FIXME: Argument of type 'false' is not assignable to para... Remove this comment to see the full error message
             if (getConfigValue('openai.randomizeUserId', false, 'boolean')) {
+                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 bodyParams['user'] = uuidv4();
             }
 
-            // @ts-expect-error TS(2322): Type 'false' is not assignable to type 'true'.
+            // @ts-expect-error TS(2322) FIXME: Type 'false' is not assignable to type 'true'.
             embedOpenRouterMedia(request.body.messages, { audio: true, video: false });
         } else if (request.body.chat_completion_source === CHAT_COMPLETION_SOURCES.OPENROUTER) {
             apiUrl = 'https://openrouter.ai/api/v1';
@@ -2293,18 +2370,22 @@ router.post('/generate', async function (request, response) {
             };
 
             if (request.body.min_p !== undefined) {
+                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 bodyParams['min_p'] = request.body.min_p;
             }
 
             if (request.body.top_a !== undefined) {
+                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 bodyParams['top_a'] = request.body.top_a;
             }
 
             if (request.body.repetition_penalty !== undefined) {
+                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 bodyParams['repetition_penalty'] = request.body.repetition_penalty;
             }
 
             if (Array.isArray(request.body.provider) && request.body.provider.length > 0) {
+                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 bodyParams['provider'] = {
                     allow_fallbacks: request.body.allow_fallbacks ?? true,
                     order: request.body.provider ?? [],
@@ -2312,23 +2393,29 @@ router.post('/generate', async function (request, response) {
             }
 
             if (Array.isArray(request.body.quantizations) && request.body.quantizations.length > 0) {
+                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 bodyParams['provider'] ??= {};
+                // @ts-expect-error TS(2339) FIXME: Property 'provider' does not exist on type '{ tran... Remove this comment to see the full error message
                 bodyParams['provider']['quantizations'] = request.body.quantizations;
             }
 
             if (request.body.use_fallback) {
+                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 bodyParams['route'] = 'fallback';
             }
 
             if (request.body.reasoning_effort) {
+                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 bodyParams['reasoning']['effort'] = request.body.reasoning_effort;
             }
 
             if (request.body.verbosity) {
+                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 bodyParams['verbosity'] = request.body.verbosity;
             }
 
             if (request.body.json_schema) {
+                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 bodyParams['response_format'] = {
                     type: 'json_schema',
                     json_schema: {
@@ -2342,6 +2429,7 @@ router.post('/generate', async function (request, response) {
             const isClaude = /^anthropic\/claude/.test(request.body.model);
             const isGemini = /google\/gemini/.test(request.body.model);
             const isCacheableGemini = isGemini && (await isOpenRouterModelCacheable(request.body.model));
+            // @ts-expect-error TS(2345) FIXME: Argument of type 'false' is not assignable to para... Remove this comment to see the full error message
             const enableGeminiSystemPromptCache = getConfigValue('gemini.enableSystemPromptCache', false, 'boolean');
 
             if (Array.isArray(request.body.messages)) {
@@ -2364,6 +2452,7 @@ router.post('/generate', async function (request, response) {
             }
 
             if (isGemini) {
+                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 bodyParams['safety_settings'] = GEMINI_SAFETY;
             }
         } else if (request.body.chat_completion_source === CHAT_COMPLETION_SOURCES.CUSTOM) {
@@ -2383,9 +2472,10 @@ router.post('/generate', async function (request, response) {
 
             mergeObjectWithYaml(bodyParams, request.body.custom_include_body);
             mergeObjectWithYaml(headers, request.body.custom_include_headers);
-            // @ts-expect-error TS(2322): Type 'false' is not assignable to type 'true'.
+            // @ts-expect-error TS(2322) FIXME: Type 'false' is not assignable to type 'true'.
             embedOpenRouterMedia(request.body.messages, { audio: true, video: false });
             if (request.body.json_schema) {
+                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 bodyParams['response_format'] = {
                     type: 'json_schema',
                     json_schema: {
@@ -2404,6 +2494,7 @@ router.post('/generate', async function (request, response) {
             };
             request.body.messages = postProcessPrompt(request.body.messages, PROMPT_PROCESSING_TYPE.STRICT, getPromptNames(request));
             if (request.body.json_schema) {
+                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 bodyParams['response_format'] = {
                     type: 'json_schema',
                     json_schema: {
@@ -2417,6 +2508,7 @@ router.post('/generate', async function (request, response) {
             headers = {};
             bodyParams = {};
             if (request.body.json_schema) {
+                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 bodyParams['response_format'] = {
                     type: 'json_schema',
                     json_schema: {
@@ -2433,6 +2525,7 @@ router.post('/generate', async function (request, response) {
             headers = {};
             bodyParams = {};
             if (request.body.json_schema) {
+                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 bodyParams['response_format'] = {
                     type: 'json_schema',
                     json_schema: {
@@ -2449,31 +2542,40 @@ router.post('/generate', async function (request, response) {
             headers = {};
             bodyParams = {};
             if (request.body.nanogpt_provider) {
+                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 headers['X-Provider'] = request.body.nanogpt_provider;
             }
             if (request.body.nanogpt_payg_override) {
+                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 headers['X-Billing-Mode'] = 'paygo';
+                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 bodyParams['billing_mode'] = 'paygo';
             }
             if (request.body.enable_web_search && !/:online$/.test(request.body.model)) {
                 request.body.model = `${request.body.model}:online`;
             }
             if (request.body.min_p !== undefined) {
+                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 bodyParams['min_p'] = request.body.min_p;
             }
             if (request.body.top_a !== undefined) {
+                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 bodyParams['top_a'] = request.body.top_a;
             }
             if (request.body.repetition_penalty !== undefined) {
+                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 bodyParams['repetition_penalty'] = request.body.repetition_penalty;
             }
             if (request.body.reasoning_effort) {
+                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 const effort = NANOGPT_REASONING_EFFORT_MAP[request.body.reasoning_effort];
+                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 bodyParams['reasoning'] = { effort: effort };
             }
 
             const isClaude = /(?:^|\/)claude[-_]/.test(request.body.model);
             if (enableSystemPromptCache && isClaude) {
+                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 bodyParams['cache_control'] = {
                     'enabled': true,
                     'ttl': cacheTTL,
@@ -2488,6 +2590,7 @@ router.post('/generate', async function (request, response) {
                 seed: request.body.seed ?? Math.floor(Math.random() * 99999999),
             };
             if (request.body.json_schema) {
+                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 bodyParams['response_format'] = {
                     type: 'json_schema',
                     json_schema: {
@@ -2555,6 +2658,7 @@ router.post('/generate', async function (request, response) {
                 repetition_penalty: request.body.repetition_penalty,
             };
             if (request.body.json_schema) {
+                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 bodyParams['response_format'] = {
                     type: 'json_schema',
                     json_schema: request.body.json_schema.value,
@@ -2568,6 +2672,7 @@ router.post('/generate', async function (request, response) {
         // A few of OpenAIs reasoning models support reasoning effort
         if (request.body.reasoning_effort && [CHAT_COMPLETION_SOURCES.CUSTOM, CHAT_COMPLETION_SOURCES.OPENAI].includes(request.body.chat_completion_source)) {
             if (OPENAI_REASONING_EFFORT_MODELS.includes(request.body.model)) {
+                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 bodyParams['reasoning_effort'] = OPENAI_FIXED_REASONING_EFFORT[request.body.model] ?? OPENAI_REASONING_EFFORT_MAP[request.body.reasoning_effort] ?? request.body.reasoning_effort;
             }
             if (request.body.chat_completion_source === CHAT_COMPLETION_SOURCES.CUSTOM && /^koboldcpp\/(.+)$/.test(request.body.model)) {
@@ -2577,6 +2682,7 @@ router.post('/generate', async function (request, response) {
 
         if (request.body.verbosity && [CHAT_COMPLETION_SOURCES.CUSTOM, CHAT_COMPLETION_SOURCES.OPENAI].includes(request.body.chat_completion_source)) {
             if (OPENAI_VERBOSITY_MODELS.test(request.body.model)) {
+                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 bodyParams['verbosity'] = request.body.verbosity;
             }
         }
@@ -2588,6 +2694,7 @@ router.post('/generate', async function (request, response) {
 
         // Add custom stop sequences
         if (Array.isArray(request.body.stop) && request.body.stop.length > 0) {
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             bodyParams['stop'] = request.body.stop;
         }
 
@@ -2603,11 +2710,15 @@ router.post('/generate', async function (request, response) {
         });
 
         if (!isTextCompletion && Array.isArray(request.body.tools) && request.body.tools.length > 0) {
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             bodyParams['tools'] = request.body.tools;
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             bodyParams['tool_choice'] = request.body.tool_choice;
         }
 
+        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         if (request.body.json_schema && !bodyParams['response_format']) {
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             bodyParams['response_format'] = {
                 type: 'json_schema',
                 json_schema: {
@@ -2685,11 +2796,15 @@ router.post('/generate', async function (request, response) {
         }
     } catch (error) {
         console.error('Generation failed', error);
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         const message = error.code === 'ECONNREFUSED'
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             ? `Connection refused: ${error.message}`
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             : error.message || 'Unknown error occurred';
 
         if (!response.headersSent) {
+            // @ts-expect-error TS(2698) FIXME: Spread types may only be created from object types... Remove this comment to see the full error message
             response.status(502).send({ error: { message, ...error } });
         } else {
             response.end();
@@ -2699,6 +2814,7 @@ router.post('/generate', async function (request, response) {
 
 const multimodalModels = express.Router();
 
+// @ts-expect-error TS(7006) FIXME: Parameter '_req' implicitly has an 'any' type.
 multimodalModels.post('/pollinations', async (_req, res) => {
     try {
         const response = await fetch('https://gen.pollinations.ai/models');
@@ -2725,6 +2841,7 @@ multimodalModels.post('/pollinations', async (_req, res) => {
     }
 });
 
+// @ts-expect-error TS(7006) FIXME: Parameter '_req' implicitly has an 'any' type.
 multimodalModels.post('/aimlapi', async (_req, res) => {
     try {
         const response = await fetch('https://api.aimlapi.com/v1/models');
@@ -2748,6 +2865,7 @@ multimodalModels.post('/aimlapi', async (_req, res) => {
     }
 });
 
+// @ts-expect-error TS(7006) FIXME: Parameter '_req' implicitly has an 'any' type.
 multimodalModels.post('/nanogpt', async (_req, res) => {
     try {
         const response = await fetch('https://nano-gpt.com/api/v1/models?detailed=true');
@@ -2771,6 +2889,7 @@ multimodalModels.post('/nanogpt', async (_req, res) => {
     }
 });
 
+// @ts-expect-error TS(7006) FIXME: Parameter '_req' implicitly has an 'any' type.
 multimodalModels.post('/electronhub', async (_req, res) => {
     try {
         const response = await fetch('https://api.electronhub.ai/v1/models');
@@ -2789,6 +2908,7 @@ multimodalModels.post('/electronhub', async (_req, res) => {
     }
 });
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
 multimodalModels.post('/chutes', async (req, res) => {
     try {
         const key = readSecret(req.user.directories, SECRET_KEYS.CHUTES);
@@ -2820,6 +2940,7 @@ multimodalModels.post('/chutes', async (req, res) => {
     }
 });
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
 multimodalModels.post('/mistral', async (req, res) => {
     try {
         const key = readSecret(req.user.directories, SECRET_KEYS.MISTRALAI);
@@ -2848,6 +2969,7 @@ multimodalModels.post('/mistral', async (req, res) => {
     }
 });
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
 multimodalModels.post('/xai', async (req, res) => {
     try {
         const key = readSecret(req.user.directories, SECRET_KEYS.XAI);
@@ -2881,6 +3003,7 @@ multimodalModels.post('/xai', async (req, res) => {
     }
 });
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
 multimodalModels.post('/moonshot', async (req, res) => {
     try {
         const key = readSecret(req.user.directories, SECRET_KEYS.MOONSHOT);
@@ -2910,6 +3033,7 @@ multimodalModels.post('/moonshot', async (req, res) => {
     }
 });
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
 multimodalModels.post('/workers_ai', async (req, res) => {
     try {
         const key = readSecret(req.user.directories, SECRET_KEYS.WORKERS_AI);
@@ -2945,6 +3069,7 @@ multimodalModels.post('/workers_ai', async (req, res) => {
 
 router.use('/multimodal-models', multimodalModels);
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 router.post('/process', async function (request, response) {
     try {
         if (!Array.isArray(request.body.messages)) {

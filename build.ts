@@ -1,5 +1,7 @@
 import { existsSync, mkdirSync, rmSync, readdirSync, copyFileSync, readFileSync, writeFileSync } from "node:fs";
+// @ts-expect-error TS(1259) FIXME: Module '"node:path"' can only be default-imported ... Remove this comment to see the full error message
 import path from "node:path";
+// @ts-expect-error TS(2792) FIXME: Cannot find module 'simple-git'. Did you mean to s... Remove this comment to see the full error message
 import { simpleGit } from "simple-git";
 
 const PUBLIC_DIR = "public";
@@ -39,10 +41,12 @@ function copyRecursiveSync(src: string, dest: string) {
 }
 
 const git = simpleGit();
+// @ts-expect-error TS(1378) FIXME: Top-level 'await' expressions are only allowed whe... Remove this comment to see the full error message
 const status = await git.status();
 const isDirty = status.files.length > 0;
 
 if (!isDirty) {
+  // @ts-expect-error TS(1378) FIXME: Top-level 'await' expressions are only allowed whe... Remove this comment to see the full error message
   const commitHash = await git.revparse(["HEAD"]);
 
   if (existsSync(COMMIT_HASH_FILE)) {
@@ -73,6 +77,7 @@ const entrypoints = [
 ];
 
 console.log("Building, bundling, and minifying scripts and styles...");
+// @ts-expect-error TS(1378) FIXME: Top-level 'await' expressions are only allowed whe... Remove this comment to see the full error message
 const result = await Bun.build({
   entrypoints,
   outdir: DIST_DIR,
@@ -110,6 +115,7 @@ if (!result.success) {
   console.log(`Build completed successfully! Generated ${result.outputs.length} files.`);
 
   if (!isDirty) {
+    // @ts-expect-error TS(1378) FIXME: Top-level 'await' expressions are only allowed whe... Remove this comment to see the full error message
     const commitHash = await git.revparse(["HEAD"]);
     writeFileSync(COMMIT_HASH_FILE, commitHash, "utf-8");
     console.log(`Stored build commit hash: ${commitHash}`);
@@ -117,6 +123,7 @@ if (!result.success) {
 }
 
 console.log("Compiling backend binary...");
+// @ts-expect-error TS(1378) FIXME: Top-level 'await' expressions are only allowed whe... Remove this comment to see the full error message
 const serverResult = await Bun.build({
   entrypoints: ["server.ts"],
   outdir: "dist/server",

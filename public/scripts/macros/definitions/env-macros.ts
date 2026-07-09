@@ -17,6 +17,7 @@ export function registerEnvMacros() {
         category: MacroCategory.NAMES,
         description: 'Your current Persona username.',
         returns: 'Persona username.',
+        // @ts-expect-error TS(7031) FIXME: Binding element 'env' implicitly has an 'any' type... Remove this comment to see the full error message
         handler: ({ env }) => env.names.user,
     });
 
@@ -24,6 +25,7 @@ export function registerEnvMacros() {
         category: MacroCategory.NAMES,
         description: 'The character\'s name.',
         returns: 'Character name.',
+        // @ts-expect-error TS(7031) FIXME: Binding element 'env' implicitly has an 'any' type... Remove this comment to see the full error message
         handler: ({ env }) => env.names.char,
     });
 
@@ -32,6 +34,7 @@ export function registerEnvMacros() {
         category: MacroCategory.NAMES,
         description: 'Comma-separated list of group member names (including muted) or the character name in solo chats.',
         returns: 'List of group member names.',
+        // @ts-expect-error TS(7031) FIXME: Binding element 'env' implicitly has an 'any' type... Remove this comment to see the full error message
         handler: ({ env }) => env.names.group ?? '',
     });
 
@@ -39,6 +42,7 @@ export function registerEnvMacros() {
         category: MacroCategory.NAMES,
         description: 'Comma-separated list of group member names excluding muted members.',
         returns: 'List of group member names excluding muted members.',
+        // @ts-expect-error TS(7031) FIXME: Binding element 'env' implicitly has an 'any' type... Remove this comment to see the full error message
         handler: ({ env }) => env.names.groupNotMuted ?? '',
     });
 
@@ -46,6 +50,7 @@ export function registerEnvMacros() {
         category: MacroCategory.NAMES,
         description: 'Comma-separated list of all participants except the current speaker.',
         returns: 'List of all participants except the current speaker.',
+        // @ts-expect-error TS(7031) FIXME: Binding element 'env' implicitly has an 'any' type... Remove this comment to see the full error message
         handler: ({ env }) => env.names.notChar ?? '',
     });
 
@@ -54,6 +59,7 @@ export function registerEnvMacros() {
         category: MacroCategory.CHARACTER,
         description: 'The character\'s Main Prompt override.',
         returns: 'Character Main Prompt override.',
+        // @ts-expect-error TS(7031) FIXME: Binding element 'env' implicitly has an 'any' type... Remove this comment to see the full error message
         handler: ({ env }) => env.character.charPrompt ?? '',
     });
 
@@ -61,6 +67,7 @@ export function registerEnvMacros() {
         category: MacroCategory.CHARACTER,
         description: 'The character\'s Post-History Instructions override.',
         returns: 'Character Post-History Instructions override.',
+        // @ts-expect-error TS(7031) FIXME: Binding element 'env' implicitly has an 'any' type... Remove this comment to see the full error message
         handler: ({ env }) => env.character.charInstruction ?? '',
     });
 
@@ -69,6 +76,7 @@ export function registerEnvMacros() {
         category: MacroCategory.CHARACTER,
         description: 'The character\'s description.',
         returns: 'Character description.',
+        // @ts-expect-error TS(7031) FIXME: Binding element 'env' implicitly has an 'any' type... Remove this comment to see the full error message
         handler: ({ env }) => env.character.description ?? '',
     });
 
@@ -77,6 +85,7 @@ export function registerEnvMacros() {
         category: MacroCategory.CHARACTER,
         description: 'The character\'s personality.',
         returns: 'Character personality.',
+        // @ts-expect-error TS(7031) FIXME: Binding element 'env' implicitly has an 'any' type... Remove this comment to see the full error message
         handler: ({ env }) => env.character.personality ?? '',
     });
 
@@ -85,6 +94,7 @@ export function registerEnvMacros() {
         category: MacroCategory.CHARACTER,
         description: 'The character\'s scenario.',
         returns: 'Character scenario.',
+        // @ts-expect-error TS(7031) FIXME: Binding element 'env' implicitly has an 'any' type... Remove this comment to see the full error message
         handler: ({ env }) => env.character.scenario ?? '',
     });
 
@@ -92,6 +102,7 @@ export function registerEnvMacros() {
         category: MacroCategory.CHARACTER,
         description: 'Your current Persona description.',
         returns: 'Persona description.',
+        // @ts-expect-error TS(7031) FIXME: Binding element 'env' implicitly has an 'any' type... Remove this comment to see the full error message
         handler: ({ env }) => env.character.persona ?? '',
     });
 
@@ -99,6 +110,7 @@ export function registerEnvMacros() {
         category: MacroCategory.CHARACTER,
         description: 'Unformatted dialogue examples from the character card.',
         returns: 'Unformatted dialogue examples.',
+        // @ts-expect-error TS(7031) FIXME: Binding element 'env' implicitly has an 'any' type... Remove this comment to see the full error message
         handler: ({ env }) => env.character.mesExamplesRaw ?? '',
     });
 
@@ -106,6 +118,7 @@ export function registerEnvMacros() {
         category: MacroCategory.CHARACTER,
         description: 'The character\'s dialogue examples, formatted for instruct mode when enabled.',
         returns: 'Formatted dialogue examples.',
+        // @ts-expect-error TS(7031) FIXME: Binding element 'env' implicitly has an 'any' type... Remove this comment to see the full error message
         handler: ({ env }) => {
             const raw = env.character.mesExamplesRaw ?? '';
             if (!raw) return '';
@@ -129,6 +142,7 @@ export function registerEnvMacros() {
         category: MacroCategory.CHARACTER,
         description: 'The character\'s @ Depth Note.',
         returns: 'Character @ Depth Note.',
+        // @ts-expect-error TS(7031) FIXME: Binding element 'env' implicitly has an 'any' type... Remove this comment to see the full error message
         handler: ({ env }) => env.character.charDepthPrompt ?? '',
     });
 
@@ -137,6 +151,7 @@ export function registerEnvMacros() {
         category: MacroCategory.CHARACTER,
         description: 'Creator notes from the character card.',
         returns: 'Creator notes.',
+        // @ts-expect-error TS(7031) FIXME: Binding element 'env' implicitly has an 'any' type... Remove this comment to see the full error message
         handler: ({ env }) => env.character.creatorNotes ?? '',
     });
 
@@ -155,6 +170,7 @@ export function registerEnvMacros() {
         description: 'The character\'s first message / greeting. Optionally specify an index to access alternate greetings.',
         returns: 'Character greeting at the given index, or empty string if out of bounds.',
         exampleUsage: ['{{greeting}}', '{{greeting::0}}', '{{greeting::1}}'],
+        // @ts-expect-error TS(7031) FIXME: Binding element 'env' implicitly has an 'any' type... Remove this comment to see the full error message
         handler: ({ env, unnamedArgs: [index] }) => {
             const i = Number(index ?? 0);
             if (i === 0) return env.character.firstMessage ?? '';
@@ -173,6 +189,7 @@ export function registerEnvMacros() {
         category: MacroCategory.CHARACTER,
         description: 'The character\'s version number.',
         returns: 'Character version number.',
+        // @ts-expect-error TS(7031) FIXME: Binding element 'env' implicitly has an 'any' type... Remove this comment to see the full error message
         handler: ({ env }) => env.character.version ?? '',
     });
 
@@ -181,6 +198,7 @@ export function registerEnvMacros() {
         category: MacroCategory.STATE,
         description: 'Model name for the currently selected API (Chat Completion or Chat Completion).',
         returns: 'Model name.',
+        // @ts-expect-error TS(7031) FIXME: Binding element 'env' implicitly has an 'any' type... Remove this comment to see the full error message
         handler: ({ env }) => env.system.model,
     });
 
@@ -188,6 +206,7 @@ export function registerEnvMacros() {
         category: MacroCategory.CHARACTER,
         description: 'Original message content for {{original}} substitution in in character prompt overrides.',
         returns: 'Original message content.',
+        // @ts-expect-error TS(7031) FIXME: Binding element 'env' implicitly has an 'any' type... Remove this comment to see the full error message
         handler: ({ env }) => {
             const value = env.functions.original();
             return value;

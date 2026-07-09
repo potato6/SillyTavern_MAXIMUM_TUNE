@@ -1,6 +1,8 @@
 /** @type {CSSStyleSheet} */
+// @ts-expect-error TS(7034) FIXME: Variable 'dynamicStyleSheet' implicitly has type '... Remove this comment to see the full error message
 let dynamicStyleSheet = null;
 /** @type {CSSStyleSheet} */
+// @ts-expect-error TS(7034) FIXME: Variable 'dynamicExtensionStyleSheet' implicitly h... Remove this comment to see the full error message
 let dynamicExtensionStyleSheet = null;
 
 /**
@@ -31,9 +33,11 @@ const observer = new MutationObserver(mutations => {
  * @param {object} [options] - Optional configuration options
  * @param {boolean} [options.fromExtension] - Indicates if the styles are from an extension
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'styleSheet' implicitly has an 'any' typ... Remove this comment to see the full error message
 function applyDynamicFocusStyles(styleSheet, { fromExtension = false } = {}) {
     /** @typedef {{ type: 'media'|'supports'|'container', conditionText: string }} WrapperCond */
     /** @type {{baseSelector: string, rule: CSSStyleRule, wrappers: WrapperCond[]}[]} */
+    // @ts-expect-error TS(7034) FIXME: Variable 'hoverRules' implicitly has type 'any[]' ... Remove this comment to see the full error message
     const hoverRules = [];
     /** @type {Set<string>} */
     const focusRules = new Set();
@@ -46,7 +50,9 @@ function applyDynamicFocusStyles(styleSheet, { fromExtension = false } = {}) {
      * @param {WrapperCond[]} wrappers
      * @returns {string}
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'wrappers' implicitly has an 'any' type.
     function wrapperSignature(wrappers) {
+        // @ts-expect-error TS(7006) FIXME: Parameter 'w' implicitly has an 'any' type.
         return wrappers.map(w => `${w.type}:${w.conditionText}`).join(';');
     }
 
@@ -55,6 +61,7 @@ function applyDynamicFocusStyles(styleSheet, { fromExtension = false } = {}) {
      * @param {CSSRuleList} rules - The CSS rules to process
      * @param {WrapperCond[]} wrappers - Current chain of wrapper conditions (@media/@supports/etc.)
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'rules' implicitly has an 'any' type.
     function processRules(rules, wrappers = []) {
         Array.from(rules).forEach(rule => {
             if (rule instanceof CSSImportRule) {
@@ -62,6 +69,7 @@ function applyDynamicFocusStyles(styleSheet, { fromExtension = false } = {}) {
                 // If the @import has media conditions, treat them as wrappers as well
                 /** @type {WrapperCond[]} */
                 const extra = (rule.media && rule.media.mediaText) ? [{ type: 'media', conditionText: rule.media.mediaText }] : [];
+                // @ts-expect-error TS(2345) FIXME: Argument of type '{ type: string; conditionText: s... Remove this comment to see the full error message
                 processImportedStylesheet(rule.styleSheet, [...wrappers, ...extra]);
             } else if (rule instanceof CSSStyleRule) {
                 // Separate multiple selectors on a rule
@@ -83,16 +91,18 @@ function applyDynamicFocusStyles(styleSheet, { fromExtension = false } = {}) {
                 });
             } else if (rule instanceof CSSMediaRule) {
                 // Recursively process nested @media rules
+                // @ts-expect-error TS(2322) FIXME: Type '{ type: string; conditionText: string; }' is... Remove this comment to see the full error message
                 processRules(rule.cssRules, [...wrappers, { type: 'media', conditionText: rule.conditionText }]);
             } else if (rule instanceof CSSSupportsRule) {
                 // Recursively process nested @supports rules
+                // @ts-expect-error TS(2322) FIXME: Type '{ type: string; conditionText: string; }' is... Remove this comment to see the full error message
                 processRules(rule.cssRules, [...wrappers, { type: 'supports', conditionText: rule.conditionText }]);
-            // @ts-expect-error TS(2551): Property 'CSSContainerRule' does not exist on type... Remove this comment to see the full error message
+            // @ts-expect-error TS(2551) FIXME: Property 'CSSContainerRule' does not exist on type... Remove this comment to see the full error message
             } else if (rule instanceof window.CSSContainerRule) {
                 // Recursively process nested @container rules (if supported by the browser)
                 // Note: conditionText contains the query like "(min-width: 300px)" or "style(color)"
                 // Using 'container' as the type ensures uniqueness separate from @media/@supports
-                // @ts-expect-error TS(2339): Property 'cssRules' does not exist on type 'unknow... Remove this comment to see the full error message
+                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 processRules(rule.cssRules, [...wrappers, { type: 'container', conditionText: rule.conditionText }]);
             }
         });
@@ -103,6 +113,7 @@ function applyDynamicFocusStyles(styleSheet, { fromExtension = false } = {}) {
      * @param {CSSStyleSheet} sheet - The imported stylesheet to process
      * @param {WrapperCond[]} wrappers - Wrapper conditions inherited from (at)import media
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'sheet' implicitly has an 'any' type.
     function processImportedStylesheet(sheet, wrappers = []) {
         if (sheet && sheet.cssRules) {
             processRules(sheet.cssRules, wrappers);
@@ -112,9 +123,11 @@ function applyDynamicFocusStyles(styleSheet, { fromExtension = false } = {}) {
     processRules(styleSheet.cssRules, []);
 
     /** @type {CSSStyleSheet} */
+    // @ts-expect-error TS(7034) FIXME: Variable 'targetStyleSheet' implicitly has type 'a... Remove this comment to see the full error message
     let targetStyleSheet = null;
 
     // Now finally create the dynamic focus rules
+    // @ts-expect-error TS(7005) FIXME: Variable 'hoverRules' implicitly has an 'any[]' ty... Remove this comment to see the full error message
     hoverRules.forEach(({ baseSelector, rule, wrappers }) => {
         if (!focusRules.has(`${baseSelector}|${wrapperSignature(wrappers)}`)) {
             // Only initialize the dynamic stylesheet if needed
@@ -139,6 +152,7 @@ function applyDynamicFocusStyles(styleSheet, { fromExtension = false } = {}) {
             if (wrappers.length > 0) {
                 // Build nested blocks from outermost to innermost
                 // Example: @media (x) { @supports (y) { <rule> } }
+                // @ts-expect-error TS(7006) FIXME: Parameter 'inner' implicitly has an 'any' type.
                 focusRule = wrappers.reduceRight((inner, w) => {
                     if (w.type === 'media') return `@media ${w.conditionText} { ${inner} }`;
                     if (w.type === 'supports') return `@supports ${w.conditionText} { ${inner} }`;
@@ -148,6 +162,7 @@ function applyDynamicFocusStyles(styleSheet, { fromExtension = false } = {}) {
             }
 
             try {
+                // @ts-expect-error TS(7005) FIXME: Variable 'targetStyleSheet' implicitly has an 'any... Remove this comment to see the full error message
                 targetStyleSheet.insertRule(focusRule, targetStyleSheet.cssRules.length);
             } catch (e) {
                 console.warn('Failed to insert focus rule:', e);
@@ -164,20 +179,24 @@ function applyDynamicFocusStyles(styleSheet, { fromExtension = false } = {}) {
  */
 function getDynamicStyleSheet({ fromExtension = false } = {}) {
     if (fromExtension) {
+        // @ts-expect-error TS(7005) FIXME: Variable 'dynamicExtensionStyleSheet' implicitly h... Remove this comment to see the full error message
         if (!dynamicExtensionStyleSheet) {
             const styleSheetElement = document.createElement('style');
             styleSheetElement.setAttribute('id', 'dynamic-extension-styles');
             document.head.appendChild(styleSheetElement);
             dynamicExtensionStyleSheet = styleSheetElement.sheet;
         }
+        // @ts-expect-error TS(7005) FIXME: Variable 'dynamicExtensionStyleSheet' implicitly h... Remove this comment to see the full error message
         return dynamicExtensionStyleSheet;
     } else {
+        // @ts-expect-error TS(7005) FIXME: Variable 'dynamicStyleSheet' implicitly has an 'an... Remove this comment to see the full error message
         if (!dynamicStyleSheet) {
             const styleSheetElement = document.createElement('style');
             styleSheetElement.setAttribute('id', 'dynamic-styles');
             document.head.appendChild(styleSheetElement);
             dynamicStyleSheet = styleSheetElement.sheet;
         }
+        // @ts-expect-error TS(7005) FIXME: Variable 'dynamicStyleSheet' implicitly has an 'an... Remove this comment to see the full error message
         return dynamicStyleSheet;
     }
 }

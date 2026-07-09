@@ -12,12 +12,14 @@ import { isFalseBoolean, isTrueBoolean } from './utils.js';
  * @typedef {import('./slash-commands/SlashCommand.js').NamedArguments | import('./slash-commands/SlashCommand.js').NamedArgumentsCapture} NamedArgumentsAssignment
  * @returns {(args: NamedArgumentsAssignment, extensionName: string | SlashCommandClosure) => Promise<string>}
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'action' implicitly has an 'any' type.
 function getExtensionActionCallback(action) {
+    // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
     return async (args, extensionName) => {
         if (args?.reload instanceof SlashCommandClosure) throw new Error('\'reload\' argument cannot be a closure.');
         if (typeof extensionName !== 'string') throw new Error('Extension name must be a string. Closures or arrays are not allowed.');
         if (!extensionName) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.warning(`Extension name must be provided as an argument to ${action} this extension.`);
             return '';
         }
@@ -25,19 +27,19 @@ function getExtensionActionCallback(action) {
         const reload = !isFalseBoolean(args?.reload?.toString());
         const extension = findExtension(extensionName);
         if (!extension) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.warning(`Extension ${extensionName} does not exist.`);
             return '';
         }
 
         if (action === 'enable' && extension.enabled) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.info(`Extension ${extension.name} is already enabled.`);
             return extension.name;
         }
 
         if (action === 'disable' && !extension.enabled) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.info(`Extension ${extension.name} is already disabled.`);
             return extension.name;
         }
@@ -47,12 +49,12 @@ function getExtensionActionCallback(action) {
         }
 
         if (reload) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.info(`${action.charAt(0).toUpperCase() + action.slice(1)}ing extension ${extension.name} and reloading...`);
 
             // Clear input, so it doesn't stay because the command didn't "finish",
             // and wait for a bit to both show the toast and let the clear bubble through.
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#send_textarea').val('')[0].dispatchEvent(new Event('input', { bubbles: true }));
             await new Promise(resolve => setTimeout(resolve, 100));
         }
@@ -63,7 +65,7 @@ function getExtensionActionCallback(action) {
             await disableExtension(extension.name, reload);
         }
 
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.success(`Extension ${extension.name} ${action}d.`);
 
 
@@ -82,11 +84,14 @@ function getExtensionActionCallback(action) {
  * @returns {SlashCommandEnumValue[]} An array of SlashCommandEnumValue objects
  */
 const extensionNamesEnumProvider = () => extensionNames.map(name => {
+    // @ts-expect-error TS(2339) FIXME: Property 'startsWith' does not exist on type 'neve... Remove this comment to see the full error message
     const isThirdParty = name.startsWith('third-party/');
+    // @ts-expect-error TS(2322) FIXME: Type 'any' is not assignable to type 'never'.
     if (isThirdParty) name = name.slice('third-party/'.length);
 
     const description = isThirdParty ? 'third party extension' : null;
 
+    // @ts-expect-error TS(2345) FIXME: Argument of type '"third party extension" | null' ... Remove this comment to see the full error message
     return new SlashCommandEnumValue(name, description, !isThirdParty ? enumTypes.name : enumTypes.enum);
 });
 
@@ -178,6 +183,7 @@ export function registerExtensionSlashCommands() {
     }));
     SlashCommandParser.addCommandObject(SlashCommand.fromProps({
         name: 'extension-toggle',
+        // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
         callback: async (args, extensionName) => {
             if (args?.state instanceof SlashCommandClosure) throw new Error('\'state\' argument cannot be a closure.');
             if (typeof extensionName !== 'string') throw new Error('Extension name must be a string. Closures or arrays are not allowed.');
@@ -237,11 +243,12 @@ export function registerExtensionSlashCommands() {
     }));
     SlashCommandParser.addCommandObject(SlashCommand.fromProps({
         name: 'extension-state',
+        // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
         callback: async (_, extensionName) => {
             if (typeof extensionName !== 'string') throw new Error('Extension name must be a string. Closures or arrays are not allowed.');
             const extension = findExtension(extensionName);
             if (!extension) {
-                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                 toastr.warning(`Extension ${extensionName} does not exist.`);
                 return '';
             }
@@ -275,6 +282,7 @@ export function registerExtensionSlashCommands() {
     SlashCommandParser.addCommandObject(SlashCommand.fromProps({
         name: 'extension-exists',
         aliases: ['extension-installed'],
+        // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
         callback: async (_, extensionName) => {
             if (typeof extensionName !== 'string') throw new Error('Extension name must be a string. Closures or arrays are not allowed.');
             const extension = findExtension(extensionName);
@@ -307,7 +315,7 @@ export function registerExtensionSlashCommands() {
     SlashCommandParser.addCommandObject(SlashCommand.fromProps({
         name: 'reload-page',
         callback: async () => {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.info('Reloading the page...');
             location.reload();
             return '';

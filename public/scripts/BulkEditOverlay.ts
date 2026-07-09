@@ -30,6 +30,7 @@ class CharacterContextMenu {
      * opens a popup.
      * @param {Array<number>} selectedCharacters Character IDs to tag
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'selectedCharacters' implicitly has an '... Remove this comment to see the full error message
     static tag = (selectedCharacters) => {
         characterGroupOverlay.bulkTagPopupHandler.show(selectedCharacters);
     };
@@ -39,8 +40,10 @@ class CharacterContextMenu {
      * @param {number} characterId Character ID to duplicate
      * @returns {Promise<object>} The response data from the duplicate API call
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'characterId' implicitly has an 'any' ty... Remove this comment to see the full error message
     static duplicate = async (characterId) => {
         const character = CharacterContextMenu.#getCharacter(characterId);
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         const body = { avatar_url: character.avatar };
 
         const result = await fetch('/api/characters/duplicate', {
@@ -63,12 +66,16 @@ class CharacterContextMenu {
      * @param {number} characterId Character ID to favorite
      * @returns {Promise<void>}
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'characterId' implicitly has an 'any' ty... Remove this comment to see the full error message
     static favorite = async (characterId) => {
         const character = CharacterContextMenu.#getCharacter(characterId);
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         const newFavState = !character.data.extensions.fav;
 
         const data = {
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             name: character.name,
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             avatar: character.avatar,
             data: {
                 extensions: {
@@ -85,11 +92,12 @@ class CharacterContextMenu {
         });
 
         if (!mergeResponse.ok) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             mergeResponse.json().then(json => toastr.error(`Character not saved. Error: ${json.message}. Field: ${json.error}`));
         }
 
         const element = document.getElementById(`CharID${characterId}`);
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         element.classList.toggle('is_fav');
     };
 
@@ -99,6 +107,7 @@ class CharacterContextMenu {
      * @param {number} characterId Character ID to convert to persona
      * @returns {Promise<void>}
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'characterId' implicitly has an 'any' ty... Remove this comment to see the full error message
     static persona = async (characterId) => void (await convertCharacterToPersona(characterId));
 
     /**
@@ -108,10 +117,12 @@ class CharacterContextMenu {
      * @param {boolean} [deleteChats] Whether to also delete associated chat files
      * @returns {Promise<void>}
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'characterKey' implicitly has an 'any' t... Remove this comment to see the full error message
     static delete = async (characterKey, deleteChats = false) => {
         await deleteCharacter(characterKey, { deleteChats: deleteChats });
     };
 
+    // @ts-expect-error TS(7006) FIXME: Parameter 'characterId' implicitly has an 'any' ty... Remove this comment to see the full error message
     static #getCharacter = (characterId) => characters[characterId] ?? null;
 
     /**
@@ -119,19 +130,26 @@ class CharacterContextMenu {
      * @param {number} positionX X coordinate for the context menu
      * @param {number} positionY Y coordinate for the context menu
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'positionX' implicitly has an 'any' type... Remove this comment to see the full error message
     static show = (positionX, positionY) => {
         const contextMenu = document.getElementById(BulkEditOverlay.contextMenuId);
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         contextMenu.style.left = `${positionX}px`;
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         contextMenu.style.top = `${positionY}px`;
 
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         document.getElementById(BulkEditOverlay.contextMenuId).classList.remove('hidden');
 
         // Adjust position if context menu is outside of viewport
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         const boundingRect = contextMenu.getBoundingClientRect();
         if (boundingRect.right > window.innerWidth) {
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             contextMenu.style.left = `${positionX - (boundingRect.right - window.innerWidth)}px`;
         }
         if (boundingRect.bottom > window.innerHeight) {
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             contextMenu.style.top = `${positionY - (boundingRect.bottom - window.innerHeight)}px`;
         }
     };
@@ -140,12 +158,14 @@ class CharacterContextMenu {
      * Hide the context menu
      * @returns {void}
      */
+    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     static hide = () => document.getElementById(BulkEditOverlay.contextMenuId).classList.add('hidden');
 
     /**
      * Sets up the context menu for the given overlay
      * @param {object} characterGroupOverlay The bulk edit overlay instance
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'characterGroupOverlay' implicitly has a... Remove this comment to see the full error message
     constructor(characterGroupOverlay) {
         const contextMenuItems = [
             { id: 'character_context_menu_favorite', callback: characterGroupOverlay.handleContextMenuFavorite },
@@ -155,6 +175,7 @@ class CharacterContextMenu {
             { id: 'character_context_menu_tag', callback: characterGroupOverlay.handleContextMenuTag },
         ];
 
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         contextMenuItems.forEach(contextMenuItem => document.getElementById(contextMenuItem.id).addEventListener('click', contextMenuItem.callback));
     }
 }
@@ -167,12 +188,14 @@ class BulkTagPopupHandler {
      * The characters for this popup
      * @type {number[]}
      */
+    // @ts-expect-error TS(7008) FIXME: Member 'characterIds' implicitly has an 'any' type... Remove this comment to see the full error message
     characterIds;
 
     /**
      * A storage of the current mutual tags, as calculated by getMutualTags()
      * @type {object[]}
      */
+    // @ts-expect-error TS(7008) FIXME: Member 'currentMutualTags' implicitly has an 'any'... Remove this comment to see the full error message
     currentMutualTags;
 
     /**
@@ -228,6 +251,7 @@ class BulkTagPopupHandler {
      * Append and show the tag control
      * @param {number[]} characterIds - The characters that are shown inside the popup
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'characterIds' implicitly has an 'any' t... Remove this comment to see the full error message
     show(characterIds) {
         // shallow copy character ids persistently into this tooltip
         this.characterIds = characterIds.slice();
@@ -239,21 +263,27 @@ class BulkTagPopupHandler {
 
         document.body.insertAdjacentHTML('beforeend', this.#getHtml());
 
+        // @ts-expect-error TS(7006) FIXME: Parameter 'id' implicitly has an 'any' type.
         const entities = this.characterIds.map(id => characterToEntity(characters[id], id)).filter(entity => entity.item !== undefined);
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         buildAvatarList($('#bulk_tags_avatars_block'), entities);
 
         // Print the tag list with all mutuable tags, marking them as removable. That is the initial fill
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         printTagList($('#bulkTagList'), { tags: () => this.getMutualTags(), tagOptions: { removable: true } });
 
         // Tag input with resolvable list for the mutual tags to get redrawn, so that newly added tags get sorted correctly
         createTagInput('#bulkTagInput', '#bulkTagList', { tags: () => this.getMutualTags(), tagOptions: { removable: true } });
 
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         document.querySelector('#bulk_tag_popup_reset').addEventListener('click', this.resetTags.bind(this));
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         document.querySelector('#bulk_tag_popup_remove_mutual').addEventListener('click', this.removeMutual.bind(this));
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         document.querySelector('#bulk_tag_popup_cancel').addEventListener('click', this.hide.bind(this));
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         document.querySelector('#bulk_tag_popup_import_all_tags').addEventListener('click', this.importAllTags.bind(this));
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         document.querySelector('#bulk_tag_popup_import_existing_tags').addEventListener('click', this.importExistingTags.bind(this));
     }
 
@@ -262,10 +292,11 @@ class BulkTagPopupHandler {
      */
     async importExistingTags() {
         for (const characterId of this.characterIds) {
+            // @ts-expect-error TS(2322) FIXME: Type 'number' is not assignable to type 'null | un... Remove this comment to see the full error message
             await importTags(characters[characterId], { importSetting: tag_import_setting.ONLY_EXISTING });
         }
 
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         document.getElementById('bulkTagList').innerHTML = '';
     }
 
@@ -274,10 +305,11 @@ class BulkTagPopupHandler {
      */
     async importAllTags() {
         for (const characterId of this.characterIds) {
+            // @ts-expect-error TS(2322) FIXME: Type 'number' is not assignable to type 'null | un... Remove this comment to see the full error message
             await importTags(characters[characterId], { importSetting: tag_import_setting.ALL });
         }
 
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         document.getElementById('bulkTagList').innerHTML = '';
     }
 
@@ -296,8 +328,11 @@ class BulkTagPopupHandler {
         }
 
         // Find mutual tags for multiple characters
+        // @ts-expect-error TS(7006) FIXME: Parameter 'cid' implicitly has an 'any' type.
         const allTags = this.characterIds.map(cid => getTagsList(getTagKeyForEntity(cid)));
+        // @ts-expect-error TS(7006) FIXME: Parameter 'mutual' implicitly has an 'any' type.
         const mutualTags = allTags.reduce((mutual, characterTags) =>
+            // @ts-expect-error TS(7006) FIXME: Parameter 'tag' implicitly has an 'any' type.
             mutual.filter(tag => characterTags.some(cTag => cTag.id === tag.id)),
         );
 
@@ -323,10 +358,11 @@ class BulkTagPopupHandler {
     resetTags() {
         for (const characterId of this.characterIds) {
             const key = getTagKeyForEntity(characterId);
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             if (key) tag_map[key] = [];
         }
 
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         document.getElementById('bulkTagList').innerHTML = '';
 
         printCharactersDebounced();
@@ -344,7 +380,7 @@ class BulkTagPopupHandler {
             }
         }
 
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         document.getElementById('bulkTagList').innerHTML = '';
 
         printCharactersDebounced();
@@ -370,6 +406,7 @@ class BulkEditOverlayState {
  * from everywhere via (new CharacterGroupOverlay())
  * @type {Readonly<BulkEditOverlay>}
  */
+// @ts-expect-error TS(7034) FIXME: Variable 'bulkEditOverlayInstance' implicitly has ... Remove this comment to see the full error message
 let bulkEditOverlayInstance = null;
 
 class BulkEditOverlay {
@@ -462,9 +499,11 @@ class BulkEditOverlay {
     }
 
     constructor() {
+        // @ts-expect-error TS(7005) FIXME: Variable 'bulkEditOverlayInstance' implicitly has ... Remove this comment to see the full error message
         if (bulkEditOverlayInstance instanceof BulkEditOverlay)
             return bulkEditOverlayInstance;
 
+        // @ts-expect-error TS(2322) FIXME: Type 'HTMLElement | null' is not assignable to typ... Remove this comment to see the full error message
         this.container = document.getElementById(BulkEditOverlay.containerId);
 
         eventSource.on(event_types.CHARACTER_GROUP_OVERLAY_STATE_CHANGE_AFTER, this.handleStateChange);
@@ -512,6 +551,7 @@ class BulkEditOverlay {
     handleStateChange = () => {
         switch (this.state) {
             case BulkEditOverlayState.browse:
+                // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
                 this.container.classList.remove(BulkEditOverlay.selectModeClass);
                 this.#contextMenuOpen = false;
                 this.#enableClickEventsForCharacters();
@@ -522,6 +562,7 @@ class BulkEditOverlay {
                 CharacterContextMenu.hide();
                 break;
             case BulkEditOverlayState.select:
+                // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
                 this.container.classList.add(BulkEditOverlay.selectModeClass);
                 this.#disableClickEventsForCharacters();
                 this.#disableClickEventsForGroups();
@@ -530,6 +571,7 @@ class BulkEditOverlay {
                 break;
         }
 
+        // @ts-expect-error TS(2349) FIXME: This expression is not callable.
         this.stateChangeCallbacks.forEach(callback => callback(this.state));
     };
 
@@ -538,6 +580,7 @@ class BulkEditOverlay {
      * set a click event to hide the custom context menu.
      */
     enableContextMenu = () => {
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         this.container.addEventListener('contextmenu', this.handleContextMenuShow);
         document.addEventListener('click', this.handleContextMenuHide);
     };
@@ -547,11 +590,12 @@ class BulkEditOverlay {
      * menu to be opened.
      */
     disableContextMenu = () => {
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         this.container.removeEventListener('contextmenu', this.handleContextMenuShow);
         document.removeEventListener('click', this.handleContextMenuHide);
     };
 
-    // @ts-expect-error TS(7030): Not all code paths return a value.
+    // @ts-expect-error TS(7006) FIXME: Parameter 'event' implicitly has an 'any' type.
     handleDefaultContextMenu = (event) => {
         if (this.isLongPress) {
             event.preventDefault();
@@ -564,6 +608,7 @@ class BulkEditOverlay {
      * Opens menu on long-press.
      * @param {MouseEvent|TouchEvent} event Pointer event
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'event' implicitly has an 'any' type.
     handleHold = (event) => {
         if (0 !== event.button && event.type !== 'touchstart') return;
         if (this.#contextMenuOpen) {
@@ -575,9 +620,11 @@ class BulkEditOverlay {
 
         let cancel = false;
 
-        // @ts-expect-error TS(6133): 'event' is declared but its value is never read.
+        // @ts-expect-error TS(7006) FIXME: Parameter 'event' implicitly has an 'any' type.
         const cancelHold = (event) => cancel = true;
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         this.container.addEventListener('mouseup', cancelHold);
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         this.container.addEventListener('touchend', cancelHold);
 
         this.isLongPress = true;
@@ -593,11 +640,14 @@ class BulkEditOverlay {
                 }
             }
 
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             this.container.removeEventListener('mouseup', cancelHold);
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             this.container.removeEventListener('touchend', cancelHold);
         }, BulkEditOverlay.longPressDelay);
     };
 
+    // @ts-expect-error TS(7006) FIXME: Parameter 'event' implicitly has an 'any' type.
     handleLongPressEnd = (event) => {
         this.isLongPress = false;
         if (this.#contextMenuOpen) event.stopPropagation();
@@ -613,11 +663,13 @@ class BulkEditOverlay {
      * @param {MouseEvent|TouchEvent} event Pointer event
      * @returns {[number, number]} X and Y coordinates
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'event' implicitly has an 'any' type.
     #getContextMenuPosition = (event) => [
         event.clientX || event.touches[0].clientX,
         event.clientY || event.touches[0].clientY,
     ];
 
+    // @ts-expect-error TS(7006) FIXME: Parameter 'event' implicitly has an 'any' type.
     #stopEventPropagation = (event) => {
         if (this.#contextMenuOpen) {
             this.handleContextMenuHide(event);
@@ -633,14 +685,19 @@ class BulkEditOverlay {
 
     #disableClickEventsForCharacters = () => this.#getEnabledElements().forEach(element => element.addEventListener('click', this.toggleCharacterSelected));
 
+    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     #enableBulkEditButtonHighlight = () => document.getElementById('bulkEditButton').classList.add('bulk_edit_overlay_active');
 
+    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     #disableBulkEditButtonHighlight = () => document.getElementById('bulkEditButton').classList.remove('bulk_edit_overlay_active');
 
+    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     #getEnabledElements = () => [...this.container.getElementsByClassName(BulkEditOverlay.characterClass)];
 
+    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     #getDisabledElements = () => [...this.container.getElementsByClassName(BulkEditOverlay.groupClass), ...this.container.getElementsByClassName(BulkEditOverlay.bogusFolderClass)];
 
+    // @ts-expect-error TS(7006) FIXME: Parameter 'event' implicitly has an 'any' type.
     toggleCharacterSelected = event => {
         event.stopPropagation();
 
@@ -649,6 +706,7 @@ class BulkEditOverlay {
         if (!this.#contextMenuOpen && !this.#cancelNextToggle) {
             if (event.shiftKey) {
                 // Shift click might have selected text that we don't want to. Unselect it.
+                // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
                 document.getSelection().removeAllRanges();
 
                 this.handleShiftClick(character);
@@ -668,10 +726,13 @@ class BulkEditOverlay {
      * If the states do not match, nothing will happen.
      * @param {HTMLElement} currentCharacter - The html element of the currently toggled character
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'currentCharacter' implicitly has an 'an... Remove this comment to see the full error message
     handleShiftClick = (currentCharacter) => {
         const characterId = Number(currentCharacter.getAttribute('data-chid'));
+        // @ts-expect-error TS(2345) FIXME: Argument of type 'number' is not assignable to par... Remove this comment to see the full error message
         const select = !this.selectedCharacters.includes(characterId);
 
+        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         if (this.lastSelected.characterId >= 0 && this.lastSelected.select !== undefined) {
             // Only if select state and the last select state match we execute the range select
             if (select === this.lastSelected.select) {
@@ -686,15 +747,18 @@ class BulkEditOverlay {
      * @param {object} param1 - Optional params
      * @param {boolean} [param1.markState] - Whether the toggle of this character should be remembered as the last done toggle
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'character' implicitly has an 'any' type... Remove this comment to see the full error message
     toggleSingleCharacter = (character, { markState = true } = {}) => {
         const characterId = Number(character.getAttribute('data-chid'));
 
+        // @ts-expect-error TS(2345) FIXME: Argument of type 'number' is not assignable to par... Remove this comment to see the full error message
         const select = !this.selectedCharacters.includes(characterId);
         const legacyBulkEditCheckbox = /** @type {HTMLInputElement} */ (character.querySelector('.' + BulkEditOverlay.legacySelectedClass));
 
         if (select) {
             character.classList.add(BulkEditOverlay.selectedClass);
             if (legacyBulkEditCheckbox) legacyBulkEditCheckbox.checked = true;
+            // @ts-expect-error TS(2345) FIXME: Argument of type 'number' is not assignable to par... Remove this comment to see the full error message
             this.#selectedCharacters.push(characterId);
         } else {
             character.classList.remove(BulkEditOverlay.selectedClass);
@@ -705,7 +769,9 @@ class BulkEditOverlay {
         this.updateSelectedCount();
 
         if (markState) {
+            // @ts-expect-error TS(2322) FIXME: Type 'number' is not assignable to type 'undefined... Remove this comment to see the full error message
             this.lastSelected.characterId = characterId;
+            // @ts-expect-error TS(2322) FIXME: Type 'boolean' is not assignable to type 'undefine... Remove this comment to see the full error message
             this.lastSelected.select = select;
         }
     };
@@ -716,7 +782,7 @@ class BulkEditOverlay {
      */
     updateSelectedCount = (countOverride = undefined) => {
         const count = countOverride ?? this.selectedCharacters.length;
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(`#${BulkEditOverlay.bulkSelectedCountId}`).text(count).attr('title', `${count} characters selected`);
     };
 
@@ -726,6 +792,7 @@ class BulkEditOverlay {
      * @param {HTMLElement} currentCharacter - The html element of the currently toggled character
      * @param {boolean} select - <c>true</c> if the characters in the range are to be selected, <c>false</c> if deselected
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'currentCharacter' implicitly has an 'an... Remove this comment to see the full error message
     toggleCharactersInRange = (currentCharacter, select) => {
         const currentCharacterId = Number(currentCharacter.getAttribute('data-chid'));
         const characters = Array.from(document.querySelectorAll('#' + BulkEditOverlay.containerId + ' .' + BulkEditOverlay.characterClass));
@@ -735,7 +802,9 @@ class BulkEditOverlay {
 
         for (let i = Math.min(startIndex, endIndex); i <= Math.max(startIndex, endIndex); i++) {
             const character = characters[i];
+            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             const characterId = Number(character.getAttribute('data-chid'));
+            // @ts-expect-error TS(2345) FIXME: Argument of type 'number' is not assignable to par... Remove this comment to see the full error message
             const isCharacterSelected = this.selectedCharacters.includes(characterId);
 
             // Only toggle the character if it wasn't on the state we have are toggling towards.
@@ -746,6 +815,7 @@ class BulkEditOverlay {
         }
     };
 
+    // @ts-expect-error TS(7006) FIXME: Parameter 'event' implicitly has an 'any' type.
     handleContextMenuShow = (event) => {
         event.preventDefault();
         const [x, y] = this.#getContextMenuPosition(event);
@@ -753,8 +823,10 @@ class BulkEditOverlay {
         this.#contextMenuOpen = true;
     };
 
+    // @ts-expect-error TS(7006) FIXME: Parameter 'event' implicitly has an 'any' type.
     handleContextMenuHide = (event) => {
         const contextMenu = document.getElementById(BulkEditOverlay.contextMenuId);
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         if (false === contextMenu.contains(event.target)) {
             CharacterContextMenu.hide();
             this.#contextMenuOpen = false;
@@ -803,6 +875,7 @@ class BulkEditOverlay {
      * @param {Array<number>} characterIds - The characters that are shown inside the popup
      * @returns {string} String containing the html for the popup content
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'characterIds' implicitly has an 'any' t... Remove this comment to see the full error message
     static #getDeletePopupContentHtml = (characterIds) => {
         return `
             <h3 class="marginBot5">Delete ${characterIds.length} characters?</h3>
@@ -827,12 +900,11 @@ class BulkEditOverlay {
      */
     handleContextMenuDelete = () => {
         const characterIds = this.selectedCharacters;
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const popupContent = $(BulkEditOverlay.#getDeletePopupContentHtml(characterIds));
         const checkbox = popupContent.find('#del_char_checkbox');
         const promise = callGenericPopup(popupContent, POPUP_TYPE.CONFIRM)
             .then((accept) => {
-                // @ts-expect-error TS(7030): Not all code paths return a value.
                 if (!accept) return;
 
                 const deleteChats = checkbox.prop('checked') ?? false;
@@ -843,6 +915,7 @@ class BulkEditOverlay {
                     message: t`Deleting ${characterIds.length} character(s)…`,
                     toastMode: loader.ToastMode.STATIC,
                 });
+                // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
                 const avatarList = characterIds.map(id => characters[id]?.avatar).filter(a => a);
                 return CharacterContextMenu.delete(avatarList, deleteChats)
                     .then(() => this.browseState())
@@ -851,7 +924,7 @@ class BulkEditOverlay {
 
         // At this moment the popup is already changed in the dom, but not yet closed/resolved. We build the avatar list here
         const entities = characterIds.map(id => characterToEntity(characters[id], id)).filter(entity => entity.item !== undefined);
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         buildAvatarList($('#bulk_delete_avatars_block'), entities);
 
         return promise;
@@ -865,6 +938,7 @@ class BulkEditOverlay {
         this.browseState();
     };
 
+    // @ts-expect-error TS(7006) FIXME: Parameter 'callback' implicitly has an 'any' type.
     addStateChangeCallback = callback => this.stateChangeCallbacks.push(callback);
 
     /**

@@ -18,6 +18,7 @@ import {
     saveSettingsDebounced,
     this_chid,
 } from '../script.js';
+// @ts-expect-error TS(7034) FIXME: Variable 'groups' implicitly has type 'any[]' in s... Remove this comment to see the full error message
 import { groups, selected_group } from './group-chats.js';
 import { t } from './i18n.js';
 import { instruct_presets } from './instruct-mode.js';
@@ -41,6 +42,7 @@ import {
 } from './textgen-settings.js';
 import { download, ensurePlainObject, equalsIgnoreCaseAndAccents, getSanitizedFilename, parseJsonFile, waitUntilCondition } from './utils.js';
 
+// @ts-expect-error TS(2792) FIXME: Cannot find module 'es-toolkit/compat'. Did you me... Remove this comment to see the full error message
 import { get, set } from 'es-toolkit/compat'
 
 const presetManagers = {};
@@ -56,6 +58,7 @@ function autoSelectPreset() {
         return;
     }
 
+    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
     const name = selected_group ? groups.find(x => x.id == selected_group)?.name : characters[this_chid]?.name;
 
     if (!name) {
@@ -94,6 +97,7 @@ export function getPresetManager(apiId = '') {
         return null;
     }
 
+    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     return presetManagers[apiId];
 }
 
@@ -103,14 +107,17 @@ export function getPresetManager(apiId = '') {
 function registerPresetManagers() {
     document.querySelectorAll('select[data-preset-manager-for]').forEach(e => {
         const forData = e.getAttribute('data-preset-manager-for');
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         for (const apiId of forData.split(',')) {
             console.debug(`Registering preset manager for API: ${apiId}`);
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             presetManagers[apiId] = new PresetManager($(e), apiId);
         }
     });
 }
 
 class PresetManager {
+    // @ts-expect-error TS(7006) FIXME: Parameter 'select' implicitly has an 'any' type.
     constructor(select, apiId) {
         this.select = select;
         this.apiId = apiId;
@@ -124,11 +131,13 @@ class PresetManager {
                 const name = manager.getSelectedPresetName();
                 return manager.getPresetSettings(name);
             },
+            // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
             setData: (data) => {
                 const manager = getPresetManager('instruct');
                 const name = data.name;
                 return manager.savePreset(name, data);
             },
+            // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
             isValid: (data) => PresetManager.isPossiblyInstructData(data),
         },
         'context': {
@@ -138,11 +147,13 @@ class PresetManager {
                 const name = manager.getSelectedPresetName();
                 return manager.getPresetSettings(name);
             },
+            // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
             setData: (data) => {
                 const manager = getPresetManager('context');
                 const name = data.name;
                 return manager.savePreset(name, data);
             },
+            // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
             isValid: (data) => PresetManager.isPossiblyContextData(data),
         },
         'sysprompt': {
@@ -152,11 +163,13 @@ class PresetManager {
                 const name = manager.getSelectedPresetName();
                 return manager.getPresetSettings(name);
             },
+            // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
             setData: (data) => {
                 const manager = getPresetManager('sysprompt');
                 const name = data.name;
                 return manager.savePreset(name, data);
             },
+            // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
             isValid: (data) => PresetManager.isPossiblySystemPromptData(data),
         },
         'preset': {
@@ -168,11 +181,13 @@ class PresetManager {
                 data.name = name;
                 return data;
             },
+            // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
             setData: (data) => {
                 const manager = getPresetManager('textgenerationwebui');
                 const name = data.name;
                 return manager.savePreset(name, data);
             },
+            // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
             isValid: (data) => PresetManager.isPossiblyTextCompletionData(data),
         },
         'reasoning': {
@@ -182,11 +197,13 @@ class PresetManager {
                 const name = manager.getSelectedPresetName();
                 return manager.getPresetSettings(name);
             },
+            // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
             setData: (data) => {
                 const manager = getPresetManager('reasoning');
                 const name = data.name;
                 return manager.savePreset(name, data);
             },
+            // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
             isValid: (data) => PresetManager.isPossiblyReasoningData(data),
         },
         'srw': {
@@ -197,47 +214,56 @@ class PresetManager {
                     show: power_user.show_user_prompt_bias ?? false,
                 };
             },
+            // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
             setData: (data) => {
                 power_user.user_prompt_bias = data.value ?? '';
                 power_user.show_user_prompt_bias = data.show ?? false;
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $('#start_reply_with').val(power_user.user_prompt_bias);
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $('#chat-show-reply-prefix-checkbox').prop('checked', power_user.show_user_prompt_bias);
                 return saveSettingsDebounced();
             },
+            // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
             isValid: (data) => PresetManager.isPossiblyStartReplyWithData(data),
         },
     };
 
     apiId: string;
+    // @ts-expect-error TS(2315) FIXME: Type 'JQuery' is not generic.
     select: JQuery<HTMLSelectElement>;
 
+    // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
     static isPossiblyInstructData(data) {
         const instructProps = ['name', 'input_sequence', 'output_sequence'];
         return data && instructProps.every(prop => Object.keys(data).includes(prop));
     }
 
+    // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
     static isPossiblyContextData(data) {
         const contextProps = ['name', 'story_string'];
         return data && contextProps.every(prop => Object.keys(data).includes(prop));
     }
 
+    // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
     static isPossiblySystemPromptData(data) {
         const sysPromptProps = ['name', 'content'];
         return data && sysPromptProps.every(prop => Object.keys(data).includes(prop));
     }
 
+    // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
     static isPossiblyTextCompletionData(data) {
         const textCompletionProps = ['temp', 'top_k', 'top_p', 'rep_pen'];
         return data && textCompletionProps.every(prop => Object.keys(data).includes(prop));
     }
 
+    // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
     static isPossiblyReasoningData(data) {
         const reasoningProps = ['name', 'prefix', 'suffix', 'separator'];
         return data && reasoningProps.every(prop => Object.keys(data).includes(prop));
     }
 
+    // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
     static isPossiblyStartReplyWithData(data) {
         return data && 'value' in data && 'show' in data;
     }
@@ -248,9 +274,10 @@ class PresetManager {
      * @param {string} fileName File name
      * @returns {Promise<void>}
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
     static async performMasterImport(data, fileName) {
         if (!data || typeof data !== 'object') {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.error(t`Invalid data provided for master import`);
             return;
         }
@@ -258,35 +285,35 @@ class PresetManager {
         // Check for legacy file imports
         // 1. Instruct Template
         if (this.isPossiblyInstructData(data)) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.info(t`Importing instruct template...`, t`Instruct template detected`);
             return await getPresetManager('instruct').savePreset(data.name, data);
         }
 
         // 2. Context Template
         if (this.isPossiblyContextData(data)) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.info(t`Importing as context template...`, t`Context template detected`);
             return await getPresetManager('context').savePreset(data.name, data);
         }
 
         // 3. System Prompt
         if (this.isPossiblySystemPromptData(data)) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.info(t`Importing as system prompt...`, t`System prompt detected`);
             return await getPresetManager('sysprompt').savePreset(data.name, data);
         }
 
         // 4. Text Completion settings
         if (this.isPossiblyTextCompletionData(data)) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.info(t`Importing as settings preset...`, t`Text Completion settings detected`);
             return await getPresetManager('textgenerationwebui').savePreset(fileName, data);
         }
 
         // 5. Reasoning Template
         if (this.isPossiblyReasoningData(data)) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.info(t`Importing as reasoning template...`, t`Reasoning template detected`);
             return await getPresetManager('reasoning').savePreset(data.name, data);
         }
@@ -299,17 +326,18 @@ class PresetManager {
         }
 
         if (validSections.length === 0) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.error(t`No valid sections found in imported data`);
             return;
         }
 
         const sectionNames = validSections.reduce((acc, key) => {
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             acc[key] = { key: key, name: this.masterSections[key].name, preset: data[key]?.name || '' };
             return acc;
         }, {});
 
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const html = $(await renderTemplateAsync('masterImport', { sections: sectionNames }));
         const popup = new Popup(html, POPUP_TYPE.CONFIRM, '', {
             okButton: t`Import`,
@@ -327,13 +355,15 @@ class PresetManager {
         const confirmedSections = Array.from(html[0].querySelectorAll('input:checked')).map(el => el instanceof HTMLInputElement && el.value);
 
         if (confirmedSections.length === 0) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.info(t`No sections selected for import`);
             return;
         }
 
         for (const section of confirmedSections) {
+            // @ts-expect-error TS(2538) FIXME: Type 'false' cannot be used as an index type.
             const sectionData = data[section];
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             const masterSection = this.masterSections[section];
             if (sectionData && masterSection) {
                 await masterSection.setData(sectionData);
@@ -341,7 +371,7 @@ class PresetManager {
             }
         }
 
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.success(t`Imported ${importedSections.length} settings: ${importedSections.join(', ')}`);
     }
 
@@ -351,10 +381,11 @@ class PresetManager {
      */
     static async performMasterExport() {
         const sectionNames = Object.entries(this.masterSections).reduce((acc, [key, section]) => {
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             acc[key] = { key: key, name: section.name, checked: !['preset', 'srw'].includes(key) };
             return acc;
         }, {});
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const html = $(await renderTemplateAsync('masterExport', { sections: sectionNames }));
 
         const popup = new Popup(html, POPUP_TYPE.CONFIRM, '', {
@@ -366,7 +397,6 @@ class PresetManager {
 
         // Export cancelled
         if (result !== POPUP_RESULT.AFFIRMATIVE) {
-            // @ts-expect-error TS(7030): Not all code paths return a value.
             return;
         }
 
@@ -374,15 +404,16 @@ class PresetManager {
         const data = {};
 
         if (confirmedSections.length === 0) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.info(t`No sections selected for export`);
-            // @ts-expect-error TS(7030): Not all code paths return a value.
             return;
         }
 
         for (const section of confirmedSections) {
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             const masterSection = this.masterSections[section];
             if (masterSection) {
+                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 data[section] = masterSection.getData();
             }
         }
@@ -395,6 +426,7 @@ class PresetManager {
      * @returns {string[]} List of preset names
      */
     getAllPresets() {
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         return Array.from(this.select[0].options).map(el => el.text);
     }
 
@@ -403,7 +435,9 @@ class PresetManager {
      * @param {string} name Preset name
      * @returns {any} Preset value
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
     findPreset(name) {
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         return Array.from(this.select[0].options).find(el => el.text === name)?.value;
     }
 
@@ -427,10 +461,12 @@ class PresetManager {
      * Selects a preset by option value.
      * @param {string} value Preset option value
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
     selectPreset(value) {
         if (this.select[0].value === value) {
             this.select.prop('selected', true);
         }
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(this.select).val(value).trigger('change');
     }
 
@@ -441,11 +477,12 @@ class PresetManager {
      * @param option
      */
     async updatePreset(option = { skipUpdate: false }) {
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const selected = $(this.select[0].options[this.select[0].selectedIndex]);
         console.log(selected);
 
         if (selected.val() == 'gui') {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.info(t`Cannot update GUI preset`);
             return;
         }
@@ -454,7 +491,7 @@ class PresetManager {
         await this.savePreset(name, null, option);
 
         const successToast = !this.isAdvancedFormatting() ? t`Preset updated` : t`Template updated`;
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.success(successToast);
     }
 
@@ -471,11 +508,11 @@ class PresetManager {
             return;
         }
 
-        // @ts-expect-error TS(2554): Expected 2-3 arguments, but got 1.
+        // @ts-expect-error TS(2554) FIXME: Expected 2-3 arguments, but got 1.
         await this.savePreset(name);
 
         const successToast = !this.isAdvancedFormatting() ? t`Preset saved` : t`Template saved`;
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.success(successToast);
     }
 
@@ -486,6 +523,7 @@ class PresetManager {
      * @param {object} [options] Options for saving the preset
      * @param {boolean} [options.skipUpdate] If true, skips updating the preset list after saving.
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
     async savePreset(name, settings, { skipUpdate = false } = {}) {
         if (this.apiId === 'instruct' && settings) {
             await checkForSystemPromptInInstructTemplate(name, settings);
@@ -504,7 +542,7 @@ class PresetManager {
         });
 
         if (!response.ok) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.error(t`Check the server connection and reload the page to prevent data loss.`, t`Preset could not be saved`);
             console.error('Preset could not be saved', response);
             throw new Error('Preset could not be saved');
@@ -525,17 +563,18 @@ class PresetManager {
      * Renames the currently selected preset.
      * @param {string} newName New name for the preset
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'newName' implicitly has an 'any' type.
     async renamePreset(newName) {
         const oldName = this.getSelectedPresetName();
         if (equalsIgnoreCaseAndAccents(oldName, newName)) {
             throw new Error('New name must be different from old name');
         }
         try {
-            // @ts-expect-error TS(2554): Expected 2-3 arguments, but got 1.
+            // @ts-expect-error TS(2554) FIXME: Expected 2-3 arguments, but got 1.
             await this.savePreset(newName);
             await this.deletePreset(oldName);
         } catch (error) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.error(t`Check the server connection and reload the page to prevent data loss.`, t`Preset could not be renamed`);
             console.error('Preset could not be renamed', error);
             throw new Error('Preset could not be renamed');
@@ -547,6 +586,7 @@ class PresetManager {
      * @param {string} [api] API ID. If not specified, uses the current API ID.
      * @returns {{presets: any[], preset_names: object, settings: object}}
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'api' implicitly has an 'any' type.
     getPresetList(api) {
         let presets = [];
         let preset_names = {};
@@ -581,21 +621,25 @@ class PresetManager {
                 break;
             case 'context':
                 presets = context_presets;
+                // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
                 preset_names = context_presets.map(x => x.name);
                 settings = power_user.context;
                 break;
             case 'instruct':
                 presets = instruct_presets;
+                // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
                 preset_names = instruct_presets.map(x => x.name);
                 settings = power_user.instruct;
                 break;
             case 'sysprompt':
                 presets = system_prompts;
+                // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
                 preset_names = system_prompts.map(x => x.name);
                 settings = power_user.sysprompt;
                 break;
             case 'reasoning':
                 presets = reasoning_templates;
+                // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
                 preset_names = reasoning_templates.map(x => x.name);
                 settings = power_user.reasoning;
                 break;
@@ -625,25 +669,28 @@ class PresetManager {
      * @param {string} name Name of the preset
      * @param {object} preset Preset object
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
     updateList(name, preset) {
-        // @ts-expect-error TS(2554): Expected 1 arguments, but got 0.
+        // @ts-expect-error TS(2554) FIXME: Expected 1 arguments, but got 0.
         const { presets, preset_names } = this.getPresetList();
-        // @ts-expect-error TS(2339): Property 'includes' does not exist on type '{}'.
+        // @ts-expect-error TS(2339) FIXME: Property 'includes' does not exist on type '{}'.
         const presetExists = this.isKeyedApi() ? preset_names.includes(name) : Object.keys(preset_names).includes(name);
 
         if (presetExists) {
             if (this.isKeyedApi()) {
-                // @ts-expect-error TS(2339): Property 'indexOf' does not exist on type '{}'.
+                // @ts-expect-error TS(2339) FIXME: Property 'indexOf' does not exist on type '{}'.
                 presets[preset_names.indexOf(name)] = preset;
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $(this.select[0].querySelector(`option[value="${CSS.escape(name)}"]`)).prop('selected', true);
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $(this.select).val(name).trigger('change');
             } else {
+                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 const value = preset_names[name];
                 presets[value] = preset;
+                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $(this.select[0].querySelector(`option[value="${CSS.escape(String(value))}"]`)).prop('selected', true);
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $(this.select).val(value).trigger('change');
             }
         } else {
@@ -651,20 +698,22 @@ class PresetManager {
             const value = presets.length - 1;
 
             if (this.isKeyedApi()) {
+                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 preset_names[value] = name;
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 const option = $('<option></option>', { value: name, text: name, selected: true });
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $(this.select).append(option);
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $(this.select).val(name).trigger('change');
             } else {
+                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 preset_names[name] = value;
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 const option = $('<option></option>', { value: value, text: name, selected: true });
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $(this.select).append(option);
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $(this.select).val(value).trigger('change');
             }
         }
@@ -675,11 +724,13 @@ class PresetManager {
      * @param {string} name Name of the preset
      * @returns {object} Preset settings object for the given name
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
     getPresetSettings(name) {
         /**
          *
          * @param apiId
          */
+        // @ts-expect-error TS(7006) FIXME: Parameter 'apiId' implicitly has an 'any' type.
         function getSettingsByApiId(apiId) {
             switch (apiId) {
                 case 'koboldhorde':
@@ -691,25 +742,25 @@ class PresetManager {
                     return textgen_settings;
                 case 'context': {
                     const context_preset = getContextSettings();
-                    // @ts-expect-error TS(2339): Property 'name' does not exist on type '{}'.
+                    // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type '{}'.
                     context_preset.name = name || power_user.context.preset;
                     return context_preset;
                 }
                 case 'instruct': {
                     const instruct_preset = structuredClone(power_user.instruct);
-                    // @ts-expect-error TS(2339): Property 'name' does not exist on type '{ enabled:... Remove this comment to see the full error message
+                    // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type '{ enabled:... Remove this comment to see the full error message
                     instruct_preset.name = name || power_user.instruct.preset;
                     return instruct_preset;
                 }
                 case 'sysprompt': {
                     const sysprompt_preset = structuredClone(power_user.sysprompt);
-                    // @ts-expect-error TS(2339): Property 'preset' does not exist on type '{ enable... Remove this comment to see the full error message
+                    // @ts-expect-error TS(2339) FIXME: Property 'preset' does not exist on type '{ enable... Remove this comment to see the full error message
                     sysprompt_preset.name = name || power_user.sysprompt.preset;
                     return sysprompt_preset;
                 }
                 case 'reasoning': {
                     const reasoning_preset = structuredClone(power_user.reasoning);
-                    // @ts-expect-error TS(2339): Property 'preset' does not exist on type '{ name: ... Remove this comment to see the full error message
+                    // @ts-expect-error TS(2339) FIXME: Property 'preset' does not exist on type '{ name: ... Remove this comment to see the full error message
                     reasoning_preset.name = name || power_user.reasoning.preset;
                     return reasoning_preset;
                 }
@@ -776,14 +827,15 @@ class PresetManager {
 
         for (const key of filteredKeys) {
             if (Object.hasOwn(settings, key)) {
+                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 delete settings[key];
             }
         }
 
         if (!this.isAdvancedFormatting() && this.apiId !== 'openai') {
-            // @ts-expect-error TS(2339): Property 'genamt' does not exist on type '{}'.
+            // @ts-expect-error TS(2339) FIXME: Property 'genamt' does not exist on type '{}'.
             settings.genamt = amount_gen;
-            // @ts-expect-error TS(2339): Property 'max_length' does not exist on type '{}'.
+            // @ts-expect-error TS(2339) FIXME: Property 'max_length' does not exist on type '{}'.
             settings.max_length = max_context;
         }
 
@@ -795,9 +847,10 @@ class PresetManager {
      * @param {string} name Name of the preset to retrieve
      * @returns {any} Preset object if found, otherwise undefined
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
     getCompletionPresetByName(name) {
         // Retrieve a completion preset by name. Return undefined if not found.
-        // @ts-expect-error TS(2554): Expected 1 arguments, but got 0.
+        // @ts-expect-error TS(2554) FIXME: Expected 1 arguments, but got 0.
         const { presets, preset_names } = this.getPresetList();
         let preset;
 
@@ -807,7 +860,9 @@ class PresetManager {
                 preset = presets[preset_names.indexOf(name)];
             }
         } else {  // object of {names: index}
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             if (preset_names[name] !== undefined) {
+                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 preset = presets[preset_names[name]];
             }
         }
@@ -824,29 +879,31 @@ class PresetManager {
      * Deletes a preset by name. If not provided, deletes the currently selected preset.
      * @param {string} [name] Name of the preset to delete.
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
     async deletePreset(name) {
-        // @ts-expect-error TS(2554): Expected 1 arguments, but got 0.
+        // @ts-expect-error TS(2554) FIXME: Expected 1 arguments, but got 0.
         const { preset_names, presets } = this.getPresetList();
         const value = name ? (this.isKeyedApi() ? this.findPreset(name) : name) : this.getSelectedPreset();
         const nameToDelete = name || this.getSelectedPresetName();
 
         if (value == 'gui') {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.info(t`Cannot delete GUI preset`);
-            // @ts-expect-error TS(7030): Not all code paths return a value.
             return;
         }
 
         if (this.isKeyedApi()) {
             this.select[0].querySelector(`option[value="${CSS.escape(value)}"]`)?.remove();
-            // @ts-expect-error TS(2339): Property 'indexOf' does not exist on type '{}'.
+            // @ts-expect-error TS(2339) FIXME: Property 'indexOf' does not exist on type '{}'.
             const index = preset_names.indexOf(nameToDelete);
-            // @ts-expect-error TS(2339): Property 'splice' does not exist on type '{}'.
+            // @ts-expect-error TS(2339) FIXME: Property 'splice' does not exist on type '{}'.
             preset_names.splice(index, 1);
             presets.splice(index, 1);
         } else {
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             const index = preset_names[nameToDelete];
             this.select[0].querySelector(`option[value="${CSS.escape(String(index))}"]`)?.remove();
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             delete preset_names[nameToDelete];
         }
 
@@ -855,9 +912,11 @@ class PresetManager {
 
         if (Object.keys(preset_names).length && switchPresets) {
             const nextPresetName = Object.keys(preset_names)[0];
+            // @ts-expect-error TS(2538) FIXME: Type 'undefined' cannot be used as an index type.
             const newValue = preset_names[nextPresetName];
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(this.select[0].querySelector(`option[value="${CSS.escape(String(newValue))}"]`)).attr('selected', 'true');
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(this.select).trigger('change');
         }
 
@@ -875,6 +934,7 @@ class PresetManager {
      * @param {string} name Name of the preset to restore
      * @returns {Promise<any>} Default preset object, or undefined if the request fails
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
     async getDefaultPreset(name) {
         const response = await fetch('/api/presets/restore', {
             method: 'POST',
@@ -884,7 +944,7 @@ class PresetManager {
 
         if (!response.ok) {
             const errorToast = !this.isAdvancedFormatting() ? t`Failed to restore default preset` : t`Failed to restore default template`;
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.error(errorToast);
             return;
         }
@@ -899,15 +959,16 @@ class PresetManager {
      * @param {string} options.path Path to the preset extension field, e.g. 'myextension.data'. If empty, reads the entire extensions object.
      * @returns {any} The value of the preset extension field, or null if not found.
      */
+    // @ts-expect-error TS(7031) FIXME: Binding element 'name' implicitly has an 'any' typ... Remove this comment to see the full error message
     readPresetExtensionField({ name, path }) {
-        // @ts-expect-error TS(2554): Expected 1 arguments, but got 0.
+        // @ts-expect-error TS(2554) FIXME: Expected 1 arguments, but got 0.
         const { settings } = this.getPresetList();
         const selectedName = this.getSelectedPresetName();
         const presetName = name || selectedName;
 
         // Read from settings if the selected preset is the same as the provided name
         if (settings && selectedName === presetName) {
-            // @ts-expect-error TS(2339): Property 'extensions' does not exist on type '{}'.
+            // @ts-expect-error TS(2339) FIXME: Property 'extensions' does not exist on type '{}'.
             const settingsExtensions = ensurePlainObject(settings.extensions || {});
             return path ? get(settingsExtensions, path, null) : settingsExtensions;
         }
@@ -932,8 +993,9 @@ class PresetManager {
      * @param {any} options.value Value to write to the preset extension field.
      * @returns {Promise<void>} Resolves when the preset is saved.
      */
+    // @ts-expect-error TS(7031) FIXME: Binding element 'name' implicitly has an 'any' typ... Remove this comment to see the full error message
     async writePresetExtensionField({ name, path, value }) {
-        // @ts-expect-error TS(2554): Expected 1 arguments, but got 0.
+        // @ts-expect-error TS(2554) FIXME: Expected 1 arguments, but got 0.
         const { settings } = this.getPresetList();
         const selectedName = this.getSelectedPresetName();
         const presetName = name || selectedName;
@@ -941,12 +1003,13 @@ class PresetManager {
         // Write to settings if the selected preset is the same as the provided name
         if (settings && selectedName === presetName) {
             // Set the value at the specified path
-            // @ts-expect-error TS(2339): Property 'extensions' does not exist on type '{}'.
+            // @ts-expect-error TS(2339) FIXME: Property 'extensions' does not exist on type '{}'.
             settings.extensions = ensurePlainObject(settings.extensions || {});
-            // @ts-expect-error TS(2339): Property 'extensions' does not exist on type '{}'.
             if (path) {
+                // @ts-expect-error TS(2339) FIXME: Property 'extensions' does not exist on type '{}'.
                 set(settings.extensions, path, value);
             } else {
+                // @ts-expect-error TS(2339) FIXME: Property 'extensions' does not exist on type '{}'.
                 settings.extensions = value;
             }
             await saveSettings();
@@ -977,6 +1040,7 @@ class PresetManager {
  * @param {string} name Unnamed arguments
  * @returns {Promise<string>} Selected or current preset name
  */
+// @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
 async function presetCommandCallback(_, name) {
     const shouldReconnect = online_status !== 'no_connection';
     const presetManager = getPresetManager();
@@ -1069,6 +1133,7 @@ export async function initPresetManager() {
             SlashCommandArgument.fromProps({
                 description: 'name',
                 typeList: [ARGUMENT_TYPE.STRING],
+                // @ts-expect-error TS(7006) FIXME: Parameter 'preset' implicitly has an 'any' type.
                 enumProvider: () => getPresetManager().getAllPresets().map(preset => new SlashCommandEnumValue(preset, null, enumTypes.enum, enumIcons.preset)),
             }),
         ],
@@ -1091,9 +1156,9 @@ export async function initPresetManager() {
     }));
 
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '[data-preset-manager-update]', async function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const apiId = $(this).data('preset-manager-update');
         const presetManager = getPresetManager(apiId);
 
@@ -1105,9 +1170,9 @@ export async function initPresetManager() {
         await presetManager.updatePreset();
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '[data-preset-manager-new]', async function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const apiId = $(this).data('preset-manager-new');
         const presetManager = getPresetManager(apiId);
 
@@ -1119,9 +1184,9 @@ export async function initPresetManager() {
         await presetManager.savePresetAs();
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '[data-preset-manager-rename]', async function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const apiId = $(this).data('preset-manager-rename');
         const presetManager = getPresetManager(apiId);
 
@@ -1138,7 +1203,7 @@ export async function initPresetManager() {
             return;
         }
         if (equalsIgnoreCaseAndAccents(oldName, newName)) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.warning(t`Name not accepted, as it is the same as before (ignoring case and accents).`, t`Rename Preset`);
             return;
         }
@@ -1151,19 +1216,19 @@ export async function initPresetManager() {
 
         if (apiId === 'openai') {
             // This is a horrible mess, but prevents the renamed preset from being corrupted.
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#update_oai_preset').trigger('click');
             return;
         }
 
         const successToast = !presetManager.isAdvancedFormatting() ? t`Preset renamed` : t`Template renamed`;
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.success(successToast);
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '[data-preset-manager-export]', async function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const apiId = $(this).data('preset-manager-export');
         const presetManager = getPresetManager(apiId);
 
@@ -1172,6 +1237,7 @@ export async function initPresetManager() {
             return;
         }
 
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const selected = $(presetManager.select[0].options[presetManager.select[0].selectedIndex]);
         const name = selected.text();
         const preset = presetManager.getPresetSettings(name);
@@ -1179,17 +1245,17 @@ export async function initPresetManager() {
         download(data, `${name}.json`, 'application/json');
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '[data-preset-manager-import]', async function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const apiId = $(this).data('preset-manager-import');
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(`[data-preset-manager-file="${apiId}"]`).trigger('click');
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('change', '[data-preset-manager-file]', async function (e) {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const apiId = $(this).data('preset-manager-file');
         const presetManager = getPresetManager(apiId);
 
@@ -1206,21 +1272,21 @@ export async function initPresetManager() {
 
         const fileName = file.name.replace('.json', '').replace('.settings', '');
         const data = await parseJsonFile(file);
-        // @ts-expect-error TS(2339): Property 'name' does not exist on type 'unknown'.
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         const name = data?.name ?? fileName;
-        // @ts-expect-error TS(2339): Property 'name' does not exist on type 'unknown'.
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         data.name = name;
 
         await presetManager.savePreset(name, data);
         const successToast = !presetManager.isAdvancedFormatting() ? t`Preset imported` : t`Template imported`;
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.success(successToast);
         e.target.value = null;
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '[data-preset-manager-delete]', async function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const apiId = $(this).data('preset-manager-delete');
         const presetManager = getPresetManager(apiId);
 
@@ -1240,21 +1306,21 @@ export async function initPresetManager() {
 
         if (result) {
             const successToast = !presetManager.isAdvancedFormatting() ? t`Preset deleted` : t`Template deleted`;
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.success(successToast);
             await eventSource.emit(event_types.PRESET_DELETED, { apiId, name });
         } else {
             const warningToast = !presetManager.isAdvancedFormatting() ? t`Preset was not deleted from server` : t`Template was not deleted from server`;
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.warning(warningToast);
         }
 
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '[data-preset-manager-restore]', async function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const apiId = $(this).data('preset-manager-restore');
         const presetManager = getPresetManager(apiId);
 
@@ -1267,7 +1333,7 @@ export async function initPresetManager() {
         const data = await presetManager.getDefaultPreset(name);
 
         if (name == 'gui') {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.info(t`Cannot restore GUI preset`);
             return;
         }
@@ -1279,7 +1345,7 @@ export async function initPresetManager() {
         if (data.isDefault) {
             if (Object.keys(data.preset).length === 0) {
                 const errorToast = !presetManager.isAdvancedFormatting() ? t`Default preset cannot be restored` : t`Default template cannot be restored`;
-                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                 toastr.error(errorToast);
                 return;
             }
@@ -1297,7 +1363,7 @@ export async function initPresetManager() {
             const option = presetManager.findPreset(name);
             presetManager.selectPreset(option);
             const successToast = !presetManager.isAdvancedFormatting() ? t`Default preset restored` : t`Default template restored`;
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.success(successToast);
         } else {
             const confirmText = !presetManager.isAdvancedFormatting()
@@ -1311,18 +1377,18 @@ export async function initPresetManager() {
             const option = presetManager.findPreset(name);
             presetManager.selectPreset(option);
             const successToast = !presetManager.isAdvancedFormatting() ? t`Preset restored` : t`Template restored`;
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.success(successToast);
         }
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#af_master_import').on('click', () => {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#af_master_import_file').trigger('click');
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#af_master_import_file').on('change', async function (e) {
         if (!(e.target instanceof HTMLInputElement)) {
             return;
@@ -1339,7 +1405,7 @@ export async function initPresetManager() {
         e.target.value = null;
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#af_master_export').on('click', async () => {
         const data = await PresetManager.performMasterExport();
 

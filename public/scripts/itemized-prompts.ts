@@ -9,7 +9,9 @@ import { renderTemplateAsync } from './templates.js';
 import { getFriendlyTokenizerName, getTokenCountAsync } from './tokenizers.js';
 import { copyText } from './utils.js';
 
+// @ts-expect-error TS(7034) FIXME: Variable 'PromptArrayItemForRawPromptDisplay' impl... Remove this comment to see the full error message
 let PromptArrayItemForRawPromptDisplay;
+// @ts-expect-error TS(7034) FIXME: Variable 'priorPromptArrayItemForRawPromptDisplay'... Remove this comment to see the full error message
 let priorPromptArrayItemForRawPromptDisplay;
 
 const promptStorage = localspace.createInstance({ name: 'SillyTavern_Prompts' });
@@ -19,6 +21,7 @@ export let itemizedPrompts = [];
  * Gets the itemized prompts for a chat.
  * @param {string} chatId Chat ID to load
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'chatId' implicitly has an 'any' type.
 export async function loadItemizedPrompts(chatId) {
     try {
         if (!chatId) {
@@ -43,6 +46,7 @@ export async function loadItemizedPrompts(chatId) {
  * Saves the itemized prompts for a chat.
  * @param {string} chatId Chat ID to save itemized prompts for
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'chatId' implicitly has an 'any' type.
 export async function saveItemizedPrompts(chatId) {
     try {
         if (!chatId) {
@@ -62,17 +66,20 @@ export async function saveItemizedPrompts(chatId) {
  * @param {string} promptText New raw prompt text
  * @returns
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'mesId' implicitly has an 'any' type.
 export async function replaceItemizedPromptText(mesId, promptText) {
     if (!Array.isArray(itemizedPrompts)) {
         itemizedPrompts = [];
     }
 
+    // @ts-expect-error TS(2339) FIXME: Property 'mesId' does not exist on type 'never'.
     const itemizedPrompt = itemizedPrompts.find(x => x.mesId === mesId);
 
     if (!itemizedPrompt) {
         return;
     }
 
+    // @ts-expect-error TS(2339) FIXME: Property 'rawPrompt' does not exist on type 'never... Remove this comment to see the full error message
     itemizedPrompt.rawPrompt = promptText;
 }
 
@@ -80,6 +87,7 @@ export async function replaceItemizedPromptText(mesId, promptText) {
  * Deletes the itemized prompts for a chat.
  * @param {string} chatId Chat ID to delete itemized prompts for
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'chatId' implicitly has an 'any' type.
 export async function deleteItemizedPrompts(chatId) {
     try {
         if (!chatId) {
@@ -112,6 +120,7 @@ export async function clearItemizedPrompts() {
  * @param thisPromptSet
  * @param incomingMesId
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'itemizedPrompts' implicitly has an 'any... Remove this comment to see the full error message
 export async function itemizedParams(itemizedPrompts, thisPromptSet, incomingMesId) {
     const params = {
         charDescriptionTokens: await getTokenCountAsync(itemizedPrompts[thisPromptSet].charDescription),
@@ -131,13 +140,16 @@ export async function itemizedParams(itemizedPrompts, thisPromptSet, incomingMes
         chatInjects: await getTokenCountAsync(itemizedPrompts[thisPromptSet].chatInjects),
         chatVectorsStringTokens: await getTokenCountAsync(itemizedPrompts[thisPromptSet].chatVectorsString),
         dataBankVectorsStringTokens: await getTokenCountAsync(itemizedPrompts[thisPromptSet].dataBankVectorsString),
+        // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type 'never'.
         modelUsed: chat[incomingMesId]?.extra?.model,
+        // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type 'never'.
         apiUsed: chat[incomingMesId]?.extra?.api,
         presetName: itemizedPrompts[thisPromptSet].presetName || t`(Unknown)`,
         messagesCount: String(itemizedPrompts[thisPromptSet].messagesCount ?? ''),
         examplesCount: String(itemizedPrompts[thisPromptSet].examplesCount ?? ''),
     };
 
+    // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
     const getFriendlyName = (value) => (document.querySelector(`#rm_api_block select option[value="${value}"]`)?.textContent || value);
 
     if (params.apiUsed) {
@@ -145,12 +157,12 @@ export async function itemizedParams(itemizedPrompts, thisPromptSet, incomingMes
     }
 
     if (params.this_main_api) {
-        // @ts-expect-error TS(2339): Property 'mainApiFriendlyName' does not exist on t... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'mainApiFriendlyName' does not exist on t... Remove this comment to see the full error message
         params.mainApiFriendlyName = getFriendlyName(params.this_main_api);
     }
 
     if (params.chatInjects) {
-        // @ts-expect-error TS(2339): Property 'ActualChatHistoryTokens' does not exist ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'ActualChatHistoryTokens' does not exist ... Remove this comment to see the full error message
         params.ActualChatHistoryTokens = params.ActualChatHistoryTokens - params.chatInjects;
     }
 
@@ -159,45 +171,45 @@ export async function itemizedParams(itemizedPrompts, thisPromptSet, incomingMes
         //console.log('-- Counting OAI Tokens');
 
         //params.finalPromptTokens = itemizedPrompts[thisPromptSet].oaiTotalTokens;
-        // @ts-expect-error TS(2339): Property 'oaiMainTokens' does not exist on type '{... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'oaiMainTokens' does not exist on type '{... Remove this comment to see the full error message
         params.oaiMainTokens = itemizedPrompts[thisPromptSet].oaiMainTokens;
-        // @ts-expect-error TS(2339): Property 'oaiStartTokens' does not exist on type '... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'oaiStartTokens' does not exist on type '... Remove this comment to see the full error message
         params.oaiStartTokens = itemizedPrompts[thisPromptSet].oaiStartTokens;
-        // @ts-expect-error TS(2339): Property 'ActualChatHistoryTokens' does not exist ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'ActualChatHistoryTokens' does not exist ... Remove this comment to see the full error message
         params.ActualChatHistoryTokens = itemizedPrompts[thisPromptSet].oaiConversationTokens;
-        // @ts-expect-error TS(2339): Property 'examplesStringTokens' does not exist on ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'examplesStringTokens' does not exist on ... Remove this comment to see the full error message
         params.examplesStringTokens = itemizedPrompts[thisPromptSet].oaiExamplesTokens;
-        // @ts-expect-error TS(2339): Property 'oaiPromptTokens' does not exist on type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'oaiPromptTokens' does not exist on type ... Remove this comment to see the full error message
         params.oaiPromptTokens = itemizedPrompts[thisPromptSet].oaiPromptTokens - (params.afterScenarioAnchorTokens + params.beforeScenarioAnchorTokens) + params.examplesStringTokens;
-        // @ts-expect-error TS(2339): Property 'oaiBiasTokens' does not exist on type '{... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'oaiBiasTokens' does not exist on type '{... Remove this comment to see the full error message
         params.oaiBiasTokens = itemizedPrompts[thisPromptSet].oaiBiasTokens;
-        // @ts-expect-error TS(2339): Property 'oaiJailbreakTokens' does not exist on ty... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'oaiJailbreakTokens' does not exist on ty... Remove this comment to see the full error message
         params.oaiJailbreakTokens = itemizedPrompts[thisPromptSet].oaiJailbreakTokens;
-        // @ts-expect-error TS(2339): Property 'oaiNudgeTokens' does not exist on type '... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'oaiNudgeTokens' does not exist on type '... Remove this comment to see the full error message
         params.oaiNudgeTokens = itemizedPrompts[thisPromptSet].oaiNudgeTokens;
-        // @ts-expect-error TS(2339): Property 'oaiImpersonateTokens' does not exist on ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'oaiImpersonateTokens' does not exist on ... Remove this comment to see the full error message
         params.oaiImpersonateTokens = itemizedPrompts[thisPromptSet].oaiImpersonateTokens;
-        // @ts-expect-error TS(2339): Property 'oaiNsfwTokens' does not exist on type '{... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'oaiNsfwTokens' does not exist on type '{... Remove this comment to see the full error message
         params.oaiNsfwTokens = itemizedPrompts[thisPromptSet].oaiNsfwTokens;
-        // @ts-expect-error TS(2339): Property 'finalPromptTokens' does not exist on typ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'finalPromptTokens' does not exist on typ... Remove this comment to see the full error message
         params.finalPromptTokens =
-            // @ts-expect-error TS(2339): Property 'oaiStartTokens' does not exist on type '... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'oaiStartTokens' does not exist on type '... Remove this comment to see the full error message
             params.oaiStartTokens +
-            // @ts-expect-error TS(2339): Property 'oaiPromptTokens' does not exist on type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'oaiPromptTokens' does not exist on type ... Remove this comment to see the full error message
             params.oaiPromptTokens +
-            // @ts-expect-error TS(2339): Property 'oaiMainTokens' does not exist on type '{... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'oaiMainTokens' does not exist on type '{... Remove this comment to see the full error message
             params.oaiMainTokens +
-            // @ts-expect-error TS(2339): Property 'oaiNsfwTokens' does not exist on type '{... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'oaiNsfwTokens' does not exist on type '{... Remove this comment to see the full error message
             params.oaiNsfwTokens +
-            // @ts-expect-error TS(2339): Property 'oaiBiasTokens' does not exist on type '{... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'oaiBiasTokens' does not exist on type '{... Remove this comment to see the full error message
             params.oaiBiasTokens +
-            // @ts-expect-error TS(2339): Property 'oaiImpersonateTokens' does not exist on ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'oaiImpersonateTokens' does not exist on ... Remove this comment to see the full error message
             params.oaiImpersonateTokens +
-            // @ts-expect-error TS(2339): Property 'oaiJailbreakTokens' does not exist on ty... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'oaiJailbreakTokens' does not exist on ty... Remove this comment to see the full error message
             params.oaiJailbreakTokens +
-            // @ts-expect-error TS(2339): Property 'oaiNudgeTokens' does not exist on type '... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'oaiNudgeTokens' does not exist on type '... Remove this comment to see the full error message
             params.oaiNudgeTokens +
-            // @ts-expect-error TS(2339): Property 'ActualChatHistoryTokens' does not exist ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'ActualChatHistoryTokens' does not exist ... Remove this comment to see the full error message
             params.ActualChatHistoryTokens +
             //charDescriptionTokens +
             //charPersonalityTokens +
@@ -206,78 +218,78 @@ export async function itemizedParams(itemizedPrompts, thisPromptSet, incomingMes
             params.beforeScenarioAnchorTokens +
             params.afterScenarioAnchorTokens;
         // Max context size - max completion tokens
-        // @ts-expect-error TS(2339): Property 'thisPrompt_max_context' does not exist o... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'thisPrompt_max_context' does not exist o... Remove this comment to see the full error message
         params.thisPrompt_max_context = (oai_settings.openai_max_context - oai_settings.openai_max_tokens);
 
         //console.log('-- applying % on OAI tokens');
-        // @ts-expect-error TS(2339): Property 'oaiStartTokensPercentage' does not exist... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'oaiStartTokensPercentage' does not exist... Remove this comment to see the full error message
         params.oaiStartTokensPercentage = ((params.oaiStartTokens / (params.finalPromptTokens)) * 100).toFixed(2);
-        // @ts-expect-error TS(2339): Property 'storyStringTokensPercentage' does not ex... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'storyStringTokensPercentage' does not ex... Remove this comment to see the full error message
         params.storyStringTokensPercentage = (((params.afterScenarioAnchorTokens + params.beforeScenarioAnchorTokens + params.oaiPromptTokens) / (params.finalPromptTokens)) * 100).toFixed(2);
-        // @ts-expect-error TS(2339): Property 'ActualChatHistoryTokensPercentage' does ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'ActualChatHistoryTokensPercentage' does ... Remove this comment to see the full error message
         params.ActualChatHistoryTokensPercentage = ((params.ActualChatHistoryTokens / (params.finalPromptTokens)) * 100).toFixed(2);
-        // @ts-expect-error TS(2339): Property 'promptBiasTokensPercentage' does not exi... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'promptBiasTokensPercentage' does not exi... Remove this comment to see the full error message
         params.promptBiasTokensPercentage = ((params.oaiBiasTokens / (params.finalPromptTokens)) * 100).toFixed(2);
-        // @ts-expect-error TS(2339): Property 'worldInfoStringTokensPercentage' does no... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'worldInfoStringTokensPercentage' does no... Remove this comment to see the full error message
         params.worldInfoStringTokensPercentage = ((params.worldInfoStringTokens / (params.finalPromptTokens)) * 100).toFixed(2);
-        // @ts-expect-error TS(2339): Property 'allAnchorsTokensPercentage' does not exi... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'allAnchorsTokensPercentage' does not exi... Remove this comment to see the full error message
         params.allAnchorsTokensPercentage = ((params.allAnchorsTokens / (params.finalPromptTokens)) * 100).toFixed(2);
-        // @ts-expect-error TS(2339): Property 'selectedTokenizer' does not exist on typ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'selectedTokenizer' does not exist on typ... Remove this comment to see the full error message
         params.selectedTokenizer = getFriendlyTokenizerName(params.this_main_api).tokenizerName;
-        // @ts-expect-error TS(2339): Property 'oaiSystemTokens' does not exist on type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'oaiSystemTokens' does not exist on type ... Remove this comment to see the full error message
         params.oaiSystemTokens = params.oaiImpersonateTokens + params.oaiJailbreakTokens + params.oaiNudgeTokens + params.oaiStartTokens + params.oaiNsfwTokens + params.oaiMainTokens;
-        // @ts-expect-error TS(2339): Property 'oaiSystemTokensPercentage' does not exis... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'oaiSystemTokensPercentage' does not exis... Remove this comment to see the full error message
         params.oaiSystemTokensPercentage = ((params.oaiSystemTokens / (params.finalPromptTokens)) * 100).toFixed(2);
     } else {
         //for non-OAI APIs
         //console.log('-- Counting non-OAI Tokens');
-        // @ts-expect-error TS(2339): Property 'finalPromptTokens' does not exist on typ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'finalPromptTokens' does not exist on typ... Remove this comment to see the full error message
         params.finalPromptTokens = await getTokenCountAsync(itemizedPrompts[thisPromptSet].finalPrompt);
-        // @ts-expect-error TS(2339): Property 'storyStringTokens' does not exist on typ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'storyStringTokens' does not exist on typ... Remove this comment to see the full error message
         params.storyStringTokens = (await getTokenCountAsync(itemizedPrompts[thisPromptSet].storyString)) - params.worldInfoStringTokens;
-        // @ts-expect-error TS(2339): Property 'examplesStringTokens' does not exist on ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'examplesStringTokens' does not exist on ... Remove this comment to see the full error message
         params.examplesStringTokens = await getTokenCountAsync(itemizedPrompts[thisPromptSet].examplesString);
-        // @ts-expect-error TS(2339): Property 'mesSendStringTokens' does not exist on t... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'mesSendStringTokens' does not exist on t... Remove this comment to see the full error message
         params.mesSendStringTokens = await getTokenCountAsync(itemizedPrompts[thisPromptSet].mesSendString);
-        // @ts-expect-error TS(2339): Property 'ActualChatHistoryTokens' does not exist ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'ActualChatHistoryTokens' does not exist ... Remove this comment to see the full error message
         params.ActualChatHistoryTokens = params.mesSendStringTokens - (params.allAnchorsTokens - (params.beforeScenarioAnchorTokens + params.afterScenarioAnchorTokens)) + power_user.token_padding;
-        // @ts-expect-error TS(2339): Property 'instructionTokens' does not exist on typ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'instructionTokens' does not exist on typ... Remove this comment to see the full error message
         params.instructionTokens = await getTokenCountAsync(itemizedPrompts[thisPromptSet].instruction);
-        // @ts-expect-error TS(2339): Property 'promptBiasTokens' does not exist on type... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'promptBiasTokens' does not exist on type... Remove this comment to see the full error message
         params.promptBiasTokens = await getTokenCountAsync(itemizedPrompts[thisPromptSet].promptBias);
 
-        // @ts-expect-error TS(2339): Property 'totalTokensInPrompt' does not exist on t... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'totalTokensInPrompt' does not exist on t... Remove this comment to see the full error message
         params.totalTokensInPrompt =
-            // @ts-expect-error TS(2339): Property 'storyStringTokens' does not exist on typ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'storyStringTokens' does not exist on typ... Remove this comment to see the full error message
             params.storyStringTokens +     //chardefs total
             params.worldInfoStringTokens +
-            // @ts-expect-error TS(2339): Property 'examplesStringTokens' does not exist on ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'examplesStringTokens' does not exist on ... Remove this comment to see the full error message
             params.examplesStringTokens + // example messages
-            // @ts-expect-error TS(2339): Property 'ActualChatHistoryTokens' does not exist ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'ActualChatHistoryTokens' does not exist ... Remove this comment to see the full error message
             params.ActualChatHistoryTokens +  //chat history
             params.allAnchorsTokens +      // AN and/or legacy anchors
             //afterScenarioAnchorTokens +       //only counts if AN is set to 'after scenario'
             //zeroDepthAnchorTokens +           //same as above, even if AN not on 0 depth
-            // @ts-expect-error TS(2339): Property 'promptBiasTokens' does not exist on type... Remove this comment to see the full error message
+            // @ts-expect-error TS(2339) FIXME: Property 'promptBiasTokens' does not exist on type... Remove this comment to see the full error message
             params.promptBiasTokens;       //{{}}
         //- thisPrompt_padding;  //not sure this way of calculating is correct, but the math results in same value as 'finalPrompt'
-        // @ts-expect-error TS(2339): Property 'thisPrompt_max_context' does not exist o... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'thisPrompt_max_context' does not exist o... Remove this comment to see the full error message
         params.thisPrompt_max_context = itemizedPrompts[thisPromptSet].this_max_context;
-        // @ts-expect-error TS(2339): Property 'thisPrompt_actual' does not exist on typ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'thisPrompt_actual' does not exist on typ... Remove this comment to see the full error message
         params.thisPrompt_actual = params.thisPrompt_max_context - params.thisPrompt_padding;
 
         //console.log('-- applying % on non-OAI tokens');
-        // @ts-expect-error TS(2339): Property 'storyStringTokensPercentage' does not ex... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'storyStringTokensPercentage' does not ex... Remove this comment to see the full error message
         params.storyStringTokensPercentage = ((params.storyStringTokens / (params.totalTokensInPrompt)) * 100).toFixed(2);
-        // @ts-expect-error TS(2339): Property 'ActualChatHistoryTokensPercentage' does ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'ActualChatHistoryTokensPercentage' does ... Remove this comment to see the full error message
         params.ActualChatHistoryTokensPercentage = ((params.ActualChatHistoryTokens / (params.totalTokensInPrompt)) * 100).toFixed(2);
-        // @ts-expect-error TS(2339): Property 'promptBiasTokensPercentage' does not exi... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'promptBiasTokensPercentage' does not exi... Remove this comment to see the full error message
         params.promptBiasTokensPercentage = ((params.promptBiasTokens / (params.totalTokensInPrompt)) * 100).toFixed(2);
-        // @ts-expect-error TS(2339): Property 'worldInfoStringTokensPercentage' does no... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'worldInfoStringTokensPercentage' does no... Remove this comment to see the full error message
         params.worldInfoStringTokensPercentage = ((params.worldInfoStringTokens / (params.totalTokensInPrompt)) * 100).toFixed(2);
-        // @ts-expect-error TS(2339): Property 'allAnchorsTokensPercentage' does not exi... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'allAnchorsTokensPercentage' does not exi... Remove this comment to see the full error message
         params.allAnchorsTokensPercentage = ((params.allAnchorsTokens / (params.totalTokensInPrompt)) * 100).toFixed(2);
-        // @ts-expect-error TS(2339): Property 'selectedTokenizer' does not exist on typ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'selectedTokenizer' does not exist on typ... Remove this comment to see the full error message
         params.selectedTokenizer = itemizedPrompts[thisPromptSet]?.tokenizer || getFriendlyTokenizerName(params.this_main_api).tokenizerName;
     }
     return params;
@@ -288,6 +300,7 @@ export async function itemizedParams(itemizedPrompts, thisPromptSet, incomingMes
  * @param itemizedPrompts
  * @param incomingMesId
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'itemizedPrompts' implicitly has an 'any... Remove this comment to see the full error message
 export function findItemizedPromptSet(itemizedPrompts, incomingMesId) {
     let thisPromptSet = undefined;
     priorPromptArrayItemForRawPromptDisplay = -1;
@@ -313,6 +326,7 @@ export function findItemizedPromptSet(itemizedPrompts, incomingMesId) {
  * @param itemizedPrompts
  * @param requestedMesId
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'itemizedPrompts' implicitly has an 'any... Remove this comment to see the full error message
 export async function promptItemize(itemizedPrompts, requestedMesId) {
     console.log('PROMPT ITEMIZE ENTERED');
     const incomingMesId = Number(requestedMesId);
@@ -326,6 +340,7 @@ export async function promptItemize(itemizedPrompts, requestedMesId) {
     }
 
     const params = await itemizedParams(itemizedPrompts, thisPromptSet, incomingMesId);
+    // @ts-expect-error TS(7006) FIXME: Parameter 'rawPrompt' implicitly has an 'any' type... Remove this comment to see the full error message
     const flatten = (rawPrompt) => Array.isArray(rawPrompt) ? rawPrompt.map(x => x.content).join('\n') : rawPrompt;
 
     const template = params.this_main_api == 'openai'
@@ -336,11 +351,14 @@ export async function promptItemize(itemizedPrompts, requestedMesId) {
 
     /** @type {HTMLElement} */
     const diffPrevPrompt = popup.dlg.querySelector('#diffPrevPrompt');
+    // @ts-expect-error TS(7005) FIXME: Variable 'priorPromptArrayItemForRawPromptDisplay'... Remove this comment to see the full error message
     if (priorPromptArrayItemForRawPromptDisplay >= 0) {
         diffPrevPrompt.style.display = '';
         diffPrevPrompt.addEventListener('click', function () {
             const dmp = new DiffMatchPatch();
+            // @ts-expect-error TS(7005) FIXME: Variable 'priorPromptArrayItemForRawPromptDisplay'... Remove this comment to see the full error message
             const text1 = flatten(itemizedPrompts[priorPromptArrayItemForRawPromptDisplay].rawPrompt);
+            // @ts-expect-error TS(7005) FIXME: Variable 'PromptArrayItemForRawPromptDisplay' impl... Remove this comment to see the full error message
             const text2 = flatten(itemizedPrompts[PromptArrayItemForRawPromptDisplay].rawPrompt);
 
             dmp.Diff_Timeout = 2.0;
@@ -354,6 +372,7 @@ export async function promptItemize(itemizedPrompts, requestedMesId) {
             const container = document.createElement('div');
             container.innerHTML = DOMPurify.sanitize(ds);
             const rawPromptWrapper = document.getElementById('rawPromptWrapper');
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             rawPromptWrapper.replaceChildren(container);
             const rawPromptPopup = document.getElementById('rawPromptPopup');
             if (rawPromptPopup) {
@@ -364,6 +383,7 @@ export async function promptItemize(itemizedPrompts, requestedMesId) {
         diffPrevPrompt.style.display = 'none';
     }
     popup.dlg.querySelector('#copyPromptToClipboard').addEventListener('pointerup', async function () {
+        // @ts-expect-error TS(7005) FIXME: Variable 'PromptArrayItemForRawPromptDisplay' impl... Remove this comment to see the full error message
         const rawPrompt = itemizedPrompts[PromptArrayItemForRawPromptDisplay].rawPrompt;
         let rawPromptValues = rawPrompt;
 
@@ -372,16 +392,19 @@ export async function promptItemize(itemizedPrompts, requestedMesId) {
         }
 
         await copyText(rawPromptValues);
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.info(t`Copied!`);
     });
 
     popup.dlg.querySelector('#showRawPrompt').addEventListener('click', async function () {
         //console.log(itemizedPrompts[PromptArrayItemForRawPromptDisplay].rawPrompt);
+        // @ts-expect-error TS(7005) FIXME: Variable 'PromptArrayItemForRawPromptDisplay' impl... Remove this comment to see the full error message
         console.log(PromptArrayItemForRawPromptDisplay);
         console.log(itemizedPrompts);
+        // @ts-expect-error TS(7005) FIXME: Variable 'PromptArrayItemForRawPromptDisplay' impl... Remove this comment to see the full error message
         console.log(itemizedPrompts[PromptArrayItemForRawPromptDisplay].rawPrompt);
 
+        // @ts-expect-error TS(7005) FIXME: Variable 'PromptArrayItemForRawPromptDisplay' impl... Remove this comment to see the full error message
         const rawPrompt = flatten(itemizedPrompts[PromptArrayItemForRawPromptDisplay].rawPrompt);
 
         // Mobile needs special handholding. The side-view on the popup wouldn't work,
@@ -390,6 +413,7 @@ export async function promptItemize(itemizedPrompts, requestedMesId) {
             const content = document.createElement('div');
             content.classList.add('tokenItemizingMaintext');
             content.innerText = rawPrompt;
+            // @ts-expect-error TS(2345) FIXME: Argument of type 'null' is not assignable to param... Remove this comment to see the full error message
             const popup = new Popup(content, POPUP_TYPE.TEXT, null, { allowVerticalScrolling: true, leftAlign: true });
             await popup.show();
             return;
@@ -397,6 +421,7 @@ export async function promptItemize(itemizedPrompts, requestedMesId) {
 
         //let DisplayStringifiedPrompt = JSON.stringify(itemizedPrompts[PromptArrayItemForRawPromptDisplay].rawPrompt).replace(/\n+/g, '<br>');
         const rawPromptWrapper = document.getElementById('rawPromptWrapper');
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         rawPromptWrapper.innerText = rawPrompt;
         const rawPromptPopup = document.getElementById('rawPromptPopup');
         if (rawPromptPopup) {
@@ -413,7 +438,7 @@ export async function promptItemize(itemizedPrompts, requestedMesId) {
 export function initItemizedPrompts() {
     registerDebugFunction('clearPrompts', 'Delete itemized prompts', 'Deletes all itemized prompts from the local storage.', async () => {
         await clearItemizedPrompts();
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.info('Itemized prompts deleted.');
         if (getCurrentChatId()) {
             await reloadCurrentChat();
@@ -421,6 +446,7 @@ export function initItemizedPrompts() {
     });
 
     document.addEventListener('pointerup', async function (event) {
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         const target = event.target.closest('.mes_prompt');
         if (!target) {
             return;
@@ -432,9 +458,11 @@ export function initItemizedPrompts() {
         }
     });
 
+    // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
     eventSource.on(event_types.CHAT_DELETED, async (name) => {
         await deleteItemizedPrompts(name);
     });
+    // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
     eventSource.on(event_types.GROUP_CHAT_DELETED, async (name) => {
         await deleteItemizedPrompts(name);
     });
@@ -445,22 +473,28 @@ export function initItemizedPrompts() {
  * @param {number} sourceMessageId Source message ID
  * @param {number} targetMessageId Target message ID
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'sourceMessageId' implicitly has an 'any... Remove this comment to see the full error message
 export function swapItemizedPrompts(sourceMessageId, targetMessageId) {
     if (!Array.isArray(itemizedPrompts)) {
         return;
     }
 
+    // @ts-expect-error TS(2339) FIXME: Property 'mesId' does not exist on type 'never'.
     const sourcePrompts = itemizedPrompts.filter(x => x.mesId === sourceMessageId);
+    // @ts-expect-error TS(2339) FIXME: Property 'mesId' does not exist on type 'never'.
     const targetPrompts = itemizedPrompts.filter(x => x.mesId === targetMessageId);
 
     sourcePrompts.forEach(prompt => {
+        // @ts-expect-error TS(2339) FIXME: Property 'mesId' does not exist on type 'never'.
         prompt.mesId = targetMessageId;
     });
 
     targetPrompts.forEach(prompt => {
+        // @ts-expect-error TS(2339) FIXME: Property 'mesId' does not exist on type 'never'.
         prompt.mesId = sourceMessageId;
     });
 
+    // @ts-expect-error TS(2339) FIXME: Property 'mesId' does not exist on type 'never'.
     itemizedPrompts.sort((a, b) => a.mesId - b.mesId);
 }
 
@@ -469,14 +503,18 @@ export function swapItemizedPrompts(sourceMessageId, targetMessageId) {
  * Shifts down other itemized prompts as necessary.
  * @param {number} messageId Message ID to delete itemized prompt for
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'messageId' implicitly has an 'any' type... Remove this comment to see the full error message
 export function deleteItemizedPromptForMessage(messageId) {
     if (!Array.isArray(itemizedPrompts)) {
         return;
     }
 
+    // @ts-expect-error TS(2339) FIXME: Property 'mesId' does not exist on type 'never'.
     itemizedPrompts = itemizedPrompts.filter(x => x.mesId !== messageId);
 
+    // @ts-expect-error TS(2339) FIXME: Property 'mesId' does not exist on type 'never'.
     for (const prompt of itemizedPrompts.filter(x => x.mesId > messageId)) {
+        // @ts-expect-error TS(2339) FIXME: Property 'mesId' does not exist on type 'never'.
         prompt.mesId -= 1;
     }
 }

@@ -38,23 +38,23 @@ export const DEFAULT_REASONING_TEMPLATE = 'Think XML';
  * @readonly
  */
 const UI = {
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $select: $('#reasoning_select'),
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $suffix: $('#reasoning_suffix'),
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $prefix: $('#reasoning_prefix'),
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $separator: $('#reasoning_separator'),
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $autoParse: $('#reasoning_auto_parse'),
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $autoExpand: $('#reasoning_auto_expand'),
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $showHidden: $('#reasoning_show_hidden'),
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $addToPrompts: $('#reasoning_add_to_prompts'),
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $maxAdditions: $('#reasoning_max_additions'),
 };
 
@@ -75,6 +75,7 @@ export const ReasoningType = {
  * @param {Element} element
  * @returns {{messageId: number, message: object, messageBlock: JQuery<HTMLElement>}}
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'element' implicitly has an 'any' type.
 function getMessageFromJquery(element) {
     const messageBlock = element.closest('.mes');
     const messageId = Number(messageBlock.getAttribute('mesid'));
@@ -104,6 +105,7 @@ function toggleReasoningAutoExpand() {
  * @param root0.chatCompletionSource
  * @returns {string} Extracted reasoning
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
 export function extractReasoningFromData(data, {
     mainApi = null,
     ignoreShowThoughts = false,
@@ -134,10 +136,13 @@ export function extractReasoningFromData(data, {
                         ?? '';
                 case chat_completion_sources.MAKERSUITE:
                 case chat_completion_sources.VERTEXAI:
+                    // @ts-expect-error TS(7006) FIXME: Parameter 'part' implicitly has an 'any' type.
                     return data?.responseContent?.parts?.filter(part => part.thought)?.map(part => part.text)?.join('\n\n') ?? '';
                 case chat_completion_sources.CLAUDE:
+                    // @ts-expect-error TS(7006) FIXME: Parameter 'part' implicitly has an 'any' type.
                     return data?.content?.filter(part => part.type === 'thinking')?.map(part => part.thinking)?.join('\n\n') ?? '';
                 case chat_completion_sources.MISTRALAI:
+                    // @ts-expect-error TS(7006) FIXME: Parameter 'part' implicitly has an 'any' type.
                     return data?.choices?.[0]?.message?.content?.[0]?.thinking?.map(part => part.text)?.filter(x => x)?.join('\n\n') ?? '';
                 case chat_completion_sources.AIMLAPI:
                 case chat_completion_sources.POLLINATIONS:
@@ -170,6 +175,7 @@ export function extractReasoningFromData(data, {
  * @param {string|null} [options.chatCompletionSource] Override for chat completion source
  * @returns {string?} Encrypted signature of the reasoning text
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
 export function extractReasoningSignatureFromData(data, {
     mainApi = null,
     chatCompletionSource = null,
@@ -198,6 +204,7 @@ export function extractReasoningSignatureFromData(data, {
 
     // Direct Gemini format: Extract from responseContent.parts if available (only text parts)
     if (isGemini && Array.isArray(data?.responseContent?.parts)) {
+        // @ts-expect-error TS(7006) FIXME: Parameter 'part' implicitly has an 'any' type.
         data.responseContent.parts.forEach((part) => {
             if (part.thoughtSignature && typeof part.text === 'string') {
                 return part.thoughtSignature;
@@ -220,7 +227,9 @@ export function isHiddenReasoningModel() {
     /** @typedef {{ (currentModel: string, supportedModel: string): boolean }} MatchingFunc */
     /** @type {Record.<string, MatchingFunc>} */
     const FUNCS = {
+        // @ts-expect-error TS(7006) FIXME: Parameter 'currentModel' implicitly has an 'any' t... Remove this comment to see the full error message
         equals: (currentModel, supportedModel) => currentModel === supportedModel,
+        // @ts-expect-error TS(7006) FIXME: Parameter 'currentModel' implicitly has an 'any' t... Remove this comment to see the full error message
         startsWith: (currentModel, supportedModel) => currentModel.startsWith(supportedModel),
     };
 
@@ -245,6 +254,7 @@ export function isHiddenReasoningModel() {
  * @param {object} [options] - Optional arguments
  * @param {boolean} [options.reset] - Whether to reset state, and not take the current mess properties (for example when swiping)
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'messageIdOrElement' implicitly has an '... Remove this comment to see the full error message
 export function updateReasoningUI(messageIdOrElement, { reset = false } = {}) {
     const handler = new ReasoningHandler();
     handler.initHandleMessage(messageIdOrElement, { reset });
@@ -270,9 +280,13 @@ export const ReasoningState = {
 export class ReasoningHandler {
     endTime: Date | null;
     initialTime: Date;
+    // @ts-expect-error TS(2315) FIXME: Type 'JQuery' is not generic.
     messageDom: JQuery<HTMLElement> | null;
+    // @ts-expect-error TS(2315) FIXME: Type 'JQuery' is not generic.
     messageReasoningContentDom: JQuery<HTMLElement> | null;
+    // @ts-expect-error TS(2315) FIXME: Type 'JQuery' is not generic.
     messageReasoningDetailsDom: JQuery<HTMLElement> | null;
+    // @ts-expect-error TS(2315) FIXME: Type 'JQuery' is not generic.
     messageReasoningHeaderDom: JQuery<HTMLElement> | null;
     reasoning: string;
     reasoningDisplayText: string | null;
@@ -291,6 +305,7 @@ export class ReasoningHandler {
      */
     constructor(timeStarted = null) {
         /** @type {ReasoningState} The current state of the reasoning process */
+        // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'number'.
         this.state = ReasoningState.None;
         /** @type {ReasoningType?} The type of the reasoning (where it came from) */
         this.type = null;
@@ -323,8 +338,10 @@ export class ReasoningHandler {
      * Sets the reasoning state when continuing a prompt.
      * @param {PromptReasoning} promptReasoning Prompt reasoning object
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'promptReasoning' implicitly has an 'any... Remove this comment to see the full error message
     initContinue(promptReasoning) {
         this.reasoning = promptReasoning.prefixReasoning;
+        // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'number'.
         this.state = promptReasoning.prefixIncomplete ? ReasoningState.None : ReasoningState.Done;
         this.startTime = this.initialTime;
         this.endTime = promptReasoning.prefixDuration ? new Date(this.initialTime.getTime() + promptReasoning.prefixDuration) : null;
@@ -340,26 +357,32 @@ export class ReasoningHandler {
      * @param {object} [options] - Optional arguments
      * @param {boolean} [options.reset] - Whether to reset state of the handler, and not take the current mess properties (for example when swiping)
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'messageIdOrElement' implicitly has an '... Remove this comment to see the full error message
     initHandleMessage(messageIdOrElement, { reset = false } = {}) {
         /** @type {HTMLElement} */
         const messageElement = typeof messageIdOrElement === 'number'
             ? document.querySelector(`#chat [mesid="${messageIdOrElement}"]`)
             : messageIdOrElement instanceof HTMLElement
                 ? messageIdOrElement
-                // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 : $(messageIdOrElement)[0];
         const messageId = Number(messageElement.getAttribute('mesid'));
 
         if (isNaN(messageId) || !chat[messageId]) return;
 
+        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         if (!chat[messageId].extra) {
+            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             chat[messageId].extra = {};
         }
+        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         const extra = chat[messageId].extra;
 
         if (extra.reasoning) {
+            // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'number'.
             this.state = ReasoningState.Done;
         } else if (extra.reasoning_duration) {
+            // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'number'.
             this.state = ReasoningState.Hidden;
         }
 
@@ -367,7 +390,9 @@ export class ReasoningHandler {
         this.reasoning = extra?.reasoning ?? '';
         this.reasoningDisplayText = extra?.reasoning_display_text ?? null;
 
+        // @ts-expect-error TS(2367) FIXME: This condition will always return 'true' since the... Remove this comment to see the full error message
         if (this.state !== ReasoningState.None) {
+            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             this.initialTime = new Date(chat[messageId].gen_started);
             this.startTime = this.initialTime;
             this.endTime = new Date(this.startTime.getTime() + (extra?.reasoning_duration ?? 0));
@@ -378,6 +403,7 @@ export class ReasoningHandler {
 
         // Make sure reset correctly clears all relevant states
         if (reset) {
+            // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'number'.
             this.state = this.#isHiddenReasoningModel ? ReasoningState.Thinking : ReasoningState.None;
             this.type = null;
             this.reasoning = '';
@@ -389,6 +415,7 @@ export class ReasoningHandler {
 
         this.updateDom(messageId);
 
+        // @ts-expect-error TS(2367) FIXME: This condition will always return 'true' since the... Remove this comment to see the full error message
         if (power_user.reasoning.auto_expand && this.state !== ReasoningState.Hidden) {
             this.messageReasoningDetailsDom.open = true;
         }
@@ -414,18 +441,23 @@ export class ReasoningHandler {
      * @param {boolean} [options.allowReset] - Whether to allow empty reasoning provided to reset the reasoning, instead of just taking the existing one
      * @returns {boolean} - Returns true if the reasoning was changed, otherwise false
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'messageId' implicitly has an 'any' type... Remove this comment to see the full error message
     updateReasoning(messageId, reasoning = null, { persist = false, allowReset = false } = {}) {
         if (messageId == -1 || !chat[messageId]) {
             return false;
         }
 
+        // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'null'.
         reasoning = allowReset ? reasoning ?? this.reasoning : reasoning || this.reasoning;
         reasoning = trimSpaces(reasoning);
 
         // Ensure the chat extra exists
+        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         if (!chat[messageId].extra) {
+            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             chat[messageId].extra = {};
         }
+        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         const extra = chat[messageId].extra;
 
         const reasoningChanged = extra.reasoning !== reasoning;
@@ -453,6 +485,7 @@ export class ReasoningHandler {
      * @param {PromptReasoning} promptReasoning - Prompt reasoning object
      * @returns {Promise<void>}
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'messageId' implicitly has an 'any' type... Remove this comment to see the full error message
     async process(messageId, mesChanged, promptReasoning) {
         mesChanged = this.#autoParseReasoningFromMessage(messageId, mesChanged, promptReasoning);
 
@@ -462,10 +495,13 @@ export class ReasoningHandler {
         // Ensure reasoning string is updated and regexes are applied correctly
         const reasoningChanged = this.updateReasoning(messageId, null, { persist: true });
 
+        // @ts-expect-error TS(2367) FIXME: This condition will always return 'false' since th... Remove this comment to see the full error message
         if ((this.#isHiddenReasoningModel || reasoningChanged) && this.state === ReasoningState.None) {
+            // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'number'.
             this.state = ReasoningState.Thinking;
             this.startTime = this.initialTime;
         }
+        // @ts-expect-error TS(2367) FIXME: This condition will always return 'false' since th... Remove this comment to see the full error message
         if ((this.#isHiddenReasoningModel || !reasoningChanged) && mesChanged && this.state === ReasoningState.Thinking) {
             this.endTime = new Date();
             await this.finish(messageId);
@@ -479,6 +515,7 @@ export class ReasoningHandler {
      * @param {PromptReasoning} promptReasoning Prompt reasoning object
      * @returns {boolean} Whether the message has changed after reasoning parsing
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'messageId' implicitly has an 'any' type... Remove this comment to see the full error message
     #autoParseReasoningFromMessage(messageId, mesChanged, promptReasoning) {
         if (!power_user.reasoning.auto_parse)
             return;
@@ -489,20 +526,24 @@ export class ReasoningHandler {
         const message = chat[messageId];
         if (!message) return mesChanged;
 
+        // @ts-expect-error TS(2339) FIXME: Property 'mes' does not exist on type 'never'.
         const parseTarget = promptReasoning?.prefixIncomplete ? (promptReasoning.prefixReasoningFormatted + message.mes) : message.mes;
 
         // If we are done with reasoning parse, we just split the message correctly so the reasoning doesn't show up inside of it.
         if (this.#parsingReasoningMesStartIndex) {
+            // @ts-expect-error TS(2339) FIXME: Property 'mes' does not exist on type 'never'.
             message.mes = trimSpaces(parseTarget.slice(this.#parsingReasoningMesStartIndex));
             return mesChanged;
         }
 
+        // @ts-expect-error TS(2367) FIXME: This condition will always return 'false' since th... Remove this comment to see the full error message
         if (this.state === ReasoningState.None || this.#isHiddenReasoningModel) {
             // If streamed message starts with the opening, cut it out and put all inside reasoning
             if (parseTarget.startsWith(power_user.reasoning.prefix) && parseTarget.length > power_user.reasoning.prefix.length) {
                 this.#isParsingReasoning = true;
 
                 // Manually set starting state here, as we might already have received the ending suffix
+                // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'number'.
                 this.state = ReasoningState.Thinking;
                 this.startTime = this.startTime ?? this.initialTime;
                 this.endTime = null;
@@ -514,17 +555,20 @@ export class ReasoningHandler {
 
         // If we are in manual parsing mode, all currently streaming mes tokens will go to the reasoning block
         this.reasoning = parseTarget.slice(power_user.reasoning.prefix.length);
+        // @ts-expect-error TS(2339) FIXME: Property 'mes' does not exist on type 'never'.
         message.mes = '';
 
         // If the reasoning contains the ending suffix, we cut that off and continue as message streaming
         if (this.reasoning.includes(power_user.reasoning.suffix)) {
             this.reasoning = this.reasoning.slice(0, this.reasoning.indexOf(power_user.reasoning.suffix));
             this.#parsingReasoningMesStartIndex = parseTarget.indexOf(power_user.reasoning.suffix) + power_user.reasoning.suffix.length;
+            // @ts-expect-error TS(2339) FIXME: Property 'mes' does not exist on type 'never'.
             message.mes = trimSpaces(parseTarget.slice(this.#parsingReasoningMesStartIndex));
             this.#isParsingReasoning = false;
         }
 
         // Only return the original mesChanged value if we haven't cut off the complete message
+        // @ts-expect-error TS(2339) FIXME: Property 'mes' does not exist on type 'never'.
         return message.mes.length ? mesChanged : false;
     }
 
@@ -536,7 +580,9 @@ export class ReasoningHandler {
      * @param {number} messageId - The ID of the message to complete reasoning for
      * @returns {Promise<void>}
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'messageId' implicitly has an 'any' type... Remove this comment to see the full error message
     async finish(messageId) {
+        // @ts-expect-error TS(2367) FIXME: This condition will always return 'false' since th... Remove this comment to see the full error message
         if (this.state === ReasoningState.None) return;
 
         // Make sure the finish time is recorded if a reasoning was in process and it wasn't ended correctly during streaming
@@ -544,7 +590,9 @@ export class ReasoningHandler {
             this.endTime = new Date();
         }
 
+        // @ts-expect-error TS(2367) FIXME: This condition will always return 'false' since th... Remove this comment to see the full error message
         if (this.state === ReasoningState.Thinking) {
+            // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'number'.
             this.state = this.#isHiddenReasoningModel ? ReasoningState.Hidden : ReasoningState.Done;
             this.updateReasoning(messageId, null, { persist: true });
             await eventSource.emit(event_types.STREAM_REASONING_DONE, this.reasoning, this.getDuration(), messageId, this.state);
@@ -559,13 +607,16 @@ export class ReasoningHandler {
      * Toggles the CSS class, updates states, reasoning message, and duration.
      * @param {number} messageId - The ID of the message to update
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'messageId' implicitly has an 'any' type... Remove this comment to see the full error message
     updateDom(messageId) {
         this.#checkDomElements(messageId);
 
         // Main CSS class to show this message includes reasoning
+        // @ts-expect-error TS(2367) FIXME: This condition will always return 'true' since the... Remove this comment to see the full error message
         this.messageDom.classList.toggle('reasoning', this.state !== ReasoningState.None);
 
         // Update states to the relevant DOM elements
+        // @ts-expect-error TS(2367) FIXME: This condition will always return 'true' since the... Remove this comment to see the full error message
         setDatasetProperty(this.messageDom, 'reasoningState', this.state !== ReasoningState.None ? this.state : null);
         setDatasetProperty(this.messageReasoningDetailsDom, 'state', this.state);
         setDatasetProperty(this.messageReasoningDetailsDom, 'type', this.type);
@@ -583,9 +634,11 @@ export class ReasoningHandler {
         // Update tooltip for hidden reasoning edit
         /** @type {HTMLElement} */
         const button = this.messageDom.querySelector('.mes_edit_add_reasoning');
+        // @ts-expect-error TS(2367) FIXME: This condition will always return 'false' since th... Remove this comment to see the full error message
         button.title = this.state === ReasoningState.Hidden ? t`Hidden reasoning - Add reasoning block` : t`Add reasoning block`;
 
         // Make sure that hidden reasoning headers are collapsed by default, to not show a useless edit button
+        // @ts-expect-error TS(2367) FIXME: This condition will always return 'false' since th... Remove this comment to see the full error message
         if (this.state === ReasoningState.Hidden) {
             this.messageReasoningDetailsDom.open = false;
         }
@@ -598,6 +651,7 @@ export class ReasoningHandler {
      * Finds and caches reasoning-related DOM elements for the given message.
      * @param {number} messageId - The ID of the message to cache the DOM elements for
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'messageId' implicitly has an 'any' type... Remove this comment to see the full error message
     #checkDomElements(messageId) {
         // Make sure we reset dom elements if we are checking for a different message (shouldn't happen, but be sure)
         if (this.messageDom !== null && this.messageDom.getAttribute('mesid') !== messageId.toString()) {
@@ -638,6 +692,7 @@ export class ReasoningHandler {
             element.textContent = t`Thought for ${durationStr}`;
             data = String(seconds);
             title = `${seconds} seconds`;
+        // @ts-expect-error TS(2345) FIXME: Argument of type 'number' is not assignable to par... Remove this comment to see the full error message
         } else if ([ReasoningState.Done, ReasoningState.Hidden].includes(this.state)) {
             element.textContent = t`Thought for some time`;
             data = 'unknown';
@@ -689,10 +744,12 @@ export class PromptReasoning {
             return '';
         }
 
+        // @ts-expect-error TS(2339) FIXME: Property 'prefixIncomplete' does not exist on type... Remove this comment to see the full error message
         if (!PromptReasoning.#LATEST.prefixIncomplete) {
             return '';
         }
 
+        // @ts-expect-error TS(2339) FIXME: Property 'prefixReasoningFormatted' does not exist... Remove this comment to see the full error message
         return PromptReasoning.#LATEST.prefixReasoningFormatted;
     }
 
@@ -705,6 +762,7 @@ export class PromptReasoning {
     }
 
     constructor() {
+        // @ts-expect-error TS(2322) FIXME: Type 'this' is not assignable to type 'null'.
         PromptReasoning.#LATEST = this;
 
         /** @type {number} */
@@ -741,6 +799,7 @@ export class PromptReasoning {
      * @param {number?} duration Duration of the reasoning
      * @returns {string} Message content with reasoning
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'content' implicitly has an 'any' type.
     addToMessage(content, reasoning, isPrefix, duration) {
         // Disabled or reached limit of additions
         if (!isPrefix && (!power_user.reasoning.add_to_prompts || this.counter >= power_user.reasoning.max_additions)) {
@@ -790,6 +849,7 @@ export class PromptReasoning {
      * @param {string} content Content with the reasoning prefix
      * @returns {string} Content without the reasoning prefix
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'content' implicitly has an 'any' type.
     removePrefix(content) {
         if (this.prefixLength > 0) {
             return content.slice(this.prefixLength);
@@ -804,49 +864,49 @@ export class PromptReasoning {
 function loadReasoningSettings() {
     UI.$addToPrompts.prop('checked', power_user.reasoning.add_to_prompts);
     UI.$addToPrompts.on('change', function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         power_user.reasoning.add_to_prompts = !!$(this).prop('checked');
         saveSettingsDebounced();
     });
 
     UI.$prefix.val(power_user.reasoning.prefix);
     UI.$prefix.on('input', function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         power_user.reasoning.prefix = String($(this).val());
         saveSettingsDebounced();
     });
 
     UI.$suffix.val(power_user.reasoning.suffix);
     UI.$suffix.on('input', function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         power_user.reasoning.suffix = String($(this).val());
         saveSettingsDebounced();
     });
 
     UI.$separator.val(power_user.reasoning.separator);
     UI.$separator.on('input', function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         power_user.reasoning.separator = String($(this).val());
         saveSettingsDebounced();
     });
 
     UI.$maxAdditions.val(power_user.reasoning.max_additions);
     UI.$maxAdditions.on('input', function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         power_user.reasoning.max_additions = Number($(this).val());
         saveSettingsDebounced();
     });
 
     UI.$autoParse.prop('checked', power_user.reasoning.auto_parse);
     UI.$autoParse.on('change', function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         power_user.reasoning.auto_parse = !!$(this).prop('checked');
         saveSettingsDebounced();
     });
 
     UI.$autoExpand.prop('checked', power_user.reasoning.auto_expand);
     UI.$autoExpand.on('change', function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         power_user.reasoning.auto_expand = !!$(this).prop('checked');
         toggleReasoningAutoExpand();
         saveSettingsDebounced();
@@ -855,30 +915,37 @@ function loadReasoningSettings() {
 
     UI.$showHidden.prop('checked', power_user.reasoning.show_hidden);
     UI.$showHidden.on('change', function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         power_user.reasoning.show_hidden = !!$(this).prop('checked');
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#chat').attr('data-show-hidden-reasoning', power_user.reasoning.show_hidden ? 'true' : null);
         saveSettingsDebounced();
     });
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#chat').attr('data-show-hidden-reasoning', power_user.reasoning.show_hidden ? 'true' : null);
 
     UI.$select.on('change', async function () {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const name = String($(this).val());
+        // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
         const template = reasoning_templates.find(p => p.name === name);
         if (!template) {
             return;
         }
 
+        // @ts-expect-error TS(2339) FIXME: Property 'prefix' does not exist on type 'never'.
         UI.$prefix.val(template.prefix);
+        // @ts-expect-error TS(2339) FIXME: Property 'suffix' does not exist on type 'never'.
         UI.$suffix.val(template.suffix);
+        // @ts-expect-error TS(2339) FIXME: Property 'separator' does not exist on type 'never... Remove this comment to see the full error message
         UI.$separator.val(template.separator);
 
         power_user.reasoning.name = name;
+        // @ts-expect-error TS(2339) FIXME: Property 'prefix' does not exist on type 'never'.
         power_user.reasoning.prefix = template.prefix;
+        // @ts-expect-error TS(2339) FIXME: Property 'suffix' does not exist on type 'never'.
         power_user.reasoning.suffix = template.suffix;
+        // @ts-expect-error TS(2339) FIXME: Property 'separator' does not exist on type 'never... Remove this comment to see the full error message
         power_user.reasoning.separator = template.separator;
 
         saveSettingsDebounced();
@@ -890,12 +957,14 @@ function loadReasoningSettings() {
  * @param args
  * @param name
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
 function selectReasoningTemplateCallback(args, name) {
     if (!name) {
         return power_user.reasoning.name ?? '';
     }
 
     const quiet = isTrueBoolean(args?.quiet);
+    // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
     const templateNames = reasoning_templates.map(preset => preset.name);
     let foundName = templateNames.find(x => x.toLowerCase() === name.toLowerCase());
 
@@ -903,7 +972,7 @@ function selectReasoningTemplateCallback(args, name) {
         const result = performFuzzySearch('reasoning-templates', templateNames, [], name);
 
         if (result.length === 0) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             if (!quiet) toastr.warning(`Reasoning template "${name}" not found`);
             return '';
         }
@@ -912,7 +981,7 @@ function selectReasoningTemplateCallback(args, name) {
     }
 
     UI.$select.val(foundName).trigger('change');
-    // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+    // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
     if (!quiet) toastr.success(`Reasoning template "${foundName}" selected`);
     return foundName;
 }
@@ -933,9 +1002,11 @@ function registerReasoningSlashCommands() {
                 enumProvider: commonEnumProviders.messages(),
             }),
         ],
+        // @ts-expect-error TS(7006) FIXME: Parameter '_args' implicitly has an 'any' type.
         callback: (_args, value) => {
             const messageId = !isNaN(parseInt(value.toString())) ? parseInt(value.toString()) : chat.length - 1;
             const message = chat[messageId];
+            // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type 'never'.
             const reasoning = String(message?.extra?.reasoning ?? '');
             return reasoning;
         },
@@ -966,6 +1037,7 @@ function registerReasoningSlashCommands() {
                 typeList: ARGUMENT_TYPE.STRING,
             }),
         ],
+        // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
         callback: async (args, value) => {
             const messageId = !isNaN(Number(args.at)) ? Number(args.at) : chat.length - 1;
             const message = chat[messageId];
@@ -973,21 +1045,26 @@ function registerReasoningSlashCommands() {
                 return '';
             }
             // Make sure the message has an extra object
+            // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type 'never'.
             if (!message.extra || typeof message.extra !== 'object') {
+                // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type 'never'.
                 message.extra = {};
             }
 
+            // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type 'never'.
             message.extra.reasoning = String(value ?? '');
+            // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type 'never'.
             message.extra.reasoning_type = ReasoningType.Manual;
             await saveChatConditional();
 
             closeMessageEditor('reasoning');
             updateMessageBlock(messageId, message);
 
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             if (isTrueBoolean(String(args.collapse))) $(`#chat [mesid="${messageId}"] .mes_reasoning_details`).removeAttr('open');
-            // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             if (isFalseBoolean(String(args.collapse))) $(`#chat [mesid="${messageId}"] .mes_reasoning_details`).attr('open', '');
+            // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type 'never'.
             return message.extra.reasoning;
         },
     }));
@@ -1032,18 +1109,19 @@ function registerReasoningSlashCommands() {
                 typeList: [ARGUMENT_TYPE.STRING],
             }),
         ],
+        // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
         callback: (args, value) => {
             if (!value || typeof value !== 'string') {
                 return '';
             }
 
             if (!power_user.reasoning.prefix || !power_user.reasoning.suffix) {
-                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                 toastr.warning(t`Both prefix and suffix must be set in the Reasoning Formatting settings.`, t`Reasoning Parse`);
                 return value;
             }
             if (typeof args.return !== 'string' || !['reasoning', 'content'].includes(args.return)) {
-                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                 toastr.warning(t`Invalid return type '${args.return}', defaulting to 'reasoning'.`, t`Reasoning Parse`);
             }
 
@@ -1084,18 +1162,19 @@ function registerReasoningSlashCommands() {
                 isRequired: false,
             }),
         ],
+        // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
         callback: (args, value) => {
             const reasoning = String(args?.reasoning ?? '');
             const content = String(value ?? '');
 
             if (!power_user.reasoning.prefix || !power_user.reasoning.suffix) {
-                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                 toastr.warning(t`Both prefix and suffix must be set in the Reasoning Formatting settings.`, t`Reasoning Format`);
                 return '';
             }
 
             if (!reasoning) {
-                // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                 toastr.warning(t`Reasoning argument is required.`, t`Reasoning Format`);
                 return '';
             }
@@ -1122,6 +1201,7 @@ function registerReasoningSlashCommands() {
             SlashCommandArgument.fromProps({
                 description: 'reasoning template name',
                 typeList: [ARGUMENT_TYPE.STRING],
+                // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
                 enumProvider: () => reasoning_templates.map(x => new SlashCommandEnumValue(x.name, null, enumTypes.enum, enumIcons.preset)),
             }),
         ],
@@ -1146,10 +1226,11 @@ function registerReasoningSlashCommands() {
      * @param {string} value Unnamed argument value (message ID or range)
      * @returns {JQuery<HTMLElement>|null} The reasoning details elements, or null if not found
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
     function getReasoningDetailsElements(value) {
         const range = value ? stringToRange(String(value), 0, chat.length - 1) : { start: chat.length - 1, end: chat.length - 1 };
         if (!range) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.warning(t`Invalid message ID or range: ${value}`);
             return null;
         }
@@ -1158,7 +1239,7 @@ function registerReasoningSlashCommands() {
         ).join(',');
         const details = document.querySelectorAll(selector);
         if (details.length === 0) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.warning(t`No reasoning blocks found for the specified messages.`);
             return null;
         }
@@ -1178,8 +1259,10 @@ function registerReasoningSlashCommands() {
         aliases: ['collapse-reasoning'],
         helpString: t`Collapse the reasoning block of a message or range of messages.`,
         unnamedArgumentList: reasoningVisibilityArgs,
+        // @ts-expect-error TS(7006) FIXME: Parameter '_args' implicitly has an 'any' type.
         callback: (_args, value) => {
             const details = getReasoningDetailsElements(value.toString());
+            // @ts-expect-error TS(2339) FIXME: Property 'removeAttr' does not exist on type 'Node... Remove this comment to see the full error message
             if (details) details.removeAttr('open');
             return '';
         },
@@ -1190,8 +1273,10 @@ function registerReasoningSlashCommands() {
         aliases: ['expand-reasoning'],
         helpString: t`Expand the reasoning block of a message or range of messages.`,
         unnamedArgumentList: reasoningVisibilityArgs,
+        // @ts-expect-error TS(7006) FIXME: Parameter '_args' implicitly has an 'any' type.
         callback: (_args, value) => {
             const details = getReasoningDetailsElements(value.toString());
+            // @ts-expect-error TS(2339) FIXME: Property 'attr' does not exist on type 'NodeListOf... Remove this comment to see the full error message
             if (details) details.attr('open', '');
             return '';
         },
@@ -1202,6 +1287,7 @@ function registerReasoningSlashCommands() {
         aliases: ['toggle-reasoning'],
         helpString: t`Toggle the reasoning block of a message or range of messages. Expanded blocks will be collapsed, and collapsed blocks will be expanded.`,
         unnamedArgumentList: reasoningVisibilityArgs,
+        // @ts-expect-error TS(7006) FIXME: Parameter '_args' implicitly has an 'any' type.
         callback: (_args, value) => {
             const details = getReasoningDetailsElements(value.toString());
             if (!details) return '';
@@ -1247,21 +1333,23 @@ function setReasoningEventHandlers() {
      * @param {object} message Message object
      * @param {string} value Reasoning value
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'message' implicitly has an 'any' type.
     function updateReasoningFromValue(message, value) {
         const reasoning = getRegexedString(value, regex_placement.REASONING, { isEdit: true });
         message.extra.reasoning = reasoning;
         message.extra.reasoning_type = message.extra.reasoning_type ? ReasoningType.Edited : ReasoningType.Manual;
     }
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.mes_reasoning_details', function (e) {
         if (!e.target.closest('.mes_reasoning_actions') && !e.target.closest('.mes_reasoning_header')) {
             e.preventDefault();
         }
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.mes_reasoning_header', function (e) {
+        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
         const details = this.closest('.mes_reasoning_details');
         const reasoningEl = details?.querySelector('.mes_reasoning');
         if (reasoningEl && !reasoningEl.hasChildNodes()) {
@@ -1269,6 +1357,7 @@ function setReasoningEventHandlers() {
             return;
         }
 
+        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
         const mes = this.closest('.mes');
         const mesEditArea = mes.querySelector('#curEditTextarea');
         if (mesEditArea) {
@@ -1280,35 +1369,40 @@ function setReasoningEventHandlers() {
         }
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.mes_reasoning_copy', (e) => {
         e.stopPropagation();
         e.preventDefault();
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.mes_reasoning_edit', function (e) {
         e.stopPropagation();
         e.preventDefault();
+        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
         const { message, messageBlock } = getMessageFromJquery(this);
+        // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type 'never'.
         if (!message?.extra) {
             return;
         }
 
+        // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type 'never'.
         const reasoning = String(message?.extra?.reasoning ?? '');
         const chatElement = document.getElementById('chat');
         const textarea = document.createElement('textarea');
         const reasoningBlock = messageBlock.querySelector('.mes_reasoning');
         textarea.classList.add('reasoning_edit_textarea');
         textarea.value = reasoning;
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(textarea).insertBefore(reasoningBlock);
 
         if (!CSS.supports('field-sizing', 'content')) {
             const resetHeight = function () {
+                // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
                 const scrollTop = chatElement.scrollTop;
                 textarea.style.height = '0px';
                 textarea.style.height = `${textarea.scrollHeight}px`;
+                // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
                 chatElement.scrollTop = scrollTop;
             };
 
@@ -1320,29 +1414,33 @@ function setReasoningEventHandlers() {
         textarea.setSelectionRange(textarea.value.length, textarea.value.length);
 
         const textareaRect = textarea.getBoundingClientRect();
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         const chatRect = chatElement.getBoundingClientRect();
 
         // Scroll if textarea bottom is below visible area
         if (textareaRect.bottom > chatRect.bottom) {
             const scrollOffset = textareaRect.bottom - chatRect.bottom;
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             chatElement.scrollTop += scrollOffset;
         }
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.mes_reasoning_close_all', function (e) {
         e.stopPropagation();
         e.preventDefault();
 
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('.mes_reasoning_details[open] .mes_reasoning_header').trigger('click');
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.mes_reasoning_edit_done', async function (e) {
         e.stopPropagation();
         e.preventDefault();
+        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
         const { message, messageId, messageBlock } = getMessageFromJquery(this);
+        // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type 'never'.
         if (!message?.extra) {
             return;
         }
@@ -1351,6 +1449,7 @@ function setReasoningEventHandlers() {
         let newReasoning = String(textarea.value);
         newReasoning = substituteParams(newReasoning);
         textarea.remove();
+        // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type 'never'.
         if (newReasoning === message.extra.reasoning) {
             return;
         }
@@ -1362,11 +1461,12 @@ function setReasoningEventHandlers() {
         await eventSource.emit(event_types.MESSAGE_REASONING_EDITED, messageId);
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.mes_reasoning_edit_cancel', function (e) {
         e.stopPropagation();
         e.preventDefault();
 
+        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
         const { messageBlock } = getMessageFromJquery(this);
         const textarea = messageBlock.querySelector('.reasoning_edit_textarea');
         textarea.remove();
@@ -1376,15 +1476,18 @@ function setReasoningEventHandlers() {
         updateReasoningUI(messageBlock);
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.mes_edit_add_reasoning', async function () {
+        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
         const { message, messageBlock } = getMessageFromJquery(this);
+        // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type 'never'.
         if (!message?.extra) {
             return;
         }
 
+        // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type 'never'.
         if (message.extra.reasoning) {
-            // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.info(t`Reasoning already exists.`, t`Edit Message`);
             return;
         }
@@ -1403,7 +1506,7 @@ function setReasoningEventHandlers() {
         await saveChatConditional();
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.mes_reasoning_delete', async function (e) {
         e.stopPropagation();
         e.preventDefault();
@@ -1414,12 +1517,17 @@ function setReasoningEventHandlers() {
             return;
         }
 
+        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
         const { message, messageId, messageBlock } = getMessageFromJquery(this);
+        // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type 'never'.
         if (!message?.extra) {
             return;
         }
+        // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type 'never'.
         message.extra.reasoning = '';
+        // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type 'never'.
         delete message.extra.reasoning_type;
+        // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type 'never'.
         delete message.extra.reasoning_duration;
         await saveChatConditional();
         updateMessageBlock(messageId, message);
@@ -1427,9 +1535,11 @@ function setReasoningEventHandlers() {
         await eventSource.emit(event_types.MESSAGE_REASONING_DELETED, messageId);
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('pointerup', '.mes_reasoning_copy', async function () {
+        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
         const { message } = getMessageFromJquery(this);
+        // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type 'never'.
         const reasoning = String(message?.extra?.reasoning ?? '');
 
         if (!reasoning) {
@@ -1437,22 +1547,24 @@ function setReasoningEventHandlers() {
         }
 
         await copyText(reasoning);
-        // @ts-expect-error TS(2304): Cannot find name 'toastr'.
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.info(t`Copied!`, '', { timeOut: 2000 });
     });
 
-    // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('input', '.reasoning_edit_textarea', function () {
         if (!power_user.auto_save_msg_edits) {
             return;
         }
 
+        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
         const { message, messageBlock } = getMessageFromJquery(this);
+        // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type 'never'.
         if (!message?.extra) {
             return;
         }
 
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         updateReasoningFromValue(message, String($(this).val()));
         updateReasoningUI(messageBlock);
         saveChatDebounced();
@@ -1464,6 +1576,7 @@ function setReasoningEventHandlers() {
  * @param {string} str Input string
  * @returns {string} Output string
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'str' implicitly has an 'any' type.
 export function removeReasoningFromString(str) {
     if (!power_user.reasoning.auto_parse) {
         return str;
@@ -1479,7 +1592,9 @@ export function removeReasoningFromString(str) {
  * @returns {ReasoningTemplate} the reasoning template object
  * @throws {Error}
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
 export function getReasoningTemplateByName(name) {
+    // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
     const template = reasoning_templates.find(p => p.name === name);
     if (!template) throw new Error(`Unknown reasoning template name: "${name}"`);
     return template;
@@ -1496,15 +1611,19 @@ export function getReasoningTemplateByName(name) {
  * @param {ReasoningTemplate} template Optional reasoning template to use instead of power_user.reasoning
  * @returns {ParsedReasoning|null} Parsed reasoning block and message content
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'str' implicitly has an 'any' type.
 export function parseReasoningFromString(str, { strict = true } = {}, template = null) {
+    // @ts-expect-error TS(2322) FIXME: Type '{ name: string; auto_parse: boolean; add_to_... Remove this comment to see the full error message
     template = template ?? power_user.reasoning;  // if no template given, use the currently selected template
 
     // Both prefix and suffix must be defined
+    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     if (!template.prefix || !template.suffix) {
         return null;
     }
 
     try {
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         const regex = new RegExp(`${(strict ? '^\\s*?' : '')}${escapeRegex(template.prefix)}(.*?)${escapeRegex(template.suffix)}`, 's');
 
         let didReplace = false;
@@ -1538,17 +1657,23 @@ export function parseReasoningFromString(str, { strict = true } = {}, template =
  * @param {ReasoningTemplate} [template] Optional template to use. Defaults to power_user.reasoning
  * @returns {FormattedReasoning} Object containing both formatted (reasoning + content) and contentOnly
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'reasoning' implicitly has an 'any' type... Remove this comment to see the full error message
 export function formatReasoning(reasoning, content, template = null) {
+    // @ts-expect-error TS(2322) FIXME: Type '{ name: string; auto_parse: boolean; add_to_... Remove this comment to see the full error message
     template = template ?? power_user.reasoning;
 
     // If no reasoning provided, return content only
+    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     if (!reasoning || !template.prefix || !template.suffix) {
         return { formatted: content, contentOnly: content };
     }
 
     // Substitute macros in template parts
+    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     const prefix = substituteParams(template.prefix || '');
+    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     const suffix = substituteParams(template.suffix || '');
+    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     const separator = substituteParams(template.separator || '');
 
     // Build the formatted string: prefix + reasoning + suffix + separator + content
@@ -1568,6 +1693,7 @@ export function formatReasoning(reasoning, content, template = null) {
  * @property {string} reasoning_type Type of reasoning block
  * @property {string?} reasoning_signature Encrypted signature of the reasoning text
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'swipes' implicitly has an 'any' type.
 export function parseReasoningInSwipes(swipes, swipeInfoArray, duration) {
     if (!power_user.reasoning.auto_parse) {
         return;
@@ -1593,6 +1719,7 @@ export function parseReasoningInSwipes(swipes, swipeInfoArray, duration) {
  *
  */
 function registerReasoningAppEvents() {
+    // @ts-expect-error TS(7006) FIXME: Parameter 'type' implicitly has an 'any' type.
     const eventHandler = (/** @type {string} */ type, /** @type {number} */ idx) => {
         if (!power_user.reasoning.auto_parse) {
             return;
@@ -1607,16 +1734,19 @@ function registerReasoningAppEvents() {
             return null;
         }
 
+        // @ts-expect-error TS(2339) FIXME: Property 'mes' does not exist on type 'never'.
         if (!message.mes || message.mes === '...') {
             console.debug('[Reasoning] Message content is empty or a placeholder', idx);
             return null;
         }
 
+        // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type 'never'.
         if (message.extra?.reasoning && !prefix) {
             console.debug('[Reasoning] Message already has reasoning', idx);
             return null;
         }
 
+        // @ts-expect-error TS(2339) FIXME: Property 'mes' does not exist on type 'never'.
         const parsedReasoning = parseReasoningFromString(prefix + message.mes);
 
         // No reasoning block found
@@ -1625,20 +1755,27 @@ function registerReasoningAppEvents() {
         }
 
         // Make sure the message has an extra object
+        // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type 'never'.
         if (!message.extra || typeof message.extra !== 'object') {
+            // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type 'never'.
             message.extra = {};
         }
 
+        // @ts-expect-error TS(2339) FIXME: Property 'mes' does not exist on type 'never'.
         const contentUpdated = !!parsedReasoning.reasoning || parsedReasoning.content !== message.mes;
 
         // If reasoning was found, add it to the message
         if (parsedReasoning.reasoning) {
+            // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type 'never'.
             message.extra.reasoning = getRegexedString(parsedReasoning.reasoning, regex_placement.REASONING);
+            // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type 'never'.
             message.extra.reasoning_type = ReasoningType.Parsed;
         }
 
         // Update the message text if it was changed
+        // @ts-expect-error TS(2339) FIXME: Property 'mes' does not exist on type 'never'.
         if (parsedReasoning.content !== message.mes) {
+            // @ts-expect-error TS(2339) FIXME: Property 'mes' does not exist on type 'never'.
             message.mes = parsedReasoning.content;
         }
 
@@ -1656,6 +1793,7 @@ function registerReasoningAppEvents() {
     };
 
     for (const event of [event_types.MESSAGE_RECEIVED, event_types.MESSAGE_UPDATED]) {
+        // @ts-expect-error TS(7006) FIXME: Parameter 'idx' implicitly has an 'any' type.
         eventSource.on(event, (/** @type {number} */ idx) => eventHandler(event, idx));
     }
 
@@ -1677,13 +1815,13 @@ function registerReasoningAppEvents() {
 
         console.debug('[Reasoning] Auto-parsing reasoning block for impersonation');
 
-        // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
         if (!sendTextArea.value) {
             console.debug('[Reasoning] Reasoning is empty, skipping');
             return;
         }
 
-        // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
+        // @ts-expect-error TS(2339) FIXME: Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
         sendTextArea.value = removeReasoningFromString(sendTextArea.value);
         sendTextArea.dispatchEvent(new Event('input', { bubbles: true }));
     });
@@ -1695,21 +1833,25 @@ function registerReasoningAppEvents() {
  * @param {ReasoningTemplate[]} data.reasoning Reasoning templates
  * @returns {Promise<void>}
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
 export async function loadReasoningTemplates(data) {
     if (data.reasoning !== undefined) {
+        // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
         reasoning_templates.splice(0, reasoning_templates.length, ...data.reasoning);
     }
 
     for (const template of reasoning_templates) {
-        // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('<option>').val(template.name).text(template.name).appendTo(UI.$select);
     }
 
     // No template name, need to migrate
     if (power_user.reasoning.name === undefined) {
+        // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
         const defaultTemplate = reasoning_templates.find(p => p.name === DEFAULT_REASONING_TEMPLATE);
         if (defaultTemplate) {
             // If the reasoning settings were modified - migrate them to a custom template
+            // @ts-expect-error TS(2339) FIXME: Property 'prefix' does not exist on type 'never'.
             if (power_user.reasoning.prefix !== defaultTemplate.prefix || power_user.reasoning.suffix !== defaultTemplate.suffix || power_user.reasoning.separator !== defaultTemplate.separator) {
                 /** @type {ReasoningTemplate} */
                 const data = {
@@ -1721,6 +1863,7 @@ export async function loadReasoningTemplates(data) {
                 await getPresetManager('reasoning')?.savePreset(data.name, data);
                 power_user.reasoning.name = data.name;
             } else {
+                // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
                 power_user.reasoning.name = defaultTemplate.name;
             }
         } else {

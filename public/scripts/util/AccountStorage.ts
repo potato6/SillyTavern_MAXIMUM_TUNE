@@ -54,9 +54,13 @@ class AccountStorage {
             localStorageKeys.push(globalThis.localStorage.key(i));
         }
         for (const key of localStorageKeys) {
+            // @ts-expect-error TS(2345) FIXME: Argument of type 'string | null' is not assignable... Remove this comment to see the full error message
             if (MIGRATABLE_KEYS.some(k => k.test(key))) {
+                // @ts-expect-error TS(2345) FIXME: Argument of type 'string | null' is not assignable... Remove this comment to see the full error message
                 const value = globalThis.localStorage.getItem(key);
+                // @ts-expect-error TS(2538) FIXME: Type 'null' cannot be used as an index type.
                 this.#state[key] = value;
+                // @ts-expect-error TS(2345) FIXME: Argument of type 'string | null' is not assignable... Remove this comment to see the full error message
                 globalThis.localStorage.removeItem(key);
             }
         }
@@ -66,6 +70,7 @@ class AccountStorage {
      * Initialize the account storage.
      * @param {object} state Initial state
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'state' implicitly has an 'any' type.
     init(state) {
         if (state && typeof state === 'object') {
             this.#state = Object.assign(this.#state, state);
@@ -73,6 +78,7 @@ class AccountStorage {
 
         if (!Object.hasOwn(this.#state, MIGRATED_MARKER)) {
             this.#migrateLocalStorage();
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             this.#state[MIGRATED_MARKER] = '1';
             saveSettingsDebounced();
         }
@@ -85,11 +91,13 @@ class AccountStorage {
      * @param {string} key Key to get
      * @returns {string|null} Value of the key
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'key' implicitly has an 'any' type.
     getItem(key) {
         if (!this.#ready) {
             console.warn(`AccountStorage not ready (trying to read from ${key})`);
         }
 
+        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         return Object.hasOwn(this.#state, key) ? String(this.#state[key]) : null;
     }
 
@@ -98,17 +106,20 @@ class AccountStorage {
      * @param {string} key Key to set
      * @param {string} value Value to set
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'key' implicitly has an 'any' type.
     setItem(key, value) {
         if (!this.#ready) {
             console.warn(`AccountStorage not ready (trying to write to ${key})`);
         }
 
+        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         const hasPropertySet = Object.hasOwn(this.#state, key) && this.#state[key] === String(value);
 
         if (hasPropertySet) {
             return;
         }
 
+        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         this.#state[key] = String(value);
         saveSettingsDebounced();
     }
@@ -117,6 +128,7 @@ class AccountStorage {
      * Remove a key from account storage.
      * @param {string} key Key to remove
      */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'key' implicitly has an 'any' type.
     removeItem(key) {
         if (!this.#ready) {
             console.warn(`AccountStorage not ready (trying to remove ${key})`);
@@ -126,6 +138,7 @@ class AccountStorage {
             return;
         }
 
+        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         delete this.#state[key];
         saveSettingsDebounced();
     }
