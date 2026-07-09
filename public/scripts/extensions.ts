@@ -89,7 +89,6 @@ export function cancelDebouncedMetadataSave() {
     // @ts-expect-error TS(7005) FIXME: Variable 'saveMetadataTimeout' implicitly has an '... Remove this comment to see the full error message
     if (saveMetadataTimeout) {
         console.debug('Debounced metadata save cancelled');
-        // @ts-expect-error TS(7005) FIXME: Variable 'saveMetadataTimeout' implicitly has an '... Remove this comment to see the full error message
         clearTimeout(saveMetadataTimeout);
         saveMetadataTimeout = null;
     }
@@ -482,7 +481,6 @@ async function callExtensionHook(name, hookName) {
     console.debug(`callExtensionHook: Calling hook "${hookName}" (function "${hookFunctionName}") for extension "${name}"`);
 
     try {
-        // @ts-expect-error TS(1323) FIXME: Dynamic imports are only supported when the '--mod... Remove this comment to see the full error message
         const module = await import(url);
 
         if (typeof module[hookFunctionName] !== 'function') {
@@ -782,7 +780,6 @@ async function addExtensionsButtonAndMenu() {
             // Close the other popover before opening this one
             const options = document.getElementById('options');
             if (options?.matches(':popover-open')) {
-                // @ts-expect-error TS(2339) FIXME: Property 'hidePopover' does not exist on type 'HTM... Remove this comment to see the full error message
                 options.hidePopover();
             }
             dropdown[0].showPopover();
@@ -2272,16 +2269,13 @@ export async function writeExtensionField(characterId, key, value) {
     }
 
     // Process JSON data
-    // @ts-expect-error TS(2339) FIXME: Property 'json_data' does not exist on type 'never... Remove this comment to see the full error message
     if (character.json_data) {
-        // @ts-expect-error TS(2339) FIXME: Property 'json_data' does not exist on type 'never... Remove this comment to see the full error message
         const jsonData = JSON.parse(character.json_data);
         if (isUnset) {
             deleteValueByPath(jsonData, extensionPath);
         } else {
             setValueByPath(jsonData, extensionPath, value);
         }
-        // @ts-expect-error TS(2339) FIXME: Property 'json_data' does not exist on type 'never... Remove this comment to see the full error message
         character.json_data = JSON.stringify(jsonData);
 
         // Make sure the data doesn't get lost when saving the current character
@@ -2293,7 +2287,6 @@ export async function writeExtensionField(characterId, key, value) {
 
     // Save data to the server
     const saveDataRequest = {
-        // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
         avatar: character.avatar,
         data: {
             extensions: {
@@ -2385,7 +2378,6 @@ export async function writeExtensionFieldBulk(avatars, key, value, {
     // Sync in-memory character objects for successfully updated characters
     const updatedSet = new Set(result.updated);
     for (const character of context.characters) {
-        // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
         if (!character || !updatedSet.has(character.avatar)) continue;
 
         if (isUnset) {
@@ -2395,16 +2387,13 @@ export async function writeExtensionFieldBulk(avatars, key, value, {
         }
 
         // Keep json_data in sync
-        // @ts-expect-error TS(2339) FIXME: Property 'json_data' does not exist on type 'never... Remove this comment to see the full error message
         if (character.json_data) {
-            // @ts-expect-error TS(2339) FIXME: Property 'json_data' does not exist on type 'never... Remove this comment to see the full error message
             const jsonData = JSON.parse(character.json_data);
             if (isUnset) {
                 deleteValueByPath(jsonData, extensionPath);
             } else {
                 setValueByPath(jsonData, extensionPath, value);
             }
-            // @ts-expect-error TS(2339) FIXME: Property 'json_data' does not exist on type 'never... Remove this comment to see the full error message
             character.json_data = JSON.stringify(jsonData);
         }
     }
@@ -2412,7 +2401,6 @@ export async function writeExtensionFieldBulk(avatars, key, value, {
     // If the currently active character was updated, sync the hidden input
     if (context.characterId !== undefined) {
         const activeChar = context.characters[context.characterId];
-        // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
         if (activeChar && updatedSet.has(activeChar.avatar) && activeChar.json_data) {
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#character_json_data').val(activeChar.json_data);
@@ -2489,7 +2477,6 @@ export function getAuthorFromUrl(url) {
 
     try {
         const parsedUrl = new URL(url);
-        // @ts-expect-error TS(7006) FIXME: Parameter 's' implicitly has an 'any' type.
         const pathSegments = parsedUrl.pathname.split('/').filter(s => s.length > 0);
 
         // TODO: Handle non-GitHub URLs if needed

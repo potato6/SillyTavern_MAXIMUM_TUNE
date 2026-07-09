@@ -1,9 +1,7 @@
 /** @type {CSSStyleSheet} */
-// @ts-expect-error TS(7034) FIXME: Variable 'dynamicStyleSheet' implicitly has type '... Remove this comment to see the full error message
-let dynamicStyleSheet = null;
+let dynamicStyleSheet: CSSStyleSheet | null = null;
 /** @type {CSSStyleSheet} */
-// @ts-expect-error TS(7034) FIXME: Variable 'dynamicExtensionStyleSheet' implicitly h... Remove this comment to see the full error message
-let dynamicExtensionStyleSheet = null;
+let dynamicExtensionStyleSheet: CSSStyleSheet | null = null;
 
 /**
  * An observer that will check if any new stylesheets are added to the head
@@ -97,7 +95,6 @@ function applyDynamicFocusStyles(styleSheet, { fromExtension = false } = {}) {
                 // Recursively process nested @supports rules
                 // @ts-expect-error TS(2322) FIXME: Type '{ type: string; conditionText: string; }' is... Remove this comment to see the full error message
                 processRules(rule.cssRules, [...wrappers, { type: 'supports', conditionText: rule.conditionText }]);
-            // @ts-expect-error TS(2551) FIXME: Property 'CSSContainerRule' does not exist on type... Remove this comment to see the full error message
             } else if (rule instanceof window.CSSContainerRule) {
                 // Recursively process nested @container rules (if supported by the browser)
                 // Note: conditionText contains the query like "(min-width: 300px)" or "style(color)"
@@ -123,7 +120,6 @@ function applyDynamicFocusStyles(styleSheet, { fromExtension = false } = {}) {
     processRules(styleSheet.cssRules, []);
 
     /** @type {CSSStyleSheet} */
-    // @ts-expect-error TS(7034) FIXME: Variable 'targetStyleSheet' implicitly has type 'a... Remove this comment to see the full error message
     let targetStyleSheet = null;
 
     // Now finally create the dynamic focus rules
@@ -162,7 +158,6 @@ function applyDynamicFocusStyles(styleSheet, { fromExtension = false } = {}) {
             }
 
             try {
-                // @ts-expect-error TS(7005) FIXME: Variable 'targetStyleSheet' implicitly has an 'any... Remove this comment to see the full error message
                 targetStyleSheet.insertRule(focusRule, targetStyleSheet.cssRules.length);
             } catch (e) {
                 console.warn('Failed to insert focus rule:', e);
@@ -179,24 +174,20 @@ function applyDynamicFocusStyles(styleSheet, { fromExtension = false } = {}) {
  */
 function getDynamicStyleSheet({ fromExtension = false } = {}) {
     if (fromExtension) {
-        // @ts-expect-error TS(7005) FIXME: Variable 'dynamicExtensionStyleSheet' implicitly h... Remove this comment to see the full error message
         if (!dynamicExtensionStyleSheet) {
             const styleSheetElement = document.createElement('style');
             styleSheetElement.setAttribute('id', 'dynamic-extension-styles');
             document.head.appendChild(styleSheetElement);
             dynamicExtensionStyleSheet = styleSheetElement.sheet;
         }
-        // @ts-expect-error TS(7005) FIXME: Variable 'dynamicExtensionStyleSheet' implicitly h... Remove this comment to see the full error message
         return dynamicExtensionStyleSheet;
     } else {
-        // @ts-expect-error TS(7005) FIXME: Variable 'dynamicStyleSheet' implicitly has an 'an... Remove this comment to see the full error message
         if (!dynamicStyleSheet) {
             const styleSheetElement = document.createElement('style');
             styleSheetElement.setAttribute('id', 'dynamic-styles');
             document.head.appendChild(styleSheetElement);
             dynamicStyleSheet = styleSheetElement.sheet;
         }
-        // @ts-expect-error TS(7005) FIXME: Variable 'dynamicStyleSheet' implicitly has an 'an... Remove this comment to see the full error message
         return dynamicStyleSheet;
     }
 }
