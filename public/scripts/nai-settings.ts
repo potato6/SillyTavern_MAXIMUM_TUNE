@@ -219,12 +219,15 @@ export async function loadNovelSubscriptionData() {
 export function loadNovelPreset(preset) {
     if (preset.genamt === undefined) {
         const needsUnlock = preset.max_context > MAX_CONTEXT_DEFAULT || preset.max_length > MAX_RESPONSE_DEFAULT;
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#amount_gen').val(preset.max_length).trigger('input');
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#max_context_unlocked').prop('checked', needsUnlock).trigger('change');
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#max_context').val(preset.max_context).trigger('input');
+        const amountGen = document.getElementById('amount_gen');
+        amountGen.value = preset.max_length;
+        amountGen.dispatchEvent(new Event('input'));
+        const maxContextUnlocked = document.getElementById('max_context_unlocked');
+        maxContextUnlocked.checked = needsUnlock;
+        maxContextUnlocked.dispatchEvent(new Event('change'));
+        const maxContext = document.getElementById('max_context');
+        maxContext.value = preset.max_context;
+        maxContext.dispatchEvent(new Event('input'));
     } else {
         setGenerationParamsFromPreset(preset);
     }
@@ -1058,18 +1061,16 @@ export function parseNovelAILogprobs(data) {
     return { token: chosenId, topLogprobs: merged };
 }
 
-// @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-$('#nai_preamble_textarea').on('input', function () {
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    nai_settings.preamble = String($('#nai_preamble_textarea').val());
+document.getElementById('nai_preamble_textarea')?.addEventListener('input', function () {
+    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
+    nai_settings.preamble = String(this.value);
     saveSettingsDebounced();
 });
 
-// @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-$('#nai_preamble_restore').on('click', function () {
+document.getElementById('nai_preamble_restore')?.addEventListener('click', function () {
     nai_settings.preamble = default_preamble;
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#nai_preamble_textarea').val(nai_settings.preamble);
+    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
+    document.getElementById('nai_preamble_textarea').value = nai_settings.preamble;
     saveSettingsDebounced();
 });
 
@@ -1097,23 +1098,21 @@ export async function getStatusNovel() {
  */
 export function initNovelAISettings() {
     sliders.forEach(slider => {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(document).on('input', slider.sliderId, function () {
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const value = $(this).val();
+        document.addEventListener('input', function (event) {
+            const el = event.target.closest(slider.sliderId);
+            if (!el) return;
+            const value = el.value;
             const formattedValue = slider.format(value);
             slider.setValue(value);
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(slider.counterId).val(formattedValue);
+            const counter = document.querySelector(slider.counterId);
+            if (counter) counter.value = formattedValue;
             saveSettingsDebounced();
         });
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#api_button_novel').on('click', async function (e) {
+    document.getElementById('api_button_novel')?.addEventListener('click', async function (e) {
         e.stopPropagation();
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const api_key_novel = String($('#api_key_novel').val()).trim();
+        const api_key_novel = String(document.getElementById('api_key_novel')?.value).trim();
 
         if (api_key_novel.length) {
             // @ts-expect-error TS(2554) FIXME: Expected 3-4 arguments, but got 2.
@@ -1130,50 +1129,44 @@ export function initNovelAISettings() {
         await getStatusNovel();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#settings_preset_novel').on('change', async function () {
+    document.getElementById('settings_preset_novel')?.addEventListener('change', async function () {
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        nai_settings.preset_settings_novel = document.getElementById('settings_preset_novel').options[document.getElementById('settings_preset_novel').selectedIndex].text;
+        nai_settings.preset_settings_novel = this.options[this.selectedIndex].text;
         const preset = novelai_settings[novelai_setting_names[nai_settings.preset_settings_novel]];
         loadNovelPreset(preset);
         saveSettingsDebounced();
         await eventSource.emit(event_types.PRESET_CHANGED, { apiId: 'novel', name: nai_settings.preset_settings_novel });
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#streaming_novel').on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const value = !!$(this).prop('checked');
+    document.getElementById('streaming_novel')?.addEventListener('input', function () {
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
+        const value = !!(this).checked;
         nai_settings.streaming_novel = value;
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#model_novel_select').on('change', function () {
+    document.getElementById('model_novel_select')?.addEventListener('change', function () {
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        nai_settings.model_novel = String(document.getElementById('model_novel_select').options[document.getElementById('model_novel_select').selectedIndex].value);
+        nai_settings.model_novel = String(this.options[this.selectedIndex].value);
         saveSettingsDebounced();
 
         // Update the selected preset to something appropriate
         // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         const default_preset = default_presets[nai_settings.model_novel];
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#settings_preset_novel').val(novelai_setting_names[default_preset]);
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(`#settings_preset_novel option[value=${novelai_setting_names[default_preset]}]`).attr('selected', 'true');
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#settings_preset_novel').trigger('change');
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
+        document.getElementById('settings_preset_novel').value = novelai_setting_names[default_preset];
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
+        document.querySelector(`#settings_preset_novel option[value="${novelai_setting_names[default_preset]}"]`)?.setAttribute('selected', 'true');
+        document.getElementById('settings_preset_novel')?.dispatchEvent(new Event('change'));
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#nai_prefix').on('change', function () {
+    document.getElementById('nai_prefix')?.addEventListener('change', function () {
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        nai_settings.prefix = String(document.getElementById('nai_prefix').options[document.getElementById('nai_prefix').selectedIndex].value);
+        nai_settings.prefix = String(this.options[this.selectedIndex].value);
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#phrase_rep_pen_novel').on('change', function () {
+    document.getElementById('phrase_rep_pen_novel')?.addEventListener('change', function () {
         // @ts-expect-error TS(2339) FIXME: Property 'phrase_rep_pen' does not exist on type '... Remove this comment to see the full error message
         nai_settings.phrase_rep_pen = String(document.getElementById('phrase_rep_pen_novel').options[document.getElementById('phrase_rep_pen_novel').selectedIndex].value);
         saveSettingsDebounced();
@@ -1185,16 +1178,16 @@ export function initNovelAISettings() {
         stop: saveSamplingOrder,
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#novel_order .toggle_button').on('click', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const $item = $(this.closest('[data-id]'));
-        const isEnabled = !$item.hasClass('disabled');
-        $item.toggleClass('disabled', isEnabled);
-        console.log('Sampler toggled:', $item.data('id'), !isEnabled);
+    document.addEventListener('click', function (event) {
+        const el = event.target.closest('#novel_order .toggle_button');
+        if (!el) return;
+        const item = el.closest('[data-id]');
+        if (!item) return;
+        const isEnabled = !item.classList.contains('disabled');
+        item.classList.toggle('disabled', isEnabled);
+        console.log('Sampler toggled:', item.getAttribute('data-id'), !isEnabled);
         saveSamplingOrder();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#novelai_logit_bias_new_entry').on('click', () => createNewLogitBiasEntry(nai_settings.logit_bias, BIAS_KEY));
+    document.getElementById('novelai_logit_bias_new_entry')?.addEventListener('click', () => createNewLogitBiasEntry(nai_settings.logit_bias, BIAS_KEY));
 }
