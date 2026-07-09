@@ -2504,32 +2504,39 @@ export async function initExtensions() {
     document.getElementById('extensions_details')?.addEventListener('click', showExtensionsDetails);
     document.getElementById('extensions_notify_updates')?.addEventListener('input', notifyUpdatesInputHandler);
     document.addEventListener('click', function (event) {
+        if (!(event.target instanceof Element)) return;
         const el = event.target.closest('.extensions_info .extension_block .toggle_disable');
-        if (el) onDisableExtensionClick.call(el, event);
+        if (el) onDisableExtensionClick.call(el);
     });
     document.addEventListener('click', function (event) {
+        if (!(event.target instanceof Element)) return;
         const el = event.target.closest('.extensions_info .extension_block .toggle_enable');
-        if (el) onEnableExtensionClick.call(el, event);
+        if (el) onEnableExtensionClick.call(el);
     });
     document.addEventListener('click', function (event) {
+        if (!(event.target instanceof Element)) return;
         const el = event.target.closest('.extensions_info .extension_block .btn_update');
-        if (el) onUpdateClick.call(el, event);
+        if (el) onUpdateClick.call(el);
     });
     document.addEventListener('click', function (event) {
+        if (!(event.target instanceof Element)) return;
         const el = event.target.closest('.extensions_info .extension_block .btn_delete');
-        if (el) onDeleteClick.call(el, event);
+        if (el) onDeleteClick.call(el);
     });
     document.addEventListener('click', function (event) {
+        if (!(event.target instanceof Element)) return;
         const el = event.target.closest('.extensions_info .extension_block .btn_clean');
-        if (el) onCleanClick.call(el, event);
+        if (el) onCleanClick.call(el);
     });
     document.addEventListener('click', function (event) {
+        if (!(event.target instanceof Element)) return;
         const el = event.target.closest('.extensions_info .extension_block .btn_move');
-        if (el) onMoveClick.call(el, event);
+        if (el) onMoveClick.call(el);
     });
     document.addEventListener('click', function (event) {
+        if (!(event.target instanceof Element)) return;
         const el = event.target.closest('.extensions_info .extension_block .btn_branch');
-        if (el) onBranchClick.call(el, event);
+        if (el) onBranchClick.call(el);
     });
 
     /**
