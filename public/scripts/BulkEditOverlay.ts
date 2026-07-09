@@ -43,7 +43,6 @@ class CharacterContextMenu {
     // @ts-expect-error TS(7006) FIXME: Parameter 'characterId' implicitly has an 'any' ty... Remove this comment to see the full error message
     static duplicate = async (characterId) => {
         const character = CharacterContextMenu.#getCharacter(characterId);
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         const body = { avatar_url: character.avatar };
 
         const result = await fetch('/api/characters/duplicate', {
@@ -69,13 +68,10 @@ class CharacterContextMenu {
     // @ts-expect-error TS(7006) FIXME: Parameter 'characterId' implicitly has an 'any' ty... Remove this comment to see the full error message
     static favorite = async (characterId) => {
         const character = CharacterContextMenu.#getCharacter(characterId);
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         const newFavState = !character.data.extensions.fav;
 
         const data = {
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             name: character.name,
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             avatar: character.avatar,
             data: {
                 extensions: {
@@ -915,7 +911,6 @@ class BulkEditOverlay {
                     message: t`Deleting ${characterIds.length} character(s)…`,
                     toastMode: loader.ToastMode.STATIC,
                 });
-                // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
                 const avatarList = characterIds.map(id => characters[id]?.avatar).filter(a => a);
                 return CharacterContextMenu.delete(avatarList, deleteChats)
                     .then(() => this.browseState())
