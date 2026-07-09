@@ -531,7 +531,7 @@ export class SlashCommandClosure {
                     args[name] = [value];
                 }
             } else {
-                args[name] !== undefined && console.debug(`Named argument assigned multiple times: ${name}`);
+                if (args[name] !== undefined) console.debug(`Named argument assigned multiple times: ${name}`);
                 args[name] = value;
             }
         };

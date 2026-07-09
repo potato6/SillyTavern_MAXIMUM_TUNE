@@ -863,7 +863,7 @@ function isRequestFromTrustedProxy(ip: string) {
             if (ipMatching.matches(ip, match)) {
                 return true;
             }
-        } catch (_e) {
+        } catch {
             continue;
         }
     }
@@ -1098,7 +1098,7 @@ function createRouteHandler(directoryFn: (req: express.Request) => string) {
 
             invalidateFirefoxCache(filePath, req, res);
             return res.sendFile(filePath, { root: directory });
-        } catch (_error) {
+        } catch {
             return res.sendStatus(500);
         }
     };
@@ -1133,7 +1133,7 @@ function createExtensionsRouteHandler(directoryFn: (req: express.Request) => str
             }
 
             return res.sendStatus(404);
-        } catch (_error) {
+        } catch {
             return res.sendStatus(500);
         }
     };

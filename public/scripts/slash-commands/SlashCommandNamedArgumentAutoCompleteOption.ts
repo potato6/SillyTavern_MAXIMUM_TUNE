@@ -21,8 +21,7 @@ export class SlashCommandNamedArgumentAutoCompleteOption extends AutoCompleteOpt
 
     // @ts-expect-error TS(4114): This member must have an 'override' modifier becau... Remove this comment to see the full error message
     renderItem() {
-        let li;
-        li = this.makeItem(this.name, '⌗', true, [], [], null, `${this.arg.isRequired ? '' : '(optional) '}${this.arg.description ?? ''}`);
+        const li = this.makeItem(this.name, '⌗', true, [], [], null, `${this.arg.isRequired ? '' : '(optional) '}${this.arg.description ?? ''}`);
         li.setAttribute('data-name', this.name);
         li.setAttribute('data-option-type', 'namedArgument');
         return li;

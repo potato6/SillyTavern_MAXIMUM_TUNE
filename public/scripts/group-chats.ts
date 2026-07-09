@@ -2602,7 +2602,7 @@ function doCurMemberListPopout(event) {
         if (animation_duration > 0) {
             newElement.style.opacity = '0';
             newElement.style.transition = `opacity ${animation_duration}ms ease`;
-            newElement.offsetHeight;
+            void newElement.offsetHeight;
             newElement.style.opacity = '1';
         }
 

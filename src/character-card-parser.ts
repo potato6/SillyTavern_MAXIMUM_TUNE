@@ -12,7 +12,7 @@ import PNGtext from 'png-chunk-text';
  * @param {string} data Character data to write
  * @returns {Buffer} PNG image buffer with metadata
  */
-export const write = (image: any, data: any) => {
+export const write = (image: Buffer | Uint8Array, data: string) => {
     const chunks = extract(new Uint8Array(image));
     const tEXtChunks = chunks.filter(chunk => chunk.name === 'tEXt');
 
@@ -37,7 +37,7 @@ export const write = (image: any, data: any) => {
 
         const base64EncodedData = Buffer.from(JSON.stringify(v3Data), 'utf8').toString('base64');
         chunks.splice(-1, 0, PNGtext.encode('ccv3', base64EncodedData));
-    } catch (error) {
+    } catch {
         // Ignore errors when adding v3 chunk
     }
 
@@ -51,7 +51,7 @@ export const write = (image: any, data: any) => {
  * @param {Buffer} image PNG image buffer
  * @returns {string} Character data
  */
-export const read = (image: any) => {
+export const read = (image: Buffer | Uint8Array) => {
     const chunks = extract(new Uint8Array(image));
 
     const textChunks = chunks.filter((chunk) => chunk.name === 'tEXt').map((chunk) => PNGtext.decode(chunk.data));
@@ -83,7 +83,7 @@ export const read = (image: any) => {
  * @param {string} format File format
  * @returns {Promise<string>} Character data
  */
-export const parse = async (cardUrl: any, format: any) => {
+export const parse = async (cardUrl: string, format: string) => {
     const fileFormat = format === undefined ? 'png' : format;
 
     switch (fileFormat) {

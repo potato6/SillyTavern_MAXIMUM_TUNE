@@ -7,7 +7,7 @@ import { crc32 } from 'crc';
  * @returns {Uint8Array} Encoded PNG data
  * @copyright Based on https://github.com/hughsk/png-chunks-encode (MIT)
  */
-export default function encode(chunks: any) {
+export default function encode(chunks: { name: string; data: Uint8Array }[]) {
     const uint8 = new Uint8Array(4);
     const int32 = new Int32Array(uint8.buffer);
     const uint32 = new Uint32Array(uint8.buffer);

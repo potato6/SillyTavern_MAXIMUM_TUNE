@@ -10,7 +10,7 @@ const API_NANOGPT = 'https://nano-gpt.com/api';
  * @param {unknown} value Value to parse.
  * @returns {number}
  */
-function parseNumber(value: any) {
+function parseNumber(value: unknown) {
     const number = Number(value);
     return Number.isFinite(number) ? number : 0;
 }
@@ -20,7 +20,7 @@ function parseNumber(value: any) {
  * @param {any} usage Usage bucket from NanoGPT.
  * @returns {{ used: number, remaining: number, percentUsed: number, resetAt: number } | null}
  */
-function normalizeUsage(usage: any) {
+function normalizeUsage(usage: Record<string, unknown>) {
     if (!usage || typeof usage !== 'object') {
         return null;
     }
@@ -124,7 +124,7 @@ router.post('/models/providers', async (req, res) => {
         /** @type {any} */
         const data = await response.json();
         const providers = Array.isArray(data?.providers)
-            ? data.providers.filter((p: any) => p?.available !== false).map((p: any) => p.provider).filter(Boolean)
+            ? data.providers.filter((p: Record<string, unknown>) => p?.available !== false).map((p: Record<string, unknown>) => p.provider).filter(Boolean)
             : [];
 
         return res.json({

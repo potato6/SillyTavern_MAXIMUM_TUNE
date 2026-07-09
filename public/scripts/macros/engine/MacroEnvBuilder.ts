@@ -42,9 +42,7 @@ export const env_provider_order = {
     LATEST: 100,
 };
 
-/** @type {MacroEnvBuilder} */
-let instance;
-export { instance as MacroEnvBuilder };
+
 
 class MacroEnvBuilder {
     /** @type {MacroEnvBuilder} */ static #instance;
@@ -210,3 +208,6 @@ function getGroupValue(ctx, { currentChar = null, includeMuted = false, filterOu
 
     return names;
 }
+
+const instance = MacroEnvBuilder.instance;
+export { instance as MacroEnvBuilder };

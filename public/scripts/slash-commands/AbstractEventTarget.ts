@@ -3,7 +3,7 @@
  * @implements {EventTarget}
  */
 export class AbstractEventTarget {
-    listeners: any;
+    listeners: Record<string, ((event: Event) => void)[]>;
     constructor() {
         this.listeners = {};
     }

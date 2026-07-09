@@ -20,7 +20,7 @@ const cliArguments = yargs(process.argv)
     .parseSync();
 
 /** @type {string} The URL to load in the window. */
-let appUrl: any;
+let appUrl: string;
 
 /**
  *

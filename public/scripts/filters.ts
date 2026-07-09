@@ -76,7 +76,7 @@ export const fuzzySearchCategories = Object.freeze({
  * data = filterHelper.applyFilters(data);
  */
 export class FilterHelper {
-    onDataChanged: any;
+    onDataChanged: () => void;
     /**
      * Cache fuzzy search weighting scores for re-usability, sorting and stuff
      *
@@ -334,21 +334,20 @@ export class FilterHelper {
             this.cacheScores(FILTER_TYPES.SEARCH, new Map(fuzzySearchTagsResult.map(i => [`tag.${i.item.id}`, i.score])));
         }
 
-        const _this = this;
         /**
          *
          * @param entity
          */
-        function getIsValidSearch(entity) {
+        const getIsValidSearch = (entity) => {
             if (power_user.fuzzy_search) {
                 // We can filter easily by checking if we have saved a score
-                const score = _this.getScore(FILTER_TYPES.SEARCH, `${entity.type}.${entity.id}`);
+                const score = this.getScore(FILTER_TYPES.SEARCH, `${entity.type}.${entity.id}`);
                 return score !== undefined;
             } else {
                 // Compare insensitive and without accents
                 return includesIgnoreCaseAndAccents(entity.item?.name, searchValue);
             }
-        }
+        };
 
         return data.filter(entity => getIsValidSearch(entity));
     }

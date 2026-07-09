@@ -70,12 +70,7 @@ import { isFalseBoolean } from '/scripts/utils.js';
  * @property {number} argCount - Number of arguments provided to the macro.
  */
 
-/**
- * The singleton instance of the MacroCstWalker.
- * @type {MacroCstWalker}
- */
-let instance;
-export { instance as MacroCstWalker };
+
 
 class MacroCstWalker {
     /** @type {MacroCstWalker} */ static #instance;
@@ -1349,4 +1344,5 @@ class MacroCstWalker {
     }
 }
 
-instance = MacroCstWalker.instance;
+const instance = MacroCstWalker.instance;
+export { instance as MacroCstWalker };

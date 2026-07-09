@@ -266,11 +266,16 @@ export class ToolManager {
      * Registers a new tool with the tool registry.
      * @param {ToolRegistration} tool The tool to register.
      */
-    static registerFunctionTool({ name, displayName, description, parameters, action, formatMessage, shouldRegister, stealth }) {
-        // Convert WIP arguments
-        if (typeof arguments[0] !== 'object') {
-            [name, description, parameters, action] = arguments;
-        }
+    static registerFunctionTool(...args) {
+        const hasConfigObject = typeof args[0] === 'object';
+        const name = hasConfigObject ? args[0].name : args[0];
+        const displayName = hasConfigObject ? args[0].displayName : undefined;
+        const description = hasConfigObject ? args[0].description : args[1];
+        const parameters = hasConfigObject ? args[0].parameters : args[2];
+        const action = hasConfigObject ? args[0].action : args[3];
+        const formatMessage = hasConfigObject ? args[0].formatMessage : undefined;
+        const shouldRegister = hasConfigObject ? args[0].shouldRegister : undefined;
+        const stealth = hasConfigObject ? args[0].stealth : undefined;
 
         if (this.#tools.has(name)) {
             console.warn(`[ToolManager] A tool with the name "${name}" has already been registered. The definition will be overwritten.`);

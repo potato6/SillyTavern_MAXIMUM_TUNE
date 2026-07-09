@@ -1,5 +1,5 @@
 export class AbortReason {
-    reason: any;
+    reason: string;
     constructor(reason) {
         this.reason = reason;
     }

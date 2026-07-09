@@ -79,8 +79,10 @@ async function openSwipePicker(messageId) {
     wrapper.appendChild(listContainer);
 
     /** @type {Popup} */
+    // eslint-disable-next-line prefer-const
     let popup;
     /** @type {HTMLInputElement} */
+    // eslint-disable-next-line prefer-const
     let swipeIdInput;
     /** @type {number|null} */
     let branchActionSwipeId = null;

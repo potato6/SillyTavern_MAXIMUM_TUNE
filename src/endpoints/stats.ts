@@ -315,7 +315,7 @@ const calculateStats = (chatsPath: string, item: string) => {
  * @param {string} handle - The user handle.
  * @param {object} stats - The new charStats object.
  */
-function setCharStats(handle: string, stats: Record<string, any>) {
+function setCharStats(handle: string, stats: Record<string, unknown>) {
     stats.timestamp = Date.now();
     STATS.set(handle, stats);
 }

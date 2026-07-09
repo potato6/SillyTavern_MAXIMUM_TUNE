@@ -1,6 +1,6 @@
 
 
-import { eventSource, event_types, saveSettings, saveSettingsDebounced, getRequestHeaders, animation_duration, CLIENT_VERSION } from '../script.js';
+import { eventSource, event_types, saveSettings, saveSettingsDebounced, getRequestHeaders, CLIENT_VERSION } from '../script.js';
 import { POPUP_RESULT, POPUP_TYPE, Popup } from './popup.js';
 import { renderTemplate, renderTemplateAsync } from './templates.js';
 import { delay, deleteValueByPath, equalsIgnoreCaseAndAccents, escapeHtml, isSubsetOf, sanitizeSelector, setValueByPath, versionCompare } from './utils.js';
@@ -69,7 +69,7 @@ const defaultUrl = 'http://localhost:5100';
 export const isOfficialExtension = (url) => {
     try {
         return /^https:\/\/github\.com\/SillyTavern\/(.+)$/i.test(new URL(url).href);
-    } catch (e) {
+    } catch {
         return false;
     }
 };
@@ -2257,7 +2257,7 @@ export async function writeExtensionField(characterId, key, value) {
  */
 export async function writeExtensionFieldBulk(avatars, key, value, {
     filterPath
-}: any = {}) {
+}: { filterPath?: string } = {}) {
     const context = getContext();
     const extensionPath = `data.extensions.${key}`;
     const isUnset = value === UNSET_VALUE;

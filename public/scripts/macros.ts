@@ -18,8 +18,8 @@ import { power_user } from './power-user.js';
 // Register any macro that you want to leave in the compiled story string
 Handlebars.registerHelper('trim', () => '{{trim}}');
 // Catch-all helper for any macro that is not defined for story strings
-Handlebars.registerHelper('helperMissing', function () {
-    const options = arguments[arguments.length - 1];
+Handlebars.registerHelper('helperMissing', function (...args: unknown[]) {
+    const options = args[args.length - 1];
     const macroName = options.name;
     return substituteParams(`{{${macroName}}}`);
 });
@@ -153,7 +153,7 @@ export class MacrosParser {
      * @returns {string|MacroFunction|undefined} The macro value
      */
     static get(key) {
-        MacrosParser.#logDeprecated('get', 'macros.registry.getMacro (from scripts/macros/macro-system.js)', arguments);
+        MacrosParser.#logDeprecated('get', 'macros.registry.getMacro (from scripts/macros/macro-system.js)', [key]);
         return MacrosParser.#macros.get(key);
     }
 
@@ -163,7 +163,7 @@ export class MacrosParser {
      * @returns {boolean} True if the macro is registered, false otherwise
      */
     static has(key) {
-        MacrosParser.#logDeprecated('has', 'macros.registry.hasMacro (from scripts/macros/macro-system.js)', arguments);
+        MacrosParser.#logDeprecated('has', 'macros.registry.hasMacro (from scripts/macros/macro-system.js)', [key]);
         if (power_user.experimental_macro_engine) {
             return macroSystem.registry.hasMacro(key);
         }
@@ -178,7 +178,7 @@ export class MacrosParser {
      * @param {string} [description] Optional description of the macro
      */
     static registerMacro(key, value, description = '') {
-        MacrosParser.#logDeprecated('registerMacro', 'macros.registry.registerMacro (from scripts/macros/macro-system.js) or substituteParams({ dynamicMacros })', arguments);
+        MacrosParser.#logDeprecated('registerMacro', 'macros.registry.registerMacro (from scripts/macros/macro-system.js) or substituteParams({ dynamicMacros })', [key, value, description]);
         if (typeof key !== 'string') {
             throw new Error('Macro key must be a string');
         }
@@ -220,7 +220,7 @@ export class MacrosParser {
      * @param {string} key Macro name (key)
      */
     static unregisterMacro(key) {
-        MacrosParser.#logDeprecated('unregisterMacro', 'macros.registry.unregisterMacro (from scripts/macros/macro-system.js)', arguments);
+        MacrosParser.#logDeprecated('unregisterMacro', 'macros.registry.unregisterMacro (from scripts/macros/macro-system.js)', [key]);
         if (typeof key !== 'string') {
             throw new Error('Macro key must be a string');
         }

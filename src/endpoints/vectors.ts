@@ -7,7 +7,7 @@ import express from 'express';
 // @ts-expect-error TS(2792): Cannot find module 'sanitize-filename'. Did you me... Remove this comment to see the full error message
 import sanitize from 'sanitize-filename';
 
-const registry: Record<string, () => Promise<any>> = {
+const registry: Record<string, () => Promise<unknown>> = {
     nomicai: () => import('../vectors/nomicai-vectors.js'),
     openai: () => import('../vectors/openai-vectors.js'),
     mistral: () => import('../vectors/openai-vectors.js'),

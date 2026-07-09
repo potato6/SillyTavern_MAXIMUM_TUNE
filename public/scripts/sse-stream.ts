@@ -8,8 +8,8 @@ const NOT_PRIMARY = Symbol('not_primary_swipe');
  * A stream which handles Server-Sent Events from a binary ReadableStream like you get from the fetch API.
  */
 class EventSourceStream {
-    readable: any;
-    writable: any;
+    readable: ReadableStream | null;
+    writable: WritableStream | null;
     constructor() {
         const decoder = new TextDecoderStream('utf-8');
 
@@ -347,7 +347,7 @@ async function* parseStreamData(json) {
  */
 export class SmoothEventSourceStream extends EventSourceStream {
     // @ts-expect-error TS(2612): Property 'readable' will overwrite the base proper... Remove this comment to see the full error message
-    readable: any;
+    readable: ReadableStream | null;
     constructor() {
         super();
         let lastStr = '';
@@ -371,7 +371,9 @@ export class SmoothEventSourceStream extends EventSourceStream {
                     }
 
                     for await (const parsed of parseStreamData(json)) {
-                        !(power_user.smooth_streaming_no_think && parsed.reasoning) && hasFocus && (await delay(getDelay(lastStr)));
+                        if (!(power_user.smooth_streaming_no_think && parsed.reasoning) && hasFocus) {
+                        await delay(getDelay(lastStr));
+                    }
                         controller.enqueue(new MessageEvent(event.type, { data: JSON.stringify(parsed.data) }));
                         lastStr = parsed.chunk;
                     }

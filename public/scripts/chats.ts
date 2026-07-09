@@ -676,7 +676,7 @@ export function decodeStyleTags(text, { prefix } = { prefix: '.mes_text ' }) {
  * Class to manage style preferences for characters.
  */
 class StylesPreference {
-    avatarId: any;
+    avatarId: string | null;
     /**
      * Creates a new StylesPreference instance.
      * @param {string|null} avatarId - The avatar ID of the character
@@ -1583,7 +1583,7 @@ async function openAttachmentManager() {
             modal?.append(buttonTemplate);
         }
 
-        const modalButtonData = Object.entries(sources).map(entry => {
+        Object.entries(sources).forEach(entry => {
             const [source, selector] = entry;
             const button = template?.querySelector(`${selector} .openActionModalButton`);
 
@@ -2445,8 +2445,8 @@ export function initChatUtilities() {
         }
         textarea.value = String(contentEditable ? bro[0].innerText : bro.val());
         textarea.classList.add('height100p', 'wide100p', 'maximized_textarea');
-        bro.hasClass('monospace') && textarea.classList.add('monospace');
-        bro.hasClass('mdHotkeys') && textarea.classList.add('mdHotkeys');
+        if (bro.hasClass('monospace')) textarea.classList.add('monospace');
+        if (bro.hasClass('mdHotkeys')) textarea.classList.add('mdHotkeys');
         textarea.addEventListener('input', function () {
             if (contentEditable) {
                 bro[0].innerText = textarea.value;

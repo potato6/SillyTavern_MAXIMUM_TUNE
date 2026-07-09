@@ -71,7 +71,7 @@ router.post('/generate-voice', async (req, res) => {
         const decoder = new TextDecoder();
 
         const result = await new Promise((resolve, reject) => {
-            const audioChunks_: any = [];
+            const audioChunks_: Buffer[] = [];
             let buffer = '';
             if (!response.body) {
                 reject(new Error('Response body is null'));

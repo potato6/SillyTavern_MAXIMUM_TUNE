@@ -24,7 +24,7 @@ const logicalRules = {
     "require-yield": "off",
 };
 
-const getRules = (config: any) => {
+const getRules = (config: unknown) => {
     if (!config) return {};
     if (Array.isArray(config)) {
         return config.reduce((acc, c) => ({ ...acc, ...(c?.rules || {}) }), {});

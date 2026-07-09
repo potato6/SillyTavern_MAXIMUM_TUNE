@@ -28,9 +28,6 @@ import { ELSE_MARKER } from '../definitions/core-macros.js';
  * The singleton instance of the MacroEngine.
  * @type {MacroEngine}
  */
-let instance;
-export { instance as MacroEngine };
-
 class MacroEngine {
     /** @type {MacroEngine} */ static #instance;
     /** @type {MacroEngine} */ static get instance() { return MacroEngine.#instance ?? (MacroEngine.#instance = new MacroEngine()); }
@@ -334,7 +331,7 @@ class MacroEngine {
         if (typeof value === 'object' || Array.isArray(value)) {
             try {
                 return JSON.stringify(value);
-            } catch (_error) {
+            } catch {
                 return String(value);
             }
         }
@@ -407,4 +404,5 @@ class MacroEngine {
     }
 }
 
-instance = MacroEngine.instance;
+const instance = MacroEngine.instance;
+export { instance as MacroEngine };

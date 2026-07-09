@@ -23,7 +23,7 @@ const OPTIONS = Object.freeze({ timeout: { block: 5 * 60 * 1000 } });
  * @param {string} extensionPath - The path of the extension folder
  * @returns {Promise<object>} - Returns the manifest data as an object
  */
-async function getManifest(extensionPath: any) {
+async function getManifest(extensionPath: string) {
     const manifestPath = path.join(extensionPath, 'manifest.json');
 
     // Check if manifest.json exists
@@ -40,7 +40,7 @@ async function getManifest(extensionPath: any) {
  * @param {string} extensionPath - The path of the extension folder
  * @returns {Promise<object>} - Returns the extension information as an object
  */
-async function checkIfRepoIsUpToDate(extensionPath: any) {
+async function checkIfRepoIsUpToDate(extensionPath: string) {
     const git = simpleGit({ baseDir: extensionPath, ...OPTIONS });
     await git.fetch('origin');
     const currentBranch = await git.branch();
@@ -71,7 +71,7 @@ export const router = express.Router();
  * Feature flag guard: don't allow calling any of the endpoints if extensions are disabled
  * @type {import('express').RequestHandler}
  */
-export const extensionsEnabledFeatureGuard = (_: any, response: any, next: any) => {
+export const extensionsEnabledFeatureGuard = (_: express.Request, response: express.Response, next: express.NextFunction) => {
     const enabled = !!getConfigValue('extensions.enabled', true, 'boolean');
     if (!enabled) {
         response.sendStatus(404);
@@ -409,7 +409,7 @@ router.post('/version', async (request, response) => {
                 throw new Error(`Directory is not a Git repository at ${extensionPath}`);
             }
             currentCommitHash = await git.revparse(['HEAD']);
-        } catch (error) {
+        } catch {
             // it is not a git repo, or has no commits yet, or is a bare repo
             // not possible to update it, most likely can't get the branch name either
             return response.send({ currentBranchName: '', currentCommitHash: '', isUpToDate: true, remoteUrl: '' });

@@ -281,7 +281,7 @@ router.post('/embed', async function (request, response) {
         }
 
         const model = data.model || 'unknown';
-        const embeddings = data.data.map((x: any) => Array.isArray(x) ? x[0] : x).sort((a: any, b: any) => a.index - b.index).map((x: any) => x.embedding);
+        const embeddings = data.data.map((x: unknown) => Array.isArray(x) ? x[0] : x).sort((a: { index: number }, b: { index: number }) => a.index - b.index).map((x: { embedding: unknown }) => x.embedding);
         return response.json({ model, embeddings });
     } catch (error) {
         console.error('KoboldCpp embedding failed', error);

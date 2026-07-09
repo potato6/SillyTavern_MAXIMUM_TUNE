@@ -1345,7 +1345,7 @@ function appendTagToList(listElement, tag, { removable = false, isFilter = false
 
     $(tagEl?.querySelector('.tag_name')).text(tag.name);
     const removeButton = $(tagEl?.querySelector('.tag_remove'));
-    removable ? removeButton.show() : removeButton.hide();
+    if (removable) { removeButton.show(); } else { removeButton.hide(); }
     if (removable && removeAction) {
         tagElement.attr('custom-remove-action', String(true));
         removeButton.on('click', () => {

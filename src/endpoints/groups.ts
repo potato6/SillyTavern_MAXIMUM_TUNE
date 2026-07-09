@@ -16,7 +16,7 @@ export const router = express.Router();
  * Warns if group data contains deprecated metadata keys and removes them.
  * @param {object} groupData Group data object
  */
-function warnOnGroupMetadata(groupData: any) {
+function warnOnGroupMetadata(groupData: Record<string, unknown>) {
     if (typeof groupData !== 'object' || groupData === null) {
         return;
     }
@@ -32,7 +32,7 @@ function warnOnGroupMetadata(groupData: any) {
  * Migrates group metadata to include chat metadata for each group chat instead of the group itself.
  * @param {import('../users.js').UserDirectoryList[]} userDirectories Listing of all users' directories
  */
-export async function migrateGroupChatsMetadataFormat(userDirectories: any) {
+export async function migrateGroupChatsMetadataFormat(userDirectories: Record<string, string>[]) {
     for (const userDirs of userDirectories) {
         try {
             let anyDataMigrated = false;
@@ -112,7 +112,7 @@ export async function migrateGroupChatsMetadataFormat(userDirectories: any) {
 }
 
 router.post('/all', (request, response) => {
-    const groups: any = [];
+    const groups: object[] = [];
 
     if (!fs.existsSync(request.user.directories.groups)) {
         fs.mkdirSync(request.user.directories.groups);

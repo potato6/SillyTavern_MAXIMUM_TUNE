@@ -361,7 +361,7 @@ export let secret_state = {};
  */
 export async function writeSecret(key, value, label, {
     allowEmpty
-}: any = {}) {
+}: { allowEmpty?: boolean } = {}) {
     try {
         if (!value && !allowEmpty) {
             console.warn(`No value provided for ${key} in writeSecret, redirecting to deleteSecret`);

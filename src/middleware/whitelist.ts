@@ -25,7 +25,7 @@ if (fs.existsSync(whitelistPath)) {
     try {
         const whitelistTxt = fs.readFileSync(whitelistPath, 'utf-8');
         whitelist = whitelistTxt.split('\n').filter(ip => ip).map(ip => ip.trim());
-    } catch (e) {
+    } catch {
         // Ignore errors that may occur when reading the whitelist (e.g. permissions)
     }
 }

@@ -382,7 +382,7 @@ const setHotswapsDebounced = debounce(favsToHotswap);
  */
 export function playMessageSound({
     force
-}: any = {}) {
+}: { force?: boolean } = {}) {
     if (!power_user.play_message_sound && !force) {
         return;
     }
@@ -3648,8 +3648,8 @@ jQuery(() => {
         return zoomLevel;
     });
 
-    var coreTruthWinWidth = window.innerWidth;
-    var coreTruthWinHeight = window.innerHeight;
+    const coreTruthWinWidth = window.innerWidth;
+    const coreTruthWinHeight = window.innerHeight;
 
     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(window).on('resize', async () => {
@@ -3676,14 +3676,12 @@ jQuery(() => {
                 const oldTop = elmntState.top;
                 const oldBottom = elmntState.bottom;
                 const oldRight = elmntState.right;
-                var newHeight, newWidth, newTop, newBottom, newLeft, newRight;
-
-                newHeight = Number(oldHeight * scaleY).toFixed(0);
-                newWidth = Number(oldWidth * scaleX).toFixed(0);
-                newLeft = Number(oldLeft * scaleX).toFixed(0);
-                newTop = Number(oldTop * scaleY).toFixed(0);
-                newBottom = Number(oldBottom * scaleY).toFixed(0);
-                newRight = Number(oldRight * scaleX).toFixed(0);
+                const newHeight = Number(oldHeight * scaleY).toFixed(0);
+                const newWidth = Number(oldWidth * scaleX).toFixed(0);
+                const newLeft = Number(oldLeft * scaleX).toFixed(0);
+                const newTop = Number(oldTop * scaleY).toFixed(0);
+                const newBottom = Number(oldBottom * scaleY).toFixed(0);
+                const newRight = Number(oldRight * scaleX).toFixed(0);
                 try {
                     // @ts-expect-error TS(2592): Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                     const elmnt = $('#' + $.escapeSelector(elmntName));

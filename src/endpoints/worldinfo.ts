@@ -14,7 +14,7 @@ import { tryParse } from '../util.js';
  * @param {boolean} allowDummy If true, returns an empty object if the file doesn't exist
  * @returns {object} World Info file contents
  */
-export function readWorldInfoFile(directories: any, worldInfoName: any, allowDummy: any) {
+export function readWorldInfoFile(directories: Record<string, string>, worldInfoName: string, allowDummy: boolean) {
     const dummyObject = allowDummy ? { entries: {} } : null;
 
     if (!worldInfoName) {
@@ -56,14 +56,14 @@ router.post('/list', async (request, response) => {
                     extensions: (typeof fileExtensions === 'object' && fileExtensions !== null) ? fileExtensions : {},
                 };
                 data.push(fileData);
-            } catch (err) {
-                console.warn(`Error reading or parsing World Info file ${file.name}:`, err);
+            } catch (error) {
+                console.warn(`Error reading or parsing World Info file ${file.name}:`, error);
             }
         }
 
         return response.send(data);
-    } catch (err) {
-        console.error('Error reading World Info directory:', err);
+    } catch (error) {
+        console.error('Error reading World Info directory:', error);
         return response.sendStatus(500);
     }
 });
@@ -116,7 +116,7 @@ router.post('/import', (request, response) => {
         if (!('entries' in worldContent)) {
             throw new Error('File must contain a world info entries list');
         }
-    } catch (err) {
+    } catch {
         return response.status(400).send('Is not a valid world info file');
     }
 
@@ -144,7 +144,7 @@ router.post('/edit', (request, response) => {
         if (!('entries' in request.body.data)) {
             throw new Error('World info must contain an entries list');
         }
-    } catch (err) {
+    } catch {
         return response.status(400).send('Is not a valid world info file');
     }
 

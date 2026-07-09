@@ -11,8 +11,7 @@ export class SlashCommandQuickReplyAutoCompleteOption extends AutoCompleteOption
 
     // @ts-expect-error TS(4114): This member must have an 'override' modifier becau... Remove this comment to see the full error message
     renderItem() {
-        let li;
-        li = this.makeItem(this.name, 'QR', true);
+        const li = this.makeItem(this.name, 'QR', true);
         li.setAttribute('data-name', this.name);
         li.setAttribute('data-option-type', 'qr');
         return li;

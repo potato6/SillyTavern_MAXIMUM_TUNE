@@ -172,7 +172,7 @@ function selectSystemPromptCallback(args, name) {
 
         if (result.length === 0) {
             // @ts-expect-error TS(2304): Cannot find name 'toastr'.
-            !quiet && toastr.warning(`System prompt "${name}" not found`);
+            if (!quiet) toastr.warning(`System prompt "${name}" not found`);
             return '';
         }
 
@@ -181,7 +181,7 @@ function selectSystemPromptCallback(args, name) {
 
     $select.val(foundName).trigger('change');
     // @ts-expect-error TS(2304): Cannot find name 'toastr'.
-    !quiet && toastr.success(`System prompt "${foundName}" selected`);
+    if (!quiet) toastr.success(`System prompt "${foundName}" selected`);
     return foundName;
 }
 

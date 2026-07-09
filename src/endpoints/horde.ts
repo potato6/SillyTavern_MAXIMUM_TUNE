@@ -36,7 +36,7 @@ async function getHordeClient() {
  * @param {string} prompt Prompt to sanitize
  * @returns {string} Sanitized prompt
  */
-function sanitizeHordeImagePrompt(prompt: any) {
+function sanitizeHordeImagePrompt(prompt: string) {
     if (!prompt) {
         return '';
     }
@@ -93,8 +93,8 @@ async function getHordeTextModelMetadata() {
  * @param models
  * @param metadata
  */
-async function mergeModelsAndMetadata(models: any, metadata: any) {
-    return models.map((model: any) => {
+async function mergeModelsAndMetadata(models: Record<string, unknown>[], metadata: Record<string, unknown>) {
+    return models.map((model: Record<string, unknown>) => {
         const metadataModel = metadata[model.name];
         if (!metadataModel) {
             return { ...model, is_whitelisted: false };

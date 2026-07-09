@@ -7,7 +7,7 @@ export const forbiddenRegExp = path.sep === '/' ? /[/\x00]/ : /[/\x00\\]/;
  * @param {object} o Object to check
  * @returns {boolean} True if the object has a toString method, false otherwise
  */
-function hasToString(o: any) {
+function hasToString(o: unknown) {
     return o != null && typeof o.toString === 'function';
 }
 
@@ -16,14 +16,14 @@ function hasToString(o: any) {
  * @param {string} fieldName Field name
  * @returns {import('express').RequestHandler} Middleware function
  */
-export function getFileNameValidationFunction(fieldName: any) {
+export function getFileNameValidationFunction(fieldName: string) {
     /**
      * Validates the field in the request body.
      * @param {import('express').Request} req Request object
      * @param {import('express').Response} res Response object
      * @param {import('express').NextFunction} next Next middleware
      */
-    return function validateAvatarUrlMiddleware(req: any, res: any, next: any) {
+    return function validateAvatarUrlMiddleware(req: import('express').Request, res: import('express').Response, next: import('express').NextFunction) {
         if (req.body && fieldName in req.body && (typeof req.body[fieldName] === 'string' || hasToString(req.body[fieldName]))) {
             if (forbiddenRegExp.test(req.body[fieldName])) {
                 console.error('An error occurred while validating the request body', {

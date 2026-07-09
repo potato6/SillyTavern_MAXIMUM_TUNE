@@ -1,15 +1,7 @@
 import { hljs } from '../../lib.js';
 import { t } from '../i18n.js';
-// @ts-expect-error TS(6133): 'SlashCommandAbortController' is declared but its ... Remove this comment to see the full error message
-import { SlashCommandAbortController } from './SlashCommandAbortController.js';
-// @ts-expect-error TS(6192): All imports in import declaration are unused.
 import { SlashCommandArgument, SlashCommandNamedArgument } from './SlashCommandArgument.js';
-// @ts-expect-error TS(6133): 'SlashCommandClosure' is declared but its value is... Remove this comment to see the full error message
 import { SlashCommandClosure } from './SlashCommandClosure.js';
-// @ts-expect-error TS(6133): 'SlashCommandDebugController' is declared but its ... Remove this comment to see the full error message
-import { SlashCommandDebugController } from './SlashCommandDebugController.js';
-// @ts-expect-error TS(6133): 'SlashCommandScope' is declared but its value is n... Remove this comment to see the full error message
-import { SlashCommandScope } from './SlashCommandScope.js';
 
 /**
  * @typedef {NamedArgumentsCapture & {
@@ -226,12 +218,11 @@ export class SlashCommand {
         key = key ?? this.name;
         if (!this.helpDetailsCache[key]) {
             const frag = document.createDocumentFragment();
-            const cmd = this;
-            const namedArguments = cmd.namedArgumentList ?? [];
-            const unnamedArguments = cmd.unnamedArgumentList ?? [];
-            const returnType = cmd.returns ?? 'void';
-            const helpString = cmd.helpString ?? 'NO DETAILS';
-            const aliasList = [cmd.name, ...(cmd.aliases ?? [])].filter(it => it != key);
+            const namedArguments = this.namedArgumentList ?? [];
+            const unnamedArguments = this.unnamedArgumentList ?? [];
+            const returnType = this.returns ?? 'void';
+            const helpString = this.helpString ?? 'NO DETAILS';
+            const aliasList = [this.name, ...(this.aliases ?? [])].filter(it => it != key);
             const specs = document.createElement('div'); {
                 specs.classList.add('specs');
                 const head = document.createElement('div'); {

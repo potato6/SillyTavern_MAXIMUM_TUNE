@@ -373,7 +373,7 @@ export async function getUserAvatars(doRender = true, openPageAt = '') {
         };
 
         // @ts-expect-error TS(2554): Expected 0 arguments, but got 1.
-        openPageAt && navigateToAvatar(openPageAt);
+        if (openPageAt) navigateToAvatar(openPageAt);
 
         return allEntities;
     }

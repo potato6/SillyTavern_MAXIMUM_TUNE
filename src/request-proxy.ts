@@ -23,7 +23,13 @@ export default function initRequestProxy({
     bypass,
     enableKeepAlive,
     privateRequestFilterEnabled
-}: any) {
+}: {
+    enabled: boolean;
+    url: string;
+    bypass: string[];
+    enableKeepAlive: boolean;
+    privateRequestFilterEnabled: boolean;
+}) {
     try {
         // No proxy is enabled, so return
         if (!enabled) {

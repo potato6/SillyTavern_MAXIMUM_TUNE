@@ -627,7 +627,7 @@ export function getCfgPrompt(guidanceScale, isNegative, quiet = false) {
     const customSeparator = getCustomSeparator();
     const combinedCfgPrompt = splitCfgPrompt.filter((e) => e.length > 0).join(customSeparator);
     const insertionDepth = chat_metadata[metadataKeys.prompt_insertion_depth] ?? 1;
-    !quiet && console.log(`Setting CFG with guidance scale: ${guidanceScale.value}, negatives: ${combinedCfgPrompt}`);
+    if (!quiet) console.log(`Setting CFG with guidance scale: ${guidanceScale.value}, negatives: ${combinedCfgPrompt}`);
 
     return {
         value: combinedCfgPrompt,

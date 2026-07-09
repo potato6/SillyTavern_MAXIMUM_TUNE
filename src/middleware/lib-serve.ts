@@ -1,6 +1,7 @@
 /* global Bun */
 import path from 'node:path';
 import crypto from 'node:crypto';
+import type { Request, Response, NextFunction } from 'express';
 import { getVersion } from '../util.js';
 
 /**
@@ -34,7 +35,7 @@ export default function getLibServeMiddleware() {
      * @param {import('express').NextFunction} next Next function.
      * @type {import('express').RequestHandler}
      */
-    async function devMiddleware(req: any, res: any, next: any) {
+    async function devMiddleware(req: Request, res: Response, next: NextFunction) {
         const { path: outputPath, filename: outputFile } = await getLibOutputPath();
         const parsedPath = path.parse(req.path);
 

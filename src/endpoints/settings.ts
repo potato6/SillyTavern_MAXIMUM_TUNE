@@ -57,7 +57,7 @@ function readAndParseFromDirectory(directoryPath: string, fileExtension = '.json
         .filter(x => path.parse(x).ext == fileExtension)
         .sort();
 
-    const parsedFiles: any[] = [];
+    const parsedFiles: unknown[] = [];
 
     files.forEach(item => {
         try {
@@ -235,7 +235,7 @@ router.post('/get', (request, response) => {
     try {
         const pathToSettings = path.join(request.user.directories.root, SETTINGS_FILE);
         settings = fs.readFileSync(pathToSettings, 'utf8');
-    } catch (_e) {
+    } catch {
         return response.sendStatus(500);
     }
 

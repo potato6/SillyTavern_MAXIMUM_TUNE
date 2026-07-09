@@ -166,9 +166,6 @@ export const MacroValueType = Object.freeze({
  * The singleton instance of the MacroRegistry.
  * @type {MacroRegistry}
  */
-let instance;
-export { instance as MacroRegistry };
-
 class MacroRegistry {
     /** @type {MacroRegistry} */ static #instance;
     /** @type {MacroRegistry} */ static get instance() { return MacroRegistry.#instance ?? (MacroRegistry.#instance = new MacroRegistry()); }
@@ -385,7 +382,7 @@ class MacroRegistry {
      */
     executeMacro(call, {
         defOverride
-    }: any = {}) {
+    }: { defOverride?: object } = {}) {
         const name = call.name;
         const def = defOverride || this.getMacro(name);
         if (!def) {
@@ -477,7 +474,7 @@ class MacroRegistry {
      */
     buildMacroDefFromOptions(name, options, {
         source
-    }: any = {}) {
+    }: { source?: string } = {}) {
         name = typeof name === 'string' ? name.trim() : String(name);
 
         if (!isIdentifierValid(name)) throw new Error(`Macro name "${name}" is invalid. Must start with a letter, followed by alphanumeric characters or hyphens.`);
@@ -676,7 +673,8 @@ class MacroRegistry {
     }
 }
 
-instance = MacroRegistry.instance;
+const instance = MacroRegistry.instance;
+export { instance as MacroRegistry };
 
 /**
  * Validates a macro identifier.

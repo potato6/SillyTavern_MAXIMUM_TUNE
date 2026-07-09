@@ -4,8 +4,8 @@
  * @augments Map<K, V>
  */
 export class StructuredCloneMap extends Map {
-    cloneOnGet: any;
-    cloneOnSet: any;
+    cloneOnGet: boolean;
+    cloneOnSet: boolean;
     /**
      * Constructs a new StructuredCloneMap.
      * @param {object} options - Options for the map

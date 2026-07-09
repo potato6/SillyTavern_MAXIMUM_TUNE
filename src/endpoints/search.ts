@@ -34,7 +34,7 @@ const visitHeaders = {
  * @param {string} lang Language code
  * @returns {Promise<string>} Transcript text
  */
-async function extractTranscript(videoPageBody: any, lang: any) {
+async function extractTranscript(videoPageBody: string, lang: string) {
     const RE_XML_TRANSCRIPT = /<text start="([^"]*)" dur="([^"]*)">([^<]*)<\/text>/g;
     const splittedHTML = videoPageBody.split('"captions":');
 
@@ -51,7 +51,7 @@ async function extractTranscript(videoPageBody: any, lang: any) {
     const captions = (() => {
         try {
             return JSON.parse(splittedHTML[1].split(',"videoDetails')[0].replace('\n', ''));
-        } catch (e) {
+        } catch {
             return undefined;
         }
     })()?.playerCaptionsTracklistRenderer;
@@ -64,11 +64,11 @@ async function extractTranscript(videoPageBody: any, lang: any) {
         throw new Error('Transcript not available');
     }
 
-    if (lang && !captions.captionTracks.some((track: any) => track.languageCode === lang)) {
+    if (lang && !captions.captionTracks.some((track: { languageCode: string }) => track.languageCode === lang)) {
         throw new Error('Transcript not available in this language');
     }
 
-    const transcriptURL = (lang ? captions.captionTracks.find((track: any) => track.languageCode === lang) : captions.captionTracks[0]).baseUrl;
+    const transcriptURL = (lang ? captions.captionTracks.find((track: { languageCode: string }) => track.languageCode === lang) : captions.captionTracks[0]).baseUrl;
     const transcriptResponse = await fetch(transcriptURL, {
         headers: {
             ...(lang && { 'Accept-Language': lang }),
@@ -422,7 +422,7 @@ router.post('/visit', async (request, response) => {
             if (ipRegex.v4({ exact: true }).test(urlObj.hostname) || ipRegex.v6({ exact: true }).test(urlObj.hostname)) {
                 throw new Error('Invalid hostname');
             }
-        } catch (error) {
+        } catch {
             console.error('Invalid url provided for /visit', url);
             return response.sendStatus(400);
         }

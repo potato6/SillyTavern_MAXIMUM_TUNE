@@ -210,8 +210,8 @@ class PresetManager {
         },
     };
 
-    apiId: any;
-    select: any;
+    apiId: string;
+    select: JQuery<HTMLSelectElement>;
 
     static isPossiblyInstructData(data) {
         const instructProps = ['name', 'input_sequence', 'output_sequence'];
@@ -944,7 +944,11 @@ class PresetManager {
             // @ts-expect-error TS(2339): Property 'extensions' does not exist on type '{}'.
             settings.extensions = ensurePlainObject(settings.extensions || {});
             // @ts-expect-error TS(2339): Property 'extensions' does not exist on type '{}'.
-            path ? set(settings.extensions, path, value) : (settings.extensions = value);
+            if (path) {
+                set(settings.extensions, path, value);
+            } else {
+                settings.extensions = value;
+            }
             await saveSettings();
         }
 
@@ -956,7 +960,11 @@ class PresetManager {
 
         // Set the value at the specified path
         preset.extensions = ensurePlainObject(preset.extensions || {});
-        path ? set(preset.extensions, path, value) : (preset.extensions = value);
+        if (path) {
+            set(preset.extensions, path, value);
+        } else {
+            preset.extensions = value;
+        }
 
         // Save the updated preset
         await this.savePreset(presetName, preset, { skipUpdate: true });
@@ -1001,7 +1009,9 @@ async function presetCommandCallback(_, name) {
 
             if (presetValue) {
                 presetManager.selectPreset(presetValue);
-                shouldReconnect && (await waitForConnection());
+                if (shouldReconnect) {
+                    await waitForConnection();
+                }
             }
         }
 
@@ -1024,7 +1034,9 @@ async function presetCommandCallback(_, name) {
 
             if (currentPreset !== fuzzyPresetName) {
                 presetManager.selectPreset(fuzzyPresetValue);
-                shouldReconnect && (await waitForConnection());
+                if (shouldReconnect) {
+                    await waitForConnection();
+                }
             }
         }
 

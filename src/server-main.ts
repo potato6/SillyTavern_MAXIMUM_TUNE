@@ -489,7 +489,7 @@ function setDnsResolutionOrder() {
             dns.setDefaultResultOrder('ipv4first');
             console.log('Preferring IPv4 for DNS resolution');
         }
-    } catch (_error) {
+    } catch {
         console.warn('Failed to set DNS resolution order. Possibly unsupported in this Node version.');
     }
 }

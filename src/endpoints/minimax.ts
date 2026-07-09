@@ -5,7 +5,7 @@ import { readSecret, SECRET_KEYS } from './secrets.js';
 export const router = express.Router();
 
 // Audio format MIME type mapping
-const getAudioMimeType = (format: any) => {
+const getAudioMimeType = (format: string) => {
     const mimeTypes = {
         'mp3': 'audio/mpeg',
         'wav': 'audio/wav',
@@ -102,7 +102,7 @@ router.post('/generate-voice', async (request, response) => {
                 } else {
                     errorMessage = errorData.error?.message || errorData.message || errorData.detail || `HTTP ${apiResponse.status}`;
                 }
-            } catch (jsonError) {
+            } catch {
                 // If not JSON, try to read text
                 try {
                     const errorText = await apiResponse.text();

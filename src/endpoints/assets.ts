@@ -19,7 +19,7 @@ const VALID_CATEGORIES = ['bgm', 'ambient', 'blip', 'live2d', 'vrm', 'character'
  * @param {string} inputFilename Input filename
  * @returns {{error: boolean, message?: string}} Whether validation failed, and why if so
  */
-export function validateAssetFileName(inputFilename: any) {
+export function validateAssetFileName(inputFilename: string) {
     if (!/^[a-zA-Z0-9_\-.]+$/.test(inputFilename)) {
         return {
             error: true,
@@ -58,7 +58,7 @@ export function validateAssetFileName(inputFilename: any) {
  * @param {string[]} files - The array of files to return
  * @returns {string[]} - The array of files
  */
-function getFiles(dir: any, files = []) {
+function getFiles(dir: string, files: string[] = []) {
     if (!fs.existsSync(dir)) return files;
 
     // Get an array of all files and directories in the passed directory using fs.readdirSync
@@ -82,7 +82,7 @@ function getFiles(dir: any, files = []) {
  * Ensure that the asset folders exist.
  * @param {import('../users.js').UserDirectoryList} directories - The user's directories
  */
-function ensureFoldersExist(directories: any) {
+function ensureFoldersExist(directories: Record<string, string>) {
     const folderPath = path.join(directories.assets);
 
     for (const category of VALID_CATEGORIES) {

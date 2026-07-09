@@ -794,7 +794,7 @@ async function getStatusTextgen() {
         const autoSelected = autoSelectInstructPreset(online_status);
 
         const supportsTokenization = response.headers.get('x-supports-tokenization') === 'true';
-        supportsTokenization ? sessionStorage.setItem(TOKENIZER_SUPPORTED_KEY, 'true') : sessionStorage.removeItem(TOKENIZER_SUPPORTED_KEY);
+        if (supportsTokenization) { sessionStorage.setItem(TOKENIZER_SUPPORTED_KEY, 'true'); } else { sessionStorage.removeItem(TOKENIZER_SUPPORTED_KEY); }
 
         const wantsInstructDerivation = !autoSelected && (power_user.instruct.enabled && power_user.instruct_derived);
         const wantsContextDerivation = !autoSelected && power_user.context_derived;

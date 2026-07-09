@@ -14,7 +14,7 @@ import { getDefaultPresetFile, getDefaultPresets } from './content-manager.js';
  * @param {import('../users.js').UserDirectoryList} directories User directories
  * @returns {{folder: string?, extension: string?}} Object containing the folder and extension for the preset settings
  */
-function getPresetSettingsByAPI(apiId: any, directories: any) {
+function getPresetSettingsByAPI(apiId: string, directories: Record<string, string>) {
     switch (apiId) {
         case 'kobold':
         case 'koboldhorde':

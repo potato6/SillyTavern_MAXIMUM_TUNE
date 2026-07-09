@@ -297,9 +297,6 @@ const Def = {
  * The singleton instance of the MacroLexer.
  * @type {MacroLexer}
  */
-let instance;
-export { instance as MacroLexer };
-
 class MacroLexer extends Lexer {
     /** @type {MacroLexer} */ static #instance;
     /** @type {MacroLexer} */ static get instance() { return MacroLexer.#instance ?? (MacroLexer.#instance = new MacroLexer()); }
@@ -307,7 +304,7 @@ class MacroLexer extends Lexer {
     // Define the tokens
     /** @readonly */ static tokens = Tokens;
     /** @readonly */ static def = Def;
-    tokenize: any;
+    tokenize: Lexer['tokenize'];
     /** @readonly */ tokens = Tokens;
     /** @readonly */ def = MacroLexer.def;
 
@@ -328,7 +325,8 @@ class MacroLexer extends Lexer {
     }
 }
 
-instance = MacroLexer.instance;
+const instance = MacroLexer.instance;
+export { instance as MacroLexer };
 
 /**
  * [Utility]

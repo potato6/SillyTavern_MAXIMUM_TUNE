@@ -642,7 +642,7 @@ router.post('/workers-ai/models/embedding', async (request, response) => {
             return response.sendStatus(500);
         }
 
-        return response.json(data.result.map((m: any) => ({
+        return response.json(data.result.map((m: Record<string, unknown>) => ({
             ...m,
             id: m.name
         })));
@@ -846,8 +846,12 @@ function createTranscribeHandler({
     secretKey,
     apiUrl,
     providerName
-}: any) {
-    return async (request: any, response: any) => {
+}: {
+    secretKey: string;
+    apiUrl: string;
+    providerName: string;
+}) {
+    return async (request: import('express').Request, response: import('express').Response) => {
         try {
             const key = readSecret(request.user.directories, secretKey);
 

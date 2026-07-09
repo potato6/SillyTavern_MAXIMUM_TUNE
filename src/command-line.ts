@@ -47,13 +47,13 @@ import { initConfig } from './config-init.js';
  * Provides a command line arguments parser.
  */
 export class CommandLineParser {
-    booleanAutoOptions: any;
+    booleanAutoOptions: (boolean | string)[];
     /**
      * Gets the default configuration values.
      * @param {boolean} isGlobal If the configuration is global or not
      * @returns {CommandLineArguments} Default configuration values
      */
-    getDefaultConfig(isGlobal: any) {
+    getDefaultConfig(isGlobal: boolean) {
         const appPaths = envPaths('SillyTavern', { suffix: '' });
         const configPath = isGlobal ? path.join(appPaths.data, 'config.yaml') : './config.yaml';
         const dataPath = isGlobal ? path.join(appPaths.data, 'data') : './data';
@@ -109,7 +109,7 @@ export class CommandLineParser {
      * @param {string[]} args Process startup arguments.
      * @returns {CommandLineArguments} Parsed command line arguments.
      */
-    parse(args: any) {
+    parse(args: string[]) {
         const cliArguments = yargs(hideBin(args))
             .usage('Usage: <your-start-script> [options]\nOptions that are not provided will be filled with config values.')
             .option('global', {
@@ -346,7 +346,10 @@ export class CommandLineParser {
             getBrowserLaunchHostname: async function ({
                 useIPv6,
                 useIPv4
-            }: any) {
+            }: {
+                useIPv6: boolean;
+                useIPv4: boolean;
+            }) {
                 if (this.browserLaunchHostname === 'auto') {
                     if (useIPv6 && useIPv4) {
                         return this.browserLaunchAvoidLocalhost ? '[::1]' : 'localhost';
@@ -363,7 +366,7 @@ export class CommandLineParser {
 
                 return this.browserLaunchHostname;
             },
-            getBrowserLaunchUrl: function (hostname: any) {
+            getBrowserLaunchUrl: function (hostname: string) {
                 const browserLaunchPort = (this.browserLaunchPort >= 0) ? this.browserLaunchPort : this.port;
                 return new URL(
                     (this.ssl ? 'https://' : 'http://') +
