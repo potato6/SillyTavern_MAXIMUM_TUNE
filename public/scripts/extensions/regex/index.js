@@ -650,21 +650,25 @@ async function loadRegexScripts() {
 
         scriptHtml.attr('id', script.id);
         scriptHtml.find('.regex_script_name').text(script.scriptName).attr('title', script.scriptName);
-        scriptHtml.find('.disable_regex').prop('checked', script.disabled ?? false)
-            .on('input', async function () {
-                script.disabled = !!$(this).prop('checked');
+        scriptHtml.find('.disable_regex').prop('checked', script.disabled ?? false);
+        scriptHtml.find('.disable_regex')[0].addEventListener('input', async function () {
+            script.disabled = !this.checked;
                 await save();
             });
-        scriptHtml.find('.regex-toggle-on').on('click', function () {
-            scriptHtml.find('.disable_regex').prop('checked', true).trigger('input');
+        scriptHtml.find('.regex-toggle-on')[0].addEventListener('click', function () {
+            const checkbox = scriptHtml.find('.disable_regex')[0];
+            checkbox.checked = true;
+            checkbox.dispatchEvent(new Event('input', { bubbles: true }));
         });
-        scriptHtml.find('.regex-toggle-off').on('click', function () {
-            scriptHtml.find('.disable_regex').prop('checked', false).trigger('input');
+        scriptHtml.find('.regex-toggle-off')[0].addEventListener('click', function () {
+            const checkbox = scriptHtml.find('.disable_regex')[0];
+            checkbox.checked = false;
+            checkbox.dispatchEvent(new Event('input', { bubbles: true }));
         });
-        scriptHtml.find('.edit_existing_regex').on('click', async function () {
+        scriptHtml.find('.edit_existing_regex')[0].addEventListener('click', async function () {
             await onRegexEditorOpenClick(scriptHtml.attr('id'), scriptType);
         });
-        scriptHtml.find('.move_to_global').on('click', async function () {
+        scriptHtml.find('.move_to_global')[0].addEventListener('click', async function () {
             const confirm = await callGenericPopup(t`Are you sure you want to move this regex script to global?`, POPUP_TYPE.CONFIRM);
 
             if (!confirm) {
@@ -672,7 +676,7 @@ async function loadRegexScripts() {
             }
             await moveRegexScript(script, SCRIPT_TYPES.GLOBAL, scriptType);
         });
-        scriptHtml.find('.move_to_scoped').on('click', async function () {
+        scriptHtml.find('.move_to_scoped')[0].addEventListener('click', async function () {
             if (this_chid === undefined) {
                 toastr.error(t`No character selected.`);
                 return;
@@ -687,7 +691,7 @@ async function loadRegexScripts() {
             }
             await moveRegexScript(script, SCRIPT_TYPES.SCOPED, scriptType);
         });
-        scriptHtml.find('.move_to_preset').on('click', async function () {
+        scriptHtml.find('.move_to_preset')[0].addEventListener('click', async function () {
             const confirm = await callGenericPopup(
                 t`Are you sure you want to move this regex script to preset?`,
                 POPUP_TYPE.CONFIRM,
@@ -697,12 +701,12 @@ async function loadRegexScripts() {
             }
             await moveRegexScript(script, SCRIPT_TYPES.PRESET, scriptType);
         });
-        scriptHtml.find('.export_regex').on('click', async function () {
+        scriptHtml.find('.export_regex')[0].addEventListener('click', async function () {
             const fileName = `regex-${sanitizeFileName(script.scriptName)}.json`;
             const fileData = JSON.stringify(script, null, 4);
             download(fileData, fileName, 'application/json');
         });
-        scriptHtml.find('.delete_regex').on('click', async function () {
+        scriptHtml.find('.delete_regex')[0].addEventListener('click', async function () {
             const confirm = await callGenericPopup(t`Are you sure you want to delete this regex script?`, POPUP_TYPE.CONFIRM);
             if (!confirm) {
                 return;
@@ -710,13 +714,13 @@ async function loadRegexScripts() {
             await deleteRegexScript(script.id, scriptType);
             await reloadCurrentChat();
         });
-        scriptHtml.find('.regex_bulk_checkbox').on('change', function () {
+        scriptHtml.find('.regex_bulk_checkbox')[0].addEventListener('change', function () {
             setMoveButtonsVisibility();
             const checkboxes = $('#regex_container .regex_bulk_checkbox');
             const allAreChecked = checkboxes.length === checkboxes.filter(':checked').length;
             setToggleAllIcon(allAreChecked);
         });
-        scriptHtml.find('input[name="regex_expand"]').on('change', function () {
+        scriptHtml.find('input[name="regex_expand"]')[0].addEventListener('change', function () {
             if (!(this instanceof HTMLInputElement)) {
                 return;
             }
@@ -808,7 +812,7 @@ async function onRegexEditorOpenClick(existingId, scriptType) {
             .prop('checked', true);
     }
 
-    editorHtml.find('#regex_test_mode_toggle').on('click', function () {
+    editorHtml.find('#regex_test_mode_toggle')[0].addEventListener('click', function () {
         editorHtml.find('#regex_test_mode').toggleClass('displayNone');
         updateTestResult();
     });
@@ -840,7 +844,7 @@ async function onRegexEditorOpenClick(existingId, scriptType) {
         editorHtml.find('#regex_test_output').text(result);
     }
 
-    editorHtml.find('input, textarea, select').on('input', updateTestResult);
+    editorHtml[0].querySelectorAll('input, textarea, select').forEach(el => el.addEventListener('input', updateTestResult));
     updateInfoBlock(editorHtml);
 
     const popupResult = await callGenericPopup(editorHtml, POPUP_TYPE.CONFIRM, '', { okButton: t`Save`, cancelButton: t`Cancel`, allowVerticalScrolling: true });
@@ -1110,9 +1114,9 @@ function populateDebuggerRuleList(container) {
             );
         ruleElement.find('.rule-enabled').prop('checked', !script.disabled);
         // @ts-ignore
-        ruleElement.find('.edit_rule').on('click', () => onRegexEditorOpenClick(script.id, script.type));
+        ruleElement.find('.edit_rule')[0].addEventListener('click', () => onRegexEditorOpenClick(script.id, script.type));
 
-        ruleElement.on('click', function (event) {
+        ruleElement[0].addEventListener('click', function (event) {
             if ($(event.target).is('input, .menu_button, .menu_button i')) {
                 return;
             }
@@ -1180,7 +1184,7 @@ async function onRegexDebuggerOpenClick() {
     // @ts-ignore
     debuggerHtml.find('#regex_debugger_rules_preset').sortable({ delay: getSortableDelay() }).disableSelection();
 
-    debuggerHtml.find('#regex_debugger_run_test').on('click', function () {
+    debuggerHtml.find('#regex_debugger_run_test')[0].addEventListener('click', function () {
         const allScripts = debuggerHtml.data('allScripts');
         const orderedRuleIds = [
             ...$('#regex_debugger_rules_global').find('li.regex-debugger-rule').map((i, el) => $(el).data('id')).get(),
@@ -1259,7 +1263,7 @@ async function onRegexDebuggerOpenClick() {
         }
     });
 
-    debuggerHtml.find('#regex_debugger_save_order').on('click', async function () {
+    debuggerHtml.find('#regex_debugger_save_order')[0].addEventListener('click', async function () {
         const allKnownScripts = getRegexScripts();
         const newGlobalScripts = $('#regex_debugger_rules_global').children('li').map((_, el) => allKnownScripts.find(s => s.id === $(el).data('id'))).get().filter(Boolean);
         const newScopedScripts = $('#regex_debugger_rules_scoped').children('li').map((_, el) => allKnownScripts.find(s => s.id === $(el).data('id'))).get().filter(Boolean);
@@ -1285,7 +1289,7 @@ async function onRegexDebuggerOpenClick() {
         currentPopupContent.find('#regex_debugger_rules_preset').sortable({ delay: getSortableDelay() }).disableSelection();
     });
 
-    debuggerHtml.find('#regex_debugger_expand_steps').on('click', function () {
+    debuggerHtml.find('#regex_debugger_expand_steps')[0].addEventListener('click', function () {
         const popupContainer = $('<div class="expanded-regex-container"></div>');
         const navPanel = $('<div class="expanded-regex-nav"><h4>Steps</h4></div>');
         const contentPanel = $('<div class="expanded-regex-content"></div>');
@@ -1326,7 +1330,7 @@ async function onRegexDebuggerOpenClick() {
         callGenericPopup(popupContainer, POPUP_TYPE.TEXT, t`Step-by-step Transformation`, { wide: true, allowVerticalScrolling: false });
     });
 
-    debuggerHtml.find('#regex_debugger_expand_final').on('click', function () {
+    debuggerHtml.find('#regex_debugger_expand_final')[0].addEventListener('click', function () {
         const content = $('#regex_debugger_final_output').html();
         const popupContent = $('<div class="regex-popup-content"></div>').html(content);
         callGenericPopup(popupContent, POPUP_TYPE.TEXT, t`Final Output`, { wide: true, large: true, allowVerticalScrolling: true });
@@ -1727,11 +1731,11 @@ export async function init() {
 
     const settingsHtml = $(await renderExtensionTemplateAsync('regex', 'dropdown'));
     $('#regex_container').append(settingsHtml);
-    $('#open_regex_editor').on('click', function () {
+    document.getElementById('open_regex_editor').addEventListener('click', function () {
         onRegexEditorOpenClick(false, SCRIPT_TYPES.GLOBAL);
     });
-    $('#open_regex_debugger').on('click', onRegexDebuggerOpenClick);
-    $('#open_scoped_editor').on('click', function () {
+    document.getElementById('open_regex_debugger').addEventListener('click', onRegexDebuggerOpenClick);
+    document.getElementById('open_scoped_editor').addEventListener('click', function () {
         if (this_chid === undefined) {
             toastr.error(t`No character selected.`);
             return;
@@ -1744,15 +1748,15 @@ export async function init() {
 
         onRegexEditorOpenClick(false, SCRIPT_TYPES.SCOPED);
     });
-    $('#open_preset_editor').on('click', function () {
+    document.getElementById('open_preset_editor').addEventListener('click', function () {
         onRegexEditorOpenClick(false, SCRIPT_TYPES.PRESET);
     });
-    $('#import_regex_file').on('change', async function () {
+    document.getElementById('import_regex_file').addEventListener('change', async function () {
         let target = SCRIPT_TYPES.GLOBAL;
         const template = $(await renderExtensionTemplateAsync('regex', 'importTarget'));
-        template.find('#regex_import_target_global').on('input', () => (target = SCRIPT_TYPES.GLOBAL));
-        template.find('#regex_import_target_scoped').on('input', () => (target = SCRIPT_TYPES.SCOPED));
-        template.find('#regex_import_target_preset').on('input', () => (target = SCRIPT_TYPES.PRESET));
+        template.find('#regex_import_target_global')[0].addEventListener('input', () => (target = SCRIPT_TYPES.GLOBAL));
+        template.find('#regex_import_target_scoped')[0].addEventListener('input', () => (target = SCRIPT_TYPES.SCOPED));
+        template.find('#regex_import_target_preset')[0].addEventListener('input', () => (target = SCRIPT_TYPES.PRESET));
 
         await callGenericPopup(template, POPUP_TYPE.TEXT);
 
@@ -1762,11 +1766,11 @@ export async function init() {
         }
         inputElement.value = '';
     });
-    $('#import_regex').on('click', function () {
-        $('#import_regex_file').trigger('click');
+    document.getElementById('import_regex').addEventListener('click', function () {
+        document.getElementById('import_regex_file').click();
     });
 
-    $('#bulk_select_all_toggle').on('click', async function () {
+    document.getElementById('bulk_select_all_toggle').addEventListener('click', async function () {
         const checkboxes = $('#regex_container .regex_bulk_checkbox');
         if (checkboxes.length === 0) {
             return;
@@ -1780,11 +1784,11 @@ export async function init() {
         setMoveButtonsVisibility();
     });
 
-    $('#bulk_enable_regex').on('click', async function () {
+    document.getElementById('bulk_enable_regex').addEventListener('click', async function () {
         await bulkToggleRegexScripts(true);
     });
 
-    $('#bulk_disable_regex').on('click', async function () {
+    document.getElementById('bulk_disable_regex').addEventListener('click', async function () {
         await bulkToggleRegexScripts(false);
     });
 
@@ -1847,7 +1851,7 @@ export async function init() {
         }
     }
 
-    $('#bulk_regex_move_to_global').on('click', async () => {
+    document.getElementById('bulk_regex_move_to_global').addEventListener('click', async () => {
         const confirm = await callGenericPopup(t`Are you sure you want to move the selected regex scripts to global?`, POPUP_TYPE.CONFIRM);
         if (!confirm) {
             return;
@@ -1855,7 +1859,7 @@ export async function init() {
         await bulkMoveRegexScript(SCRIPT_TYPES.GLOBAL);
     });
 
-    $('#bulk_regex_move_to_scoped').on('click', async () => {
+    document.getElementById('bulk_regex_move_to_scoped').addEventListener('click', async () => {
         if (this_chid === undefined) {
             toastr.error(t`No character selected.`);
             return;
@@ -1871,7 +1875,7 @@ export async function init() {
         await bulkMoveRegexScript(SCRIPT_TYPES.SCOPED);
     });
 
-    $('#bulk_regex_move_to_preset').on('click', async function () {
+    document.getElementById('bulk_regex_move_to_preset').addEventListener('click', async function () {
         const confirm = await callGenericPopup(t`Are you sure you want to move the selected regex scripts to preset?`, POPUP_TYPE.CONFIRM);
         if (!confirm) {
             return;
@@ -1879,7 +1883,7 @@ export async function init() {
         await bulkMoveRegexScript(SCRIPT_TYPES.PRESET);
     });
 
-    $('#bulk_delete_regex').on('click', async function () {
+    document.getElementById('bulk_delete_regex').addEventListener('click', async function () {
         const scripts = getSelectedScripts();
         if (scripts.length === 0) {
             toastr.warning(t`No regex scripts selected for deletion.`);
@@ -1897,7 +1901,7 @@ export async function init() {
         await reloadCurrentChat();
     });
 
-    $('#bulk_export_regex').on('click', async function () {
+    document.getElementById('bulk_export_regex').addEventListener('click', async function () {
         const scripts = getSelectedScripts();
         if (scripts.length === 0) {
             toastr.warning(t`No regex scripts selected for export.`);
@@ -1952,7 +1956,7 @@ export async function init() {
         });
     }
 
-    $('#regex_scoped_toggle').on('input', function () {
+    document.getElementById('regex_scoped_toggle').addEventListener('input', function () {
         if (this_chid === undefined) {
             toastr.error(t`No character selected.`);
             return;
@@ -1963,7 +1967,7 @@ export async function init() {
             return;
         }
 
-        const isEnable = !!$(this).prop('checked');
+        const isEnable = !!(this).checked;
         const character = characters[this_chid];
 
         if (isEnable) {
@@ -1976,8 +1980,8 @@ export async function init() {
         reloadCurrentChat();
     });
 
-    $('#regex_preset_toggle').on('input', function () {
-        const isEnable = !!$(this).prop('checked');
+    document.getElementById('regex_preset_toggle').addEventListener('input', function () {
+        const isEnable = !!(this).checked;
         const name = getCurrentPresetName();
 
         if (isEnable) {
