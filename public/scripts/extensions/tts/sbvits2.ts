@@ -7,7 +7,7 @@ class SBVits2TtsProvider {
     // Config //
     //########//
 
-    settings;
+    settings: any;
     ready = false;
     voices = [];
     separator = '. ';
@@ -18,7 +18,7 @@ class SBVits2TtsProvider {
      * @param {string} text Input text
      * @returns {string} Processed text
      */
-    processText(text) {
+    processText(text: any) {
         // backup for auto_split
         text = text.replace(/\n+/g, '<br>');
         return text;
@@ -139,7 +139,7 @@ class SBVits2TtsProvider {
         this.changeTTSSettings();
     }
 
-    async loadSettings(settings) {
+    async loadSettings(settings: any) {
         // Pupulate Provider UI given input settings
         if (Object.keys(settings).length == 0) {
             console.info('Using default TTS Provider settings');
@@ -216,7 +216,7 @@ class SBVits2TtsProvider {
      * @param {string} voiceName Voice name to get
      * @returns {Promise<Object>} Voice object
      */
-    async getVoice(voiceName) {
+    async getVoice(voiceName: any) {
         if (this.voices.length == 0) {
             this.voices = await this.fetchTtsVoiceObjects();
         }
@@ -229,7 +229,7 @@ class SBVits2TtsProvider {
         return match;
     }
 
-    async generateTts(text, voiceId) {
+    async generateTts(text: any, voiceId: any) {
         const response = await this.fetchTtsGeneration(text, voiceId);
         return response;
     }
@@ -273,7 +273,7 @@ class SBVits2TtsProvider {
      * @param {string} voiceId Voice ID to use (model_id-speaker_id-style)
      * @returns {Promise<Response>} Fetch response
      */
-    async fetchTtsGeneration(inputText, voiceId) {
+    async fetchTtsGeneration(inputText: any, voiceId: any) {
         console.info(`Generating new TTS for voice_id ${voiceId}`);
 
         const [model_id, speaker_id, ...rest] = voiceId.split('-');
@@ -321,7 +321,7 @@ class SBVits2TtsProvider {
      * Preview TTS for a given voice ID.
      * @param {string} id Voice ID
      */
-    async previewTtsVoice(id) {
+    async previewTtsVoice(id: any) {
         this.audioElement.pause();
         this.audioElement.currentTime = 0;
         const lang_code = this.langKey2LangCode[this.settings.lang] ?? 'ja-JP';
@@ -338,7 +338,7 @@ class SBVits2TtsProvider {
     }
 
     // Interface not used
-    async fetchTtsFromHistory(history_item_id) {
+    async fetchTtsFromHistory(history_item_id: any) {
         return Promise.resolve(history_item_id);
     }
 }

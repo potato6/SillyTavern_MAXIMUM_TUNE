@@ -7,7 +7,7 @@ class GptSovitsV2Provider {
     // Config //
     //########//
 
-    settings;
+    settings: any;
     ready = false;
     voices = [];
     separator = '. ';
@@ -18,7 +18,7 @@ class GptSovitsV2Provider {
      * @param {string} text Input text
      * @returns {string} Processed text
      */
-    processText(text) {
+    processText(text: any) {
         return text;
     }
 
@@ -74,7 +74,7 @@ class GptSovitsV2Provider {
         this.changeTTSSettings();
     }
 
-    async loadSettings(settings) {
+    async loadSettings(settings: any) {
         // Pupulate Provider UI given input settings
         if (Object.keys(settings).length == 0) {
             console.info('Using default TTS Provider settings');
@@ -114,7 +114,7 @@ class GptSovitsV2Provider {
     //  TTS Interfaces //
     //#################//
 
-    async getVoice(voiceName) {
+    async getVoice(voiceName: any) {
         if (this.voices.length == 0) {
             this.voices = await this.fetchTtsVoiceObjects();
         }
@@ -131,7 +131,7 @@ class GptSovitsV2Provider {
     }
 
 
-    async generateTts(text, voiceId) {
+    async generateTts(text: any, voiceId: any) {
         const response = await this.fetchTtsGeneration(text, voiceId);
         return response;
     }
@@ -166,10 +166,10 @@ class GptSovitsV2Provider {
      */
 
 
-    async fetchTtsGeneration(inputText, voiceId, lang = null, forceNoStreaming = false) {
+    async fetchTtsGeneration(inputText: any, voiceId: any, lang = null, forceNoStreaming = false) {
         console.info(`Generating new TTS for voice_id ${voiceId}`);
 
-        function replaceSpeaker(text) {
+        function replaceSpeaker(text: any) {
             return text.replace(/\[.*?\]/gu, '');
         }
 
@@ -209,7 +209,7 @@ class GptSovitsV2Provider {
 
 
     // Interface not used
-    async fetchTtsFromHistory(history_item_id) {
+    async fetchTtsFromHistory(history_item_id: any) {
         return Promise.resolve(history_item_id);
     }
 }

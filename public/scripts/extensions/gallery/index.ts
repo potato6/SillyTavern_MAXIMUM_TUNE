@@ -21,7 +21,7 @@ import { Popup } from '../../popup.js';
 import { deleteMediaFromServer } from '../../chats.js';
 import { MEDIA_REQUEST_TYPE, VIDEO_EXTENSIONS } from '../../constants.js';
 
-const isVideo = (/** @type {string} */ url) => VIDEO_EXTENSIONS.some(ext => new RegExp(`.${ext}$`, 'i').test(url));
+const isVideo = (/** @type {string} */ url: any) => VIDEO_EXTENSIONS.some(ext => new RegExp(`.${ext}$`, 'i').test(url));
 const extensionName = 'gallery';
 const extensionFolderPath = `scripts/extensions/${extensionName}/`;
 let firstTime = true;
@@ -29,7 +29,7 @@ let deleteModeActive = false;
 
 
 // Remove all draggables associated with the gallery
-$('#movingDivs').on('click', '.dragClose', function () {
+$('#movingDivs').on('click', '.dragClose', function(this: any) {
     const relatedId = $(this).data('related-id');
     if (!relatedId) return;
     const relatedElement = $(`#movingDivs > .draggable[id="${relatedId}"]`);
@@ -98,7 +98,7 @@ function initSettings() {
  * @param {Character} char Character data
  * @returns {string} The gallery folder for the character
  */
-function getGalleryFolder(char) {
+function getGalleryFolder(char: any) {
     return SillyTavern.getContext().extensionSettings.gallery.folders[char?.avatar] ?? char?.name;
 }
 
@@ -109,7 +109,7 @@ function getGalleryFolder(char) {
  * @param {string} url - The base URL to retrieve the list of images.
  * @returns {Promise<Array>} - Resolves with an array of gallery item objects, rejects on error.
  */
-async function getGalleryItems(url) {
+async function getGalleryItems(url: any) {
     const sortValue = getSortOrder();
     const sortObj = Object.values(SORT).find(it => it.value === sortValue) ?? SORT.DATE_ASC;
     const response = await fetch('/api/images/list', {
@@ -177,7 +177,7 @@ async function getGalleryFolders() {
  * Deletes a gallery item based on the provided URL.
  * @param {string} url - The URL of the image to be deleted.
  */
-async function deleteGalleryItem(url) {
+async function deleteGalleryItem(url: any) {
     const isDeleted = await deleteMediaFromServer(url, false);
     if (isDeleted) {
         toastr.success(t`Image deleted successfully.`);
@@ -188,7 +188,7 @@ async function deleteGalleryItem(url) {
  * Sets the sort order for the gallery.
  * @param {string} order Sort order
  */
-function setSortOrder(order) {
+function setSortOrder(order: any) {
     const context = SillyTavern.getContext();
     context.extensionSettings.gallery.sort = order;
     context.saveSettingsDebounced();
@@ -211,7 +211,7 @@ function getSortOrder() {
  * @param {string} url - The URL to use when a file is dropped onto the gallery for uploading.
  * @returns {Promise<void>} - Promise representing the completion of the gallery initialization.
  */
-async function initGallery(items, url) {
+async function initGallery(items: any, url: any) {
     // Exposed defaults for future tweaking
     const thumbnailHeight = 150;
     const paginationVisiblePages = 5;
@@ -242,13 +242,13 @@ async function initGallery(items, url) {
         },
         galleryDisplayMode: 'pagination',
         fnThumbnailOpen: viewWithDragbox,
-        fnThumbnailInit: function (/** @type {JQuery<HTMLElement>} */ $thumbnail, /** @type {{src: string}} */ item) {
+        fnThumbnailInit: function (/** @type {JQuery<HTMLElement>} */ $thumbnail: any, /** @type {{src: string}} */ item: any) {
             if (!item?.src) return;
             $thumbnail.attr('title', String(item.src).split('/').pop());
         },
     });
 
-    const dragDropHandler = new DragAndDropHandler(`#dragGallery.${nonce}`, async (files) => {
+    const dragDropHandler = new DragAndDropHandler(`#dragGallery.${nonce}`, async (files: any) => {
         if (!Array.isArray(files) || files.length === 0) {
             return;
         }
@@ -347,7 +347,7 @@ async function showCharGallery(deleteModeState = false) {
  * @param {string} url - The URL indicating where the file should be uploaded.
  * @returns {Promise<void>} - Promise representing the completion of the file upload and gallery refresh.
  */
-async function uploadFile(file, url) {
+async function uploadFile(file: any, url: any) {
     try {
         // Convert the file to a base64 string
         const fileBase64 = await getBase64Async(file);
@@ -372,7 +372,7 @@ async function uploadFile(file, url) {
  * @param {string} url - The URL of the image source.
  * @returns {Promise<void>} - Promise representing the completion of the draggable container creation.
  */
-async function makeMovable(url) {
+async function makeMovable(url: any) {
     console.debug('making new container from template');
     const id = 'gallery';
     const template = $('#generic_draggable_template').html();
@@ -457,7 +457,7 @@ async function makeMovable(url) {
     const topBarElement = document.createElement('div');
     topBarElement.classList.add('flex-container', 'alignItemsCenter');
 
-    const onChangeFolder = async (/** @type {Event} */ e) => {
+    const onChangeFolder = async (/** @type {Event} */ e: any) => {
         if (e instanceof KeyboardEvent && e.key !== 'Enter') {
             return;
         }
@@ -526,12 +526,12 @@ async function makeMovable(url) {
     const folders = await getGalleryFolders();
     $(galleryFolderInput)
         .autocomplete({
-            source: (i, o) => {
+            source: (i: any, o: any) => {
                 const term = i.term.toLowerCase();
-                const filtered = folders.filter(f => f.toLowerCase().includes(term));
+                const filtered = folders.filter((f: any) => f.toLowerCase().includes(term));
                 o(filtered);
             },
-            select: (e, u) => {
+            select: (e: any, u: any) => {
                 galleryFolderInput.value = u.item.value;
                 onChangeFolder(e);
             },
@@ -555,7 +555,7 @@ async function makeMovable(url) {
         easing: animation_easing,
     });
 
-    $(`.draggable[forChar="${id}"] img`).on('dragstart', (e) => {
+    $(`.draggable[forChar="${id}"] img`).on('dragstart', (e: any) => {
         console.log('saw drag on avatar!');
         e.preventDefault();
         return false;
@@ -566,7 +566,7 @@ async function makeMovable(url) {
  * Sets the gallery folder to a new URL.
  * @param {string} newUrl - The new URL to set for the gallery folder.
  */
-function updateGalleryFolder(newUrl) {
+function updateGalleryFolder(newUrl: any) {
     if (!newUrl) {
         throw new Error('Folder name cannot be empty');
     }
@@ -626,7 +626,7 @@ function restoreGalleryFolder() {
  * @param {string} id - A base identifier for the new draggable element.
  * @param {string} url - The URL of the image to be added to the draggable element.
  */
-function makeDragImg(id, url) {
+function makeDragImg(id: any, url: any) {
     // Step 1: Clone the template content
     const template = document.getElementById('generic_draggable_template');
 
@@ -694,7 +694,7 @@ function makeDragImg(id, url) {
         dragElement(appendedElement);
 
         // Prevent dragging the image
-        $(`#${uniqueId} img`).on('dragstart', (e) => {
+        $(`#${uniqueId} img`).on('dragstart', (e: any) => {
             console.log('saw drag on avatar!');
             e.preventDefault();
             return false;
@@ -711,7 +711,7 @@ function makeDragImg(id, url) {
  * @param {string} id - The ID to be sanitized.
  * @returns {string} - The sanitized ID.
  */
-function sanitizeHTMLId(id) {
+function sanitizeHTMLId(id: any) {
     // Replace spaces and non-word characters
     id = id.replace(/\s+/g, '-')
         .replace(/[^\x00-\x7F]/g, '-')
@@ -729,7 +729,7 @@ function sanitizeHTMLId(id) {
  *
  * @param {Array} items - A list of items where each item has a responsiveURL method that returns a URL.
  */
-function viewWithDragbox(items) {
+function viewWithDragbox(items: any) {
     if (items && items.length > 0) {
         const url = items[0].responsiveURL(); // Get the URL of the clicked image/video
         if (deleteModeActive) {
@@ -781,7 +781,7 @@ SlashCommandParser.addCommandObject(SlashCommand.fromProps({
     helpString: 'List images in the gallery of the current char / group or a specified char / group.',
 }));
 
-async function listGalleryCommand(args) {
+async function listGalleryCommand(args: any) {
     try {
         let url = args.char ?? (args.group ? groups.find(it => it.name == args.group)?.id : null) ?? (selected_group || this_chid);
         if (!args.char && !args.group && !selected_group && this_chid !== undefined) {
@@ -819,7 +819,7 @@ function addGalleryWandButton() {
 // On extension load, ensure the settings are initialized
 export async function init() {
     initSettings();
-    eventSource.on(event_types.CHARACTER_RENAMED, (oldAvatar, newAvatar) => {
+    eventSource.on(event_types.CHARACTER_RENAMED, (oldAvatar: any, newAvatar: any) => {
         const context = SillyTavern.getContext();
         const galleryFolder = context.extensionSettings.gallery.folders[oldAvatar];
         if (galleryFolder) {
@@ -828,14 +828,14 @@ export async function init() {
             context.saveSettingsDebounced();
         }
     });
-    eventSource.on(event_types.CHARACTER_DELETED, (data) => {
+    eventSource.on(event_types.CHARACTER_DELETED, (data: any) => {
         const avatar = data?.character?.avatar;
         if (!avatar) return;
         const context = SillyTavern.getContext();
         delete context.extensionSettings.gallery.folders[avatar];
         context.saveSettingsDebounced();
     });
-    eventSource.on(event_types.CHARACTER_MANAGEMENT_DROPDOWN, (selectedOptionId) => {
+    eventSource.on(event_types.CHARACTER_MANAGEMENT_DROPDOWN, (selectedOptionId: any) => {
         if (selectedOptionId === 'show_char_gallery') {
             showCharGallery();
         }

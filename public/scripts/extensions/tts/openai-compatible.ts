@@ -5,7 +5,7 @@ import { getPreviewString, saveTtsProviderSettings } from './index.js';
 export { OpenAICompatibleTtsProvider };
 
 class OpenAICompatibleTtsProvider {
-    settings;
+    settings: any;
     voices = [];
     separator = ' . ';
 
@@ -41,7 +41,7 @@ class OpenAICompatibleTtsProvider {
     }
 
     constructor() {
-        this.handler = async function (/** @type {string} */ key) {
+        this.handler = async function(this: any, /** @type {string} */ key: any) {
             if (key !== SECRET_KEYS.CUSTOM_OPENAI_TTS) return;
             $('#openai_compatible_tts_key').toggleClass('success', !!secret_state[SECRET_KEYS.CUSTOM_OPENAI_TTS]);
             await this.onRefreshClick();
@@ -54,7 +54,7 @@ class OpenAICompatibleTtsProvider {
         });
     }
 
-    async loadSettings(settings) {
+    async loadSettings(settings: any) {
         // Populate Provider UI given input settings
         if (Object.keys(settings).length == 0) {
             console.info('Using default TTS Provider settings');
@@ -115,7 +115,7 @@ class OpenAICompatibleTtsProvider {
         return;
     }
 
-    async getVoice(voiceName) {
+    async getVoice(voiceName: any) {
         if (this.voices.length == 0) {
             this.voices = await this.fetchTtsVoiceObjects();
         }
@@ -128,18 +128,18 @@ class OpenAICompatibleTtsProvider {
         return match;
     }
 
-    async generateTts(text, voiceId) {
+    async generateTts(text: any, voiceId: any) {
         const response = await this.fetchTtsGeneration(text, voiceId);
         return response;
     }
 
     async fetchTtsVoiceObjects() {
-        return this.settings.available_voices.map(v => {
+        return this.settings.available_voices.map((v: any) => {
             return { name: v, voice_id: v, lang: 'en-US' };
         });
     }
 
-    async previewTtsVoice(voiceId) {
+    async previewTtsVoice(voiceId: any) {
         this.audioElement.pause();
         this.audioElement.currentTime = 0;
 
@@ -156,7 +156,7 @@ class OpenAICompatibleTtsProvider {
         this.audioElement.onended = () => URL.revokeObjectURL(url);
     }
 
-    async fetchTtsGeneration(inputText, voiceId) {
+    async fetchTtsGeneration(inputText: any, voiceId: any) {
         console.info(`Generating new TTS for voice_id ${voiceId}`);
         const response = await fetch('/api/openai/custom/generate-voice', {
             method: 'POST',

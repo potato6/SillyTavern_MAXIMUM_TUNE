@@ -1,7 +1,7 @@
 import { MenuItem } from './MenuItem.js';
 
 export class MenuHeader extends MenuItem {
-    constructor(/**@type {String}*/label) {
+    constructor(/**@type {String}*/label: any) {
         super(null, null, label, null, null, null, []);
     }
 

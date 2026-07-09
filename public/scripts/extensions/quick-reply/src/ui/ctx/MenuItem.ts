@@ -8,11 +8,11 @@ export class MenuItem {
     /**@type {object}*/ value;
     /**@type {function}*/ callback;
     /**@type {MenuItem[]}*/ childList = [];
-    /**@type {SubMenu}*/ subMenu;
+    /**@type {SubMenu}*/ subMenu: any;
 
-    /**@type {HTMLElement}*/ root;
+    /**@type {HTMLElement}*/ root: any;
 
-    /**@type {function}*/ onExpand;
+    /**@type {function}*/ onExpand: any;
 
 
     /**
@@ -25,7 +25,7 @@ export class MenuItem {
      * @param {function} callback
      * @param {MenuItem[]} children
      */
-    constructor(icon, showLabel, label, title, value, callback, children = []) {
+    constructor(icon: any, showLabel: any, label: any, title: any, value: any, callback: any, children = []) {
         this.icon = icon;
         this.showLabel = showLabel;
         this.label = label;

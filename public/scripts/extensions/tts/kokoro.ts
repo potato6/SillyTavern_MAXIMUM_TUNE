@@ -57,13 +57,13 @@ export class KokoroTtsProvider {
      * @param {string} text Input text
      * @returns {string} Processed text
      */
-    processText(text) {
+    processText(text: any) {
         // TILDE!
         text = text.replace(/~/g, '.');
         return text;
     }
 
-    async loadSettings(settings) {
+    async loadSettings(settings: any) {
         if (settings.modelId !== undefined) this.settings.modelId = settings.modelId;
         if (settings.dtype !== undefined) this.settings.dtype = settings.dtype;
         if (settings.device !== undefined) this.settings.device = settings.device;
@@ -110,11 +110,11 @@ export class KokoroTtsProvider {
                     }, 600000); // 600 second timeout
 
                     this.pendingRequests.set('initialization', {
-                        resolve: (result) => {
+                        resolve: (result: any) => {
                             clearTimeout(timeoutId);
                             initResolve(result);
                         },
-                        reject: (error) => {
+                        reject: (error: any) => {
                             clearTimeout(timeoutId);
                             initReject(error);
                         },
@@ -141,7 +141,7 @@ export class KokoroTtsProvider {
         });
     }
 
-    handleWorkerMessage(event) {
+    handleWorkerMessage(event: any) {
         const { action, success, ready, error, requestId, blobUrl } = event.data;
 
         switch (action) {
@@ -254,15 +254,15 @@ export class KokoroTtsProvider {
         if (!this.ready) {
             await this.checkReady();
         }
-        return this.voices.map(voice => ({
+        return this.voices.map((voice: any) => ({
             name: voice,
             voice_id: voice,
             preview_url: null,
-            lang: voice.startsWith('b') ? 'en-GB' : 'en-US',
+            lang: voice.startsWith('b') ? 'en-GB' : 'en-US'
         }));
     }
 
-    async previewTtsVoice(voiceId) {
+    async previewTtsVoice(voiceId: any) {
         if (!this.ready) {
             await this.checkReady();
         }
@@ -282,11 +282,11 @@ export class KokoroTtsProvider {
         }
     }
 
-    getVoiceDisplayName(voiceId) {
+    getVoiceDisplayName(voiceId: any) {
         return voiceId;
     }
 
-    getVoice(voiceName) {
+    getVoice(voiceName: any) {
         const defaultVoice = this.settings.defaultVoice || 'af_heart';
         const actualVoiceName = this.voices.includes(voiceName) ? voiceName : defaultVoice;
         return {
@@ -303,7 +303,7 @@ export class KokoroTtsProvider {
      * @param {string} voiceId Voice ID
      * @returns {AsyncGenerator<Response>} Audio response generator
      */
-    async* generateTts(text, voiceId) {
+    async* generateTts(text: any, voiceId: any) {
         if (!this.ready || !this.worker) {
             console.log('TTS not ready, initializing...');
             await this.initializeWorker();

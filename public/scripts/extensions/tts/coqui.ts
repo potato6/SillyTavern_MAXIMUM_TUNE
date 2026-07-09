@@ -58,7 +58,7 @@ class CoquiTtsProvider {
     //  Extension UI and Settings  //
     //#############################//
 
-    settings;
+    settings: any;
 
     defaultSettings = {
         voiceMap: {},
@@ -123,7 +123,7 @@ class CoquiTtsProvider {
         return html;
     }
 
-    async loadSettings(settings) {
+    async loadSettings(settings: any) {
         // Only accept keys defined in defaultSettings
         this.settings = this.defaultSettings;
 
@@ -338,7 +338,7 @@ class CoquiTtsProvider {
         return;
     }
 
-    async getVoice(voiceName) {
+    async getVoice(voiceName: any) {
         let match = await this.fetchTtsVoiceObjects();
         match = match.filter(
             voice => voice.name == voiceName,
@@ -589,7 +589,7 @@ class CoquiTtsProvider {
     /*
         Check model installation state, return one of ["installed", "corrupted", "absent"]
     */
-    static async checkmodel_state(model_id) {
+    static async checkmodel_state(model_id: any) {
         throwIfModuleMissing();
         const url = new URL(getApiUrl());
         url.pathname = '/api/text-to-speech/coqui/coqui-api/check-model-state';
@@ -613,7 +613,7 @@ class CoquiTtsProvider {
         return apiResult;
     }
 
-    static async installModel(model_id, action) {
+    static async installModel(model_id: any, action: any) {
         throwIfModuleMissing();
         const url = new URL(getApiUrl());
         url.pathname = '/api/text-to-speech/coqui/coqui-api/install-model';
@@ -671,7 +671,7 @@ class CoquiTtsProvider {
     // tts_models/multilingual/multi-dataset/your_tts[2][1]
     // tts_models/en/ljspeech/glow-tts
     // ts_models/ja/kokoro/tacotron2-DDC
-    async generateTts(text, voiceId) {
+    async generateTts(text: any, voiceId: any) {
         throwIfModuleMissing();
         voiceId = this.settings.customVoices[voiceId];
 
@@ -730,11 +730,11 @@ class CoquiTtsProvider {
     }
 
     // Do nothing
-    previewTtsVoice(id) {
+    previewTtsVoice(id: any) {
         return;
     }
 
-    async fetchTtsFromHistory(history_item_id) {
+    async fetchTtsFromHistory(history_item_id: any) {
         return Promise.resolve(history_item_id);
     }
 }

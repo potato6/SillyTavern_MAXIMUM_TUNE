@@ -10,7 +10,7 @@ class MiniMaxTtsProvider {
     // Config //
     //########//
 
-    settings;
+    settings: any;
     voices = [];
     separator = ' . ';
     audioElement = document.createElement('audio');
@@ -172,7 +172,7 @@ class MiniMaxTtsProvider {
     }
 
     constructor() {
-        this.handler = async function (/** @type {string} */ key) {
+        this.handler = async function(this: any, /** @type {string} */ key: any) {
             if (![SECRET_KEYS.MINIMAX, SECRET_KEYS.MINIMAX_GROUP_ID].includes(key)) return;
             $('#api_key_minimax').toggleClass('success', !!secret_state[SECRET_KEYS.MINIMAX]);
             $('#minimax_group_id').toggleClass('success', !!secret_state[SECRET_KEYS.MINIMAX_GROUP_ID]);
@@ -212,7 +212,7 @@ class MiniMaxTtsProvider {
         }
 
         // Check if already exists in custom models
-        if (this.settings.customModels.find(m => m.id === modelId)) {
+        if (this.settings.customModels.find((m: any) => m.id === modelId)) {
             toastr.error('Model ID already exists in custom models');
             return;
         }
@@ -239,8 +239,8 @@ class MiniMaxTtsProvider {
         toastr.success('Model added successfully');
     }
 
-    removeCustomModel(modelId) {
-        this.settings.customModels = this.settings.customModels.filter(m => m.id !== modelId);
+    removeCustomModel(modelId: any) {
+        this.settings.customModels = this.settings.customModels.filter((m: any) => m.id !== modelId);
         this.updateCustomModelsDisplay();
         this.updateModelSelect(this.getAllModels());
         saveTtsProviderSettings();
@@ -259,7 +259,7 @@ class MiniMaxTtsProvider {
         }
 
         // Check if already exists in custom voices
-        if (this.settings.customVoices.find(v => v.voice_id === voiceId)) {
+        if (this.settings.customVoices.find((v: any) => v.voice_id === voiceId)) {
             toastr.error('Voice ID already exists in custom voices');
             return;
         }
@@ -297,8 +297,8 @@ class MiniMaxTtsProvider {
     }
 
     // Remove custom voice
-    removeCustomVoice(voiceId) {
-        this.settings.customVoices = this.settings.customVoices.filter(v => v.voice_id !== voiceId);
+    removeCustomVoice(voiceId: any) {
+        this.settings.customVoices = this.settings.customVoices.filter((v: any) => v.voice_id !== voiceId);
         this.updateCustomVoicesDisplay();
         initVoiceMap(); // Update TTS extension voiceMap
         saveTtsProviderSettings();
@@ -306,7 +306,7 @@ class MiniMaxTtsProvider {
     }
 
     // Helper function to escape HTML
-    escapeHtml(text) {
+    escapeHtml(text: any) {
         const div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
@@ -322,7 +322,7 @@ class MiniMaxTtsProvider {
             return;
         }
 
-        this.settings.customModels.forEach(model => {
+        this.settings.customModels.forEach((model: any) => {
             const modelDiv = $('<div></div>').addClass('minimax-custom-item');
 
             const modelInfo = $('<div></div>').addClass('minimax-custom-item-info');
@@ -357,7 +357,7 @@ class MiniMaxTtsProvider {
             return;
         }
 
-        this.settings.customVoices.forEach(voice => {
+        this.settings.customVoices.forEach((voice: any) => {
             const voiceDiv = $('<div></div>').addClass('minimax-custom-item');
 
             const voiceInfo = $('<div></div>').addClass('minimax-custom-item-info');
@@ -397,7 +397,7 @@ class MiniMaxTtsProvider {
      * @param {string} displayName Language display name
      * @returns {string} Standard language code
      */
-    convertDisplayNameToLanguageCode(displayName) {
+    convertDisplayNameToLanguageCode(displayName: any) {
         const displayNameToCode = {
             'Chinese': 'zh-CN',
             'Chinese,Yue': 'zh-TW',
@@ -428,7 +428,7 @@ class MiniMaxTtsProvider {
         return displayNameToCode[displayName] || displayName;
     }
 
-    updateModelSelect(models) {
+    updateModelSelect(models: any) {
         const modelSelect = $('#minimax_tts_model');
         const currentValue = modelSelect.val();
 
@@ -436,7 +436,7 @@ class MiniMaxTtsProvider {
         modelSelect.empty();
 
         // Add all models
-        models.forEach(model => {
+        models.forEach((model: any) => {
             const option = $('<option></option>');
             option.val(model.id);
             option.text(model.name);
@@ -444,12 +444,12 @@ class MiniMaxTtsProvider {
         });
 
         // Restore previous selection if it still exists
-        if (currentValue && models.find(m => m.id === currentValue)) {
+        if (currentValue && models.find((m: any) => m.id === currentValue)) {
             modelSelect.val(currentValue);
         }
     }
 
-    async loadSettings(settings) {
+    async loadSettings(settings: any) {
         // Populate Provider UI given input settings
         if (Object.keys(settings).length === 0) {
             console.info('Using default MiniMax TTS Provider settings');
@@ -547,7 +547,7 @@ class MiniMaxTtsProvider {
 
         // Keyboard event listeners
         const ENTER_KEY = 13;
-        $('#minimax_custom_model_id, #minimax_custom_model_name').on('keypress', (e) => {
+        $('#minimax_custom_model_id, #minimax_custom_model_name').on('keypress', (e: any) => {
             if (e.which === ENTER_KEY) {
                 try {
                     this.addCustomModel();
@@ -558,7 +558,7 @@ class MiniMaxTtsProvider {
             }
         });
 
-        $('#minimax_custom_voice_name, #minimax_custom_voice_id').on('keypress', (e) => {
+        $('#minimax_custom_voice_name, #minimax_custom_voice_id').on('keypress', (e: any) => {
             if (e.which === ENTER_KEY) {
                 try {
                     this.addCustomVoice();
@@ -650,7 +650,7 @@ class MiniMaxTtsProvider {
         }
     }
 
-    async getVoice(voiceName) {
+    async getVoice(voiceName: any) {
         if (!voiceName) {
             const error = new Error('TTS Voice name not provided');
             console.error('MiniMax TTS getVoice error:', error.message);
@@ -680,7 +680,7 @@ class MiniMaxTtsProvider {
         return voice;
     }
 
-    async generateTts(text, voiceId) {
+    async generateTts(text: any, voiceId: any) {
         // If voiceId is 'customVoice', use the custom voice ID from settings
         if (voiceId === 'customVoice') {
             const customVoiceId = this.settings.customVoiceId;
@@ -761,7 +761,7 @@ class MiniMaxTtsProvider {
     }
 
     // Get correct MIME type
-    getAudioMimeType(format) {
+    getAudioMimeType(format: any) {
         const mimeTypes = {
             'mp3': 'audio/mpeg',
             'wav': 'audio/wav',
@@ -772,7 +772,7 @@ class MiniMaxTtsProvider {
         return mimeTypes[format] || 'audio/mpeg';
     }
 
-    async fetchTtsGeneration(inputText, voiceId, language = null) {
+    async fetchTtsGeneration(inputText: any, voiceId: any, language = null) {
         console.info(`Generating new MiniMax TTS for voice_id ${voiceId}`);
 
         if (!secret_state[SECRET_KEYS.MINIMAX] || !secret_state[SECRET_KEYS.MINIMAX_GROUP_ID]) {
@@ -782,7 +782,7 @@ class MiniMaxTtsProvider {
         }
 
         /** @param {number} number @param {number} lower @param {number} upper @returns {number} */
-        const clamp = (number, lower, upper) => Math.min(Math.max(number, lower), upper);
+        const clamp = (number: any, lower: any, upper: any) => Math.min(Math.max(number, lower), upper);
 
         const requestBody = {
             text: inputText,
@@ -848,7 +848,7 @@ class MiniMaxTtsProvider {
      * @param {string} lang Language code or display name
      * @returns {string} MiniMax API language format
      */
-    mapLanguageToMiniMaxFormat(lang) {
+    mapLanguageToMiniMaxFormat(lang: any) {
         // Convert display name to language code if needed
         const languageCode = this.convertDisplayNameToLanguageCode(lang);
 
@@ -891,7 +891,7 @@ class MiniMaxTtsProvider {
      * Preview TTS for a given voice ID.
      * @param {string} voiceId Voice ID
      */
-    async previewTtsVoice(voiceId) {
+    async previewTtsVoice(voiceId: any) {
         this.audioElement.pause();
         this.audioElement.currentTime = 0;
 

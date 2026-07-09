@@ -1,13 +1,13 @@
 // kokoro-worker.js
 /** @type {import('./lib/kokoro.web.js').KokoroTTS} */
-let tts = null;
+let tts: any = null;
 /** @type {boolean} */
 let ready = false;
 /** @type {string[]} */
-let voices = [];
+let voices: any = [];
 
 // Handle messages from the main thread
-self.onmessage = async function (e) {
+self.onmessage = async function (e: any) {
     const { action, data } = e.data;
 
     switch (action) {
@@ -55,7 +55,7 @@ self.onmessage = async function (e) {
 };
 
 // Initialize the TTS engine
-async function initializeTts(settings) {
+async function initializeTts(settings: any) {
     try {
         const { KokoroTTS } = await import('./lib/kokoro.web.js');
 
@@ -90,7 +90,7 @@ async function initializeTts(settings) {
 }
 
 // Generate TTS audio
-async function generateTts(text, voiceId, speakingRate) {
+async function generateTts(text: any, voiceId: any, speakingRate: any) {
     if (!ready || !tts) {
         throw new Error('TTS engine not initialized');
     }

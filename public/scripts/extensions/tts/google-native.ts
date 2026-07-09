@@ -5,7 +5,7 @@ import { getPreviewString, saveTtsProviderSettings } from './index.js';
 
 
 export class GoogleNativeTtsProvider {
-    settings;
+    settings: any;
     voices = [];
     separator = ' . ';
     audioElement = document.createElement('audio');
@@ -37,7 +37,7 @@ export class GoogleNativeTtsProvider {
         </div>`;
     }
 
-    async loadSettings(settings) {
+    async loadSettings(settings: any) {
         if (Object.keys(settings).length === 0) {
             console.info('Using default Google TTS Provider settings');
         }
@@ -73,7 +73,7 @@ export class GoogleNativeTtsProvider {
         await this.checkReady();
     }
 
-    async getVoice(voiceName) {
+    async getVoice(voiceName: any) {
         if (this.voices.length === 0) {
             this.voices = await this.fetchTtsVoiceObjects();
         }
@@ -86,7 +86,7 @@ export class GoogleNativeTtsProvider {
         return match;
     }
 
-    async generateTts(text, voiceId) {
+    async generateTts(text: any, voiceId: any) {
         return await this.fetchNativeTtsGeneration(text, voiceId);
     }
 
@@ -130,7 +130,7 @@ export class GoogleNativeTtsProvider {
         }
     }
 
-    async previewTtsVoice(id) {
+    async previewTtsVoice(id: any) {
         this.audioElement.pause();
         this.audioElement.currentTime = 0;
 
@@ -156,7 +156,7 @@ export class GoogleNativeTtsProvider {
         }
     }
 
-    async fetchNativeTtsGeneration(text, voiceId) {
+    async fetchNativeTtsGeneration(text: any, voiceId: any) {
         console.info(`Generating native Google TTS for voice_id ${voiceId}`);
         const useReverseProxy = oai_settings.reverse_proxy && isValidUrl(oai_settings.reverse_proxy);
 

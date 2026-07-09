@@ -7,7 +7,7 @@ class CosyVoiceProvider {
     // Config //
     //########//
 
-    settings;
+    settings: any;
     ready = false;
     voices = [];
     separator = '. ';
@@ -18,7 +18,7 @@ class CosyVoiceProvider {
      * @param {string} text Input text
      * @returns {string} Processed text
      */
-    processText(text) {
+    processText(text: any) {
         return text;
     }
 
@@ -70,7 +70,7 @@ class CosyVoiceProvider {
         this.changeTTSSettings();
     }
 
-    async loadSettings(settings) {
+    async loadSettings(settings: any) {
         // Pupulate Provider UI given input settings
         if (Object.keys(settings).length == 0) {
             console.info('Using default TTS Provider settings');
@@ -109,7 +109,7 @@ class CosyVoiceProvider {
     //  TTS Interfaces //
     //#################//
 
-    async getVoice(voiceName) {
+    async getVoice(voiceName: any) {
         if (this.voices.length == 0) {
             this.voices = await this.fetchTtsVoiceObjects();
         }
@@ -126,7 +126,7 @@ class CosyVoiceProvider {
     }
 
 
-    async generateTts(text, voiceId) {
+    async generateTts(text: any, voiceId: any) {
         const response = await this.fetchTtsGeneration(text, voiceId);
         return response;
     }
@@ -159,7 +159,7 @@ class CosyVoiceProvider {
      * @param {string} voiceId Voice ID to use (model_type&speaker_id))
      * @returns {Promise<Response|string>} Fetch response
      */
-    async fetchTtsGeneration(inputText, voiceId, lang = null, forceNoStreaming = false) {
+    async fetchTtsGeneration(inputText: any, voiceId: any, lang = null, forceNoStreaming = false) {
         console.info(`Generating new TTS for voice_id ${voiceId}`);
 
         const streaming = this.settings.streaming;
@@ -194,7 +194,7 @@ class CosyVoiceProvider {
 
 
     // Interface not used
-    async fetchTtsFromHistory(history_item_id) {
+    async fetchTtsFromHistory(history_item_id: any) {
         return Promise.resolve(history_item_id);
     }
 }

@@ -7,7 +7,7 @@ class GSVITtsProvider {
     // Config //
     //########//
 
-    settings;
+    settings: any;
     ready = false;
     separator = '. ';
 
@@ -18,7 +18,7 @@ class GSVITtsProvider {
      * @param {string} text Input text
      * @returns {string} Processed text
      */
-    processText(text) {
+    processText(text: any) {
         text = text.replace('<br>', '\n'); // Replace <br> with newline
         return text;
     }
@@ -143,7 +143,7 @@ class GSVITtsProvider {
         saveTtsProviderSettings();
     }
 
-    async loadSettings(settings) {
+    async loadSettings(settings: any) {
         // Populate Provider UI given input settings
         if (Object.keys(settings).length === 0) {
             console.info('Using default TTS Provider settings');
@@ -204,7 +204,7 @@ class GSVITtsProvider {
     //  TTS Interfaces //
     //#################//
 
-    async getVoice(voiceName) {
+    async getVoice(voiceName: any) {
         if (this.voices.length == 0) {
             this.fetchCharacterList();
         }
@@ -214,7 +214,7 @@ class GSVITtsProvider {
         return { name: voiceName, voice_id: voiceName, preview_url: false, lang: 'zh-CN' };
     }
 
-    async generateTts(text, voiceId) {
+    async generateTts(text: any, voiceId: any) {
         const response = await this.fetchTtsGeneration(text, voiceId);
         return response;
     }
@@ -232,7 +232,7 @@ class GSVITtsProvider {
     }
 
 
-    async fetchTtsGeneration(inputText, voiceId) {
+    async fetchTtsGeneration(inputText: any, voiceId: any) {
         console.info(`Generating new TTS for voice_id ${voiceId}`);
 
 
@@ -252,7 +252,7 @@ class GSVITtsProvider {
     }
 
     // Interface not used by GSVI TTS
-    async fetchTtsFromHistory(history_item_id) {
+    async fetchTtsFromHistory(history_item_id: any) {
         return Promise.resolve(history_item_id);
     }
 }

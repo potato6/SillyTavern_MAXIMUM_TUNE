@@ -21,20 +21,20 @@ export class QuickReply {
     /**
      * @param {{ id?: number; contextList?: any; }} props
      */
-    static from(props) {
-        props.contextList = (props.contextList ?? []).map((/** @type {any} */ it) => QuickReplyContextLink.from(it));
+    static from(props: any) {
+        props.contextList = (props.contextList ?? []).map((/** @type {any} */ it: any) => QuickReplyContextLink.from(it));
         return Object.assign(new this(), props);
     }
 
 
-    /**@type {number}*/ id;
-    /**@type {string}*/ icon;
+    /**@type {number}*/ id: any;
+    /**@type {string}*/ icon: any;
     /**@type {string}*/ label = '';
     /**@type {boolean}*/ showLabel = false;
     /**@type {string}*/ title = '';
     /**@type {string}*/ message = '';
 
-    /**@type {QuickReplyContextLink[]}*/ contextList;
+    /**@type {QuickReplyContextLink[]}*/ contextList: any;
 
     /**@type {boolean}*/ preventAutoExecute = true;
     /**@type {boolean}*/ isHidden = false;
@@ -47,43 +47,43 @@ export class QuickReply {
     /**@type {boolean}*/ executeBeforeGeneration = false;
     /**@type {string}*/ automationId = '';
 
-    /**@type {function}*/ onExecute;
-    /** @type {(qr:QuickReply)=>AsyncGenerator<SlashCommandClosureResult|{closure:SlashCommandClosure, executor:SlashCommandExecutor|SlashCommandClosureResult}, SlashCommandClosureResult, boolean>} */ onDebug;
-    /**@type {function}*/ onDelete;
-    /**@type {function}*/ onUpdate;
-    /**@type {function}*/ onInsertBefore;
-    /**@type {function}*/ onTransfer;
+    /**@type {function}*/ onExecute: any;
+    /** @type {(qr:QuickReply)=>AsyncGenerator<SlashCommandClosureResult|{closure:SlashCommandClosure, executor:SlashCommandExecutor|SlashCommandClosureResult}, SlashCommandClosureResult, boolean>} */ onDebug: any;
+    /**@type {function}*/ onDelete: any;
+    /**@type {function}*/ onUpdate: any;
+    /**@type {function}*/ onInsertBefore: any;
+    /**@type {function}*/ onTransfer: any;
 
 
-    /**@type {HTMLElement}*/ dom;
-    /**@type {HTMLElement}*/ domIcon;
-    /**@type {HTMLElement}*/ domLabel;
-    /**@type {HTMLElement}*/ settingsDom;
-    /**@type {HTMLElement}*/ settingsDomIcon;
-    /**@type {HTMLInputElement}*/ settingsDomLabel;
-    /**@type {HTMLTextAreaElement}*/ settingsDomMessage;
+    /**@type {HTMLElement}*/ dom: any;
+    /**@type {HTMLElement}*/ domIcon: any;
+    /**@type {HTMLElement}*/ domLabel: any;
+    /**@type {HTMLElement}*/ settingsDom: any;
+    /**@type {HTMLElement}*/ settingsDomIcon: any;
+    /**@type {HTMLInputElement}*/ settingsDomLabel: any;
+    /**@type {HTMLTextAreaElement}*/ settingsDomMessage: any;
 
-    /**@type {Popup}*/ editorPopup;
-    /**@type {HTMLElement}*/ editorDom;
+    /**@type {Popup}*/ editorPopup: any;
+    /**@type {HTMLElement}*/ editorDom: any;
 
-    /**@type {HTMLTextAreaElement}*/ editorMessage;
-    /**@type {HTMLTextAreaElement}*/ editorMessageLabel;
-    /**@type {HTMLElement}*/ editorSyntax;
-    /**@type {HTMLElement}*/ editorExecuteBtn;
-    /**@type {HTMLElement}*/ editorExecuteBtnPause;
-    /**@type {HTMLElement}*/ editorExecuteBtnStop;
-    /**@type {HTMLElement}*/ editorExecuteProgress;
-    /**@type {HTMLElement}*/ editorExecuteErrors;
-    /**@type {HTMLElement}*/ editorExecuteResult;
-    /**@type {HTMLElement}*/ editorDebugState;
-    /**@type {Promise}*/ editorExecutePromise;
-    /**@type {boolean}*/ isExecuting;
-    /**@type {SlashCommandAbortController}*/ abortController;
-    /**@type {SlashCommandDebugController}*/ debugController;
+    /**@type {HTMLTextAreaElement}*/ editorMessage: any;
+    /**@type {HTMLTextAreaElement}*/ editorMessageLabel: any;
+    /**@type {HTMLElement}*/ editorSyntax: any;
+    /**@type {HTMLElement}*/ editorExecuteBtn: any;
+    /**@type {HTMLElement}*/ editorExecuteBtnPause: any;
+    /**@type {HTMLElement}*/ editorExecuteBtnStop: any;
+    /**@type {HTMLElement}*/ editorExecuteProgress: any;
+    /**@type {HTMLElement}*/ editorExecuteErrors: any;
+    /**@type {HTMLElement}*/ editorExecuteResult: any;
+    /**@type {HTMLElement}*/ editorDebugState: any;
+    /**@type {Promise}*/ editorExecutePromise: any;
+    /**@type {boolean}*/ isExecuting: any;
+    /**@type {SlashCommandAbortController}*/ abortController: any;
+    /**@type {SlashCommandDebugController}*/ debugController: any;
 
 
     get hasContext() {
-        return this.contextList && this.contextList.filter(it => it.set).length > 0;
+        return this.contextList && this.contextList.filter((it: any) => it.set).length > 0;
     }
 
 
@@ -165,7 +165,7 @@ export class QuickReply {
     }
 
 
-    renderSettings(idx) {
+    renderSettings(idx: any) {
         if (!this.settingsDom) {
             const item = document.createElement('div'); {
                 this.settingsDom = item;
@@ -427,7 +427,7 @@ export class QuickReply {
             label.addEventListener('input', () => {
                 this.updateLabel(label.value);
             });
-            let switcherList;
+            let switcherList: any;
             // @ts-ignore
             dom.querySelector('#qr--modal-switcher').addEventListener('click', (evt) => {
                 if (switcherList) {
@@ -438,7 +438,7 @@ export class QuickReply {
                 const list = document.createElement('ul'); {
                     switcherList = list;
                     list.classList.add('qr--modal-switcherList');
-                    const makeList = (qrs) => {
+                    const makeList = (qrs: any) => {
                         const setItem = document.createElement('li'); {
                             setItem.classList.add('qr--modal-switcherItem');
                             setItem.addEventListener('click', () => {
@@ -498,7 +498,7 @@ export class QuickReply {
                             }
                             list.append(addItem);
                         }
-                        for (const qr of qrs.qrList.toSorted((a, b) => a.label.toLowerCase().localeCompare(b.label.toLowerCase()))) {
+                        for (const qr of qrs.qrList.toSorted((a: any, b: any) => a.label.toLowerCase().localeCompare(b.label.toLowerCase()))) {
                             const item = document.createElement('li'); {
                                 item.classList.add('qr--modal-switcherItem');
                                 if (qr == this) item.classList.add('qr--current');
@@ -561,7 +561,7 @@ export class QuickReply {
                 }
                 updateScrollDebounced();
             };
-            const updateScroll = (evt) => {
+            const updateScroll = (evt: any) => {
                 let left = message.scrollLeft;
                 let top = message.scrollTop;
                 if (evt) {
@@ -625,7 +625,7 @@ export class QuickReply {
             const message = dom.querySelector('#qr--modal-message');
             this.editorMessage = message;
             message.value = this.message;
-            const updateMessageDebounced = debounce((value) => this.updateMessage(value), 10);
+            const updateMessageDebounced = debounce((value: any) => this.updateMessage(value), 10);
             message.addEventListener('input', () => {
                 updateMessageDebounced(message.value);
                 updateScrollDebounced();
@@ -644,7 +644,7 @@ export class QuickReply {
                 }
                 return lineStart;
             };
-            message.addEventListener('keydown', async (evt) => {
+            message.addEventListener('keydown', async (evt: any) => {
                 if (this.isExecuting) return;
                 if (evt.key == 'Tab' && !evt.shiftKey && !evt.ctrlKey && !evt.altKey) {
                     // increase indent
@@ -679,7 +679,7 @@ export class QuickReply {
                     const lineStart = getLineStart();
                     message.selectionStart = lineStart;
                     const affectedLines = message.value.substring(lineStart, end).split('\n');
-                    const newText = affectedLines.map(it => it.replace(/^\t/, '')).join('\n');
+                    const newText = affectedLines.map((it: any) => it.replace(/^\t/, '')).join('\n');
                     const delta = affectedLines.join('\n').length - newText.length;
                     // document.execCommand is deprecated (and potentially buggy in some browsers) but the only way to retain undo-history
                     if (delta > 0) {
@@ -744,7 +744,7 @@ export class QuickReply {
                     parser.parse(message.value, false);
                     const start = message.selectionStart;
                     const end = message.selectionEnd;
-                    const comment = parser.commandIndex.findLast(it => it.name == '*' && (it.start <= start && it.end >= start || it.start <= end && it.end >= end));
+                    const comment = parser.commandIndex.findLast((it: any) => it.name == '*' && (it.start <= start && it.end >= start || it.start <= end && it.end >= end));
                     if (comment) {
                         // uncomment
                         let content = message.value.slice(comment.start + 1, comment.end - 1);
@@ -775,19 +775,19 @@ export class QuickReply {
                 }
             });
             const ac = await setSlashCommandAutoComplete(message, true);
-            message.addEventListener('wheel', (evt) => {
+            message.addEventListener('wheel', (evt: any) => {
                 updateScrollDebounced(evt);
             });
             // @ts-ignore
             message.addEventListener('scroll', (evt) => {
                 updateScrollDebounced();
             });
-            let preBreakPointStart;
-            let preBreakPointEnd;
+            let preBreakPointStart: any;
+            let preBreakPointEnd: any;
             /**
              * @param {SlashCommandBreakPoint} bp
              */
-            const removeBreakpoint = (bp) => {
+            const removeBreakpoint = (bp: any) => {
                 // start at -1 because "/" is not included in start-end
                 let start = bp.start - 1;
                 // step left until forward slash "/"
@@ -832,7 +832,7 @@ export class QuickReply {
             /**
              * @param {SlashCommandExecutor} cmd
              */
-            const addBreakpoint = (cmd) => {
+            const addBreakpoint = (cmd: any) => {
                 // start at -1 because "/" is not included in start-end
                 let start = cmd.start - 1;
                 let indent = '';
@@ -862,7 +862,7 @@ export class QuickReply {
                 let postEnd = preBreakPointEnd;
                 const parser = new SlashCommandParser();
                 parser.parse(message.value, false);
-                const cmdIdx = parser.commandIndex.findLastIndex(it => it.start <= idx);
+                const cmdIdx = parser.commandIndex.findLastIndex((it: any) => it.start <= idx);
                 if (cmdIdx > -1) {
                     const cmd = parser.commandIndex[cmdIdx];
                     if (cmd instanceof SlashCommandBreakPoint) {
@@ -884,17 +884,17 @@ export class QuickReply {
                     message.selectionEnd = postEnd;
                 }
             };
-            message.addEventListener('pointerdown', (evt) => {
+            message.addEventListener('pointerdown', (evt: any) => {
                 if (!evt.ctrlKey || !evt.altKey) return;
                 preBreakPointStart = message.selectionStart;
                 preBreakPointEnd = message.selectionEnd;
             });
-            message.addEventListener('pointerup', async (evt) => {
+            message.addEventListener('pointerup', async (evt: any) => {
                 if (!evt.ctrlKey || !evt.altKey || message.selectionStart != message.selectionEnd) return;
                 toggleBreakpoint();
             });
             /** @type {any} */
-            const resizeListener = debounce((evt) => {
+            const resizeListener = debounce((evt: any) => {
                 updateScrollDebounced(evt);
                 if (document.activeElement == message) {
                     message.blur();
@@ -915,8 +915,8 @@ export class QuickReply {
             };
             let lastSyntaxUpdate = 0;
             const fpsTime = 1000 / 30;
-            let lastMessageValue = null;
-            let wasSyntax = null;
+            let lastMessageValue: any = null;
+            let wasSyntax: any = null;
             const updateSyntaxLoop = () => {
                 const now = Date.now();
                 // fps limit
@@ -947,8 +947,8 @@ export class QuickReply {
             /**@type {HTMLTemplateElement}*/
             const tpl = dom.querySelector('#qr--ctxItem');
             const linkList = dom.querySelector('#qr--ctxEditor');
-            const fillQrSetSelect = (/**@type {HTMLSelectElement}*/select, /**@type {QuickReplyContextLink}*/ link) => {
-                [{ name: 'Select a QR set' }, ...QuickReplySet.list.toSorted((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()))].forEach(qrs => {
+            const fillQrSetSelect = (/**@type {HTMLSelectElement}*/select: any, /**@type {QuickReplyContextLink}*/ link: any) => {
+                [{ name: 'Select a QR set' }, ...QuickReplySet.list.toSorted((a: any, b: any) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()))].forEach(qrs => {
                     const opt = document.createElement('option'); {
                         opt.value = qrs.name;
                         opt.textContent = qrs.name;
@@ -957,7 +957,7 @@ export class QuickReply {
                     }
                 });
             };
-            const addCtxItem = (/**@type {QuickReplyContextLink}*/link, /**@type {number}*/idx) => {
+            const addCtxItem = (/**@type {QuickReplyContextLink}*/link: any, /**@type {number}*/idx: any) => {
                 /**@type {HTMLElement} */
                 // @ts-ignore
                 const itemDom = tpl.content.querySelector('.qr--ctxItem').cloneNode(true); {
@@ -1171,18 +1171,18 @@ export class QuickReply {
             });
             /**@type {boolean}*/
             let isResizing = false;
-            let resizeStart;
-            let wStart;
+            let resizeStart: any;
+            let wStart: any;
             /**@type {HTMLElement}*/
             const resizeHandle = dom.querySelector('#qr--resizeHandle');
-            resizeHandle.addEventListener('pointerdown', (evt) => {
+            resizeHandle.addEventListener('pointerdown', (evt: any) => {
                 if (isResizing) return;
                 isResizing = true;
                 evt.preventDefault();
                 resizeStart = evt.x;
                 // @ts-ignore
                 wStart = dom.querySelector('#qr--qrOptions').offsetWidth;
-                const dragListener = debounce((evt) => {
+                const dragListener = debounce((evt: any) => {
                     const w = wStart + resizeStart - evt.x;
                     // @ts-ignore
                     dom.querySelector('#qr--qrOptions').style.setProperty('--width', `${w}px`);
@@ -1204,7 +1204,7 @@ export class QuickReply {
         }
     }
 
-    getEditorPosition(start, end, message = null) {
+    getEditorPosition(start: any, end: any, message = null) {
         const inputRect = this.editorMessage.getBoundingClientRect();
         const style = window.getComputedStyle(this.editorMessage);
         if (!this.clone) {
@@ -1271,7 +1271,7 @@ export class QuickReply {
         this.editorExecuteErrors.innerHTML = '';
         this.editorExecuteResult.innerHTML = '';
         const syntax = this.editorDom.querySelector('#qr--modal-messageSyntaxInner');
-        const updateScroll = (evt) => {
+        const updateScroll = (evt: any) => {
             let left = syntax.scrollLeft;
             let top = syntax.scrollTop;
             if (evt) {
@@ -1291,7 +1291,7 @@ export class QuickReply {
             });
         };
         const updateScrollDebounced = updateScroll;
-        syntax.addEventListener('wheel', (evt) => {
+        syntax.addEventListener('wheel', (evt: any) => {
             updateScrollDebounced(evt);
         });
         // @ts-ignore
@@ -1301,7 +1301,7 @@ export class QuickReply {
         try {
             this.abortController = new SlashCommandAbortController();
             this.debugController = new SlashCommandDebugController();
-            this.debugController.onBreakPoint = async (closure, executor) => {
+            this.debugController.onBreakPoint = async (closure: any, executor: any) => {
                 this.editorDom.classList.add('qr--isPaused');
                 syntax.innerHTML = hljs.highlight(`${closure.fullText}${closure.fullText.slice(-1) == '\n' ? ' ' : ''}`, { language: 'stscript', ignoreIllegals: true })?.value;
                 this.editorMessageLabel.innerHTML = '';
@@ -1328,12 +1328,12 @@ export class QuickReply {
                 const source = closure.source;
                 this.editorDebugState.innerHTML = '';
                 let ci = -1;
-                const varNames = [];
-                const macroNames = [];
+                const varNames: any = [];
+                const macroNames: any = [];
                 /**
                  * @param {SlashCommandScope} scope
                  */
-                const buildVars = (scope, isCurrent = false) => {
+                const buildVars = (scope: any, isCurrent = false) => {
                     if (!isCurrent) {
                         ci--;
                     }
@@ -1351,7 +1351,7 @@ export class QuickReply {
                                     }
                                     wrap.append(namedTitle);
                                 }
-                                const keys = new Set([...Object.keys(this.debugController.namedArguments ?? {}), ...(executor.namedArgumentList ?? []).map(it => it.name)]);
+                                const keys = new Set([...Object.keys(this.debugController.namedArguments ?? {}), ...(executor.namedArgumentList ?? []).map((it: any) => it.name)]);
                                 for (const key of keys) {
                                     if (key[0] == '_') continue;
                                     const item = document.createElement('div'); {
@@ -1364,7 +1364,7 @@ export class QuickReply {
                                         const vUnresolved = document.createElement('div'); {
                                             vUnresolved.classList.add('qr--val');
                                             vUnresolved.classList.add('qr--singleCol');
-                                            const val = executor.namedArgumentList.find(it => it.name == key)?.value;
+                                            const val = executor.namedArgumentList.find((it: any) => it.name == key)?.value;
                                             if (val instanceof SlashCommandClosure) {
                                                 vUnresolved.classList.add('qr--closure');
                                                 vUnresolved.title = val.rawText;
@@ -1503,7 +1503,7 @@ export class QuickReply {
                             title.classList.add('qr--title');
                             title.textContent = isCurrent ? 'Current Scope' : 'Parent Scope';
                             if (c.source == source) {
-                                let hi;
+                                let hi: any;
                                 title.addEventListener('pointerenter', () => {
                                     const loc = this.getEditorPosition(Math.max(0, c.executorList[0].start - 1), c.executorList.slice(-1)[0].end, c.fullText);
                                     const layer = syntax.getBoundingClientRect();
@@ -1643,7 +1643,7 @@ export class QuickReply {
                             const item = document.createElement('div'); {
                                 item.classList.add('qr--item');
                                 if (executor.source == source) {
-                                    let hi;
+                                    let hi: any;
                                     item.addEventListener('pointerenter', () => {
                                         const loc = this.getEditorPosition(Math.max(0, executor.start - 1), executor.end, c.fullText);
                                         const layer = syntax.getBoundingClientRect();
@@ -1757,7 +1757,7 @@ export class QuickReply {
         this.editorPopup.onClosing = null;
     }
 
-    updateEditorProgress(done, total) {
+    updateEditorProgress(done: any, total: any) {
         this.editorExecuteProgress.style.setProperty('--prog', `${done / total * 100}`);
     }
 
@@ -1773,7 +1773,7 @@ export class QuickReply {
     /**
      * @param {string} value
      */
-    updateMessage(value) {
+    updateMessage(value: any) {
         if (this.onUpdate) {
             if (this.settingsDomMessage && this.settingsDomMessage.value != value) {
                 this.settingsDomMessage.value = value;
@@ -1787,7 +1787,7 @@ export class QuickReply {
     /**
      * @param {string} value
      */
-    updateIcon(value) {
+    updateIcon(value: any) {
         if (this.onUpdate) {
             if (value === null) return;
             if (this.settingsDomIcon) {
@@ -1817,7 +1817,7 @@ export class QuickReply {
     /**
      * @param {boolean} value
      */
-    updateShowLabel(value) {
+    updateShowLabel(value: any) {
         if (this.onUpdate) {
             this.showLabel = value;
             this.updateRender();
@@ -1828,7 +1828,7 @@ export class QuickReply {
     /**
      * @param {string} value
      */
-    updateLabel(value) {
+    updateLabel(value: any) {
         if (this.onUpdate) {
             if (this.settingsDomLabel && this.settingsDomLabel.value != value) {
                 this.settingsDomLabel.value = value;
@@ -1842,7 +1842,7 @@ export class QuickReply {
     /**
      * @param {string} value
      */
-    updateTitle(value) {
+    updateTitle(value: any) {
         if (this.onUpdate) {
             this.title = value;
             this.updateRender();
@@ -1856,12 +1856,12 @@ export class QuickReply {
             this.onUpdate(this);
         }
     }
-    addContextLink(cl) {
+    addContextLink(cl: any) {
         this.contextList.push(cl);
         this.updateContext();
     }
-    removeContextLink(setName) {
-        const idx = this.contextList.findIndex(it => it.set.name == setName);
+    removeContextLink(setName: any) {
+        const idx = this.contextList.findIndex((it: any) => it.set.name == setName);
         if (idx > -1) {
             this.contextList.splice(idx, 1);
             this.updateContext();

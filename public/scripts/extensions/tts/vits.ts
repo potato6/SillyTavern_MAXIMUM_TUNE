@@ -7,7 +7,7 @@ class VITSTtsProvider {
     // Config //
     //########//
 
-    settings;
+    settings: any;
     ready = false;
     voices = [];
     separator = '. ';
@@ -18,7 +18,7 @@ class VITSTtsProvider {
      * @param {string} text Input text
      * @returns {string} Processed text
      */
-    processText(text) {
+    processText(text: any) {
         return text;
     }
 
@@ -168,7 +168,7 @@ class VITSTtsProvider {
         this.changeTTSSettings();
     }
 
-    async loadSettings(settings) {
+    async loadSettings(settings: any) {
         // Pupulate Provider UI given input settings
         if (Object.keys(settings).length == 0) {
             console.info('Using default TTS Provider settings');
@@ -244,7 +244,7 @@ class VITSTtsProvider {
     //  TTS Interfaces //
     //#################//
 
-    async getVoice(voiceName) {
+    async getVoice(voiceName: any) {
         if (this.voices.length == 0) {
             this.voices = await this.fetchTtsVoiceObjects();
         }
@@ -257,7 +257,7 @@ class VITSTtsProvider {
         return match;
     }
 
-    async getVoiceById(voiceId) {
+    async getVoiceById(voiceId: any) {
         if (this.voices.length == 0) {
             this.voices = await this.fetchTtsVoiceObjects();
         }
@@ -270,7 +270,7 @@ class VITSTtsProvider {
         return match;
     }
 
-    async generateTts(text, voiceId) {
+    async generateTts(text: any, voiceId: any) {
         const response = await this.fetchTtsGeneration(text, voiceId);
         return response;
     }
@@ -284,10 +284,10 @@ class VITSTtsProvider {
             throw new Error(`HTTP ${response.status}: ${await response.json()}`);
         }
         const jsonData = await response.json();
-        const voices = [];
+        const voices: any = [];
 
-        const addVoices = (modelType) => {
-            jsonData[modelType].forEach(voice => {
+        const addVoices = (modelType: any) => {
+            jsonData[modelType].forEach((voice: any) => {
                 voices.push({
                     name: `[${modelType}] ${voice.name} (${voice.lang})`,
                     voice_id: `${modelType}&${voice.id}`,
@@ -314,7 +314,7 @@ class VITSTtsProvider {
      * @param {string} voiceId Voice ID to use (model_type&speaker_id))
      * @returns {Promise<Response|string>} Fetch response
      */
-    async fetchTtsGeneration(inputText, voiceId, lang = null, forceNoStreaming = false) {
+    async fetchTtsGeneration(inputText: any, voiceId: any, lang = null, forceNoStreaming = false) {
         console.info(`Generating new TTS for voice_id ${voiceId}`);
 
         const streaming = !forceNoStreaming && this.settings.streaming;
@@ -375,7 +375,7 @@ class VITSTtsProvider {
      * Preview TTS for a given voice ID.
      * @param {string} id Voice ID
      */
-    async previewTtsVoice(id) {
+    async previewTtsVoice(id: any) {
         this.audioElement.pause();
         this.audioElement.currentTime = 0;
         const voice = await this.getVoiceById(id);
@@ -396,7 +396,7 @@ class VITSTtsProvider {
     }
 
     // Interface not used
-    async fetchTtsFromHistory(history_item_id) {
+    async fetchTtsFromHistory(history_item_id: any) {
         return Promise.resolve(history_item_id);
     }
 }

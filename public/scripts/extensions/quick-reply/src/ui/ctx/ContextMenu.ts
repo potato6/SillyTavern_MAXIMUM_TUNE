@@ -7,11 +7,11 @@ export class ContextMenu {
     /**@type {MenuItem[]}*/ itemList = [];
     /**@type {Boolean}*/ isActive = false;
 
-    /**@type {HTMLElement}*/ root;
-    /**@type {HTMLElement}*/ menu;
+    /**@type {HTMLElement}*/ root: any;
+    /**@type {HTMLElement}*/ menu: any;
 
 
-    constructor(/**@type {QuickReply}*/qr) {
+    constructor(/**@type {QuickReply}*/qr: any) {
         // this.itemList = items;
         this.itemList = this.build(qr).children;
         this.itemList.forEach(item => {
@@ -28,7 +28,7 @@ export class ContextMenu {
      * @param {QuickReplySet[]} hierarchy
      * @param {String[]} labelHierarchy
      */
-    build(qr, chainedMessage = null, hierarchy = [], labelHierarchy = []) {
+    build(qr: any, chainedMessage = null, hierarchy = [], labelHierarchy = []) {
         const tree = {
             icon: qr.icon,
             showLabel: qr.showLabel,
@@ -37,7 +37,7 @@ export class ContextMenu {
             message: (chainedMessage && qr.message ? `${chainedMessage} | ` : '') + qr.message,
             children: [],
         };
-        qr.contextList.forEach((cl) => {
+        qr.contextList.forEach((cl: any) => {
             if (!cl.set) return;
             if (!hierarchy.includes(cl.set)) {
                 const nextHierarchy = [...hierarchy, cl.set];
@@ -53,13 +53,13 @@ export class ContextMenu {
                 // - hidden QRs **with an icon** are shown in the menu
                 // so everybody is happy
                 const qrsOwnSetAddedAsContextMenu = cl.set.qrList.includes(qr);
-                const visible = (subQr) => {
+                const visible = (subQr: any) => {
                     return qrsOwnSetAddedAsContextMenu
                         ? subQr.isHidden && !!subQr.icon  // yes .isHidden gets inverted here
                         : !subQr.isHidden;
                 };
 
-                cl.set.qrList.filter(visible).forEach(subQr => {
+                cl.set.qrList.filter(visible).forEach((subQr: any) => {
                     const subTree = this.build(subQr, cl.isChained ? tree.message : null, nextHierarchy, nextLabelHierarchy);
                     tree.children.push(new MenuItem(
                         subTree.icon,
@@ -67,7 +67,7 @@ export class ContextMenu {
                         subTree.label,
                         subTree.title,
                         subTree.message,
-                        (evt) => {
+                        (evt: any) => {
                             evt.stopPropagation();
                             const finalQr = Object.assign(new QuickReply(), subQr);
                             finalQr.message = subTree.message.replace(/%%parent(-\d+)?%%/g, (_, index) => {
@@ -102,7 +102,10 @@ export class ContextMenu {
     }
 
 
-    show({ clientX, clientY }) {
+    show({
+        clientX,
+        clientY
+    }: any) {
         if (this.isActive) return;
         this.isActive = true;
         this.render();
@@ -116,7 +119,7 @@ export class ContextMenu {
         }
         this.isActive = false;
     }
-    toggle(/**@type {PointerEvent}*/evt) {
+    toggle(/**@type {PointerEvent}*/evt: any) {
         if (this.isActive) {
             this.hide();
         } else {

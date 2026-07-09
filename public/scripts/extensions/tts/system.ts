@@ -14,9 +14,9 @@ import { t } from '../../i18n.js';
  * Modified by Haaris for bug fixes
  */
 
-var speechUtteranceChunker = function (utt, settings, callback) {
+var speechUtteranceChunker = function (utt: any, settings: any, callback: any) {
     settings = settings || {};
-    var newUtt;
+    var newUtt: any;
     var txt = (settings && settings.offset !== undefined ? utt.text.substring(settings.offset) : utt.text);
     if (utt.voice && utt.voice.voiceURI === 'native') { // Not part of the spec
         newUtt = utt;
@@ -83,7 +83,7 @@ class SystemTtsProvider {
     static BROWSER_DEFAULT_VOICE_ID = '__browser_default__';
     static BROWSER_DEFAULT_VOICE_NAME = 'System Default Voice';
 
-    settings;
+    settings: any;
     ready = false;
     voices = [];
     separator = ' ... ';
@@ -114,7 +114,7 @@ class SystemTtsProvider {
         saveTtsProviderSettings();
     }
 
-    async loadSettings(settings) {
+    async loadSettings(settings: any) {
         // Populate Provider UI given input settings
         if (Object.keys(settings).length == 0) {
             console.info('Using default TTS Provider settings');
@@ -199,7 +199,7 @@ class SystemTtsProvider {
         });
     }
 
-    previewTtsVoice(voiceId) {
+    previewTtsVoice(voiceId: any) {
         if (!('speechSynthesis' in window)) {
             throw new Error('Speech synthesis API is not supported');
         }
@@ -237,7 +237,7 @@ class SystemTtsProvider {
         speechSynthesis.speak(utterance);
     }
 
-    async getVoice(voiceName) {
+    async getVoice(voiceName: any) {
         if (!('speechSynthesis' in window)) {
             return { voice_id: null, name: 'API Not Supported' };
         }
@@ -268,7 +268,7 @@ class SystemTtsProvider {
         return { voice_id: match.voiceURI, name: match.name };
     }
 
-    async generateTts(text, voiceId) {
+    async generateTts(text: any, voiceId: any) {
         if (!('speechSynthesis' in window)) {
             throw 'Speech synthesis API is not supported';
         }

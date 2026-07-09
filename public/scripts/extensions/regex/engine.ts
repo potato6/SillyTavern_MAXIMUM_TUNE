@@ -49,7 +49,7 @@ export class RegexProvider {
      * @param {string} regexString The regex string to retrieve
      * @returns {RegExp?} Compiled regex or null if invalid
      */
-    get(regexString) {
+    get(regexString: any) {
         const isCached = this.#cache.has(regexString);
         const regex = isCached
             ? this.#cache.get(regexString)
@@ -104,7 +104,7 @@ export function getRegexScripts(options = DEFAULT_GET_REGEX_SCRIPTS_OPTIONS) {
  * @param {GetRegexScriptsOptions} options Options for retrieving the regex scripts
  * @returns {RegexScript[]} An array of regex scripts for the specified type.
  */
-export function getScriptsByType(scriptType, { allowedOnly } = DEFAULT_GET_REGEX_SCRIPTS_OPTIONS) {
+export function getScriptsByType(scriptType: any, { allowedOnly } = DEFAULT_GET_REGEX_SCRIPTS_OPTIONS) {
     switch (scriptType) {
         case SCRIPT_TYPE_UNKNOWN:
             return [];
@@ -137,7 +137,7 @@ export function getScriptsByType(scriptType, { allowedOnly } = DEFAULT_GET_REGEX
  * @param {SCRIPT_TYPES} scriptType The type of regex scripts to save.
  * @returns {Promise<void>}
  */
-export async function saveScriptsByType(scripts, scriptType) {
+export async function saveScriptsByType(scripts: any, scriptType: any) {
     switch (scriptType) {
         case SCRIPT_TYPES.GLOBAL:
             extension_settings.regex = scripts;
@@ -162,7 +162,7 @@ export async function saveScriptsByType(scripts, scriptType) {
  * @param {Character|undefined} character
  * @returns {boolean}
  */
-export function isScopedScriptsAllowed(character) {
+export function isScopedScriptsAllowed(character: any) {
     return !!extension_settings?.character_allowed_regex?.includes(character?.avatar);
 }
 
@@ -171,7 +171,7 @@ export function isScopedScriptsAllowed(character) {
  * @param {Character|undefined} character
  * @returns {void}
  */
-export function allowScopedScripts(character) {
+export function allowScopedScripts(character: any) {
     const avatar = character?.avatar;
     if (!avatar) {
         return;
@@ -190,7 +190,7 @@ export function allowScopedScripts(character) {
  * @param {Character|undefined} character
  * @returns {void}
  */
-export function disallowScopedScripts(character) {
+export function disallowScopedScripts(character: any) {
     const avatar = character?.avatar;
     if (!avatar) {
         return;
@@ -211,7 +211,7 @@ export function disallowScopedScripts(character) {
  * @param {string} presetName Preset name
  * @returns {boolean} True if allowed, false if not
  */
-export function isPresetScriptsAllowed(apiId, presetName) {
+export function isPresetScriptsAllowed(apiId: any, presetName: any) {
     if (!apiId || !presetName) {
         return false;
     }
@@ -224,7 +224,7 @@ export function isPresetScriptsAllowed(apiId, presetName) {
  * @param {string} presetName Preset name
  * @returns {void}
  */
-export function allowPresetScripts(apiId, presetName) {
+export function allowPresetScripts(apiId: any, presetName: any) {
     if (!apiId || !presetName) {
         return;
     }
@@ -248,7 +248,7 @@ export function allowPresetScripts(apiId, presetName) {
  * @param {string} presetName Preset name
  * @returns {void}
  */
-export function disallowPresetScripts(apiId, presetName) {
+export function disallowPresetScripts(apiId: any, presetName: any) {
     if (!apiId || !presetName) {
         return;
     }
@@ -305,7 +305,7 @@ export const substitute_find_regex = {
     ESCAPED: 2,
 };
 
-function sanitizeRegexMacro(x) {
+function sanitizeRegexMacro(x: any) {
     return (x && typeof x === 'string') ?
         x.replaceAll(/[\n\r\t\v\f\0.^$*+?{}[\]\\/|()]/gs, function (s) {
             switch (s) {
@@ -335,7 +335,13 @@ function sanitizeRegexMacro(x) {
  * @returns {string} The regexed string
  * @typedef {{characterOverride?: string, isMarkdown?: boolean, isPrompt?: boolean, isEdit?: boolean, depth?: number }} RegexParams The parameters to use for the regex script
  */
-export function getRegexedString(rawString, placement, { characterOverride, isMarkdown, isPrompt, isEdit, depth } = {}) {
+export function getRegexedString(rawString: any, placement: any, {
+    characterOverride,
+    isMarkdown,
+    isPrompt,
+    isEdit,
+    depth
+}: any = {}) {
     // WTF have you passed me?
     if (typeof rawString !== 'string') {
         console.warn('getRegexedString: rawString is not a string. Returning empty string.');
@@ -392,7 +398,9 @@ export function getRegexedString(rawString, placement, { characterOverride, isMa
  * @returns {string} The new string
  * @typedef {{characterOverride?: string}} RegexScriptParams The parameters to use for the regex script
  */
-export function runRegexScript(regexScript, rawString, { characterOverride } = {}) {
+export function runRegexScript(regexScript: any, rawString: any, {
+    characterOverride
+}: any = {}) {
     let newString = rawString;
     if (!regexScript || !!(regexScript.disabled) || !regexScript?.findRegex || !rawString) {
         return newString;
@@ -420,10 +428,10 @@ export function runRegexScript(regexScript, rawString, { characterOverride } = {
     }
 
     // Run replacement. Currently does not support the Overlay strategy
-    newString = rawString.replace(findRegex, function (match) {
+    newString = rawString.replace(findRegex, function (match: any) {
         const args = [...arguments];
         const replaceString = regexScript.replaceString.replace(/{{match}}/gi, '$0');
-        const replaceWithGroups = replaceString.replaceAll(/\$(\d+)|\$<([^>]+)>/g, (_, num, groupName) => {
+        const replaceWithGroups = replaceString.replaceAll(/\$(\d+)|\$<([^>]+)>/g, (_: any, num: any, groupName: any) => {
             if (num) {
                 // Handle numbered capture groups ($1, $2, etc.)
                 match = args[Number(num)];
@@ -458,9 +466,11 @@ export function runRegexScript(regexScript, rawString, { characterOverride } = {
  * @param {RegexScriptParams} params The parameters to use for the regex filter
  * @returns {string} The filtered string
  */
-function filterString(rawString, trimStrings, { characterOverride } = {}) {
+function filterString(rawString: any, trimStrings: any, {
+    characterOverride
+}: any = {}) {
     let finalString = rawString;
-    trimStrings.forEach((trimString) => {
+    trimStrings.forEach((trimString: any) => {
         const subTrimString = substituteParams(trimString, { name2Override: characterOverride });
         finalString = finalString.replaceAll(subTrimString, '');
     });

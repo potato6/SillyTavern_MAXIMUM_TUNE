@@ -6,10 +6,10 @@ export class SubMenu {
     /**@type {MenuItem[]}*/ itemList = [];
     /**@type {Boolean}*/ isActive = false;
 
-    /**@type {HTMLElement}*/ root;
+    /**@type {HTMLElement}*/ root: any;
 
 
-    constructor(/**@type {MenuItem[]}*/items) {
+    constructor(/**@type {MenuItem[]}*/items: any) {
         this.itemList = items;
     }
 
@@ -27,7 +27,7 @@ export class SubMenu {
     }
 
 
-    show(/**@type {HTMLElement}*/parent) {
+    show(/**@type {HTMLElement}*/parent: any) {
         if (this.isActive) return;
         this.isActive = true;
         this.render();
@@ -52,7 +52,7 @@ export class SubMenu {
         }
         this.isActive = false;
     }
-    toggle(/**@type {HTMLElement}*/parent) {
+    toggle(/**@type {HTMLElement}*/parent: any) {
         if (this.isActive) {
             this.hide();
         } else {

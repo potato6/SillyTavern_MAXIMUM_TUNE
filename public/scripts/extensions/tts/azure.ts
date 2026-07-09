@@ -8,7 +8,7 @@ class AzureTtsProvider {
     // Config //
     //########//
 
-    settings;
+    settings: any;
     voices = [];
     separator = ' . ';
     audioElement = document.createElement('audio');
@@ -39,7 +39,7 @@ class AzureTtsProvider {
     }
 
     constructor() {
-        this.handler = async function (/** @type {string} */ key) {
+        this.handler = async function(this: any, /** @type {string} */ key: any) {
             if (key !== SECRET_KEYS.AZURE_TTS) return;
             $('#azure_tts_key').toggleClass('success', !!secret_state[SECRET_KEYS.AZURE_TTS]);
             await this.onRefreshClick();
@@ -60,7 +60,7 @@ class AzureTtsProvider {
         saveTtsProviderSettings();
     }
 
-    async loadSettings(settings) {
+    async loadSettings(settings: any) {
         // Populate Provider UI given input settings
         if (Object.keys(settings).length == 0) {
             console.info('Using default TTS Provider settings');
@@ -108,7 +108,7 @@ class AzureTtsProvider {
     //  TTS Interfaces //
     //#################//
 
-    async getVoice(voiceName) {
+    async getVoice(voiceName: any) {
         if (this.voices.length == 0) {
             this.voices = await this.fetchTtsVoiceObjects();
         }
@@ -121,7 +121,7 @@ class AzureTtsProvider {
         return match;
     }
 
-    async generateTts(text, voiceId) {
+    async generateTts(text: any, voiceId: any) {
         const response = await this.fetchTtsGeneration(text, voiceId);
         return response;
     }
@@ -153,8 +153,13 @@ class AzureTtsProvider {
         }
         let responseJson = await response.json();
         responseJson = responseJson
-            .sort((a, b) => a.Locale.localeCompare(b.Locale) || a.ShortName.localeCompare(b.ShortName))
-            .map(x => ({ name: x.ShortName, voice_id: x.ShortName, preview_url: false, lang: x.Locale }));
+            .sort((a: any, b: any) => a.Locale.localeCompare(b.Locale) || a.ShortName.localeCompare(b.ShortName))
+            .map((x: any) => ({
+            name: x.ShortName,
+            voice_id: x.ShortName,
+            preview_url: false,
+            lang: x.Locale
+        }));
         return responseJson;
     }
 
@@ -162,7 +167,7 @@ class AzureTtsProvider {
      * Preview TTS for a given voice ID.
      * @param {string} id Voice ID
      */
-    async previewTtsVoice(id) {
+    async previewTtsVoice(id: any) {
         this.audioElement.pause();
         this.audioElement.currentTime = 0;
         const voice = await this.getVoice(id);
@@ -179,7 +184,7 @@ class AzureTtsProvider {
         this.audioElement.onended = () => URL.revokeObjectURL(url);
     }
 
-    async fetchTtsGeneration(text, voiceId) {
+    async fetchTtsGeneration(text: any, voiceId: any) {
         if (!secret_state[SECRET_KEYS.AZURE_TTS]) {
             throw new Error('Azure TTS API Key not set');
         }

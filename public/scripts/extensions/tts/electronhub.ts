@@ -5,7 +5,7 @@ import { getPreviewString, saveTtsProviderSettings, initVoiceMap } from './index
 export { ElectronHubTtsProvider };
 
 class ElectronHubTtsProvider {
-    settings;
+    settings: any;
     voices = [];
     models = [];
     separator = ' . ';
@@ -96,7 +96,7 @@ class ElectronHubTtsProvider {
     }
 
     constructor() {
-        this.handler = async function (/** @type {string} */ key) {
+        this.handler = async function(this: any, /** @type {string} */ key: any) {
             if (key !== SECRET_KEYS.ELECTRONHUB) return;
             $('#electronhub_tts_key').toggleClass('success', !!secret_state[SECRET_KEYS.ELECTRONHUB]);
             await this.onRefreshClick();
@@ -109,7 +109,7 @@ class ElectronHubTtsProvider {
         });
     }
 
-    async loadSettings(settings) {
+    async loadSettings(settings: any) {
         if (Object.keys(settings).length == 0) {
             console.info('Using default Electron Hub TTS settings');
         }
@@ -197,7 +197,7 @@ class ElectronHubTtsProvider {
             const allModels = Array.isArray(data) ? data : [];
             const ttsModels = allModels.filter(m => {
                 const eps = Array.isArray(m?.endpoints) ? m.endpoints : [];
-                return eps.some(ep => {
+                return eps.some((ep: any) => {
                     if (typeof ep !== 'string') return false;
                     return ep === '/v1/audio/speech' || ep.endsWith('/audio/speech') || ep === 'audio/speech';
                 });
@@ -241,8 +241,8 @@ class ElectronHubTtsProvider {
      * @param {Array<any>} array
      * @returns {Map<string, any[]>}
      */
-    groupByVendor(array) {
-        return array.reduce((acc, curr) => {
+    groupByVendor(array: any) {
+        return array.reduce((acc: any, curr: any) => {
             const name = String(curr?.name || curr?.id || 'Other');
             const vendor = name.split(':')[0].trim() || 'Other';
             if (!acc.has(vendor)) acc.set(vendor, []);
@@ -357,7 +357,7 @@ class ElectronHubTtsProvider {
         saveTtsProviderSettings();
     }
 
-    async getVoice(voiceName) {
+    async getVoice(voiceName: any) {
         if (this.voices.length == 0) {
             this.voices = await this.fetchTtsVoiceObjects();
         }
@@ -368,7 +368,7 @@ class ElectronHubTtsProvider {
         return match;
     }
 
-    async generateTts(text, voiceId) {
+    async generateTts(text: any, voiceId: any) {
         const response = await this.fetchTtsGeneration(text, voiceId);
         return response;
     }
@@ -377,14 +377,18 @@ class ElectronHubTtsProvider {
         const modelId = this.settings.model;
         const model = this.models.find(m => m.id === modelId);
         if (model && Array.isArray(model.voices) && model.voices.length) {
-            return model.voices.map(name => ({ name, voice_id: name, lang: 'en-US' }));
+            return model.voices.map((name: any) => ({
+                name,
+                voice_id: name,
+                lang: 'en-US'
+            }));
         }
         // Fallback to common OpenAI voices
         const fallback = ['alloy', 'ash', 'ballad', 'coral', 'echo', 'fable', 'onyx', 'nova', 'sage', 'shimmer', 'verse'];
         return fallback.map(name => ({ name, voice_id: name, lang: 'en-US' }));
     }
 
-    async previewTtsVoice(voiceId) {
+    async previewTtsVoice(voiceId: any) {
         this.audioElement.pause();
         this.audioElement.currentTime = 0;
         const text = getPreviewString('en-US');
@@ -399,7 +403,7 @@ class ElectronHubTtsProvider {
         this.audioElement.onended = () => URL.revokeObjectURL(url);
     }
 
-    async fetchTtsGeneration(inputText, voiceId) {
+    async fetchTtsGeneration(inputText: any, voiceId: any) {
         console.info(`Generating Electron Hub TTS for voice_id ${voiceId}`);
         const body = {
             input: inputText,

@@ -4,17 +4,17 @@ import { QuickReplySet } from './QuickReplySet.js';
 
 export class QuickReplyConfig {
     /**@type {QuickReplySetLink[]}*/ setList = [];
-    /**@type {'global'|'chat'|'character'}*/ scope;
+    /**@type {'global'|'chat'|'character'}*/ scope: any;
 
-    /**@type {Function}*/ onUpdate;
-    /**@type {Function}*/ onRequestEditSet;
+    /**@type {Function}*/ onUpdate: any;
+    /**@type {Function}*/ onRequestEditSet: any;
 
-    /**@type {HTMLElement}*/ dom;
-    /**@type {HTMLElement}*/ setListDom;
+    /**@type {HTMLElement}*/ dom: any;
+    /**@type {HTMLElement}*/ setListDom: any;
 
 
-    static from(props) {
-        props.setList = props.setList?.map(it => QuickReplySetLink.from(it))?.filter(it => it.set) ?? [];
+    static from(props: any) {
+        props.setList = props.setList?.map((it: any) => QuickReplySetLink.from(it))?.filter((it: any) => it.set) ?? [];
         const instance = Object.assign(new this(), props);
         instance.init();
         return instance;
@@ -26,10 +26,10 @@ export class QuickReplyConfig {
     }
 
 
-    hasSet(qrs) {
+    hasSet(qrs: any) {
         return this.setList.find(it => it.set == qrs) != null;
     }
-    addSet(qrs, isVisible = true) {
+    addSet(qrs: any, isVisible = true) {
         if (!this.hasSet(qrs)) {
             const qrl = new QuickReplySetLink();
             qrl.set = qrs;
@@ -40,7 +40,7 @@ export class QuickReplyConfig {
             this.update();
         }
     }
-    removeSet(qrs) {
+    removeSet(qrs: any) {
         const idx = this.setList.findIndex(it => it.set == qrs);
         if (idx > -1) {
             this.setList.splice(idx, 1);
@@ -50,7 +50,7 @@ export class QuickReplyConfig {
     }
 
 
-    renderSettingsInto(/**@type {HTMLElement}*/root) {
+    renderSettingsInto(/**@type {HTMLElement}*/root: any) {
         /**@type {HTMLElement}*/
         this.setListDom = root.querySelector('.qr--setList');
         root.querySelector('.qr--setListAdd').addEventListener('click', () => {
@@ -88,13 +88,13 @@ export class QuickReplyConfig {
     /**
      * @param {QuickReplySetLink} qrl
      */
-    hookQuickReplyLink(qrl) {
+    hookQuickReplyLink(qrl: any) {
         qrl.onDelete = () => this.deleteQuickReplyLink(qrl);
         qrl.onUpdate = () => this.update();
         qrl.onRequestEditSet = () => this.requestEditSet(qrl.set);
     }
 
-    deleteQuickReplyLink(qrl) {
+    deleteQuickReplyLink(qrl: any) {
         this.setList.splice(this.setList.indexOf(qrl), 1);
         this.update();
     }
@@ -105,7 +105,7 @@ export class QuickReplyConfig {
         }
     }
 
-    requestEditSet(qrs) {
+    requestEditSet(qrs: any) {
         if (this.onRequestEditSet) {
             this.onRequestEditSet(qrs);
         }

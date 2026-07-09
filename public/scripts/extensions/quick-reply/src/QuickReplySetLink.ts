@@ -1,7 +1,7 @@
 import { QuickReplySet } from './QuickReplySet.js';
 
 export class QuickReplySetLink {
-    static from(props) {
+    static from(props: any) {
         props.set = QuickReplySet.get(props.set);
         /**@type {QuickReplySetLink}*/
         const instance = Object.assign(new this(), props);
@@ -9,19 +9,19 @@ export class QuickReplySetLink {
     }
 
 
-    /**@type {QuickReplySet}*/ set;
+    /**@type {QuickReplySet}*/ set: any;
     /**@type {Boolean}*/ isVisible = true;
 
-    /**@type {Number}*/ index;
+    /**@type {Number}*/ index: any;
 
-    /**@type {Function}*/ onUpdate;
-    /**@type {Function}*/ onRequestEditSet;
-    /**@type {Function}*/ onDelete;
+    /**@type {Function}*/ onUpdate: any;
+    /**@type {Function}*/ onRequestEditSet: any;
+    /**@type {Function}*/ onDelete: any;
 
-    /**@type {HTMLElement}*/ settingsDom;
+    /**@type {HTMLElement}*/ settingsDom: any;
 
 
-    renderSettings(idx) {
+    renderSettings(idx: any) {
         this.index = idx;
         const item = document.createElement('div'); {
             this.settingsDom = item;
@@ -41,7 +41,7 @@ export class QuickReplySetLink {
                     this.set = QuickReplySet.get(set.value);
                     this.update();
                 });
-                QuickReplySet.list.toSorted((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase())).forEach(qrs => {
+                QuickReplySet.list.toSorted((a: any, b: any) => a.name.toLowerCase().localeCompare(b.name.toLowerCase())).forEach((qrs: any) => {
                     const opt = document.createElement('option'); {
                         opt.value = qrs.name;
                         opt.textContent = qrs.name;

@@ -209,7 +209,7 @@ class ChatterboxTtsProvider {
     // Startup & Initialize //
     //######################//
 
-    async loadSettings(settings) {
+    async loadSettings(settings: any) {
         this.updateStatus('Offline');
 
         if (Object.keys(settings).length === 0) {
@@ -312,11 +312,11 @@ class ChatterboxTtsProvider {
             const predefinedData = await predefinedResponse.json();
 
             // Transform predefined voices
-            const predefinedVoices = predefinedData.map(voice => ({
+            const predefinedVoices = predefinedData.map((voice: any) => ({
                 name: voice.display_name,
                 voice_id: voice.voice_id || voice.filename,
                 preview_url: null,
-                lang: voice.language || 'en',
+                lang: voice.language || 'en'
             }));
 
             // Always try to fetch reference voices
@@ -325,11 +325,11 @@ class ChatterboxTtsProvider {
                 const refResponse = await fetch(`${this.settings.provider_endpoint}/get_reference_files`);
                 if (refResponse.ok) {
                     const refData = await refResponse.json();
-                    referenceVoices = refData.map(filename => ({
+                    referenceVoices = refData.map((filename: any) => ({
                         name: `[Clone] ${filename}`,
                         voice_id: `ref_${filename}`,
                         preview_url: null,
-                        lang: 'en',
+                        lang: 'en'
                     }));
                 }
             } catch (error) {
@@ -365,44 +365,44 @@ class ChatterboxTtsProvider {
         });
 
         // Language
-        $('#chatterbox-language').on('change', (e) => {
+        $('#chatterbox-language').on('change', (e: any) => {
             this.settings.language = e.target.value;
             this.onSettingsChange();
         });
 
         // Parameter sliders
-        $('#chatterbox-temperature').on('input', (e) => {
+        $('#chatterbox-temperature').on('input', (e: any) => {
             this.settings.temperature = parseFloat(e.target.value);
             $('#chatterbox-temperature-value').text(this.settings.temperature);
             this.onSettingsChange();
         });
 
-        $('#chatterbox-exaggeration').on('input', (e) => {
+        $('#chatterbox-exaggeration').on('input', (e: any) => {
             this.settings.exaggeration = parseFloat(e.target.value);
             $('#chatterbox-exaggeration-value').text(this.settings.exaggeration);
             this.onSettingsChange();
         });
 
-        $('#chatterbox-cfg-weight').on('input', (e) => {
+        $('#chatterbox-cfg-weight').on('input', (e: any) => {
             this.settings.cfg_weight = parseFloat(e.target.value);
             $('#chatterbox-cfg-weight-value').text(this.settings.cfg_weight);
             this.onSettingsChange();
         });
 
-        $('#chatterbox-speed').on('input', (e) => {
+        $('#chatterbox-speed').on('input', (e: any) => {
             this.settings.speed_factor = parseFloat(e.target.value);
             $('#chatterbox-speed-value').text(this.settings.speed_factor);
             this.onSettingsChange();
         });
 
         // Seed
-        $('#chatterbox-seed').on('change', (e) => {
+        $('#chatterbox-seed').on('change', (e: any) => {
             this.settings.seed = parseInt(e.target.value);
             this.onSettingsChange();
         });
 
         // Text splitting
-        $('#chatterbox-split-text').on('change', (e) => {
+        $('#chatterbox-split-text').on('change', (e: any) => {
             this.settings.split_text = e.target.checked;
             if (e.target.checked) {
                 $('#chunk-size-row').show();
@@ -412,13 +412,13 @@ class ChatterboxTtsProvider {
             this.onSettingsChange();
         });
 
-        $('#chatterbox-chunk-size').on('change', (e) => {
+        $('#chatterbox-chunk-size').on('change', (e: any) => {
             this.settings.chunk_size = parseInt(e.target.value);
             this.onSettingsChange();
         });
 
         // Output format
-        $('#chatterbox-format').on('change', (e) => {
+        $('#chatterbox-format').on('change', (e: any) => {
             this.settings.output_format = e.target.value;
             this.onSettingsChange();
         });
@@ -458,7 +458,7 @@ class ChatterboxTtsProvider {
     // Preview Voice    //
     //##################//
 
-    async previewTtsVoice(voiceId) {
+    async previewTtsVoice(voiceId: any) {
         try {
             this.updateStatus('Processing');
 
@@ -528,7 +528,7 @@ class ChatterboxTtsProvider {
     // Get Voice Object    //
     //#####################//
 
-    async getVoice(voiceName) {
+    async getVoice(voiceName: any) {
         // Ensure voices are loaded
         if (this.voices.length === 0) {
             await this.fetchTtsVoiceObjects();
@@ -569,7 +569,7 @@ class ChatterboxTtsProvider {
     // Generate TTS     //
     //##################//
 
-    async generateTts(inputText, voiceId) {
+    async generateTts(inputText: any, voiceId: any) {
         try {
             this.updateStatus('Processing');
 
@@ -636,7 +636,7 @@ class ChatterboxTtsProvider {
     // Update Status        //
     //######################//
 
-    updateStatus(status) {
+    updateStatus(status: any) {
         const statusElement = document.getElementById('chatterbox-status');
         if (statusElement) {
             statusElement.textContent = status;

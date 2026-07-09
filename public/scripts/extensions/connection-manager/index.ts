@@ -186,7 +186,7 @@ const profilesProvider = () => [
  * @param {string} value Search value
  * @returns {ConnectionProfile|null} Best match or null
  */
-function findProfileByName(value) {
+function findProfileByName(value: any) {
     // Try to find exact match
     const profile = extension_settings.connectionManager.profiles.find(p => p.name === value);
 
@@ -212,7 +212,7 @@ function findProfileByName(value) {
  * @param {ConnectionProfile} profile Connection profile
  * @param {boolean} [cleanUp] Whether to clean up the profile
  */
-async function readProfileFromCommands(mode, profile, cleanUp = false) {
+async function readProfileFromCommands(mode: any, profile: any, cleanUp = false) {
     const commands = mode === 'cc' ? CC_COMMANDS : TC_COMMANDS;
     const opposingCommands = mode === 'cc' ? TC_COMMANDS : CC_COMMANDS;
     const excludeList = Array.isArray(profile.exclude) ? profile.exclude : [];
@@ -269,7 +269,7 @@ async function createConnectionProfile(forceName = null) {
 
     const profileForDisplay = makeFancyProfile(profile);
     const template = $(await renderExtensionTemplateAsync(MODULE_NAME, 'profile', { profile: profileForDisplay }));
-    template.find('input[name="exclude"]').on('input', function () {
+    template.find('input[name="exclude"]').on('input', function(this: any) {
         const fancyName = String($(this).val());
         const keyName = Object.entries(FANCY_NAMES).find(x => x[1] === fancyName)?.[0];
         if (!keyName) {
@@ -289,9 +289,9 @@ async function createConnectionProfile(forceName = null) {
             index !== -1 && profile.exclude.splice(index, 1);
         }
     });
-    const isNameTaken = (n) => extension_settings.connectionManager.profiles.some(p => p.name === n);
+    const isNameTaken = (n: any) => extension_settings.connectionManager.profiles.some(p => p.name === n);
     const suggestedName = getUniqueName(collapseSpaces(`${profile.api ?? ''} ${profile.model ?? ''} - ${profile.preset ?? ''}`), isNameTaken);
-    let name = forceName ?? await callGenericPopup(template, POPUP_TYPE.INPUT, suggestedName);
+    let name = forceName ?? (await callGenericPopup(template, POPUP_TYPE.INPUT, suggestedName));
     // If it's cancelled, it will be false
     if (!name) {
         return null;
@@ -352,7 +352,7 @@ async function deleteConnectionProfile() {
  * @param {ConnectionProfile} profile Connection profile
  * @returns {Object} Fancy profile
  */
-function makeFancyProfile(profile) {
+function makeFancyProfile(profile: any) {
     return Object.entries(FANCY_NAMES).reduce((acc, [key, value]) => {
         const allowEmpty = ALLOW_EMPTY.includes(key);
         if (!profile[key]) {
@@ -389,7 +389,7 @@ function makeFancyProfile(profile) {
  * @param {ConnectionProfile} profile Connection profile
  * @returns {Promise<void>}
  */
-async function applyConnectionProfile(profile) {
+async function applyConnectionProfile(profile: any) {
     if (!profile) {
         return;
     }
@@ -428,7 +428,7 @@ async function applyConnectionProfile(profile) {
  * @param {ConnectionProfile} profile Connection profile
  * @returns {Promise<void>}
  */
-async function updateConnectionProfile(profile) {
+async function updateConnectionProfile(profile: any) {
     profile.mode = main_api === 'openai' ? 'cc' : 'tc';
     await readProfileFromCommands(profile.mode, profile, true);
 }
@@ -437,7 +437,7 @@ async function updateConnectionProfile(profile) {
  * Renders the connection profile details.
  * @param {HTMLSelectElement} profiles Select element containing connection profiles
  */
-function renderConnectionProfiles(profiles) {
+function renderConnectionProfiles(profiles: any) {
     profiles.innerHTML = '';
     const noneOption = document.createElement('option');
 
@@ -459,7 +459,7 @@ function renderConnectionProfiles(profiles) {
  * Renders the content of the details element.
  * @param {HTMLElement} detailsContent Content element of the details
  */
-async function renderDetailsContent(detailsContent) {
+async function renderDetailsContent(detailsContent: any) {
     detailsContent.innerHTML = '';
     if (detailsContent.classList.contains('hidden')) {
         return;
@@ -470,7 +470,7 @@ async function renderDetailsContent(detailsContent) {
         const profileForDisplay = makeFancyProfile(profile);
         const templateParams = { profile: profileForDisplay };
         if (Array.isArray(profile.exclude) && profile.exclude.length > 0) {
-            templateParams.omitted = profile.exclude.map(e => FANCY_NAMES[e]).join(', ');
+            templateParams.omitted = profile.exclude.map((e: any) => FANCY_NAMES[e]).join(', ');
         }
         const template = await renderExtensionTemplateAsync(MODULE_NAME, 'view', templateParams);
         detailsContent.innerHTML = template;
@@ -486,7 +486,7 @@ async function renderDetailsContent(detailsContent) {
  * @param {string} value Unnamed argument (the prompt)
  * @returns {Promise<string>} The generated text, optionally with formatted reasoning
  */
-async function generateStreamCallback(args, value) {
+async function generateStreamCallback(args: any, value: any) {
     if (!value) {
         console.warn('WARN: No argument provided for /profile-genstream command');
         return '';
@@ -819,7 +819,7 @@ export async function init() {
         }
 
         let saveChanges = false;
-        const sortByViewOrder = (a, b) => Object.keys(FANCY_NAMES).indexOf(a) - Object.keys(FANCY_NAMES).indexOf(b);
+        const sortByViewOrder = (a: any, b: any) => Object.keys(FANCY_NAMES).indexOf(a) - Object.keys(FANCY_NAMES).indexOf(b);
         const commands = profile.mode === 'cc' ? CC_COMMANDS : TC_COMMANDS;
         const settings = commands.slice().sort(sortByViewOrder).reduce((acc, command) => {
             const fancyName = FANCY_NAMES[command];
@@ -853,12 +853,12 @@ export async function init() {
             return;
         }
 
-        const newExcludeList = template.find('input[name="exclude"]:not(:checked)').map(function () {
+        const newExcludeList = template.find('input[name="exclude"]:not(:checked)').map(function(this: any) {
             return Object.entries(FANCY_NAMES).find(x => x[1] === String($(this).val()))?.[0];
         }).get();
 
         const oldProfile = structuredClone(profile);
-        if (newExcludeList.length !== profile.exclude.length || !newExcludeList.every(e => profile.exclude.includes(e))) {
+        if (newExcludeList.length !== profile.exclude.length || !newExcludeList.every((e: any) => profile.exclude.includes(e))) {
             profile.exclude = newExcludeList;
             for (const command of newExcludeList) {
                 delete profile[command];
@@ -918,7 +918,7 @@ export async function init() {
                 defaultValue: '2000',
             }),
         ],
-        callback: async (args, value) => {
+        callback: async (args: any, value: any) => {
             if (!value || typeof value !== 'string') {
                 const selectedProfile = extension_settings.connectionManager.selectedProfile;
                 const profile = extension_settings.connectionManager.profiles.find(p => p.id === selectedProfile);
@@ -979,7 +979,7 @@ export async function init() {
                 typeList: [ARGUMENT_TYPE.STRING],
             }),
         ],
-        callback: async (_args, name) => {
+        callback: async (_args: any, name: any) => {
             if (!name || typeof name !== 'string') {
                 toastr.warning('Please provide a name for the new connection profile.');
                 return '';
@@ -1028,7 +1028,7 @@ export async function init() {
                 isRequired: false,
             }),
         ],
-        callback: async (_args, value) => {
+        callback: async (_args: any, value: any) => {
             if (!value || typeof value !== 'string') {
                 const selectedProfile = extension_settings.connectionManager.selectedProfile;
                 const profile = extension_settings.connectionManager.profiles.find(p => p.id === selectedProfile);
@@ -1097,7 +1097,7 @@ export async function init() {
                 defaultValue: '3000',
                 enumList: [
                     new SlashCommandEnumValue('infinite', 'Keep the streaming display open until manually closed', 'command', '♾️'),
-                    new SlashCommandEnumValue('any delay in seconds', null, 'number', '⌚', () => true, input => input),
+                    new SlashCommandEnumValue('any delay in seconds', null, 'number', '⌚', () => true, (input: any) => input),
                 ],
             }),
             SlashCommandNamedArgument.fromProps({

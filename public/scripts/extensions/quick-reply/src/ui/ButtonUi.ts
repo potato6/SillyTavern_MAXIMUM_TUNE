@@ -6,11 +6,11 @@ import { QuickReplySettings } from '../QuickReplySettings.js';
 export class ButtonUi {
     /** @type {QuickReplySettings} */ settings;
 
-    /**@type {HTMLElement}*/ dom;
-    /**@type {HTMLElement}*/ popoutDom;
+    /**@type {HTMLElement}*/ dom: any;
+    /**@type {HTMLElement}*/ popoutDom: any;
 
 
-    constructor(/**@type {QuickReplySettings}*/settings) {
+    constructor(/**@type {QuickReplySettings}*/settings: any) {
         this.settings = settings;
     }
 
@@ -55,7 +55,7 @@ export class ButtonUi {
 
     renderBar() {
         if (!this.dom) {
-            let buttonHolder;
+            let buttonHolder: any;
             const root = document.createElement('div'); {
                 this.dom = root;
                 buttonHolder = root;
@@ -96,7 +96,7 @@ export class ButtonUi {
 
     renderPopout() {
         if (!this.popoutDom) {
-            let buttonHolder;
+            let buttonHolder: any;
             const root = document.createElement('div'); {
                 this.popoutDom = root;
                 root.id = 'qr--popout';

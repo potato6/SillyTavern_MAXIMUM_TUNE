@@ -5,7 +5,7 @@ import { getPreviewString, saveTtsProviderSettings } from './index.js';
 export { ChutesTtsProvider };
 
 class ChutesTtsProvider {
-    settings;
+    settings: any;
     voices = [];
     models = [];
     separator = ' . ';
@@ -39,7 +39,7 @@ class ChutesTtsProvider {
     }
 
     constructor() {
-        this.handler = async function (/** @type {string} */ key) {
+        this.handler = async function(this: any, /** @type {string} */ key: any) {
             if (key !== SECRET_KEYS.CHUTES) return;
             $('#chutes_tts_key').toggleClass('success', !!secret_state[SECRET_KEYS.CHUTES]);
             await this.onRefreshClick();
@@ -58,7 +58,7 @@ class ChutesTtsProvider {
         saveTtsProviderSettings();
     }
 
-    async loadSettings(settings) {
+    async loadSettings(settings: any) {
         if (Object.keys(settings).length === 0) {
             Object.assign(settings, this.defaultSettings);
         }
@@ -178,7 +178,7 @@ class ChutesTtsProvider {
         }));
     }
 
-    async getVoice(voiceName) {
+    async getVoice(voiceName: any) {
         if (this.voices.length === 0) {
             await this.updateVoices();
         }
@@ -186,12 +186,12 @@ class ChutesTtsProvider {
         return voice || this.voices.find(v => v.voice_id === 'af_heart');
     }
 
-    async generateTts(text, voiceId) {
+    async generateTts(text: any, voiceId: any) {
         const response = await this.fetchTtsGeneration(text, voiceId);
         return response;
     }
 
-    async fetchTtsGeneration(text, voiceId) {
+    async fetchTtsGeneration(text: any, voiceId: any) {
         const apiKey = secret_state[SECRET_KEYS.CHUTES];
 
         if (!apiKey) {
@@ -226,7 +226,7 @@ class ChutesTtsProvider {
         return voiceIds;
     }
 
-    async previewTtsVoice(voiceId) {
+    async previewTtsVoice(voiceId: any) {
         const text = getPreviewString(voiceId);
         await this.generateTts(text, voiceId);
     }

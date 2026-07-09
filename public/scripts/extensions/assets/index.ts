@@ -15,7 +15,7 @@ export { MODULE_NAME };
 
 const MODULE_NAME = 'assets';
 const DEBUG_PREFIX = '<Assets module> ';
-let previewAudio = null;
+let previewAudio: any = null;
 let ASSETS_JSON_URL = 'https://raw.githubusercontent.com/SillyTavern/SillyTavern-Content/main/index.json';
 
 
@@ -46,7 +46,7 @@ function filterAssets() {
         $('#assets_menu .asset-block').show();
     } else {
         $('#assets_menu .asset-block').hide();
-        $('#assets_menu .asset-block').filter(function () {
+        $('#assets_menu .asset-block').filter(function(this: any) {
             return $(this).text().toLowerCase().includes(searchValue);
         }).show();
     }
@@ -67,7 +67,7 @@ const KNOWN_TYPES = {
  * @param {number} index Index of the asset in the list of available assets of the same type, used to create a unique element ID
  * @returns {JQuery} The button element
  */
-function createAssetButton(asset, assetType, index) {
+function createAssetButton(asset: any, assetType: any, index: any) {
     const elemId = `assets_install_${assetType}_${index}`;
     const element = $('<div />', { id: elemId, class: 'asset-download-button right_menu_button' });
     const label = $('<i class="fa-fw fa-solid fa-download fa-lg"></i>');
@@ -75,7 +75,7 @@ function createAssetButton(asset, assetType, index) {
 
     console.debug(DEBUG_PREFIX, 'Checking asset', asset.id, asset.url);
 
-    const assetInstall = async function () {
+    const assetInstall = async function(this: any) {
         element.off('click');
         label.removeClass('fa-download');
         this.classList.add('asset-download-button-loading');
@@ -148,7 +148,7 @@ function createAssetButton(asset, assetType, index) {
  * @param {JQuery} element The button element from createAssetButton
  * @returns {JQuery} The asset block element
  */
-function createAssetBlock(asset, assetType, element) {
+function createAssetBlock(asset: any, assetType: any, element: any) {
     console.debug(DEBUG_PREFIX, 'Created element for ', asset.id);
 
     const displayName = DOMPurify.sanitize(asset.name || asset.id);
@@ -185,7 +185,7 @@ function createAssetBlock(asset, assetType, element) {
 
     const assetBlock = $('<i></i>').append(element).append(infoDiv);
 
-    assetBlock.find('.tag').on('click', function (e) {
+    assetBlock.find('.tag').on('click', function (e: any) {
         const a = document.createElement('a');
         a.href = 'https://docs.sillytavern.app/for-contributors/function-calling/';
         a.target = '_blank';
@@ -208,7 +208,7 @@ function createAssetBlock(asset, assetType, element) {
  * @param {string} assetType Asset type, e.g. 'extension', 'character', 'ambient', 'bgm', 'blip'
  * @returns {Promise<void>}
  */
-async function buildAssetTypeSection(assetType) {
+async function buildAssetTypeSection(assetType: any) {
     const assetTypeMenu = $('<div />', { id: `assets_${assetType}_div`, class: 'assets-list-div' });
     assetTypeMenu.attr('data-type', assetType);
     assetTypeMenu.append($('<h3>').text(KNOWN_TYPES[assetType] || assetType)).hide();
@@ -217,7 +217,7 @@ async function buildAssetTypeSection(assetType) {
         assetTypeMenu.append(await renderExtensionTemplateAsync('assets', 'installation'));
     }
 
-    for (const asset of availableAssets[assetType].sort((a, b) => a?.name && b?.name && a.name.localeCompare(b.name))) {
+    for (const asset of availableAssets[assetType].sort((a: any, b: any) => a?.name && b?.name && a.name.localeCompare(b.name))) {
         const i = availableAssets[assetType].indexOf(asset);
         const element = createAssetButton(asset, assetType, i);
         const assetBlock = createAssetBlock(asset, assetType, element);
@@ -240,7 +240,7 @@ async function buildAssetTypeSection(assetType) {
  * Parses the fetched assets JSON and renders the full assets menu.
  * @param {object[]} json Array of asset objects, each containing at least id, name, description, url and type fields
  */
-async function populateAssetsMenu(json) {
+async function populateAssetsMenu(json: any) {
     availableAssets = {};
     $('#assets_menu').empty();
 
@@ -286,7 +286,7 @@ async function populateAssetsMenu(json) {
  * Downloads the assets list from the given URL and populates the menu. Shows error message if something goes wrong.
  * @param {URL} url URL to fetch from
  */
-async function downloadAssetsList(url) {
+async function downloadAssetsList(url: any) {
     await updateCurrentAssets();
     try {
         const response = await fetch(url, { cache: 'no-cache' });
@@ -316,7 +316,7 @@ async function downloadAssetsList(url) {
  * Previews the asset by opening its URL. If it's an audio asset, it plays a preview sound. Otherwise, it opens the URL in a new tab.
  * @param {JQuery.Event} e Click event
  */
-function previewAsset(e) {
+function previewAsset(this: any, e: any) {
     const href = $(this).attr('href');
     const audioExtensions = ['.mp3', '.ogg', '.wav'];
 
@@ -347,7 +347,7 @@ function previewAsset(e) {
  * @param {string} filename Name or ID of the asset
  * @returns {boolean} True if the asset is installed, false otherwise
  */
-function isAssetInstalled(assetType, filename) {
+function isAssetInstalled(assetType: any, filename: any) {
     let assetList = currentAssets[assetType];
 
     if (assetType == 'extension') {
@@ -375,7 +375,7 @@ function isAssetInstalled(assetType, filename) {
  * @param {string} filename Name or ID of the asset
  * @returns {Promise<boolean>} True if the asset was successfully installed, false otherwise
  */
-async function installAsset(url, assetType, filename) {
+async function installAsset(url: any, assetType: any, filename: any) {
     console.debug(DEBUG_PREFIX, 'Downloading ', url);
     const category = assetType;
     try {
@@ -418,7 +418,7 @@ async function installAsset(url, assetType, filename) {
  * @param {string} filename Name or ID of the asset
  * @returns {Promise<boolean>} True if the asset was successfully deleted, false otherwise
  */
-async function deleteAsset(assetType, filename) {
+async function deleteAsset(assetType: any, filename: any) {
     console.debug(DEBUG_PREFIX, 'Deleting ', assetType, filename);
     const category = assetType;
     try {
@@ -452,7 +452,7 @@ async function deleteAsset(assetType, filename) {
  * @param {boolean} forceDefault If true, it uses the default ASSETS_JSON_URL instead of the one from the input field.
  * @returns {Promise<void>}
  */
-async function openCharacterBrowser(forceDefault) {
+async function openCharacterBrowser(forceDefault: any) {
     const url = forceDefault ? ASSETS_JSON_URL : String($('#assets-json-url-field').val());
     if (!isValidUrl(url)) {
         toastr.error('Please enter a valid URL');
@@ -560,15 +560,15 @@ export async function init() {
         const rememberKey = `Assets_SkipConfirm_${getStringHash(url.href)}`;
         const skipConfirm = accountStorage.getItem(rememberKey) === 'true';
 
-        const confirmation = skipConfirm || await Popup.show.confirm(t`Loading Asset List`, '<span>' + t`Are you sure you want to connect to the following url?` + `</span><var>${escapeHtml(url.href)}</var>`, {
+        const confirmation = skipConfirm || (await Popup.show.confirm(t`Loading Asset List`, '<span>' + t`Are you sure you want to connect to the following url?` + `</span><var>${escapeHtml(url.href)}</var>`, {
             customInputs: [{ id: 'assets-remember', label: 'Don\'t ask again for this URL' }],
-            onClose: popup => {
+            onClose: (popup: any) => {
                 if (popup.result) {
                     const rememberValue = popup.inputResults.get('assets-remember');
                     accountStorage.setItem(rememberKey, String(rememberValue));
                 }
             },
-        });
+        }));
 
         if (confirmation) {
             try {
@@ -592,7 +592,7 @@ export async function init() {
     windowHtml.find('#assets_filters').hide();
     $('#assets_container').append(windowHtml);
 
-    eventSource.on(event_types.OPEN_CHARACTER_LIBRARY, async (forceDefault) => {
+    eventSource.on(event_types.OPEN_CHARACTER_LIBRARY, async (forceDefault: any) => {
         openCharacterBrowser(forceDefault);
     });
 }

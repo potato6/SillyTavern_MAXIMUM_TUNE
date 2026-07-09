@@ -8,7 +8,7 @@ export class AutoExecuteHandler {
     /** @type {Boolean[]}*/ preventAutoExecuteStack = [];
 
 
-    constructor(/** @type {QuickReplySettings} */settings) {
+    constructor(/** @type {QuickReplySettings} */settings: any) {
         this.settings = settings;
     }
 
@@ -18,7 +18,7 @@ export class AutoExecuteHandler {
     }
 
 
-    async performAutoExecute(/** @type {QuickReply[]} */qrList) {
+    async performAutoExecute(/** @type {QuickReply[]} */qrList: any) {
         for (const qr of qrList) {
             this.preventAutoExecuteStack.push(qr.preventAutoExecute);
             try {
@@ -32,10 +32,10 @@ export class AutoExecuteHandler {
     }
 
 
-    getCommands(eventName) {
-        const getFromConfig = (config) => {
+    getCommands(eventName: any) {
+        const getFromConfig = (config: any) => {
             // This safely handles cases where a link exists but the set hasn't been loaded (link.set is null)
-            return config?.setList?.map(link => link.set ? link.set.qrList.filter(qr => qr[eventName]) : [])?.flat() ?? [];
+            return config?.setList?.map((link: any) => link.set ? link.set.qrList.filter((qr: any) => qr[eventName]) : [])?.flat() ?? [];
         };
         return [
             ...getFromConfig(this.settings.config),
@@ -82,14 +82,14 @@ export class AutoExecuteHandler {
     /**
      * @param {any[]} entries Set of activated entries
      */
-    async handleWIActivation(entries) {
+    async handleWIActivation(entries: any) {
         if (!this.checkExecute() || !Array.isArray(entries) || entries.length === 0) return;
         const automationIds = entries.map(entry => entry.automationId).filter(Boolean);
         if (automationIds.length === 0) return;
 
-        const getFromConfig = (config) => {
+        const getFromConfig = (config: any) => {
             return config?.setList
-                ?.map(link => link.set ? link.set.qrList.filter(qr => qr.automationId && automationIds.includes(qr.automationId)) : [])
+                ?.map((link: any) => link.set ? link.set.qrList.filter((qr: any) => qr.automationId && automationIds.includes(qr.automationId)) : [])
                 ?.flat() ?? [];
         };
 

@@ -16,7 +16,7 @@ class OpenAITtsProvider {
         { name: 'Shimmer', voice_id: 'shimmer', lang: 'en-US', preview_url: 'https://cdn.openai.com/API/docs/audio/shimmer.wav' },
     ];
 
-    settings;
+    settings: any;
     voices = [];
     separator = ' . ';
     audioElement = document.createElement('audio');
@@ -54,7 +54,7 @@ class OpenAITtsProvider {
         return html;
     }
 
-    async loadSettings(settings) {
+    async loadSettings(settings: any) {
         // Populate Provider UI given input settings
         if (Object.keys(settings).length == 0) {
             console.info('Using default TTS Provider settings');
@@ -146,7 +146,7 @@ class OpenAITtsProvider {
     }
 
     populateCharacterInstructions() {
-        const currentCharacters = $('.tts_voicemap_block_char span').map((i, el) => $(el).text()).get();
+        const currentCharacters = $('.tts_voicemap_block_char span').map((i: any, el: any) => $(el).text()).get();
 
         document.getElementById('openai-character-instructions').innerHTML = '';
 
@@ -176,7 +176,7 @@ class OpenAITtsProvider {
         }
     }
 
-    saveCharacterInstructions(characterName, instructions) {
+    saveCharacterInstructions(characterName: any, instructions: any) {
         if (!this.settings.characterInstructions) {
             this.settings.characterInstructions = {};
         }
@@ -192,7 +192,7 @@ class OpenAITtsProvider {
         return;
     }
 
-    async getVoice(voiceName) {
+    async getVoice(voiceName: any) {
         if (!voiceName) {
             throw 'TTS Voice name not provided';
         }
@@ -206,7 +206,7 @@ class OpenAITtsProvider {
         return voice;
     }
 
-    async generateTts(text, voiceId, characterName = null) {
+    async generateTts(text: any, voiceId: any, characterName = null) {
         const response = await this.fetchTtsGeneration(text, voiceId, characterName);
         return response;
     }
@@ -215,11 +215,11 @@ class OpenAITtsProvider {
         return OpenAITtsProvider.voices;
     }
 
-    async previewTtsVoice(_) {
+    async previewTtsVoice(_: any) {
         return;
     }
 
-    async fetchTtsGeneration(inputText, voiceId, characterName = null) {
+    async fetchTtsGeneration(inputText: any, voiceId: any, characterName = null) {
         console.info(`Generating new TTS for voice_id ${voiceId}`);
 
         const requestBody = {

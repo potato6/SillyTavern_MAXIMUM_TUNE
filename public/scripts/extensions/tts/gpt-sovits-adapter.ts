@@ -9,7 +9,7 @@ export { GptSoVITSAdapterProvider };
 */
 
 class GptSoVITSAdapterProvider {
-    settings;
+    settings: any;
     ready = false;
     voices = [];
     separator = '. ';
@@ -17,7 +17,7 @@ class GptSoVITSAdapterProvider {
     /*
         do not modify the text, adapter will handle it
     */
-    processText(text) {
+    processText(text: any) {
         return text;
     }
 
@@ -55,8 +55,8 @@ class GptSoVITSAdapterProvider {
         { value: 'flac', label: 'FLAC' },
     ];
 
-    _generateOptions(options, currentSetting) {
-        return options.map(opt => {
+    _generateOptions(options: any, currentSetting: any) {
+        return options.map((opt: any) => {
             const isSelected = opt.value === currentSetting ? 'selected' : '';
             return `<option value="${opt.value}" ${isSelected}>${opt.label}</option>`;
         }).join('');
@@ -94,7 +94,7 @@ class GptSoVITSAdapterProvider {
         this.changeTTSSettings();
     }
 
-    async loadSettings(settings) {
+    async loadSettings(settings: any) {
         // Populate Provider UI given input settings
         if (Object.keys(settings).length == 0) {
             console.info('Using default TTS Provider settings');
@@ -132,7 +132,7 @@ class GptSoVITSAdapterProvider {
     //  TTS Interfaces //
     //#################//
 
-    async getVoice(voiceName) {
+    async getVoice(voiceName: any) {
         if (this.voices.length == 0) {
             this.voices = await this.fetchTtsVoiceObjects();
         }
@@ -146,7 +146,7 @@ class GptSoVITSAdapterProvider {
         return match;
     }
 
-    async generateTts(text, voiceId) {
+    async generateTts(text: any, voiceId: any) {
         const response = await this.fetchTtsGeneration(text, voiceId);
         return response;
     }
@@ -174,7 +174,7 @@ class GptSoVITSAdapterProvider {
     * Preview TTS voice by generating a short sample.
     * @param {string} voiceId Voice ID to preview (model_type&speaker_id))
     */
-    async previewTtsVoice(voiceId) {
+    async previewTtsVoice(voiceId: any) {
         const langCode = this.langKey2LangCode[this.settings.text_lang] || 'zh-CN';
         const previewText = getPreviewString(langCode);
         const response = await this.fetchTtsGeneration(previewText, voiceId);
@@ -192,7 +192,7 @@ class GptSoVITSAdapterProvider {
      * @param {string} voiceId Voice ID to use (model_type&speaker_id))
      * @returns {Promise<Response>} Fetch response
      */
-    async fetchTtsGeneration(inputText, voiceId, lang = null, forceNoStreaming = false) {
+    async fetchTtsGeneration(inputText: any, voiceId: any, lang = null, forceNoStreaming = false) {
         console.info(`Generating new TTS for voice_id ${voiceId}`);
 
         const params = {
@@ -227,7 +227,7 @@ class GptSoVITSAdapterProvider {
     }
 
     // Interface not used
-    async fetchTtsFromHistory(history_item_id) {
+    async fetchTtsFromHistory(history_item_id: any) {
         return Promise.resolve(history_item_id);
     }
 }

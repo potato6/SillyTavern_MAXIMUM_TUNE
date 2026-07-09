@@ -169,7 +169,7 @@ const remoteEmbeddingEndpoints = {
         settingsKey: 'electronhub_model',
         selectId: 'vectors_electronhub_model',
         textProperty: 'name',
-        filter: models => models.filter(m => Array.isArray(m?.endpoints) && m.endpoints.includes('/v1/embeddings')),
+        filter: (models: any) => models.filter((m: any) => Array.isArray(m?.endpoints) && m.endpoints.includes('/v1/embeddings')),
     },
     openrouter: {
         url: '/api/openrouter/models/embedding',
@@ -196,7 +196,7 @@ const remoteEmbeddingEndpoints = {
  * @param {string} fileUrl URL of the file
  * @returns {string} Collection ID
  */
-function getFileCollectionId(fileUrl) {
+function getFileCollectionId(fileUrl: any) {
     return `file_${getStringHash(fileUrl)}`;
 }
 
@@ -295,7 +295,7 @@ function getChunkDelimiters() {
  * @param {object[]} items Array of vector items
  * @returns {object[]} Array of vector items (possibly chunked)
  */
-function splitByChunks(items) {
+function splitByChunks(items: any) {
     if (settings.message_chunk_size <= 0) {
         return items;
     }
@@ -318,7 +318,7 @@ function splitByChunks(items) {
  * @param {HashedMessage} element hashed message
  * @returns {Promise<boolean>} Sucess
  */
-async function summarizeExtra(element) {
+async function summarizeExtra(element: any) {
     try {
         const url = new URL(getApiUrl());
         url.pathname = '/api/summarize';
@@ -352,7 +352,7 @@ async function summarizeExtra(element) {
  * @param {HashedMessage} element hashed message
  * @returns {Promise<boolean>} Success
  */
-async function summarizeMain(element) {
+async function summarizeMain(element: any) {
     element.text = removeReasoningFromString(await generateRaw({ prompt: element.text, systemPrompt: settings.summary_prompt }));
     return true;
 }
@@ -362,7 +362,7 @@ async function summarizeMain(element) {
  * @param {HashedMessage} element hashed message
  * @returns {Promise<boolean>} Success
  */
-async function summarizeWebLLM(element) {
+async function summarizeWebLLM(element: any) {
     if (!isWebLlmSupported()) {
         console.warn('Vectors: WebLLM is not supported');
         return false;
@@ -380,7 +380,7 @@ async function summarizeWebLLM(element) {
  * @param {string} endpoint
  * @returns {Promise<boolean>} Whether the attempt succeeded.
  */
-async function summarizeOne(element, endpoint) {
+async function summarizeOne(element: any, endpoint: any) {
     switch (endpoint) {
         case 'main':
             return await summarizeMain(element);
@@ -403,7 +403,7 @@ async function summarizeOne(element, endpoint) {
  * @param {boolean} [options.skipOnFailure=false] If true, tags failed elements with `summaryFailed = true` instead of throwing
  * @returns {Promise<HashedMessage[]>} Summarized messages
  */
-async function summarize(hashedMessages, endpoint = 'main', { skipOnFailure = false } = {}) {
+async function summarize(hashedMessages: any, endpoint = 'main', { skipOnFailure = false } = {}) {
     const maxAttempts = Math.max(1, Number(settings.summary_retries) || 1);
     for (const element of hashedMessages) {
         const cachedSummary = cachedSummaries.get(element.hash);
@@ -466,7 +466,7 @@ async function synchronizeChat(batchSize = 5) {
         const newVectorItems = hashedMessages
             .filter(x => !hashesInCollection.includes(x.hash))
             .filter(x => !skippedHashes.has(x.hash));
-        const deletedHashes = hashesInCollection.filter(x => !hashedMessages.some(y => y.hash === x));
+        const deletedHashes = hashesInCollection.filter((x: any) => !hashedMessages.some(y => y.hash === x));
 
         let batch = newVectorItems.slice(0, batchSize);
 
@@ -510,7 +510,7 @@ async function synchronizeChat(batchSize = 5) {
          * @param {string} cause Error cause key
          * @returns {string} Error message
          */
-        function getErrorMessage(cause) {
+        function getErrorMessage(cause: any) {
             switch (cause) {
                 case 'api_key_missing':
                     return 'API key missing. Save it in the "API Connections" panel.';
@@ -553,7 +553,7 @@ const hashCache = new Map();
  * @param {string} str Input string
  * @returns {number} Hash value
  */
-function getStringHash(str) {
+function getStringHash(str: any) {
     // Check if the hash is already in the cache
     if (hashCache.has(str)) {
         return hashCache.get(str);
@@ -573,7 +573,7 @@ function getStringHash(str) {
  * @param {ChatMessage[]} chat Array of chat messages
  * @returns {Promise<void>}
  */
-async function processFiles(chat) {
+async function processFiles(chat: any) {
     try {
         if (!settings.enabled_files) {
             return;
@@ -641,7 +641,7 @@ async function processFiles(chat) {
  * @param {string} [source] Optional source filter for data bank attachments.
  * @returns {Promise<string[]>} Collection IDs
  */
-async function ingestDataBankAttachments(source) {
+async function ingestDataBankAttachments(source: any) {
     // Exclude disabled files
     const dataBank = source ? getDataBankAttachmentsForSource(source, false) : getDataBankAttachments(false);
     const dataBankCollectionIds = [];
@@ -675,7 +675,7 @@ async function ingestDataBankAttachments(source) {
  * @param {string[]} collectionIds File collection IDs
  * @returns {Promise<void>}
  */
-async function injectDataBankChunks(queryText, collectionIds) {
+async function injectDataBankChunks(queryText: any, collectionIds: any) {
     try {
         const queryResults = await queryMultipleCollections(collectionIds, queryText, settings.chunk_count_db, settings.score_threshold);
         console.debug(`Vectors: Retrieved ${collectionIds.length} Data Bank collections`, queryResults);
@@ -683,7 +683,7 @@ async function injectDataBankChunks(queryText, collectionIds) {
 
         for (const collectionId in queryResults) {
             console.debug(`Vectors: Processing Data Bank collection ${collectionId}`, queryResults[collectionId]);
-            const metadata = queryResults[collectionId].metadata?.filter(x => x.text)?.sort((a, b) => a.index - b.index)?.map(x => x.text)?.filter(onlyUnique) || [];
+            const metadata = queryResults[collectionId].metadata?.filter((x: any) => x.text)?.sort((a: any, b: any) => a.index - b.index)?.map((x: any) => x.text)?.filter(onlyUnique) || [];
             textResult += metadata.join('\n') + '\n\n';
         }
 
@@ -705,11 +705,11 @@ async function injectDataBankChunks(queryText, collectionIds) {
  * @param {string} collectionId File collection ID
  * @returns {Promise<string>} Retrieved file text
  */
-async function retrieveFileChunks(queryText, collectionId) {
+async function retrieveFileChunks(queryText: any, collectionId: any) {
     console.debug(`Vectors: Retrieving file chunks for collection ${collectionId}`, queryText);
     const queryResults = await queryCollection(collectionId, queryText, settings.chunk_count);
     console.debug(`Vectors: Retrieved ${queryResults.hashes.length} file chunks for collection ${collectionId}`, queryResults);
-    const metadata = queryResults.metadata.filter(x => x.text).sort((a, b) => a.index - b.index).map(x => x.text).filter(onlyUnique);
+    const metadata = queryResults.metadata.filter((x: any) => x.text).sort((a: any, b: any) => a.index - b.index).map((x: any) => x.text).filter(onlyUnique);
     const fileText = metadata.join('\n');
 
     return fileText;
@@ -724,7 +724,7 @@ async function retrieveFileChunks(queryText, collectionId) {
  * @param {number} overlapPercent Overlap size (in %)
  * @returns {Promise<boolean>} True if successful, false if not
  */
-async function vectorizeFile(fileText, fileName, collectionId, chunkSize, overlapPercent) {
+async function vectorizeFile(fileText: any, fileName: any, collectionId: any, chunkSize: any, overlapPercent: any) {
     let toast = jQuery();
 
     try {
@@ -741,13 +741,17 @@ async function vectorizeFile(fileText, fileName, collectionId, chunkSize, overla
         const delimiters = getChunkDelimiters();
         // Overlap should not be included in chunk size. It will be later compensated by overlapChunks
         chunkSize = overlapSize > 0 ? (chunkSize - overlapSize) : chunkSize;
-        const applyOverlap = (x, y, z) => overlapSize > 0 ? overlapChunks(x, y, z, overlapSize) : x;
+        const applyOverlap = (x: any, y: any, z: any) => overlapSize > 0 ? overlapChunks(x, y, z, overlapSize) : x;
         const chunks = settings.only_custom_boundary && settings.force_chunk_delimiter
             ? fileText.split(settings.force_chunk_delimiter).map(applyOverlap)
             : splitRecursive(fileText, chunkSize, delimiters).map(applyOverlap);
         console.debug(`Vectors: Split file ${fileName} into ${chunks.length} chunks with ${overlapPercent}% overlap`, chunks);
 
-        const items = chunks.map((chunk, index) => ({ hash: getStringHash(chunk), text: chunk, index: index }));
+        const items = chunks.map((chunk, index) => ({
+            hash: getStringHash(chunk),
+            text: chunk,
+            index: index
+        }));
 
         for (let i = 0; i < items.length; i += batchSize) {
             toastBody.text(`${i}/${items.length} (${Math.round((i / items.length) * 100)}%) chunks processed`);
@@ -773,7 +777,7 @@ async function vectorizeFile(fileText, fileName, collectionId, chunkSize, overla
  * @param {function} _abort Abort function (unused)
  * @param {string} type Generation type
  */
-async function rearrangeChat(chat, _contextSize, _abort, type) {
+async function rearrangeChat(chat: any, _contextSize: any, _abort: any, type: any) {
     try {
         if (type === 'quiet') {
             console.debug('Vectors: Skipping quiet prompt');
@@ -862,8 +866,8 @@ async function rearrangeChat(chat, _contextSize, _abort, type) {
  * @param {any[]} queriedMessages
  * @returns {string}
  */
-function getPromptText(queriedMessages) {
-    const queriedText = queriedMessages.map(x => collapseNewlines(`${x.name}: ${x.mes}`).trim()).join('\n\n');
+function getPromptText(queriedMessages: any) {
+    const queriedText = queriedMessages.map((x: any) => collapseNewlines(`${x.name}: ${x.mes}`).trim()).join('\n\n');
     console.log('Vectors: relevant past messages found.\n', queriedText);
     return substituteParamsExtended(settings.template, { text: queriedText });
 }
@@ -876,7 +880,7 @@ function getPromptText(queriedMessages) {
  * @param {number} overlapSize Size of the overlap
  * @returns {string} Overlapped chunks, with overlap trimmed to sentence boundaries
  */
-function overlapChunks(chunk, index, chunks, overlapSize) {
+function overlapChunks(chunk: any, index: any, chunks: any, overlapSize: any) {
     const halfOverlap = Math.floor(overlapSize / 2);
     const nextChunk = chunks[index + 1];
     const prevChunk = chunks[index - 1];
@@ -898,27 +902,31 @@ const onChatEvent = debounce(async () => await moduleWorker.update(), debounce_t
  * @param {'file'|'chat'|'world-info'} initiator Initiator of the query
  * @returns {Promise<string>} Text to query
  */
-async function getQueryText(chat, initiator) {
-    const getTextWithoutAttachments = (x) => {
+async function getQueryText(chat: any, initiator: any) {
+    const getTextWithoutAttachments = (x: any) => {
         const fileLength = x?.extra?.fileLength || 0;
         return String(x?.mes || '').substring(fileLength).trim();
     };
 
     let hashedMessages = chat
-        .map(x => ({ text: substituteParams(getTextWithoutAttachments(x)), hash: getStringHash(substituteParams(getTextWithoutAttachments(x))), index: chat.indexOf(x) }))
-        .filter(x => x.text)
+        .map((x: any) => ({
+        text: substituteParams(getTextWithoutAttachments(x)),
+        hash: getStringHash(substituteParams(getTextWithoutAttachments(x))),
+        index: chat.indexOf(x)
+    }))
+        .filter((x: any) => x.text)
         .reverse()
         .slice(0, settings.query);
 
     if (initiator === 'chat' && settings.enabled_chats && settings.summarize && settings.summarize_sent) {
         const minLength = Math.max(0, Number(settings.summary_threshold) || 0);
-        const toSummarize = minLength > 0 ? hashedMessages.filter(x => x.text.length >= minLength) : hashedMessages;
+        const toSummarize = minLength > 0 ? hashedMessages.filter((x: any) => x.text.length >= minLength) : hashedMessages;
         if (toSummarize.length > 0) {
             await summarize(toSummarize, settings.summary_source, { skipOnFailure: true });
         }
     }
 
-    const queryText = hashedMessages.map(x => x.text).join('\n');
+    const queryText = hashedMessages.map((x: any) => x.text).join('\n');
 
     return collapseNewlines(queryText).trim();
 }
@@ -1001,7 +1009,7 @@ function getVectorsRequestBody(args = {}) {
  * @param {string[]} items Items to embed
  * @returns {Promise<object>} Additional arguments
  */
-async function getAdditionalArgs(items) {
+async function getAdditionalArgs(items: any) {
     const args = {};
     switch (settings.source) {
         case 'webllm':
@@ -1022,7 +1030,7 @@ async function getAdditionalArgs(items) {
 * @param {string} collectionId
 * @returns {Promise<number[]>} Saved hashes
 */
-async function getSavedHashes(collectionId) {
+async function getSavedHashes(collectionId: any) {
     const args = await getAdditionalArgs([]);
     const response = await fetch('/api/vector/list', {
         method: 'POST',
@@ -1048,10 +1056,10 @@ async function getSavedHashes(collectionId) {
  * @param {{ hash: number, text: string }[]} items - The items to insert
  * @returns {Promise<void>}
  */
-async function insertVectorItems(collectionId, items) {
+async function insertVectorItems(collectionId: any, items: any) {
     throwIfSourceInvalid();
 
-    const args = await getAdditionalArgs(items.map(x => x.text));
+    const args = await getAdditionalArgs(items.map((x: any) => x.text));
     const response = await fetch('/api/vector/insert', {
         method: 'POST',
         headers: getRequestHeaders(),
@@ -1124,7 +1132,7 @@ function throwIfSourceInvalid() {
  * @param {number[]} hashes - The hashes of the items to delete
  * @returns {Promise<void>}
  */
-async function deleteVectorItems(collectionId, hashes) {
+async function deleteVectorItems(collectionId: any, hashes: any) {
     const args = await getAdditionalArgs([]);
     const response = await fetch('/api/vector/delete', {
         method: 'POST',
@@ -1148,7 +1156,7 @@ async function deleteVectorItems(collectionId, hashes) {
  * @param {number} topK - The number of results to return
  * @returns {Promise<{ hashes: number[], metadata: object[]}>} - Hashes of the results
  */
-async function queryCollection(collectionId, searchText, topK) {
+async function queryCollection(collectionId: any, searchText: any, topK: any) {
     const args = await getAdditionalArgs([searchText]);
     const response = await fetch('/api/vector/query', {
         method: 'POST',
@@ -1178,7 +1186,7 @@ async function queryCollection(collectionId, searchText, topK) {
  * @param {number} threshold - Score threshold
  * @returns {Promise<Record<string, { hashes: number[], metadata: object[] }>>} - Results mapped to collection IDs
  */
-async function queryMultipleCollections(collectionIds, searchText, topK, threshold) {
+async function queryMultipleCollections(collectionIds: any, searchText: any, topK: any, threshold: any) {
     const args = await getAdditionalArgs([searchText]);
     const response = await fetch('/api/vector/query-multi', {
         method: 'POST',
@@ -1204,7 +1212,7 @@ async function queryMultipleCollections(collectionIds, searchText, topK, thresho
  * Purges the vector index for a file.
  * @param {string} fileUrl File URL to purge
  */
-async function purgeFileVectorIndex(fileUrl) {
+async function purgeFileVectorIndex(fileUrl: any) {
     try {
         if (!settings.enabled_files) {
             return;
@@ -1237,7 +1245,7 @@ async function purgeFileVectorIndex(fileUrl) {
  * @param {string} collectionId Collection ID to purge
  * @returns <Promise<boolean>> True if deleted, false if not
  */
-async function purgeVectorIndex(collectionId) {
+async function purgeVectorIndex(collectionId: any) {
     try {
         if (!settings.enabled_chats) {
             return true;
@@ -1321,7 +1329,7 @@ function toggleSettings() {
  * Loads models from a remote embedding endpoint and populates the corresponding select element.
  * @param {string} source - The source key matching a remoteEmbeddingEndpoints entry
  */
-async function loadRemoteEmbeddingModels(source) {
+async function loadRemoteEmbeddingModels(source: any) {
     const config = remoteEmbeddingEndpoints[source];
     if (!config) {
         return;
@@ -1335,7 +1343,7 @@ async function loadRemoteEmbeddingModels(source) {
      * Populates the select element with the given models.
      * @param {any[]} models - Array of model objects
      */
-    function populateSelect(models) {
+    function populateSelect(models: any) {
         const select = $(`#${selectId}`);
         select.empty();
         for (const m of models) {
@@ -1387,7 +1395,7 @@ async function loadRemoteEmbeddingModels(source) {
  * @returns {Promise<T>}
  * @template T
  */
-async function executeWithWebLlmErrorHandling(func) {
+async function executeWithWebLlmErrorHandling(func: any) {
     try {
         return await func();
     } catch (error) {
@@ -1417,7 +1425,7 @@ function loadWebLlmModels() {
         for (const model of models) {
             $('#vectors_webllm_model').append($('<option>', { value: model.id, text: model.toString() }));
         }
-        if (!settings.webllm_model || !models.some(x => x.id === settings.webllm_model)) {
+        if (!settings.webllm_model || !models.some((x: any) => x.id === settings.webllm_model)) {
             if (models.length) {
                 settings.webllm_model = models[0].id;
             }
@@ -1432,7 +1440,7 @@ function loadWebLlmModels() {
  * @param {string[]} items Items to embed
  * @returns {Promise<Record<string, number[]>>} Calculated embeddings
  */
-async function createWebLlmEmbeddings(items) {
+async function createWebLlmEmbeddings(items: any) {
     if (items.length === 0) {
         return /** @type {Record<string, number[]>} */ ({});
     }
@@ -1451,7 +1459,7 @@ async function createWebLlmEmbeddings(items) {
  * @param {string[]} items Items to embed
  * @returns {Promise<{embeddings: Record<string, number[]>, model: string}>} Calculated embeddings
  */
-async function createKoboldCppEmbeddings(items) {
+async function createKoboldCppEmbeddings(items: any) {
     const response = await fetch('/api/backends/kobold/embed', {
         method: 'POST',
         headers: getRequestHeaders(),
@@ -1537,7 +1545,7 @@ async function onVectorizeAllFilesClick() {
          * @param file {import('../../chats.js').FileAttachment} File attachment
          * @returns {number} Chunk size for the file
          */
-        function getChunkSize(file) {
+        function getChunkSize(file: any) {
             if (chatAttachments.includes(file)) {
                 // Convert kilobytes to string length
                 const thresholdLength = settings.size_threshold * 1024;
@@ -1559,7 +1567,7 @@ async function onVectorizeAllFilesClick() {
          * @param file {import('../../chats.js').FileAttachment} File attachment
          * @returns {number} Overlap percent for the file
          */
-        function getOverlapPercent(file) {
+        function getOverlapPercent(file: any) {
             if (chatAttachments.includes(file)) {
                 return settings.overlap_percent;
             }
@@ -1620,7 +1628,7 @@ async function onPurgeFilesClick() {
     }
 }
 
-async function activateWorldInfo(chat) {
+async function activateWorldInfo(chat: any) {
     if (!settings.enabled_world_info) {
         console.debug('Vectors: Disabled for World Info');
         return;
@@ -1679,12 +1687,16 @@ async function activateWorldInfo(chat) {
     for (const world in groupedEntries) {
         const collectionId = `world_${getStringHash(world)}`;
         const hashesInCollection = await getSavedHashes(collectionId);
-        const newEntries = groupedEntries[world].filter(x => !hashesInCollection.includes(getStringHash(x.content)));
-        const deletedHashes = hashesInCollection.filter(x => !groupedEntries[world].some(y => getStringHash(y.content) === x));
+        const newEntries = groupedEntries[world].filter((x: any) => !hashesInCollection.includes(getStringHash(x.content)));
+        const deletedHashes = hashesInCollection.filter((x: any) => !groupedEntries[world].some((y: any) => getStringHash(y.content) === x));
 
         if (newEntries.length > 0) {
             console.log(`Vectors: Found ${newEntries.length} new WI entries for world ${world}`);
-            await insertVectorItems(collectionId, newEntries.map(x => ({ hash: getStringHash(x.content), text: x.content, index: x.uid })));
+            await insertVectorItems(collectionId, newEntries.map((x: any) => ({
+                hash: getStringHash(x.content),
+                text: x.content,
+                index: x.uid
+            })));
         }
 
         if (deletedHashes.length > 0) {
@@ -2252,7 +2264,7 @@ export async function init() {
 
     $('#api_key_nomicai').toggleClass('success', !!secret_state[SECRET_KEYS.NOMICAI]);
     [event_types.SECRET_WRITTEN, event_types.SECRET_DELETED, event_types.SECRET_ROTATED].forEach(event => {
-        eventSource.on(event, (/** @type {string} */ key) => {
+        eventSource.on(event, (/** @type {string} */ key: any) => {
             if (key !== SECRET_KEYS.NOMICAI) return;
             $('#api_key_nomicai').toggleClass('success', !!secret_state[SECRET_KEYS.NOMICAI]);
         });
@@ -2267,7 +2279,7 @@ export async function init() {
     eventSource.on(event_types.CHAT_DELETED, purgeVectorIndex);
     eventSource.on(event_types.GROUP_CHAT_DELETED, purgeVectorIndex);
     eventSource.on(event_types.FILE_ATTACHMENT_DELETED, purgeFileVectorIndex);
-    eventSource.on(event_types.EXTENSION_SETTINGS_LOADED, async (manifest) => {
+    eventSource.on(event_types.EXTENSION_SETTINGS_LOADED, async (manifest: any) => {
         if (settings.source === 'webllm' && manifest?.display_name === 'WebLLM') {
             await loadWebLlmModels();
         }
@@ -2300,10 +2312,10 @@ export async function init() {
 
     SlashCommandParser.addCommandObject(SlashCommand.fromProps({
         name: 'db-search',
-        callback: async (args, query) => {
-            const clamp = (v) => Number.isNaN(v) ? null : Math.min(1, Math.max(0, v));
+        callback: async (args: any, query: any) => {
+            const clamp = (v: any) => Number.isNaN(v) ? null : Math.min(1, Math.max(0, v));
             const threshold = clamp(Number(args?.threshold ?? settings.score_threshold));
-            const validateCount = (v) => Number.isNaN(v) || !Number.isInteger(v) || v < 1 ? null : v;
+            const validateCount = (v: any) => Number.isNaN(v) || !Number.isInteger(v) || v < 1 ? null : v;
             const count = validateCount(Number(args?.count)) ?? settings.chunk_count_db;
             const source = String(args?.source ?? '');
             const attachments = source ? getDataBankAttachmentsForSource(source, false) : getDataBankAttachments(false);
@@ -2313,7 +2325,7 @@ export async function init() {
             // Get URLs
             const urls = Object
                 .keys(queryResults)
-                .map(x => attachments.find(y => getFileCollectionId(y.url) === x))
+                .map(x => attachments.find((y: any) => getFileCollectionId(y.url) === x))
                 .filter(x => x)
                 .map(x => x.url);
 
@@ -2321,7 +2333,7 @@ export async function init() {
             const getChunksText = () => {
                 let textResult = '';
                 for (const collectionId in queryResults) {
-                    const metadata = queryResults[collectionId].metadata?.filter(x => x.text)?.sort((a, b) => a.index - b.index)?.map(x => x.text)?.filter(onlyUnique) || [];
+                    const metadata = queryResults[collectionId].metadata?.filter((x: any) => x.text)?.sort((a: any, b: any) => a.index - b.index)?.map((x: any) => x.text)?.filter(onlyUnique) || [];
                     textResult += metadata.join('\n') + '\n\n';
                 }
                 return textResult;
@@ -2367,7 +2379,7 @@ export async function init() {
                 typeList: [ARGUMENT_TYPE.NUMBER],
             }),
         ],
-        callback: async (_args, value) => {
+        callback: async (_args: any, value: any) => {
             const raw = String(value ?? '').trim();
             if (!raw) {
                 return String(settings.score_threshold);
@@ -2397,7 +2409,7 @@ export async function init() {
                 typeList: [ARGUMENT_TYPE.NUMBER],
             }),
         ],
-        callback: async (_args, value) => {
+        callback: async (_args: any, value: any) => {
             const raw = String(value ?? '').trim();
             if (!raw) {
                 return String(settings.query);
@@ -2427,7 +2439,7 @@ export async function init() {
                 typeList: [ARGUMENT_TYPE.NUMBER],
             }),
         ],
-        callback: async (_args, value) => {
+        callback: async (_args: any, value: any) => {
             const raw = String(value ?? '').trim();
             if (!raw) {
                 return String(settings.max_entries);
@@ -2458,7 +2470,7 @@ export async function init() {
                 enumList: commonEnumProviders.boolean('trueFalse')(),
             }),
         ],
-        callback: async (_args, value) => {
+        callback: async (_args: any, value: any) => {
             const raw = String(value ?? '').trim();
             if (!raw) {
                 return String(settings.enabled_chats);
@@ -2484,7 +2496,7 @@ export async function init() {
                 enumList: commonEnumProviders.boolean('trueFalse')(),
             }),
         ],
-        callback: async (_args, value) => {
+        callback: async (_args: any, value: any) => {
             const raw = String(value ?? '').trim();
             if (!raw) {
                 return String(settings.enabled_files);
@@ -2510,7 +2522,7 @@ export async function init() {
                 enumList: commonEnumProviders.boolean('trueFalse')(),
             }),
         ],
-        callback: async (_args, value) => {
+        callback: async (_args: any, value: any) => {
             const raw = String(value ?? '').trim();
             if (!raw) {
                 return String(settings.enabled_world_info);

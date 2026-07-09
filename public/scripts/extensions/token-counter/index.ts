@@ -47,7 +47,7 @@ async function doTokenCounter() {
  * @param {string[]} chunks
  * @param {number[]} ids
  */
-function drawChunks(chunks, ids) {
+function drawChunks(chunks: any, ids: any) {
     const pastelRainbow = [
         //main_text_color,
         //italics_text_color,
