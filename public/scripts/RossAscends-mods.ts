@@ -1046,25 +1046,24 @@ export function initRossMods() {
 
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(SelectedCharacterTab).on('click', function () { accountStorage.setItem('SelectedNavTab', 'rm_button_selected_ch'); });
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#rm_button_characters').on('click', function () { accountStorage.setItem('SelectedNavTab', 'rm_button_characters'); });
+    document.getElementById('rm_button_characters').addEventListener('click', function () { accountStorage.setItem('SelectedNavTab', 'rm_button_characters'); });
 
     // when a char is selected from the list, save them as the auto-load character for next page load
 
     // when a char is selected from the list, save their name as the auto-load character for next page load
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document).on('click', '.character_select', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const characterId = $(this).attr('data-chid');
+    document.addEventListener('click', function (event) {
+        const el = event.target.closest('.character_select');
+        if (!el) return;
+        const characterId = el.getAttribute('data-chid');
         setActiveCharacter(characterId);
         setActiveGroup(null);
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document).on('click', '.group_select', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const groupId = $(this).attr('data-chid') || $(this).attr('data-grid');
+    document.addEventListener('click', function (event) {
+        const el = event.target.closest('.group_select');
+        if (!el) return;
+        const groupId = el.getAttribute('data-chid') || el.getAttribute('data-grid');
         setActiveCharacter(null);
         setActiveGroup(groupId);
         saveSettingsDebounced();
@@ -1203,9 +1202,8 @@ export function initRossMods() {
             event.metaKey));
     }
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document).on('keydown', async function (event) {
-        await processHotkeys(event.originalEvent);
+    document.addEventListener('keydown', async function (event) {
+        await processHotkeys(event);
     });
 
     const hotkeyTargets = {
