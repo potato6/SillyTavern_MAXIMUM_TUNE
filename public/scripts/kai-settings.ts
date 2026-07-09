@@ -546,14 +546,13 @@ export async function getStatusKobold() {
  */
 export function initKoboldSettings() {
     sliders.forEach(slider => {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(document).on('input', slider.sliderId, function () {
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const value = $(this).val();
+        document.addEventListener('input', function (event) {
+            const el = event.target.closest(slider.sliderId);
+            if (!el) return;
+            const value = el.value;
             const formattedValue = slider.format(value);
             slider.setValue(value);
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(slider.counterId).val(formattedValue);
+            document.querySelector(slider.counterId).value = formattedValue;
             saveSettingsDebounced();
         });
     });
