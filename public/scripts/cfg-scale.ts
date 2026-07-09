@@ -152,7 +152,7 @@ function onCfgMenuItemClick() {
             .siblings('.inline-drawer-content')
             .css('display') !== 'block') {
             $('#floatingPrompt').addClass('resizing');
-            $('#CFGBlockToggle').trigger('click');
+            document.getElementById('CFGBlockToggle')?.click();
         }
     } else {
         $('#cfgConfig').addClass('resizing');
