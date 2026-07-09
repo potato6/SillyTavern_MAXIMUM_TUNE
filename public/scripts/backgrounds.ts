@@ -1984,148 +1984,129 @@ export function initBackgrounds() {
     eventSource.on(event_types.FORCE_SET_BACKGROUND, forceSetBackground);
 
     // Folder event handlers
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document)
-        // @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
-        .on('click', '.bg_folder_tile:not(.bg_new_folder_tile)', function (e) {
-            if (e.target.closest('.jg-button')) return; // let button handler run
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const folderId = $(this).attr('data-folder-id');
-            if (folderId) onFolderDrillIn(folderId);
-        })
-        .on('click', '#bg_add_folder_button', function () {
-            onCreateFolder();
-        })
-        .on('click', '#bg_back_to_folders', function () {
-            onBackToFolders();
-        })
-        // @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
-        .on('click', '.bg_folder_tile [data-action="rename-folder"]', function (e) {
-            e.stopPropagation();
-            // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-            const folderId = this.closest('.bg_folder_tile')?.getAttribute('data-folder-id');
-            if (folderId) onRenameFolder(folderId);
-        })
-        // @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
-        .on('click', '.bg_folder_tile [data-action="delete-folder"]', function (e) {
-            e.stopPropagation();
-            // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-            const folderId = this.closest('.bg_folder_tile')?.getAttribute('data-folder-id');
-            if (folderId) onDeleteFolder(folderId);
-        })
-        // @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
-        .on('click', '.bg_folder_tile .mobile-only-menu-toggle', function (e) {
-            e.stopPropagation();
-            // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-            const context = this.closest('.bg_folder_tile');
-            const wasOpen = context?.classList.contains('mobile-menu-open');
-            // Close all other open menus before opening a new one.
-            document.querySelectorAll('.bg_folder_tile.mobile-menu-open').forEach(el => el.classList.remove('mobile-menu-open'));
-            document.querySelectorAll('.bg_example.mobile-menu-open').forEach(el => el.classList.remove('mobile-menu-open'));
-            if (!wasOpen) {
-                context?.classList.add('mobile-menu-open');
-            }
-        });
+    document.addEventListener('click', function (event) {
+        const el = event.target.closest('.bg_folder_tile:not(.bg_new_folder_tile)');
+        if (!el) return;
+        if (event.target.closest('.jg-button')) return; // let button handler run
+        const folderId = el.getAttribute('data-folder-id');
+        if (folderId) onFolderDrillIn(folderId);
+    });
+    document.addEventListener('click', function (event) {
+        if (event.target.closest('#bg_add_folder_button')) onCreateFolder();
+    });
+    document.addEventListener('click', function (event) {
+        if (event.target.closest('#bg_back_to_folders')) onBackToFolders();
+    });
+    document.addEventListener('click', function (event) {
+        const el = event.target.closest('.bg_folder_tile [data-action="rename-folder"]');
+        if (!el) return;
+        event.stopPropagation();
+        const folderId = el.closest('.bg_folder_tile')?.getAttribute('data-folder-id');
+        if (folderId) onRenameFolder(folderId);
+    });
+    document.addEventListener('click', function (event) {
+        const el = event.target.closest('.bg_folder_tile [data-action="delete-folder"]');
+        if (!el) return;
+        event.stopPropagation();
+        const folderId = el.closest('.bg_folder_tile')?.getAttribute('data-folder-id');
+        if (folderId) onDeleteFolder(folderId);
+    });
+    document.addEventListener('click', function (event) {
+        const el = event.target.closest('.bg_folder_tile .mobile-only-menu-toggle');
+        if (!el) return;
+        event.stopPropagation();
+        const context = el.closest('.bg_folder_tile');
+        const wasOpen = context?.classList.contains('mobile-menu-open');
+        // Close all other open menus before opening a new one.
+        document.querySelectorAll('.bg_folder_tile.mobile-menu-open').forEach(el => el.classList.remove('mobile-menu-open'));
+        document.querySelectorAll('.bg_example.mobile-menu-open').forEach(el => el.classList.remove('mobile-menu-open'));
+        if (!wasOpen) {
+            context?.classList.add('mobile-menu-open');
+        }
+    });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document)
-        .off('click', '.bg_example').on('click', '.bg_example', onSelectBackgroundClick)
-        // @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
-        .off('click', '.bg_example .mobile-only-menu-toggle').on('click', '.bg_example .mobile-only-menu-toggle', function (e) {
-            e.stopPropagation();
-            // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-            const context = this.closest('.bg_example');
-            const wasOpen = context?.classList.contains('mobile-menu-open');
-            // Close all other open menus before opening a new one.
-            document.querySelectorAll('.bg_example.mobile-menu-open').forEach(el => el.classList.remove('mobile-menu-open'));
-            document.querySelectorAll('.bg_folder_tile.mobile-menu-open').forEach(el => el.classList.remove('mobile-menu-open'));
-            if (!wasOpen) {
-                context?.classList.add('mobile-menu-open');
-            }
-        })
-        .off('blur', '.bg_example.mobile-menu-open').on('blur', '.bg_example.mobile-menu-open', function () {
-            // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-            if (!this.matches(':focus-within')) {
-                // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-                this.classList.remove('mobile-menu-open');
-            }
-        })
-        // @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
-        .off('click', '.jg-button').on('click', '.jg-button', function (e) {
-            e.stopPropagation();
-            // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-            if (isBackgroundSelectionMode && this.closest('#bg_menu_content')) {
-                return;
-            }
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const action = $(this).data('action');
+    document.addEventListener('click', function (event) {
+        const el = event.target.closest('.bg_example');
+        if (el) onSelectBackgroundClick.call(el, event);
+    });
+    document.addEventListener('click', function (event) {
+        const el = event.target.closest('.bg_example .mobile-only-menu-toggle');
+        if (!el) return;
+        event.stopPropagation();
+        const context = el.closest('.bg_example');
+        const wasOpen = context?.classList.contains('mobile-menu-open');
+        // Close all other open menus before opening a new one.
+        document.querySelectorAll('.bg_example.mobile-menu-open').forEach(el => el.classList.remove('mobile-menu-open'));
+        document.querySelectorAll('.bg_folder_tile.mobile-menu-open').forEach(el => el.classList.remove('mobile-menu-open'));
+        if (!wasOpen) {
+            context?.classList.add('mobile-menu-open');
+        }
+    });
+    document.addEventListener('blur', function (event) {
+        const el = event.target.closest('.bg_example.mobile-menu-open');
+        if (!el) return;
+        if (!el.matches(':focus-within')) {
+            el.classList.remove('mobile-menu-open');
+        }
+    }, true);
+    document.addEventListener('click', function (event) {
+        const el = event.target.closest('.jg-button');
+        if (!el) return;
+        event.stopPropagation();
+        if (isBackgroundSelectionMode && el.closest('#bg_menu_content')) {
+            return;
+        }
+        const action = el.getAttribute('data-action');
 
-            switch (action) {
-                case 'lock':
-                    // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-                    onLockBackgroundClick.call(this, e.originalEvent);
-                    break;
-                case 'unlock':
-                    // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-                    onUnlockBackgroundClick.call(this, e.originalEvent);
-                    break;
-                case 'edit':
-                    // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-                    onRenameBackgroundClick.call(this, e.originalEvent);
-                    break;
-                case 'delete':
-                    // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-                    onDeleteBackgroundClick.call(this, e.originalEvent);
-                    break;
-                case 'copy':
-                    // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-                    onCopyToSystemBackgroundClick.call(this, e.originalEvent);
-                    break;
-                case 'folder': {
-                    // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-                    const bgEl = this.closest('.bg_example');
-                    if (bgEl?.getAttribute('custom') === 'true') break; // Only system backgrounds
-                    const bgFile = bgEl?.getAttribute('bgfile');
-                    if (bgFile) onAssignToFolder(bgFile);
-                    break;
-                }
-                case 'set-cover': {
-                    // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-                    const bgEl = this.closest('.bg_example');
-                    if (bgEl?.getAttribute('custom') === 'true') break; // Only system backgrounds
-                    const bgFile = bgEl?.getAttribute('bgfile');
-                    if (bgFile) onSetFolderCover(bgFile);
-                    break;
-                }
+        switch (action) {
+            case 'lock':
+                onLockBackgroundClick.call(el, event);
+                break;
+            case 'unlock':
+                onUnlockBackgroundClick.call(el, event);
+                break;
+            case 'edit':
+                onRenameBackgroundClick.call(el, event);
+                break;
+            case 'delete':
+                onDeleteBackgroundClick.call(el, event);
+                break;
+            case 'copy':
+                onCopyToSystemBackgroundClick.call(el, event);
+                break;
+            case 'folder': {
+                const bgEl = el.closest('.bg_example');
+                if (bgEl?.getAttribute('custom') === 'true') break; // Only system backgrounds
+                const bgFile = bgEl?.getAttribute('bgfile');
+                if (bgFile) onAssignToFolder(bgFile);
+                break;
             }
-        });
+            case 'set-cover': {
+                const bgEl = el.closest('.bg_example');
+                if (bgEl?.getAttribute('custom') === 'true') break; // Only system backgrounds
+                const bgFile = bgEl?.getAttribute('bgfile');
+                if (bgFile) onSetFolderCover(bgFile);
+                break;
+            }
+        }
+    });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#bg_thumb_zoom_in').on('click', () => {
-        // @ts-expect-error TS(2339) FIXME: Property 'thumbnailColumns' does not exist on type... Remove this comment to see the full error message
+    document.getElementById('bg_thumb_zoom_in')?.addEventListener('click', () => {
+        // @ts-expect-error TS(2339) FIXME: Property 'thumbnailColumns' does not exist on type...
         applyThumbnailColumns(background_settings.thumbnailColumns - 1);
     });
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#bg_thumb_zoom_out').on('click', () => {
-        // @ts-expect-error TS(2339) FIXME: Property 'thumbnailColumns' does not exist on type... Remove this comment to see the full error message
+    document.getElementById('bg_thumb_zoom_out')?.addEventListener('click', () => {
+        // @ts-expect-error TS(2339) FIXME: Property 'thumbnailColumns' does not exist on type...
         applyThumbnailColumns(background_settings.thumbnailColumns + 1);
     });
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#auto_background').on('click', autoBackgroundCommand);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#bg_selection_mode_button').on('click', () => setBackgroundSelectionMode(!isBackgroundSelectionMode));
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#bg_group_add_to_folder_button').on('click', onAddSelectedToFolder);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#bg_folder_remove_selected_button').on('click', onRemoveSelectedFromCurrentFolder);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#add_bg_button').on('change', (e) => onBackgroundUploadSelected(e.originalEvent));
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#bg-filter').on('input', () => debouncedOnBackgroundFilterInput());
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#bg-sort').on('change', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        background_settings.sortOrder = String($(this).val());
+    document.getElementById('auto_background')?.addEventListener('click', autoBackgroundCommand);
+    document.getElementById('bg_selection_mode_button')?.addEventListener('click', () => setBackgroundSelectionMode(!isBackgroundSelectionMode));
+    document.getElementById('bg_group_add_to_folder_button')?.addEventListener('click', onAddSelectedToFolder);
+    document.getElementById('bg_folder_remove_selected_button')?.addEventListener('click', onRemoveSelectedFromCurrentFolder);
+    document.getElementById('add_bg_button')?.addEventListener('change', (e) => onBackgroundUploadSelected(e));
+    document.getElementById('bg-filter')?.addEventListener('input', () => debouncedOnBackgroundFilterInput());
+    document.getElementById('bg-sort')?.addEventListener('change', function () {
+        background_settings.sortOrder = String(this.value);
         saveSettingsDebounced();
         // Re-render both galleries with new sort order (respecting active folder filter)
         renderSystemBackgrounds(getFilteredImages());
@@ -2161,18 +2142,16 @@ export function initBackgrounds() {
         helpString: 'Automatically changes the background based on the chat context using the AI request prompt',
     }));
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#background_fitting').on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        background_settings.fitting = String($(this).val());
+    document.getElementById('background_fitting')?.addEventListener('input', function () {
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
+        background_settings.fitting = String(this.value);
         setFittingClass(background_settings.fitting);
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#background_thumbnails_animation').on('input', async function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        background_settings.animation = !!$(this).prop('checked');
+    document.getElementById('background_thumbnails_animation')?.addEventListener('input', async function () {
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
+        background_settings.animation = !!(this).checked;
         saveSettingsDebounced();
 
         // Refresh background thumbnails
