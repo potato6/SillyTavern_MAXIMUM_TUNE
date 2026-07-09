@@ -146,27 +146,26 @@ async function performLogin(handle, password) {
  * @param {object} user User object
  * @returns {Promise<void>}
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'user' implicitly has an 'any' type.
-async function onUserSelected(user) {
+async function onUserSelected(user: { password?: string; handle: string }) {
     // No password, just log in
     if (!user.password) {
         return await performLogin(user.handle, '');
     }
 
-    document.getElementById('passwordRecoveryBlock').style.display = 'none';
-    document.getElementById('passwordEntryBlock').style.display = '';
-    document.getElementById('loginButton').addEventListener('click', async () => {
-        const password = String(document.getElementById('userPassword').value);
+    (document.getElementById('passwordRecoveryBlock') as HTMLElement).style.display = 'none';
+    (document.getElementById('passwordEntryBlock') as HTMLElement).style.display = '';
+    (document.getElementById('loginButton') as HTMLElement).addEventListener('click', async () => {
+        const password = String((document.getElementById('userPassword') as HTMLInputElement).value);
         await performLogin(user.handle, password);
     });
 
-    document.getElementById('recoverPassword').addEventListener('click', async () => {
+    (document.getElementById('recoverPassword') as HTMLElement).addEventListener('click', async () => {
         await sendRecoveryPart1(user.handle);
     });
 
-    document.getElementById('sendRecovery').addEventListener('click', async () => {
-        const code = String(document.getElementById('recoveryCode').value);
-        const newPassword = String(document.getElementById('newPassword').value);
+    (document.getElementById('sendRecovery') as HTMLElement).addEventListener('click', async () => {
+        const code = String((document.getElementById('recoveryCode') as HTMLInputElement).value);
+        const newPassword = String((document.getElementById('newPassword') as HTMLInputElement).value);
         await sendRecoveryPart2(user.handle, code, newPassword);
     });
 
@@ -261,31 +260,27 @@ function configureNormalLogin(userList) {
  */
 function configureDiscreetLogin() {
     console.log('Discreet login is enabled');
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#handleEntryBlock').show();
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#normalLoginPrompt').hide();
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#discreetLoginPrompt').show();
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#userList').hide();
-    document.getElementById('passwordRecoveryBlock').style.display = 'none';
-    document.getElementById('passwordEntryBlock').style.display = '';
-    document.getElementById('loginButton').addEventListener('click', async () => {
-        const handle = String(document.getElementById('userHandle').value);
-        const password = String(document.getElementById('userPassword').value);
+    (document.getElementById('handleEntryBlock') as HTMLElement).style.display = '';
+    (document.getElementById('normalLoginPrompt') as HTMLElement).style.display = 'none';
+    (document.getElementById('discreetLoginPrompt') as HTMLElement).style.display = '';
+    (document.getElementById('userList') as HTMLElement).style.display = 'none';
+    (document.getElementById('passwordRecoveryBlock') as HTMLElement).style.display = 'none';
+    (document.getElementById('passwordEntryBlock') as HTMLElement).style.display = '';
+    (document.getElementById('loginButton') as HTMLElement).addEventListener('click', async () => {
+        const handle = String((document.getElementById('userHandle') as HTMLInputElement).value);
+        const password = String((document.getElementById('userPassword') as HTMLInputElement).value);
         await performLogin(handle, password);
     });
 
-    document.getElementById('recoverPassword').addEventListener('click', async () => {
-        const handle = String(document.getElementById('userHandle').value);
+    (document.getElementById('recoverPassword') as HTMLElement).addEventListener('click', async () => {
+        const handle = String((document.getElementById('userHandle') as HTMLInputElement).value);
         await sendRecoveryPart1(handle);
     });
 
-    document.getElementById('sendRecovery').addEventListener('click', async () => {
-        const handle = String(document.getElementById('userHandle').value);
-        const code = String(document.getElementById('recoveryCode').value);
-        const newPassword = String(document.getElementById('newPassword').value);
+    (document.getElementById('sendRecovery') as HTMLElement).addEventListener('click', async () => {
+        const handle = String((document.getElementById('userHandle') as HTMLInputElement).value);
+        const code = String((document.getElementById('recoveryCode') as HTMLInputElement).value);
+        const newPassword = String((document.getElementById('newPassword') as HTMLInputElement).value);
         await sendRecoveryPart2(handle, code, newPassword);
     });
 }
@@ -301,14 +296,14 @@ function configureDiscreetLogin() {
     } else {
         configureNormalLogin(userList);
     }
-    document.getElementById('shadow_popup').style.opacity = '';
-    document.getElementById('cancelRecovery').addEventListener('click', onCancelRecoveryClick);
+    (document.getElementById('shadow_popup') as HTMLElement).style.opacity = '';
+    (document.getElementById('cancelRecovery') as HTMLElement).addEventListener('click', onCancelRecoveryClick);
     document.addEventListener('keydown', (evt) => {
         if (evt.key === 'Enter' && document.activeElement?.tagName === 'INPUT') {
-            if (document.getElementById('passwordRecoveryBlock').offsetParent !== null) {
-                document.getElementById('sendRecovery').dispatchEvent(new Event('click'));
+            if ((document.getElementById('passwordRecoveryBlock') as HTMLElement).offsetParent !== null) {
+                (document.getElementById('sendRecovery') as HTMLElement).dispatchEvent(new Event('click'));
             } else {
-                document.getElementById('loginButton').dispatchEvent(new Event('click'));
+                (document.getElementById('loginButton') as HTMLElement).dispatchEvent(new Event('click'));
             }
         }
     });
