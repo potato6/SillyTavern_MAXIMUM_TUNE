@@ -546,12 +546,14 @@ export async function getStatusKobold() {
 export function initKoboldSettings() {
     sliders.forEach(slider => {
         document.addEventListener('input', function (event) {
+            if (!(event.target instanceof Element)) return;
             const el = event.target.closest(slider.sliderId);
             if (!el) return;
-            const value = el.value;
+            const value = (el as HTMLInputElement).value;
             const formattedValue = slider.format(value);
             slider.setValue(value);
-            document.querySelector(slider.counterId).value = formattedValue;
+            const counter = document.querySelector(slider.counterId);
+            if (counter) (counter as HTMLInputElement).value = formattedValue;
             saveSettingsDebounced();
         });
     });
