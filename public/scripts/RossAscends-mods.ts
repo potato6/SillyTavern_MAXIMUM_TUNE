@@ -27,7 +27,6 @@ import {
     send_on_enter_options,
 } from './power-user.js';
 
-// @ts-expect-error TS(7034) FIXME: Variable 'selected_group' implicitly has type 'any... Remove this comment to see the full error message
 import { selected_group, is_group_generating, openGroupById } from './group-chats.js';
 import { getTagKeyForEntity, applyTagsOnCharacterSelect } from './tags.js';
 import {
@@ -386,7 +385,6 @@ function RA_checkOnlineStatus() {
             connection_made = true;
             retry_delay = 100;
 
-            // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
             if (!is_send_press && !(selected_group && is_group_generating)) {
                 // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
                 document.getElementById('send_but').classList.remove('displayNone'); //on connect, send button shows
