@@ -9,7 +9,6 @@ import {
     saveSettingsDebounced,
     this_chid,
 } from '../script.js';
-// @ts-expect-error TS(7034) FIXME: Variable 'selected_group' implicitly has type 'any... Remove this comment to see the full error message
 import { selected_group } from './group-chats.js';
 import { extension_settings, getContext, saveMetadataDebounced } from './extensions.js';
 import { getCharaFilename, debounce, delay } from './utils.js';
@@ -55,7 +54,6 @@ function setNoteTextCommand(_, text) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.success(t`Author's Note text updated`);
     }
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     return chat_metadata[metadata_keys.prompt];
 }
 
@@ -80,7 +78,6 @@ function setNoteDepthCommand(_, text) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.success(t`Author's Note depth updated`);
     }
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     return chat_metadata[metadata_keys.depth];
 }
 
@@ -105,7 +102,6 @@ function setNoteIntervalCommand(_, text) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.success(t`Author's Note frequency updated`);
     }
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     return chat_metadata[metadata_keys.interval];
 }
 
@@ -197,7 +193,6 @@ const setDefaultPromptTokenCounterDebounced = debounce(async (value) => $('#exte
 async function onExtensionFloatingPromptInput() {
     // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     chat_metadata[metadata_keys.prompt] = $(this).val();
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     setMainPromptTokenCounterDebounced(chat_metadata[metadata_keys.prompt]);
     updateSettings();
     saveMetadataDebounced();
@@ -226,7 +221,6 @@ async function onExtensionFloatingDepthInput() {
         $(this).val(value);
     }
 
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     chat_metadata[metadata_keys.depth] = value;
     updateSettings();
     saveMetadataDebounced();
@@ -237,7 +231,6 @@ async function onExtensionFloatingDepthInput() {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
 async function onExtensionFloatingPositionInput(e) {
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     chat_metadata[metadata_keys.position] = Number(e.target.value);
     updateSettings();
     saveMetadataDebounced();
@@ -285,7 +278,6 @@ async function onDefaultIntervalInput() {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
 function onExtensionFloatingRoleInput(e) {
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     chat_metadata[metadata_keys.role] = Number(e.target.value);
     updateSettings();
 }
@@ -429,7 +421,6 @@ function loadSettings() {
         extension_settings.note.defaultRole = DEFAULT_ROLE;
     }
 
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     chat_metadata[metadata_keys.prompt] = chat_metadata[metadata_keys.prompt] ?? extension_settings.note.default ?? '';
     // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     chat_metadata[metadata_keys.interval] = chat_metadata[metadata_keys.interval] ?? extension_settings.note.defaultInterval ?? DEFAULT_INTERVAL;
@@ -530,12 +521,10 @@ export function setFloatingPrompt() {
     `);
 
     // interval 1 should be inserted no matter what
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     if (chat_metadata[metadata_keys.interval] === 1) {
         lastMessageNumber = 1;
     }
 
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     if (lastMessageNumber <= 0 || chat_metadata[metadata_keys.interval] <= 0) {
         context.setExtensionPrompt(MODULE_NAME, '', extension_prompt_types.NONE, MAX_INJECTION_DEPTH);
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
@@ -544,11 +533,8 @@ export function setFloatingPrompt() {
         return;
     }
 
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     const messagesTillInsertion = lastMessageNumber >= chat_metadata[metadata_keys.interval]
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         ? (lastMessageNumber % chat_metadata[metadata_keys.interval])
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         : (chat_metadata[metadata_keys.interval] - lastMessageNumber);
     const shouldAddPrompt = messagesTillInsertion == 0;
     shouldWIAddPrompt = shouldAddPrompt;
@@ -582,13 +568,10 @@ export function setFloatingPrompt() {
     context.setExtensionPrompt(
         MODULE_NAME,
         String(prompt),
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         chat_metadata[metadata_keys.position],
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         chat_metadata[metadata_keys.depth],
         // @ts-expect-error TS(2339) FIXME: Property 'allowWIScan' does not exist on type '{ d... Remove this comment to see the full error message
         extension_settings.note.allowWIScan,
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         chat_metadata[metadata_keys.role],
     );
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
@@ -599,7 +582,6 @@ export function setFloatingPrompt() {
  *
  */
 function onANMenuItemClick() {
-    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
     if (!selected_group && this_chid === undefined) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.warning(t`Select a character before trying to use Author's Note`, '', { timeOut: 2000 });
@@ -663,7 +645,6 @@ async function onChatChanged() {
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#extension_floating_chara').prop('disabled', !!context.groupId);
 
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     const tokenCounter1 = chat_metadata[metadata_keys.prompt] ? await getTokenCountAsync(chat_metadata[metadata_keys.prompt]) : 0;
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#extension_floating_prompt_token_counter').text(tokenCounter1);
@@ -839,7 +820,6 @@ function registerAuthorsNoteMacros() {
         macros.register('authorsNote', {
             category: MacroCategory.PROMPTS,
             description: t`The contents of the Author's Note`,
-            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             handler: () => chat_metadata[metadata_keys.prompt] ?? '',
         });
         macros.register('charAuthorsNote', {
@@ -856,7 +836,6 @@ function registerAuthorsNoteMacros() {
     } else {
         // TODO: Remove this when the experimental macro engine is replacing the old macro engine
         MacrosParser.registerMacro('authorsNote',
-            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             () => chat_metadata[metadata_keys.prompt] ?? '',
             t`The contents of the Author's Note`,
         );
