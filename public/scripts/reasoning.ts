@@ -980,7 +980,11 @@ function selectReasoningTemplateCallback(args, name) {
         foundName = result[0]!.item;
     }
 
-    UI.$select.val(foundName).trigger('change');
+    const reasoningSelect = document.getElementById('reasoning_select');
+    if (reasoningSelect instanceof HTMLSelectElement) {
+        reasoningSelect.value = foundName;
+        reasoningSelect.dispatchEvent(new Event('change'));
+    }
     // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
     if (!quiet) toastr.success(`Reasoning template "${foundName}" selected`);
     return foundName;
@@ -1431,7 +1435,7 @@ function setReasoningEventHandlers() {
         e.preventDefault();
 
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('.mes_reasoning_details[open] .mes_reasoning_header').trigger('click');
+        document.querySelectorAll('.mes_reasoning_details[open] .mes_reasoning_header').forEach(el => (el instanceof HTMLElement) && el.click());
     });
 
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
