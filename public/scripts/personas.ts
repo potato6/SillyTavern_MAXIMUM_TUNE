@@ -1457,7 +1457,6 @@ async function onPersonaLoreButtonClick({ shiftKey, altKey }) {
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const template = $(templateEl);
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const worldSelect = templateEl.querySelector('select');
     templateEl.querySelector('.persona_name').textContent = personaName;
 
@@ -1950,7 +1949,6 @@ export async function showCharConnections() {
                 }
 
                 isRemoving = true;
-                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 document.getElementById('char_connections_button')?.click();
             }
         },
@@ -3265,9 +3263,7 @@ export async function initPersonas() {
     addLongPressEvent('#persona_lore_button', function () {
         onPersonaLoreButtonClick({ shiftKey: true, altKey: false });
     });
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('persona-management-dropdown')?.addEventListener('change', async function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    document.getElementById('persona-management-dropdown')?.addEventListener('change', async function (this: HTMLSelectElement) {
         const target = this.querySelector('option:checked')?.id;
         this.selectedIndex = 0;
         switch (target) {
@@ -3279,10 +3275,10 @@ export async function initPersonas() {
     document.getElementById('personas_backup')?.addEventListener('click', onBackupPersonas);
     document.getElementById('personas_restore')?.addEventListener('click', () => document.getElementById('personas_restore_input')?.click());
     document.getElementById('personas_restore_input')?.addEventListener('change', onPersonasRestoreInput);
-    const personaSortOrderEl = document.getElementById('persona_sort_order');
+    const personaSortOrderEl = document.getElementById('persona_sort_order') as HTMLSelectElement | null;
     if (personaSortOrderEl) {
         personaSortOrderEl.value = power_user.persona_sort_order;
-        personaSortOrderEl.addEventListener('input', function () {
+        personaSortOrderEl.addEventListener('input', function (this: HTMLSelectElement) {
             const value = String(this.value);
             // Save sort order, but do not save search sorting, as this is a temporary sorting option
             if (value !== 'search') power_user.persona_sort_order = value;
@@ -3296,43 +3292,36 @@ export async function initPersonas() {
         switchPersonaGridView();
     });
 
-    // @ts-expect-error TS(7006) FIXME: Parameter 'searchQuery' implicitly has an 'any' type.
-    const debouncedPersonaSearch = debounce((searchQuery) => {
+    const debouncedPersonaSearch = debounce((searchQuery: string) => {
         personasFilter.setFilterData(FILTER_TYPES.PERSONA_SEARCH, searchQuery);
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('persona_search_bar')?.addEventListener('input', function () {
+    document.getElementById('persona_search_bar')?.addEventListener('input', function (this: HTMLInputElement) {
         const searchQuery = String(this.value);
         debouncedPersonaSearch(searchQuery);
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     document.getElementById('sync_name_button')?.addEventListener('click', async () => await syncUserNameToPersona());
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     document.getElementById('avatar_upload_file')?.addEventListener('change', changeUserAvatar);
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     document.addEventListener('click', async function (e) {
+        if (!(e.target instanceof Element)) return;
         const el = e.target.closest('#user_avatar_block .avatar-container');
         if (!el) return;
         const imgfile = el.getAttribute('data-avatar-id');
         await setUserAvatar(imgfile);
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     document.getElementById('persona_rename_button')?.addEventListener('click', () => renamePersona(user_avatar));
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     document.addEventListener('click', function (e) {
+        if (!(e.target instanceof Element)) return;
         const el = e.target.closest('#user_avatar_block .avatar_upload');
         if (!el) return;
-        document.getElementById('avatar_upload_overwrite').value = '';
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        (document.getElementById('avatar_upload_overwrite') as HTMLInputElement).value = '';
         document.getElementById('avatar_upload_file')?.click();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     document.getElementById('persona_duplicate_button')?.addEventListener('click', () => duplicatePersona(user_avatar));
 
     document.getElementById('persona_set_image_button')?.addEventListener('click', function () {
