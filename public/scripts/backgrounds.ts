@@ -1985,34 +1985,46 @@ export function initBackgrounds() {
 
     // Folder event handlers
     document.addEventListener('click', function (event) {
-        const el = event.target.closest('.bg_folder_tile:not(.bg_new_folder_tile)');
+        const target = event.target;
+        if (!(target instanceof Element)) return;
+        const el = target.closest('.bg_folder_tile:not(.bg_new_folder_tile)');
         if (!el) return;
-        if (event.target.closest('.jg-button')) return; // let button handler run
+        if (target.closest('.jg-button')) return; // let button handler run
         const folderId = el.getAttribute('data-folder-id');
         if (folderId) onFolderDrillIn(folderId);
     });
     document.addEventListener('click', function (event) {
-        if (event.target.closest('#bg_add_folder_button')) onCreateFolder();
+        const target = event.target;
+        if (!(target instanceof Element)) return;
+        if (target.closest('#bg_add_folder_button')) onCreateFolder();
     });
     document.addEventListener('click', function (event) {
-        if (event.target.closest('#bg_back_to_folders')) onBackToFolders();
+        const target = event.target;
+        if (!(target instanceof Element)) return;
+        if (target.closest('#bg_back_to_folders')) onBackToFolders();
     });
     document.addEventListener('click', function (event) {
-        const el = event.target.closest('.bg_folder_tile [data-action="rename-folder"]');
+        const target = event.target;
+        if (!(target instanceof Element)) return;
+        const el = target.closest('.bg_folder_tile [data-action="rename-folder"]');
         if (!el) return;
         event.stopPropagation();
         const folderId = el.closest('.bg_folder_tile')?.getAttribute('data-folder-id');
         if (folderId) onRenameFolder(folderId);
     });
     document.addEventListener('click', function (event) {
-        const el = event.target.closest('.bg_folder_tile [data-action="delete-folder"]');
+        const target = event.target;
+        if (!(target instanceof Element)) return;
+        const el = target.closest('.bg_folder_tile [data-action="delete-folder"]');
         if (!el) return;
         event.stopPropagation();
         const folderId = el.closest('.bg_folder_tile')?.getAttribute('data-folder-id');
         if (folderId) onDeleteFolder(folderId);
     });
     document.addEventListener('click', function (event) {
-        const el = event.target.closest('.bg_folder_tile .mobile-only-menu-toggle');
+        const target = event.target;
+        if (!(target instanceof Element)) return;
+        const el = target.closest('.bg_folder_tile .mobile-only-menu-toggle');
         if (!el) return;
         event.stopPropagation();
         const context = el.closest('.bg_folder_tile');
@@ -2026,11 +2038,15 @@ export function initBackgrounds() {
     });
 
     document.addEventListener('click', function (event) {
-        const el = event.target.closest('.bg_example');
+        const target = event.target;
+        if (!(target instanceof Element)) return;
+        const el = target.closest('.bg_example');
         if (el) onSelectBackgroundClick.call(el, event);
     });
     document.addEventListener('click', function (event) {
-        const el = event.target.closest('.bg_example .mobile-only-menu-toggle');
+        const target = event.target;
+        if (!(target instanceof Element)) return;
+        const el = target.closest('.bg_example .mobile-only-menu-toggle');
         if (!el) return;
         event.stopPropagation();
         const context = el.closest('.bg_example');
@@ -2043,14 +2059,18 @@ export function initBackgrounds() {
         }
     });
     document.addEventListener('blur', function (event) {
-        const el = event.target.closest('.bg_example.mobile-menu-open');
+        const target = event.target;
+        if (!(target instanceof Element)) return;
+        const el = target.closest('.bg_example.mobile-menu-open');
         if (!el) return;
         if (!el.matches(':focus-within')) {
             el.classList.remove('mobile-menu-open');
         }
     }, true);
     document.addEventListener('click', function (event) {
-        const el = event.target.closest('.jg-button');
+        const target = event.target;
+        if (!(target instanceof Element)) return;
+        const el = target.closest('.jg-button');
         if (!el) return;
         event.stopPropagation();
         if (isBackgroundSelectionMode && el.closest('#bg_menu_content')) {
@@ -2060,10 +2080,10 @@ export function initBackgrounds() {
 
         switch (action) {
             case 'lock':
-                onLockBackgroundClick.call(el, event);
+                onLockBackgroundClick.call(el, event as any);
                 break;
             case 'unlock':
-                onUnlockBackgroundClick.call(el, event);
+                onUnlockBackgroundClick.call(el, event as any);
                 break;
             case 'edit':
                 onRenameBackgroundClick.call(el, event);
@@ -2105,8 +2125,9 @@ export function initBackgrounds() {
     document.getElementById('bg_folder_remove_selected_button')?.addEventListener('click', onRemoveSelectedFromCurrentFolder);
     document.getElementById('add_bg_button')?.addEventListener('change', (e) => onBackgroundUploadSelected(e));
     document.getElementById('bg-filter')?.addEventListener('input', () => debouncedOnBackgroundFilterInput());
-    document.getElementById('bg-sort')?.addEventListener('change', function () {
-        background_settings.sortOrder = String(this.value);
+    const bgSortEl = document.getElementById('bg-sort') as HTMLSelectElement | null;
+    bgSortEl?.addEventListener('change', function () {
+        background_settings.sortOrder = String(bgSortEl?.value);
         saveSettingsDebounced();
         // Re-render both galleries with new sort order (respecting active folder filter)
         renderSystemBackgrounds(getFilteredImages());
