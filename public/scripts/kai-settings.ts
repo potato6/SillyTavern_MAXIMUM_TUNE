@@ -99,10 +99,9 @@ export function formatKoboldUrl(value) {
  *
  */
 function selectKoboldGuiPreset() {
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#settings_preset option[value=gui]')
-        .attr('selected', 'true')
-        .trigger('change');
+    const option = document.querySelector('#settings_preset option[value=gui]');
+    option?.setAttribute('selected', 'true');
+    option?.closest('select')?.dispatchEvent(new Event('change'));
 }
 
 /**
