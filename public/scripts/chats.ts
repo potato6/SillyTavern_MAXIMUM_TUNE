@@ -29,7 +29,6 @@ import {
     getMediaDisplay,
     chatElement,
 } from '../script.js';
-// @ts-expect-error TS(7034) FIXME: Variable 'selected_group' implicitly has type 'any... Remove this comment to see the full error message
 import { selected_group } from './group-chats.js';
 import { power_user } from './power-user.js';
 import {
@@ -805,7 +804,6 @@ export function formatCreatorNotes(text, avatarId) {
  *
  */
 async function openGlobalStylesPreferenceDialog() {
-    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
     if (selected_group) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.info(t`To change the global styles preference, please select a character individually.`);
@@ -863,14 +861,11 @@ async function openGlobalStylesPreferenceDialog() {
  */
 async function checkForCreatorNotesStyles() {
     // Don't do anything if in group chat or not in a chat
-    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
     if (selected_group || this_chid === undefined) {
         return;
     }
 
-    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
     const notes = characters[this_chid].data?.creator_notes || characters[this_chid].creatorcomment;
-    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
     const avatarId = characters[this_chid].avatar;
     const styleContents = getStyleContentsFromMarkdown(notes);
 
@@ -944,9 +939,7 @@ function getStyleContentsFromMarkdown(text) {
     const parsedDocument = new DOMParser().parseFromString(html, 'text/html');
     const styleElements = Array.from(parsedDocument.querySelectorAll('style'));
     return styleElements
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         .filter(s => s.textContent.trim().length > 0)
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         .map(s => s.textContent.trim())
         .join('\n\n');
 }
@@ -1003,13 +996,10 @@ async function openExternalMediaOverridesDialog() {
  *
  */
 export function getCurrentEntityId() {
-    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
     if (selected_group) {
-        // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
         return String(selected_group);
     }
 
-    // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
     return characters[this_chid]?.avatar ?? null;
 }
 
@@ -1765,7 +1755,6 @@ async function openAttachmentManager() {
         /** @type {FileAttachment[]} */
         const globalAttachments = extension_settings.attachments ?? [];
         /** @type {FileAttachment[]} */
-        // @ts-expect-error TS(2339) FIXME: Property 'attachments' does not exist on type '{}'... Remove this comment to see the full error message
         const chatAttachments = chat_metadata.attachments ?? [];
         /** @type {FileAttachment[]} */
         // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
@@ -1775,7 +1764,6 @@ async function openAttachmentManager() {
         await renderList(chatAttachments, ATTACHMENT_SOURCE.CHAT);
         await renderList(characterAttachments, ATTACHMENT_SOURCE.CHARACTER);
 
-        // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
         const isNotCharacter = this_chid === undefined || selected_group;
         const isNotInChat = getCurrentChatId() === undefined;
         const charBlock = template.querySelector('.characterAttachmentsBlock');
@@ -1785,7 +1773,6 @@ async function openAttachmentManager() {
         // @ts-expect-error TS(2339) FIXME: Property 'style' does not exist on type 'Element'.
         if (chatBlock) chatBlock.style.display = isNotInChat ? 'none' : '';
 
-        // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
         const characterName = characters[this_chid]?.name || 'Anonymous';
         const charNameEl = template.querySelector('.characterAttachmentsName');
         if (charNameEl) charNameEl.textContent = characterName;
@@ -1945,7 +1932,6 @@ async function openAttachmentManager() {
 function getAvailableTargets() {
     const targets = Object.values(ATTACHMENT_SOURCE);
 
-    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
     const isNotCharacter = this_chid === undefined || selected_group;
     const isNotInChat = getCurrentChatId() === undefined;
 
@@ -2056,7 +2042,6 @@ export async function uploadFileAttachmentToServer(file, target) {
             saveSettingsDebounced();
             break;
         case ATTACHMENT_SOURCE.CHAT:
-            // @ts-expect-error TS(2339) FIXME: Property 'attachments' does not exist on type '{}'... Remove this comment to see the full error message
             chat_metadata.attachments.push(attachment);
             saveMetadataDebounced();
             break;
@@ -2082,9 +2067,7 @@ function ensureAttachmentsExist() {
         extension_settings.attachments = [];
     }
 
-    // @ts-expect-error TS(2339) FIXME: Property 'attachments' does not exist on type '{}'... Remove this comment to see the full error message
     if (!Array.isArray(chat_metadata.attachments)) {
-        // @ts-expect-error TS(2339) FIXME: Property 'attachments' does not exist on type '{}'... Remove this comment to see the full error message
         chat_metadata.attachments = [];
     }
 
@@ -2109,7 +2092,6 @@ function ensureAttachmentsExist() {
 export function getDataBankAttachments(includeDisabled = false) {
     ensureAttachmentsExist();
     const globalAttachments = extension_settings.attachments ?? [];
-    // @ts-expect-error TS(2339) FIXME: Property 'attachments' does not exist on type '{}'... Remove this comment to see the full error message
     const chatAttachments = chat_metadata.attachments ?? [];
     // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     const characterAttachments = extension_settings.character_attachments?.[characters[this_chid]?.avatar] ?? [];
@@ -2135,7 +2117,6 @@ export function getDataBankAttachmentsForSource(source, includeDisabled = true) 
             case ATTACHMENT_SOURCE.GLOBAL:
                 return extension_settings.attachments ?? [];
             case ATTACHMENT_SOURCE.CHAT:
-                // @ts-expect-error TS(2339) FIXME: Property 'attachments' does not exist on type '{}'... Remove this comment to see the full error message
                 return chat_metadata.attachments ?? [];
             case ATTACHMENT_SOURCE.CHARACTER:
                 // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
@@ -2199,7 +2180,6 @@ const NEUTRAL_CHAT_KEY = 'neutralChat';
  *
  */
 export function preserveNeutralChat() {
-    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
     if (this_chid !== undefined || selected_group || name2 !== neutralCharacterName) {
         return;
     }
@@ -2211,7 +2191,6 @@ export function preserveNeutralChat() {
  *
  */
 export function restoreNeutralChat() {
-    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
     if (this_chid !== undefined || selected_group || name2 !== neutralCharacterName) {
         return;
     }
@@ -2255,7 +2234,6 @@ export function registerFileConverter(mimeType, converter) {
  */
 export function addDOMPurifyHooks() {
     // Allow target="_blank" in links
-    // @ts-expect-error TS(7006) FIXME: Parameter 'node' implicitly has an 'any' type.
     DOMPurify.addHook('afterSanitizeAttributes', function (node) {
         if ('target' in node) {
             node.setAttribute('target', '_blank');
@@ -2263,7 +2241,6 @@ export function addDOMPurifyHooks() {
         }
     });
 
-    // @ts-expect-error TS(7006) FIXME: Parameter 'node' implicitly has an 'any' type.
     DOMPurify.addHook('uponSanitizeAttribute', (node, data, config) => {
         if (!config.MESSAGE_SANITIZE) {
             return;
@@ -2278,7 +2255,6 @@ export function addDOMPurifyHooks() {
         switch (data.attrName) {
             case 'class': {
                 if (data.attrValue) {
-                    // @ts-expect-error TS(7006) FIXME: Parameter 'v' implicitly has an 'any' type.
                     data.attrValue = data.attrValue.split(' ').map((v) => {
                         if (v.startsWith('fa-') || v.startsWith('note-') || v === 'monospace') {
                             return v;
@@ -2292,7 +2268,6 @@ export function addDOMPurifyHooks() {
         }
     });
 
-    // @ts-expect-error TS(7006) FIXME: Parameter 'node' implicitly has an 'any' type.
     DOMPurify.addHook('uponSanitizeElement', (node, _, config) => {
         if (!config.MESSAGE_SANITIZE) {
             return;

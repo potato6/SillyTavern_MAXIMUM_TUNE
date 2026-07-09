@@ -20,12 +20,10 @@ import {
     DEFAULT_AUTO_MODE_DELAY,
     group_activation_strategy,
     group_generation_mode,
-    // @ts-expect-error TS(7034) FIXME: Variable 'groups' implicitly has type 'any[]' in s... Remove this comment to see the full error message
     groups,
     openGroupById,
     openGroupChat,
     saveGroupBookmarkChat,
-    // @ts-expect-error TS(7034) FIXME: Variable 'selected_group' implicitly has type 'any... Remove this comment to see the full error message
     selected_group,
 } from './group-chats.js';
 import { loader } from './action-loader.js';
@@ -52,9 +50,7 @@ const bookmarkNameToken = 'Checkpoint #';
  * @returns {Promise<string[]>} - Returns a promise that resolves to an array of existing chat names.
  */
 async function getExistingChatNames() {
-    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
     if (selected_group) {
-        // @ts-expect-error TS(7005) FIXME: Variable 'groups' implicitly has an 'any[]' type.
         const group = groups.find(x => x.id == selected_group);
         if (group && Array.isArray(group.chats)) {
             return [...group.chats];
@@ -75,7 +71,6 @@ async function getExistingChatNames() {
     const response = await fetch('/api/characters/chats', {
         method: 'POST',
         headers: getRequestHeaders(),
-        // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
         body: JSON.stringify({ avatar_url: character.avatar, simple: true }),
     });
 
@@ -133,21 +128,14 @@ async function getBookmarkName({ isReplace = false, forceName = null } = {}) {
  */
 function getMainChatName() {
     if (chat_metadata) {
-        // @ts-expect-error TS(2339) FIXME: Property 'main_chat' does not exist on type '{}'.
         if (chat_metadata.main_chat) {
-            // @ts-expect-error TS(2339) FIXME: Property 'main_chat' does not exist on type '{}'.
             return chat_metadata.main_chat;
-        // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
         } else if (selected_group) {
             // groups didn't support bookmarks before chat metadata was introduced
             return null;
-        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         } else if (characters[this_chid].chat && characters[this_chid].chat.includes(bookmarkNameToken)) {
-            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             const tokenIndex = characters[this_chid].chat.lastIndexOf(bookmarkNameToken);
-            // @ts-expect-error TS(2339) FIXME: Property 'main_chat' does not exist on type '{}'.
             chat_metadata.main_chat = characters[this_chid].chat.substring(0, tokenIndex).trim();
-            // @ts-expect-error TS(2339) FIXME: Property 'main_chat' does not exist on type '{}'.
             return chat_metadata.main_chat;
         }
     }
@@ -159,7 +147,6 @@ function getMainChatName() {
  */
 export function showBookmarksButtons() {
     try {
-        // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
         if (selected_group) {
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#option_convert_to_group').hide();
@@ -168,14 +155,12 @@ export function showBookmarksButtons() {
             $('#option_convert_to_group').show();
         }
 
-        // @ts-expect-error TS(2339) FIXME: Property 'main_chat' does not exist on type '{}'.
         if (chat_metadata.main_chat) {
             // In bookmark chat
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#option_back_to_main').show();
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#option_new_bookmark').show();
-        // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
         } else if (!selected_group && !characters[this_chid].chat) {
             // No chat recorded on character
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
@@ -297,7 +282,6 @@ export async function createBranch(mesId, { swipeId = null } = {}) {
         return;
     }
 
-    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
     if (selected_group) {
         // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
         await saveGroupBookmarkChat(selected_group, name, newMetadata, mesId, branchChatSnapshot);
@@ -330,7 +314,6 @@ export async function createBranch(mesId, { swipeId = null } = {}) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'mesId' implicitly has an 'any' type.
 export async function createNewBookmark(mesId, { forceName = null } = {}) {
-    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
     if (this_chid === undefined && !selected_group) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.info('No character selected.', 'Create Checkpoint');
@@ -363,14 +346,11 @@ export async function createNewBookmark(mesId, { forceName = null } = {}) {
         return null;
     }
 
-    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
     const mainChat = selected_group ? groups?.find(x => x.id == selected_group)?.chat_id : characters[this_chid].chat;
     const newMetadata = { main_chat: mainChat };
     await saveItemizedPrompts(name);
 
-    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
     if (selected_group) {
-        // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
         await saveGroupBookmarkChat(selected_group, name, newMetadata, mesId);
     } else {
         await saveChat({ chatName: name, withMetadata: newMetadata, mesId });
@@ -411,9 +391,7 @@ async function backToMainChat() {
     const allChats = await getExistingChatNames();
 
     if (allChats.includes(mainChatName)) {
-        // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
         if (selected_group) {
-            // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
             await openGroupChat(selected_group, mainChatName);
         } else {
             await openCharacterChat(mainChatName);
@@ -428,7 +406,6 @@ async function backToMainChat() {
  *
  */
 export async function convertSoloToGroupChat() {
-    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
     if (selected_group) {
         console.log('Already in group. No need for conversion');
         return;
@@ -449,17 +426,13 @@ export async function convertSoloToGroupChat() {
     // Populate group required fields
     // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
     const name = getUniqueName(`Group: ${character.name}`, y => groups.findIndex(x => x.name === y) !== -1);
-    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
     const avatar = getThumbnailUrl('avatar', character.avatar);
     const chatName = humanizedDateTime();
     const chats = [chatName];
-    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
     const members = [character.avatar];
-    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
     const favChecked = character.fav || character.fav == 'true';
     /** @type {ChatMetadata} */
     const metadata = Object.assign({}, chat_metadata);
-    // @ts-expect-error TS(2339) FIXME: Property 'main_chat' does not exist on type '{}'.
     delete metadata.main_chat;
     /** @type {ChatHeader} */
     const chatHeader = {
@@ -565,7 +538,6 @@ export async function convertSoloToGroupChat() {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'mesId' implicitly has an 'any' type.
 export async function branchChat(mesId, { swipeId = null } = {}) {
-    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
     if (this_chid === undefined && !selected_group) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.info('No character selected.', 'Create Branch');
@@ -579,9 +551,7 @@ export async function branchChat(mesId, { swipeId = null } = {}) {
 
     await saveItemizedPrompts(fileName);
 
-    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
     if (selected_group) {
-        // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
         await openGroupChat(selected_group, fileName);
     } else {
         await openCharacterChat(fileName);
@@ -717,9 +687,7 @@ function registerBookmarksSlashCommands() {
                 return '';
             }
 
-            // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
             if (selected_group) {
-                // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
                 await openGroupChat(selected_group, checkPointName);
             } else {
                 await openCharacterChat(checkPointName);
@@ -862,9 +830,7 @@ export function initBookmarks() {
         });
 
         try {
-            // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
             if (selected_group) {
-                // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
                 await openGroupChat(selected_group, fileName);
             } else {
                 await openCharacterChat(fileName);
