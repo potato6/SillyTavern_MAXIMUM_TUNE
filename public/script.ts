@@ -8871,7 +8871,6 @@ export function setUserName(value, { toastPersonaNameChange = true } = {}) {
 async function doOnboarding(avatarId) {
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const template = $('#onboarding_template .onboarding');
-    // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
     let userName = await callGenericPopup(template, POPUP_TYPE.INPUT, currentUser?.name || name1, { wider: true, cancelButton: false });
 
     if (userName) {
