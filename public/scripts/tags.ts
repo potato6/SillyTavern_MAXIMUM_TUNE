@@ -15,7 +15,7 @@ import {
 } from '../script.js';
 import { FILTER_TYPES, FILTER_STATES, DEFAULT_FILTER_STATE, isFilterState, FilterHelper } from './filters.js';
 
-// @ts-expect-error TS(7034) FIXME: Variable 'groups' implicitly has type 'any[]' in s... Remove this comment to see the full error message
+
 import { groupCandidatesFilter, groupMembersFilter, groups, selected_group } from './group-chats.js';
 import { download, onlyUnique, parseJsonFile, uuidv4, getSortableDelay, flashHighlight, equalsIgnoreCaseAndAccents, includesIgnoreCaseAndAccents, removeFromArray, getFreeName, debounce, findChar, escapeHtml } from './utils.js';
 import { power_user } from './power-user.js';
@@ -143,9 +143,9 @@ function getVisibleAvatarsForGroupContext(type, currentGroup) {
             return currentGroup.members;
         case tag_filter_type.group_candidates_list:
             return characters
-                // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
+
                 .filter(c => !currentGroup.members.includes(c.avatar))
-                // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
+
                 .map(c => c.avatar);
         default:
             console.warn('getVisibleAvatarsForGroupContext got invalid type, expected 1 or 2, got ', type);
@@ -729,7 +729,7 @@ function getTagsList(key, sort = true) {
     const list = tag_map[key]
         // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
         .map(x => tags.find(y => y.id === x))
-        // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
+
         .filter(x => x);
     if (sort) list.sort(compareTagsForSort);
     return list;
@@ -739,9 +739,9 @@ function getTagsList(key, sort = true) {
  *
  */
 function getInlineListSelector() {
-    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
+
     if (selected_group && menu_type === 'group_edit') {
-        // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
+
         return `.group_select[grid="${selected_group}"] .tags`;
     }
 
@@ -756,14 +756,14 @@ function getInlineListSelector() {
  * Gets the current tag key based on the currently selected character or group
  */
 function getTagKey() {
-    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
+
     if (selected_group && menu_type === 'group_edit') {
-        // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
+
         return selected_group;
     }
 
     if (this_chid !== undefined && menu_type === 'character_edit') {
-        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
+
         return characters[this_chid].avatar;
     }
 
@@ -787,10 +787,10 @@ export function getTagKeyForEntity(entityOrKey) {
 
     // Next lets check if its a valid character or character id, so we can swith it to its tag
     let character;
-    // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
+
     if (!character && characters.indexOf(x) >= 0) character = x; // Check for char object
     if (!character && !isNaN(parseInt(entityOrKey))) character = characters[x]; // check if its a char id
-    // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
+
     if (!character) character = characters.find(y => y.avatar === x); // check if its a char key
 
     if (character) {
@@ -851,9 +851,9 @@ export function getTagKeyForEntityElement(element) {
 // @ts-expect-error TS(7006) FIXME: Parameter 'charName' implicitly has an 'any' type.
 export function searchCharByName(charName, { suppressLogging = false } = {}) {
     const entity = charName
-        // @ts-expect-error TS(7005) FIXME: Variable 'groups' implicitly has an 'any[]' type.
+
         ? (findChar({ name: charName }) || groups.find(x => equalsIgnoreCaseAndAccents(x.name, charName)))
-        // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
+
         : (selected_group ? groups.find(x => x.id == selected_group) : characters[this_chid]);
     const key = getTagKeyForEntity(entity);
     if (!key) {
@@ -1752,7 +1752,7 @@ function printTagFilters(type = tag_filter_type.character) {
     if (isGroupContext(type)) {
         // For group contexts, show all tags but mark ones without presence in current context as inactive
         // CAUTION: when called by openGroupById, the selected_group variable might not yet be updated
-        // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
+
         const currentGroup = selected_group ? groups.find(x => x.id == selected_group) : null;
         const visibleAvatars = getVisibleAvatarsForGroupContext(type, currentGroup);
 
@@ -2195,9 +2195,9 @@ async function onTagRestoreFileSelect(e) {
         }
 
         // Verify that the key points to a valid character or group.
-        // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
+
         const characterExists = characters.some(x => String(x.avatar) === String(key));
-        // @ts-expect-error TS(7005) FIXME: Variable 'groups' implicitly has an 'any[]' type.
+
         const groupExists = groups.some(x => String(x.id) === String(key));
 
         if (!characterExists && !groupExists) {
@@ -2282,7 +2282,7 @@ async function onTagsPruneClick() {
     const tagsToPrune = tags.filter(tag => !allTagsInTagMaps.has(tag.id));
 
     // Get tag maps referring to deleted entities
-    // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
+
     const allEntityKeys = new Set([...characters.map(c => String(c.avatar)), ...groups.map(g => String(g.id))]);
     const tagMapsToPrune = Object.keys(tag_map).filter(key => !allEntityKeys.has(key));
 
@@ -2956,7 +2956,7 @@ function registerTagsSlashCommands() {
             const key = searchCharByName(name);
             if (!key) return '';
             const tags = getTagsList(key);
-            // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
+
             return tags.map(x => x.name).join(', ');
         },
         namedArgumentList: [
@@ -2991,7 +2991,7 @@ function registerTagsSlashCommands() {
         /** @param {{name: string, mode: 'all'|'existing'|'none'|'ask'}} namedArgs @returns {Promise<string>} */
         // @ts-expect-error TS(7031) FIXME: Binding element 'name' implicitly has an 'any' typ... Remove this comment to see the full error message
         callback: async ({ name, mode }) => {
-            // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
+
             if (selected_group !== null) {
                 // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                 toastr.warning(t`Tag import does not support group chats.`);
@@ -3295,7 +3295,7 @@ export function initTags() {
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.tag_view_prune', onTagsPruneClick);
     eventSource.on(event_types.CHARACTER_DUPLICATED, copyTags);
-    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
+
     eventSource.makeFirst(event_types.CHAT_CHANGED, () => selected_group ? applyTagsOnGroupSelect() : applyTagsOnCharacterSelect());
 
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message

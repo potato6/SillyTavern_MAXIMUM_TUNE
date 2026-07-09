@@ -151,7 +151,7 @@ let groupChatQueueOrder = new Map();
 function setAutoModeWorker() {
     // @ts-expect-error TS(7005) FIXME: Variable 'autoModeWorker' implicitly has an 'any' ... Remove this comment to see the full error message
     clearInterval(autoModeWorker);
-    // @ts-expect-error TS(7005) FIXME: Variable 'groups' implicitly has an 'any[]' type.
+
     const autoModeDelay = groups.find(x => x.id === selected_group)?.auto_mode_delay ?? DEFAULT_AUTO_MODE_DELAY;
     autoModeWorker = setInterval(groupChatAutoModeWorker, autoModeDelay * 1000);
 }
@@ -240,7 +240,7 @@ async function validateGroup(group) {
     let dirty = false;
     // @ts-expect-error TS(7006) FIXME: Parameter 'member' implicitly has an 'any' type.
     group.members = group.members.filter(member => {
-        // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
+
         const character = characters.find(x => x.avatar === member || x.name === member);
         if (!character) {
             const msg = t`Warning: Listed member ${member} does not exist as a character. It will be removed from the group.`;
@@ -275,7 +275,7 @@ async function validateGroup(group) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'groupId' implicitly has an 'any' type.
 export async function getGroupChat(groupId, reload = false) {
-    // @ts-expect-error TS(7005) FIXME: Variable 'groups' implicitly has an 'any[]' type.
+
     const group = groups.find((x) => x.id === groupId);
     if (!group) {
         console.warn('Group not found', groupId);
@@ -308,7 +308,7 @@ export async function getGroupChat(groupId, reload = false) {
         // @ts-expect-error TS(7006) FIXME: Parameter 'el' implicitly has an 'any' type.
         chatElement[0].querySelectorAll('.mes').forEach(el => el.remove());
         for (const member of group.members) {
-            // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
+
             const character = characters.find(x => x.avatar === member || x.name === member);
             if (!character) {
                 continue;
@@ -353,11 +353,11 @@ export async function getGroupChat(groupId, reload = false) {
  * @param {string} [groupId] - The ID of the group to retrieve members from. Defaults to the currently selected group.
  * @returns {Character[]} An array of character objects representing the members of the group. If the group is not found, an empty array is returned.
  */
-// @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
+
 export function getGroupMembers(groupId = selected_group) {
-    // @ts-expect-error TS(7005) FIXME: Variable 'groups' implicitly has an 'any[]' type.
+
     const group = groups.find((x) => x.id === groupId);
-    // @ts-expect-error TS(7006) FIXME: Parameter 'member' implicitly has an 'any' type.
+
     return group?.members.map(member => characters.find(x => x.avatar === member)) ?? [];
 }
 
@@ -366,14 +366,14 @@ export function getGroupMembers(groupId = selected_group) {
  * @returns {string[]} An array of character names representing the members of the group.
  */
 export function getGroupNames() {
-    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
+
     if (!selected_group) {
         return [];
     }
-    // @ts-expect-error TS(7005) FIXME: Variable 'groups' implicitly has an 'any[]' type.
+
     const groupMembers = groups.find(x => x.id == selected_group)?.members;
     return Array.isArray(groupMembers)
-        // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
+
         ? groupMembers.map(x => characters.find(y => y.avatar === x)?.name).filter(x => x)
         : [];
 }
@@ -393,7 +393,7 @@ export function findGroupMemberId(arg, full = false) {
         return;
     }
 
-    // @ts-expect-error TS(7005) FIXME: Variable 'groups' implicitly has an 'any[]' type.
+
     const group = groups.find(x => x.id == selected_group);
 
     if (!group || !Array.isArray(group.members)) {
@@ -405,12 +405,12 @@ export function findGroupMemberId(arg, full = false) {
     const searchByString = isNaN(index);
 
     if (searchByString) {
-        // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
+
         const memberNames = group.members.map(x => ({
             avatar: x,
-            // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
+
             name: characters.find(y => y.avatar === x)?.name,
-            // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
+
             index: characters.findIndex(y => y.avatar === x),
         }));
         const fuse = new Fuse(memberNames, { keys: ['avatar', 'name'] });
@@ -421,7 +421,7 @@ export function findGroupMemberId(arg, full = false) {
             return;
         }
 
-        const chid = result[0].item.index;
+        const chid = result[0]!.item!.index;
 
         if (chid === -1) {
             console.warn(`WARN: No character found for group member ${arg}`);
@@ -430,7 +430,7 @@ export function findGroupMemberId(arg, full = false) {
 
         console.log(`Targeting group member ${chid} (${arg}) from search result`, result[0]);
 
-        return !full ? chid : { ...{ id: chid }, ...result[0].item };
+        return !full ? chid : { ...{ id: chid }, ...result[0]!.item! };
     } else {
         const memberAvatar = group.members[index];
 
@@ -439,7 +439,7 @@ export function findGroupMemberId(arg, full = false) {
             return;
         }
 
-        // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
+
         const chid = characters.findIndex(x => x.avatar === memberAvatar);
 
         if (chid === -1) {
@@ -452,7 +452,7 @@ export function findGroupMemberId(arg, full = false) {
         return !full ? chid : {
             id: chid,
             avatar: memberAvatar,
-            // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
+
             name: characters.find(y => y.avatar === memberAvatar)?.name,
             index: index,
         };
@@ -472,7 +472,7 @@ export function getGroupDepthPrompts(groupId, characterId) {
     }
 
     console.debug('getGroupDepthPrompts entered for group: ', groupId);
-    // @ts-expect-error TS(7005) FIXME: Variable 'groups' implicitly has an 'any[]' type.
+
     const group = groups.find(x => x.id === groupId);
 
     if (!group || !Array.isArray(group.members) || !group.members.length) {
@@ -486,7 +486,7 @@ export function getGroupDepthPrompts(groupId, characterId) {
     const depthPrompts = [];
 
     for (const member of group.members) {
-        // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
+
         const index = characters.findIndex(x => x.avatar === member);
         const character = characters[index];
 
@@ -500,11 +500,11 @@ export function getGroupDepthPrompts(groupId, characterId) {
             continue;
         }
 
-        // @ts-expect-error TS(2339) FIXME: Property 'data' does not exist on type 'never'.
+
         const depthPromptText = baseChatReplace(character.data?.extensions?.depth_prompt?.prompt?.trim(), null, character.name) || '';
-        // @ts-expect-error TS(2339) FIXME: Property 'data' does not exist on type 'never'.
+
         const depthPromptDepth = character.data?.extensions?.depth_prompt?.depth ?? depth_prompt_depth_default;
-        // @ts-expect-error TS(2339) FIXME: Property 'data' does not exist on type 'never'.
+
         const depthPromptRole = character.data?.extensions?.depth_prompt?.role ?? depth_prompt_role_default;
 
         if (depthPromptText) {
@@ -548,7 +548,7 @@ export function getGroupCharacterCards(groupId, characterId) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'groupId' implicitly has an 'any' type.
 export function getGroupCharacterCardsLazy(groupId, characterId) {
-    // @ts-expect-error TS(7005) FIXME: Variable 'groups' implicitly has an 'any[]' type.
+
     const group = groups.find(x => x.id === groupId);
 
     // If no group cards should be generated, return null so caller knows to fall back
@@ -588,8 +588,8 @@ export function getGroupCharacterCardsLazy(groupId, characterId) {
             // @ts-expect-error TS(2349) FIXME: This expression is not callable.
             value = preprocess(value);
         }
-        const prefix = customTransform(group.generation_mode_join_prefix, fieldName, characterName, false);
-        const suffix = customTransform(group.generation_mode_join_suffix, fieldName, characterName, false);
+        const prefix = customTransform(group!.generation_mode_join_prefix, fieldName, characterName, false);
+        const suffix = customTransform(group!.generation_mode_join_suffix, fieldName, characterName, false);
         value = customTransform(value, fieldName, characterName, true);
         return `${prefix}${value}${suffix}`;
     }
@@ -604,23 +604,23 @@ export function getGroupCharacterCardsLazy(groupId, characterId) {
     // @ts-expect-error TS(7006) FIXME: Parameter 'fieldName' implicitly has an 'any' type... Remove this comment to see the full error message
     function collectField(fieldName, getter, preprocess = null) {
         const values = [];
-        for (const member of group.members) {
-            // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
+        for (const member of group!.members) {
+
             const index = characters.findIndex(x => x.avatar === member);
             const character = characters[index];
             if (index === -1 || !character) continue;
-            if (group.disabled_members.includes(member) && characterId !== index && group.generation_mode !== group_generation_mode.APPEND_DISABLED) {
+            if (group!.disabled_members.includes(member) && characterId !== index && group!.generation_mode !== group_generation_mode.APPEND_DISABLED) {
                 continue;
             }
-            // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
+
             values.push(replaceAndPrepareForJoin(getter(character), character.name, fieldName, preprocess));
         }
         return values.filter(x => x.length).join('\n');
     }
 
-    // @ts-expect-error TS(2339) FIXME: Property 'scenario' does not exist on type '{}'.
+
     const scenarioOverride = String(chat_metadata.scenario || '');
-    // @ts-expect-error TS(2339) FIXME: Property 'mes_example' does not exist on type '{}'... Remove this comment to see the full error message
+
     const mesExamplesOverride = String(chat_metadata.mes_example || '');
 
     return createLazyFields({
@@ -700,7 +700,7 @@ function resetSelectedGroup() {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'groupId' implicitly has an 'any' type.
 async function saveGroupChat(groupId, shouldSaveGroup, force = false) {
-    // @ts-expect-error TS(7005) FIXME: Variable 'groups' implicitly has an 'any[]' type.
+
     const group = groups.find(x => x.id == groupId);
     if (!group) {
         console.warn('Group not found', groupId);
@@ -764,11 +764,11 @@ async function saveGroupChat(groupId, shouldSaveGroup, force = false) {
 // @ts-expect-error TS(7006) FIXME: Parameter 'oldAvatar' implicitly has an 'any' type... Remove this comment to see the full error message
 export async function renameGroupMember(oldAvatar, newAvatar, newName) {
     // Scan every group for our renamed character
-    // @ts-expect-error TS(7005) FIXME: Variable 'groups' implicitly has an 'any[]' type.
+
     for (const group of groups) {
         try {
             // Try finding the member by old avatar link
-            // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
+
             const memberIndex = group.members.findIndex(x => x == oldAvatar);
 
             // Character was not present in the group...
@@ -862,18 +862,18 @@ async function getGroups() {
                 group.chat_id = group.id;
                 group.chats = [group.id];
                 group.members = group.members
-                    // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
+
                     .map(x => characters.find(y => y.name == x)?.avatar)
-                    // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
+
                     .filter(x => x)
                     .filter(onlyUnique);
             }
             if (typeof group.chat_id === 'number') {
                 group.chat_id = String(group.chat_id);
             }
-            // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
+
             if (Array.isArray(group.chats) && group.chats.some(x => typeof x === 'number')) {
-                // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
+
                 group.chats = group.chats.map(x => String(x));
             }
         }
@@ -891,10 +891,10 @@ export function getGroupBlock(group) {
 
     if (Array.isArray(group.members) && group.members.length) {
         for (const member of group.members) {
-            // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
+
             const character = characters.find(x => x.avatar === member || x.name === member);
             if (character) {
-                // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
+
                 namesList.push(character.name);
                 count++;
             }
@@ -995,11 +995,11 @@ function getGroupAvatar(group) {
     const memberAvatars = [];
     if (group && Array.isArray(group.members) && group.members.length) {
         for (const member of group.members) {
-            // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
+
             const charIndex = characters.findIndex(x => x.avatar === member);
-            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
+
             if (charIndex !== -1 && characters[charIndex].avatar !== 'none') {
-                // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
+
                 const avatar = getThumbnailUrl('avatar', characters[charIndex].avatar);
                 memberAvatars.push(avatar);
             }
@@ -1045,7 +1045,7 @@ function getGroupAvatar(group) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'groupId' implicitly has an 'any' type.
 function getGroupChatNames(groupId) {
-    // @ts-expect-error TS(7005) FIXME: Variable 'groups' implicitly has an 'any[]' type.
+
     const group = groups.find(x => x.id === groupId);
 
     if (!group) {
@@ -1090,14 +1090,14 @@ async function generateGroupWrapper(byAutoMode, type = null, params = {}) {
 
     // Auto-navigate back to group menu
     if (menu_type !== 'group_edit') {
-        // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
+
         select_group_chats(selected_group, false);
         await delay(1);
     }
 
     /** @type {any} Caution: JS war crimes ahead */
     let textResult = '';
-    // @ts-expect-error TS(7005) FIXME: Variable 'groups' implicitly has an 'any[]' type.
+
     const group = groups.find((x) => x.id === selected_group);
 
     if (!group || !Array.isArray(group.members) || !group.members.length) {
@@ -1106,7 +1106,7 @@ async function generateGroupWrapper(byAutoMode, type = null, params = {}) {
     }
 
     try {
-        // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
+
         await unshallowGroupMembers(selected_group);
 
         throwIfAborted();
@@ -1135,7 +1135,7 @@ async function generateGroupWrapper(byAutoMode, type = null, params = {}) {
         }
 
         const activationStrategy = Number(group.activation_strategy ?? group_activation_strategy.NATURAL);
-        // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
+
         const enabledMembers = group.members.filter(x => !group.disabled_members.includes(x));
         let activatedMembers = [];
 
@@ -1186,18 +1186,18 @@ async function generateGroupWrapper(byAutoMode, type = null, params = {}) {
 
         if (power_user.show_group_chat_queue) {
             for (let i = 0; i < activatedMembers.length; ++i) {
-                // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
+
                 groupChatQueueOrder.set(characters[activatedMembers[i]].avatar, i + 1);
             }
         }
-        // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
+
         await eventSource.emit(event_types.GROUP_WRAPPER_STARTED, { selected_group, type });
         // now the real generation begins: cycle through every activated character
         for (const chId of activatedMembers) {
             throwIfAborted();
             deactivateSendButtons();
             setCharacterId(chId);
-            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
+
             setCharacterName(characters[chId].name);
             if (power_user.show_group_chat_queue) {
                 printGroupMembers();
@@ -1219,7 +1219,7 @@ async function generateGroupWrapper(byAutoMode, type = null, params = {}) {
                 }
             }
             if (power_user.show_group_chat_queue) {
-                // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
+
                 groupChatQueueOrder.delete(characters[chId].avatar);
                 groupChatQueueOrder.forEach((value, key, map) => map.set(key, value - 1));
             }
@@ -1235,7 +1235,7 @@ async function generateGroupWrapper(byAutoMode, type = null, params = {}) {
         setCharacterName('');
         activateSendButtons();
         showSwipeButtons();
-        // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
+
         await eventSource.emit(event_types.GROUP_WRAPPER_FINISHED, { selected_group, type });
     }
 
@@ -1269,7 +1269,7 @@ function activateImpersonate(members) {
     const randomIndex = Math.floor(Math.random() * members.length);
     const activatedMembers = [members[randomIndex]];
     const memberIds = activatedMembers
-        // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
+
         .map((x) => characters.findIndex((y) => y.avatar === x))
         .filter((x) => x !== -1);
     return memberIds;
@@ -1319,9 +1319,9 @@ function activateSwipe(members, { allowSystem = false } = {}) {
         const matches = characters.filter(x => x.name == lastMessage.name);
 
         for (const match of matches) {
-            // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
+
             if (members.includes(match.avatar)) {
-                // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
+
                 activatedNames.push(match.avatar);
                 break;
             }
@@ -1332,7 +1332,7 @@ function activateSwipe(members, { allowSystem = false } = {}) {
     }
 
     const memberIds = activatedNames
-        // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
+
         .map((x) => characters.findIndex((y) => y.avatar === x))
         .filter((x) => x !== -1);
     return memberIds;
@@ -1366,7 +1366,7 @@ function activateListOrder(members) {
 // @ts-expect-error TS(7006) FIXME: Parameter 'members' implicitly has an 'any' type.
 function activatePooledOrder(members, lastMessage, isUserInput) {
     /** @type {string} */
-    // @ts-expect-error TS(7034) FIXME: Variable 'activatedMember' implicitly has type 'an... Remove this comment to see the full error message
+
     let activatedMember = null;
     /** @type {string[]} */
     // @ts-expect-error TS(7034) FIXME: Variable 'spokenSinceUser' implicitly has type 'an... Remove this comment to see the full error message
@@ -1404,7 +1404,7 @@ function activatePooledOrder(members, lastMessage, isUserInput) {
         activatedMember = randomPool[Math.floor(Math.random() * randomPool.length)];
     }
 
-    // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
+
     const memberId = characters.findIndex(y => y.avatar === activatedMember);
     return memberId !== -1 ? [memberId] : [];
 }
@@ -1434,15 +1434,15 @@ function activateNaturalOrder(members, input, lastMessage, allowSelfResponses, i
     if (input && input.length) {
         for (const inputWord of extractAllWords(input)) {
             for (const member of members) {
-                // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
+
                 const character = characters.find(x => x.avatar === member);
 
-                // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
+
                 if (!character || character.name === bannedUser) {
                     continue;
                 }
 
-                // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
+
                 if (extractAllWords(character.name).includes(inputWord)) {
                     activatedMembers.push(member);
                     break;
@@ -1455,19 +1455,19 @@ function activateNaturalOrder(members, input, lastMessage, allowSelfResponses, i
     // activation by talkativeness (in shuffled order, except banned)
     const shuffledMembers = shuffle([...members]);
     for (const member of shuffledMembers) {
-        // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
+
         const character = characters.find((x) => x.avatar === member);
 
-        // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
+
         if (!character || character.name === bannedUser) {
             continue;
         }
 
         const rollValue = Math.random();
-        // @ts-expect-error TS(2339) FIXME: Property 'talkativeness' does not exist on type 'n... Remove this comment to see the full error message
+
         const talkativeness = isNaN(character.talkativeness)
             ? talkativeness_default
-            // @ts-expect-error TS(2339) FIXME: Property 'talkativeness' does not exist on type 'n... Remove this comment to see the full error message
+
             : Number(character.talkativeness);
         if (talkativeness >= rollValue) {
             activatedMembers.push(member);
@@ -1483,7 +1483,7 @@ function activateNaturalOrder(members, input, lastMessage, allowSelfResponses, i
     const randomPool = chattyMembers.length > 0 ? chattyMembers : members;
     while (activatedMembers.length === 0 && ++retries <= randomPool.length) {
         const randomIndex = Math.floor(Math.random() * randomPool.length);
-        // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
+
         const character = characters.find((x) => x.avatar === randomPool[randomIndex]);
 
         if (!character) {
@@ -1498,7 +1498,7 @@ function activateNaturalOrder(members, input, lastMessage, allowSelfResponses, i
 
     // map to character ids
     const memberIds = activatedMembers
-        // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
+
         .map((x) => characters.findIndex((y) => y.avatar === x))
         .filter((x) => x !== -1);
     return memberIds;
@@ -1511,7 +1511,7 @@ function activateNaturalOrder(members, input, lastMessage, allowSelfResponses, i
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'id' implicitly has an 'any' type.
 async function deleteGroup(id) {
-    // @ts-expect-error TS(7005) FIXME: Variable 'groups' implicitly has an 'any[]' type.
+
     const group = groups.find((x) => x.id === id);
 
     const response = await fetch('/api/groups/delete', {
@@ -1551,7 +1551,7 @@ async function deleteGroup(id) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'id' implicitly has an 'any' type.
 export async function editGroup(id, immediately, reload = true) {
-    // @ts-expect-error TS(7005) FIXME: Variable 'groups' implicitly has an 'any[]' type.
+
     const group = groups.find((x) => x.id === id);
 
     if (!group) {
@@ -1572,7 +1572,7 @@ export async function editGroup(id, immediately, reload = true) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'groupId' implicitly has an 'any' type.
 export async function unshallowGroupMembers(groupId) {
-    // @ts-expect-error TS(7005) FIXME: Variable 'groups' implicitly has an 'any[]' type.
+
     const group = groups.find(x => x.id == groupId);
     if (!group) {
         return;
@@ -1582,7 +1582,7 @@ export async function unshallowGroupMembers(groupId) {
         return;
     }
     for (const member of members) {
-        // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
+
         const index = characters.findIndex(x => x.avatar === member);
         if (index === -1) {
             continue;
@@ -1602,12 +1602,12 @@ async function groupChatAutoModeWorker() {
         return;
     }
 
-    // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
+
     if (!selected_group || is_send_press || is_group_generating) {
         return;
     }
 
-    // @ts-expect-error TS(7005) FIXME: Variable 'groups' implicitly has an 'any[]' type.
+
     const group = groups.find((x) => x.id === selected_group);
 
     if (!group || !Array.isArray(group.members) || !group.members.length) {
@@ -1628,13 +1628,13 @@ async function groupChatAutoModeWorker() {
 // @ts-expect-error TS(7006) FIXME: Parameter 'groupId' implicitly has an 'any' type.
 async function modifyGroupMember(groupId, groupMember, isDelete) {
     const id = groupMember.dataset.id;
-    // @ts-expect-error TS(7005) FIXME: Variable 'groups' implicitly has an 'any[]' type.
+
     const thisGroup = groups.find((x) => x.id == groupId);
     // @ts-expect-error TS(7005) FIXME: Variable 'newGroupMembers' implicitly has an 'any[... Remove this comment to see the full error message
     const membersArray = thisGroup?.members ?? newGroupMembers;
 
     if (isDelete) {
-        // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
+
         const index = membersArray.findIndex((x) => x === id);
         if (index !== -1) {
             membersArray.splice(membersArray.indexOf(id), 1);
@@ -1645,9 +1645,9 @@ async function modifyGroupMember(groupId, groupMember, isDelete) {
 
     // @ts-expect-error TS(7005) FIXME: Variable 'openGroupId' implicitly has an 'any' typ... Remove this comment to see the full error message
     if (openGroupId) {
-        // @ts-expect-error TS(7005) FIXME: Variable 'openGroupId' implicitly has an 'any' typ... Remove this comment to see the full error message
+
         await unshallowGroupMembers(openGroupId);
-        // @ts-expect-error TS(7005) FIXME: Variable 'openGroupId' implicitly has an 'any' typ... Remove this comment to see the full error message
+
         await editGroup(openGroupId, false, false);
         updateGroupAvatar(thisGroup);
     }
@@ -1672,7 +1672,7 @@ async function modifyGroupMember(groupId, groupMember, isDelete) {
 // @ts-expect-error TS(7006) FIXME: Parameter 'groupId' implicitly has an 'any' type.
 async function reorderGroupMember(groupId, groupMember, direction) {
     const id = groupMember.dataset.id;
-    // @ts-expect-error TS(7005) FIXME: Variable 'groups' implicitly has an 'any[]' type.
+
     const thisGroup = groups.find((x) => x.id == groupId);
     // @ts-expect-error TS(7005) FIXME: Variable 'newGroupMembers' implicitly has an 'any[... Remove this comment to see the full error message
     const memberArray = thisGroup?.members ?? newGroupMembers;
@@ -1712,8 +1712,8 @@ async function onGroupActivationStrategyInput(e) {
     if (openGroupId) {
         // @ts-expect-error TS(7005) FIXME: Variable 'groups' implicitly has an 'any[]' type.
         const _thisGroup = groups.find((x) => x.id == openGroupId);
-        _thisGroup.activation_strategy = Number(e.target.value);
-        // @ts-expect-error TS(7005) FIXME: Variable 'openGroupId' implicitly has an 'any' typ... Remove this comment to see the full error message
+        _thisGroup!.activation_strategy = Number(e.target.value);
+
         await editGroup(openGroupId, false, false);
     }
 }
@@ -1728,11 +1728,11 @@ async function onGroupGenerationModeInput(e) {
     if (openGroupId) {
         // @ts-expect-error TS(7005) FIXME: Variable 'groups' implicitly has an 'any[]' type.
         const _thisGroup = groups.find((x) => x.id == openGroupId);
-        _thisGroup.generation_mode = Number(e.target.value);
-        // @ts-expect-error TS(7005) FIXME: Variable 'openGroupId' implicitly has an 'any' typ... Remove this comment to see the full error message
+        _thisGroup!.generation_mode = Number(e.target.value);
+
         await editGroup(openGroupId, false, false);
 
-        toggleHiddenControls(_thisGroup);
+        toggleHiddenControls(_thisGroup!);
     }
 }
 
@@ -1746,8 +1746,8 @@ async function onGroupAutoModeDelayInput(e) {
     if (openGroupId) {
         // @ts-expect-error TS(7005) FIXME: Variable 'groups' implicitly has an 'any[]' type.
         const _thisGroup = groups.find((x) => x.id == openGroupId);
-        _thisGroup.auto_mode_delay = Number(e.target.value);
-        // @ts-expect-error TS(7005) FIXME: Variable 'openGroupId' implicitly has an 'any' typ... Remove this comment to see the full error message
+        _thisGroup!.auto_mode_delay = Number(e.target.value);
+
         await editGroup(openGroupId, false, false);
         setAutoModeWorker();
     }
@@ -1764,8 +1764,8 @@ async function onGroupAutoModeDelayInput(e) {
         // @ts-expect-error TS(7005) FIXME: Variable 'groups' implicitly has an 'any[]' type.
         const _thisGroup = groups.find((x) => x.id == openGroupId);
         const prop = e.target.getAttribute('setting');
-        _thisGroup[prop] = String(e.target.value);
-        // @ts-expect-error TS(7005) FIXME: Variable 'openGroupId' implicitly has an 'any' typ... Remove this comment to see the full error message
+        (_thisGroup as any)[prop] = String(e.target.value);
+
         await editGroup(openGroupId, false, false);
     }
 }
@@ -1780,10 +1780,10 @@ async function onGroupNameInput(event) {
     if (openGroupId) {
         // @ts-expect-error TS(7005) FIXME: Variable 'groups' implicitly has an 'any[]' type.
         const _thisGroup = groups.find((x) => x.id == openGroupId);
-        _thisGroup.name = event.currentTarget.value;
+        _thisGroup!.name = event.currentTarget.value;
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        document.getElementById('rm_button_selected_ch').querySelector(':scope > h2').textContent = _thisGroup.name;
-        // @ts-expect-error TS(7005) FIXME: Variable 'openGroupId' implicitly has an 'any' typ... Remove this comment to see the full error message
+        document.getElementById('rm_button_selected_ch').querySelector(':scope > h2').textContent = _thisGroup!.name;
+
         await editGroup(openGroupId, false);
     }
 }
@@ -1885,7 +1885,7 @@ function getGroupCharacters({ doFilter = false, onlyMembers = false } = {}) {
     const characterIndexMap = new Map(characters.map((char, index) => [char, index]));
 
     const results = characters
-        // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
+
         .filter((x) => isGroupMember(thisGroup, x.avatar) == onlyMembers)
         .map((x) => ({ item: x, id: characterIndexMap.get(x), type: 'character' }));
 
@@ -2073,7 +2073,7 @@ async function onDeleteGroupClick() {
 
     const confirm = await Popup.show.confirm(t`Delete the group?`, '<p>' + t`This will also delete all your chats with that group. If you want to delete a single conversation, select a "View past chats" option in the lower left menu.` + '</p>');
     if (confirm) {
-        // @ts-expect-error TS(7005) FIXME: Variable 'openGroupId' implicitly has an 'any' typ... Remove this comment to see the full error message
+
         deleteGroup(openGroupId);
     }
 }
@@ -2087,8 +2087,8 @@ async function onFavoriteGroupClick() {
     if (openGroupId) {
         // @ts-expect-error TS(7005) FIXME: Variable 'groups' implicitly has an 'any[]' type.
         const _thisGroup = groups.find((x) => x.id == openGroupId);
-        _thisGroup.fav = fav_grp_checked;
-        // @ts-expect-error TS(7005) FIXME: Variable 'openGroupId' implicitly has an 'any' typ... Remove this comment to see the full error message
+        _thisGroup!.fav = fav_grp_checked;
+
         await editGroup(openGroupId, false, false);
         favsToHotswap();
     }
@@ -2105,8 +2105,8 @@ async function onGroupSelfResponsesClick(event) {
         // @ts-expect-error TS(7005) FIXME: Variable 'groups' implicitly has an 'any[]' type.
         const _thisGroup = groups.find((x) => x.id == openGroupId);
         const value = event.currentTarget.checked;
-        _thisGroup.allow_self_responses = value;
-        // @ts-expect-error TS(7005) FIXME: Variable 'openGroupId' implicitly has an 'any' typ... Remove this comment to see the full error message
+        _thisGroup!.allow_self_responses = value;
+
         await editGroup(openGroupId, false, false);
     }
 }
@@ -2121,9 +2121,9 @@ async function onHideMutedSpritesClick(value) {
     if (openGroupId) {
         // @ts-expect-error TS(7005) FIXME: Variable 'groups' implicitly has an 'any[]' type.
         const _thisGroup = groups.find((x) => x.id == openGroupId);
-        _thisGroup.hideMutedSprites = value;
-        console.log(`_thisGroup.hideMutedSprites = ${_thisGroup.hideMutedSprites}`);
-        // @ts-expect-error TS(7005) FIXME: Variable 'openGroupId' implicitly has an 'any' typ... Remove this comment to see the full error message
+        _thisGroup!.hideMutedSprites = value;
+        console.log(`_thisGroup.hideMutedSprites = ${_thisGroup!.hideMutedSprites}`);
+
         await editGroup(openGroupId, false, false);
         await eventSource.emit(event_types.GROUP_UPDATED);
     }
@@ -2343,15 +2343,15 @@ async function uploadGroupAvatar(event) {
         return;
     }
 
-    _thisGroup.avatar_url = thumbnailUrl;
+    _thisGroup!.avatar_url = thumbnailUrl;
     const _preview = document.getElementById('group_avatar_preview');
     // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     _preview.innerHTML = '';
     // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    _preview.append(getGroupAvatar(_thisGroup));
+    _preview.append(getGroupAvatar(_thisGroup!));
     // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     document.getElementById('rm_group_restore_avatar').style.display = '';
-    // @ts-expect-error TS(7005) FIXME: Variable 'openGroupId' implicitly has an 'any' typ... Remove this comment to see the full error message
+
     await editGroup(openGroupId, true, true);
 }
 
@@ -2375,15 +2375,15 @@ async function restoreGroupAvatar() {
 
     // @ts-expect-error TS(7005) FIXME: Variable 'groups' implicitly has an 'any[]' type.
     const _thisGroup = groups.find((x) => x.id == openGroupId);
-    _thisGroup.avatar_url = '';
+    _thisGroup!.avatar_url = '';
     const _previewRestore = document.getElementById('group_avatar_preview');
     // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     _previewRestore.innerHTML = '';
     // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    _previewRestore.append(getGroupAvatar(_thisGroup));
+    _previewRestore.append(getGroupAvatar(_thisGroup!));
     // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     document.getElementById('rm_group_restore_avatar').style.display = 'none';
-    // @ts-expect-error TS(7005) FIXME: Variable 'openGroupId' implicitly has an 'any' typ... Remove this comment to see the full error message
+
     await editGroup(openGroupId, true, true);
 }
 
@@ -2413,9 +2413,9 @@ async function onGroupActionClick(event) {
         member.classList.remove('disabled');
         // @ts-expect-error TS(7005) FIXME: Variable 'groups' implicitly has an 'any[]' type.
         const _thisGroup = groups.find(x => x.id === openGroupId);
-        const index = _thisGroup.disabled_members.indexOf(member.dataset.id);
+        const index = _thisGroup!.disabled_members.indexOf(member.dataset.id);
         if (index !== -1) {
-            _thisGroup.disabled_members.splice(index, 1);
+            _thisGroup!.disabled_members.splice(index, 1);
             // @ts-expect-error TS(7005) FIXME: Variable 'openGroupId' implicitly has an 'any' typ... Remove this comment to see the full error message
             await editGroup(openGroupId, false, false);
         }
@@ -2425,8 +2425,8 @@ async function onGroupActionClick(event) {
         member.classList.add('disabled');
         // @ts-expect-error TS(7005) FIXME: Variable 'groups' implicitly has an 'any[]' type.
         const _thisGroup = groups.find(x => x.id === openGroupId);
-        if (!_thisGroup.disabled_members.includes(member.dataset.id)) {
-            _thisGroup.disabled_members.push(member.dataset.id);
+        if (!_thisGroup!.disabled_members.includes(member.dataset.id)) {
+            _thisGroup!.disabled_members.push(member.dataset.id);
             // @ts-expect-error TS(7005) FIXME: Variable 'openGroupId' implicitly has an 'any' typ... Remove this comment to see the full error message
             await editGroup(openGroupId, false, false);
         }
@@ -2479,7 +2479,7 @@ export async function openGroupById(groupId) {
         return false;
     }
 
-    // @ts-expect-error TS(7005) FIXME: Variable 'groups' implicitly has an 'any[]' type.
+
     if (!groups.find(x => x.id === groupId)) {
         console.log('Group not found', groupId);
         return false;
@@ -2488,7 +2488,7 @@ export async function openGroupById(groupId) {
     if (!is_send_press && !is_group_generating) {
         select_group_chats(groupId, false);
 
-        // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
+
         if (selected_group !== groupId) {
             groupChatQueueOrder = new Map();
             setCharacterId(undefined);
@@ -2569,7 +2569,7 @@ async function createGroup() {
     const autoModeDelay = Number(document.getElementById('rm_group_automode_delay').value) ?? DEFAULT_AUTO_MODE_DELAY;
     // @ts-expect-error TS(7005) FIXME: Variable 'newGroupMembers' implicitly has an 'any[... Remove this comment to see the full error message
     const members = newGroupMembers;
-    // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
+
     const memberNames = characters.filter(x => members.includes(x.avatar)).map(x => x.name).join(', ');
 
     if (!name) {
@@ -2618,7 +2618,7 @@ async function createGroup() {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'groupId' implicitly has an 'any' type.
 export async function createNewGroupChat(groupId) {
-    // @ts-expect-error TS(7005) FIXME: Variable 'groups' implicitly has an 'any[]' type.
+
     const group = groups.find(x => x.id === groupId);
 
     if (!group) {
@@ -2642,7 +2642,7 @@ export async function createNewGroupChat(groupId) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'groupId' implicitly has an 'any' type.
 export async function getGroupPastChats(groupId) {
-    // @ts-expect-error TS(7005) FIXME: Variable 'groups' implicitly has an 'any[]' type.
+
     const group = groups.find(x => x.id === groupId);
 
     if (!group) {
@@ -2678,7 +2678,7 @@ export async function getGroupPastChats(groupId) {
 // @ts-expect-error TS(7006) FIXME: Parameter 'groupId' implicitly has an 'any' type.
 export async function openGroupChat(groupId, chatId) {
     await waitUntilCondition(() => !isChatSaving, debounce_timeout.extended, 10);
-    // @ts-expect-error TS(7005) FIXME: Variable 'groups' implicitly has an 'any[]' type.
+
     const group = groups.find(x => x.id === groupId);
 
     if (!group || !group.chats.includes(chatId)) {
@@ -2703,7 +2703,7 @@ export async function openGroupChat(groupId, chatId) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'groupId' implicitly has an 'any' type.
 export async function renameGroupChat(groupId, oldChatId, newChatId) {
-    // @ts-expect-error TS(7005) FIXME: Variable 'groups' implicitly has an 'any[]' type.
+
     const group = groups.find(x => x.id === groupId);
 
     if (!group || !group.chats.includes(oldChatId)) {
@@ -2728,7 +2728,7 @@ export async function renameGroupChat(groupId, oldChatId, newChatId) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'groupId' implicitly has an 'any' type.
 export async function deleteGroupChatByName(groupId, chatName) {
-    // @ts-expect-error TS(7005) FIXME: Variable 'groups' implicitly has an 'any[]' type.
+
     const group = groups.find(x => x.id === groupId);
     if (!group || !group.chats.includes(chatName)) {
         return;
@@ -2752,7 +2752,7 @@ export async function deleteGroupChatByName(groupId, chatName) {
     // If the deleted chat was the current chat, switch to the last chat in the group
     if (group.chat_id === chatName) {
         const newChatName = group.chats.length ? group.chats[group.chats.length - 1] : humanizedDateTime();
-        group.chat_id = newChatName;
+        group.chat_id = newChatName ?? humanizedDateTime();
     }
 
     await editGroup(groupId, true, true);
@@ -2768,7 +2768,7 @@ export async function deleteGroupChatByName(groupId, chatName) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'groupId' implicitly has an 'any' type.
 export async function deleteGroupChat(groupId, chatId, { jumpToNewChat = true } = {}) {
-    // @ts-expect-error TS(7005) FIXME: Variable 'groups' implicitly has an 'any[]' type.
+
     const group = groups.find(x => x.id === groupId);
 
     if (!group || !group.chats.includes(chatId)) {
@@ -2821,12 +2821,12 @@ export async function importGroupChat(formData, { refresh = true } = {}) {
         const data = await fetchResult.json();
         if (data.res) {
             const chatId = data.res;
-            // @ts-expect-error TS(7005) FIXME: Variable 'groups' implicitly has an 'any[]' type.
+
             const group = groups.find(x => x.id == selected_group);
 
             if (group) {
                 group.chats.push(chatId);
-                // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
+
                 await editGroup(selected_group, true, true);
                 if (refresh) {
                     await displayPastChats();
@@ -2853,7 +2853,7 @@ export async function importGroupChat(formData, { refresh = true } = {}) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'groupId' implicitly has an 'any' type.
 export async function saveGroupBookmarkChat(groupId, name, metadata, mesId, chatData = undefined) {
-    // @ts-expect-error TS(7005) FIXME: Variable 'groups' implicitly has an 'any[]' type.
+
     const group = groups.find(x => x.id === groupId);
 
     if (!group) {
@@ -2910,7 +2910,7 @@ function onSendTextareaInput() {
 function stopAutoModeGeneration() {
     // @ts-expect-error TS(7005) FIXME: Variable 'groupAutoModeAbortController' implicitly... Remove this comment to see the full error message
     if (groupAutoModeAbortController) {
-        // @ts-expect-error TS(7005) FIXME: Variable 'groupAutoModeAbortController' implicitly... Remove this comment to see the full error message
+
         groupAutoModeAbortController.abort();
     }
 
@@ -2930,7 +2930,7 @@ function doCurMemberListPopout(event) {
         console.debug('did not see popout yet, creating');
         const memberListClone = event.currentTarget.parentElement?.parentElement?.querySelector('.inline-drawer-content')?.innerHTML ?? '';
         const templateElement = document.getElementById('zoomed_avatar_template');
-        // @ts-expect-error TS(7034) FIXME: Variable 'newElement' implicitly has type 'any' in... Remove this comment to see the full error message
+
         let newElement = null;
         if (templateElement instanceof HTMLTemplateElement) {
             newElement = templateElement.content.firstElementChild?.cloneNode(true);
@@ -2972,16 +2972,16 @@ function doCurMemberListPopout(event) {
         if (closeBtn) {
             closeBtn.addEventListener('click', function () {
                 if (animation_duration > 0) {
-                    // @ts-expect-error TS(7005) FIXME: Variable 'newElement' implicitly has an 'any' type... Remove this comment to see the full error message
+
                     newElement.style.transition = `opacity ${animation_duration}ms ease`;
-                    // @ts-expect-error TS(7005) FIXME: Variable 'newElement' implicitly has an 'any' type... Remove this comment to see the full error message
+
                     newElement.style.opacity = '0';
                     setTimeout(() => {
-                        // @ts-expect-error TS(7005) FIXME: Variable 'newElement' implicitly has an 'any' type... Remove this comment to see the full error message
+
                         newElement.remove();
                     }, animation_duration);
                 } else {
-                    // @ts-expect-error TS(7005) FIXME: Variable 'newElement' implicitly has an 'any' type... Remove this comment to see the full error message
+
                     newElement.remove();
                 }
             });
