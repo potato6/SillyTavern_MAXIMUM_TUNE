@@ -7,7 +7,6 @@ import { createThumbnail, flashHighlight, getBase64Async, stringFormat, debounce
 import { debounce_timeout } from './constants.js';
 import { t } from './i18n.js';
 import { callGenericPopup, Popup, POPUP_TYPE } from './popup.js';
-// @ts-expect-error TS(7034) FIXME: Variable 'groups' implicitly has type 'any[]' in s... Remove this comment to see the full error message
 import { groups, selected_group } from './group-chats.js';
 import { humanizedDateTime } from './RossAscends-mods.js';
 import { deleteMediaFromServer } from './chats.js';
@@ -99,8 +98,7 @@ const BG_TABS = Object.freeze({
  * Global IntersectionObserver instance for lazy loading backgrounds
  * @type {IntersectionObserver|null}
  */
-// @ts-expect-error TS(7034) FIXME: Variable 'lazyLoadObserver' implicitly has type 'a... Remove this comment to see the full error message
-let lazyLoadObserver = null;
+let lazyLoadObserver: IntersectionObserver | null = null;
 
 /**
  * Cache for the current list of system background filenames.
@@ -282,11 +280,9 @@ async function forceSetBackground(backgroundInfo) {
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#bg1').css('background-image', backgroundInfo.url);
 
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     const list = chat_metadata[LIST_METADATA_KEY] || [];
     const bg = backgroundInfo.path;
     list.push(bg);
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     chat_metadata[LIST_METADATA_KEY] = list;
     saveMetadataDebounced();
     // @ts-expect-error TS(2554) FIXME: Expected 1 arguments, but got 0.
@@ -299,7 +295,6 @@ async function forceSetBackground(backgroundInfo) {
  *
  */
 async function onChatChanged() {
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     const lockedUrl = chat_metadata[BG_METADATA_KEY];
 
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
@@ -318,7 +313,6 @@ async function onChatChanged() {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'fileUrl' implicitly has an 'any' type.
 export function isCustomBackgroundUrl(fileUrl) {
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     const customBackgrounds = chat_metadata[LIST_METADATA_KEY] || [];
     // @ts-expect-error TS(7006) FIXME: Parameter 'bg' implicitly has an 'any' type.
     return customBackgrounds.some(bg => bg === fileUrl || generateUrlParameter(bg, true) === fileUrl);
@@ -352,7 +346,6 @@ function getBackgroundRelativePath(file) {
 function highlightLockedBackground() {
     document.querySelectorAll('.bg_example.locked-background').forEach(el => el.classList.remove('locked-background'));
 
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     const lockedBackgroundUrl = chat_metadata[BG_METADATA_KEY];
 
     if (lockedBackgroundUrl) {
@@ -409,7 +402,6 @@ function onUnlockBackgroundClick(_event = null) {
  *
  */
 function isChatBackgroundLocked() {
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     return chat_metadata[BG_METADATA_KEY];
 }
 
@@ -419,7 +411,6 @@ function isChatBackgroundLocked() {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'file' implicitly has an 'any' type.
 function saveBackgroundMetadata(file) {
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     chat_metadata[BG_METADATA_KEY] = file;
     saveMetadataDebounced();
 }
@@ -428,7 +419,6 @@ function saveBackgroundMetadata(file) {
  *
  */
 function removeBackgroundMetadata() {
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     delete chat_metadata[BG_METADATA_KEY];
     saveMetadataDebounced();
 }
@@ -496,7 +486,6 @@ async function onCopyToSystemBackgroundClick(e) {
 
     await uploadBackground(formData);
 
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     const list = chat_metadata[LIST_METADATA_KEY] || [];
     const index = list.indexOf(bgNames.oldBg);
     list.splice(index, 1);
@@ -522,7 +511,7 @@ async function getThumbnailFromStorage(bg, isCustom) {
 
     const savedBlob = await THUMBNAIL_STORAGE.getItem(bg);
     if (savedBlob) {
-        const savedBlobUrl = URL.createObjectURL(savedBlob);
+        const savedBlobUrl = URL.createObjectURL(savedBlob as Blob);
         THUMBNAIL_BLOBS.set(bg, savedBlobUrl);
         return savedBlobUrl;
     }
@@ -663,13 +652,11 @@ async function onDeleteBackgroundClick(e) {
                 cachedSystemBackgrounds.splice(cacheIndex, 1);
             }
         } else {
-            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             const list = chat_metadata[LIST_METADATA_KEY] || [];
             const index = list.indexOf(bg);
             list.splice(index, 1);
         }
 
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         if (bg === background_settings.name || url === chat_metadata[BG_METADATA_KEY]) {
             const siblingSelector = '.bg_example';
             const nextBg = bgToDelete?.nextElementSibling?.matches(siblingSelector) ? bgToDelete.nextElementSibling : null;
@@ -714,7 +701,6 @@ async function onDeleteBackgroundClick(e) {
 
         bgToDelete?.remove();
 
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         if (url === chat_metadata[BG_METADATA_KEY]) {
             removeBackgroundMetadata();
         }
@@ -772,7 +758,7 @@ async function autoBackgroundCommand() {
     }
 
     console.debug('Automatically choosing background:', bestMatch);
-    bestMatch[0].item.element.click();
+    (bestMatch[0]?.item?.element as HTMLElement)?.click();
     return '';
 }
 
@@ -815,7 +801,6 @@ function renderSystemBackgrounds(backgrounds) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'backgrounds' implicitly has an 'any' ty... Remove this comment to see the full error message
 function renderChatBackgrounds(backgrounds) {
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     const sourceList = backgrounds ?? (chat_metadata[LIST_METADATA_KEY] || []);
     const container = document.getElementById('bg_custom_content');
     // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
@@ -1338,7 +1323,6 @@ async function onRemoveSelectedFromCurrentFolder() {
     }
 
     try {
-        // @ts-expect-error TS(7005) FIXME: Variable 'activeFolderId' implicitly has an 'any' ... Remove this comment to see the full error message
         await updateFolderAssignments(bgFiles, activeFolderId, true);
         renderFolderGrid();
         renderSystemBackgrounds(getFilteredImages());
@@ -1566,7 +1550,6 @@ async function onSetFolderCover(bgFile) {
         const response = await fetch('/api/image-metadata/folders/update', {
             method: 'POST',
             headers: getRequestHeaders(),
-            // @ts-expect-error TS(7005) FIXME: Variable 'activeFolderId' implicitly has an 'any' ... Remove this comment to see the full error message
             body: JSON.stringify({ id: activeFolderId, thumbnailFile: bgFile }),
         });
         if (response.ok) {
@@ -1597,9 +1580,7 @@ async function onSetFolderCover(bgFile) {
  */
 function activateLazyLoader() {
     // Disconnect previous observer to prevent memory leaks
-    // @ts-expect-error TS(7005) FIXME: Variable 'lazyLoadObserver' implicitly has an 'any... Remove this comment to see the full error message
     if (lazyLoadObserver) {
-        // @ts-expect-error TS(7005) FIXME: Variable 'lazyLoadObserver' implicitly has an 'any... Remove this comment to see the full error message
         lazyLoadObserver.disconnect();
         lazyLoadObserver = null;
     }
@@ -1878,19 +1859,14 @@ async function uploadChatBackground(formData) {
         // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         const base64Data = imageDataUri.split(',')[1];
         const extension = getFileExtension(file);
-        // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
         const characterName = selected_group
-            // @ts-expect-error TS(7005) FIXME: Variable 'groups' implicitly has an 'any[]' type.
             ? groups.find(g => g.id === selected_group)?.id?.toString()
-            // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
             : characters[this_chid]?.name;
         const filename = `${characterName}_${humanizedDateTime()}`;
         const imagePath = await saveBase64AsFile(base64Data, characterName, filename, extension);
 
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         const list = chat_metadata[LIST_METADATA_KEY] || [];
         list.push(imagePath);
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         chat_metadata[LIST_METADATA_KEY] = list;
         await saveMetadata();
         // @ts-expect-error TS(2554) FIXME: Expected 1 arguments, but got 0.

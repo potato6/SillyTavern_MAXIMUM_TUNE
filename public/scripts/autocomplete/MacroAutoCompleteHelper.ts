@@ -119,7 +119,6 @@ export function findUnclosedScopesRegex(text) {
             if (macroDef && macroDef.maxArgs > 0 && macroDef.list === null) {
                 // Try to find closing }} to extract trailing whitespace
                 let paddingAfter = '';
-                // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
                 const afterMatch = text.slice(match.index + match[0].length);
                 const closingMatch = afterMatch.match(/^[^}]*?(\s*)\}\}/);
                 if (closingMatch) {
@@ -129,7 +128,6 @@ export function findUnclosedScopesRegex(text) {
                 stack.push({
                     name,
                     startOffset: match.index,
-                    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
                     endOffset: match.index + match[0].length,
                     paddingBefore,
                     paddingAfter,
