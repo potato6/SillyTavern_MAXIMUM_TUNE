@@ -246,8 +246,9 @@ export const extension_settings = {
  */
 function showHideExtensionsMenu() {
     // Get the number of menu items that are not hidden
-    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    const hasMenuItems = Array.from(document.getElementById('extensionsMenu').children).some(child => getComputedStyle(child).display !== 'none');
+    const menu = document.getElementById('extensionsMenu');
+    if (!menu) return;
+    const hasMenuItems = Array.from(menu.children).some(child => getComputedStyle(child).display !== 'none');
 
     // We have menu items, so we can stop checking
     if (hasMenuItems) {
