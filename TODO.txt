@@ -57,20 +57,42 @@ PHASE 4 — DOM manipulation (no plugin dependency) ✅
 [x] Replace `.clone()` with `.cloneNode(true)`
 [x] Replace `.replaceWith(html)` with `.outerHTML = html` or `.replaceWith(...)`
 
-PHASE 5 — Events (no plugin dependency)
+PHASE 5 — Events (no plugin dependency) ✅
 -----------------------------------------
-[ ] Replace `$(sel).on(event, handler)` with `el.addEventListener(event, handler)`
-[ ] Replace `$(sel).off(event, handler)` with `el.removeEventListener(event, handler)`
-[ ] Replace `$(sel).trigger(event)` with `el.dispatchEvent(new Event(event))`
-[ ] Replace `$(document).on(event, sel, handler)` delegation with event delegation on closest static parent
-[ ] Replace `.click(fn)`, `.change(fn)`, `.keyup(fn)`, `.keydown(fn)`, `.focus(fn)`, `.blur(fn)`, `.submit(fn)` shorthand with `.addEventListener(event, fn)`
-[ ] Replace `.hover(fnIn, fnOut)` with `mouseenter`/`mouseleave` listeners
-[ ] Replace `.serialize()` with manual `FormData` + iteration or `URLSearchParams(new FormData(form))`
-[ ] Replace `.serializeArray()` with `Array.from(new FormData(form).entries())`
+[x] Replace `$(sel).on(event, handler)` with `el.addEventListener(event, handler)`
+[x] Replace `$(sel).off(event, handler)` with `el.removeEventListener(event, handler)`
+[x] Replace `$(sel).trigger(event)` with `el.dispatchEvent(new Event(event))`
+[x] Replace `$(document).on(event, sel, handler)` delegation with event delegation on closest static parent
+[x] Replace `.click(fn)`, `.change(fn)`, `.keyup(fn)`, `.keydown(fn)`, `.focus(fn)`, `.blur(fn)`, `.submit(fn)` shorthand with `.addEventListener(event, fn)`
+[x] Replace `.hover(fnIn, fnOut)` with `mouseenter`/`mouseleave` listeners
+[x] Replace `.serialize()` with manual `FormData` + iteration or `URLSearchParams(new FormData(form))`
+[x] Replace `.serializeArray()` with `Array.from(new FormData(form).entries())`
 
-- public/scripts/group-chats.ts
-- public/scripts/data-maid.ts
-- public/scripts/extensions/shared.js
+✅ public/scripts/group-chats.ts — already clean, only Phase 8 plugin $() calls
+✅ public/scripts/data-maid.ts — already clean
+✅ public/scripts/extensions/shared.ts — already clean
+✅ public/scripts/bulk-edit.ts — delegation → native
+✅ public/scripts/tags.ts — all delegation + direct patterns → native
+✅ public/scripts/login.ts — all event patterns → native
+✅ public/scripts/kai-settings.ts — delegation + trigger → native
+✅ public/scripts/extensions.ts — all delegation + one() → native
+✅ public/scripts/RossAscends-mods.ts — delegation + keydown → native
+✅ public/scripts/swipe-picker.ts — click handlers → native
+✅ public/scripts/textgen-models.ts — off/on patterns → native
+✅ public/scripts/backgrounds.ts — all delegation chains + direct → native
+✅ public/scripts/nai-settings.ts — all triggers + on patterns → native
+⬜ public/scripts/user.ts — delegated to subagent (~39 patterns)
+⬜ public/scripts/world-info.ts — delegated to subagent (50+ patterns)
+⬜ public/scripts/chats.ts — delegated to subagent (many delegations)
+⬜ public/scripts/openai.ts — delegated to subagent (many trigger + delegation patterns)
+⬜ public/scripts/personas.ts — delegated to subagent
+⬜ public/scripts/power-user.ts — delegated to subagent (2 slider patterns)
+⬜ public/scripts/textgen-settings.ts — delegated to subagent
+⬜ public/scripts/samplerSelect.ts — delegated to subagent
+⬜ public/scripts/extensions/memory/index.js — NOT YET DONE
+⬜ public/scripts/extensions/expressions/index.js — NOT YET DONE
+⬜ public/scripts/extensions/assets/index.js — NOT YET DONE
+⬜ public/scripts/extensions/tts/coqui.js — NOT YET DONE
 
 PHASE 6 — Effects & animation (needs CSS transitions or JS fallback)
 ----------------------------------------------------------------------
