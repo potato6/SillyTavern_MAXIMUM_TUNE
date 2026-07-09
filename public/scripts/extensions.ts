@@ -1314,13 +1314,10 @@ async function showExtensionsDetails() {
                     const { name } = extension;
 
                     const toggleInput = externalContainer.querySelector(`.extension_block[data-name="${getNameSelector(name)}"] .extension_toggle input`);
-                    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                    $(toggleInput)
-                        .off('click')
-                        .one('click', () => {
-                            // @ts-expect-error TS(7005) FIXME: Variable 'extensionsToToggle' implicitly has an 'a... Remove this comment to see the full error message
-                            extensionsToToggle = extensionsToToggle.filter(ext => ext.name !== name);
-                        });
+                    toggleInput?.addEventListener('click', () => {
+                        // @ts-expect-error TS(7005) FIXME: Variable 'extensionsToToggle' implicitly has an 'a... Remove this comment to see the full error message
+                        extensionsToToggle = extensionsToToggle.filter(ext => ext.name !== name);
+                    }, { once: true });
                 }
 
                 const restoreButtonHandler = extensionsToToggle.length > 0 ? 'remove' : 'add';
@@ -2501,33 +2498,42 @@ export async function initExtensions() {
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#extensionsMenuButton').css('display', 'flex');
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#extensions_connect').on('click', connectClickHandler);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#extensions_autoconnect').on('input', autoConnectInputHandler);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#extensions_details').on('click', showExtensionsDetails);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#extensions_notify_updates').on('input', notifyUpdatesInputHandler);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document).on('click', '.extensions_info .extension_block .toggle_disable', onDisableExtensionClick);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document).on('click', '.extensions_info .extension_block .toggle_enable', onEnableExtensionClick);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document).on('click', '.extensions_info .extension_block .btn_update', onUpdateClick);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document).on('click', '.extensions_info .extension_block .btn_delete', onDeleteClick);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document).on('click', '.extensions_info .extension_block .btn_clean', onCleanClick);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document).on('click', '.extensions_info .extension_block .btn_move', onMoveClick);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document).on('click', '.extensions_info .extension_block .btn_branch', onBranchClick);
+    document.getElementById('extensions_connect')?.addEventListener('click', connectClickHandler);
+    document.getElementById('extensions_autoconnect')?.addEventListener('input', autoConnectInputHandler);
+    document.getElementById('extensions_details')?.addEventListener('click', showExtensionsDetails);
+    document.getElementById('extensions_notify_updates')?.addEventListener('input', notifyUpdatesInputHandler);
+    document.addEventListener('click', function (event) {
+        const el = event.target.closest('.extensions_info .extension_block .toggle_disable');
+        if (el) onDisableExtensionClick.call(el, event);
+    });
+    document.addEventListener('click', function (event) {
+        const el = event.target.closest('.extensions_info .extension_block .toggle_enable');
+        if (el) onEnableExtensionClick.call(el, event);
+    });
+    document.addEventListener('click', function (event) {
+        const el = event.target.closest('.extensions_info .extension_block .btn_update');
+        if (el) onUpdateClick.call(el, event);
+    });
+    document.addEventListener('click', function (event) {
+        const el = event.target.closest('.extensions_info .extension_block .btn_delete');
+        if (el) onDeleteClick.call(el, event);
+    });
+    document.addEventListener('click', function (event) {
+        const el = event.target.closest('.extensions_info .extension_block .btn_clean');
+        if (el) onCleanClick.call(el, event);
+    });
+    document.addEventListener('click', function (event) {
+        const el = event.target.closest('.extensions_info .extension_block .btn_move');
+        if (el) onMoveClick.call(el, event);
+    });
+    document.addEventListener('click', function (event) {
+        const el = event.target.closest('.extensions_info .extension_block .btn_branch');
+        if (el) onBranchClick.call(el, event);
+    });
 
     /**
      * Handles the click event for the third-party extension import button.
      * @listens #third_party_extension_button#click - The click event of the '#third_party_extension_button' element.
      */
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#third_party_extension_button').on('click', () => openThirdPartyExtensionMenu());
+    document.getElementById('third_party_extension_button')?.addEventListener('click', () => openThirdPartyExtensionMenu());
 }
