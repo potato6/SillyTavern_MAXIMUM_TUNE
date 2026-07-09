@@ -978,37 +978,25 @@ export async function loadFeatherlessModels(data) {
     }
 
     // Unset previously added listeners
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(searchBar).off('input');
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(sortOrderSelect).off('change');
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(classSelect).off('change');
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(categoriesSelect).off('change');
+    searchBar?.removeEventListener('input', applyFiltersAndSort);
+    sortOrderSelect?.removeEventListener('change', applyFiltersAndSort);
+    classSelect?.removeEventListener('change', applyFiltersAndSort);
+    categoriesSelect?.removeEventListener('change', applyFiltersAndSort);
 
     // Add event listener for input on the search bar
     // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    searchBar.addEventListener('input', function () {
-        applyFiltersAndSort();
-    });
+    searchBar.addEventListener('input', applyFiltersAndSort);
 
     // Add event listener for the sort order select
     // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    sortOrderSelect.addEventListener('change', function () {
-        applyFiltersAndSort();
-    });
+    sortOrderSelect.addEventListener('change', applyFiltersAndSort);
 
     // Add event listener for the class select
     // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    classSelect.addEventListener('change', function () {
-        applyFiltersAndSort();
-    });
+    classSelect.addEventListener('change', applyFiltersAndSort);
 
     // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    categoriesSelect.addEventListener('change', function () {
-        applyFiltersAndSort();
-    });
+    categoriesSelect.addEventListener('change', applyFiltersAndSort);
 
     // Function to populate class selection dropdown
     /**
