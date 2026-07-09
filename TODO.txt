@@ -81,18 +81,18 @@ PHASE 5 — Events (no plugin dependency) ✅
 ✅ public/scripts/textgen-models.ts — off/on patterns → native
 ✅ public/scripts/backgrounds.ts — all delegation chains + direct → native
 ✅ public/scripts/nai-settings.ts — all triggers + on patterns → native
-⬜ public/scripts/user.ts — delegated to subagent (~39 patterns)
-⬜ public/scripts/world-info.ts — delegated to subagent (50+ patterns)
-⬜ public/scripts/chats.ts — delegated to subagent (many delegations)
-⬜ public/scripts/openai.ts — delegated to subagent (many trigger + delegation patterns)
-⬜ public/scripts/personas.ts — delegated to subagent
-⬜ public/scripts/power-user.ts — delegated to subagent (2 slider patterns)
-⬜ public/scripts/textgen-settings.ts — delegated to subagent
-⬜ public/scripts/samplerSelect.ts — delegated to subagent
-⬜ public/scripts/extensions/memory/index.js — NOT YET DONE
-⬜ public/scripts/extensions/expressions/index.js — NOT YET DONE
-⬜ public/scripts/extensions/assets/index.js — NOT YET DONE
-⬜ public/scripts/extensions/tts/coqui.js — NOT YET DONE
+✅ public/scripts/chats.ts — all delegations → native (hotfixed: chatElement is jQuery obj)
+✅ public/scripts/openai.ts — all trigger + delegation patterns → native (hotfixed: 2 .text().trim() bugs)
+✅ public/scripts/personas.ts — all event patterns → native
+✅ public/scripts/power-user.ts — slider event patterns → native
+✅ public/scripts/textgen-settings.ts — reset button event → native
+✅ public/scripts/samplerSelect.ts — all event patterns → native
+⬜ public/scripts/user.ts — still has ~37 jQuery .on() patterns (subagent incomplete)
+⬜ public/scripts/world-info.ts — still has ~50 jQuery event patterns (subagent incomplete)
+⬜ public/scripts/extensions/memory/index.js
+⬜ public/scripts/extensions/expressions/index.js
+⬜ public/scripts/extensions/assets/index.js
+⬜ public/scripts/extensions/tts/coqui.js
 
 PHASE 6 — Effects & animation (needs CSS transitions or JS fallback)
 ----------------------------------------------------------------------
