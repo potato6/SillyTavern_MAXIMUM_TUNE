@@ -4307,7 +4307,7 @@ class MessageCollection {
      * Add a new item to the collection.
      * @param {object} item - The Message or MessageCollection instance to be added.
      */
-    add(item) {
+    add(item: any) {
         this.collection.push(item);
     }
 
@@ -4316,7 +4316,7 @@ class MessageCollection {
      * @param {string} identifier - The identifier of the item to be found.
      * @returns {object} The found item, or undefined if no item was found.
      */
-    getItemByIdentifier(identifier) {
+    getItemByIdentifier(identifier: string) {
         return this.collection.find(item => item?.identifier === identifier);
     }
 
@@ -4325,7 +4325,7 @@ class MessageCollection {
      * @param {string} identifier - The identifier to check.
      * @returns {boolean} True if an item with the given identifier exists, false otherwise.
      */
-    hasItemWithIdentifier(identifier) {
+    hasItemWithIdentifier(identifier: string) {
         return this.collection.some(message => message.identifier === identifier);
     }
 
@@ -4697,7 +4697,7 @@ export class ChatCompletion {
      * @param {string} identifier - The identifier of the message to find.
      * @returns {number} The index of the message in the collection.
      */
-    findMessageIndex(identifier) {
+    findMessageIndex(identifier: string) {
         const index = this.messages.collection.findIndex(item => item?.identifier === identifier);
         if (index < 0) {
             throw new IdentifierNotFoundError(identifier);
