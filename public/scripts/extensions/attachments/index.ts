@@ -166,10 +166,12 @@ async function disableDataBankAttachment(args: any, value: any) {
         return '';
     }
 
+    // @ts-expect-error TS(2345): Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
     if (extension_settings.disabled_attachments.includes(attachment.url)) {
         return '';
     }
 
+    // @ts-expect-error TS(2345): Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
     extension_settings.disabled_attachments.push(attachment.url);
     return '';
 }
@@ -189,6 +191,7 @@ async function enableDataBankAttachment(args: any, value: any) {
         return '';
     }
 
+    // @ts-expect-error TS(2345): Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
     const index = extension_settings.disabled_attachments.indexOf(attachment.url);
     if (index === -1) {
         return '';
@@ -201,14 +204,18 @@ async function enableDataBankAttachment(args: any, value: any) {
 function cleanUpAttachments() {
     let shouldSaveSettings = false;
     if (extension_settings.character_attachments) {
+        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         Object.values(extension_settings.character_attachments).flat().filter(a => a.text).forEach(a => {
             shouldSaveSettings = true;
+            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             delete a.text;
         });
     }
     if (Array.isArray(extension_settings.attachments)) {
+        // @ts-expect-error TS(2339): Property 'text' does not exist on type 'never'.
         extension_settings.attachments.filter(a => a.text).forEach(a => {
             shouldSaveSettings = true;
+            // @ts-expect-error TS(2339): Property 'text' does not exist on type 'never'.
             delete a.text;
         });
     }
@@ -224,7 +231,9 @@ function cleanUpAttachments() {
 function cleanUpCharacterAttachments(data: any) {
     const avatar = data?.character?.avatar;
     if (!avatar) return;
+    // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     if (Array.isArray(extension_settings?.character_attachments?.[avatar])) {
+        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         delete extension_settings.character_attachments[avatar];
         saveSettingsDebounced();
     }
@@ -237,8 +246,11 @@ function cleanUpCharacterAttachments(data: any) {
  */
 function handleCharacterRename(oldAvatar: any, newAvatar: any) {
     if (!oldAvatar || !newAvatar) return;
+    // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     if (Array.isArray(extension_settings?.character_attachments?.[oldAvatar])) {
+        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         extension_settings.character_attachments[newAvatar] = extension_settings.character_attachments[oldAvatar];
+        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         delete extension_settings.character_attachments[oldAvatar];
         saveSettingsDebounced();
     }
@@ -267,6 +279,7 @@ export async function init() {
 
             return attachments.map((attachment: any) => new SlashCommandEnumValue(
                 returnField === 'name' ? attachment.name : attachment.url,
+                // @ts-expect-error TS(2345): Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
                 `${enumIcons.getStateIcon(!extension_settings.disabled_attachments.includes(attachment.url))} [${source}] ${returnField === 'url' ? attachment.name : attachment.url}`,
                 enumTypes.enum, enumIcons.file));
         },
@@ -288,7 +301,9 @@ export async function init() {
         aliases: ['databank-list', 'data-bank-list'],
         helpString: 'List attachments in the Data Bank as a JSON-serialized array. Optionally, provide the source of the attachments and the field to list by.',
         namedArgumentList: [
+            // @ts-expect-error TS(2345): Argument of type '""' is not assignable to paramet... Remove this comment to see the full error message
             new SlashCommandNamedArgument('source', 'The source of the attachments.', ARGUMENT_TYPE.STRING, false, false, '', TYPES),
+            // @ts-expect-error TS(2345): Argument of type '"url"' is not assignable to para... Remove this comment to see the full error message
             new SlashCommandNamedArgument('field', 'The field to list by.', ARGUMENT_TYPE.STRING, false, false, 'url', FIELDS),
         ],
         returns: ARGUMENT_TYPE.LIST,
@@ -300,6 +315,7 @@ export async function init() {
         aliases: ['databank-get', 'data-bank-get'],
         helpString: 'Get attachment text from the Data Bank. Either provide the name or URL of the attachment. Optionally, provide the source of the attachment.',
         namedArgumentList: [
+            // @ts-expect-error TS(2345): Argument of type '""' is not assignable to paramet... Remove this comment to see the full error message
             new SlashCommandNamedArgument('source', 'The source of the attachment.', ARGUMENT_TYPE.STRING, false, false, '', TYPES),
         ],
         unnamedArgumentList: [
@@ -320,6 +336,7 @@ export async function init() {
         aliases: ['databank-add', 'data-bank-add'],
         helpString: 'Add an attachment to the Data Bank. If name is not provided, it will be generated automatically. Returns the URL of the attachment.',
         namedArgumentList: [
+            // @ts-expect-error TS(2345): Argument of type '"chat"' is not assignable to par... Remove this comment to see the full error message
             new SlashCommandNamedArgument('source', 'The source for the attachment.', ARGUMENT_TYPE.STRING, false, false, 'chat', TYPES),
             new SlashCommandNamedArgument('name', 'The name of the attachment.', ARGUMENT_TYPE.STRING, false, false),
         ],
@@ -335,6 +352,7 @@ export async function init() {
         aliases: ['databank-update', 'data-bank-update'],
         helpString: 'Update an attachment in the Data Bank, preserving its name. Returns a new URL of the attachment.',
         namedArgumentList: [
+            // @ts-expect-error TS(2345): Argument of type '"chat"' is not assignable to par... Remove this comment to see the full error message
             new SlashCommandNamedArgument('source', 'The source for the attachment.', ARGUMENT_TYPE.STRING, false, false, 'chat', TYPES),
             SlashCommandNamedArgument.fromProps({
                 name: 'name',
@@ -361,6 +379,7 @@ export async function init() {
         aliases: ['databank-disable', 'data-bank-disable'],
         helpString: 'Disable an attachment in the Data Bank by its name or URL. Optionally, provide the source of the attachment.',
         namedArgumentList: [
+            // @ts-expect-error TS(2345): Argument of type '""' is not assignable to paramet... Remove this comment to see the full error message
             new SlashCommandNamedArgument('source', 'The source of the attachment.', ARGUMENT_TYPE.STRING, false, false, '', TYPES),
         ],
         unnamedArgumentList: [
@@ -379,6 +398,7 @@ export async function init() {
         aliases: ['databank-enable', 'data-bank-enable'],
         helpString: 'Enable an attachment in the Data Bank by its name or URL. Optionally, provide the source of the attachment.',
         namedArgumentList: [
+            // @ts-expect-error TS(2345): Argument of type '""' is not assignable to paramet... Remove this comment to see the full error message
             new SlashCommandNamedArgument('source', 'The source of the attachment.', ARGUMENT_TYPE.STRING, false, false, '', TYPES),
         ],
         unnamedArgumentList: [
@@ -397,6 +417,7 @@ export async function init() {
         aliases: ['databank-delete', 'data-bank-delete'],
         helpString: 'Delete an attachment from the Data Bank.',
         namedArgumentList: [
+            // @ts-expect-error TS(2345): Argument of type '"chat"' is not assignable to par... Remove this comment to see the full error message
             new SlashCommandNamedArgument('source', 'The source of the attachment.', ARGUMENT_TYPE.STRING, false, false, 'chat', TYPES),
         ],
         unnamedArgumentList: [

@@ -101,6 +101,7 @@ class EdgeTtsProvider {
             this.voices = await this.fetchTtsVoiceObjects();
         }
         const match = this.voices.filter(
+            // @ts-expect-error TS(2339): Property 'name' does not exist on type 'never'.
             voice => voice.name == voiceName,
         )[0];
         if (!match) {
@@ -127,6 +128,7 @@ class EdgeTtsProvider {
         await this.throwIfModuleMissing();
 
         const url = this.getVoicesUrl();
+        // @ts-expect-error TS(2554): Expected 2 arguments, but got 1.
         const response = await this.doFetch(url);
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}: ${await response.text()}`);
@@ -151,6 +153,7 @@ class EdgeTtsProvider {
         this.audioElement.pause();
         this.audioElement.currentTime = 0;
         const voice = await this.getVoice(id);
+        // @ts-expect-error TS(2339): Property 'lang' does not exist on type 'never'.
         const text = getPreviewString(voice.lang);
         const response = await this.fetchTtsGeneration(text, id);
         if (!response.ok) {
@@ -248,6 +251,7 @@ class EdgeTtsProvider {
     }
 
     async throwIfModuleMissing() {
+        // @ts-expect-error TS(2345): Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
         if (this.settings.provider === EDGE_TTS_PROVIDER.extras && !modules.includes('edge-tts')) {
             const message = 'Edge TTS module not loaded. Add edge-tts to enable-modules and restart the Extras API.';
             // toastr.error(message)

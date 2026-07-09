@@ -28,6 +28,7 @@ export class QuickReplyConfig {
 
 
     hasSet(qrs: any) {
+        // @ts-expect-error TS(2339): Property 'set' does not exist on type 'never'.
         return this.setList.find(it => it.set == qrs) != null;
     }
     addSet(qrs: any, isVisible = true) {
@@ -36,12 +37,14 @@ export class QuickReplyConfig {
             qrl.set = qrs;
             qrl.isVisible = isVisible;
             this.hookQuickReplyLink(qrl);
+            // @ts-expect-error TS(2345): Argument of type 'QuickReplySetLink' is not assign... Remove this comment to see the full error message
             this.setList.push(qrl);
             this.setListDom.append(qrl.renderSettings(this.setList.length - 1));
             this.update();
         }
     }
     removeSet(qrs: any) {
+        // @ts-expect-error TS(2339): Property 'set' does not exist on type 'never'.
         const idx = this.setList.findIndex(it => it.set == qrs);
         if (idx > -1) {
             this.setList.splice(idx, 1);
@@ -55,6 +58,7 @@ export class QuickReplyConfig {
         /**@type {HTMLElement}*/
         this.setListDom = root.querySelector('.qr--setList');
         root.querySelector('.qr--setListAdd').addEventListener('click', () => {
+            // @ts-expect-error TS(2339): Property 'set' does not exist on type 'never'.
             const newSet = QuickReplySet.list.find(qr => !this.setList.find(qrl => qrl.set == qr));
             if (newSet) {
                 this.addSet(newSet);
@@ -71,14 +75,19 @@ export class QuickReplyConfig {
             delay: getSortableDelay(),
             stop: () => this.onSetListSort(),
         });
+        // @ts-expect-error TS(2339): Property 'set' does not exist on type 'never'.
         this.setList.filter(it => !it.set.isDeleted).forEach((qrl, idx) => this.setListDom.append(qrl.renderSettings(idx)));
     }
 
 
     onSetListSort() {
+        // @ts-expect-error TS(2322): Type 'undefined[]' is not assignable to type 'neve... Remove this comment to see the full error message
         this.setList = Array.from(this.setListDom.children).map((it, idx) => {
+            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             const qrl = this.setList[Number(it.getAttribute('data-order'))];
+            // @ts-expect-error TS(2532): Object is possibly 'undefined'.
             qrl.index = idx;
+            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             it.setAttribute('data-order', String(idx));
             return qrl;
         });
@@ -96,6 +105,7 @@ export class QuickReplyConfig {
     }
 
     deleteQuickReplyLink(qrl: any) {
+        // @ts-expect-error TS(2345): Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
         this.setList.splice(this.setList.indexOf(qrl), 1);
         this.update();
     }

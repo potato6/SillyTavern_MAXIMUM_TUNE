@@ -69,10 +69,13 @@ class VITSTtsProvider {
         <select id="vits_lang">`;
 
         for (let language in this.languageLabels) {
+            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             if (this.languageLabels[language] == this.settings?.lang) {
+                // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 html += `<option value="${this.languageLabels[language]}" selected="selected">${language}</option>`;
                 continue;
             }
+            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             html += `<option value="${this.languageLabels[language]}">${language}</option>`;
         }
 
@@ -250,6 +253,7 @@ class VITSTtsProvider {
             this.voices = await this.fetchTtsVoiceObjects();
         }
         const match = this.voices.filter(
+            // @ts-expect-error TS(2339): Property 'name' does not exist on type 'never'.
             v => v.name == voiceName,
         )[0];
         if (!match) {
@@ -263,6 +267,7 @@ class VITSTtsProvider {
             this.voices = await this.fetchTtsVoiceObjects();
         }
         const match = this.voices.filter(
+            // @ts-expect-error TS(2339): Property 'voice_id' does not exist on type 'never'... Remove this comment to see the full error message
             v => v.voice_id == voiceId,
         )[0];
         if (!match) {
@@ -298,6 +303,7 @@ class VITSTtsProvider {
             });
         };
         for (const key in this.modelTypes) {
+            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             addVoices(this.modelTypes[key]);
         }
 
@@ -380,8 +386,10 @@ class VITSTtsProvider {
         this.audioElement.pause();
         this.audioElement.currentTime = 0;
         const voice = await this.getVoiceById(id);
+        // @ts-expect-error TS(2339): Property 'lang' does not exist on type 'never'.
         const lang = voice.lang.includes(this.settings.lang) ? this.settings.lang : voice.lang[0];
 
+        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         let lang_code = this.langKey2LangCode[lang];
         const text = getPreviewString(lang_code);
         const response = await this.fetchTtsGeneration(text, id, lang, true);

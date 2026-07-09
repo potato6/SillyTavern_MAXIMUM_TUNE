@@ -117,6 +117,7 @@ class CosyVoiceProvider {
 
 
         const match = this.voices.filter(
+            // @ts-expect-error TS(2339): Property 'name' does not exist on type 'never'.
             v => v.name == voiceName,
         )[0];
         console.log(match);
@@ -171,6 +172,7 @@ class CosyVoiceProvider {
         };
 
         if (streaming) {
+            // @ts-expect-error TS(2339): Property 'streaming' does not exist on type '{ tex... Remove this comment to see the full error message
             params.streaming = 1;
         }
 

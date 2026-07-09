@@ -25,39 +25,58 @@ const TEMPLATE_DEFAULT = '[{{user}} sends {{char}} a picture that contains: {{ca
  * Must keep this function for compatibility with old settings.
  */
 function migrateSettings() {
+    // @ts-expect-error TS(2339): Property 'local' does not exist on type '{ refine_... Remove this comment to see the full error message
     if (extension_settings.caption.local !== undefined) {
+        // @ts-expect-error TS(2339): Property 'source' does not exist on type '{ refine... Remove this comment to see the full error message
         extension_settings.caption.source = extension_settings.caption.local ? 'local' : 'extras';
     }
 
+    // @ts-expect-error TS(2339): Property 'local' does not exist on type '{ refine_... Remove this comment to see the full error message
     delete extension_settings.caption.local;
 
+    // @ts-expect-error TS(2339): Property 'source' does not exist on type '{ refine... Remove this comment to see the full error message
     if (!extension_settings.caption.source) {
+        // @ts-expect-error TS(2339): Property 'source' does not exist on type '{ refine... Remove this comment to see the full error message
         extension_settings.caption.source = 'extras';
     }
 
+    // @ts-expect-error TS(2339): Property 'source' does not exist on type '{ refine... Remove this comment to see the full error message
     if (extension_settings.caption.source === 'openai') {
+        // @ts-expect-error TS(2339): Property 'source' does not exist on type '{ refine... Remove this comment to see the full error message
         extension_settings.caption.source = 'multimodal';
+        // @ts-expect-error TS(2339): Property 'multimodal_api' does not exist on type '... Remove this comment to see the full error message
         extension_settings.caption.multimodal_api = 'openai';
+        // @ts-expect-error TS(2339): Property 'multimodal_model' does not exist on type... Remove this comment to see the full error message
         extension_settings.caption.multimodal_model = 'gpt-4-turbo';
     }
 
+    // @ts-expect-error TS(2339): Property 'multimodal_api' does not exist on type '... Remove this comment to see the full error message
     if (!extension_settings.caption.multimodal_api) {
+        // @ts-expect-error TS(2339): Property 'multimodal_api' does not exist on type '... Remove this comment to see the full error message
         extension_settings.caption.multimodal_api = 'openai';
     }
 
+    // @ts-expect-error TS(2339): Property 'multimodal_model' does not exist on type... Remove this comment to see the full error message
     if (!extension_settings.caption.multimodal_model) {
+        // @ts-expect-error TS(2339): Property 'multimodal_model' does not exist on type... Remove this comment to see the full error message
         extension_settings.caption.multimodal_model = 'gpt-4-turbo';
     }
 
+    // @ts-expect-error TS(2339): Property 'prompt' does not exist on type '{ refine... Remove this comment to see the full error message
     if (!extension_settings.caption.prompt) {
+        // @ts-expect-error TS(2339): Property 'prompt' does not exist on type '{ refine... Remove this comment to see the full error message
         extension_settings.caption.prompt = PROMPT_DEFAULT;
     }
 
+    // @ts-expect-error TS(2339): Property 'template' does not exist on type '{ refi... Remove this comment to see the full error message
     if (!extension_settings.caption.template) {
+        // @ts-expect-error TS(2339): Property 'template' does not exist on type '{ refi... Remove this comment to see the full error message
         extension_settings.caption.template = TEMPLATE_DEFAULT;
     }
 
+    // @ts-expect-error TS(2339): Property 'show_in_chat' does not exist on type '{ ... Remove this comment to see the full error message
     if (!extension_settings.caption.show_in_chat) {
+        // @ts-expect-error TS(2339): Property 'show_in_chat' does not exist on type '{ ... Remove this comment to see the full error message
         extension_settings.caption.show_in_chat = false;
     }
 }
@@ -94,6 +113,7 @@ async function setSpinnerIcon() {
  * @returns {Promise<string>} Wrapped caption
  */
 async function wrapCaptionTemplate(caption: any) {
+    // @ts-expect-error TS(2339): Property 'template' does not exist on type '{ refi... Remove this comment to see the full error message
     let template = extension_settings.caption.template || TEMPLATE_DEFAULT;
 
     if (!/{{caption}}/i.test(template)) {
@@ -201,10 +221,12 @@ async function sendCaptionedMessage(caption: any, image: any, mimeType: any) {
             media: [mediaAttachment],
             media_display: MEDIA_DISPLAY.GALLERY,
             media_index: 0,
+            // @ts-expect-error TS(2339): Property 'show_in_chat' does not exist on type '{ ... Remove this comment to see the full error message
             inline_image: !!extension_settings.caption.show_in_chat,
         },
     };
     chat_metadata.tainted = true;
+    // @ts-expect-error TS(2345): Argument of type '{ name: string; is_user: boolean... Remove this comment to see the full error message
     context.chat.push(message);
     const messageId = context.chat.length - 1;
     await eventSource.emit(event_types.MESSAGE_SENT, messageId);
@@ -222,6 +244,7 @@ async function sendCaptionedMessage(caption: any, image: any, mimeType: any) {
  * @returns {Promise<{caption: string}>} Generated caption
  */
 async function doCaptionRequest(base64Img: any, fileData: any, externalPrompt: any) {
+    // @ts-expect-error TS(2339): Property 'source' does not exist on type '{ refine... Remove this comment to see the full error message
     switch (extension_settings.caption.source) {
         case 'local':
             return await captionLocal(base64Img);
@@ -242,6 +265,7 @@ async function doCaptionRequest(base64Img: any, fileData: any, externalPrompt: a
  * @returns {Promise<{caption: string}>} Generated caption
  */
 async function captionExtras(base64Img: any) {
+    // @ts-expect-error TS(2345): Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
     if (!modules.includes('caption')) {
         throw new Error('No captioning module is available.');
     }
@@ -313,8 +337,10 @@ async function captionHorde(base64Img: any) {
  * @returns {Promise<{caption: string}>} Generated caption
  */
 async function captionMultimodal(base64Img: any, externalPrompt: any) {
+    // @ts-expect-error TS(2339): Property 'prompt' does not exist on type '{ refine... Remove this comment to see the full error message
     let prompt = externalPrompt || extension_settings.caption.prompt || PROMPT_DEFAULT;
 
+    // @ts-expect-error TS(2339): Property 'prompt_ask' does not exist on type '{ re... Remove this comment to see the full error message
     if (!externalPrompt && extension_settings.caption.prompt_ask) {
         const customPrompt = await callGenericPopup('Enter a comment or question:', POPUP_TYPE.INPUT, prompt, { rows: 4 });
         if (!customPrompt) {
@@ -371,6 +397,7 @@ async function getCaptionForFile(file: any, prompt: any, quiet: any) {
         const context = getContext();
         const fileData = await getBase64Async(await ensureImageFormatSupported(file));
         const extension = getFileExtension(file);
+        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         const base64Data = fileData.split(',')[1];
         const { caption } = await doCaptionRequest(base64Data, fileData, prompt);
         if (!quiet) {
@@ -379,6 +406,7 @@ async function getCaptionForFile(file: any, prompt: any, quiet: any) {
         }
         return caption;
     } catch (error) {
+        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         const errorMessage = error.message || 'Unknown error';
         toastr.error(errorMessage, 'Failed to caption');
         console.error(error);
@@ -389,6 +417,7 @@ async function getCaptionForFile(file: any, prompt: any, quiet: any) {
 }
 
 function onRefineModeInput() {
+    // @ts-expect-error TS(2531): Object is possibly 'null'.
     extension_settings.caption.refine_mode = document.getElementById('caption_refine_mode').checked;
     saveSettingsDebounced();
 }
@@ -406,8 +435,10 @@ async function captionCommandCallback(args: any, prompt: any) {
     if (!isNaN(Number(messageId))) {
         /** @type {ChatMessage} */
         const message = getContext().chat[messageId];
+        // @ts-expect-error TS(2339): Property 'extra' does not exist on type 'never'.
         if (Array.isArray(message?.extra?.media) && message.extra.media.length > 0) {
             try {
+                // @ts-expect-error TS(2532): Object is possibly 'undefined'.
                 const mediaAttachment = message.extra.media[index] || message.extra.media[0];
                 if (!mediaAttachment || !mediaAttachment.url) {
                     toastr.error('The specified message does not contain an image.');
@@ -441,6 +472,7 @@ async function captionCommandCallback(args: any, prompt: any) {
             const caption = await onSelectImage(e, prompt, quiet);
             resolve(caption);
         };
+        // @ts-expect-error TS(2339): Property 'oncancel' does not exist on type 'HTMLIn... Remove this comment to see the full error message
         input.oncancel = () => resolve('');
         input.click();
     });
@@ -451,10 +483,12 @@ async function captionCommandCallback(args: any, prompt: any) {
  * @returns {boolean} True if video captioning is supported for the current source.
  */
 function isVideoCaptioningAvailable() {
+    // @ts-expect-error TS(2339): Property 'source' does not exist on type '{ refine... Remove this comment to see the full error message
     if (extension_settings.caption.source !== 'multimodal') {
         return false;
     }
 
+    // @ts-expect-error TS(2339): Property 'multimodal_api' does not exist on type '... Remove this comment to see the full error message
     return ['google', 'vertexai', 'zai'].includes(extension_settings.caption.multimodal_api);
 }
 
@@ -472,13 +506,19 @@ export async function init() {
                 const settings = extension_settings.caption;
 
                 // Handle non-multimodal sources
+                // @ts-expect-error TS(2339): Property 'source' does not exist on type '{ refine... Remove this comment to see the full error message
                 if (settings.source === 'extras' && modules.includes('caption')) return true;
+                // @ts-expect-error TS(2339): Property 'source' does not exist on type '{ refine... Remove this comment to see the full error message
                 if (settings.source === 'local' || settings.source === 'horde') return true;
 
                 // Handle multimodal sources
+                // @ts-expect-error TS(2339): Property 'source' does not exist on type '{ refine... Remove this comment to see the full error message
                 if (settings.source === 'multimodal') {
+                    // @ts-expect-error TS(2339): Property 'multimodal_api' does not exist on type '... Remove this comment to see the full error message
                     const api = settings.multimodal_api;
+                    // @ts-expect-error TS(2339): Property 'alt_endpoint_enabled' does not exist on ... Remove this comment to see the full error message
                     const altEndpointEnabled = settings.alt_endpoint_enabled;
+                    // @ts-expect-error TS(2339): Property 'alt_endpoint_url' does not exist on type... Remove this comment to see the full error message
                     const altEndpointUrl = settings.alt_endpoint_url;
 
                     // APIs that support reverse proxy
@@ -493,7 +533,9 @@ export async function init() {
                         'moonshot': SECRET_KEYS.MOONSHOT,
                     };
 
+                    // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                     if (reverseProxyApis[api]) {
+                        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                         if (secret_state[reverseProxyApis[api]] || settings.allow_reverse_proxy) {
                             return true;
                         }
@@ -511,6 +553,7 @@ export async function init() {
                         'workers_ai': SECRET_KEYS.WORKERS_AI,
                     };
 
+                    // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                     if (chatCompletionApis[api] && secret_state[chatCompletionApis[api]]) {
                         return true;
                     }
@@ -523,10 +566,12 @@ export async function init() {
                         'vllm': textgen_types.VLLM,
                     };
 
+                    // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                     if (textCompletionApis[api] && altEndpointEnabled && altEndpointUrl) {
                         return true;
                     }
 
+                    // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                     if (textCompletionApis[api] && !altEndpointEnabled && textgenerationwebui_settings.server_urls[textCompletionApis[api]]) {
                         return true;
                     }
@@ -545,6 +590,7 @@ export async function init() {
                 return;
             }
 
+            // @ts-expect-error TS(2531): Object is possibly 'null'.
             document.getElementById('img_file').click();
         });
     }
@@ -563,19 +609,26 @@ export async function init() {
     }
     async function switchMultimodalBlocks() {
         await addRemoteEndpointModels();
+        // @ts-expect-error TS(2339): Property 'source' does not exist on type '{ refine... Remove this comment to see the full error message
         const isMultimodal = extension_settings.caption.source === 'multimodal';
+        // @ts-expect-error TS(2339): Property 'multimodal_model' does not exist on type... Remove this comment to see the full error message
         if (!extension_settings.caption.multimodal_model) {
             const dropdown = $('#caption_multimodal_model');
+            // @ts-expect-error TS(2339): Property 'multimodal_api' does not exist on type '... Remove this comment to see the full error message
             const options = dropdown.find(`option[data-type="${extension_settings.caption.multimodal_api}"]`);
+            // @ts-expect-error TS(2339): Property 'multimodal_model' does not exist on type... Remove this comment to see the full error message
             extension_settings.caption.multimodal_model = String(options.first().val());
         }
         $('#caption_multimodal_block').toggle(isMultimodal);
         $('#caption_prompt_block').toggle(isMultimodal);
+        // @ts-expect-error TS(2339): Property 'multimodal_api' does not exist on type '... Remove this comment to see the full error message
         $('#caption_multimodal_api').val(extension_settings.caption.multimodal_api);
+        // @ts-expect-error TS(2339): Property 'multimodal_model' does not exist on type... Remove this comment to see the full error message
         $('#caption_multimodal_model').val(extension_settings.caption.multimodal_model);
         $('#caption_multimodal_block [data-type]').each(function(this: any) {
             const type = $(this).data('type');
             const types = type.split(',');
+            // @ts-expect-error TS(2339): Property 'multimodal_api' does not exist on type '... Remove this comment to see the full error message
             $(this).toggle(types.includes(extension_settings.caption.multimodal_api));
         });
     }
@@ -590,6 +643,7 @@ export async function init() {
             if (!(dropdown instanceof HTMLSelectElement)) {
                 return;
             }
+            // @ts-expect-error TS(2339): Property 'source' does not exist on type '{ refine... Remove this comment to see the full error message
             if (extension_settings.caption.source !== 'multimodal' || extension_settings.caption.multimodal_api !== api) {
                 return;
             }
@@ -637,96 +691,148 @@ export async function init() {
     await switchMultimodalBlocks();
 
     $('#caption_refine_mode').prop('checked', !!(extension_settings.caption.refine_mode));
+    // @ts-expect-error TS(2339): Property 'allow_reverse_proxy' does not exist on t... Remove this comment to see the full error message
     $('#caption_allow_reverse_proxy').prop('checked', !!(extension_settings.caption.allow_reverse_proxy));
+    // @ts-expect-error TS(2339): Property 'prompt_ask' does not exist on type '{ re... Remove this comment to see the full error message
     $('#caption_prompt_ask').prop('checked', !!(extension_settings.caption.prompt_ask));
+    // @ts-expect-error TS(2339): Property 'auto_mode' does not exist on type '{ ref... Remove this comment to see the full error message
     $('#caption_auto_mode').prop('checked', !!(extension_settings.caption.auto_mode));
+    // @ts-expect-error TS(2339): Property 'source' does not exist on type '{ refine... Remove this comment to see the full error message
     $('#caption_source').val(extension_settings.caption.source);
+    // @ts-expect-error TS(2339): Property 'prompt' does not exist on type '{ refine... Remove this comment to see the full error message
     $('#caption_prompt').val(extension_settings.caption.prompt);
+    // @ts-expect-error TS(2339): Property 'template' does not exist on type '{ refi... Remove this comment to see the full error message
     $('#caption_template').val(extension_settings.caption.template);
+    // @ts-expect-error TS(2531): Object is possibly 'null'.
     document.getElementById('caption_refine_mode').addEventListener('input', onRefineModeInput);
+    // @ts-expect-error TS(2531): Object is possibly 'null'.
     document.getElementById('caption_source').addEventListener('change', async () => {
+        // @ts-expect-error TS(2339): Property 'source' does not exist on type '{ refine... Remove this comment to see the full error message
         extension_settings.caption.source = String(document.getElementById('caption_source').value);
         await switchMultimodalBlocks();
         saveSettingsDebounced();
     });
+    // @ts-expect-error TS(2531): Object is possibly 'null'.
     document.getElementById('caption_prompt').addEventListener('input', () => {
+        // @ts-expect-error TS(2339): Property 'prompt' does not exist on type '{ refine... Remove this comment to see the full error message
         extension_settings.caption.prompt = String(document.getElementById('caption_prompt').value);
         saveSettingsDebounced();
     });
+    // @ts-expect-error TS(2531): Object is possibly 'null'.
     document.getElementById('caption_template').addEventListener('input', () => {
+        // @ts-expect-error TS(2339): Property 'template' does not exist on type '{ refi... Remove this comment to see the full error message
         extension_settings.caption.template = String(document.getElementById('caption_template').value);
         saveSettingsDebounced();
     });
+    // @ts-expect-error TS(2531): Object is possibly 'null'.
     document.getElementById('caption_allow_reverse_proxy').addEventListener('input', () => {
+        // @ts-expect-error TS(2339): Property 'allow_reverse_proxy' does not exist on t... Remove this comment to see the full error message
         extension_settings.caption.allow_reverse_proxy = document.getElementById('caption_allow_reverse_proxy').checked;
         saveSettingsDebounced();
     });
+    // @ts-expect-error TS(2531): Object is possibly 'null'.
     document.getElementById('caption_prompt_ask').addEventListener('input', () => {
+        // @ts-expect-error TS(2339): Property 'prompt_ask' does not exist on type '{ re... Remove this comment to see the full error message
         extension_settings.caption.prompt_ask = document.getElementById('caption_prompt_ask').checked;
         saveSettingsDebounced();
     });
+    // @ts-expect-error TS(2531): Object is possibly 'null'.
     document.getElementById('caption_auto_mode').addEventListener('input', () => {
+        // @ts-expect-error TS(2339): Property 'auto_mode' does not exist on type '{ ref... Remove this comment to see the full error message
         extension_settings.caption.auto_mode = !!document.getElementById('caption_auto_mode').checked;
         saveSettingsDebounced();
     });
+    // @ts-expect-error TS(2531): Object is possibly 'null'.
     document.getElementById('caption_ollama_pull').addEventListener('click', (e) => {
+        // @ts-expect-error TS(2339): Property 'multimodal_model' does not exist on type... Remove this comment to see the full error message
         const selectedModel = extension_settings.caption.multimodal_model;
+        // @ts-expect-error TS(2339): Property 'ollama_custom_model' does not exist on t... Remove this comment to see the full error message
         const staticModels = { 'ollama_current': textgenerationwebui_settings.ollama_model, 'ollama_custom': extension_settings.caption.ollama_custom_model };
+        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         const presetModel = staticModels[selectedModel] || selectedModel;
         e.preventDefault();
+        // @ts-expect-error TS(2531): Object is possibly 'null'.
         document.getElementById('ollama_download_model').click();
+        // @ts-expect-error TS(2531): Object is possibly 'null'.
         document.querySelector('.popup .popup-input').value = presetModel;
     });
+    // @ts-expect-error TS(2531): Object is possibly 'null'.
     document.getElementById('caption_multimodal_api').addEventListener('change', async () => {
+        // @ts-expect-error TS(2531): Object is possibly 'null'.
         const api = String(document.getElementById('caption_multimodal_api').value);
+        // @ts-expect-error TS(2339): Property 'multimodal_api' does not exist on type '... Remove this comment to see the full error message
         extension_settings.caption.multimodal_api = api;
+        // @ts-expect-error TS(2339): Property 'multimodal_model' does not exist on type... Remove this comment to see the full error message
         extension_settings.caption.multimodal_model = '';
         await switchMultimodalBlocks();
         saveSettingsDebounced();
     });
+    // @ts-expect-error TS(2531): Object is possibly 'null'.
     document.getElementById('caption_multimodal_model').addEventListener('change', () => {
+        // @ts-expect-error TS(2339): Property 'multimodal_model' does not exist on type... Remove this comment to see the full error message
         extension_settings.caption.multimodal_model = String(document.getElementById('caption_multimodal_model').value);
         saveSettingsDebounced();
     });
+    // @ts-expect-error TS(2531): Object is possibly 'null'.
     document.getElementById('caption_altEndpoint_url').value = extension_settings.caption.alt_endpoint_url ?? '';
+    // @ts-expect-error TS(2531): Object is possibly 'null'.
     document.getElementById('caption_altEndpoint_url').addEventListener('input', () => {
+        // @ts-expect-error TS(2339): Property 'alt_endpoint_url' does not exist on type... Remove this comment to see the full error message
         extension_settings.caption.alt_endpoint_url = String(document.getElementById('caption_altEndpoint_url').value);
         saveSettingsDebounced();
     });
+    // @ts-expect-error TS(2531): Object is possibly 'null'.
     document.getElementById('caption_altEndpoint_enabled').checked = !!(extension_settings.caption.alt_endpoint_enabled);
+    // @ts-expect-error TS(2531): Object is possibly 'null'.
     document.getElementById('caption_altEndpoint_enabled').addEventListener('input', () => {
+        // @ts-expect-error TS(2339): Property 'alt_endpoint_enabled' does not exist on ... Remove this comment to see the full error message
         extension_settings.caption.alt_endpoint_enabled = !!document.getElementById('caption_altEndpoint_enabled').checked;
         saveSettingsDebounced();
     });
+    // @ts-expect-error TS(2531): Object is possibly 'null'.
     document.getElementById('caption_show_in_chat').checked = !!(extension_settings.caption.show_in_chat);
+    // @ts-expect-error TS(2531): Object is possibly 'null'.
     document.getElementById('caption_show_in_chat').addEventListener('input', () => {
+        // @ts-expect-error TS(2339): Property 'show_in_chat' does not exist on type '{ ... Remove this comment to see the full error message
         extension_settings.caption.show_in_chat = !!document.getElementById('caption_show_in_chat').checked;
         saveSettingsDebounced();
     });
+    // @ts-expect-error TS(2531): Object is possibly 'null'.
     document.getElementById('caption_ollama_custom_model').value = extension_settings.caption.ollama_custom_model || '';
+    // @ts-expect-error TS(2531): Object is possibly 'null'.
     document.getElementById('caption_ollama_custom_model').addEventListener('input', () => {
+        // @ts-expect-error TS(2339): Property 'ollama_custom_model' does not exist on t... Remove this comment to see the full error message
         extension_settings.caption.ollama_custom_model = String(document.getElementById('caption_ollama_custom_model').value).trim();
         saveSettingsDebounced();
     });
+    // @ts-expect-error TS(2531): Object is possibly 'null'.
     document.getElementById('caption_custom_model').value = extension_settings.caption.custom_model || '';
+    // @ts-expect-error TS(2531): Object is possibly 'null'.
     document.getElementById('caption_custom_model').addEventListener('input', () => {
+        // @ts-expect-error TS(2339): Property 'custom_model' does not exist on type '{ ... Remove this comment to see the full error message
         extension_settings.caption.custom_model = String(document.getElementById('caption_custom_model').value).trim();
         saveSettingsDebounced();
     });
+    // @ts-expect-error TS(2531): Object is possibly 'null'.
     document.getElementById('caption_refresh_models').addEventListener('click', async () => {
+        // @ts-expect-error TS(2339): Property 'multimodal_model' does not exist on type... Remove this comment to see the full error message
         extension_settings.caption.multimodal_model = '';
         await switchMultimodalBlocks();
         saveSettingsDebounced();
     });
 
     const onMessageEvent = async (/** @type {number} */ messageId: any) => {
+        // @ts-expect-error TS(2339): Property 'auto_mode' does not exist on type '{ ref... Remove this comment to see the full error message
         if (!extension_settings.caption.auto_mode) {
             return;
         }
 
         const message = getContext().chat[messageId];
+        // @ts-expect-error TS(2339): Property 'extra' does not exist on type 'never'.
         if (Array.isArray(message?.extra?.media) && message.extra.media.length > 0) {
+            // @ts-expect-error TS(2532): Object is possibly 'undefined'.
             for (let mediaIndex = 0; mediaIndex < message.extra.media.length; mediaIndex++) {
+                // @ts-expect-error TS(2532): Object is possibly 'undefined'.
                 const mediaAttachment = message.extra.media[mediaIndex];
                 if (mediaAttachment.type === MEDIA_TYPE.VIDEO && !isVideoCaptioningAvailable()) {
                     continue;
@@ -752,6 +858,7 @@ export async function init() {
     eventSource.on(event_types.MESSAGE_FILE_EMBEDDED, onMessageEvent);
 
     document.addEventListener('click', async function (event) {
+        // @ts-expect-error TS(2531): Object is possibly 'null'.
         const captionElement = event.target.closest('.mes_img_caption');
         if (!captionElement) return;
         const animationClass = 'fa-fade';
@@ -769,6 +876,7 @@ export async function init() {
             await saveChatConditional();
         } catch (e) {
             console.error('Message image recaption failed', e);
+            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             toastr.error(e.message || 'Unknown error', 'Failed to caption');
         } finally {
             messageMedia.removeClass(animationClass);
@@ -781,6 +889,7 @@ export async function init() {
         returns: 'caption',
         namedArgumentList: [
             new SlashCommandNamedArgument(
+                // @ts-expect-error TS(2345): Argument of type '"false"' is not assignable to pa... Remove this comment to see the full error message
                 'quiet', 'suppress sending a captioned message', [ARGUMENT_TYPE.BOOLEAN], false, false, 'false',
             ),
             SlashCommandNamedArgument.fromProps({

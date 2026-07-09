@@ -25,6 +25,7 @@ export class QuickReplySet {
      * @param {string} name - name of the QuickReplySet
      */
     static get(name: any) {
+        // @ts-expect-error TS(2339): Property 'name' does not exist on type 'never'.
         return this.list.find(it => it.name == name);
     }
 
@@ -61,7 +62,9 @@ export class QuickReplySet {
                 this.dom = root;
                 root.classList.add('qr--buttons');
                 this.updateColor();
+                // @ts-expect-error TS(2339): Property 'isHidden' does not exist on type 'never'... Remove this comment to see the full error message
                 this.qrList.filter(qr => !qr.isHidden).forEach(qr => {
+                    // @ts-expect-error TS(2339): Property 'render' does not exist on type 'never'.
                     root.append(qr.render());
                 });
             }
@@ -71,7 +74,9 @@ export class QuickReplySet {
     rerender() {
         if (!this.dom) return;
         this.dom.innerHTML = '';
+        // @ts-expect-error TS(2339): Property 'isHidden' does not exist on type 'never'... Remove this comment to see the full error message
         this.qrList.filter(qr => !qr.isHidden).forEach(qr => {
+            // @ts-expect-error TS(2339): Property 'render' does not exist on type 'never'.
             this.dom.append(qr.render());
         });
     }
@@ -118,6 +123,7 @@ export class QuickReplySet {
      */
     async debug(qr: any) {
         const parser = new SlashCommandParser();
+        // @ts-expect-error TS(2345): Argument of type 'never[]' is not assignable to pa... Remove this comment to see the full error message
         const closure = parser.parse(qr.message, true, [], qr.abortController, qr.debugController);
         closure.source = `${this.name}.${qr.label}`;
         closure.onProgress = (done: any, total: any) => qr.updateEditorProgress(done, total);
@@ -146,11 +152,15 @@ export class QuickReplySet {
             scope: null,
             executionOptions: {},
         }, options);
+        // @ts-expect-error TS(2339): Property 'executionOptions' does not exist on type... Remove this comment to see the full error message
         const execOptions = options.executionOptions;
         /**@type {HTMLTextAreaElement}*/
         const ta = document.querySelector('#send_textarea');
+        // @ts-expect-error TS(2339): Property 'message' does not exist on type '{}'.
         const finalMessage = options.message ?? qr.message;
+        // @ts-expect-error TS(2531): Object is possibly 'null'.
         let input = ta.value;
+        // @ts-expect-error TS(2339): Property 'isAutoExecute' does not exist on type '{... Remove this comment to see the full error message
         if (!options.isAutoExecute && !options.isEditor && !options.isRun && this.injectInput && input.length > 0) {
             if (this.placeBeforeInput) {
                 input = `${finalMessage} ${input}`;
@@ -163,15 +173,19 @@ export class QuickReplySet {
 
         if (input[0] == '/' && !this.disableSend) {
             let result;
+            // @ts-expect-error TS(2339): Property 'isAutoExecute' does not exist on type '{... Remove this comment to see the full error message
             if (options.isAutoExecute || options.isRun) {
                 result = await executeSlashCommandsWithOptions(input, Object.assign(execOptions, {
                     handleParserErrors: true,
+                    // @ts-expect-error TS(2339): Property 'scope' does not exist on type '{}'.
                     scope: options.scope,
                     source: `${this.name}.${qr.label}`,
                 }));
+            // @ts-expect-error TS(2339): Property 'isEditor' does not exist on type '{}'.
             } else if (options.isEditor) {
                 result = await executeSlashCommandsWithOptions(input, Object.assign(execOptions, {
                     handleParserErrors: false,
+                    // @ts-expect-error TS(2339): Property 'scope' does not exist on type '{}'.
                     scope: options.scope,
                     abortController: qr.abortController,
                     source: `${this.name}.${qr.label}`,
@@ -179,6 +193,7 @@ export class QuickReplySet {
                 }));
             } else {
                 result = await executeSlashCommandsOnChatInput(input, Object.assign(execOptions, {
+                    // @ts-expect-error TS(2339): Property 'scope' does not exist on type '{}'.
                     scope: options.scope,
                     source: `${this.name}.${qr.label}`,
                 }));
@@ -186,7 +201,9 @@ export class QuickReplySet {
             return typeof result === 'object' ? result?.pipe : '';
         }
 
+        // @ts-expect-error TS(2531): Object is possibly 'null'.
         ta.value = substituteParams(input);
+        // @ts-expect-error TS(2531): Object is possibly 'null'.
         ta.focus();
 
         if (!this.disableSend) {
@@ -209,9 +226,12 @@ export class QuickReplySet {
     }
 
     addQuickReply(data = {}) {
+        // @ts-expect-error TS(2339): Property 'id' does not exist on type 'never'.
         const id = Math.max(this.idIndex, this.qrList.reduce((max, qr) => Math.max(max, qr.id), 0)) + 1;
+        // @ts-expect-error TS(2339): Property 'id' does not exist on type '{}'.
         data.id = this.idIndex = id + 1;
         const qr = QuickReply.from(data);
+        // @ts-expect-error TS(2345): Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
         this.qrList.push(qr);
         this.hookQuickReply(qr);
         if (this.settingsDom) {
@@ -264,8 +284,10 @@ export class QuickReplySet {
         qr.onInsertBefore = (qrJson: any) => {
             this.addQuickReplyFromText(qrJson);
             const newQr = this.qrList.pop();
+            // @ts-expect-error TS(2345): Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
             this.qrList.splice(this.qrList.indexOf(qr), 0, newQr);
             if (qr.settingsDom) {
+                // @ts-expect-error TS(2532): Object is possibly 'undefined'.
                 qr.settingsDom.insertAdjacentElement('beforebegin', newQr.settingsDom);
             }
             this.save();
@@ -296,11 +318,14 @@ export class QuickReplySet {
                     }
                     for (const qrs of QuickReplySet.list) {
                         const opt = document.createElement('option'); {
+                            // @ts-expect-error TS(2339): Property 'name' does not exist on type 'never'.
                             opt.value = qrs.name;
+                            // @ts-expect-error TS(2339): Property 'name' does not exist on type 'never'.
                             opt.textContent = qrs.name;
                             sel.append(opt);
                         }
                     }
+                    // @ts-expect-error TS(7006): Parameter 'evt' implicitly has an 'any' type.
                     sel.addEventListener('keyup', (evt) => {
                         if (evt.key == 'Shift') {
                             // @ts-ignore
@@ -308,6 +333,7 @@ export class QuickReplySet {
                             return;
                         }
                     });
+                    // @ts-expect-error TS(7006): Parameter 'evt' implicitly has an 'any' type.
                     sel.addEventListener('keydown', (evt) => {
                         if (evt.key == 'Shift') {
                             // @ts-ignore
@@ -330,6 +356,7 @@ export class QuickReplySet {
                     dom.append(hintP);
                 }
             }
+            // @ts-expect-error TS(2345): Argument of type 'null' is not assignable to param... Remove this comment to see the full error message
             const dlg = new Popup(dom, POPUP_TYPE.CONFIRM, null, { okButton: 'Transfer', cancelButton: 'Cancel' });
             const copyBtn = document.createElement('div'); {
                 copyBtn.classList.add('qr--copy');
@@ -346,7 +373,9 @@ export class QuickReplySet {
             sel.focus();
             await prom;
             if (dlg.result == POPUP_RESULT.AFFIRMATIVE) {
+                // @ts-expect-error TS(2339): Property 'name' does not exist on type 'never'.
                 const qrs = QuickReplySet.list.find(it => it.name == sel.value);
+                // @ts-expect-error TS(2532): Object is possibly 'undefined'.
                 qrs.addQuickReply(qr.toJSON());
                 if (!isCopy) {
                     qr.delete();
@@ -356,6 +385,7 @@ export class QuickReplySet {
     }
 
     removeQuickReply(qr: any) {
+        // @ts-expect-error TS(2345): Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
         this.qrList.splice(this.qrList.indexOf(qr), 1);
         this.save();
     }
@@ -398,6 +428,7 @@ export class QuickReplySet {
 
         if (response.ok) {
             this.unrender();
+            // @ts-expect-error TS(2345): Argument of type 'this' is not assignable to param... Remove this comment to see the full error message
             const idx = QuickReplySet.list.indexOf(this);
             if (idx > -1) {
                 QuickReplySet.list.splice(idx, 1);

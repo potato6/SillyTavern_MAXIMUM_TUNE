@@ -67,6 +67,7 @@ class GoogleTranslateTtsProvider {
             this.voices = await this.fetchTtsVoiceObjects();
         }
         const match = this.voices.filter(
+            // @ts-expect-error TS(2339): Property 'name' does not exist on type 'never'.
             voice => voice.name == voiceName || voice.voice_id == voiceName,
         )[0];
         if (!match) {
@@ -95,6 +96,7 @@ class GoogleTranslateTtsProvider {
         }
         let responseJson = await response.json();
         responseJson = Object.entries(responseJson)
+            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             .sort((a, b) => a[1].localeCompare(b[1]))
             .map(x => ({ name: x[1], voice_id: x[0], preview_url: false, lang: x[0] }));
         return responseJson;
@@ -108,6 +110,7 @@ class GoogleTranslateTtsProvider {
         this.audioElement.pause();
         this.audioElement.currentTime = 0;
         const voice = await this.getVoice(id);
+        // @ts-expect-error TS(2339): Property 'lang' does not exist on type 'never'.
         const text = getPreviewString(voice.lang);
         const response = await this.fetchTtsGeneration(text, id);
         if (!response.ok) {

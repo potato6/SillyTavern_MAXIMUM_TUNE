@@ -55,6 +55,7 @@ class SileroTtsProvider {
 
         const apiCheckInterval = setInterval(() => {
             // Use Extras API if TTS support is enabled
+            // @ts-expect-error TS(2345): Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
             if (modules.includes('tts') || modules.includes('silero-tts')) {
                 const baseUrl = new URL(getApiUrl());
                 baseUrl.pathname = '/api/tts';
@@ -95,6 +96,7 @@ class SileroTtsProvider {
             this.voices = await this.fetchTtsVoiceObjects();
         }
         const match = this.voices.filter(
+            // @ts-expect-error TS(2339): Property 'name' does not exist on type 'never'.
             sileroVoice => sileroVoice.name == voiceName,
         )[0];
         if (!match) {

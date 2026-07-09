@@ -347,6 +347,7 @@ class TtsWebuiProvider {
             this.voices = await this.fetchTtsVoiceObjects();
         }
         const match = this.voices.filter(
+            // @ts-expect-error TS(2339): Property 'name' does not exist on type 'never'.
             oaicVoice => oaicVoice.name == voiceName,
         )[0];
         if (!match) {
@@ -406,12 +407,16 @@ class TtsWebuiProvider {
     }
 
     async initAudioWorklet(wavSampleRate: any) {
+        // @ts-expect-error TS(2322): Type 'AudioContext' is not assignable to type 'nul... Remove this comment to see the full error message
         this.audioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: wavSampleRate });
 
         // Load the PCM processor from separate file
         const processorUrl = './scripts/extensions/tts/lib/pcm-processor.js';
+        // @ts-expect-error TS(2531): Object is possibly 'null'.
         await this.audioContext.audioWorklet.addModule(processorUrl);
+        // @ts-expect-error TS(2322): Type 'AudioWorkletNode' is not assignable to type ... Remove this comment to see the full error message
         this.audioWorkletNode = new AudioWorkletNode(this.audioContext, 'pcm-processor');
+        // @ts-expect-error TS(2531): Object is possibly 'null'.
         this.audioWorkletNode.connect(this.audioContext.destination);
     }
 
@@ -436,6 +441,7 @@ class TtsWebuiProvider {
         let headerParsed = false;
         let wavInfo = null;
 
+        // @ts-expect-error TS(7023): 'processStream' implicitly has return type 'any' b... Remove this comment to see the full error message
         const processStream = async ({
             done,
             value
@@ -454,6 +460,7 @@ class TtsWebuiProvider {
 
                 // Skip WAV header (first 44 bytes typically)
                 const pcmData = value.slice(44);
+                // @ts-expect-error TS(2531): Object is possibly 'null'.
                 this.audioWorkletNode.port.postMessage({ pcmData });
                 headerParsed = true;
 
@@ -462,6 +469,7 @@ class TtsWebuiProvider {
             }
 
             // Send PCM data to AudioWorklet for immediate playback
+            // @ts-expect-error TS(2531): Object is possibly 'null'.
             this.audioWorkletNode.port.postMessage({ pcmData: value });
             const next = await reader.read();
             return processStream(next);
@@ -546,6 +554,7 @@ class TtsWebuiProvider {
 
         const response = await fetch(settings.provider_endpoint, {
             method: 'POST',
+            // @ts-expect-error TS(2769): No overload matches this call.
             headers,
             body: JSON.stringify(requestBody),
         });
@@ -569,6 +578,7 @@ class TtsWebuiProvider {
 
         // Set volume for AudioWorklet (streaming)
         if (this.audioWorkletNode) {
+            // @ts-expect-error TS(2339): Property 'port' does not exist on type 'never'.
             this.audioWorkletNode.port.postMessage({ volume: this.currentVolume });
         }
     }

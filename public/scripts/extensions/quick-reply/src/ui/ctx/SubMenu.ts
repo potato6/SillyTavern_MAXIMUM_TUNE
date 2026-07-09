@@ -20,6 +20,7 @@ export class SubMenu {
                 menu.classList.add('list-group');
                 menu.classList.add('ctx-menu');
                 menu.classList.add('ctx-sub-menu');
+                // @ts-expect-error TS(2339): Property 'render' does not exist on type 'never'.
                 this.itemList.forEach(it => menu.append(it.render()));
             }
         }

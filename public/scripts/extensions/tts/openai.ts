@@ -94,8 +94,11 @@ class OpenAITtsProvider {
     }
 
     setupVoiceMapObserver() {
+        // @ts-expect-error TS(2339): Property 'voiceMapObserver' does not exist on type... Remove this comment to see the full error message
         if (this.voiceMapObserver) {
+            // @ts-expect-error TS(2339): Property 'voiceMapObserver' does not exist on type... Remove this comment to see the full error message
             this.voiceMapObserver.disconnect();
+            // @ts-expect-error TS(2339): Property 'voiceMapObserver' does not exist on type... Remove this comment to see the full error message
             this.voiceMapObserver = null;
         }
 
@@ -109,6 +112,7 @@ class OpenAITtsProvider {
         });
 
         observer.observe(targetNode, { childList: true, subtree: true });
+        // @ts-expect-error TS(2339): Property 'voiceMapObserver' does not exist on type... Remove this comment to see the full error message
         this.voiceMapObserver = observer;
     }
 
@@ -128,7 +132,9 @@ class OpenAITtsProvider {
             this.populateCharacterInstructions();
         } else {
             $('#openai-instructions-container').hide();
+            // @ts-expect-error TS(2339): Property 'voiceMapObserver' does not exist on type... Remove this comment to see the full error message
             this.voiceMapObserver?.disconnect();
+            // @ts-expect-error TS(2339): Property 'voiceMapObserver' does not exist on type... Remove this comment to see the full error message
             this.voiceMapObserver = null;
         }
     }
@@ -142,6 +148,7 @@ class OpenAITtsProvider {
                     <div id="openai-character-instructions"></div>
                 </div>
             `;
+            // @ts-expect-error TS(2531): Object is possibly 'null'.
             document.getElementById('openai-tts-speed').parentElement.insertAdjacentHTML('afterend', containerHtml);
         }
     }
@@ -149,6 +156,7 @@ class OpenAITtsProvider {
     populateCharacterInstructions() {
         const currentCharacters = $('.tts_voicemap_block_char span').map((i: any, el: any) => $(el).text()).get();
 
+        // @ts-expect-error TS(2531): Object is possibly 'null'.
         document.getElementById('openai-character-instructions').innerHTML = '';
 
         for (const char of currentCharacters) {
@@ -173,6 +181,7 @@ class OpenAITtsProvider {
                 this.saveCharacterInstructions(char, textArea.value);
             });
 
+            // @ts-expect-error TS(2531): Object is possibly 'null'.
             document.getElementById('openai-character-instructions').append(instructionBlock);
         }
     }
@@ -233,6 +242,7 @@ class OpenAITtsProvider {
         if (this.settings.model === 'gpt-4o-mini-tts' && characterName) {
             const instructions = this.settings.characterInstructions?.[characterName];
             if (instructions && instructions.trim()) {
+                // @ts-expect-error TS(2339): Property 'instructions' does not exist on type '{ ... Remove this comment to see the full error message
                 requestBody.instructions = substituteParams(instructions);
             }
         }

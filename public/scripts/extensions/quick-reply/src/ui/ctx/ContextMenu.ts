@@ -15,8 +15,10 @@ export class ContextMenu {
         // this.itemList = items;
         this.itemList = this.build(qr).children;
         this.itemList.forEach(item => {
+            // @ts-expect-error TS(2339): Property 'onExpand' does not exist on type 'never'... Remove this comment to see the full error message
             item.onExpand = () => {
                 this.itemList.filter(it => it !== item)
+                    // @ts-expect-error TS(2339): Property 'collapse' does not exist on type 'never'... Remove this comment to see the full error message
                     .forEach(it => it.collapse());
             };
         });
@@ -39,9 +41,11 @@ export class ContextMenu {
         };
         qr.contextList.forEach((cl: any) => {
             if (!cl.set) return;
+            // @ts-expect-error TS(2345): Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
             if (!hierarchy.includes(cl.set)) {
                 const nextHierarchy = [...hierarchy, cl.set];
                 const nextLabelHierarchy = [...labelHierarchy, tree.label];
+                // @ts-expect-error TS(2345): Argument of type 'MenuHeader' is not assignable to... Remove this comment to see the full error message
                 tree.children.push(new MenuHeader(cl.set.name));
 
                 // If the Quick Reply's own set is added as a context menu,
@@ -60,7 +64,9 @@ export class ContextMenu {
                 };
 
                 cl.set.qrList.filter(visible).forEach((subQr: any) => {
+                    // @ts-expect-error TS(2345): Argument of type 'string | null' is not assignable... Remove this comment to see the full error message
                     const subTree = this.build(subQr, cl.isChained ? tree.message : null, nextHierarchy, nextLabelHierarchy);
+                    // @ts-expect-error TS(2345): Argument of type 'MenuItem' is not assignable to p... Remove this comment to see the full error message
                     tree.children.push(new MenuItem(
                         subTree.icon,
                         subTree.showLabel,
@@ -93,6 +99,7 @@ export class ContextMenu {
                     this.menu = menu;
                     menu.classList.add('list-group');
                     menu.classList.add('ctx-menu');
+                    // @ts-expect-error TS(2339): Property 'render' does not exist on type 'never'.
                     this.itemList.forEach(it => menu.append(it.render()));
                     blocker.append(menu);
                 }

@@ -59,11 +59,14 @@ class SBVits2TtsProvider {
         <select id="sbvits_api_language">`;
 
         for (let language in this.languageLabels) {
+            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             if (this.languageLabels[language] == this.settings?.language) {
+                // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 html += `<option value="${this.languageLabels[language]}" selected="selected">${language}</option>`;
                 continue;
             }
 
+            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             html += `<option value="${this.languageLabels[language]}">${language}</option>`;
         }
 
@@ -219,9 +222,11 @@ class SBVits2TtsProvider {
      */
     async getVoice(voiceName: any) {
         if (this.voices.length == 0) {
+            // @ts-expect-error TS(2322): Type '{ name: string; voice_id: string; preview_ur... Remove this comment to see the full error message
             this.voices = await this.fetchTtsVoiceObjects();
         }
         const match = this.voices.filter(
+            // @ts-expect-error TS(2339): Property 'name' does not exist on type 'never'.
             v => v.name == voiceName,
         )[0];
         if (!match) {
@@ -260,6 +265,7 @@ class SBVits2TtsProvider {
             });
         });
 
+        // @ts-expect-error TS(2322): Type '{ name: string; voice_id: string; preview_ur... Remove this comment to see the full error message
         this.voices = voices; // Assign to the class property
         return voices; // Also return this list
     }
@@ -325,6 +331,7 @@ class SBVits2TtsProvider {
     async previewTtsVoice(id: any) {
         this.audioElement.pause();
         this.audioElement.currentTime = 0;
+        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         const lang_code = this.langKey2LangCode[this.settings.lang] ?? 'ja-JP';
         const text = getPreviewString(lang_code);
         const response = await this.fetchTtsGeneration(text, id);

@@ -23,7 +23,9 @@ var speechUtteranceChunker = function (utt: any, settings: any, callback: any) {
         newUtt = utt;
         newUtt.text = txt;
         newUtt.addEventListener('end', function () {
+            // @ts-expect-error TS(2339): Property 'cancel' does not exist on type '(utt: an... Remove this comment to see the full error message
             if (speechUtteranceChunker.cancel) {
+                // @ts-expect-error TS(2339): Property 'cancel' does not exist on type '(utt: an... Remove this comment to see the full error message
                 speechUtteranceChunker.cancel = false;
             }
             if (callback !== undefined) {
@@ -55,7 +57,9 @@ var speechUtteranceChunker = function (utt: any, settings: any, callback: any) {
         newUtt.rate = utt.rate;
         newUtt.pitch = utt.pitch;
         newUtt.addEventListener('end', function () {
+            // @ts-expect-error TS(2339): Property 'cancel' does not exist on type '(utt: an... Remove this comment to see the full error message
             if (speechUtteranceChunker.cancel) {
+                // @ts-expect-error TS(2339): Property 'cancel' does not exist on type '(utt: an... Remove this comment to see the full error message
                 speechUtteranceChunker.cancel = false;
                 return;
             }
@@ -280,6 +284,7 @@ class SystemTtsProvider {
             const voices = speechSynthesis.getVoices();
             const voice = voices.find(x => x.voiceURI === voiceId);
             const utterance = new SpeechSynthesisUtterance(text);
+            // @ts-expect-error TS(2322): Type 'SpeechSynthesisVoice | undefined' is not ass... Remove this comment to see the full error message
             utterance.voice = voice;
             utterance.rate = this.settings.rate || 1;
             utterance.pitch = this.settings.pitch || 1;

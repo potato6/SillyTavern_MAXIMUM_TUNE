@@ -63,9 +63,12 @@ class VolcengineTtsProvider {
     }
 
     constructor() {
+        // @ts-expect-error TS(2339): Property 'handler' does not exist on type 'Volceng... Remove this comment to see the full error message
         this.handler = async function(this: any, /** @type {string} */ key: any) {
             if (![SECRET_KEYS.VOLCENGINE_APP_ID, SECRET_KEYS.VOLCENGINE_ACCESS_KEY].includes(key)) return;
+            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             $('#volcengine-tts-app-id').toggleClass('success', !!secret_state[SECRET_KEYS.VOLCENGINE_APP_ID]);
+            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             $('#volcengine-tts-access-key').toggleClass('success', !!secret_state[SECRET_KEYS.VOLCENGINE_ACCESS_KEY]);
             await this.onRefreshClick();
         }.bind(this);
@@ -73,6 +76,7 @@ class VolcengineTtsProvider {
 
     dispose() {
         [event_types.SECRET_WRITTEN, event_types.SECRET_DELETED, event_types.SECRET_ROTATED].forEach(event => {
+            // @ts-expect-error TS(2339): Property 'handler' does not exist on type 'Volceng... Remove this comment to see the full error message
             eventSource.removeListener(event, this.handler);
         });
     }
@@ -235,9 +239,12 @@ class VolcengineTtsProvider {
         $('#volcengine-tts-provider-endpoint').val(this.settings.provider_endpoint).on('change', this.onSettingsChange.bind(this));
 
         // Initialize secret keys UI
+        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         $('#volcengine-tts-app-id').toggleClass('success', !!secret_state[SECRET_KEYS.VOLCENGINE_APP_ID]);
+        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         $('#volcengine-tts-access-key').toggleClass('success', !!secret_state[SECRET_KEYS.VOLCENGINE_ACCESS_KEY]);
         [event_types.SECRET_WRITTEN, event_types.SECRET_DELETED, event_types.SECRET_ROTATED].forEach(event => {
+            // @ts-expect-error TS(2339): Property 'handler' does not exist on type 'Volceng... Remove this comment to see the full error message
             eventSource.on(event, this.handler);
         });
 
@@ -269,6 +276,7 @@ class VolcengineTtsProvider {
             return;
         }
 
+        // @ts-expect-error TS(2554): Expected 2-3 arguments, but got 1.
         const confirm = await Popup.show.confirm(`Are you sure you want to delete the selected voice ${selectedVoiceName}?`);
         if (!confirm) {
             return;

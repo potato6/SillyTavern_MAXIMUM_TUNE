@@ -6,6 +6,7 @@ export class MenuHeader extends MenuItem {
     }
 
 
+    // @ts-expect-error TS(4114): This member must have an 'override' modifier becau... Remove this comment to see the full error message
     render() {
         if (!this.root) {
             const item = document.createElement('li'); {

@@ -23,6 +23,7 @@ self.onmessage = async function (e: any) {
                 self.postMessage({
                     action: 'initialized',
                     success: false,
+                    // @ts-expect-error TS(2571): Object is of type 'unknown'.
                     error: error.message,
                 });
             }
@@ -42,6 +43,7 @@ self.onmessage = async function (e: any) {
                 self.postMessage({
                     action: 'generatedTts',
                     success: false,
+                    // @ts-expect-error TS(2571): Object is of type 'unknown'.
                     error: error.message,
                     requestId: data.requestId,
                 });
@@ -57,6 +59,7 @@ self.onmessage = async function (e: any) {
 // Initialize the TTS engine
 async function initializeTts(settings: any) {
     try {
+        // @ts-expect-error TS(1323): Dynamic imports are only supported when the '--mod... Remove this comment to see the full error message
         const { KokoroTTS } = await import('./lib/kokoro.web.js');
 
         console.log('Worker: Initializing Kokoro TTS with settings:', {

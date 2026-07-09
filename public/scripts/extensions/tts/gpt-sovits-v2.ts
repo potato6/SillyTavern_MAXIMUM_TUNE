@@ -122,6 +122,7 @@ class GptSovitsV2Provider {
 
 
         const match = this.voices.filter(
+            // @ts-expect-error TS(2339): Property 'name' does not exist on type 'never'.
             v => v.name == voiceName,
         )[0];
         console.log(match);

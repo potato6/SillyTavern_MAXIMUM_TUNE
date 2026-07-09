@@ -69,6 +69,7 @@ export class QuickReplySettings {
 
 
     save() {
+        // @ts-expect-error TS(2551): Property 'quickReplyV2' does not exist on type '{ ... Remove this comment to see the full error message
         extension_settings.quickReplyV2 = this.toJSON();
         saveSettingsDebounced();
         if (this.chatConfig) {
@@ -89,9 +90,11 @@ export class QuickReplySettings {
     toJSON() {
         const characterConfigs = {};
         for (const key of Object.keys(this.characterConfigs)) {
+            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             if (this.characterConfigs[key]?.setList?.length === 0) {
                 continue;
             }
+            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             characterConfigs[key] = this.characterConfigs[key].toJSON();
         }
         return {

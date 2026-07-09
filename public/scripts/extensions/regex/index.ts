@@ -77,8 +77,11 @@ class RegexPresetManager {
         const presetScripts = this.regexListToPresetItems(getScriptsByType(SCRIPT_TYPES.PRESET));
 
         return {
+            // @ts-expect-error TS(2531): Object is possibly 'null'.
             global: globalScripts.map(item => item.id).sort(),
+            // @ts-expect-error TS(2531): Object is possibly 'null'.
             scoped: scopedScripts.map(item => item.id).sort(),
+            // @ts-expect-error TS(2531): Object is possibly 'null'.
             preset: presetScripts.map(item => item.id).sort(),
         };
     }
@@ -114,6 +117,7 @@ class RegexPresetManager {
      */
     updateStoredState(presetId: any) {
         this.currentPresetId = presetId;
+        // @ts-expect-error TS(2322): Type '{ global: any[]; scoped: any[]; preset: any[... Remove this comment to see the full error message
         this.lastKnownState = this.captureCurrentState();
     }
 
@@ -131,7 +135,9 @@ class RegexPresetManager {
             return true; // No changes detected
         }
 
+        // @ts-expect-error TS(2339): Property 'id' does not exist on type 'never'.
         const currentPreset = extension_settings.regex_presets.find(p => p.id === this.currentPresetId);
+        // @ts-expect-error TS(2339): Property 'name' does not exist on type 'never'.
         const presetName = currentPreset ? currentPreset.name : t`Unknown Preset`;
 
         const choice = await Popup.show.confirm(
@@ -159,13 +165,16 @@ class RegexPresetManager {
      * @returns {void}
      */
     setupEventListeners() {
+        // @ts-expect-error TS(2322): Type 'HTMLElement | null' is not assignable to typ... Remove this comment to see the full error message
         this.presetSelect = /** @type {HTMLSelectElement} */ (document.getElementById('regex_presets'));
         if (!this.presetSelect) {
             console.error('RegexPresetManager: Could not find preset select element in the DOM.');
             return;
         }
 
+        // @ts-expect-error TS(2339): Property 'addEventListener' does not exist on type... Remove this comment to see the full error message
         this.presetSelect.addEventListener('change', async (event: any) => {
+            // @ts-expect-error TS(2531): Object is possibly 'null'.
             const selectedPresetId = this.presetSelect.value;
             const fromSlashCommand = event instanceof CustomEvent && event?.detail?.fromSlashCommand === true;
 
@@ -175,8 +184,10 @@ class RegexPresetManager {
                 if (!canProceed) {
                     // Revert the selection
                     event.preventDefault();
+                    // @ts-expect-error TS(2339): Property 'id' does not exist on type 'never'.
                     const currentPreset = extension_settings.regex_presets.find(p => p.id === this.currentPresetId);
                     if (currentPreset) {
+                        // @ts-expect-error TS(2531): Object is possibly 'null'.
                         this.presetSelect.value = currentPreset.id;
                     }
                     return;
@@ -184,17 +195,20 @@ class RegexPresetManager {
             }
 
             await this.applyPreset(selectedPresetId);
+            // @ts-expect-error TS(2339): Property 'isSelected' does not exist on type 'neve... Remove this comment to see the full error message
             extension_settings.regex_presets.forEach(p => { p.isSelected = p.id === selectedPresetId; });
             saveSettingsDebounced();
             this.updateStoredState(selectedPresetId);
         });
 
+        // @ts-expect-error TS(2322): Type 'HTMLElement | null' is not assignable to typ... Remove this comment to see the full error message
         this.presetCreateButton = document.getElementById('regex_preset_create');
         if (!this.presetCreateButton) {
             console.error('RegexPresetManager: Could not find preset create button in the DOM.');
             return;
         }
 
+        // @ts-expect-error TS(2339): Property 'addEventListener' does not exist on type... Remove this comment to see the full error message
         this.presetCreateButton.addEventListener('click', async () => {
             const newId = uuidv4();
             await this.savePreset(newId, false);
@@ -202,45 +216,56 @@ class RegexPresetManager {
             this.updateStoredState(newId);
         });
 
+        // @ts-expect-error TS(2322): Type 'HTMLElement | null' is not assignable to typ... Remove this comment to see the full error message
         this.presetUpdateButton = document.getElementById('regex_preset_update');
         if (!this.presetUpdateButton) {
             console.error('RegexPresetManager: Could not find preset update button in the DOM.');
             return;
         }
 
+        // @ts-expect-error TS(2339): Property 'addEventListener' does not exist on type... Remove this comment to see the full error message
         this.presetUpdateButton.addEventListener('click', async () => {
+            // @ts-expect-error TS(2531): Object is possibly 'null'.
             const selectedPresetId = this.presetSelect.value;
             await this.savePreset(selectedPresetId, true);
             this.renderPresetList();
             this.updateStoredState(selectedPresetId);
         });
 
+        // @ts-expect-error TS(2322): Type 'HTMLElement | null' is not assignable to typ... Remove this comment to see the full error message
         this.presetApplyButton = document.getElementById('regex_preset_apply');
         if (!this.presetApplyButton) {
             console.error('RegexPresetManager: Could not find preset apply button in the DOM.');
             return;
         }
 
+        // @ts-expect-error TS(2339): Property 'addEventListener' does not exist on type... Remove this comment to see the full error message
         this.presetApplyButton.addEventListener('click', async () => {
+            // @ts-expect-error TS(2531): Object is possibly 'null'.
             const selectedPresetId = this.presetSelect.value;
             await this.applyPreset(selectedPresetId);
             this.updateStoredState(selectedPresetId);
         });
 
+        // @ts-expect-error TS(2322): Type 'HTMLElement | null' is not assignable to typ... Remove this comment to see the full error message
         this.presetDeleteButton = document.getElementById('regex_preset_delete');
         if (!this.presetDeleteButton) {
             console.error('RegexPresetManager: Could not find preset delete button in the DOM.');
             return;
         }
 
+        // @ts-expect-error TS(2339): Property 'addEventListener' does not exist on type... Remove this comment to see the full error message
         this.presetDeleteButton.addEventListener('click', async () => {
+            // @ts-expect-error TS(2531): Object is possibly 'null'.
             const selectedPresetId = this.presetSelect.value;
             await this.deletePreset(selectedPresetId);
             this.renderPresetList();
 
+            // @ts-expect-error TS(2339): Property 'isSelected' does not exist on type 'neve... Remove this comment to see the full error message
             const newSelectedPresetId = extension_settings.regex_presets.find(p => p.isSelected)?.id;
             if (newSelectedPresetId) {
                 await this.applyPreset(newSelectedPresetId);
+                // @ts-expect-error TS(2531): Object is possibly 'null'.
                 this.presetSelect.value = newSelectedPresetId;
                 this.updateStoredState(newSelectedPresetId);
             } else {
@@ -252,8 +277,10 @@ class RegexPresetManager {
         this.renderPresetList();
 
         // Initialize the stored state with the currently selected preset
+        // @ts-expect-error TS(2339): Property 'isSelected' does not exist on type 'neve... Remove this comment to see the full error message
         const selectedPreset = extension_settings.regex_presets?.find(p => p.isSelected);
         if (selectedPreset) {
+            // @ts-expect-error TS(2339): Property 'id' does not exist on type 'never'.
             this.updateStoredState(selectedPreset.id);
         }
     }
@@ -275,10 +302,13 @@ class RegexPresetManager {
 
                 if (name) {
                     const quiet = isTrueBoolean(args?.quiet?.toString());
+                    // @ts-expect-error TS(2339): Property 'id' does not exist on type 'never'.
                     const foundId = extension_settings.regex_presets.find(p => equalsIgnoreCaseAndAccents(p.id, name) || equalsIgnoreCaseAndAccents(p.name, name))?.id;
 
                     if (foundId) {
+                        // @ts-expect-error TS(2339): Property 'value' does not exist on type 'never'.
                         this.presetSelect.value = foundId;
+                        // @ts-expect-error TS(2339): Property 'dispatchEvent' does not exist on type 'n... Remove this comment to see the full error message
                         this.presetSelect.dispatchEvent(new CustomEvent('change', { detail: { fromSlashCommand: true } }));
                         return foundId;
                     }
@@ -287,6 +317,7 @@ class RegexPresetManager {
                     return '';
                 }
 
+                // @ts-expect-error TS(2339): Property 'value' does not exist on type 'never'.
                 return this.presetSelect.value;
             },
             returns: 'current preset ID',
@@ -303,6 +334,7 @@ class RegexPresetManager {
                 SlashCommandArgument.fromProps({
                     description: 'regex preset name or ID',
                     typeList: [ARGUMENT_TYPE.STRING],
+                    // @ts-expect-error TS(2339): Property 'id' does not exist on type 'never'.
                     enumProvider: () => extension_settings.regex_presets.map(x => new SlashCommandEnumValue(x.id, x.name, enumTypes.enum, enumIcons.preset)),
                 }),
             ],
@@ -318,20 +350,26 @@ class RegexPresetManager {
             return;
         }
 
+        // @ts-expect-error TS(2339): Property 'innerHTML' does not exist on type 'never... Remove this comment to see the full error message
         this.presetSelect.innerHTML = '';
 
         if (!Array.isArray(extension_settings.regex_presets) || extension_settings.regex_presets.length === 0) {
             const fallbackOption = new Option(t`[No presets saved]`, '', true, true);
+            // @ts-expect-error TS(2339): Property 'appendChild' does not exist on type 'nev... Remove this comment to see the full error message
             this.presetSelect.appendChild(fallbackOption);
+            // @ts-expect-error TS(2339): Property 'disabled' does not exist on type 'never'... Remove this comment to see the full error message
             this.presetSelect.disabled = true;
             return;
         }
 
         extension_settings.regex_presets.forEach(preset => {
+            // @ts-expect-error TS(2339): Property 'name' does not exist on type 'never'.
             const option = new Option(preset.name, preset.id, preset.isSelected, preset.isSelected);
+            // @ts-expect-error TS(2531): Object is possibly 'null'.
             this.presetSelect.appendChild(option);
         });
 
+        // @ts-expect-error TS(2339): Property 'disabled' does not exist on type 'never'... Remove this comment to see the full error message
         this.presetSelect.disabled = false;
     }
 
@@ -372,6 +410,7 @@ class RegexPresetManager {
      * @returns {Promise<void>}
      */
     async applyPreset(presetId: any) {
+        // @ts-expect-error TS(2339): Property 'id' does not exist on type 'never'.
         const preset = extension_settings.regex_presets.find(p => p.id === presetId);
         if (!preset) {
             toastr.error(t`Could not find the selected preset.`);
@@ -382,8 +421,11 @@ class RegexPresetManager {
         for (const scriptType of Object.values(SCRIPT_TYPES)) {
             await this.applyPresetList({
                 presetList: {
+                    // @ts-expect-error TS(2339): Property 'global' does not exist on type 'never'.
                     [SCRIPT_TYPES.GLOBAL]: preset.global,
+                    // @ts-expect-error TS(2339): Property 'scoped' does not exist on type 'never'.
                     [SCRIPT_TYPES.SCOPED]: preset.scoped,
+                    // @ts-expect-error TS(2339): Property 'preset' does not exist on type 'never'.
                     [SCRIPT_TYPES.PRESET]: preset.preset,
                 }[scriptType],
                 targetList: getScriptsByType(scriptType),
@@ -417,6 +459,7 @@ class RegexPresetManager {
      * @returns {Promise<void>}
      */
     async savePreset(presetId: any, isUpdate: any) {
+        // @ts-expect-error TS(2339): Property 'id' does not exist on type 'never'.
         const existingPreset = isUpdate ? extension_settings.regex_presets.find(p => p.id === presetId) : null;
 
         if (isUpdate && !existingPreset) {
@@ -424,7 +467,9 @@ class RegexPresetManager {
             return;
         }
 
+        // @ts-expect-error TS(2533): Object is possibly 'null' or 'undefined'.
         const name = isUpdate ? existingPreset.name : await Popup.show.input(t`Enter a name for the new regex preset:`, '');
+        // @ts-expect-error TS(2533): Object is possibly 'null' or 'undefined'.
         const id = isUpdate ? existingPreset.id : presetId;
 
         if (!name || !name.trim().length) {
@@ -441,11 +486,14 @@ class RegexPresetManager {
         };
 
         if (isUpdate) {
+            // @ts-expect-error TS(2769): No overload matches this call.
             Object.assign(existingPreset, preset);
         } else {
+            // @ts-expect-error TS(2345): Argument of type '{ id: any; name: any; isSelected... Remove this comment to see the full error message
             extension_settings.regex_presets.push(preset);
         }
 
+        // @ts-expect-error TS(2339): Property 'isSelected' does not exist on type 'neve... Remove this comment to see the full error message
         extension_settings.regex_presets.forEach(p => { p.isSelected = p.id === id; });
         saveSettingsDebounced();
 
@@ -458,12 +506,14 @@ class RegexPresetManager {
      * @returns {Promise<void>}
      */
     async deletePreset(presetId: any) {
+        // @ts-expect-error TS(2339): Property 'id' does not exist on type 'never'.
         const presetIndex = extension_settings.regex_presets.findIndex(p => p.id === presetId);
         if (presetIndex === -1) {
             toastr.error(t`Could not find the preset to delete.`);
             return;
         }
 
+        // @ts-expect-error TS(2532): Object is possibly 'undefined'.
         const presetName = extension_settings.regex_presets[presetIndex].name;
         const confirm = await Popup.show.confirm(t`Are you sure you want to delete this regex preset?`, presetName);
         if (!confirm) {
@@ -473,6 +523,7 @@ class RegexPresetManager {
         extension_settings.regex_presets.splice(presetIndex, 1);
 
         // Select the first preset if any exist
+        // @ts-expect-error TS(2339): Property 'isSelected' does not exist on type 'neve... Remove this comment to see the full error message
         extension_settings.regex_presets.forEach((p, i) => { p.isSelected = i === 0; });
         saveSettingsDebounced();
 
@@ -619,7 +670,9 @@ async function moveRegexScript(script: any, toType: any, fromType = null, saveSe
         console.warn(`moveRegexScript: Invalid target script type ${toType}`);
         return;
     }
+    // @ts-expect-error TS(2345): Argument of type 'null' is not assignable to param... Remove this comment to see the full error message
     if (!Object.values(SCRIPT_TYPES).includes(fromType)) {
+        // @ts-expect-error TS(2322): Type 'number' is not assignable to type 'null'.
         fromType = getScriptType(script);
     }
     if (fromType === toType || fromType === SCRIPT_TYPE_UNKNOWN || toType === SCRIPT_TYPE_UNKNOWN) {
@@ -916,6 +969,7 @@ function buildReplacementHtml(match: any, pattern: any) {
         } else if (backref === '$\'') {
             container.appendChild(document.createTextNode(match.input.substring(match.index + match[0].length)));
         } else { // It's a numbered capture group, $n.
+            // @ts-expect-error TS(2345): Argument of type 'string | undefined' is not assig... Remove this comment to see the full error message
             const groupIndex = parseInt(reMatch[1], 10);
             if (groupIndex > 0 && groupIndex < match.length && match[groupIndex] !== undefined) {
                 const mark = document.createElement('mark');
@@ -926,6 +980,7 @@ function buildReplacementHtml(match: any, pattern: any) {
                 // Not a valid group index, treat it as a literal.
                 const mark = document.createElement('mark');
                 mark.className = 'green_hl';
+                // @ts-expect-error TS(2322): Type 'string | undefined' is not assignable to typ... Remove this comment to see the full error message
                 mark.innerText = backref;
                 container.appendChild(mark);
             }
@@ -956,6 +1011,7 @@ function executeRegexScriptForDebugging(script: any, text: any) {
         originalRegex = regexFromString(script.findRegex);
         if (!originalRegex) throw new Error('Invalid regex string');
     } catch (e) {
+        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         err = `Compile error: ${e.message}`;
         return { output: text, highlightedOutput: text, error: err, charsCaptured: 0, charsAdded: 0, charsRemoved: 0 };
     }
@@ -1007,6 +1063,7 @@ function executeRegexScriptForDebugging(script: any, text: any) {
                 } else if (backref === '$\'') {
                     const part = match.input.substring(match.index + match[0].length); charsKeptFromMatch += part.length; replacementForPlainText += part;
                 } else {
+                    // @ts-expect-error TS(2345): Argument of type 'string | undefined' is not assig... Remove this comment to see the full error message
                     const groupIndex = parseInt(reMatch[1], 10);
                     if (groupIndex > 0 && groupIndex < match.length && match[groupIndex] !== undefined) {
                         charsKeptFromMatch += match[groupIndex].length;
@@ -1041,6 +1098,7 @@ function executeRegexScriptForDebugging(script: any, text: any) {
         outputText += trailingText;
         highlightedOutput += escapeHtml(trailingText);
     } catch (e) {
+        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         err = (err ? err + '; ' : '') + `Replace error: ${e.message}`;
         outputText = text; // Fallback
         highlightedOutput = escapeHtml(text);
@@ -1151,6 +1209,7 @@ function populateDebuggerRuleList(container: any) {
     if (globalScripts.length > 0) {
         rulesContainer.append('<div class="list-header regex-debugger-list-header">' + t`Global Rules` + '</div>');
         const globalList = $('<ul id="regex_debugger_rules_global" class="sortable-list"></ul>');
+        // @ts-expect-error TS(7006): Parameter 'script' implicitly has an 'any' type.
         globalScripts.forEach(script => globalList.append(renderRule(script)));
         rulesContainer.append(globalList);
     }
@@ -1158,6 +1217,7 @@ function populateDebuggerRuleList(container: any) {
     if (presetScripts.length > 0) {
         rulesContainer.append('<div class="list-header regex-debugger-list-header">' + t`Preset Rules` + '</div>');
         const presetList = $('<ul id="regex_debugger_rules_preset" class="sortable-list"></ul>');
+        // @ts-expect-error TS(7006): Parameter 'script' implicitly has an 'any' type.
         presetScripts.forEach(script => presetList.append(renderRule(script)));
         rulesContainer.append(presetList);
     }
@@ -1165,6 +1225,7 @@ function populateDebuggerRuleList(container: any) {
     if (scopedScripts.length > 0) {
         rulesContainer.append('<div class="list-header regex-debugger-list-header">' + t`Scoped Rules` + '</div>');
         const scopedList = $('<ul id="regex_debugger_rules_scoped" class="sortable-list"></ul>');
+        // @ts-expect-error TS(7006): Parameter 'script' implicitly has an 'any' type.
         scopedScripts.forEach(script => scopedList.append(renderRule(script)));
         rulesContainer.append(scopedList);
     }
@@ -1374,6 +1435,7 @@ function updateInfoBlock(editorHtml: any) {
         setInfoBlock(infoBlock, flagInfo.join('. '), 'hint');
         infoBlockFlagsHint.show();
     } catch (error) {
+        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         setInfoBlock(infoBlock, error.message, 'error');
     }
 }
@@ -1385,22 +1447,31 @@ function migrateSettings() {
 
     // Current: If MD Display is present in placement, remove it and add new placements/MD option
     extension_settings.regex.forEach((script) => {
+        // @ts-expect-error TS(2339): Property 'id' does not exist on type 'never'.
         if (!script.id) {
+            // @ts-expect-error TS(2339): Property 'id' does not exist on type 'never'.
             script.id = uuidv4();
             performSave = true;
         }
 
+        // @ts-expect-error TS(2339): Property 'placement' does not exist on type 'never... Remove this comment to see the full error message
         if (!Array.isArray(script.placement)) {
+            // @ts-expect-error TS(2339): Property 'placement' does not exist on type 'never... Remove this comment to see the full error message
             script.placement = [];
             performSave = true;
         }
 
+        // @ts-expect-error TS(2339): Property 'placement' does not exist on type 'never... Remove this comment to see the full error message
         if (script.placement.includes(regex_placement.MD_DISPLAY)) {
+            // @ts-expect-error TS(2339): Property 'placement' does not exist on type 'never... Remove this comment to see the full error message
             script.placement = script.placement.length === 1 ?
                 Object.values(regex_placement).filter((e) => e !== regex_placement.MD_DISPLAY) :
+                // @ts-expect-error TS(2339): Property 'placement' does not exist on type 'never... Remove this comment to see the full error message
                 script.placement = script.placement.filter((e: any) => e !== regex_placement.MD_DISPLAY);
 
+            // @ts-expect-error TS(2339): Property 'markdownOnly' does not exist on type 'ne... Remove this comment to see the full error message
             script.markdownOnly = true;
+            // @ts-expect-error TS(2339): Property 'promptOnly' does not exist on type 'neve... Remove this comment to see the full error message
             script.promptOnly = true;
 
             performSave = true;
@@ -1408,9 +1479,12 @@ function migrateSettings() {
 
         // Old system and sendas placement migration
         // 4 - sendAs
+        // @ts-expect-error TS(2339): Property 'placement' does not exist on type 'never... Remove this comment to see the full error message
         if (script.placement.includes(4)) {
+            // @ts-expect-error TS(2339): Property 'placement' does not exist on type 'never... Remove this comment to see the full error message
             script.placement = script.placement.length === 1 ?
                 [regex_placement.SLASH_COMMAND] :
+                // @ts-expect-error TS(2339): Property 'placement' does not exist on type 'never... Remove this comment to see the full error message
                 script.placement = script.placement.filter((e: any) => e !== 4);
 
             performSave = true;
@@ -1553,6 +1627,7 @@ async function onRegexImportFileChange(file: any, scriptType: any) {
     }
 
     try {
+        // @ts-expect-error TS(2345): Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
         const regexScripts = JSON.parse(await getFileText(file));
         if (Array.isArray(regexScripts)) {
             for (const regexScript of regexScripts) {
@@ -1739,6 +1814,7 @@ export async function init() {
     }
 
     // Manually disable the extension since static imports auto-import the JS file
+    // @ts-expect-error TS(2345): Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
     if (extension_settings.disabledExtensions.includes('regex')) {
         return;
     }
@@ -1747,10 +1823,13 @@ export async function init() {
 
     const settingsHtml = $(await renderExtensionTemplateAsync('regex', 'dropdown'));
     $('#regex_container').append(settingsHtml);
+    // @ts-expect-error TS(2531): Object is possibly 'null'.
     document.getElementById('open_regex_editor').addEventListener('click', function () {
         onRegexEditorOpenClick(false, SCRIPT_TYPES.GLOBAL);
     });
+    // @ts-expect-error TS(2531): Object is possibly 'null'.
     document.getElementById('open_regex_debugger').addEventListener('click', onRegexDebuggerOpenClick);
+    // @ts-expect-error TS(2531): Object is possibly 'null'.
     document.getElementById('open_scoped_editor').addEventListener('click', function () {
         if (this_chid === undefined) {
             toastr.error(t`No character selected.`);
@@ -1764,9 +1843,11 @@ export async function init() {
 
         onRegexEditorOpenClick(false, SCRIPT_TYPES.SCOPED);
     });
+    // @ts-expect-error TS(2531): Object is possibly 'null'.
     document.getElementById('open_preset_editor').addEventListener('click', function () {
         onRegexEditorOpenClick(false, SCRIPT_TYPES.PRESET);
     });
+    // @ts-expect-error TS(2531): Object is possibly 'null'.
     document.getElementById('import_regex_file').addEventListener('change', async function () {
         let target = SCRIPT_TYPES.GLOBAL;
         const template = $(await renderExtensionTemplateAsync('regex', 'importTarget'));
@@ -1777,15 +1858,20 @@ export async function init() {
         await callGenericPopup(template, POPUP_TYPE.TEXT);
 
         const inputElement = this instanceof HTMLInputElement && this;
+        // @ts-expect-error TS(2339): Property 'files' does not exist on type 'false | H... Remove this comment to see the full error message
         for (const file of inputElement.files) {
             await onRegexImportFileChange(file, target);
         }
+        // @ts-expect-error TS(2339): Property 'value' does not exist on type 'false | H... Remove this comment to see the full error message
         inputElement.value = '';
     });
+    // @ts-expect-error TS(2531): Object is possibly 'null'.
     document.getElementById('import_regex').addEventListener('click', function () {
+        // @ts-expect-error TS(2531): Object is possibly 'null'.
         document.getElementById('import_regex_file').click();
     });
 
+    // @ts-expect-error TS(2531): Object is possibly 'null'.
     document.getElementById('bulk_select_all_toggle').addEventListener('click', async function () {
         const checkboxes = $('#regex_container .regex_bulk_checkbox');
         if (checkboxes.length === 0) {
@@ -1800,10 +1886,12 @@ export async function init() {
         setMoveButtonsVisibility();
     });
 
+    // @ts-expect-error TS(2531): Object is possibly 'null'.
     document.getElementById('bulk_enable_regex').addEventListener('click', async function () {
         await bulkToggleRegexScripts(true);
     });
 
+    // @ts-expect-error TS(2531): Object is possibly 'null'.
     document.getElementById('bulk_disable_regex').addEventListener('click', async function () {
         await bulkToggleRegexScripts(false);
     });
@@ -1854,6 +1942,7 @@ export async function init() {
             return;
         }
         for (const script of scripts) {
+            // @ts-expect-error TS(2345): Argument of type 'number' is not assignable to par... Remove this comment to see the full error message
             await moveRegexScript(script, toType, getScriptType(script), false);
         }
 
@@ -1867,6 +1956,7 @@ export async function init() {
         }
     }
 
+    // @ts-expect-error TS(2531): Object is possibly 'null'.
     document.getElementById('bulk_regex_move_to_global').addEventListener('click', async () => {
         const confirm = await callGenericPopup(t`Are you sure you want to move the selected regex scripts to global?`, POPUP_TYPE.CONFIRM);
         if (!confirm) {
@@ -1875,6 +1965,7 @@ export async function init() {
         await bulkMoveRegexScript(SCRIPT_TYPES.GLOBAL);
     });
 
+    // @ts-expect-error TS(2531): Object is possibly 'null'.
     document.getElementById('bulk_regex_move_to_scoped').addEventListener('click', async () => {
         if (this_chid === undefined) {
             toastr.error(t`No character selected.`);
@@ -1891,6 +1982,7 @@ export async function init() {
         await bulkMoveRegexScript(SCRIPT_TYPES.SCOPED);
     });
 
+    // @ts-expect-error TS(2531): Object is possibly 'null'.
     document.getElementById('bulk_regex_move_to_preset').addEventListener('click', async function () {
         const confirm = await callGenericPopup(t`Are you sure you want to move the selected regex scripts to preset?`, POPUP_TYPE.CONFIRM);
         if (!confirm) {
@@ -1899,6 +1991,7 @@ export async function init() {
         await bulkMoveRegexScript(SCRIPT_TYPES.PRESET);
     });
 
+    // @ts-expect-error TS(2531): Object is possibly 'null'.
     document.getElementById('bulk_delete_regex').addEventListener('click', async function () {
         const scripts = getSelectedScripts();
         if (scripts.length === 0) {
@@ -1917,6 +2010,7 @@ export async function init() {
         await reloadCurrentChat();
     });
 
+    // @ts-expect-error TS(2531): Object is possibly 'null'.
     document.getElementById('bulk_export_regex').addEventListener('click', async function () {
         const scripts = getSelectedScripts();
         if (scripts.length === 0) {
@@ -1972,6 +2066,7 @@ export async function init() {
         });
     }
 
+    // @ts-expect-error TS(2531): Object is possibly 'null'.
     document.getElementById('regex_scoped_toggle').addEventListener('input', function () {
         if (this_chid === undefined) {
             toastr.error(t`No character selected.`);
@@ -1983,6 +2078,7 @@ export async function init() {
             return;
         }
 
+        // @ts-expect-error TS(2339): Property 'checked' does not exist on type 'HTMLEle... Remove this comment to see the full error message
         const isEnable = !!(this).checked;
         const character = characters[this_chid];
 
@@ -1996,7 +2092,9 @@ export async function init() {
         reloadCurrentChat();
     });
 
+    // @ts-expect-error TS(2531): Object is possibly 'null'.
     document.getElementById('regex_preset_toggle').addEventListener('input', function () {
+        // @ts-expect-error TS(2339): Property 'checked' does not exist on type 'HTMLEle... Remove this comment to see the full error message
         const isEnable = !!(this).checked;
         const name = getCurrentPresetName();
 
@@ -2061,6 +2159,7 @@ export async function init() {
                 const { typename, color, icon } = getScriptDecorators(type);
                 return new SlashCommandEnumValue(
                     script.scriptName,
+                    // @ts-expect-error TS(2345): Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
                     `${enumIcons.getStateIcon(!script.disabled)} [${typename}] ${script.findRegex}`,
                     color,
                     icon,

@@ -39,20 +39,26 @@ export class SlashCommandHandler {
 
         const localEnumProviders = {
             /** All quick reply sets, optionally filtering out sets that wer already used in the "set" named argument */
+            // @ts-expect-error TS(2339): Property 'name' does not exist on type 'never'.
             qrSets: (executor: any) => QuickReplySet.list.filter(qrSet => qrSet.name != String(executor.namedArgumentList.find((x: any) => x.name == 'set')?.value))
+                // @ts-expect-error TS(2339): Property 'name' does not exist on type 'never'.
                 .map(qrSet => new SlashCommandEnumValue(qrSet.name, null, enumTypes.enum, 'S')),
 
             /** All QRs inside a set, utilizing the "set" named argument */
+            // @ts-expect-error TS(2339): Property 'qrList' does not exist on type 'never'.
             qrEntries: (executor: any) => QuickReplySet.get(String(executor.namedArgumentList.find((x: any) => x.name == 'set')?.value))?.qrList.map((qr: any) => {
                 const icons = getExecutionIcons(qr);
                 const message = `${qr.automationId ? `[${qr.automationId}]` : ''}${icons ? `[auto: ${icons}]` : ''} ${qr.title || qr.message}`.trim();
+                // @ts-expect-error TS(2345): Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
                 return new SlashCommandEnumValue(qr.label, message, enumTypes.enum, enumIcons.qr);
             }) ?? [],
 
             /** All QRs inside a set, utilizing the "set" named argument, returns the QR's ID */
+            // @ts-expect-error TS(2339): Property 'qrList' does not exist on type 'never'.
             qrIds: (executor: any) => QuickReplySet.get(String(executor.namedArgumentList.find((x: any) => x.name == 'set')?.value))?.qrList.map((qr: any) => {
                 const icons = getExecutionIcons(qr);
                 const message = `${qr.automationId ? `[${qr.automationId}]` : ''}${icons ? `[auto: ${icons}]` : ''} ${qr.title || qr.message}`.trim();
+                // @ts-expect-error TS(2345): Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
                 return new SlashCommandEnumValue(qr.label, message, enumTypes.enum, enumIcons.qr, null, () => qr.id.toString(), true);
             }) ?? [],
 
@@ -69,20 +75,26 @@ export class SlashCommandHandler {
                     set: link.set,
                     qr
                 }))).flat() ?? [];
+                // @ts-expect-error TS(2339): Property 'name' does not exist on type 'never'.
                 const otherQrs = QuickReplySet.list.filter(set => !globalSetList.some((link: any) => link.set.name === set.name && !chatSetList?.some((link: any) => link.set.name === set.name)))
+                    // @ts-expect-error TS(2339): Property 'qrList' does not exist on type 'never'.
                     .map(set => set.qrList.map((qr: any) => ({
                     set,
                     qr
                 }))).flat();
 
                 return [
+                    // @ts-expect-error TS(2345): Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
                     ...globalQrs.map((x: any) => new SlashCommandEnumValue(`${x.set.name}.${x.qr.label}`, `[global] ${x.qr.title || x.qr.message}`, enumTypes.name, enumIcons.qr)),
+                    // @ts-expect-error TS(2345): Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
                     ...chatQrs.map((x: any) => new SlashCommandEnumValue(`${x.set.name}.${x.qr.label}`, `[chat] ${x.qr.title || x.qr.message}`, enumTypes.enum, enumIcons.qr)),
+                    // @ts-expect-error TS(2345): Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
                     ...otherQrs.map(x => new SlashCommandEnumValue(`${x.set.name}.${x.qr.label}`, `${x.qr.title || x.qr.message}`, enumTypes.qr, enumIcons.qr)),
                 ];
             },
         };
 
+        // @ts-expect-error TS(7017): Element implicitly has an 'any' type because type ... Remove this comment to see the full error message
         globalThis.qrEnumProviderExecutables = localEnumProviders.qrExecutables;
 
         SlashCommandParser.addCommandObject(SlashCommand.fromProps({ name: 'qr',
@@ -108,6 +120,7 @@ export class SlashCommandHandler {
             },
             namedArgumentList: [
                 new SlashCommandNamedArgument(
+                    // @ts-expect-error TS(2345): Argument of type '"true"' is not assignable to par... Remove this comment to see the full error message
                     'visible', 'set visibility', [ARGUMENT_TYPE.BOOLEAN], false, false, 'true',
                 ),
             ],
@@ -128,6 +141,7 @@ export class SlashCommandHandler {
             },
             namedArgumentList: [
                 new SlashCommandNamedArgument(
+                    // @ts-expect-error TS(2345): Argument of type '"true"' is not assignable to par... Remove this comment to see the full error message
                     'visible', 'set visibility', [ARGUMENT_TYPE.BOOLEAN], false, false, 'true',
                 ),
             ],
@@ -163,6 +177,7 @@ export class SlashCommandHandler {
             },
             namedArgumentList: [
                 new SlashCommandNamedArgument(
+                    // @ts-expect-error TS(2345): Argument of type '"true"' is not assignable to par... Remove this comment to see the full error message
                     'visible', 'set visibility', [ARGUMENT_TYPE.BOOLEAN], false, false, 'true',
                 ),
             ],
@@ -184,6 +199,7 @@ export class SlashCommandHandler {
             },
             namedArgumentList: [
                 new SlashCommandNamedArgument(
+                    // @ts-expect-error TS(2345): Argument of type '"true"' is not assignable to par... Remove this comment to see the full error message
                     'visible', 'whether the QR set should be visible', [ARGUMENT_TYPE.BOOLEAN], false, false, 'true',
                 ),
             ],
@@ -218,6 +234,7 @@ export class SlashCommandHandler {
             namedArgumentList: [],
             unnamedArgumentList: [
                 new SlashCommandArgument(
+                    // @ts-expect-error TS(2345): Argument of type '"all"' is not assignable to para... Remove this comment to see the full error message
                     'set type', [ARGUMENT_TYPE.STRING], false, false, 'all', ['all', 'global', 'chat'],
                 ),
             ],
@@ -267,13 +284,21 @@ export class SlashCommandHandler {
                 typeList: [ARGUMENT_TYPE.BOOLEAN],
                 isRequired: false,
             }),
+            // @ts-expect-error TS(2345): Argument of type '"false"' is not assignable to pa... Remove this comment to see the full error message
             new SlashCommandNamedArgument('hidden', 'whether the button should be hidden, e.g., hidden=true', [ARGUMENT_TYPE.BOOLEAN], false, false, 'false'),
+            // @ts-expect-error TS(2345): Argument of type '"false"' is not assignable to pa... Remove this comment to see the full error message
             new SlashCommandNamedArgument('startup', 'auto execute on app startup, e.g., startup=true', [ARGUMENT_TYPE.BOOLEAN], false, false, 'false'),
+            // @ts-expect-error TS(2345): Argument of type '"false"' is not assignable to pa... Remove this comment to see the full error message
             new SlashCommandNamedArgument('user', 'auto execute on user message, e.g., user=true', [ARGUMENT_TYPE.BOOLEAN], false, false, 'false'),
+            // @ts-expect-error TS(2345): Argument of type '"false"' is not assignable to pa... Remove this comment to see the full error message
             new SlashCommandNamedArgument('bot', 'auto execute on AI message, e.g., bot=true', [ARGUMENT_TYPE.BOOLEAN], false, false, 'false'),
+            // @ts-expect-error TS(2345): Argument of type '"false"' is not assignable to pa... Remove this comment to see the full error message
             new SlashCommandNamedArgument('load', 'auto execute on chat load, e.g., load=true', [ARGUMENT_TYPE.BOOLEAN], false, false, 'false'),
+            // @ts-expect-error TS(2345): Argument of type '"false"' is not assignable to pa... Remove this comment to see the full error message
             new SlashCommandNamedArgument('new', 'auto execute on new chat, e.g., new=true', [ARGUMENT_TYPE.BOOLEAN], false, false, 'false'),
+            // @ts-expect-error TS(2345): Argument of type '"false"' is not assignable to pa... Remove this comment to see the full error message
             new SlashCommandNamedArgument('group', 'auto execute on group member selection, e.g., group=true', [ARGUMENT_TYPE.BOOLEAN], false, false, 'false'),
+            // @ts-expect-error TS(2345): Argument of type '"false"' is not assignable to pa... Remove this comment to see the full error message
             new SlashCommandNamedArgument('generation', 'auto execute before message generation, e.g., generation=true', [ARGUMENT_TYPE.BOOLEAN], false, false, 'false'),
             new SlashCommandNamedArgument('title', 'title / tooltip to be shown on button, e.g., title="My Fancy Button"', [ARGUMENT_TYPE.STRING], false),
         ];
@@ -449,6 +474,7 @@ export class SlashCommandHandler {
                     [ARGUMENT_TYPE.BOOLEAN],
                     false,
                     false,
+                    // @ts-expect-error TS(2345): Argument of type '"false"' is not assignable to pa... Remove this comment to see the full error message
                     'false',
                 ),
             ],
@@ -662,6 +688,7 @@ export class SlashCommandHandler {
         SlashCommandParser.addCommandObject(SlashCommand.fromProps({ name: 'qr-arg',
             callback: ({
                 _scope
+            // @ts-expect-error TS(7031): Binding element 'key' implicitly has an 'any' type... Remove this comment to see the full error message
             }: any, [key, value]) => {
                 _scope.setMacro(`arg::${key}`, value, key.includes('*'));
                 return '';
@@ -708,11 +735,13 @@ export class SlashCommandHandler {
                     let qrName = qrNameParts.join('.');
                     let qrs = QuickReplySet.get(setName);
                     if (qrs) {
+                        // @ts-expect-error TS(2339): Property 'qrList' does not exist on type 'never'.
                         qr = qrs.qrList.find((it: any) => it.label == qrName);
                     }
                 }
                 if (qr) {
                     const parser = new SlashCommandParser();
+                    // @ts-expect-error TS(2345): Argument of type 'never[]' is not assignable to pa... Remove this comment to see the full error message
                     const closure = parser.parse(qr.message, true, [], args._abortController, args._debugController);
                     if (args._debugController) {
                         closure.source = args.from;
@@ -729,10 +758,13 @@ export class SlashCommandHandler {
                         );
                     };
                     const candidates = closure.executorList
+                        // @ts-expect-error TS(2339): Property 'command' does not exist on type 'never'.
                         .filter(executor => ['let', 'var'].includes(executor.command.name))
                         .filter(testCandidates)
                         .map(executor => ({
+                            // @ts-expect-error TS(2339): Property 'namedArgumentList' does not exist on typ... Remove this comment to see the full error message
                             key: executor.namedArgumentList.find((arg: any) => arg.name == 'key')?.value ?? executor.unnamedArgumentList[0].value,
+                            // @ts-expect-error TS(2339): Property 'unnamedArgumentList' does not exist on t... Remove this comment to see the full error message
                             value: executor.unnamedArgumentList[executor.namedArgumentList.find((arg: any) => arg.name == 'key') ? 0 : 1].value,
                         }))
                     ;
@@ -812,6 +844,7 @@ export class SlashCommandHandler {
         try {
             return await this.api.executeQuickReplyByIndex(idx);
         } catch (ex) {
+            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             toastr.error(ex.message);
         }
     }
@@ -819,15 +852,19 @@ export class SlashCommandHandler {
 
     toggleGlobalSet(name: any, args = {}) {
         try {
+            // @ts-expect-error TS(2339): Property 'visible' does not exist on type '{}'.
             this.api.toggleGlobalSet(name, isTrueBoolean(args.visible ?? 'true'));
         } catch (ex) {
+            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             toastr.error(ex.message);
         }
     }
     addGlobalSet(name: any, args = {}) {
         try {
+            // @ts-expect-error TS(2339): Property 'visible' does not exist on type '{}'.
             this.api.addGlobalSet(name, isTrueBoolean(args.visible ?? 'true'));
         } catch (ex) {
+            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             toastr.error(ex.message);
         }
     }
@@ -835,6 +872,7 @@ export class SlashCommandHandler {
         try {
             this.api.removeGlobalSet(name);
         } catch (ex) {
+            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             toastr.error(ex.message);
         }
     }
@@ -842,15 +880,19 @@ export class SlashCommandHandler {
 
     toggleChatSet(name: any, args = {}) {
         try {
+            // @ts-expect-error TS(2339): Property 'visible' does not exist on type '{}'.
             this.api.toggleChatSet(name, isTrueBoolean(args.visible ?? 'true'));
         } catch (ex) {
+            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             toastr.error(ex.message);
         }
     }
     addChatSet(name: any, args = {}) {
         try {
+            // @ts-expect-error TS(2339): Property 'visible' does not exist on type '{}'.
             this.api.addChatSet(name, isTrueBoolean(args.visible ?? 'true'));
         } catch (ex) {
+            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             toastr.error(ex.message);
         }
     }
@@ -858,6 +900,7 @@ export class SlashCommandHandler {
         try {
             this.api.removeChatSet(name);
         } catch (ex) {
+            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             toastr.error(ex.message);
         }
     }
@@ -885,6 +928,7 @@ export class SlashCommandHandler {
                 },
             );
         } catch (ex) {
+            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             toastr.error(ex.message);
         }
     }
@@ -896,6 +940,7 @@ export class SlashCommandHandler {
         try {
             return JSON.stringify(this.api.getQrByLabel(args.set, args.id !== undefined ? Number(args.id) : args.label));
         } catch (ex) {
+            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             toastr.error(ex.message);
         }
     }
@@ -922,6 +967,7 @@ export class SlashCommandHandler {
                 },
             );
         } catch (ex) {
+            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             toastr.error(ex.message);
         }
     }
@@ -929,6 +975,7 @@ export class SlashCommandHandler {
         try {
             this.api.deleteQuickReply(args.set, args.id !== undefined ? Number(args.id) : (args.label ?? label));
         } catch (ex) {
+            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             toastr.error(ex.message);
         }
     }
@@ -942,6 +989,7 @@ export class SlashCommandHandler {
                 isTrueBoolean(args.chain),
             );
         }  catch (ex) {
+            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             toastr.error(ex.message);
         }
     }
@@ -949,6 +997,7 @@ export class SlashCommandHandler {
         try {
             this.api.deleteContextItem(args.set, args.id !== undefined ? Number(args.id) : args.label, name);
         }  catch (ex) {
+            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             toastr.error(ex.message);
         }
     }
@@ -956,6 +1005,7 @@ export class SlashCommandHandler {
         try {
             this.api.clearContextMenu(args.set, args.id !== undefined ? Number(args.id) : args.label ?? label);
         } catch (ex) {
+            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             toastr.error(ex.message);
         }
     }
@@ -972,6 +1022,7 @@ export class SlashCommandHandler {
                 },
             );
         } catch (ex) {
+            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             toastr.error(ex.message);
         }
     }
@@ -986,6 +1037,7 @@ export class SlashCommandHandler {
                 },
             );
         } catch (ex) {
+            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             toastr.error(ex.message);
         }
     }
@@ -993,6 +1045,7 @@ export class SlashCommandHandler {
         try {
             await this.api.deleteSet(name ?? '');
         } catch (ex) {
+            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             toastr.error(ex.message);
         }
     }
@@ -1008,6 +1061,7 @@ export class SlashCommandHandler {
                     return this.api.listSets();
             }
         } catch (ex) {
+            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             toastr.error(ex.message);
         }
     }
@@ -1015,6 +1069,7 @@ export class SlashCommandHandler {
         try {
             return this.api.listQuickReplies(name);
         } catch (ex) {
+            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             toastr.error(ex.message);
         }
     }

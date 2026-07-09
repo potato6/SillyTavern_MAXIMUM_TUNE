@@ -49,6 +49,7 @@ let buttons: any;
 /** @type {AutoExecuteHandler} */
 let autoExec: any;
 /** @type {QuickReplyApi} */
+// @ts-expect-error TS(7005): Variable 'quickReplyApi' implicitly has an 'any' t... Remove this comment to see the full error message
 export let quickReplyApi;
 
 
@@ -70,19 +71,33 @@ const loadSets = async () => {
                 set.injectInput = set.AutoInputInject ?? false;
                 set.qrList = set.quickReplySlots.map((slot: any, idx: any) => {
                     const qr = {};
+                    // @ts-expect-error TS(2339): Property 'id' does not exist on type '{}'.
                     qr.id = idx + 1;
+                    // @ts-expect-error TS(2339): Property 'label' does not exist on type '{}'.
                     qr.label = slot.label ?? '';
+                    // @ts-expect-error TS(2339): Property 'title' does not exist on type '{}'.
                     qr.title = slot.title ?? '';
+                    // @ts-expect-error TS(2339): Property 'message' does not exist on type '{}'.
                     qr.message = slot.mes ?? '';
+                    // @ts-expect-error TS(2339): Property 'isHidden' does not exist on type '{}'.
                     qr.isHidden = slot.hidden ?? false;
+                    // @ts-expect-error TS(2339): Property 'executeOnStartup' does not exist on type... Remove this comment to see the full error message
                     qr.executeOnStartup = slot.autoExecute_appStartup ?? false;
+                    // @ts-expect-error TS(2339): Property 'executeOnUser' does not exist on type '{... Remove this comment to see the full error message
                     qr.executeOnUser = slot.autoExecute_userMessage ?? false;
+                    // @ts-expect-error TS(2339): Property 'executeOnAi' does not exist on type '{}'... Remove this comment to see the full error message
                     qr.executeOnAi = slot.autoExecute_botMessage ?? false;
+                    // @ts-expect-error TS(2339): Property 'executeOnChatChange' does not exist on t... Remove this comment to see the full error message
                     qr.executeOnChatChange = slot.autoExecute_chatLoad ?? false;
+                    // @ts-expect-error TS(2339): Property 'executeOnGroupMemberDraft' does not exis... Remove this comment to see the full error message
                     qr.executeOnGroupMemberDraft = slot.autoExecute_groupMemberDraft ?? false;
+                    // @ts-expect-error TS(2339): Property 'executeOnNewChat' does not exist on type... Remove this comment to see the full error message
                     qr.executeOnNewChat = slot.autoExecute_newChat ?? false;
+                    // @ts-expect-error TS(2339): Property 'executeBeforeGeneration' does not exist ... Remove this comment to see the full error message
                     qr.executeBeforeGeneration = slot.autoExecute_beforeGeneration ?? false;
+                    // @ts-expect-error TS(2339): Property 'automationId' does not exist on type '{}... Remove this comment to see the full error message
                     qr.automationId = slot.automationId ?? '';
+                    // @ts-expect-error TS(2339): Property 'contextList' does not exist on type '{}'... Remove this comment to see the full error message
                     qr.contextList = (slot.contextMenu ?? []).map((it: any) => ({
                         set: it.preset,
                         isChained: it.chain
@@ -91,12 +106,15 @@ const loadSets = async () => {
                 });
             }
             if (set.version == 2) {
+                // @ts-expect-error TS(2345): Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
                 QuickReplySet.list.push(QuickReplySet.from(JSON.parse(JSON.stringify(set))));
             }
         }
         // need to load QR lists after all sets are loaded to be able to resolve context menu entries
         setList.forEach((set: any, idx: any) => {
+            // @ts-expect-error TS(2532): Object is possibly 'undefined'.
             QuickReplySet.list[idx].qrList = set.qrList.map((it: any) => QuickReply.from(it));
+            // @ts-expect-error TS(2532): Object is possibly 'undefined'.
             QuickReplySet.list[idx].init();
         });
         log('sets: ', QuickReplySet.list);
@@ -104,16 +122,21 @@ const loadSets = async () => {
 };
 
 const loadSettings = async () => {
+    // @ts-expect-error TS(2551): Property 'quickReplyV2' does not exist on type '{ ... Remove this comment to see the full error message
     if (!extension_settings.quickReplyV2) {
         if (!extension_settings.quickReply) {
+            // @ts-expect-error TS(2551): Property 'quickReplyV2' does not exist on type '{ ... Remove this comment to see the full error message
             extension_settings.quickReplyV2 = defaultSettings;
         } else {
+            // @ts-expect-error TS(2551): Property 'quickReplyV2' does not exist on type '{ ... Remove this comment to see the full error message
             extension_settings.quickReplyV2 = {
+                // @ts-expect-error TS(2339): Property 'quickReplyEnabled' does not exist on typ... Remove this comment to see the full error message
                 isEnabled: extension_settings.quickReply.quickReplyEnabled ?? false,
                 isCombined: false,
                 isPopout: false,
                 config: {
                     setList: [{
+                        // @ts-expect-error TS(2339): Property 'selectedPreset' does not exist on type '... Remove this comment to see the full error message
                         set: extension_settings.quickReply.selectedPreset ?? extension_settings.quickReply.name ?? 'Default',
                         isVisible: true,
                     }],
@@ -122,6 +145,7 @@ const loadSettings = async () => {
         }
     }
     try {
+        // @ts-expect-error TS(2551): Property 'quickReplyV2' does not exist on type '{ ... Remove this comment to see the full error message
         settings = QuickReplySettings.from(extension_settings.quickReplyV2);
         settings.config.scope = 'global';
         settings.config.onUpdate = () => settings.save();
@@ -175,12 +199,14 @@ export async function init() {
     log('settings: ', settings);
 
     manager = new SettingsUi(settings);
+    // @ts-expect-error TS(2531): Object is possibly 'null'.
     document.querySelector('#qr_container').append(await manager.render());
 
     buttons = new ButtonUi(settings);
     buttons.show();
     settings.onSave = () => buttons.refresh();
 
+    // @ts-expect-error TS(7017): Element implicitly has an 'any' type because type ... Remove this comment to see the full error message
     globalThis.executeQuickReplyByName = async (name: any, args = {}, options = {}) => {
         let qr = [
             ...settings.config.setList,
@@ -196,6 +222,7 @@ export async function init() {
             qrName = qrName.join('.');
             let qrs = QuickReplySet.get(setName);
             if (qrs) {
+                // @ts-expect-error TS(2339): Property 'qrList' does not exist on type 'never'.
                 qr = qrs.qrList.find((it: any) => it.label == qrName);
             }
         }
@@ -213,6 +240,7 @@ export async function init() {
 
     eventSource.on(event_types.APP_READY, async () => await finalizeInit());
 
+    // @ts-expect-error TS(7017): Element implicitly has an 'any' type because type ... Remove this comment to see the full error message
     globalThis.quickReplyApi = quickReplyApi;
 }
 
@@ -284,6 +312,7 @@ const onUserMessage = async () => {
 eventSource.makeFirst(event_types.USER_MESSAGE_RENDERED, (...args: any[]) => executeIfReadyElseQueue(onUserMessage, args));
 
 const onAiMessage = async (messageId: any) => {
+    // @ts-expect-error TS(2339): Property 'mes' does not exist on type 'never'.
     if (['...'].includes(chat[messageId]?.mes)) {
         log('QR auto-execution suppressed for swiped message');
         return;

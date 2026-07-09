@@ -40,8 +40,10 @@ class AzureTtsProvider {
     }
 
     constructor() {
+        // @ts-expect-error TS(2339): Property 'handler' does not exist on type 'AzureTt... Remove this comment to see the full error message
         this.handler = async function(this: any, /** @type {string} */ key: any) {
             if (key !== SECRET_KEYS.AZURE_TTS) return;
+            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             $('#azure_tts_key').toggleClass('success', !!secret_state[SECRET_KEYS.AZURE_TTS]);
             await this.onRefreshClick();
         }.bind(this);
@@ -49,6 +51,7 @@ class AzureTtsProvider {
 
     dispose() {
         [event_types.SECRET_WRITTEN, event_types.SECRET_DELETED, event_types.SECRET_ROTATED].forEach(event => {
+            // @ts-expect-error TS(2339): Property 'handler' does not exist on type 'AzureTt... Remove this comment to see the full error message
             eventSource.removeListener(event, this.handler);
         });
     }
@@ -79,8 +82,10 @@ class AzureTtsProvider {
         }
 
         $('#azure_tts_region').val(this.settings.region).on('input', () => this.onSettingsChange());
+        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         $('#azure_tts_key').toggleClass('success', !!secret_state[SECRET_KEYS.AZURE_TTS]);
         [event_types.SECRET_WRITTEN, event_types.SECRET_DELETED, event_types.SECRET_ROTATED].forEach(event => {
+            // @ts-expect-error TS(2339): Property 'handler' does not exist on type 'AzureTt... Remove this comment to see the full error message
             eventSource.on(event, this.handler);
         });
 
@@ -94,6 +99,7 @@ class AzureTtsProvider {
 
     // Perform a simple readiness check by trying to fetch voiceIds
     async checkReady() {
+        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         if (secret_state[SECRET_KEYS.AZURE_TTS]) {
             await this.fetchTtsVoiceObjects();
         } else {
@@ -114,6 +120,7 @@ class AzureTtsProvider {
             this.voices = await this.fetchTtsVoiceObjects();
         }
         const match = this.voices.filter(
+            // @ts-expect-error TS(2339): Property 'name' does not exist on type 'never'.
             voice => voice.name == voiceName,
         )[0];
         if (!match) {
@@ -131,6 +138,7 @@ class AzureTtsProvider {
     // API CALLS //
     //###########//
     async fetchTtsVoiceObjects() {
+        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         if (!secret_state[SECRET_KEYS.AZURE_TTS]) {
             console.warn('Azure TTS API Key not set');
             return [];
@@ -172,6 +180,7 @@ class AzureTtsProvider {
         this.audioElement.pause();
         this.audioElement.currentTime = 0;
         const voice = await this.getVoice(id);
+        // @ts-expect-error TS(2339): Property 'lang' does not exist on type 'never'.
         const text = getPreviewString(voice.lang);
         const response = await this.fetchTtsGeneration(text, id);
         if (!response.ok) {
@@ -186,6 +195,7 @@ class AzureTtsProvider {
     }
 
     async fetchTtsGeneration(text: any, voiceId: any) {
+        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         if (!secret_state[SECRET_KEYS.AZURE_TTS]) {
             throw new Error('Azure TTS API Key not set');
         }

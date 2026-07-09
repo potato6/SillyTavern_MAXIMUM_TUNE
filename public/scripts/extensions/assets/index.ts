@@ -12,6 +12,7 @@ import { POPUP_TYPE, Popup, callGenericPopup } from '../../popup.js';
 import { accountStorage } from '../../util/AccountStorage.js';
 import { escapeHtml, flashHighlight, getStringHash, isValidUrl } from '../../utils.js';
 import { t, translate } from '../../i18n.js';
+// @ts-expect-error TS(2792): Cannot find module '/scripts/slash-commands/SlashC... Remove this comment to see the full error message
 import { SlashCommandParser } from '/scripts/slash-commands/SlashCommandParser.js';
 export { MODULE_NAME };
 
@@ -213,13 +214,16 @@ function createAssetBlock(asset: any, assetType: any, element: any) {
 async function buildAssetTypeSection(assetType: any) {
     const assetTypeMenu = $('<div />', { id: `assets_${assetType}_div`, class: 'assets-list-div' });
     assetTypeMenu.attr('data-type', assetType);
+    // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     assetTypeMenu.append($('<h3>').text(KNOWN_TYPES[assetType] || assetType)).hide();
 
     if (assetType == 'extension') {
         assetTypeMenu.append(await renderExtensionTemplateAsync('assets', 'installation'));
     }
 
+    // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     for (const asset of availableAssets[assetType].sort((a: any, b: any) => a?.name && b?.name && a.name.localeCompare(b.name))) {
+        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         const i = availableAssets[assetType].indexOf(asset);
         const element = createAssetButton(asset, assetType, i);
         const assetBlock = createAssetBlock(asset, assetType, element);
@@ -249,8 +253,11 @@ async function populateAssetsMenu(json: any) {
     console.debug(DEBUG_PREFIX, 'Received assets dictionary', json);
 
     for (const i of json) {
+        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         if (availableAssets[i.type] === undefined)
+            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             availableAssets[i.type] = [];
+        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         availableAssets[i.type].push(i);
     }
 
@@ -263,6 +270,7 @@ async function populateAssetsMenu(json: any) {
     $('#assets_type_select').append($('<option />', { value: '', text: t`All` }));
 
     for (const type of assetTypes) {
+        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         const text = translate(KNOWN_TYPES[type] || type);
         const option = $('<option />', { value: type, text: text });
         $('#assets_type_select').append(option);
@@ -350,10 +358,12 @@ function previewAsset(this: any, e: any) {
  * @returns {boolean} True if the asset is installed, false otherwise
  */
 function isAssetInstalled(assetType: any, filename: any) {
+    // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     let assetList = currentAssets[assetType];
 
     if (assetType == 'extension') {
         const thirdPartyMarker = 'third-party/';
+        // @ts-expect-error TS(2339): Property 'startsWith' does not exist on type 'neve... Remove this comment to see the full error message
         assetList = extensionNames.filter(x => x.startsWith(thirdPartyMarker)).map(x => x.replace(thirdPartyMarker, ''));
     }
 

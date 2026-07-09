@@ -67,6 +67,7 @@ export class PollinationsTtsProvider {
             this.voices = await this.fetchTtsVoiceObjects();
         }
         const match = this.voices.filter(
+            // @ts-expect-error TS(2339): Property 'name' does not exist on type 'never'.
             voice => voice.name == voiceName || voice.voice_id == voiceName,
         )[0];
         if (!match) {
@@ -117,6 +118,7 @@ export class PollinationsTtsProvider {
         this.audioElement.pause();
         this.audioElement.currentTime = 0;
         const voice = await this.getVoice(id);
+        // @ts-expect-error TS(2339): Property 'lang' does not exist on type 'never'.
         const text = getPreviewString(voice.lang);
         for await (const response of this.generateTts(text, id)) {
             const audio = await response.blob();
@@ -125,6 +127,7 @@ export class PollinationsTtsProvider {
                 const audioElement = new Audio();
                 audioElement.src = url;
                 audioElement.play();
+                // @ts-expect-error TS(2794): Expected 1 arguments, but got 0. Did you forget to... Remove this comment to see the full error message
                 audioElement.onended = () => resolve();
             });
             URL.revokeObjectURL(url);

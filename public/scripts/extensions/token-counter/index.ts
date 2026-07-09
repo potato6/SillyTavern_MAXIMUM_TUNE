@@ -24,6 +24,7 @@ async function doTokenCounter() {
             $('#token_counter_result').text(ids.length);
 
             if (Object.hasOwnProperty.call(ids, 'chunks')) {
+                // @ts-expect-error TS(2532): Object is possibly 'undefined'.
                 drawChunks(Object.getOwnPropertyDescriptor(ids, 'chunks').value, ids);
             }
         } else {
@@ -89,6 +90,7 @@ function drawChunks(chunks: any, ids: any) {
 async function doCount() {
     // get all of the messages in the chat
     const context = getContext();
+    // @ts-expect-error TS(2339): Property 'mes' does not exist on type 'never'.
     const messages = context.chat.filter(x => x.mes && !x.is_system).map(x => x.mes);
 
     //concat all the messages into a single string

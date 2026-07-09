@@ -70,11 +70,14 @@ class XTTSTtsProvider {
         <select id="xtts_api_language">`;
 
         for (let language in this.languageLabels) {
+            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             if (this.languageLabels[language] == this.settings?.language) {
+                // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 html += `<option value="${this.languageLabels[language]}" selected="selected">${language}</option>`;
                 continue;
             }
 
+            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             html += `<option value="${this.languageLabels[language]}">${language}</option>`;
         }
 
@@ -166,6 +169,7 @@ class XTTSTtsProvider {
 
         const apiCheckInterval = setInterval(() => {
             // Use Extras API if TTS support is enabled
+            // @ts-expect-error TS(2345): Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
             if (modules.includes('tts') || modules.includes('xtts-tts')) {
                 const baseUrl = new URL(getApiUrl());
                 baseUrl.pathname = '/api/tts';
@@ -233,6 +237,7 @@ class XTTSTtsProvider {
             this.voices = await this.fetchTtsVoiceObjects();
         }
         const match = this.voices.filter(
+            // @ts-expect-error TS(2339): Property 'name' does not exist on type 'never'.
             XTTSVoice => XTTSVoice.name == voiceName,
         )[0];
         if (!match) {

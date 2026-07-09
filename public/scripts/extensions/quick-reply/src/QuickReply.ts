@@ -215,7 +215,9 @@ export class QuickReply {
                                     inp.type = 'file';
                                     inp.accept = '.json';
                                     inp.addEventListener('change', async () => {
+                                        // @ts-expect-error TS(2531): Object is possibly 'null'.
                                         if (inp.files.length > 0) {
+                                            // @ts-expect-error TS(2531): Object is possibly 'null'.
                                             for (const file of inp.files) {
                                                 const text = await file.text();
                                                 this.onInsertBefore(text);
@@ -385,11 +387,13 @@ export class QuickReply {
     async showEditor() {
         const response = await fetch('/scripts/extensions/quick-reply/html/qrEditor.html', { cache: 'no-store' });
         if (response.ok) {
+            // @ts-expect-error TS(2339): Property 'template' does not exist on type 'QuickR... Remove this comment to see the full error message
             this.template = document.createRange().createContextualFragment(await response.text()).querySelector('#qr--modalEditor');
             /**@type {HTMLElement} */
             // @ts-ignore
             const dom = this.template.cloneNode(true);
             this.editorDom = dom;
+            // @ts-expect-error TS(2322): Type 'string' is not assignable to type 'null | un... Remove this comment to see the full error message
             this.editorPopup = new Popup(dom, POPUP_TYPE.TEXT, undefined, { okButton: 'OK', wide: true, large: true, rows: 1 });
             const popupResult = this.editorPopup.show();
 
@@ -550,16 +554,21 @@ export class QuickReply {
                 if (wrap.checked) {
                     message.style.whiteSpace = 'pre-wrap';
                     messageSyntaxInner.style.whiteSpace = 'pre-wrap';
+                    // @ts-expect-error TS(2339): Property 'clone' does not exist on type 'QuickRepl... Remove this comment to see the full error message
                     if (this.clone) {
+                        // @ts-expect-error TS(2339): Property 'clone' does not exist on type 'QuickRepl... Remove this comment to see the full error message
                         this.clone.style.whiteSpace = 'pre-wrap';
                     }
                 } else {
                     message.style.whiteSpace = 'pre';
                     messageSyntaxInner.style.whiteSpace = 'pre';
+                    // @ts-expect-error TS(2339): Property 'clone' does not exist on type 'QuickRepl... Remove this comment to see the full error message
                     if (this.clone) {
+                        // @ts-expect-error TS(2339): Property 'clone' does not exist on type 'QuickRepl... Remove this comment to see the full error message
                         this.clone.style.whiteSpace = 'pre';
                     }
                 }
+                // @ts-expect-error TS(2554): Expected 1 arguments, but got 0.
                 updateScrollDebounced();
             };
             const updateScroll = (evt: any) => {
@@ -595,6 +604,7 @@ export class QuickReply {
             const updateTabSize = () => {
                 message.style.tabSize = tabSize.value;
                 messageSyntaxInner.style.tabSize = tabSize.value;
+                // @ts-expect-error TS(2554): Expected 1 arguments, but got 0.
                 updateScrollDebounced();
             };
             tabSize.addEventListener('change', () => {
@@ -629,6 +639,7 @@ export class QuickReply {
             const updateMessageDebounced = debounce((value: any) => this.updateMessage(value), 10);
             message.addEventListener('input', () => {
                 updateMessageDebounced(message.value);
+                // @ts-expect-error TS(2554): Expected 1 arguments, but got 0.
                 updateScrollDebounced();
             }, { passive: true });
             const getLineStart = () => {
@@ -663,6 +674,7 @@ export class QuickReply {
                         message.selectionStart = start + 1;
                         message.selectionEnd = end + affectedLines.length;
                         message.dispatchEvent(new Event('input', { bubbles: true }));
+                    // @ts-expect-error TS(2532): Object is possibly 'undefined'.
                     } else if (!(ac.isReplaceable && ac.isActive)) {
                         evt.stopImmediatePropagation();
                         evt.stopPropagation();
@@ -695,10 +707,12 @@ export class QuickReply {
                     } else {
                         message.selectionStart = start;
                     }
+                // @ts-expect-error TS(2532): Object is possibly 'undefined'.
                 } else if (evt.key == 'Enter' && !evt.ctrlKey && !evt.shiftKey && !evt.altKey && !(ac.isReplaceable && ac.isActive)) {
                     // new line, keep indent
                     const start = message.selectionStart;
                     let lineStart = getLineStart();
+                    // @ts-expect-error TS(2531): Object is possibly 'null'.
                     const indent = /^([^\S\n]*)/.exec(message.value.slice(lineStart))[1] ?? '';
                     if (indent.length) {
                         evt.stopImmediatePropagation();
@@ -781,6 +795,7 @@ export class QuickReply {
             });
             // @ts-ignore
             message.addEventListener('scroll', (evt) => {
+                // @ts-expect-error TS(2554): Expected 1 arguments, but got 0.
                 updateScrollDebounced();
             });
             let preBreakPointStart: any;
@@ -911,6 +926,7 @@ export class QuickReply {
                         `<div>${hljs.highlight(`${message.value}${message.value.slice(-1) == '\n' ? ' ' : ''}`, { language: 'stscript', ignoreIllegals: true })?.value}</div>`,
                         { childrenOnly: true },
                     );
+                    // @ts-expect-error TS(2554): Expected 1 arguments, but got 0.
                     updateScrollDebounced();
                 }
             };
@@ -949,6 +965,7 @@ export class QuickReply {
             const tpl = dom.querySelector('#qr--ctxItem');
             const linkList = dom.querySelector('#qr--ctxEditor');
             const fillQrSetSelect = (/**@type {HTMLSelectElement}*/select: any, /**@type {QuickReplyContextLink}*/ link: any) => {
+                // @ts-expect-error TS(2339): Property 'toSorted' does not exist on type 'never[... Remove this comment to see the full error message
                 [{ name: 'Select a QR set' }, ...QuickReplySet.list.toSorted((a: any, b: any) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()))].forEach(qrs => {
                     const opt = document.createElement('option'); {
                         opt.value = qrs.name;
@@ -997,7 +1014,9 @@ export class QuickReply {
             });
             const onContextSort = () => {
                 this.contextList = Array.from(linkList.querySelectorAll('.qr--ctxItem')).map((it, idx) => {
+                    // @ts-expect-error TS(2571): Object is of type 'unknown'.
                     const link = this.contextList[Number(it.getAttribute('data-order'))];
+                    // @ts-expect-error TS(2571): Object is of type 'unknown'.
                     it.setAttribute('data-order', String(idx));
                     return link;
                 });
@@ -1127,6 +1146,7 @@ export class QuickReply {
             inputMirror.value = inputOg.value;
             const inputOgMo = new MutationObserver(muts => {
                 if (muts.find(it => [...it.removedNodes].includes(inputMirror) || [...it.removedNodes].find(n => n.contains(inputMirror)))) {
+                    // @ts-expect-error TS(2531): Object is possibly 'null'.
                     inputOg.removeEventListener('input', inputOgListener);
                 }
             });
@@ -1135,6 +1155,7 @@ export class QuickReply {
                 // @ts-ignore
                 inputMirror.value = inputOg.value;
             };
+            // @ts-expect-error TS(2531): Object is possibly 'null'.
             inputOg.addEventListener('input', inputOgListener);
             inputMirror.addEventListener('input', () => {
                 // @ts-ignore
@@ -1208,36 +1229,55 @@ export class QuickReply {
     getEditorPosition(start: any, end: any, message = null) {
         const inputRect = this.editorMessage.getBoundingClientRect();
         const style = window.getComputedStyle(this.editorMessage);
+        // @ts-expect-error TS(2339): Property 'clone' does not exist on type 'QuickRepl... Remove this comment to see the full error message
         if (!this.clone) {
+            // @ts-expect-error TS(2339): Property 'clone' does not exist on type 'QuickRepl... Remove this comment to see the full error message
             this.clone = document.createElement('div');
             for (const key of style) {
+                // @ts-expect-error TS(2339): Property 'clone' does not exist on type 'QuickRepl... Remove this comment to see the full error message
                 this.clone.style[key] = style[key];
             }
+            // @ts-expect-error TS(2339): Property 'clone' does not exist on type 'QuickRepl... Remove this comment to see the full error message
             this.clone.style.position = 'fixed';
+            // @ts-expect-error TS(2339): Property 'clone' does not exist on type 'QuickRepl... Remove this comment to see the full error message
             this.clone.style.visibility = 'hidden';
             const mo = new MutationObserver(muts => {
                 if (muts.find(it => [...it.removedNodes].includes(this.editorMessage) || [...it.removedNodes].find(n => n.contains(this.editorMessage)))) {
+                    // @ts-expect-error TS(2339): Property 'clone' does not exist on type 'QuickRepl... Remove this comment to see the full error message
                     this.clone?.remove();
+                    // @ts-expect-error TS(2339): Property 'clone' does not exist on type 'QuickRepl... Remove this comment to see the full error message
                     this.clone = null;
                 }
             });
             mo.observe(document.body, { childList: true });
         }
+        // @ts-expect-error TS(2339): Property 'clone' does not exist on type 'QuickRepl... Remove this comment to see the full error message
         document.body.append(this.clone);
+        // @ts-expect-error TS(2339): Property 'clone' does not exist on type 'QuickRepl... Remove this comment to see the full error message
         this.clone.style.width = `${inputRect.width}px`;
+        // @ts-expect-error TS(2339): Property 'clone' does not exist on type 'QuickRepl... Remove this comment to see the full error message
         this.clone.style.height = `${inputRect.height}px`;
+        // @ts-expect-error TS(2339): Property 'clone' does not exist on type 'QuickRepl... Remove this comment to see the full error message
         this.clone.style.left = `${inputRect.left}px`;
+        // @ts-expect-error TS(2339): Property 'clone' does not exist on type 'QuickRepl... Remove this comment to see the full error message
         this.clone.style.top = `${inputRect.top}px`;
+        // @ts-expect-error TS(2339): Property 'clone' does not exist on type 'QuickRepl... Remove this comment to see the full error message
         this.clone.style.whiteSpace = style.whiteSpace;
+        // @ts-expect-error TS(2339): Property 'clone' does not exist on type 'QuickRepl... Remove this comment to see the full error message
         this.clone.style.tabSize = style.tabSize;
         const text = message ?? this.editorMessage.value;
         const before = text.slice(0, start);
+        // @ts-expect-error TS(2339): Property 'clone' does not exist on type 'QuickRepl... Remove this comment to see the full error message
         this.clone.textContent = before;
         const locator = document.createElement('span');
         locator.textContent = text.slice(start, end);
+        // @ts-expect-error TS(2339): Property 'clone' does not exist on type 'QuickRepl... Remove this comment to see the full error message
         this.clone.append(locator);
+        // @ts-expect-error TS(2339): Property 'clone' does not exist on type 'QuickRepl... Remove this comment to see the full error message
         this.clone.append(text.slice(end));
+        // @ts-expect-error TS(2339): Property 'clone' does not exist on type 'QuickRepl... Remove this comment to see the full error message
         this.clone.scrollTop = this.editorSyntax.scrollTop;
+        // @ts-expect-error TS(2339): Property 'clone' does not exist on type 'QuickRepl... Remove this comment to see the full error message
         this.clone.scrollLeft = this.editorSyntax.scrollLeft;
         const locatorRect = locator.getBoundingClientRect();
         const bodyRect = document.body.getBoundingClientRect();
@@ -1297,6 +1337,7 @@ export class QuickReply {
         });
         // @ts-ignore
         syntax.addEventListener('scroll', (evt) => {
+            // @ts-expect-error TS(2554): Expected 1 arguments, but got 0.
             updateScrollDebounced();
         });
         try {
@@ -1740,6 +1781,7 @@ export class QuickReply {
                 `;
             } else {
                 this.editorExecuteErrors.innerHTML = `
+                    // @ts-expect-error TS(2571): Object is of type 'unknown'.
                     <div>${ex.message}</div>
                 `;
             }
@@ -1878,10 +1920,12 @@ export class QuickReply {
 
     async execute(args = {}, isEditor = false, isRun = false, options = {}) {
         if (this.message?.length > 0 && this.onExecute) {
+            // @ts-expect-error TS(2554): Expected 1 arguments, but got 0.
             const scope = new SlashCommandScope();
             for (const key of Object.keys(args)) {
                 if (key[0] == '_') continue;
                 if (key == 'isAutoExecute') continue;
+                // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 scope.setMacro(`arg::${key}`, args[key]);
             }
             scope.setMacro('arg::*', '');
@@ -1890,6 +1934,7 @@ export class QuickReply {
             }
             return await this.onExecute(this, {
                 message: this.message,
+                // @ts-expect-error TS(2339): Property 'isAutoExecute' does not exist on type '{... Remove this comment to see the full error message
                 isAutoExecute: args.isAutoExecute ?? false,
                 isEditor,
                 isRun,

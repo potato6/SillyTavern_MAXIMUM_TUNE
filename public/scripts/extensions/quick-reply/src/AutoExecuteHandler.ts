@@ -20,6 +20,7 @@ export class AutoExecuteHandler {
 
     async performAutoExecute(/** @type {QuickReply[]} */qrList: any) {
         for (const qr of qrList) {
+            // @ts-expect-error TS(2345): Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
             this.preventAutoExecuteStack.push(qr.preventAutoExecute);
             try {
                 await qr.execute({ isAutoExecute: true });

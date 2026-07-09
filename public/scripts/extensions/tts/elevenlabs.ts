@@ -1,7 +1,10 @@
 import { saveTtsProviderSettings } from './index.js';
 declare const $: any; declare const toastr: any;
+// @ts-expect-error TS(2792): Cannot find module '/script.js'. Did you mean to s... Remove this comment to see the full error message
 import { event_types, eventSource, getRequestHeaders } from '/script.js';
+// @ts-expect-error TS(2792): Cannot find module '/scripts/secrets.js'. Did you ... Remove this comment to see the full error message
 import { SECRET_KEYS, secret_state, writeSecret } from '/scripts/secrets.js';
+// @ts-expect-error TS(2792): Cannot find module '/scripts/utils.js'. Did you me... Remove this comment to see the full error message
 import { getBase64Async } from '/scripts/utils.js';
 export { ElevenLabsTtsProvider };
 
@@ -77,6 +80,7 @@ class ElevenLabsTtsProvider {
     }
 
     constructor() {
+        // @ts-expect-error TS(2339): Property 'handler' does not exist on type 'ElevenL... Remove this comment to see the full error message
         this.handler = async function(this: any, /** @type {string} */ key: any) {
             if (key !== SECRET_KEYS.ELEVENLABS) return;
             $('#elevenlabs_tts_key').toggleClass('success', !!secret_state[SECRET_KEYS.ELEVENLABS]);
@@ -86,6 +90,7 @@ class ElevenLabsTtsProvider {
 
     dispose() {
         [event_types.SECRET_WRITTEN, event_types.SECRET_DELETED, event_types.SECRET_ROTATED].forEach(event => {
+            // @ts-expect-error TS(2339): Property 'handler' does not exist on type 'ElevenL... Remove this comment to see the full error message
             eventSource.removeListener(event, this.handler);
         });
     }
@@ -141,6 +146,7 @@ class ElevenLabsTtsProvider {
 
         $('#elevenlabs_tts_key').toggleClass('success', !!secret_state[SECRET_KEYS.ELEVENLABS]);
         [event_types.SECRET_WRITTEN, event_types.SECRET_DELETED, event_types.SECRET_ROTATED].forEach(event => {
+            // @ts-expect-error TS(2339): Property 'handler' does not exist on type 'ElevenL... Remove this comment to see the full error message
             eventSource.on(event, this.handler);
         });
 
@@ -198,32 +204,45 @@ class ElevenLabsTtsProvider {
         const voiceCloningLabelsInput = /** @type {HTMLInputElement} */ (document.getElementById('elevenlabs_tts_voice_cloning_labels'));
 
         const updateCloneVoiceButtonVisibility = () => {
+            // @ts-expect-error TS(2531): Object is possibly 'null'.
             cloneVoiceButton.style.display = audioFilesInput.files.length > 0 ? 'inline-block' : 'none';
         };
 
         const clearSelectedFiles = () => {
+            // @ts-expect-error TS(2531): Object is possibly 'null'.
             audioFilesInput.value = '';
+            // @ts-expect-error TS(2531): Object is possibly 'null'.
             selectedFilesListElement.innerHTML = '';
             updateCloneVoiceButtonVisibility();
         };
 
+        // @ts-expect-error TS(2531): Object is possibly 'null'.
         uploadAudioFileButton.addEventListener('click', () => {
+            // @ts-expect-error TS(2531): Object is possibly 'null'.
             audioFilesInput.click();
         });
 
+        // @ts-expect-error TS(2531): Object is possibly 'null'.
         audioFilesInput.addEventListener('change', () => {
+            // @ts-expect-error TS(2531): Object is possibly 'null'.
             selectedFilesListElement.innerHTML = '';
+            // @ts-expect-error TS(2531): Object is possibly 'null'.
             for (const file of audioFilesInput.files) {
                 const listItem = document.createElement('div');
                 listItem.textContent = file.name;
+                // @ts-expect-error TS(2531): Object is possibly 'null'.
                 selectedFilesListElement.appendChild(listItem);
             }
             updateCloneVoiceButtonVisibility();
         });
 
+        // @ts-expect-error TS(2531): Object is possibly 'null'.
         cloneVoiceButton.addEventListener('click', async () => {
+            // @ts-expect-error TS(2531): Object is possibly 'null'.
             const voiceName = voiceCloningNameInput.value.trim();
+            // @ts-expect-error TS(2531): Object is possibly 'null'.
             const voiceDescription = voiceCloningDescriptionInput.value.trim();
+            // @ts-expect-error TS(2531): Object is possibly 'null'.
             const voiceLabels = voiceCloningLabelsInput.value.trim();
 
             if (!voiceName) {
@@ -235,10 +254,14 @@ class ElevenLabsTtsProvider {
                 await this.addVoice(voiceName, voiceDescription, voiceLabels);
                 toastr.success('Voice cloned successfully. Hit reload to see the new voice in the voice listing.');
                 clearSelectedFiles();
+                // @ts-expect-error TS(2531): Object is possibly 'null'.
                 voiceCloningNameInput.value = '';
+                // @ts-expect-error TS(2531): Object is possibly 'null'.
                 voiceCloningDescriptionInput.value = '';
+                // @ts-expect-error TS(2531): Object is possibly 'null'.
                 voiceCloningLabelsInput.value = '';
             } catch (error) {
+                // @ts-expect-error TS(2571): Object is of type 'unknown'.
                 toastr.error(`Failed to clone voice: ${error.message}`);
             }
         });
@@ -256,6 +279,7 @@ class ElevenLabsTtsProvider {
             this.voices = await this.fetchTtsVoiceObjects();
         }
         const match = this.voices.filter(
+            // @ts-expect-error TS(2339): Property 'name' does not exist on type 'never'.
             elevenVoice => elevenVoice.name == voiceName,
         )[0];
         if (!match) {
@@ -343,7 +367,9 @@ class ElevenLabsTtsProvider {
             },
         };
         if (this.shouldInvolveExtendedSettings()) {
+            // @ts-expect-error TS(2339): Property 'style' does not exist on type '{ stabili... Remove this comment to see the full error message
             request.voice_settings.style = Number(this.settings.style_exaggeration);
+            // @ts-expect-error TS(2339): Property 'use_speaker_boost' does not exist on typ... Remove this comment to see the full error message
             request.voice_settings.use_speaker_boost = Boolean(this.settings.speaker_boost);
         }
         const response = await fetch('/api/speech/elevenlabs/synthesize', {
@@ -406,6 +432,7 @@ class ElevenLabsTtsProvider {
      */
     async addVoice(name: any, description: any, labels: any) {
         const audioFilesInput = /** @type {HTMLInputElement} */ (document.getElementById('elevenlabs_tts_audio_files'));
+        // @ts-expect-error TS(2531): Object is possibly 'null'.
         if (!(audioFilesInput instanceof HTMLInputElement) || audioFilesInput.files.length === 0) {
             throw new Error('No audio files selected for voice cloning.');
         }
@@ -417,8 +444,10 @@ class ElevenLabsTtsProvider {
             files: [],
         };
 
+        // @ts-expect-error TS(2531): Object is possibly 'null'.
         for (const file of audioFilesInput.files) {
             const base64Data = await getBase64Async(file);
+            // @ts-expect-error TS(2345): Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
             data.files.push(base64Data);
         }
 

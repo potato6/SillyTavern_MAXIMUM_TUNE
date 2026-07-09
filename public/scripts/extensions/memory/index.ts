@@ -31,6 +31,7 @@ import { macros, MacroCategory } from '../../macros/macro-system.js';
 import { countWebLlmTokens, generateWebLlmChatPrompt, getWebLlmContextSize, isWebLlmSupported } from '../shared.js';
 import { commonEnumProviders } from '../../slash-commands/SlashCommandCommonEnumsProvider.js';
 import { removeReasoningFromString } from '../../reasoning.js';
+// @ts-expect-error TS(2792): Cannot find module '/scripts/macros.js'. Did you m... Remove this comment to see the full error message
 import { MacrosParser } from '/scripts/macros.js';
 export { MODULE_NAME };
 
@@ -47,27 +48,33 @@ let inApiCall = false;
  * @returns {Promise<number>} Number of tokens in the text
  */
 async function countSourceTokens(text: any, padding = 0) {
+    // @ts-expect-error TS(2339): Property 'source' does not exist on type '{}'.
     if (extension_settings.memory.source === summary_sources.webllm) {
         const count = await countWebLlmTokens(text);
         return count + padding;
     }
 
+    // @ts-expect-error TS(2339): Property 'source' does not exist on type '{}'.
     if (extension_settings.memory.source === summary_sources.extras) {
         const count = getTextTokens(tokenizers.GPT2, text).length;
         return count + padding;
     }
 
+    // @ts-expect-error TS(2345): Argument of type 'number' is not assignable to par... Remove this comment to see the full error message
     return await getTokenCountAsync(text, padding);
 }
 
 async function getSourceContextSize() {
+    // @ts-expect-error TS(2339): Property 'overrideResponseLength' does not exist o... Remove this comment to see the full error message
     const overrideLength = extension_settings.memory.overrideResponseLength;
 
+    // @ts-expect-error TS(2339): Property 'source' does not exist on type '{}'.
     if (extension_settings.memory.source === summary_sources.webllm) {
         const maxContext = await getWebLlmContextSize();
         return overrideLength > 0 ? (maxContext - overrideLength) : Math.round(maxContext * 0.75);
     }
 
+    // @ts-expect-error TS(2339): Property 'source' does not exist on type '{ apiUrl... Remove this comment to see the full error message
     if (extension_settings.source === summary_sources.extras) {
         return 1024 - 64;
     }
@@ -82,7 +89,9 @@ const formatMemoryValue = function (value: any) {
 
     value = value.trim();
 
+    // @ts-expect-error TS(2339): Property 'template' does not exist on type '{}'.
     if (extension_settings.memory.template) {
+        // @ts-expect-error TS(2339): Property 'template' does not exist on type '{}'.
         return substituteParamsExtended(extension_settings.memory.template, { summary: value });
     } else {
         return `Summary: ${value}`;
@@ -145,42 +154,62 @@ function loadSettings() {
     }
 
     for (const key of Object.keys(defaultSettings)) {
+        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         if (extension_settings.memory[key] === undefined) {
+            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             extension_settings.memory[key] = defaultSettings[key];
         }
     }
 
+    // @ts-expect-error TS(2339): Property 'source' does not exist on type '{}'.
     $('#summary_source').val(extension_settings.memory.source);
     document.getElementById('summary_source')?.dispatchEvent(new Event('change'));
+    // @ts-expect-error TS(2339): Property 'memoryFrozen' does not exist on type '{}... Remove this comment to see the full error message
     $('#memory_frozen').prop('checked', extension_settings.memory.memoryFrozen);
     document.getElementById('memory_frozen')?.dispatchEvent(new Event('input'));
+    // @ts-expect-error TS(2339): Property 'SkipWIAN' does not exist on type '{}'.
     $('#memory_skipWIAN').prop('checked', extension_settings.memory.SkipWIAN);
     document.getElementById('memory_skipWIAN')?.dispatchEvent(new Event('input'));
+    // @ts-expect-error TS(2339): Property 'prompt' does not exist on type '{}'.
     $('#memory_prompt').val(extension_settings.memory.prompt);
     document.getElementById('memory_prompt')?.dispatchEvent(new Event('input'));
+    // @ts-expect-error TS(2339): Property 'promptWords' does not exist on type '{}'... Remove this comment to see the full error message
     $('#memory_prompt_words').val(extension_settings.memory.promptWords);
     document.getElementById('memory_prompt_words')?.dispatchEvent(new Event('input'));
+    // @ts-expect-error TS(2339): Property 'promptInterval' does not exist on type '... Remove this comment to see the full error message
     $('#memory_prompt_interval').val(extension_settings.memory.promptInterval);
     document.getElementById('memory_prompt_interval')?.dispatchEvent(new Event('input'));
+    // @ts-expect-error TS(2339): Property 'template' does not exist on type '{}'.
     $('#memory_template').val(extension_settings.memory.template);
     document.getElementById('memory_template')?.dispatchEvent(new Event('input'));
+    // @ts-expect-error TS(2339): Property 'depth' does not exist on type '{}'.
     $('#memory_depth').val(extension_settings.memory.depth);
     document.getElementById('memory_depth')?.dispatchEvent(new Event('input'));
+    // @ts-expect-error TS(2339): Property 'role' does not exist on type '{}'.
     $('#memory_role').val(extension_settings.memory.role);
     document.getElementById('memory_role')?.dispatchEvent(new Event('input'));
+    // @ts-expect-error TS(2339): Property 'position' does not exist on type '{}'.
     $(`input[name="memory_position"][value="${extension_settings.memory.position}"]`).prop('checked', true);
+    // @ts-expect-error TS(2339): Property 'position' does not exist on type '{}'.
     const memoryPositionInput = document.querySelector(`input[name="memory_position"][value="${extension_settings.memory.position}"]`);
     memoryPositionInput?.dispatchEvent(new Event('input'));
+    // @ts-expect-error TS(2339): Property 'promptForceWords' does not exist on type... Remove this comment to see the full error message
     $('#memory_prompt_words_force').val(extension_settings.memory.promptForceWords);
     document.getElementById('memory_prompt_words_force')?.dispatchEvent(new Event('input'));
+    // @ts-expect-error TS(2339): Property 'prompt_builder' does not exist on type '... Remove this comment to see the full error message
     $(`input[name="memory_prompt_builder"][value="${extension_settings.memory.prompt_builder}"]`).prop('checked', true);
+    // @ts-expect-error TS(2339): Property 'prompt_builder' does not exist on type '... Remove this comment to see the full error message
     document.querySelector(`input[name="memory_prompt_builder"][value="${extension_settings.memory.prompt_builder}"]`)?.dispatchEvent(new Event('input'));
+    // @ts-expect-error TS(2339): Property 'overrideResponseLength' does not exist o... Remove this comment to see the full error message
     $('#memory_override_response_length').val(extension_settings.memory.overrideResponseLength);
     document.getElementById('memory_override_response_length')?.dispatchEvent(new Event('input'));
+    // @ts-expect-error TS(2339): Property 'maxMessagesPerRequest' does not exist on... Remove this comment to see the full error message
     $('#memory_max_messages_per_request').val(extension_settings.memory.maxMessagesPerRequest);
     document.getElementById('memory_max_messages_per_request')?.dispatchEvent(new Event('input'));
+    // @ts-expect-error TS(2339): Property 'scan' does not exist on type '{}'.
     $('#memory_include_wi_scan').prop('checked', extension_settings.memory.scan);
     document.getElementById('memory_include_wi_scan')?.dispatchEvent(new Event('input'));
+    // @ts-expect-error TS(2339): Property 'source' does not exist on type '{}'.
     switchSourceControls(extension_settings.memory.source);
 }
 
@@ -188,6 +217,7 @@ async function onPromptForceWordsAutoClick() {
     const context = getContext();
     const maxPromptLength = await getSourceContextSize();
     const chat = context.chat;
+    // @ts-expect-error TS(2339): Property 'is_system' does not exist on type 'never... Remove this comment to see the full error message
     const allMessages = chat.filter(m => !m.is_system && m.mes).map(m => m.mes);
     const messagesWordCount = allMessages.map(m => extractAllWords(m)).flat().length;
     const averageMessageWordCount = messagesWordCount / allMessages.length;
@@ -197,9 +227,12 @@ async function onPromptForceWordsAutoClick() {
     // How many words should pass so that messages will start be dropped out of context;
     const wordsPerPrompt = Math.floor(maxPromptLength / tokensPerWord);
     // How many words will be needed to fit the allowance buffer
+    // @ts-expect-error TS(2339): Property 'prompt' does not exist on type '{}'.
     const summaryPromptWords = extractAllWords(extension_settings.memory.prompt).length;
+    // @ts-expect-error TS(2339): Property 'promptWords' does not exist on type '{}'... Remove this comment to see the full error message
     const promptAllowanceWords = maxPromptLengthWords - extension_settings.memory.promptWords - summaryPromptWords;
     const averageMessagesPerPrompt = Math.floor(promptAllowanceWords / averageMessageWordCount);
+    // @ts-expect-error TS(2339): Property 'maxMessagesPerRequest' does not exist on... Remove this comment to see the full error message
     const maxMessagesPerSummary = extension_settings.memory.maxMessagesPerRequest || 0;
     const targetMessagesInPrompt = maxMessagesPerSummary > 0 ? maxMessagesPerSummary : Math.max(0, averageMessagesPerPrompt);
     const targetSummaryWords = (targetMessagesInPrompt * averageMessageWordCount) + (promptAllowanceWords / 4);
@@ -218,7 +251,9 @@ async function onPromptForceWordsAutoClick() {
     });
 
     const ROUNDING = 100;
+    // @ts-expect-error TS(2339): Property 'promptForceWords' does not exist on type... Remove this comment to see the full error message
     extension_settings.memory.promptForceWords = Math.max(1, Math.floor(targetSummaryWords / ROUNDING) * ROUNDING);
+    // @ts-expect-error TS(2339): Property 'promptForceWords' does not exist on type... Remove this comment to see the full error message
     $('#memory_prompt_words_force').val(extension_settings.memory.promptForceWords);
     document.getElementById('memory_prompt_words_force')?.dispatchEvent(new Event('input'));
 }
@@ -227,14 +262,18 @@ async function onPromptIntervalAutoClick() {
     const context = getContext();
     const maxPromptLength = await getSourceContextSize();
     const chat = context.chat;
+    // @ts-expect-error TS(2339): Property 'is_system' does not exist on type 'never... Remove this comment to see the full error message
     const allMessages = chat.filter(m => !m.is_system && m.mes).map(m => m.mes);
     const messagesWordCount = allMessages.map(m => extractAllWords(m)).flat().length;
     const messagesTokenCount = await countSourceTokens(allMessages.join('\n'));
     const tokensPerWord = messagesTokenCount / messagesWordCount;
     const averageMessageTokenCount = messagesTokenCount / allMessages.length;
+    // @ts-expect-error TS(2339): Property 'promptWords' does not exist on type '{}'... Remove this comment to see the full error message
     const targetSummaryTokens = Math.round(extension_settings.memory.promptWords * tokensPerWord);
+    // @ts-expect-error TS(2339): Property 'prompt' does not exist on type '{}'.
     const promptTokens = await countSourceTokens(extension_settings.memory.prompt);
     const promptAllowance = maxPromptLength - promptTokens - targetSummaryTokens;
+    // @ts-expect-error TS(2339): Property 'maxMessagesPerRequest' does not exist on... Remove this comment to see the full error message
     const maxMessagesPerSummary = extension_settings.memory.maxMessagesPerRequest || 0;
     const averageMessagesPerPrompt = Math.floor(promptAllowance / averageMessageTokenCount);
     const targetMessagesInPrompt = maxMessagesPerSummary > 0 ? maxMessagesPerSummary : Math.max(0, averageMessagesPerPrompt);
@@ -256,14 +295,17 @@ async function onPromptIntervalAutoClick() {
     });
 
     const ROUNDING = 5;
+    // @ts-expect-error TS(2339): Property 'promptInterval' does not exist on type '... Remove this comment to see the full error message
     extension_settings.memory.promptInterval = Math.max(1, Math.floor(adjustedAverageMessagesPerPrompt / ROUNDING) * ROUNDING);
 
+    // @ts-expect-error TS(2339): Property 'promptInterval' does not exist on type '... Remove this comment to see the full error message
     $('#memory_prompt_interval').val(extension_settings.memory.promptInterval);
     document.getElementById('memory_prompt_interval')?.dispatchEvent(new Event('input'));
 }
 
 function onSummarySourceChange(event: any) {
     const value = event.target.value;
+    // @ts-expect-error TS(2339): Property 'source' does not exist on type '{}'.
     extension_settings.memory.source = value;
     switchSourceControls(value);
     saveSettingsDebounced();
@@ -272,6 +314,7 @@ function onSummarySourceChange(event: any) {
 function switchSourceControls(value: any) {
     const elements = document.querySelectorAll('#summaryExtensionDrawerContents [data-summary-source], #memory_settings [data-summary-source]');
     elements.forEach(element => {
+        // @ts-expect-error TS(2339): Property 'dataset' does not exist on type 'Element... Remove this comment to see the full error message
         const source = element.dataset.summarySource.split(',').map((s: any) => s.trim());
         $(element).toggle(source.includes(value));
     });
@@ -279,26 +322,32 @@ function switchSourceControls(value: any) {
 
 function onMemoryFrozenInput(this: any) {
     const value = Boolean(this.checked);
+    // @ts-expect-error TS(2339): Property 'memoryFrozen' does not exist on type '{}... Remove this comment to see the full error message
     extension_settings.memory.memoryFrozen = value;
     saveSettingsDebounced();
 }
 
 function onMemorySkipWIANInput(this: any) {
     const value = Boolean(this.checked);
+    // @ts-expect-error TS(2339): Property 'SkipWIAN' does not exist on type '{}'.
     extension_settings.memory.SkipWIAN = value;
     saveSettingsDebounced();
 }
 
 function onMemoryPromptWordsInput(this: any) {
     const value = this.value;
+    // @ts-expect-error TS(2339): Property 'promptWords' does not exist on type '{}'... Remove this comment to see the full error message
     extension_settings.memory.promptWords = Number(value);
+    // @ts-expect-error TS(2339): Property 'promptWords' does not exist on type '{}'... Remove this comment to see the full error message
     $('#memory_prompt_words_value').text(extension_settings.memory.promptWords);
     saveSettingsDebounced();
 }
 
 function onMemoryPromptIntervalInput(this: any) {
     const value = this.value;
+    // @ts-expect-error TS(2339): Property 'promptInterval' does not exist on type '... Remove this comment to see the full error message
     extension_settings.memory.promptInterval = Number(value);
+    // @ts-expect-error TS(2339): Property 'promptInterval' does not exist on type '... Remove this comment to see the full error message
     $('#memory_prompt_interval_value').text(extension_settings.memory.promptInterval);
     saveSettingsDebounced();
 }
@@ -310,12 +359,14 @@ function onMemoryPromptRestoreClick() {
 
 function onMemoryPromptInput(this: any) {
     const value = this.value;
+    // @ts-expect-error TS(2339): Property 'prompt' does not exist on type '{}'.
     extension_settings.memory.prompt = value;
     saveSettingsDebounced();
 }
 
 function onMemoryTemplateInput(this: any) {
     const value = this.value;
+    // @ts-expect-error TS(2339): Property 'template' does not exist on type '{}'.
     extension_settings.memory.template = value;
     reinsertMemory();
     saveSettingsDebounced();
@@ -323,6 +374,7 @@ function onMemoryTemplateInput(this: any) {
 
 function onMemoryDepthInput(this: any) {
     const value = this.value;
+    // @ts-expect-error TS(2339): Property 'depth' does not exist on type '{}'.
     extension_settings.memory.depth = Number(value);
     reinsertMemory();
     saveSettingsDebounced();
@@ -330,6 +382,7 @@ function onMemoryDepthInput(this: any) {
 
 function onMemoryRoleInput(this: any) {
     const value = this.value;
+    // @ts-expect-error TS(2339): Property 'role' does not exist on type '{}'.
     extension_settings.memory.role = Number(value);
     reinsertMemory();
     saveSettingsDebounced();
@@ -337,6 +390,7 @@ function onMemoryRoleInput(this: any) {
 
 function onMemoryPositionChange(e: any) {
     const value = e.target.value;
+    // @ts-expect-error TS(2339): Property 'position' does not exist on type '{}'.
     extension_settings.memory.position = value;
     reinsertMemory();
     saveSettingsDebounced();
@@ -344,6 +398,7 @@ function onMemoryPositionChange(e: any) {
 
 function onMemoryIncludeWIScanInput(this: any) {
     const value = !!this.checked;
+    // @ts-expect-error TS(2339): Property 'scan' does not exist on type '{}'.
     extension_settings.memory.scan = value;
     reinsertMemory();
     saveSettingsDebounced();
@@ -351,21 +406,27 @@ function onMemoryIncludeWIScanInput(this: any) {
 
 function onMemoryPromptWordsForceInput(this: any) {
     const value = this.value;
+    // @ts-expect-error TS(2339): Property 'promptForceWords' does not exist on type... Remove this comment to see the full error message
     extension_settings.memory.promptForceWords = Number(value);
+    // @ts-expect-error TS(2339): Property 'promptForceWords' does not exist on type... Remove this comment to see the full error message
     $('#memory_prompt_words_force_value').text(extension_settings.memory.promptForceWords);
     saveSettingsDebounced();
 }
 
 function onOverrideResponseLengthInput(this: any) {
     const value = this.value;
+    // @ts-expect-error TS(2339): Property 'overrideResponseLength' does not exist o... Remove this comment to see the full error message
     extension_settings.memory.overrideResponseLength = Number(value);
+    // @ts-expect-error TS(2339): Property 'overrideResponseLength' does not exist o... Remove this comment to see the full error message
     $('#memory_override_response_length_value').text(extension_settings.memory.overrideResponseLength);
     saveSettingsDebounced();
 }
 
 function onMaxMessagesPerRequestInput(this: any) {
     const value = this.value;
+    // @ts-expect-error TS(2339): Property 'maxMessagesPerRequest' does not exist on... Remove this comment to see the full error message
     extension_settings.memory.maxMessagesPerRequest = Number(value);
+    // @ts-expect-error TS(2339): Property 'maxMessagesPerRequest' does not exist on... Remove this comment to see the full error message
     $('#memory_max_messages_per_request_value').text(extension_settings.memory.maxMessagesPerRequest);
     saveSettingsDebounced();
 }
@@ -437,21 +498,25 @@ function onChatChanged() {
 
 async function onChatEvent() {
     // Module not enabled
+    // @ts-expect-error TS(2339): Property 'source' does not exist on type '{}'.
     if (extension_settings.memory.source === summary_sources.extras && !modules.includes('summarize')) {
         return;
     }
 
     // WebLLM is not supported
+    // @ts-expect-error TS(2339): Property 'source' does not exist on type '{}'.
     if (extension_settings.memory.source === summary_sources.webllm && !isWebLlmSupported()) {
         return;
     }
 
     // Streaming in-progress
+    // @ts-expect-error TS(2339): Property 'isFinished' does not exist on type 'neve... Remove this comment to see the full error message
     if (streamingProcessor && !streamingProcessor.isFinished) {
         return;
     }
 
     // Currently summarizing or frozen state - skip
+    // @ts-expect-error TS(2339): Property 'memoryFrozen' does not exist on type '{}... Remove this comment to see the full error message
     if (inApiCall || extension_settings.memory.memoryFrozen) {
         return;
     }
@@ -464,6 +529,7 @@ async function onChatEvent() {
     const lastMessage = chat[chat.length - 1];
 
     // No new messages - do nothing
+    // @ts-expect-error TS(2532): Object is possibly 'undefined'.
     if ((lastMessageId === chat.length && getStringHash(lastMessage.mes) === lastMessageHash)) {
         return;
     }
@@ -476,10 +542,14 @@ async function onChatEvent() {
 
     // Message has been edited / regenerated - delete the saved memory
     if (chat.length
+        // @ts-expect-error TS(2532): Object is possibly 'undefined'.
         && lastMessage.extra
+        // @ts-expect-error TS(2532): Object is possibly 'undefined'.
         && lastMessage.extra.memory
         && lastMessageId === chat.length
+        // @ts-expect-error TS(2532): Object is possibly 'undefined'.
         && getStringHash(lastMessage.mes) !== lastMessageHash) {
+        // @ts-expect-error TS(2532): Object is possibly 'undefined'.
         delete lastMessage.extra.memory;
     }
 
@@ -487,6 +557,7 @@ async function onChatEvent() {
         .catch(console.error)
         .finally(() => {
             lastMessageId = context.chat?.length ?? null;
+            // @ts-expect-error TS(2532): Object is possibly 'undefined'.
             lastMessageHash = getStringHash((context.chat.length && context.chat[context.chat.length - 1].mes) ?? '');
         });
 }
@@ -497,15 +568,19 @@ async function onChatEvent() {
  * @returns {Promise<string>} Summarized text
  */
 async function forceSummarizeChat(quiet: any) {
+    // @ts-expect-error TS(2339): Property 'source' does not exist on type '{}'.
     if (extension_settings.memory.source === summary_sources.extras) {
         toastr.warning('Force summarization is not supported for Extras API');
         return;
     }
 
     const context = getContext();
+    // @ts-expect-error TS(2339): Property 'SkipWIAN' does not exist on type '{}'.
     const skipWIAN = extension_settings.memory.SkipWIAN;
 
+    // @ts-expect-error TS(2304): Cannot find name 'jQuery'.
     const toast = quiet ? jQuery() : toastr.info('Summarizing chat...', 'Please wait', { timeOut: 0, extendedTimeOut: 0 });
+    // @ts-expect-error TS(2339): Property 'source' does not exist on type '{}'.
     const value = extension_settings.memory.source === summary_sources.main
         ? await summarizeChatMain(context, true, skipWIAN)
         : await summarizeChatWebLLM(context, true);
@@ -534,7 +609,9 @@ async function summarizeCallback(args: any, text: any) {
         return await forceSummarizeChat(quiet);
     }
 
+    // @ts-expect-error TS(2339): Property 'source' does not exist on type '{}'.
     const source = args.source || extension_settings.memory.source;
+    // @ts-expect-error TS(2339): Property 'prompt' does not exist on type '{}'.
     const prompt = substituteParamsExtended((args.prompt || extension_settings.memory.prompt), { words: extension_settings.memory.promptWords });
 
     try {
@@ -542,9 +619,11 @@ async function summarizeCallback(args: any, text: any) {
             case summary_sources.extras:
                 return await callExtrasSummarizeAPI(text);
             case summary_sources.main:
+                // @ts-expect-error TS(2339): Property 'overrideResponseLength' does not exist o... Remove this comment to see the full error message
                 return removeReasoningFromString(await generateRaw({ prompt: text, systemPrompt: prompt, responseLength: extension_settings.memory.overrideResponseLength }));
             case summary_sources.webllm: {
                 const messages = [{ role: 'system', content: prompt }, { role: 'user', content: text }].filter(m => m.content);
+                // @ts-expect-error TS(2339): Property 'overrideResponseLength' does not exist o... Remove this comment to see the full error message
                 const params = extension_settings.memory.overrideResponseLength > 0 ? { max_tokens: extension_settings.memory.overrideResponseLength } : {};
                 return await generateWebLlmChatPrompt(messages, params);
             }
@@ -560,7 +639,9 @@ async function summarizeCallback(args: any, text: any) {
 }
 
 async function summarizeChat(context: any) {
+    // @ts-expect-error TS(2339): Property 'SkipWIAN' does not exist on type '{}'.
     const skipWIAN = extension_settings.memory.SkipWIAN;
+    // @ts-expect-error TS(2339): Property 'source' does not exist on type '{}'.
     switch (extension_settings.memory.source) {
         case summary_sources.extras:
             await summarizeChatExtras(context);
@@ -584,6 +665,7 @@ async function summarizeChat(context: any) {
  * @returns {Promise<string>} Summary prompt or empty string
  */
 async function getSummaryPromptForNow(context: any, force: any) {
+    // @ts-expect-error TS(2339): Property 'promptInterval' does not exist on type '... Remove this comment to see the full error message
     if (extension_settings.memory.promptInterval === 0 && !force) {
         console.debug('Prompt interval is set to 0, skipping summarization');
         return '';
@@ -606,7 +688,9 @@ async function getSummaryPromptForNow(context: any, force: any) {
         return '';
     }
 
+    // @ts-expect-error TS(2339): Property 'promptInterval' does not exist on type '... Remove this comment to see the full error message
     if (context.chat.length < extension_settings.memory.promptInterval && !force) {
+        // @ts-expect-error TS(2339): Property 'promptInterval' does not exist on type '... Remove this comment to see the full error message
         console.debug(`Not enough messages in chat to summarize (chat: ${context.chat.length}, interval: ${extension_settings.memory.promptInterval})`);
         return '';
     }
@@ -622,20 +706,24 @@ async function getSummaryPromptForNow(context: any, force: any) {
         wordsSinceLastSummary += extractAllWords(context.chat[i].mes).length;
     }
 
+    // @ts-expect-error TS(2339): Property 'promptInterval' does not exist on type '... Remove this comment to see the full error message
     if (messagesSinceLastSummary >= extension_settings.memory.promptInterval) {
         conditionSatisfied = true;
     }
 
+    // @ts-expect-error TS(2339): Property 'promptForceWords' does not exist on type... Remove this comment to see the full error message
     if (extension_settings.memory.promptForceWords && wordsSinceLastSummary >= extension_settings.memory.promptForceWords) {
         conditionSatisfied = true;
     }
 
     if (!conditionSatisfied && !force) {
+        // @ts-expect-error TS(2339): Property 'promptInterval' does not exist on type '... Remove this comment to see the full error message
         console.debug(`Summary conditions not satisfied (messages: ${messagesSinceLastSummary}, interval: ${extension_settings.memory.promptInterval}, words: ${wordsSinceLastSummary}, force words: ${extension_settings.memory.promptForceWords})`);
         return '';
     }
 
     console.log('Summarizing chat, messages since last summary: ' + messagesSinceLastSummary, 'words since last summary: ' + wordsSinceLastSummary);
+    // @ts-expect-error TS(2339): Property 'prompt' does not exist on type '{}'.
     const prompt = substituteParamsExtended(extension_settings.memory.prompt, { words: extension_settings.memory.promptWords });
 
     if (!prompt) {
@@ -674,7 +762,9 @@ async function summarizeChatWebLLM(context: any, force: any) {
 
     const params = {};
 
+    // @ts-expect-error TS(2339): Property 'overrideResponseLength' does not exist o... Remove this comment to see the full error message
     if (extension_settings.memory.overrideResponseLength > 0) {
+        // @ts-expect-error TS(2339): Property 'max_tokens' does not exist on type '{}'.
         params.max_tokens = extension_settings.memory.overrideResponseLength;
     }
 
@@ -710,6 +800,7 @@ async function summarizeChatMain(context: any, force: any, skipWIAN: any) {
     let summary = '';
     let index = null;
 
+    // @ts-expect-error TS(2339): Property 'prompt_builder' does not exist on type '... Remove this comment to see the full error message
     if (prompt_builders.DEFAULT === extension_settings.memory.prompt_builder) {
         try {
             inApiCall = true;
@@ -717,6 +808,7 @@ async function summarizeChatMain(context: any, force: any, skipWIAN: any) {
             const params = {
                 quietPrompt: prompt,
                 skipWIAN: skipWIAN,
+                // @ts-expect-error TS(2339): Property 'overrideResponseLength' does not exist o... Remove this comment to see the full error message
                 responseLength: extension_settings.memory.overrideResponseLength,
             };
             summary = await generateQuietPrompt(params);
@@ -725,7 +817,9 @@ async function summarizeChatMain(context: any, force: any, skipWIAN: any) {
         }
     }
 
+    // @ts-expect-error TS(2339): Property 'prompt_builder' does not exist on type '... Remove this comment to see the full error message
     if ([prompt_builders.RAW_BLOCKING, prompt_builders.RAW_NON_BLOCKING].includes(extension_settings.memory.prompt_builder)) {
+        // @ts-expect-error TS(2339): Property 'prompt_builder' does not exist on type '... Remove this comment to see the full error message
         const lock = extension_settings.memory.prompt_builder === prompt_builders.RAW_BLOCKING;
         try {
             inApiCall = true;
@@ -747,6 +841,7 @@ async function summarizeChatMain(context: any, force: any, skipWIAN: any) {
             const params = {
                 prompt: rawPrompt,
                 systemPrompt: prompt,
+                // @ts-expect-error TS(2339): Property 'overrideResponseLength' does not exist o... Remove this comment to see the full error message
                 responseLength: extension_settings.memory.overrideResponseLength,
             };
             const rawSummary = await generateRaw(params);
@@ -835,6 +930,7 @@ async function getRawSummaryPrompt(context: any, prompt: any) {
 
         latestUsedMessage = message;
 
+        // @ts-expect-error TS(2339): Property 'maxMessagesPerRequest' does not exist on... Remove this comment to see the full error message
         if (extension_settings.memory.maxMessagesPerRequest > 0 && chatBuffer.length >= extension_settings.memory.maxMessagesPerRequest) {
             break;
         }
@@ -915,6 +1011,7 @@ async function summarizeChatExtras(context: any) {
  * @returns {Promise<string>} Summarized text
  */
 async function callExtrasSummarizeAPI(text: any) {
+    // @ts-expect-error TS(2345): Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
     if (!modules.includes('summarize')) {
         throw new Error('Summarize module is not enabled in Extras API');
     }
@@ -950,7 +1047,9 @@ function onMemoryRestoreClick() {
     reversedChat.shift();
 
     for (let mes of reversedChat) {
+        // @ts-expect-error TS(2339): Property 'extra' does not exist on type 'never'.
         if (mes.extra && mes.extra.memory == content) {
+            // @ts-expect-error TS(2339): Property 'extra' does not exist on type 'never'.
             delete mes.extra.memory;
             break;
         }
@@ -967,11 +1066,13 @@ function onMemoryContentInput(this: any) {
 
 function onMemoryPromptBuilderInput(e: any) {
     const value = Number(e.target.value);
+    // @ts-expect-error TS(2339): Property 'prompt_builder' does not exist on type '... Remove this comment to see the full error message
     extension_settings.memory.prompt_builder = value;
     saveSettingsDebounced();
 }
 
 function reinsertMemory() {
+    // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
     const existingValue = String(document.getElementById('memory_contents')?.value || '');
     setMemoryContext(existingValue, false);
 }
@@ -983,10 +1084,12 @@ function reinsertMemory() {
  * @param {number|null} index Index of the chat message to save the summary to. If null, the pre-last message is used.
  */
 function setMemoryContext(value: any, saveToMessage: any, index = null) {
+    // @ts-expect-error TS(2339): Property 'position' does not exist on type '{}'.
     setExtensionPrompt(MODULE_NAME, formatMemoryValue(value), extension_settings.memory.position, extension_settings.memory.depth, extension_settings.memory.scan, extension_settings.memory.role);
     $('#memory_contents').val(value);
 
     const summaryLog = value
+        // @ts-expect-error TS(2339): Property 'position' does not exist on type '{}'.
         ? `Summary set to: ${value}. Position: ${extension_settings.memory.position}. Depth: ${extension_settings.memory.depth}. Role: ${extension_settings.memory.role}`
         : 'Summary has no content';
     console.debug(summaryLog);
@@ -996,10 +1099,13 @@ function setMemoryContext(value: any, saveToMessage: any, index = null) {
         const idx = index ?? context.chat.length - 2;
         const mes = context.chat[idx < 0 ? 0 : idx];
 
+        // @ts-expect-error TS(2532): Object is possibly 'undefined'.
         if (!mes.extra) {
+            // @ts-expect-error TS(2532): Object is possibly 'undefined'.
             mes.extra = {};
         }
 
+        // @ts-expect-error TS(2532): Object is possibly 'undefined'.
         mes.extra.memory = value;
         saveChatDebounced();
     }
@@ -1032,6 +1138,7 @@ function doPopout(e: any) {
         newElement.classList.remove('zoomed_avatar');
         newElement.classList.add('draggable');
         newElement.innerHTML = '';
+        // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
         const prevSummaryBoxContents = document.getElementById('memory_contents')?.value?.toString() ?? '';
         if (originalElement) {
             const contentDiv = originalElement.querySelector('.inline-drawer-content');
@@ -1150,6 +1257,7 @@ export async function init() {
         name: 'summarize',
         callback: summarizeCallback,
         namedArgumentList: [
+            // @ts-expect-error TS(2345): Argument of type '""' is not assignable to paramet... Remove this comment to see the full error message
             new SlashCommandNamedArgument('source', 'API to use for summarization', [ARGUMENT_TYPE.STRING], false, false, '', Object.values(summary_sources)),
             SlashCommandNamedArgument.fromProps({
                 name: 'prompt',
@@ -1166,6 +1274,7 @@ export async function init() {
             }),
         ],
         unnamedArgumentList: [
+            // @ts-expect-error TS(2345): Argument of type '""' is not assignable to paramet... Remove this comment to see the full error message
             new SlashCommandArgument('text to summarize', [ARGUMENT_TYPE.STRING], false, false, ''),
         ],
         helpString: 'Summarizes the given text. If no text is provided, the current chat will be summarized. Can specify the source and the prompt to use.',

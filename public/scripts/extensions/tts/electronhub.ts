@@ -97,8 +97,10 @@ class ElectronHubTtsProvider {
     }
 
     constructor() {
+        // @ts-expect-error TS(2339): Property 'handler' does not exist on type 'Electro... Remove this comment to see the full error message
         this.handler = async function(this: any, /** @type {string} */ key: any) {
             if (key !== SECRET_KEYS.ELECTRONHUB) return;
+            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             $('#electronhub_tts_key').toggleClass('success', !!secret_state[SECRET_KEYS.ELECTRONHUB]);
             await this.onRefreshClick();
         }.bind(this);
@@ -106,6 +108,7 @@ class ElectronHubTtsProvider {
 
     dispose() {
         [event_types.SECRET_WRITTEN, event_types.SECRET_DELETED, event_types.SECRET_ROTATED].forEach(event => {
+            // @ts-expect-error TS(2339): Property 'handler' does not exist on type 'Electro... Remove this comment to see the full error message
             eventSource.removeListener(event, this.handler);
         });
     }
@@ -150,8 +153,10 @@ class ElectronHubTtsProvider {
         $('#electronhub_tts_emotional_style').val(this.settings.emotional_style);
         $('#electronhub_tts_emotional_style').on('input', () => { this.onSettingsChange(); });
 
+        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         $('#electronhub_tts_key').toggleClass('success', !!secret_state[SECRET_KEYS.ELECTRONHUB]);
         [event_types.SECRET_WRITTEN, event_types.SECRET_DELETED, event_types.SECRET_ROTATED].forEach(event => {
+            // @ts-expect-error TS(2339): Property 'handler' does not exist on type 'Electro... Remove this comment to see the full error message
             eventSource.on(event, this.handler);
         });
 
@@ -204,9 +209,12 @@ class ElectronHubTtsProvider {
                 });
             });
 
+            // @ts-expect-error TS(2322): Type 'any[]' is not assignable to type 'never[]'.
             this.models = ttsModels;
 
+            // @ts-expect-error TS(2339): Property 'id' does not exist on type 'never'.
             if (this.models.length > 0 && !this.models.find(m => m.id === this.settings.model)) {
+                // @ts-expect-error TS(2532): Object is possibly 'undefined'.
                 this.settings.model = this.models[0].id;
                 saveTtsProviderSettings();
             }
@@ -232,6 +240,7 @@ class ElectronHubTtsProvider {
             select.append(optgroup);
         }
 
+        // @ts-expect-error TS(2339): Property 'id' does not exist on type 'never'.
         if (this.models.find(x => x.id === this.settings.model)) {
             select.val(this.settings.model);
         }
@@ -245,6 +254,7 @@ class ElectronHubTtsProvider {
     groupByVendor(array: any) {
         return array.reduce((acc: any, curr: any) => {
             const name = String(curr?.name || curr?.id || 'Other');
+            // @ts-expect-error TS(2532): Object is possibly 'undefined'.
             const vendor = name.split(':')[0].trim() || 'Other';
             if (!acc.has(vendor)) acc.set(vendor, []);
             acc.get(vendor).push(curr);
@@ -254,8 +264,11 @@ class ElectronHubTtsProvider {
 
     updateConditionalBlocks() {
         const modelId = this.settings.model;
+        // @ts-expect-error TS(2339): Property 'id' does not exist on type 'never'.
         const model = this.models.find(m => m.id === modelId);
+        // @ts-expect-error TS(2339): Property 'parameters' does not exist on type 'neve... Remove this comment to see the full error message
         const params = model?.parameters || {};
+        // @ts-expect-error TS(2532): Object is possibly 'undefined'.
         const vendorName = String(model?.name || '').split(':')[0].trim().toLowerCase();
 
         const hasInstructions = 'instructions' in params || modelId === 'gpt-4o-mini-tts';
@@ -276,8 +289,11 @@ class ElectronHubTtsProvider {
     renderDynamicParams() {
         const container = $('#electronhub_dynamic_params');
         container.empty();
+        // @ts-expect-error TS(2339): Property 'id' does not exist on type 'never'.
         const model = this.models.find(m => m.id === this.settings.model);
+        // @ts-expect-error TS(2339): Property 'parameters' does not exist on type 'neve... Remove this comment to see the full error message
         const params = model?.parameters || {};
+        // @ts-expect-error TS(2339): Property 'voices' does not exist on type 'never'.
         const modelHasVoices = Array.isArray(model?.voices) && model.voices.length > 0;
         const exclude = new Set(['input', 'response_format', 'model', 'speed', 'temperature', 'top_p', 'instructions', 'speaker_transcript', 'cfg_scale', 'cfg_filter_top_k', 'speech_rate', 'pitch_adjustment', 'emotional_style']);
         if (modelHasVoices) exclude.add('voice');
@@ -288,14 +304,18 @@ class ElectronHubTtsProvider {
 
         for (const [key, spec] of entries) {
             const nice = key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             const type = String(spec?.type || 'string');
             const id = `electronhub_dyn_${key.replace(/[^a-zA-Z0-9_-]/g, '_')}`;
 
+            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             if (Array.isArray(spec?.enum) && spec.enum.length) {
                 const select = $(`<div><label for="${id}">${nice}</label><select id="${id}" class="text_pole"></select></div>`);
                 container.append(select);
                 const el = select.find('select');
+                // @ts-expect-error TS(2571): Object is of type 'unknown'.
                 for (const opt of spec.enum) el.append(new Option(String(opt), String(opt)));
+                // @ts-expect-error TS(2571): Object is of type 'unknown'.
                 const val = this.settings[key] ?? spec.default ?? spec.enum[0];
                 el.val(String(val));
                 el.on('change', () => { this.settings[key] = String(el.val() || ''); saveTtsProviderSettings(); });
@@ -306,18 +326,23 @@ class ElectronHubTtsProvider {
                 const block = $(`<label class="checkbox_label" for="${id}"><input type="checkbox" id="${id}"> <small>${nice}</small></label>`);
                 container.append(block);
                 const el = block.find('input');
+                // @ts-expect-error TS(2571): Object is of type 'unknown'.
                 el.prop('checked', !!(this.settings[key] ?? spec.default ?? false));
                 el.on('change', () => { this.settings[key] = !!el.is(':checked'); saveTtsProviderSettings(); });
                 continue;
             }
 
             if (type === 'number' || type === 'integer') {
+                // @ts-expect-error TS(2571): Object is of type 'unknown'.
                 const min = spec.minimum ?? undefined;
+                // @ts-expect-error TS(2571): Object is of type 'unknown'.
                 const max = spec.maximum ?? undefined;
+                // @ts-expect-error TS(2571): Object is of type 'unknown'.
                 const step = type === 'integer' ? 1 : (spec.step ?? 0.01);
                 const block = $(`<div><label for="${id}">${nice}${(min != null || max != null) ? ` (${min ?? ''}..${max ?? ''})` : ''}:</label><input id="${id}" type="number" class="text_pole" ${min != null ? `min="${min}"` : ''} ${max != null ? `max="${max}"` : ''} step="${step}"></div>`);
                 container.append(block);
                 const el = block.find('input');
+                // @ts-expect-error TS(2571): Object is of type 'unknown'.
                 const val = this.settings[key] ?? spec.default ?? '';
                 if (val !== '') el.val(val);
                 el.on('input', () => {
@@ -333,12 +358,14 @@ class ElectronHubTtsProvider {
                 const block = $(`<div><label for="${id}">${nice}</label><textarea id="${id}" class="textarea_compact autoSetHeight"></textarea></div>`);
                 container.append(block);
                 const el = block.find('textarea');
+                // @ts-expect-error TS(2571): Object is of type 'unknown'.
                 el.val(String(this.settings[key] ?? spec.default ?? ''));
                 el.on('input', () => { this.settings[key] = String(el.val() || ''); saveTtsProviderSettings(); });
             } else {
                 const block = $(`<div><label for="${id}">${nice}</label><input id="${id}" type="text" class="text_pole" /></div>`);
                 container.append(block);
                 const el = block.find('input');
+                // @ts-expect-error TS(2571): Object is of type 'unknown'.
                 el.val(String(this.settings[key] ?? spec.default ?? ''));
                 el.on('input', () => { this.settings[key] = String(el.val() || ''); saveTtsProviderSettings(); });
             }
@@ -362,6 +389,7 @@ class ElectronHubTtsProvider {
         if (this.voices.length == 0) {
             this.voices = await this.fetchTtsVoiceObjects();
         }
+        // @ts-expect-error TS(2339): Property 'name' does not exist on type 'never'.
         const match = this.voices.filter(v => v.name == voiceName)[0];
         if (!match) {
             throw `TTS Voice name ${voiceName} not found`;
@@ -376,8 +404,11 @@ class ElectronHubTtsProvider {
 
     async fetchTtsVoiceObjects() {
         const modelId = this.settings.model;
+        // @ts-expect-error TS(2339): Property 'id' does not exist on type 'never'.
         const model = this.models.find(m => m.id === modelId);
+        // @ts-expect-error TS(2339): Property 'voices' does not exist on type 'never'.
         if (model && Array.isArray(model.voices) && model.voices.length) {
+            // @ts-expect-error TS(2339): Property 'voices' does not exist on type 'never'.
             return model.voices.map((name: any) => ({
                 name,
                 voice_id: name,
@@ -416,25 +447,36 @@ class ElectronHubTtsProvider {
 
         const model = (this.settings.model || '').toLowerCase();
         if (model === 'gpt-4o-mini-tts') {
+            // @ts-expect-error TS(2339): Property 'instructions' does not exist on type '{ ... Remove this comment to see the full error message
             if (this.settings.instructions?.trim()) body.instructions = this.settings.instructions.trim();
         }
         if (model.includes('dia')) {
+            // @ts-expect-error TS(2339): Property 'speaker_transcript' does not exist on ty... Remove this comment to see the full error message
             if (this.settings.speaker_transcript?.trim()) body.speaker_transcript = this.settings.speaker_transcript.trim();
+            // @ts-expect-error TS(2339): Property 'cfg_scale' does not exist on type '{ inp... Remove this comment to see the full error message
             if (Number.isFinite(this.settings.cfg_scale)) body.cfg_scale = Number(this.settings.cfg_scale);
+            // @ts-expect-error TS(2339): Property 'cfg_filter_top_k' does not exist on type... Remove this comment to see the full error message
             if (Number.isFinite(this.settings.cfg_filter_top_k)) body.cfg_filter_top_k = Number(this.settings.cfg_filter_top_k);
         }
         if (model.includes('microsoft-tts')) {
+            // @ts-expect-error TS(2339): Property 'speech_rate' does not exist on type '{ i... Remove this comment to see the full error message
             if (Number.isFinite(this.settings.speech_rate)) body.speech_rate = Number(this.settings.speech_rate);
+            // @ts-expect-error TS(2339): Property 'pitch_adjustment' does not exist on type... Remove this comment to see the full error message
             if (Number.isFinite(this.settings.pitch_adjustment)) body.pitch_adjustment = Number(this.settings.pitch_adjustment);
+            // @ts-expect-error TS(2339): Property 'emotional_style' does not exist on type ... Remove this comment to see the full error message
             if ((this.settings.emotional_style || '').trim()) body.emotional_style = String(this.settings.emotional_style).trim();
         }
         if (Number.isFinite(this.settings.top_p)) {
+            // @ts-expect-error TS(2339): Property 'top_p' does not exist on type '{ input: ... Remove this comment to see the full error message
             body.top_p = Number(this.settings.top_p);
         }
 
         // add dynamic params based on schema
+        // @ts-expect-error TS(2339): Property 'id' does not exist on type 'never'.
         const modelObj = this.models.find(m => m.id === this.settings.model);
+        // @ts-expect-error TS(2339): Property 'parameters' does not exist on type 'neve... Remove this comment to see the full error message
         const params = modelObj?.parameters || {};
+        // @ts-expect-error TS(2339): Property 'voices' does not exist on type 'never'.
         const modelHasVoices = Array.isArray(modelObj?.voices) && modelObj.voices.length > 0;
         const exclude = new Set(['input', 'response_format', 'model', 'speed', 'temperature', 'top_p', 'instructions', 'speaker_transcript', 'cfg_scale', 'cfg_filter_top_k', 'speech_rate', 'pitch_adjustment', 'emotional_style']);
         if (modelHasVoices) exclude.add('voice');
@@ -442,6 +484,7 @@ class ElectronHubTtsProvider {
             if (exclude.has(key)) continue;
             const val = this.settings[key];
             if (val === undefined || val === '') continue;
+            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             body[key] = val;
         }
 

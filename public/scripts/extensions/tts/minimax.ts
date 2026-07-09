@@ -173,9 +173,12 @@ class MiniMaxTtsProvider {
     }
 
     constructor() {
+        // @ts-expect-error TS(2339): Property 'handler' does not exist on type 'MiniMax... Remove this comment to see the full error message
         this.handler = async function(this: any, /** @type {string} */ key: any) {
             if (![SECRET_KEYS.MINIMAX, SECRET_KEYS.MINIMAX_GROUP_ID].includes(key)) return;
+            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             $('#api_key_minimax').toggleClass('success', !!secret_state[SECRET_KEYS.MINIMAX]);
+            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             $('#minimax_group_id').toggleClass('success', !!secret_state[SECRET_KEYS.MINIMAX_GROUP_ID]);
             await this.onRefreshClick();
         }.bind(this);
@@ -183,6 +186,7 @@ class MiniMaxTtsProvider {
 
     dispose() {
         [event_types.SECRET_WRITTEN, event_types.SECRET_DELETED, event_types.SECRET_ROTATED].forEach(event => {
+            // @ts-expect-error TS(2339): Property 'handler' does not exist on type 'MiniMax... Remove this comment to see the full error message
             eventSource.removeListener(event, this.handler);
         });
     }
@@ -339,6 +343,7 @@ class MiniMaxTtsProvider {
                         this.removeCustomModel(model.id);
                     } catch (error) {
                         console.error('MiniMax TTS: Error removing custom model:', error);
+                        // @ts-expect-error TS(2571): Object is of type 'unknown'.
                         toastr.error(`Failed to remove custom model: ${error.message}`);
                     }
                 });
@@ -374,6 +379,7 @@ class MiniMaxTtsProvider {
                         this.removeCustomVoice(voice.voice_id);
                     } catch (error) {
                         console.error('MiniMax TTS: Error removing custom voice:', error);
+                        // @ts-expect-error TS(2571): Object is of type 'unknown'.
                         toastr.error(`Failed to remove custom voice: ${error.message}`);
                     }
                 });
@@ -426,6 +432,7 @@ class MiniMaxTtsProvider {
             'Hindi': 'hi-IN',
         };
 
+        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         return displayNameToCode[displayName] || displayName;
     }
 
@@ -509,6 +516,7 @@ class MiniMaxTtsProvider {
                 this.onConnectClick();
             } catch (error) {
                 console.error('MiniMax TTS: Error in connect click handler:', error);
+                // @ts-expect-error TS(2571): Object is of type 'unknown'.
                 toastr.error(`Connection failed: ${error.message}`);
             }
         });
@@ -517,6 +525,7 @@ class MiniMaxTtsProvider {
                 this.onRefreshClick();
             } catch (error) {
                 console.error('MiniMax TTS: Error in refresh click handler:', error);
+                // @ts-expect-error TS(2571): Object is of type 'unknown'.
                 toastr.error(`Refresh failed: ${error.message}`);
             }
         });
@@ -534,6 +543,7 @@ class MiniMaxTtsProvider {
                 this.addCustomModel();
             } catch (error) {
                 console.error('MiniMax TTS: Error adding custom model:', error);
+                // @ts-expect-error TS(2571): Object is of type 'unknown'.
                 toastr.error(`Failed to add custom model: ${error.message}`);
             }
         });
@@ -542,6 +552,7 @@ class MiniMaxTtsProvider {
                 this.addCustomVoice();
             } catch (error) {
                 console.error('MiniMax TTS: Error adding custom voice:', error);
+                // @ts-expect-error TS(2571): Object is of type 'unknown'.
                 toastr.error(`Failed to add custom voice: ${error.message}`);
             }
         });
@@ -554,6 +565,7 @@ class MiniMaxTtsProvider {
                     this.addCustomModel();
                 } catch (error) {
                     console.error('MiniMax TTS: Error adding custom model via keyboard:', error);
+                    // @ts-expect-error TS(2571): Object is of type 'unknown'.
                     toastr.error(`Failed to add custom model: ${error.message}`);
                 }
             }
@@ -565,6 +577,7 @@ class MiniMaxTtsProvider {
                     this.addCustomVoice();
                 } catch (error) {
                     console.error('MiniMax TTS: Error adding custom voice via keyboard:', error);
+                    // @ts-expect-error TS(2571): Object is of type 'unknown'.
                     toastr.error(`Failed to add custom voice: ${error.message}`);
                 }
             }
@@ -588,13 +601,17 @@ class MiniMaxTtsProvider {
             console.debug('MiniMax: Voice map initialization failed, but continuing');
         }
 
+        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         $('#api_key_minimax').toggleClass('success', !!secret_state[SECRET_KEYS.MINIMAX]);
+        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         $('#minimax_group_id').toggleClass('success', !!secret_state[SECRET_KEYS.MINIMAX_GROUP_ID]);
         [event_types.SECRET_WRITTEN, event_types.SECRET_DELETED, event_types.SECRET_ROTATED].forEach(event => {
+            // @ts-expect-error TS(2339): Property 'handler' does not exist on type 'MiniMax... Remove this comment to see the full error message
             eventSource.on(event, this.handler);
         });
 
         // Only check ready status when API credentials are available
+        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         if (secret_state[SECRET_KEYS.MINIMAX] && secret_state[SECRET_KEYS.MINIMAX_GROUP_ID]) {
             try {
                 await this.checkReady();
@@ -609,6 +626,7 @@ class MiniMaxTtsProvider {
 
     // Perform a simple readiness check
     async checkReady() {
+        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         if (!secret_state[SECRET_KEYS.MINIMAX] || !secret_state[SECRET_KEYS.MINIMAX_GROUP_ID]) {
             const error = new Error('API Key and Group ID are required');
             console.error('MiniMax TTS checkReady error:', error.message);
@@ -620,12 +638,15 @@ class MiniMaxTtsProvider {
         } catch (error) {
             console.warn('MiniMax TTS: Failed to fetch models/voices during ready check, will use all available:', error);
             // Even if API call fails, set all available values to ensure basic functionality
+            // @ts-expect-error TS(2322): Type 'any[]' is not assignable to type 'never[]'.
             this.availableModels = this.getAllModels();
+            // @ts-expect-error TS(2322): Type 'any[]' is not assignable to type 'never[]'.
             this.availableVoices = this.getAllVoices();
         }
 
         // Ensure at least voices are available
         if (!this.availableVoices || this.availableVoices.length === 0) {
+            // @ts-expect-error TS(2322): Type 'any[]' is not assignable to type 'never[]'.
             this.availableVoices = this.getAllVoices();
         }
     }
@@ -636,6 +657,7 @@ class MiniMaxTtsProvider {
             await initVoiceMap(); // Update voice map after refresh
             toastr.success('MiniMax TTS: Models and voices refreshed successfully');
         } catch (error) {
+            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             toastr.error(`MiniMax TTS: Failed to refresh - ${error.message}`);
         }
     }
@@ -647,6 +669,7 @@ class MiniMaxTtsProvider {
             toastr.success('MiniMax TTS: Connected successfully');
             saveTtsProviderSettings();
         } catch (error) {
+            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             toastr.error(`MiniMax TTS: ${error.message}`);
         }
     }
@@ -660,15 +683,18 @@ class MiniMaxTtsProvider {
 
         // If no available voices, try to fetch them
         if (!this.availableVoices || this.availableVoices.length === 0) {
+            // @ts-expect-error TS(2322): Type 'any[]' is not assignable to type 'never[]'.
             this.availableVoices = await this.fetchTtsVoiceObjects();
         }
 
         // Ensure at least voices are available
         if (!this.availableVoices || this.availableVoices.length === 0) {
+            // @ts-expect-error TS(2322): Type 'any[]' is not assignable to type 'never[]'.
             this.availableVoices = this.getAllVoices();
         }
 
         const voice = this.availableVoices.find(voice =>
+            // @ts-expect-error TS(2339): Property 'voice_id' does not exist on type 'never'... Remove this comment to see the full error message
             voice.voice_id === voiceName || voice.name === voiceName,
         );
 
@@ -697,8 +723,11 @@ class MiniMaxTtsProvider {
         let language = null;
         try {
             const voice = await this.getVoice(voiceId);
+            // @ts-expect-error TS(2339): Property 'lang' does not exist on type 'never'.
             if (voice && voice.lang) {
+                // @ts-expect-error TS(2339): Property 'lang' does not exist on type 'never'.
                 language = this.mapLanguageToMiniMaxFormat(voice.lang);
+                // @ts-expect-error TS(2339): Property 'lang' does not exist on type 'never'.
                 console.debug(`MiniMax TTS: Using voice language ${voice.lang}, API language: ${language}`);
             }
         } catch (error) {
@@ -710,6 +739,7 @@ class MiniMaxTtsProvider {
 
     async fetchTtsVoiceObjects() {
         try {
+            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             if (!secret_state[SECRET_KEYS.MINIMAX] || !secret_state[SECRET_KEYS.MINIMAX_GROUP_ID]) {
                 console.warn('MiniMax TTS: API Key and Group ID required for fetching voices');
                 console.warn('Using all available voices (default + custom). Please check your API credentials');
@@ -731,6 +761,7 @@ class MiniMaxTtsProvider {
         // MiniMax API doesn't provide a models listing endpoint
         // Using all available models (default + custom)
         console.info('MiniMax TTS: Using all available models (default + custom)');
+        // @ts-expect-error TS(2322): Type 'any[]' is not assignable to type 'never[]'.
         this.availableModels = this.getAllModels();
         return this.getAllModels();
     }
@@ -738,10 +769,12 @@ class MiniMaxTtsProvider {
     async updateModelsAndVoices() {
         try {
             // Get models list
+            // @ts-expect-error TS(2322): Type 'any[]' is not assignable to type 'never[]'.
             this.availableModels = await this.fetchTtsModels();
             console.info(`MiniMax TTS: Loaded ${this.availableModels.length} models`);
 
             // Get voices list (now fetched from API)
+            // @ts-expect-error TS(2322): Type 'any[]' is not assignable to type 'never[]'.
             this.availableVoices = await this.fetchTtsVoiceObjects();
             console.info(`MiniMax TTS: Loaded ${this.availableVoices.length} voices`);
 
@@ -755,7 +788,9 @@ class MiniMaxTtsProvider {
         } catch (error) {
             console.error('MiniMax TTS: Failed to update models and voices:', error);
             // Set all available values to ensure basic functionality
+            // @ts-expect-error TS(2322): Type 'any[]' is not assignable to type 'never[]'.
             this.availableModels = this.getAllModels();
+            // @ts-expect-error TS(2322): Type 'any[]' is not assignable to type 'never[]'.
             this.availableVoices = this.getAllVoices();
             throw error;
         }
@@ -770,12 +805,14 @@ class MiniMaxTtsProvider {
             'flac': 'audio/flac',
             'aac': 'audio/aac',
         };
+        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         return mimeTypes[format] || 'audio/mpeg';
     }
 
     async fetchTtsGeneration(inputText: any, voiceId: any, language = null) {
         console.info(`Generating new MiniMax TTS for voice_id ${voiceId}`);
 
+        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         if (!secret_state[SECRET_KEYS.MINIMAX] || !secret_state[SECRET_KEYS.MINIMAX_GROUP_ID]) {
             const error = new Error('API Key and Group ID are required');
             console.error('MiniMax TTS fetchTtsGeneration error:', error.message);
@@ -885,6 +922,7 @@ class MiniMaxTtsProvider {
         };
 
         // Return mapped language or default to auto
+        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         return languageMap[languageCode] || 'auto';
     }
 
@@ -899,6 +937,7 @@ class MiniMaxTtsProvider {
         try {
             const voice = await this.getVoice(voiceId);
             // Get preview text based on voice language, defaulting to en-US
+            // @ts-expect-error TS(2339): Property 'lang' does not exist on type 'never'.
             const previewLang = voice.lang || 'en-US';
             const text = getPreviewString(previewLang);
 
@@ -926,6 +965,7 @@ class MiniMaxTtsProvider {
             this.audioElement.onended = null;
             this.audioElement.onerror = null;
 
+            // @ts-expect-error TS(2322): Type 'unknown' is not assignable to type 'string'.
             this.audioElement.src = srcUrl;
             this.audioElement.volume = Math.min(this.settings.volume || 1.0, 1.0); // HTML audio element max is 1.0
 
@@ -947,6 +987,7 @@ class MiniMaxTtsProvider {
                 console.debug('MiniMax TTS: Audio playback started successfully');
             } catch (playError) {
                 console.error('MiniMax TTS: Play error:', playError);
+                // @ts-expect-error TS(2571): Object is of type 'unknown'.
                 throw new Error(`Audio playback failed: ${playError.message}`);
             }
 
@@ -956,6 +997,7 @@ class MiniMaxTtsProvider {
             };
         } catch (error) {
             console.error('MiniMax TTS Preview Error:', error);
+            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             toastr.error(`Could not generate preview: ${error.message}`);
         }
     }

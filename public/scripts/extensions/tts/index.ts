@@ -38,6 +38,7 @@ import { MiniMaxTtsProvider } from './minimax.js';
 import { ElectronHubTtsProvider } from './electronhub.js';
 import { ChutesTtsProvider } from './chutes.js';
 import { VolcengineTtsProvider } from './volcengine.js';
+// @ts-expect-error TS(2792): Cannot find module '/scripts/i18n.js'. Did you mea... Remove this comment to see the full error message
 import { applyLocale, t } from '/scripts/i18n.js';
 import { KokoroTtsProvider } from './kokoro.js';
 
@@ -94,6 +95,7 @@ export function getPreviewString(lang: any) {
     };
     const fallbackPreview = 'Neque porro quisquam est qui dolorem ipsum quia dolor sit amet';
 
+    // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     return previewStrings[lang] ?? fallbackPreview;
 }
 
@@ -109,14 +111,17 @@ export function registerTtsProvider(name: any, provider: any) {
     if (!provider || typeof provider !== 'function') {
         throw new Error(`TTS provider ${name} is not a valid provider class.`);
     }
+    // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     if (ttsProviders[name]) {
         throw new Error(`TTS provider ${name} is already registered.`);
     }
+    // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     ttsProviders[name] = provider;
     console.info(`Registered TTS provider: ${name}`);
     $('#tts_provider').append($('<option />').val(name).text(name));
 
     // Load if it was previously selected
+    // @ts-expect-error TS(2339): Property 'currentProvider' does not exist on type ... Remove this comment to see the full error message
     if (extension_settings.tts.currentProvider === name) {
         loadTtsProvider(name);
     }
@@ -167,6 +172,7 @@ async function onNarrateOneMessage(this: any) {
     }
 
     resetTtsPlayback();
+    // @ts-expect-error TS(2345): Argument of type 'number' is not assignable to par... Remove this comment to see the full error message
     processAndQueueTtsMessage(message, Number(id), { manual: true });
     moduleWorker();
 }
@@ -184,8 +190,11 @@ async function onNarrateText(args: any, text: any) {
     const baseName = args?.voice || name2;
     const name = (baseName === 'SillyTavern System' ? DEFAULT_VOICE_MARKER : baseName) || DEFAULT_VOICE_MARKER;
 
+    // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     const voiceMapEntry = voiceMap[name] === DEFAULT_VOICE_MARKER
+        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         ? voiceMap[DEFAULT_VOICE_MARKER]
+        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         : voiceMap[name];
 
     if (voiceMapEntry === DISABLED_VOICE_MARKER) {
@@ -210,6 +219,7 @@ async function onNarrateText(args: any, text: any) {
 }
 
 async function moduleWorker() {
+    // @ts-expect-error TS(2339): Property 'enabled' does not exist on type '{}'.
     if (!extension_settings.tts.enabled) {
         return;
     }
@@ -272,6 +282,7 @@ function processAndQueueTtsMessage(message: any, messageId = null, { manual = fa
     clone.id = messageId ?? null;
     clone.manual = manual ?? false;
 
+    // @ts-expect-error TS(2339): Property 'narrate_by_paragraphs' does not exist on... Remove this comment to see the full error message
     if (!extension_settings.tts.narrate_by_paragraphs) {
         ttsJobQueue.push(clone);
         return;
@@ -309,6 +320,7 @@ function debugTtsPlayback() {
         },
     ));
 }
+// @ts-expect-error TS(7017): Element implicitly has an 'any' type because type ... Remove this comment to see the full error message
 globalThis.debugTtsPlayback = debugTtsPlayback;
 
 //##################//
@@ -346,10 +358,13 @@ async function playAudioData(audioJob: any) {
         const srcUrl = await getBase64Async(audioBlob);
 
         // VRM lip sync
+        // @ts-expect-error TS(2339): Property 'vrm' does not exist on type '{ apiUrl: s... Remove this comment to see the full error message
         if (extension_settings.vrm?.enabled && typeof globalThis.vrmLipSync === 'function') {
+            // @ts-expect-error TS(7017): Element implicitly has an 'any' type because type ... Remove this comment to see the full error message
             await globalThis.vrmLipSync(audioBlob, char);
         }
 
+        // @ts-expect-error TS(2322): Type 'unknown' is not assignable to type 'string'.
         audioElement.src = srcUrl;
     } else if (typeof audioBlob === 'string') {
         audioElement.src = audioBlob;
@@ -359,11 +374,13 @@ async function playAudioData(audioJob: any) {
     audioElement.addEventListener('ended', completeCurrentAudioJob);
     audioElement.addEventListener('canplay', () => {
         console.debug('Starting TTS playback');
+        // @ts-expect-error TS(2339): Property 'playback_rate' does not exist on type '{... Remove this comment to see the full error message
         audioElement.playbackRate = extension_settings.tts.playback_rate;
         audioElement.play();
     });
 }
 
+// @ts-expect-error TS(7017): Element implicitly has an 'any' type because type ... Remove this comment to see the full error message
 globalThis.tts_preview = function (id: any) {
     const audio = document.getElementById(id);
 
@@ -399,6 +416,7 @@ async function onTtsVoicesClick() {
 }
 
 function updateUiAudioPlayState() {
+    // @ts-expect-error TS(2339): Property 'enabled' does not exist on type '{}'.
     if (extension_settings.tts.enabled == true) {
         $('#ttsExtensionMenuItem').show();
         let img;
@@ -423,6 +441,7 @@ function onAudioControlClicked() {
     } else if (context?.chat?.length > 0) {
         // Default play behavior if not processing or playing is to play the last message.
         const id = context.chat.length - 1;
+        // @ts-expect-error TS(2345): Argument of type 'number' is not assignable to par... Remove this comment to see the full error message
         processAndQueueTtsMessage(context.chat[id], id, { manual: true });
     }
     updateUiAudioPlayState();
@@ -484,6 +503,7 @@ async function processAudioJobQueue() {
         currentAudioJob = audioJobQueue.shift();
         playAudioData(currentAudioJob);
     } catch (error) {
+        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         toastr.error(error.toString());
         console.error(error);
         audioQueueProcessorReady = true;
@@ -511,7 +531,9 @@ async function tts(text: any, voiceId: any, char: any, voiceMapKey = null) {
 
     async function processResponse(response: any) {
         // RVC injection
+        // @ts-expect-error TS(7017): Element implicitly has an 'any' type because type ... Remove this comment to see the full error message
         if (typeof globalThis.rvcVoiceConversion === 'function' && extension_settings.rvc.enabled)
+            // @ts-expect-error TS(7017): Element implicitly has an 'any' type because type ... Remove this comment to see the full error message
             response = await globalThis.rvcVoiceConversion(response, char, text);
 
         const audioResult = await addAudioJob(response, char);
@@ -536,6 +558,7 @@ async function tts(text: any, voiceId: any, char: any, voiceMapKey = null) {
 }
 
 function parseMessageSegments(text: any) {
+    // @ts-expect-error TS(2339): Property 'multi_voice_enabled' does not exist on t... Remove this comment to see the full error message
     if (!extension_settings.tts.multi_voice_enabled) {
         return [{ type: 'other', text: text }];
     }
@@ -563,10 +586,12 @@ function parseMessageSegments(text: any) {
         if (match[1]) {
             // Asterisk content (*action*)
             segmentType = 'action';
+            // @ts-expect-error TS(2532): Object is possibly 'undefined'.
             content = matchedText.slice(1, -1);
         } else if (match[2] || match[3] || match[4] || match[5] || match[6] || match[7]) {
             // Various quote types ("dialogue")
             segmentType = 'dialogue';
+            // @ts-expect-error TS(2532): Object is possibly 'undefined'.
             content = matchedText.slice(1, -1);
         }
 
@@ -579,6 +604,7 @@ function parseMessageSegments(text: any) {
             });
         }
 
+        // @ts-expect-error TS(2532): Object is possibly 'undefined'.
         lastIndex = match.index + matchedText.length;
     }
 
@@ -619,6 +645,7 @@ async function processTtsQueue() {
             let voiceMapKey = char;
 
             // If multi-voice is enabled, modify the voice map key based on segment type
+            // @ts-expect-error TS(2339): Property 'multi_voice_enabled' does not exist on t... Remove this comment to see the full error message
             if (extension_settings.tts.multi_voice_enabled && char !== DEFAULT_VOICE_MARKER) {
                 switch (segmentType) {
                     case 'dialogue':
@@ -634,6 +661,7 @@ async function processTtsQueue() {
                 }
             }
 
+            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             const voiceMapEntry = voiceMap[voiceMapKey] === DEFAULT_VOICE_MARKER ? voiceMap[DEFAULT_VOICE_MARKER] : voiceMap[voiceMapKey];
 
             if (voiceMapEntry === DISABLED_VOICE_MARKER) {
@@ -661,6 +689,7 @@ async function processTtsQueue() {
             // Pass the full voiceMapKey (e.g., "User ("Quotes")") as well with character name
             await tts(segmentText, voiceId, char, voiceMapKey);
         } catch (error) {
+            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             toastr.error(error.toString());
             console.error(error);
             currentTtsJob = null;
@@ -669,36 +698,45 @@ async function processTtsQueue() {
     }
 
     // Process unsegmented job (first time processing)
+    // @ts-expect-error TS(2339): Property 'narrate_translated_only' does not exist ... Remove this comment to see the full error message
     let text = extension_settings.tts.narrate_translated_only ? (currentTtsJob?.extra?.display_text || currentTtsJob.mes) : currentTtsJob.mes;
 
     // Substitute macros
     text = substituteParams(text);
 
+    // @ts-expect-error TS(2339): Property 'skip_codeblocks' does not exist on type ... Remove this comment to see the full error message
     if (extension_settings.tts.skip_codeblocks) {
         text = text.replace(/```.*?```/gs, '').trim();
         text = text.replace(/~~~.*?~~~/gs, '').trim();
     }
 
+    // @ts-expect-error TS(2339): Property 'skip_tags' does not exist on type '{}'.
     if (extension_settings.tts.skip_tags) {
         text = text.replace(/<.*?>[\s\S]*?<\/.*?>/g, '').trim();
     }
 
+    // @ts-expect-error TS(2339): Property 'pass_asterisks' does not exist on type '... Remove this comment to see the full error message
     if (!extension_settings.tts.pass_asterisks) {
+        // @ts-expect-error TS(2339): Property 'narrate_dialogues_only' does not exist o... Remove this comment to see the full error message
         text = extension_settings.tts.narrate_dialogues_only
             ? text.replace(/\*[^*]*?(\*|$)/g, '').trim() // remove asterisks content
             : text.replaceAll('*', '').trim(); // remove just the asterisks
     }
 
+    // @ts-expect-error TS(2339): Property 'apply_regex' does not exist on type '{}'... Remove this comment to see the full error message
     if (extension_settings.tts.apply_regex && extension_settings.tts.regex_pattern) {
+        // @ts-expect-error TS(2339): Property 'regex_pattern' does not exist on type '{... Remove this comment to see the full error message
         const regex = regexFromString(extension_settings.tts.regex_pattern);
         if (regex) {
             // Clean up extra spaces that might be left after removal
             text = text.replace(regex, '').replace(/\s+/g, ' ').trim();
         } else {
+            // @ts-expect-error TS(2339): Property 'regex_pattern' does not exist on type '{... Remove this comment to see the full error message
             console.warn('Invalid regex pattern:', extension_settings.tts.regex_pattern);
         }
     }
 
+    // @ts-expect-error TS(2339): Property 'narrate_quoted_only' does not exist on t... Remove this comment to see the full error message
     if (extension_settings.tts.narrate_quoted_only) {
         const partJoiner = (ttsProvider?.separator || ' ... ');
         text = joinQuotedBlocks(text, { separator: partJoiner, includeQuotes: true });
@@ -743,7 +781,9 @@ async function processTtsQueue() {
         for (let i = segments.length - 1; i >= 0; i--) {
             const segmentJob = {
                 name: char,
+                // @ts-expect-error TS(2532): Object is possibly 'undefined'.
                 segmentType: segments[i].type,
+                // @ts-expect-error TS(2532): Object is possibly 'undefined'.
                 segmentText: segments[i].text,
                 is_user: currentTtsJob.is_user,
                 mes: currentTtsJob.mes,
@@ -757,6 +797,7 @@ async function processTtsQueue() {
         // Clear current job so the segmented jobs can be processed
         currentTtsJob = null;
     } catch (error) {
+        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         toastr.error(error.toString());
         console.error(error);
         currentTtsJob = null;
@@ -780,9 +821,13 @@ async function processTtsQueue() {
  */
 function joinQuotedBlocks(text: any, opts = {}) {
     const {
+        // @ts-expect-error TS(2339): Property 'separator' does not exist on type '{}'.
         separator = ' ... ',
+        // @ts-expect-error TS(2339): Property 'includeQuotes' does not exist on type '{... Remove this comment to see the full error message
         includeQuotes = true,
+        // @ts-expect-error TS(2339): Property 'returnEmptyOnNoQuotes' does not exist on... Remove this comment to see the full error message
         returnEmptyOnNoQuotes = false,
+        // @ts-expect-error TS(2339): Property 'pairs' does not exist on type '{}'.
         pairs = [
             // typographic doubles
             ['„', '“'],          // DE low-high
@@ -816,13 +861,16 @@ function joinQuotedBlocks(text: any, opts = {}) {
             const finished = stack.pop();
             if (stack.length === 0) {
                 // Only collect outermost quotes (contains all nested content)
+                // @ts-expect-error TS(2532): Object is possibly 'undefined'.
                 segments.push(text.slice(finished.start, i + 1));
             }
             continue;
         }
 
         // Otherwise, see if this is a new opener
+        // @ts-expect-error TS(2538): Type 'undefined' cannot be used as an index type.
         if (openToClose[ch]) {
+            // @ts-expect-error TS(2538): Type 'undefined' cannot be used as an index type.
             stack.push({ opener: ch, expectedClose: openToClose[ch], start: i });
             continue;
         }
@@ -842,6 +890,7 @@ function joinQuotedBlocks(text: any, opts = {}) {
 async function playFullConversation() {
     resetTtsPlayback();
 
+    // @ts-expect-error TS(2339): Property 'enabled' does not exist on type '{}'.
     if (!extension_settings.tts.enabled) {
         return toastr.warning('TTS is disabled. Please enable it in the extension settings.');
     }
@@ -849,7 +898,9 @@ async function playFullConversation() {
     const context = getContext();
 
     context.chat.forEach((msg, i) => {
+        // @ts-expect-error TS(2339): Property 'is_system' does not exist on type 'never... Remove this comment to see the full error message
         if (!msg.is_system && msg.mes !== '...' && msg.mes !== '') {
+            // @ts-expect-error TS(2345): Argument of type 'number' is not assignable to par... Remove this comment to see the full error message
             processAndQueueTtsMessage(msg, i, { manual: false });
         }
     });
@@ -859,6 +910,7 @@ async function playFullConversation() {
     }
 }
 
+// @ts-expect-error TS(7017): Element implicitly has an 'any' type because type ... Remove this comment to see the full error message
 globalThis.playFullConversation = playFullConversation;
 
 //#############################//
@@ -871,33 +923,54 @@ function loadSettings() {
     }
     for (const key in defaultSettings) {
         if (!(key in extension_settings.tts)) {
+            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             extension_settings.tts[key] = defaultSettings[key];
         }
     }
+    // @ts-expect-error TS(2339): Property 'currentProvider' does not exist on type ... Remove this comment to see the full error message
     $('#tts_provider').val(extension_settings.tts.currentProvider);
     $('#tts_enabled').prop(
         'checked',
+        // @ts-expect-error TS(2339): Property 'enabled' does not exist on type '{}'.
         extension_settings.tts.enabled,
     );
+    // @ts-expect-error TS(2339): Property 'narrate_dialogues_only' does not exist o... Remove this comment to see the full error message
     $('#tts_narrate_dialogues').prop('checked', extension_settings.tts.narrate_dialogues_only);
+    // @ts-expect-error TS(2339): Property 'narrate_quoted_only' does not exist on t... Remove this comment to see the full error message
     $('#tts_narrate_quoted').prop('checked', extension_settings.tts.narrate_quoted_only);
+    // @ts-expect-error TS(2339): Property 'auto_generation' does not exist on type ... Remove this comment to see the full error message
     $('#tts_auto_generation').prop('checked', extension_settings.tts.auto_generation);
+    // @ts-expect-error TS(2339): Property 'periodic_auto_generation' does not exist... Remove this comment to see the full error message
     $('#tts_periodic_auto_generation').prop('checked', extension_settings.tts.periodic_auto_generation);
+    // @ts-expect-error TS(2339): Property 'narrate_by_paragraphs' does not exist on... Remove this comment to see the full error message
     $('#tts_narrate_by_paragraphs').prop('checked', extension_settings.tts.narrate_by_paragraphs);
+    // @ts-expect-error TS(2339): Property 'narrate_translated_only' does not exist ... Remove this comment to see the full error message
     $('#tts_narrate_translated_only').prop('checked', extension_settings.tts.narrate_translated_only);
+    // @ts-expect-error TS(2339): Property 'narrate_user' does not exist on type '{}... Remove this comment to see the full error message
     $('#tts_narrate_user').prop('checked', extension_settings.tts.narrate_user);
+    // @ts-expect-error TS(2339): Property 'pass_asterisks' does not exist on type '... Remove this comment to see the full error message
     $('#tts_pass_asterisks').prop('checked', extension_settings.tts.pass_asterisks);
+    // @ts-expect-error TS(2339): Property 'skip_codeblocks' does not exist on type ... Remove this comment to see the full error message
     $('#tts_skip_codeblocks').prop('checked', extension_settings.tts.skip_codeblocks);
+    // @ts-expect-error TS(2339): Property 'skip_tags' does not exist on type '{}'.
     $('#tts_skip_tags').prop('checked', extension_settings.tts.skip_tags);
+    // @ts-expect-error TS(2339): Property 'multi_voice_enabled' does not exist on t... Remove this comment to see the full error message
     $('#tts_multi_voice_enabled').prop('checked', extension_settings.tts.multi_voice_enabled);
+    // @ts-expect-error TS(2339): Property 'apply_regex' does not exist on type '{}'... Remove this comment to see the full error message
     $('#tts_apply_regex').prop('checked', extension_settings.tts.apply_regex);
+    // @ts-expect-error TS(2339): Property 'regex_pattern' does not exist on type '{... Remove this comment to see the full error message
     $('#tts_regex_pattern').val(extension_settings.tts.regex_pattern);
+    // @ts-expect-error TS(2339): Property 'apply_regex' does not exist on type '{}'... Remove this comment to see the full error message
     $('#tts_regex_block').toggle(extension_settings.tts.apply_regex);
     updateRegexPatternWarning();
+    // @ts-expect-error TS(2339): Property 'playback_rate' does not exist on type '{... Remove this comment to see the full error message
     $('#playback_rate').val(extension_settings.tts.playback_rate);
+    // @ts-expect-error TS(2339): Property 'playback_rate' does not exist on type '{... Remove this comment to see the full error message
     $('#playback_rate_counter').val(Number(extension_settings.tts.playback_rate).toFixed(2));
+    // @ts-expect-error TS(2339): Property 'currentProvider' does not exist on type ... Remove this comment to see the full error message
     $('#playback_rate_block').toggle(extension_settings.tts.currentProvider !== 'System');
 
+    // @ts-expect-error TS(2339): Property 'enabled' does not exist on type '{}'.
     $('body').toggleClass('tts', extension_settings.tts.enabled);
 }
 
@@ -927,6 +1000,7 @@ function onRefreshClick() {
         ttsProvider.onRefreshClick(),
         // updateVoiceMap()
     ]).then(() => {
+        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         extension_settings.tts[ttsProviderName] = ttsProvider.settings;
         saveSettingsDebounced();
         setTtsStatus('Successfully applied settings', true);
@@ -941,70 +1015,84 @@ function onRefreshClick() {
 }
 
 function onEnableClick() {
+    // @ts-expect-error TS(2339): Property 'enabled' does not exist on type '{}'.
     extension_settings.tts.enabled = $('#tts_enabled').is(
         ':checked',
     );
     updateUiAudioPlayState();
     saveSettingsDebounced();
+    // @ts-expect-error TS(2339): Property 'enabled' does not exist on type '{}'.
     $('body').toggleClass('tts', extension_settings.tts.enabled);
 }
 
 
 function onAutoGenerationClick() {
+    // @ts-expect-error TS(2339): Property 'auto_generation' does not exist on type ... Remove this comment to see the full error message
     extension_settings.tts.auto_generation = !!$('#tts_auto_generation').prop('checked');
     saveSettingsDebounced();
 }
 
 
 function onPeriodicAutoGenerationClick() {
+    // @ts-expect-error TS(2339): Property 'periodic_auto_generation' does not exist... Remove this comment to see the full error message
     extension_settings.tts.periodic_auto_generation = !!$('#tts_periodic_auto_generation').prop('checked');
     saveSettingsDebounced();
 }
 
 function onNarrateByParagraphsClick() {
+    // @ts-expect-error TS(2339): Property 'narrate_by_paragraphs' does not exist on... Remove this comment to see the full error message
     extension_settings.tts.narrate_by_paragraphs = !!$('#tts_narrate_by_paragraphs').prop('checked');
     saveSettingsDebounced();
 }
 
 
 function onNarrateDialoguesClick() {
+    // @ts-expect-error TS(2339): Property 'narrate_dialogues_only' does not exist o... Remove this comment to see the full error message
     extension_settings.tts.narrate_dialogues_only = !!$('#tts_narrate_dialogues').prop('checked');
     saveSettingsDebounced();
 }
 
 function onNarrateUserClick() {
+    // @ts-expect-error TS(2339): Property 'narrate_user' does not exist on type '{}... Remove this comment to see the full error message
     extension_settings.tts.narrate_user = !!$('#tts_narrate_user').prop('checked');
     saveSettingsDebounced();
 }
 
 function onNarrateQuotedClick() {
+    // @ts-expect-error TS(2339): Property 'narrate_quoted_only' does not exist on t... Remove this comment to see the full error message
     extension_settings.tts.narrate_quoted_only = !!$('#tts_narrate_quoted').prop('checked');
     saveSettingsDebounced();
 }
 
 
 function onNarrateTranslatedOnlyClick() {
+    // @ts-expect-error TS(2339): Property 'narrate_translated_only' does not exist ... Remove this comment to see the full error message
     extension_settings.tts.narrate_translated_only = !!$('#tts_narrate_translated_only').prop('checked');
     saveSettingsDebounced();
 }
 
 function onSkipCodeblocksClick() {
+    // @ts-expect-error TS(2339): Property 'skip_codeblocks' does not exist on type ... Remove this comment to see the full error message
     extension_settings.tts.skip_codeblocks = !!$('#tts_skip_codeblocks').prop('checked');
     saveSettingsDebounced();
 }
 
 function onSkipTagsClick() {
+    // @ts-expect-error TS(2339): Property 'skip_tags' does not exist on type '{}'.
     extension_settings.tts.skip_tags = !!$('#tts_skip_tags').prop('checked');
     saveSettingsDebounced();
 }
 
 function onPassAsterisksClick() {
+    // @ts-expect-error TS(2339): Property 'pass_asterisks' does not exist on type '... Remove this comment to see the full error message
     extension_settings.tts.pass_asterisks = !!$('#tts_pass_asterisks').prop('checked');
     saveSettingsDebounced();
+    // @ts-expect-error TS(2339): Property 'pass_asterisks' does not exist on type '... Remove this comment to see the full error message
     console.log('setting pass asterisks', extension_settings.tts.pass_asterisks);
 }
 
 function onMultiVoiceClick() {
+    // @ts-expect-error TS(2339): Property 'multi_voice_enabled' does not exist on t... Remove this comment to see the full error message
     extension_settings.tts.multi_voice_enabled = !!$('#tts_multi_voice_enabled').prop('checked');
     saveSettingsDebounced();
     // Reinitialize voice map to show/hide voices
@@ -1012,13 +1100,16 @@ function onMultiVoiceClick() {
 }
 
 function onApplyRegexChange() {
+    // @ts-expect-error TS(2339): Property 'apply_regex' does not exist on type '{}'... Remove this comment to see the full error message
     extension_settings.tts.apply_regex = !!$('#tts_apply_regex').prop('checked');
     saveSettingsDebounced();
+    // @ts-expect-error TS(2339): Property 'apply_regex' does not exist on type '{}'... Remove this comment to see the full error message
     $('#tts_regex_block').toggle(extension_settings.tts.apply_regex);
     updateRegexPatternWarning();
 }
 
 function onRegexPatternChange() {
+    // @ts-expect-error TS(2339): Property 'regex_pattern' does not exist on type '{... Remove this comment to see the full error message
     extension_settings.tts.regex_pattern = $('#tts_regex_pattern').val().toString();
     saveSettingsDebounced();
     updateRegexPatternWarning();
@@ -1026,11 +1117,13 @@ function onRegexPatternChange() {
 
 function updateRegexPatternWarning() {
     const warning = $('#tts_regex_warning');
+    // @ts-expect-error TS(2339): Property 'apply_regex' does not exist on type '{}'... Remove this comment to see the full error message
     if (!extension_settings.tts.apply_regex) {
         warning.hide();
         return;
     }
 
+    // @ts-expect-error TS(2339): Property 'regex_pattern' does not exist on type '{... Remove this comment to see the full error message
     const pattern = extension_settings.tts.regex_pattern;
     if (!pattern) {
         warning.hide();
@@ -1054,16 +1147,20 @@ async function loadTtsProvider(provider: any) {
     }
 
     // Init provider references
+    // @ts-expect-error TS(2339): Property 'currentProvider' does not exist on type ... Remove this comment to see the full error message
     extension_settings.tts.currentProvider = provider;
     ttsProviderName = provider;
+    // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     ttsProvider = new ttsProviders[provider];
 
     // Init provider settings
     $('#tts_provider_settings').append(ttsProvider.settingsHtml);
     if (!(ttsProviderName in extension_settings.tts)) {
         console.warn(`Provider ${ttsProviderName} not in Extension Settings, initiatilizing provider in settings`);
+        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         extension_settings.tts[ttsProviderName] = {};
     }
+    // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     await ttsProvider.loadSettings(extension_settings.tts[ttsProviderName]);
     await initVoiceMap();
 }
@@ -1073,13 +1170,16 @@ function onTtsProviderChange() {
         ttsProvider.dispose();
     }
     const ttsProviderSelection = $('#tts_provider').val();
+    // @ts-expect-error TS(2339): Property 'currentProvider' does not exist on type ... Remove this comment to see the full error message
     extension_settings.tts.currentProvider = ttsProviderSelection;
+    // @ts-expect-error TS(2339): Property 'currentProvider' does not exist on type ... Remove this comment to see the full error message
     $('#playback_rate_block').toggle(extension_settings.tts.currentProvider !== 'System');
     loadTtsProvider(ttsProviderSelection);
 }
 
 // Ensure that TTS provider settings are saved to extension settings.
 export function saveTtsProviderSettings() {
+    // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     extension_settings.tts[ttsProviderName] = ttsProvider.settings;
     updateVoiceMap();
     saveSettingsDebounced();
@@ -1101,11 +1201,13 @@ async function onChatChanged() {
 
 async function onMessageEvent(messageId: any, lastCharIndex: any) {
     // If TTS is disabled, do nothing
+    // @ts-expect-error TS(2339): Property 'enabled' does not exist on type '{}'.
     if (!extension_settings.tts.enabled) {
         return;
     }
 
     // Auto generation is disabled
+    // @ts-expect-error TS(2339): Property 'auto_generation' does not exist on type ... Remove this comment to see the full error message
     if (!extension_settings.tts.auto_generation) {
         return;
     }
@@ -1120,6 +1222,7 @@ async function onMessageEvent(messageId: any, lastCharIndex: any) {
     // Chat changed
     if (context.chatId !== lastChatId) {
         lastChatId = context.chatId;
+        // @ts-expect-error TS(2339): Property 'mes' does not exist on type 'never'.
         lastMessageHash = getStringHash(context.chat[messageId]?.mes ?? '');
 
         // Force to speak on the first message in the new chat
@@ -1131,9 +1234,11 @@ async function onMessageEvent(messageId: any, lastCharIndex: any) {
     // clone message object, as things go haywire if message object is altered below (it's passed by reference)
     /** @type {TtsMessage} */
     const message = structuredClone(context.chat[messageId]);
+    // @ts-expect-error TS(2339): Property 'mes' does not exist on type 'never'.
     const hashNew = getStringHash(message?.mes ?? '');
 
     // Ignore prompt-hidden messages
+    // @ts-expect-error TS(2532): Object is possibly 'undefined'.
     if (message.is_system) {
         return;
     }
@@ -1145,20 +1250,26 @@ async function onMessageEvent(messageId: any, lastCharIndex: any) {
 
     // if we only want to process part of the message
     if (lastCharIndex) {
+        // @ts-expect-error TS(2532): Object is possibly 'undefined'.
         message.mes = message.mes.substring(0, lastCharIndex);
     }
 
     const isLastMessageInCurrent = () =>
         lastMessage &&
         typeof lastMessage === 'object' &&
+        // @ts-expect-error TS(2532): Object is possibly 'undefined'.
         message.swipe_id === lastMessage.swipe_id &&
+        // @ts-expect-error TS(2532): Object is possibly 'undefined'.
         message.name === lastMessage.name &&
+        // @ts-expect-error TS(2532): Object is possibly 'undefined'.
         message.is_user === lastMessage.is_user &&
+        // @ts-expect-error TS(2532): Object is possibly 'undefined'.
         message.mes.indexOf(lastMessage.mes) !== -1;
 
     // if last message within current message, message got extended. only send diff to TTS.
     if (isLastMessageInCurrent()) {
         const tmp = structuredClone(message);
+        // @ts-expect-error TS(2532): Object is possibly 'undefined'.
         message.mes = message.mes.replace(lastMessage.mes, '');
         lastMessage = tmp;
     } else {
@@ -1166,16 +1277,19 @@ async function onMessageEvent(messageId: any, lastCharIndex: any) {
     }
 
     // We're currently swiping. Don't generate voice
+    // @ts-expect-error TS(2339): Property 'mes' does not exist on type 'never'.
     if (!message || message.mes === '...' || message.mes === '') {
         return;
     }
 
     // Don't generate if message doesn't have a display text
+    // @ts-expect-error TS(2339): Property 'narrate_translated_only' does not exist ... Remove this comment to see the full error message
     if (extension_settings.tts.narrate_translated_only && !(message?.extra?.display_text)) {
         return;
     }
 
     // Don't generate if message is a user message and user message narration is disabled
+    // @ts-expect-error TS(2339): Property 'is_user' does not exist on type 'never'.
     if (message.is_user && !extension_settings.tts.narrate_user) {
         return;
     }
@@ -1184,9 +1298,12 @@ async function onMessageEvent(messageId: any, lastCharIndex: any) {
     lastMessageHash = hashNew;
     lastChatId = context.chatId;
 
+    // @ts-expect-error TS(2339): Property 'name' does not exist on type 'never'.
     console.debug(`Adding message from ${message.name} for TTS processing: "${message.mes}"`);
 
+    // @ts-expect-error TS(2339): Property 'periodic_auto_generation' does not exist... Remove this comment to see the full error message
     if (extension_settings.tts.periodic_auto_generation && isStreamingEnabled()) {
+        // @ts-expect-error TS(2339): Property 'id' does not exist on type 'never'.
         message.id = messageId;
         ttsJobQueue.push(message);
     } else {
@@ -1201,6 +1318,7 @@ async function onMessageDeleted() {
     lastChatId = context.chatId;
 
     // compare against lastMessageHash. If it's the same, we did not delete the last chat item, so no need to reset tts queue
+    // @ts-expect-error TS(2532): Object is possibly 'undefined'.
     const messageHash = getStringHash((context.chat.length && context.chat[context.chat.length - 1].mes) ?? '');
     if (messageHash === lastMessageHash) {
         return;
@@ -1219,16 +1337,19 @@ async function onGenerationStarted(generationType: any, _args: any, isDryRun: an
     }
 
     // If TTS is disabled, do nothing
+    // @ts-expect-error TS(2339): Property 'enabled' does not exist on type '{}'.
     if (!extension_settings.tts.enabled) {
         return;
     }
 
     // Auto generation is disabled
+    // @ts-expect-error TS(2339): Property 'auto_generation' does not exist on type ... Remove this comment to see the full error message
     if (!extension_settings.tts.auto_generation) {
         return;
     }
 
     // Periodic auto generation is disabled
+    // @ts-expect-error TS(2339): Property 'periodic_auto_generation' does not exist... Remove this comment to see the full error message
     if (!extension_settings.tts.periodic_auto_generation) {
         return;
     }
@@ -1263,11 +1384,13 @@ async function onPeriodicMessageGenerationTick() {
     const lastMessageId = context.chat.length - 1;
 
     // the last message was from the user
+    // @ts-expect-error TS(2532): Object is possibly 'undefined'.
     if (context.chat[lastMessageId].is_user) {
         return;
     }
 
     const lastMessage = structuredClone(context.chat[lastMessageId]);
+    // @ts-expect-error TS(2339): Property 'mes' does not exist on type 'never'.
     const lastMessageText = lastMessage?.mes ?? '';
 
     // look for double ending lines which should indicate the end of a paragraph
@@ -1324,6 +1447,7 @@ export function getCharacters(unrestricted: any) {
     characters = characters.filter(onlyUnique);
 
     // If multi-voice is enabled, expand characters to include segment types
+    // @ts-expect-error TS(2339): Property 'multi_voice_enabled' does not exist on t... Remove this comment to see the full error message
     if (extension_settings.tts.multi_voice_enabled) {
         const expandedCharacters = [];
         for (const char of characters) {
@@ -1359,6 +1483,7 @@ function parseVoiceMap(voiceMapString: any) {
         .split(',')
         .map((s: any) => s.split(':'))) {
         if (charName && voiceId) {
+            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             parsedVoiceMap[charName.trim()] = voiceId.trim();
         }
     }
@@ -1375,15 +1500,19 @@ function updateVoiceMap() {
         if (voice.voiceId === null) {
             continue;
         }
+        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         tempVoiceMap[voice.name] = voice.voiceId;
     }
     if (Object.keys(tempVoiceMap).length !== 0) {
         voiceMap = tempVoiceMap;
         console.log(`Voicemap updated to ${JSON.stringify(voiceMap)}`);
     }
+    // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     if (!extension_settings.tts[ttsProviderName].voiceMap) {
+        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         extension_settings.tts[ttsProviderName].voiceMap = {};
     }
+    // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     Object.assign(extension_settings.tts[ttsProviderName].voiceMap, voiceMap);
     saveSettingsDebounced();
 }
@@ -1493,12 +1622,17 @@ async function initVoiceMapInternal(unrestricted: any) {
 
     // Get saved voicemap from provider settings, handling new and old representations
     let voiceMapFromSettings = {};
+    // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     if ('voiceMap' in extension_settings.tts[ttsProviderName]) {
         // Handle previous representation
+        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         if (typeof extension_settings.tts[ttsProviderName].voiceMap === 'string') {
+            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             voiceMapFromSettings = parseVoiceMap(extension_settings.tts[ttsProviderName].voiceMap);
             // Handle new representation
+        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         } else if (typeof extension_settings.tts[ttsProviderName].voiceMap === 'object') {
+            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             voiceMapFromSettings = extension_settings.tts[ttsProviderName].voiceMap;
         }
     }
@@ -1519,6 +1653,7 @@ async function initVoiceMapInternal(unrestricted: any) {
         // Check provider settings for voiceIds
         let voiceId;
         if (character in voiceMapFromSettings) {
+            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             voiceId = voiceMapFromSettings[character];
         } else if (character === DEFAULT_VOICE_MARKER) {
             voiceId = DISABLED_VOICE_MARKER;
@@ -1555,6 +1690,7 @@ export async function init() {
         $('#playback_rate').on('input', function(this: any) {
             const value = $(this).val();
             const formattedValue = Number(value).toFixed(2);
+            // @ts-expect-error TS(2339): Property 'playback_rate' does not exist on type '{... Remove this comment to see the full error message
             extension_settings.tts.playback_rate = value;
             $('#playback_rate_counter').val(formattedValue);
             saveSettingsDebounced();
@@ -1569,6 +1705,7 @@ export async function init() {
     }
     await addExtensionControls(); // No init dependencies
     loadSettings(); // Depends on Extension Controls and loadTtsProvider
+    // @ts-expect-error TS(2339): Property 'currentProvider' does not exist on type ... Remove this comment to see the full error message
     loadTtsProvider(extension_settings.tts.currentProvider); // No dependencies
     addAudioControl(); // Depends on Extension Controls
     setInterval(wrapper.update.bind(wrapper), UPDATE_INTERVAL); // Init depends on all the things
@@ -1578,7 +1715,9 @@ export async function init() {
     eventSource.on(event_types.GROUP_UPDATED, onChatChanged);
     eventSource.on(event_types.GENERATION_STARTED, onGenerationStarted);
     eventSource.on(event_types.GENERATION_ENDED, onGenerationEnded);
+    // @ts-expect-error TS(2554): Expected 2 arguments, but got 1.
     eventSource.makeLast(event_types.CHARACTER_MESSAGE_RENDERED, (messageId: any) => onMessageEvent(messageId));
+    // @ts-expect-error TS(2554): Expected 2 arguments, but got 1.
     eventSource.makeLast(event_types.USER_MESSAGE_RENDERED, (messageId: any) => onMessageEvent(messageId));
     SlashCommandParser.addCommandObject(SlashCommand.fromProps({
         name: 'speak',

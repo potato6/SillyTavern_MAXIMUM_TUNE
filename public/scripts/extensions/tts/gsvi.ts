@@ -59,6 +59,7 @@ class GSVITtsProvider {
         }
         const characterList = await response.json();
         this.characterList = characterList;
+        // @ts-expect-error TS(2322): Type 'string[]' is not assignable to type 'never[]... Remove this comment to see the full error message
         this.voices = Object.keys(characterList);
     }
 
@@ -69,11 +70,14 @@ class GSVITtsProvider {
         <select id="gsvi_api_language">`;
 
         for (let language in this.languageLabels) {
+            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             if (this.languageLabels[language] == this.settings?.language) {
+                // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 html += `<option value="${this.languageLabels[language]}" selected="selected">${language}</option>`;
                 continue;
             }
 
+            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             html += `<option value="${this.languageLabels[language]}">${language}</option>`;
         }
 
@@ -209,6 +213,7 @@ class GSVITtsProvider {
         if (this.voices.length == 0) {
             this.fetchCharacterList();
         }
+        // @ts-expect-error TS(2345): Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
         if (!this.voices.includes(voiceName)) {
             throw `TTS Voice name ${voiceName} not found`;
         }

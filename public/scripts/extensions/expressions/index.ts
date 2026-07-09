@@ -127,6 +127,7 @@ function isVisualNovelMode() {
 
 async function forceUpdateVisualNovelMode() {
     if (isVisualNovelMode()) {
+        // @ts-expect-error TS(2554): Expected 2 arguments, but got 0.
         await updateVisualNovelMode();
     }
 }
@@ -165,9 +166,11 @@ async function visualNovelRemoveInactive(container: any) {
             if (!group.members.includes(avatar) || group.disabled_members.includes(avatar)) {
                 element.fadeOut(250, () => {
                     element.remove();
+                    // @ts-expect-error TS(2794): Expected 1 arguments, but got 0. Did you forget to... Remove this comment to see the full error message
                     resolve();
                 });
             } else {
+                // @ts-expect-error TS(2794): Expected 1 arguments, but got 0. Did you forget to... Remove this comment to see the full error message
                 resolve();
             }
         });
@@ -209,15 +212,19 @@ async function visualNovelSetCharacterSprites(vnContainer: any, spriteFolderName
         /** @type {JQuery<HTMLElement>} */
         let img;
 
+        // @ts-expect-error TS(2345): Argument of type '{ original_avatar: any; }' is no... Remove this comment to see the full error message
         const memberSpriteFolderName = getSpriteFolderName({ original_avatar: character.avatar }, character.name);
 
         // download images if not downloaded yet
+        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         if (spriteCache[memberSpriteFolderName] === undefined) {
+            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             spriteCache[memberSpriteFolderName] = await getSpritesList(memberSpriteFolderName);
         }
 
         const prevExpressionSrc = expressionImage.find('img').attr('src') || null;
 
+        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         if (!originalExpression && Array.isArray(spriteCache[memberSpriteFolderName]) && spriteCache[memberSpriteFolderName].length > 0) {
             expression = await getLastMessageSprite(avatar);
         }
@@ -243,6 +250,7 @@ async function visualNovelSetCharacterSprites(vnContainer: any, spriteFolderName
             img = template.find('img');
             await setImage(img, spriteFile?.imageSrc || '');
             const fadeInPromise = new Promise(resolve => {
+                // @ts-expect-error TS(2794): Expected 1 arguments, but got 0. Did you forget to... Remove this comment to see the full error message
                 template.fadeIn(250, () => resolve());
             });
             setSpritePromises.push(fadeInPromise);
@@ -272,9 +280,11 @@ async function visualNovelSetCharacterSprites(vnContainer: any, spriteFolderName
  */
 async function getLastMessageSprite(avatar: any) {
     const context = getContext();
+    // @ts-expect-error TS(2339): Property 'original_avatar' does not exist on type ... Remove this comment to see the full error message
     const lastMessage = context.chat.slice().reverse().find(x => x.original_avatar == avatar || (x.force_avatar && x.force_avatar.includes(encodeURIComponent(avatar))));
 
     if (lastMessage) {
+        // @ts-expect-error TS(2339): Property 'mes' does not exist on type 'never'.
         const text = lastMessage.mes || '';
         return await getExpressionLabel(text);
     }
@@ -285,6 +295,7 @@ async function getLastMessageSprite(avatar: any) {
 export async function visualNovelUpdateLayers(container: any) {
     const context = getContext();
     const group = context.groups.find(x => x.id == context.groupId);
+    // @ts-expect-error TS(2339): Property 'original_avatar' does not exist on type ... Remove this comment to see the full error message
     const recentMessages = context.chat.map(x => x.original_avatar).filter(x => x).reverse().filter(onlyUnique);
     const filteredMembers = group.members.filter((x: any) => !group.disabled_members.includes(x));
     const layerIndices = filteredMembers.slice().sort((a: any, b: any) => {
@@ -330,13 +341,17 @@ export async function visualNovelUpdateLayers(container: any) {
         imagesWidth.push($(image).width());
     });
 
+    // @ts-expect-error TS(7006): Parameter 'a' implicitly has an 'any' type.
     let totalWidth = imagesWidth.reduce((a, b) => a + b, 0);
     let currentPosition = pivotalPoint - (totalWidth / 2);
 
     if (totalWidth > containerWidth) {
         let totalOverlap = totalWidth - containerWidth;
+        // @ts-expect-error TS(7006): Parameter 'a' implicitly has an 'any' type.
         let totalWidthWithoutWidest = imagesWidth.reduce((a, b) => a + b, 0) - Math.max(...imagesWidth);
+        // @ts-expect-error TS(7006): Parameter 'width' implicitly has an 'any' type.
         let overlaps = imagesWidth.map(width => (width / totalWidthWithoutWidest) * totalOverlap);
+        // @ts-expect-error TS(7006): Parameter 'width' implicitly has an 'any' type.
         imagesWidth = imagesWidth.map((width, index) => width - overlaps[index]);
         currentPosition = 0; // Reset the initial position to 0
     }
@@ -347,8 +362,11 @@ export async function visualNovelUpdateLayers(container: any) {
 
         // skip repositioning of dragged elements
         if (element.data('dragged')
+            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             || (power_user.movingUIState[elementID]
+                // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 && (typeof power_user.movingUIState[elementID] === 'object')
+                // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 && Object.keys(power_user.movingUIState[elementID]).length > 0)) {
             loadMovingUIState();
             //currentPosition += imagesWidth[index];
@@ -363,9 +381,11 @@ export async function visualNovelUpdateLayers(container: any) {
         const promise = new Promise(resolve => {
             if (power_user.reduced_motion) {
                 element.css('left', currentPosition + 'px');
+                // @ts-expect-error TS(2794): Expected 1 arguments, but got 0. Did you forget to... Remove this comment to see the full error message
                 requestAnimationFrame(() => resolve());
             } else {
                 element.animate({ left: currentPosition + 'px' }, 500, () => {
+                    // @ts-expect-error TS(2794): Expected 1 arguments, but got 0. Did you forget to... Remove this comment to see the full error message
                     resolve();
                 });
             }
@@ -453,8 +473,10 @@ async function setImage(img: any, path: any) {
                     expressionHolder.css('min-height', 100);
 
                     if (expressionClone.prop('complete')) {
+                        // @ts-expect-error TS(2794): Expected 1 arguments, but got 0. Did you forget to... Remove this comment to see the full error message
                         resolve();
                     } else {
+                        // @ts-expect-error TS(2794): Expected 1 arguments, but got 0. Did you forget to... Remove this comment to see the full error message
                         expressionClone.one('load', () => resolve());
                     }
                 });
@@ -467,9 +489,11 @@ async function setImage(img: any, path: any) {
                 console.debug('Expression image error', path);
                 $(this).attr('src', '');
                 $(this).off('error');
+                // @ts-expect-error TS(2794): Expected 1 arguments, but got 0. Did you forget to... Remove this comment to see the full error message
                 resolve();
             });
         } else {
+            // @ts-expect-error TS(2794): Expected 1 arguments, but got 0. Did you forget to... Remove this comment to see the full error message
             resolve();
         }
     });
@@ -504,6 +528,7 @@ async function moduleWorker({ newChat = false } = {}) {
     }
 
     const currentLastMessage = getLastCharacterMessage();
+    // @ts-expect-error TS(2345): Argument of type '{ mes: any; name: any; original_... Remove this comment to see the full error message
     let spriteFolderName = getSpriteFolderName(currentLastMessage, currentLastMessage.name);
 
     // character has no expressions or it is not loaded
@@ -513,6 +538,7 @@ async function moduleWorker({ newChat = false } = {}) {
     }
 
     const offlineMode = $('.expression_settings .offline_mode');
+    // @ts-expect-error TS(2345): Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
     if (!modules.includes('classify') && extension_settings.expressions.api == EXPRESSION_API.extras) {
         $('#open_chat_expressions').show();
         $('#no_chat_expressions').hide();
@@ -535,6 +561,7 @@ async function moduleWorker({ newChat = false } = {}) {
             await forceUpdateVisualNovelMode();
         }
 
+        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         if (context.groupId && !Array.isArray(spriteCache[spriteFolderName])) {
             await validateImages(spriteFolderName, true);
             await forceUpdateVisualNovelMode();
@@ -548,6 +575,7 @@ async function moduleWorker({ newChat = false } = {}) {
     }
 
     // Don't bother classifying if current char has no sprites and no default expressions are enabled
+    // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     if ((!Array.isArray(spriteCache[spriteFolderName]) || spriteCache[spriteFolderName].length === 0) && !extension_settings.expressions.showDefault) {
         return;
     }
@@ -560,6 +588,7 @@ async function moduleWorker({ newChat = false } = {}) {
     }
 
     // If using LLM api then check if streamingProcessor is finished to avoid sending multiple requests to the API
+    // @ts-expect-error TS(2339): Property 'isFinished' does not exist on type 'neve... Remove this comment to see the full error message
     if (extension_settings.expressions.api === EXPRESSION_API.llm && context.streamingProcessor && !context.streamingProcessor.isFinished) {
         return;
     }
@@ -571,6 +600,7 @@ async function moduleWorker({ newChat = false } = {}) {
     }
 
     // Throttle classification requests during streaming
+    // @ts-expect-error TS(2339): Property 'isFinished' does not exist on type 'neve... Remove this comment to see the full error message
     if (!context.groupId && context.streamingProcessor && !context.streamingProcessor.isFinished) {
         const now = Date.now();
         const timeSinceLastServerResponse = now - lastServerResponseTime;
@@ -597,6 +627,7 @@ async function moduleWorker({ newChat = false } = {}) {
             expression = extension_settings.expressions.fallback_expression;
         }
 
+        // @ts-expect-error TS(2322): Type 'boolean' is not assignable to type 'null | u... Remove this comment to see the full error message
         await sendExpressionCall(spriteFolderName, expression, { force: force, vnMode: vnMode });
     } catch (error) {
         console.log(error);
@@ -613,9 +644,12 @@ function getSpriteFolderName(characterMessage = null, characterName = null) {
     let spriteFolderName = characterName ?? context.name2;
     const message = characterMessage ?? getLastCharacterMessage();
     const avatarFileName = getFolderNameByMessage(message);
+    // @ts-expect-error TS(2339): Property 'name' does not exist on type 'never'.
     const expressionOverride = extension_settings.expressionOverrides.find(e => e.name == avatarFileName);
 
+    // @ts-expect-error TS(2339): Property 'path' does not exist on type 'never'.
     if (expressionOverride && expressionOverride.path) {
+        // @ts-expect-error TS(2339): Property 'path' does not exist on type 'never'.
         spriteFolderName = expressionOverride.path;
     }
 
@@ -651,8 +685,10 @@ function getFolderNameByMessage(message: any) {
  * @param {string?} [options.overrideSpriteFile=null] - Set if a specific sprite file should be used. Must be sprite file name.
  */
 export async function sendExpressionCall(spriteFolderName: any, expression: any, { force = false, vnMode = null, overrideSpriteFile = null } = {}) {
+    // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     lastExpression[spriteFolderName.split('/')[0]] = expression;
     if (vnMode === null) {
+        // @ts-expect-error TS(2322): Type 'boolean' is not assignable to type 'null'.
         vnMode = isVisualNovelMode();
     }
 
@@ -705,6 +741,7 @@ async function classifyCallback(/** @type {{api: string?, filter: string?, promp
         return '';
     }
 
+    // @ts-expect-error TS(2538): Type 'null' cannot be used as an index type.
     const expressionApi = EXPRESSION_API[api] || extension_settings.expressions.api;
     const filterAvailable = !isFalseBoolean(filter);
 
@@ -713,11 +750,13 @@ async function classifyCallback(/** @type {{api: string?, filter: string?, promp
         return '';
     }
 
+    // @ts-expect-error TS(2345): Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
     if (!modules.includes('classify') && expressionApi == EXPRESSION_API.extras) {
         toastr.warning('Text classification is disabled or not available');
         return '';
     }
 
+    // @ts-expect-error TS(2322): Type 'boolean' is not assignable to type 'null | u... Remove this comment to see the full error message
     const label = await getExpressionLabel(text, expressionApi, { filterAvailable: filterAvailable, customPrompt: prompt });
     console.debug(`Classification result for "${text}": ${label}`);
     return label;
@@ -735,6 +774,7 @@ async function setSpriteSlashCommand({
     }
 
     const currentLastMessage = selected_group ? getLastCharacterMessage() : null;
+    // @ts-expect-error TS(2345): Argument of type '{ mes: any; name: any; original_... Remove this comment to see the full error message
     const spriteFolderName = getSpriteFolderName(currentLastMessage, currentLastMessage?.name);
 
     let label = searchTerm;
@@ -747,6 +787,7 @@ async function setSpriteSlashCommand({
     // Handle reset as a special term and just reset the sprite via expression call
     if (searchTerm === RESET_SPRITE_LABEL) {
         await sendExpressionCall(spriteFolderName, label, { force: true });
+        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         return lastExpression[spriteFolderName] ?? '';
     }
 
@@ -768,6 +809,7 @@ async function setSpriteSlashCommand({
         }
         case 'sprite': {
             // Fuzzy search for sprite file
+            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             const sprites = spriteCache[spriteFolderName].map((x: any) => x.files).flat();
             const results = performFuzzySearch('expression-expressions', sprites, [
                 { name: 'title', weight: 1 },
@@ -801,7 +843,9 @@ function setFallBackExpressionSlashCommand(args: any, expressionName: any) {
 
     const select = /** @type {HTMLSelectElement} */(document.getElementById('expression_fallback'));
     const fallbackExpressions = Array
+        // @ts-expect-error TS(2339): Property 'options' does not exist on type 'HTMLEle... Remove this comment to see the full error message
         .from(select?.options || [])
+        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         .map(option => option.value)
         .filter(expression => expression?.length > 0);
 
@@ -826,7 +870,9 @@ function setFallBackExpressionSlashCommand(args: any, expressionName: any) {
  */
 function spriteFolderNameFromCharacter(char: any) {
     const avatarFileName = char.avatar.replace(/\.[^/.]+$/, '');
+    // @ts-expect-error TS(2339): Property 'name' does not exist on type 'never'.
     const expressionOverride = extension_settings.expressionOverrides.find(e => e.name === avatarFileName);
+    // @ts-expect-error TS(2339): Property 'path' does not exist on type 'never'.
     return expressionOverride?.path ? expressionOverride.path : avatarFileName;
 }
 
@@ -1050,17 +1096,22 @@ function onTextGenSettingsReady(args: any) {
  */
 export async function getExpressionLabel(text: any, expressionsApi = extension_settings.expressions.api, { filterAvailable = null, customPrompt = null } = {}) {
     // Return if text is undefined, saving a costly fetch request
+    // @ts-expect-error TS(2345): Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
     if ((!modules.includes('classify') && expressionsApi == EXPRESSION_API.extras) || !text) {
         return extension_settings.expressions.fallback_expression;
     }
 
+    // @ts-expect-error TS(7017): Element implicitly has an 'any' type because type ... Remove this comment to see the full error message
     if (extension_settings.expressions.translate && typeof globalThis.translate === 'function') {
+        // @ts-expect-error TS(7017): Element implicitly has an 'any' type because type ... Remove this comment to see the full error message
         text = await globalThis.translate(text, 'en');
     }
 
     text = sampleClassifyText(text);
 
+    // @ts-expect-error TS(2339): Property 'filterAvailable' does not exist on type ... Remove this comment to see the full error message
     filterAvailable ??= extension_settings.expressions.filterAvailable;
+    // @ts-expect-error TS(2345): Argument of type 'undefined' is not assignable to ... Remove this comment to see the full error message
     if (filterAvailable && ![EXPRESSION_API.llm, EXPRESSION_API.webllm].includes(expressionsApi)) {
         console.debug('Filter available is only supported for LLM and WebLLM expressions');
     }
@@ -1068,6 +1119,7 @@ export async function getExpressionLabel(text: any, expressionsApi = extension_s
     try {
         switch (expressionsApi) {
             // Local BERT pipeline
+            // @ts-expect-error TS(2678): Type 'number' is not comparable to type 'undefined... Remove this comment to see the full error message
             case EXPRESSION_API.local: {
                 const localResult = await fetch('/api/extra/classify', {
                     method: 'POST',
@@ -1081,6 +1133,7 @@ export async function getExpressionLabel(text: any, expressionsApi = extension_s
                 }
             } break;
             // Using LLM
+            // @ts-expect-error TS(2678): Type 'number' is not comparable to type 'undefined... Remove this comment to see the full error message
             case EXPRESSION_API.llm: {
                 try {
                     await waitUntilCondition(() => online_status !== 'no_connection', 3000, 250);
@@ -1089,6 +1142,7 @@ export async function getExpressionLabel(text: any, expressionsApi = extension_s
                     return extension_settings.expressions.fallback_expression;
                 }
 
+                // @ts-expect-error TS(2322): Type 'null' is not assignable to type 'boolean | u... Remove this comment to see the full error message
                 const expressionsList = await getExpressionsList({ filterAvailable: filterAvailable });
                 const prompt = substituteParamsExtended(customPrompt, { labels: expressionsList }) || (await getLlmPrompt(expressionsList));
                 eventSource.once(event_types.TEXT_COMPLETION_SETTINGS_READY, onTextGenSettingsReady);
@@ -1110,12 +1164,14 @@ export async function getExpressionLabel(text: any, expressionsApi = extension_s
                 return parseLlmResponse(emotionResponse, expressionsList);
             }
             // Using WebLLM
+            // @ts-expect-error TS(2678): Type 'number' is not comparable to type 'undefined... Remove this comment to see the full error message
             case EXPRESSION_API.webllm: {
                 if (!isWebLlmSupported()) {
                     console.warn('WebLLM is not supported. Using fallback expression');
                     return extension_settings.expressions.fallback_expression;
                 }
 
+                // @ts-expect-error TS(2322): Type 'null' is not assignable to type 'boolean | u... Remove this comment to see the full error message
                 const expressionsList = await getExpressionsList({ filterAvailable: filterAvailable });
                 const prompt = substituteParamsExtended(customPrompt, { labels: expressionsList }) || (await getLlmPrompt(expressionsList));
                 const messages = [
@@ -1126,6 +1182,7 @@ export async function getExpressionLabel(text: any, expressionsApi = extension_s
                 return parseLlmResponse(emotionResponse, expressionsList);
             }
             // Extras
+            // @ts-expect-error TS(2678): Type 'number' is not comparable to type 'undefined... Remove this comment to see the full error message
             case EXPRESSION_API.extras: {
                 const url = new URL(getApiUrl());
                 url.pathname = '/api/classify';
@@ -1145,6 +1202,7 @@ export async function getExpressionLabel(text: any, expressionsApi = extension_s
                 }
             } break;
             // None
+            // @ts-expect-error TS(2678): Type 'number' is not comparable to type 'undefined... Remove this comment to see the full error message
             case EXPRESSION_API.none: {
                 // Return empty, the fallback expression will be used
                 return '';
@@ -1166,10 +1224,12 @@ function getLastCharacterMessage() {
     const reversedChat = context.chat.slice().reverse();
 
     for (let mes of reversedChat) {
+        // @ts-expect-error TS(2339): Property 'is_user' does not exist on type 'never'.
         if (mes.is_user || mes.is_system || mes.extra?.type === system_message_types.NARRATOR) {
             continue;
         }
 
+        // @ts-expect-error TS(2339): Property 'mes' does not exist on type 'never'.
         return { mes: mes.mes, name: mes.name, original_avatar: mes.original_avatar, force_avatar: mes.force_avatar };
     }
 
@@ -1197,9 +1257,11 @@ async function validateImages(spriteFolderName: any, forceRedrawCached = false) 
 
     const labels = await getExpressionsList();
 
+    // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     if (spriteCache[spriteFolderName]) {
         if (forceRedrawCached && $('#image_list').data('name') !== spriteFolderName) {
             console.debug('force redrawing character sprites list');
+            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             await drawSpritesList(spriteFolderName, labels, spriteCache[spriteFolderName]);
         }
 
@@ -1208,6 +1270,7 @@ async function validateImages(spriteFolderName: any, forceRedrawCached = false) 
 
     const sprites = await getSpritesList(spriteFolderName);
     let validExpressions = await drawSpritesList(spriteFolderName, labels, sprites);
+    // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     spriteCache[spriteFolderName] = validExpressions;
 }
 
@@ -1225,6 +1288,7 @@ function getExpressionImageData(sprite: any) {
         title: fileNameWithoutExtension,
         imageSrc: sprite.path,
         type: 'success',
+        // @ts-expect-error TS(2345): Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
         isCustom: extension_settings.expressions.custom?.includes(sprite.label),
     };
 }
@@ -1251,6 +1315,7 @@ async function drawSpritesList(spriteFolderName: any, labels: any, sprites: any)
     }
 
     for (const expression of labels.sort()) {
+        // @ts-expect-error TS(2345): Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
         const isCustom = extension_settings.expressions.custom?.includes(expression);
         const images = sprites
             .filter((s: any) => s.label === expression)
@@ -1353,6 +1418,7 @@ function renderCustomExpressions() {
         extension_settings.expressions.custom = [];
     }
 
+    // @ts-expect-error TS(2339): Property 'localeCompare' does not exist on type 'n... Remove this comment to see the full error message
     const customExpressions = extension_settings.expressions.custom.sort((a, b) => a.localeCompare(b));
     $('#expression_custom').empty();
 
@@ -1416,15 +1482,18 @@ export async function getExpressionsList({ filterAvailable = false } = {}) {
     const expressions = getCachedExpressions();
 
     // Filtering is only available for llm and webllm APIs
+    // @ts-expect-error TS(2345): Argument of type 'undefined' is not assignable to ... Remove this comment to see the full error message
     if (!filterAvailable || ![EXPRESSION_API.llm, EXPRESSION_API.webllm].includes(extension_settings.expressions.api)) {
         return expressions;
     }
 
     // Get expressions with available sprites
     const currentLastMessage = selected_group ? getLastCharacterMessage() : null;
+    // @ts-expect-error TS(2345): Argument of type '{ mes: any; name: any; original_... Remove this comment to see the full error message
     const spriteFolderName = getSpriteFolderName(currentLastMessage, currentLastMessage?.name);
 
     return expressions.filter(label => {
+        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         const expression = spriteCache[spriteFolderName]?.find((x: any) => x.label === label);
         return (expression?.files.length ?? 0) > 0;
     });
@@ -1437,6 +1506,7 @@ export async function getExpressionsList({ filterAvailable = false } = {}) {
         // See if we can retrieve a specific expression list from the API
         try {
             // Check Extras api first, if enabled and that module active
+            // @ts-expect-error TS(2345): Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
             if (extension_settings.expressions.api == EXPRESSION_API.extras && modules.includes('classify')) {
                 const url = new URL(getApiUrl());
                 url.pathname = '/api/classify/labels';
@@ -1491,12 +1561,15 @@ export async function getExpressionsList({ filterAvailable = false } = {}) {
  * @returns {ExpressionImage?} - The selected sprite
  */
 function chooseSpriteForExpression(spriteFolderName: any, expression: any, { prevExpressionSrc = null, overrideSpriteFile = null } = {}) {
+    // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     if (!spriteCache[spriteFolderName]) return null;
     if (expression === RESET_SPRITE_LABEL) return null;
 
     // Search for sprites of that expression - or fallback expression sprites if enabled
+    // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     let sprite = spriteCache[spriteFolderName].find((x: any) => x.label === expression);
     if (!(sprite?.files.length > 0) && extension_settings.expressions.fallback_expression) {
+        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         sprite = spriteCache[spriteFolderName].find((x: any) => x.label === extension_settings.expressions.fallback_expression);
         console.debug('Expression', expression, 'not found. Using fallback expression', extension_settings.expressions.fallback_expression);
     }
@@ -1638,6 +1711,7 @@ async function setExpression(spriteFolderName: any, expression: any, { force = f
         console.debug('Expression unset - No sprite found', { expression: expression });
     }
 
+    // @ts-expect-error TS(2531): Object is possibly 'null'.
     document.getElementById('expression-holder').style.display = '';
 }
 
@@ -1647,6 +1721,7 @@ async function setExpression(spriteFolderName: any, expression: any, { force = f
  * @param {string} expression - The expression label to use for the default image
  */
 function setDefaultEmojiForImage(img: any, expression: any) {
+    // @ts-expect-error TS(2345): Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
     if (extension_settings.expressions.custom?.includes(expression)) {
         console.debug(`Can't set default emoji for a custom expression (${expression}). setting to ${DEFAULT_FALLBACK_EXPRESSION} instead.`);
         expression = DEFAULT_FALLBACK_EXPRESSION;
@@ -1701,16 +1776,19 @@ async function onClickExpressionAddCustom() {
         toastr.warning('Invalid custom expression name provided', 'Add Custom Expression');
         return;
     }
+    // @ts-expect-error TS(2531): Object is possibly 'null'.
     if (DEFAULT_EXPRESSIONS.includes(expressionName) || DEFAULT_EXPRESSIONS.some(x => expressionName.startsWith(x))) {
         toastr.warning('Expression name already exists', 'Add Custom Expression');
         return;
     }
+    // @ts-expect-error TS(2345): Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
     if (extension_settings.expressions.custom.includes(expressionName)) {
         toastr.warning('Custom expression already exists', 'Add Custom Expression');
         return;
     }
 
     // Add custom expression into settings
+    // @ts-expect-error TS(2345): Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
     extension_settings.expressions.custom.push(expressionName);
     await renderAdditionalExpressionSettings();
     saveSettingsDebounced();
@@ -1739,10 +1817,12 @@ async function onClickExpressionRemoveCustom() {
     }
 
     // Remove custom expression from settings
+    // @ts-expect-error TS(2345): Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
     const index = extension_settings.expressions.custom.indexOf(selectedExpression);
     extension_settings.expressions.custom.splice(index, 1);
     if (selectedExpression == extension_settings.expressions.fallback_expression) {
         toastr.warning(`Deleted custom expression '${selectedExpression}' that was also selected as the fallback expression.\nFallback expression has been reset to '${DEFAULT_FALLBACK_EXPRESSION}'.`, 'Remove Custom Expression');
+        // @ts-expect-error TS(2322): Type '"joy"' is not assignable to type 'undefined'... Remove this comment to see the full error message
         extension_settings.expressions.fallback_expression = DEFAULT_FALLBACK_EXPRESSION;
     }
     await renderAdditionalExpressionSettings();
@@ -1757,7 +1837,9 @@ async function onClickExpressionRemoveCustom() {
 function onExpressionApiChanged(this: any) {
     const tempApi = this.value;
     if (tempApi) {
+        // @ts-expect-error TS(2322): Type 'number' is not assignable to type 'undefined... Remove this comment to see the full error message
         extension_settings.expressions.api = Number(tempApi);
+        // @ts-expect-error TS(2345): Argument of type 'undefined' is not assignable to ... Remove this comment to see the full error message
         $('.expression_llm_prompt_block').toggle([EXPRESSION_API.llm, EXPRESSION_API.webllm].includes(extension_settings.expressions.api));
         $('.expression_prompt_type_block').toggle(extension_settings.expressions.api === EXPRESSION_API.llm);
         expressionsList = null;
@@ -1774,10 +1856,12 @@ async function onExpressionFallbackChanged(this: any) {
 
     switch (selectedValue) {
         case OPTION_NO_FALLBACK:
+            // @ts-expect-error TS(2322): Type 'null' is not assignable to type 'undefined'.
             extension_settings.expressions.fallback_expression = null;
             extension_settings.expressions.showDefault = false;
             break;
         case OPTION_EMOJI_FALLBACK:
+            // @ts-expect-error TS(2322): Type 'null' is not assignable to type 'undefined'.
             extension_settings.expressions.fallback_expression = null;
             extension_settings.expressions.showDefault = true;
             break;
@@ -1821,6 +1905,7 @@ async function handleFileUpload(url: any, formData: any) {
 
         // Refresh sprites list
         const name = formData.get('name').toString();
+        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         delete spriteCache[name];
         await fetchImagesNoCache();
         await validateImages(name);
@@ -1866,6 +1951,7 @@ async function onClickExpressionUpload(this: any, event: any) {
             return;
         }
 
+        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         const existingFiles = spriteCache[name]?.find((x: any) => x.label === expression)?.files || [];
 
         let spriteName = expression;
@@ -1957,6 +2043,7 @@ async function onClickExpressionOverrideButton() {
 
     const overridePath = String($('#expression_override').val());
     const existingOverrideIndex = extension_settings.expressionOverrides.findIndex((e) =>
+        // @ts-expect-error TS(2339): Property 'name' does not exist on type 'never'.
         e.name == avatarFileName,
     );
 
@@ -1973,10 +2060,13 @@ async function onClickExpressionOverrideButton() {
         const existingOverride = extension_settings.expressionOverrides[existingOverrideIndex];
         if (existingOverride) {
             Object.assign(existingOverride, { path: overridePath });
+            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             delete spriteCache[existingOverride.name];
         } else {
             const characterOverride = { name: avatarFileName, path: overridePath };
+            // @ts-expect-error TS(2345): Argument of type '{ name: string; path: string; }'... Remove this comment to see the full error message
             extension_settings.expressionOverrides.push(characterOverride);
+            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             delete spriteCache[currentLastMessage.name];
         }
 
@@ -2004,6 +2094,7 @@ async function onClickExpressionOverrideButton() {
 async function onClickExpressionOverrideRemoveAllButton() {
     // Remove all the overrided entries from sprite cache
     for (const element of extension_settings.expressionOverrides) {
+        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         delete spriteCache[element.name];
     }
 
@@ -2092,6 +2183,7 @@ async function onClickExpressionDelete(this: any, event: any) {
     }
 
     // Refresh sprites list
+    // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     delete spriteCache[name];
     await fetchImagesNoCache();
     await validateImages(name);
@@ -2105,12 +2197,16 @@ function setExpressionOverrideHtml(forceClear = false) {
     }
 
     const expressionOverride = extension_settings.expressionOverrides.find((e) =>
+        // @ts-expect-error TS(2339): Property 'name' does not exist on type 'never'.
         e.name == avatarFileName,
     );
 
+    // @ts-expect-error TS(2339): Property 'path' does not exist on type 'never'.
     if (expressionOverride && expressionOverride.path) {
+        // @ts-expect-error TS(2339): Property 'path' does not exist on type 'never'.
         $('#expression_override').val(expressionOverride.path);
     } else if (expressionOverride) {
+        // @ts-expect-error TS(2339): Property 'name' does not exist on type 'never'.
         delete extension_settings.expressionOverrides[expressionOverride.name];
     }
 
@@ -2145,20 +2241,25 @@ async function fetchImagesNoCache() {
 
 function migrateSettings() {
     if (extension_settings.expressions.api === undefined) {
+        // @ts-expect-error TS(2322): Type 'number' is not assignable to type 'undefined... Remove this comment to see the full error message
         extension_settings.expressions.api = EXPRESSION_API.none;
         saveSettingsDebounced();
     }
 
     if (Object.keys(extension_settings.expressions).includes('local')) {
+        // @ts-expect-error TS(2339): Property 'local' does not exist on type '{ api: un... Remove this comment to see the full error message
         if (extension_settings.expressions.local) {
+            // @ts-expect-error TS(2322): Type 'number' is not assignable to type 'undefined... Remove this comment to see the full error message
             extension_settings.expressions.api = EXPRESSION_API.local;
         }
 
+        // @ts-expect-error TS(2339): Property 'local' does not exist on type '{ api: un... Remove this comment to see the full error message
         delete extension_settings.expressions.local;
         saveSettingsDebounced();
     }
 
     if (extension_settings.expressions.llmPrompt === undefined) {
+        // @ts-expect-error TS(2322): Type '"Ignore previous instructions. Classify the ... Remove this comment to see the full error message
         extension_settings.expressions.llmPrompt = DEFAULT_LLM_PROMPT;
         saveSettingsDebounced();
     }
@@ -2216,7 +2317,9 @@ export async function init() {
             extension_settings.expressions.rerollIfSame = !!$(this).prop('checked');
             saveSettingsDebounced();
         });
+        // @ts-expect-error TS(2339): Property 'filterAvailable' does not exist on type ... Remove this comment to see the full error message
         $('#expressions_filter_available').prop('checked', extension_settings.expressions.filterAvailable).on('input', function(this: any) {
+            // @ts-expect-error TS(2339): Property 'filterAvailable' does not exist on type ... Remove this comment to see the full error message
             extension_settings.expressions.filterAvailable = !!$(this).prop('checked');
             saveSettingsDebounced();
         });
@@ -2233,14 +2336,17 @@ export async function init() {
 
         await renderAdditionalExpressionSettings();
         $('#expression_api').val(extension_settings.expressions.api ?? EXPRESSION_API.none);
+        // @ts-expect-error TS(2345): Argument of type 'undefined' is not assignable to ... Remove this comment to see the full error message
         $('.expression_llm_prompt_block').toggle([EXPRESSION_API.llm, EXPRESSION_API.webllm].includes(extension_settings.expressions.api));
         $('#expression_llm_prompt').val(extension_settings.expressions.llmPrompt ?? '');
         $('#expression_llm_prompt').on('input', function(this: any) {
+            // @ts-expect-error TS(2322): Type 'string' is not assignable to type 'undefined... Remove this comment to see the full error message
             extension_settings.expressions.llmPrompt = String($(this).val());
             saveSettingsDebounced();
         });
         $('#expression_llm_prompt_restore').on('click', function () {
             $('#expression_llm_prompt').val(DEFAULT_LLM_PROMPT);
+            // @ts-expect-error TS(2322): Type '"Ignore previous instructions. Classify the ... Remove this comment to see the full error message
             extension_settings.expressions.llmPrompt = DEFAULT_LLM_PROMPT;
             saveSettingsDebounced();
         });
@@ -2296,14 +2402,18 @@ export async function init() {
     const localEnumProviders = {
         expressions: () => {
             const currentLastMessage = selected_group ? getLastCharacterMessage() : null;
+            // @ts-expect-error TS(2345): Argument of type '{ mes: any; name: any; original_... Remove this comment to see the full error message
             const spriteFolderName = getSpriteFolderName(currentLastMessage, currentLastMessage?.name);
             const expressions = getCachedExpressions();
             return expressions.map(expression => {
+                // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 const spriteCount = spriteCache[spriteFolderName]?.find((x: any) => x.label === expression)?.files.length ?? 0;
+                // @ts-expect-error TS(2345): Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
                 const isCustom = extension_settings.expressions.custom?.includes(expression);
                 const subtitle = spriteCount == 0 ? '❌ No sprites available for this expression' :
                     spriteCount > 1 ? `${spriteCount} sprites` : null;
                 return new SlashCommandEnumValue(expression,
+                    // @ts-expect-error TS(2345): Argument of type 'string | null' is not assignable... Remove this comment to see the full error message
                     subtitle,
                     isCustom ? enumTypes.name : enumTypes.enum,
                     isCustom ? 'C' : 'D');
@@ -2311,7 +2421,9 @@ export async function init() {
         },
         sprites: () => {
             const currentLastMessage = selected_group ? getLastCharacterMessage() : null;
+            // @ts-expect-error TS(2345): Argument of type '{ mes: any; name: any; original_... Remove this comment to see the full error message
             const spriteFolderName = getSpriteFolderName(currentLastMessage, currentLastMessage?.name);
+            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             const sprites = spriteCache[spriteFolderName]?.map((x: any) => x.files)?.flat() ?? [];
             return sprites.map((x: any) => {
                 return new SlashCommandEnumValue(x.title,
@@ -2347,6 +2459,7 @@ export async function init() {
                     if (type == 'sprite') return localEnumProviders.sprites();
                     else return [
                         ...localEnumProviders.expressions(),
+                        // @ts-expect-error TS(2345): Argument of type '"Resets the expression (to eithe... Remove this comment to see the full error message
                         new SlashCommandEnumValue(RESET_SPRITE_LABEL, 'Resets the expression (to either default or no sprite)', enumTypes.enum, '❌'),
                     ];
                 },
@@ -2364,7 +2477,9 @@ export async function init() {
                 typeList: [ARGUMENT_TYPE.STRING],
                 isRequired: false,
                 enumProvider: () => [
+                    // @ts-expect-error TS(2345): Argument of type '"Sets the fallback expression to... Remove this comment to see the full error message
                     new SlashCommandEnumValue('#none', 'Sets the fallback expression to no image'),
+                    // @ts-expect-error TS(2345): Argument of type '"Sets the fallback expression to... Remove this comment to see the full error message
                     new SlashCommandEnumValue('#emoji', 'Sets the fallback expression to emojis'),
                     ...localEnumProviders.expressions(),
                 ],
@@ -2437,6 +2552,7 @@ export async function init() {
             const char = findChar({ name: name });
             if (!char) toastr.warning(t`Couldn't find character ${name}.`, t`Character not found`);
 
+            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             const sprite = lastExpression[char?.name ?? name] ?? '';
             return sprite;
         },

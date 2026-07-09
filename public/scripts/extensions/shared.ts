@@ -316,6 +316,7 @@ export function isWebLlmSupported() {
         return false;
     }
 
+    // @ts-expect-error TS(2304): Cannot find name 'SillyTavern'.
     if (!('llm' in SillyTavern)) {
         const warningKey = 'webllm_extension_warning_shown';
         if (!sessionStorage.getItem(warningKey)) {
@@ -345,6 +346,7 @@ export async function generateWebLlmChatPrompt(messages: any[], params: Record<s
     }
 
     console.debug('WebLLM chat completion request:', messages, params);
+    // @ts-expect-error TS(2304): Cannot find name 'SillyTavern'.
     const engine = SillyTavern.llm;
     const response = await engine.generateChatPrompt(messages, params);
     console.debug('WebLLM chat completion response:', response);
@@ -363,6 +365,7 @@ export async function countWebLlmTokens(text: string) {
     }
 
     try {
+        // @ts-expect-error TS(2304): Cannot find name 'SillyTavern'.
         const engine = SillyTavern.llm;
         const response = await engine.countTokens(text);
         return response;
@@ -381,6 +384,7 @@ export async function getWebLlmContextSize() {
         throw new Error('WebLLM extension is not installed.');
     }
 
+    // @ts-expect-error TS(2304): Cannot find name 'SillyTavern'.
     const engine = SillyTavern.llm;
     await engine.loadModel();
     const model = await engine.getCurrentModelInfo();
@@ -424,6 +428,7 @@ export class ConnectionManagerRequestService {
     static async sendRequest(profileId: string, prompt: string | any[], maxTokens: number, custom: Record<string, any> = this.defaultSendRequestParams, overridePayload: Record<string, any> = {}) {
         const { stream, signal, extractData, includePreset, includeInstruct, instructSettings } = { ...this.defaultSendRequestParams, ...custom };
 
+        // @ts-expect-error TS(2304): Cannot find name 'SillyTavern'.
         const context = (SillyTavern.getContext() as any);
         if (context.extensionSettings.disabledExtensions.includes('connection-manager')) {
             throw new Error('Connection Manager is not available');
@@ -487,6 +492,7 @@ export class ConnectionManagerRequestService {
                 }
             }
         } catch (error) {
+            // @ts-expect-error TS(2769): No overload matches this call.
             throw new Error('API request failed', { cause: error });
         }
     }
@@ -499,6 +505,7 @@ export class ConnectionManagerRequestService {
     * @param {InstructSettings} instructSettings optional instruct settings
     */
     static constructPrompt(prompt: any[], profileId: string, instructSettings: any = null) {
+        // @ts-expect-error TS(2304): Cannot find name 'SillyTavern'.
         const context = (SillyTavern.getContext() as any);
         const profile = this.getProfile(profileId);
         const selectedApiMap = this.validateProfile(profile);
@@ -528,6 +535,7 @@ export class ConnectionManagerRequestService {
      * @returns {import('./connection-manager/index.js').ConnectionProfile[]}
      */
     static getSupportedProfiles() {
+        // @ts-expect-error TS(2304): Cannot find name 'SillyTavern'.
         const context = (SillyTavern.getContext() as any);
         if (context.extensionSettings.disabledExtensions.includes('connection-manager')) {
             throw new Error('Connection Manager is not available');
@@ -544,6 +552,7 @@ export class ConnectionManagerRequestService {
      * @throws {Error}
      */
     static getProfile(profileId: string) {
+        // @ts-expect-error TS(2304): Cannot find name 'SillyTavern'.
         const profile = (SillyTavern.getContext() as any).extensionSettings.connectionManager.profiles.find((p: any) => p.id === profileId);
         if (!profile) throw new Error(`Profile not found (ID: ${profileId})`);
         return profile;
@@ -556,10 +565,12 @@ export class ConnectionManagerRequestService {
      * @returns {HTMLImageElement | null}
      */
     static getProfileIcon(profileId?: string) {
+        // @ts-expect-error TS(2304): Cannot find name 'SillyTavern'.
         if (((SillyTavern.getContext() as any)).extensionSettings.disabledExtensions.includes('connection-manager')) {
             return null;
         }
 
+        // @ts-expect-error TS(2304): Cannot find name 'SillyTavern'.
         const id = profileId ?? ((SillyTavern.getContext() as any)).extensionSettings.connectionManager.selectedProfile;
         if (!id) return null;
 
@@ -610,6 +621,7 @@ export class ConnectionManagerRequestService {
             throw new Error('Select a connection profile that has an API');
         }
 
+        // @ts-expect-error TS(2304): Cannot find name 'SillyTavern'.
         const context = (SillyTavern.getContext() as any);
         const selectedApiMap = context.CONNECT_API_MAP[profile.api];
         if (!selectedApiMap) {
@@ -639,6 +651,7 @@ export class ConnectionManagerRequestService {
         unUpdate: (oldProfile: any, newProfile: any) => Promise<void> | void = () => {},
         onDelete: (profile: any) => Promise<void> | void = () => {},
     ) {
+        // @ts-expect-error TS(2304): Cannot find name 'SillyTavern'.
         const context = (SillyTavern.getContext() as any);
         if (context.extensionSettings.disabledExtensions.includes('connection-manager')) {
             throw new Error('Connection Manager is not available');

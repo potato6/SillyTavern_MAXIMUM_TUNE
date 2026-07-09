@@ -149,7 +149,9 @@ export class SettingsUi {
                 inp.type = 'file';
                 inp.accept = '.json';
                 inp.addEventListener('change', async () => {
+                    // @ts-expect-error TS(2531): Object is possibly 'null'.
                     if (inp.files.length > 0) {
+                        // @ts-expect-error TS(2531): Object is possibly 'null'.
                         for (const file of inp.files) {
                             const text = await file.text();
                             this.currentQrSet.addQuickReply(JSON.parse(text));
@@ -159,9 +161,11 @@ export class SettingsUi {
                 inp.click();
             }
         });
+        // @ts-expect-error TS(2339): Property 'qrList' does not exist on type 'Settings... Remove this comment to see the full error message
         this.qrList = this.dom.querySelector('#qr--set-qrList');
         this.currentSet = this.dom.querySelector('#qr--set');
         this.currentSet.addEventListener('change', () => this.onQrSetChange());
+        // @ts-expect-error TS(2339): Property 'toSorted' does not exist on type 'never[... Remove this comment to see the full error message
         QuickReplySet.list.toSorted((a: any, b: any) => a.name.toLowerCase().localeCompare(b.name.toLowerCase())).forEach((qrs: any) => {
             const opt = document.createElement('option'); {
                 opt.value = qrs.name;
@@ -230,8 +234,10 @@ export class SettingsUi {
         // @ts-ignore
         this.color.color = this.currentQrSet.color ?? 'transparent';
         this.onlyBorderColor.checked = this.currentQrSet.onlyBorderColor;
+        // @ts-expect-error TS(2339): Property 'qrList' does not exist on type 'Settings... Remove this comment to see the full error message
         this.qrList.innerHTML = '';
         const qrsDom = this.currentQrSet.renderSettings();
+        // @ts-expect-error TS(2339): Property 'qrList' does not exist on type 'Settings... Remove this comment to see the full error message
         this.qrList.append(qrsDom);
         // @ts-ignore
         $(qrsDom).sortable({
@@ -268,7 +274,9 @@ export class SettingsUi {
 
     async onGlobalSetListSort() {
         this.settings.config.setList = Array.from(this.globalSetList.children).map((it, idx) => {
+            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             const set = this.settings.config.setList[Number(it.getAttribute('data-order'))];
+            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             it.setAttribute('data-order', String(idx));
             return set;
         });
@@ -277,7 +285,9 @@ export class SettingsUi {
 
     async onChatSetListSort() {
         this.settings.chatConfig.setList = Array.from(this.chatSetList.children).map((it, idx) => {
+            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             const set = this.settings.chatConfig.setList[Number(it.getAttribute('data-order'))];
+            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             it.setAttribute('data-order', String(idx));
             return set;
         });
@@ -286,13 +296,17 @@ export class SettingsUi {
 
     updateOrder(list: any) {
         Array.from(list.children).forEach((it, idx) => {
+            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             it.setAttribute('data-order', idx);
         });
     }
 
     async onQrListSort() {
+        // @ts-expect-error TS(2339): Property 'qrList' does not exist on type 'Settings... Remove this comment to see the full error message
         this.currentQrSet.qrList = Array.from(this.qrList.querySelectorAll('.qr--set-item')).map((it, idx) => {
+            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             const qr = this.currentQrSet.qrList.find((qr: any) => qr.id == Number(it.getAttribute('data-id')));
+            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             it.setAttribute('data-order', String(idx));
             return qr;
         });
@@ -383,12 +397,14 @@ export class SettingsUi {
             const oldQrs = QuickReplySet.get(name);
             if (oldQrs) {
                 const replace = Popup.show.confirm('Replace existing World Info', `A Quick Reply Set named "${name}" already exists.<br>Do you want to overwrite the existing Quick Reply Set?<br>The existing set will be deleted. This cannot be undone.`);
+                // @ts-expect-error TS(2801): This condition will always return true since this ... Remove this comment to see the full error message
                 if (replace) {
                     const idx = QuickReplySet.list.indexOf(oldQrs);
                     await this.doDeleteQrSet(oldQrs);
                     const qrs = new QuickReplySet();
                     qrs.name = name;
                     qrs.addQuickReply();
+                    // @ts-expect-error TS(2345): Argument of type 'QuickReplySet' is not assignable... Remove this comment to see the full error message
                     QuickReplySet.list.splice(idx, 0, qrs);
                     this.rerender();
                     this.currentSet.value = name;
@@ -401,10 +417,13 @@ export class SettingsUi {
                 const qrs = new QuickReplySet();
                 qrs.name = name;
                 qrs.addQuickReply();
+                // @ts-expect-error TS(2339): Property 'name' does not exist on type 'never'.
                 const idx = QuickReplySet.list.findIndex(it => it.name.toLowerCase().localeCompare(name.toLowerCase()) == 1);
                 if (idx > -1) {
+                    // @ts-expect-error TS(2345): Argument of type 'QuickReplySet' is not assignable... Remove this comment to see the full error message
                     QuickReplySet.list.splice(idx, 0, qrs);
                 } else {
+                    // @ts-expect-error TS(2345): Argument of type 'QuickReplySet' is not assignable... Remove this comment to see the full error message
                     QuickReplySet.list.push(qrs);
                 }
                 const opt = document.createElement('option'); {
@@ -446,9 +465,11 @@ export class SettingsUi {
                 const oldQrs = QuickReplySet.get(props.name);
                 if (oldQrs) {
                     const replace = Popup.show.confirm('Replace existing World Info', `A Quick Reply Set named "${name}" already exists.<br>Do you want to overwrite the existing Quick Reply Set?<br>The existing set will be deleted. This cannot be undone.`);
+                    // @ts-expect-error TS(2801): This condition will always return true since this ... Remove this comment to see the full error message
                     if (replace) {
                         const idx = QuickReplySet.list.indexOf(oldQrs);
                         await this.doDeleteQrSet(oldQrs);
+                        // @ts-expect-error TS(2345): Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
                         QuickReplySet.list.splice(idx, 0, qrs);
                         await qrs.save();
                         this.rerender();
@@ -459,10 +480,13 @@ export class SettingsUi {
                         this.prepareCharacterSetList();
                     }
                 } else {
+                    // @ts-expect-error TS(2339): Property 'name' does not exist on type 'never'.
                     const idx = QuickReplySet.list.findIndex(it => it.name.toLowerCase().localeCompare(qrs.name.toLowerCase()) == 1);
                     if (idx > -1) {
+                        // @ts-expect-error TS(2345): Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
                         QuickReplySet.list.splice(idx, 0, qrs);
                     } else {
+                        // @ts-expect-error TS(2345): Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
                         QuickReplySet.list.push(qrs);
                     }
                     await qrs.save();
@@ -484,6 +508,7 @@ export class SettingsUi {
             }
         } catch (ex) {
             warn(ex);
+            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             toastr.error(`Failed to import "${file.name}":\n\n${ex.message}`);
         }
     }
@@ -511,10 +536,13 @@ export class SettingsUi {
             newQrSet.name = newName;
             newQrSet.qrList = this.currentQrSet.qrList.map((qr: any) => QuickReply.from(qr.toJSON()));
             newQrSet.init();
+            // @ts-expect-error TS(2339): Property 'name' does not exist on type 'never'.
             const idx = QuickReplySet.list.findIndex(it => it.name.toLowerCase().localeCompare(newName.toLowerCase()) == 1);
             if (idx > -1) {
+                // @ts-expect-error TS(2345): Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
                 QuickReplySet.list.splice(idx, 0, newQrSet);
             } else {
+                // @ts-expect-error TS(2345): Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
                 QuickReplySet.list.push(newQrSet);
             }
             const opt = document.createElement('option'); {

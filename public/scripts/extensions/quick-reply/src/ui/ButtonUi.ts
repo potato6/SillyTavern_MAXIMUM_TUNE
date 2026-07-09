@@ -38,9 +38,12 @@ export class ButtonUi {
             dragElement(this.render());
         } else {
             const sendForm = document.querySelector('#send_form');
+            // @ts-expect-error TS(2531): Object is possibly 'null'.
             if (sendForm.children.length > 0) {
+                // @ts-expect-error TS(2531): Object is possibly 'null'.
                 sendForm.children[0].insertAdjacentElement('beforebegin', this.render());
             } else {
+                // @ts-expect-error TS(2531): Object is possibly 'null'.
                 sendForm.append(this.render());
             }
         }

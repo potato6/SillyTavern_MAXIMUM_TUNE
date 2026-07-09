@@ -54,6 +54,7 @@ export class GoogleNativeTtsProvider {
             await this.checkReady();
             console.debug('Google TTS: Settings loaded');
         } catch (err) {
+            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             console.warn('Google TTS: Settings loaded, but not ready.', err.message);
         }
     }
@@ -79,6 +80,7 @@ export class GoogleNativeTtsProvider {
             this.voices = await this.fetchTtsVoiceObjects();
         }
 
+        // @ts-expect-error TS(2339): Property 'name' does not exist on type 'never'.
         const match = this.voices.find(voice => voice.name === voiceName || voice.voice_id === voiceName);
 
         if (!match) {
@@ -109,6 +111,7 @@ export class GoogleNativeTtsProvider {
                     }
                 } catch (parseError) {
                     // Response isn't valid JSON, use the HTTP error message
+                    // @ts-expect-error TS(2571): Object is of type 'unknown'.
                     console.debug('Error response is not JSON:', parseError.message);
                 }
 
@@ -137,6 +140,7 @@ export class GoogleNativeTtsProvider {
 
         try {
             const voice = await this.getVoice(id);
+            // @ts-expect-error TS(2339): Property 'lang' does not exist on type 'never'.
             const text = getPreviewString(voice.lang || 'en-US');
 
             const response = await this.fetchNativeTtsGeneration(text, id);
@@ -153,6 +157,7 @@ export class GoogleNativeTtsProvider {
             this.audioElement.onended = () => URL.revokeObjectURL(url);
         } catch (error) {
             console.error('TTS Preview Error:', error);
+            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             toastr.error(`Could not generate preview: ${error.message}`);
         }
     }

@@ -139,6 +139,7 @@ class GptSoVITSAdapterProvider {
         }
 
         const match = this.voices.filter(
+            // @ts-expect-error TS(2339): Property 'name' does not exist on type 'never'.
             v => v.name == voiceName,
         )[0];
         if (!match) {
@@ -176,6 +177,7 @@ class GptSoVITSAdapterProvider {
     * @param {string} voiceId Voice ID to preview (model_type&speaker_id))
     */
     async previewTtsVoice(voiceId: any) {
+        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         const langCode = this.langKey2LangCode[this.settings.text_lang] || 'zh-CN';
         const previewText = getPreviewString(langCode);
         const response = await this.fetchTtsGeneration(previewText, voiceId);

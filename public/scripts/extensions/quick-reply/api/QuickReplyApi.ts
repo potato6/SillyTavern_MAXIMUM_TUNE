@@ -21,6 +21,7 @@ export class QuickReplyApi {
      * @returns {QuickReplySet}
      */
     getSetByQr(qr: any) {
+        // @ts-expect-error TS(2339): Property 'qrList' does not exist on type 'never'.
         return QuickReplySet.list.find(it => it.qrList.includes(qr));
     }
 
@@ -44,7 +45,9 @@ export class QuickReplyApi {
     getQrByLabel(setName: any, label: any) {
         const set = this.getSetByName(setName);
         if (!set) return;
+        // @ts-expect-error TS(2339): Property 'qrList' does not exist on type 'never'.
         if (Number.isInteger(label)) return set.qrList.find((it: any) => it.id == label);
+        // @ts-expect-error TS(2339): Property 'qrList' does not exist on type 'never'.
         return set.qrList.find((it: any) => it.label == label);
     }
 
@@ -219,6 +222,7 @@ export class QuickReplyApi {
         if (!set) {
             throw new Error(`No quick reply set with named "${setName}" found.`);
         }
+        // @ts-expect-error TS(2339): Property 'addQuickReply' does not exist on type 'n... Remove this comment to see the full error message
         const qr = set.addQuickReply();
         qr.label = label ?? '';
         qr.icon = icon ??  '';
@@ -352,6 +356,7 @@ export class QuickReplyApi {
         if (!set) {
             throw new Error(`No quick reply set with name "${contextSetName}" found.`);
         }
+        // @ts-expect-error TS(2339): Property 'name' does not exist on type 'never'.
         qr.removeContextLink(set.name);
     }
 
@@ -392,12 +397,16 @@ export class QuickReplyApi {
         set.injectInput = injectInput ?? false;
         const oldSet = this.getSetByName(name);
         if (oldSet) {
+            // @ts-expect-error TS(2345): Argument of type 'QuickReplySet' is not assignable... Remove this comment to see the full error message
             QuickReplySet.list.splice(QuickReplySet.list.indexOf(oldSet), 1, set);
         } else {
+            // @ts-expect-error TS(2339): Property 'name' does not exist on type 'never'.
             const idx = QuickReplySet.list.findIndex(it => it.name.localeCompare(name) == 1);
             if (idx > -1) {
+                // @ts-expect-error TS(2345): Argument of type 'QuickReplySet' is not assignable... Remove this comment to see the full error message
                 QuickReplySet.list.splice(idx, 0, set);
             } else {
+                // @ts-expect-error TS(2345): Argument of type 'QuickReplySet' is not assignable... Remove this comment to see the full error message
                 QuickReplySet.list.push(set);
             }
         }
@@ -425,9 +434,13 @@ export class QuickReplyApi {
         if (!set) {
             throw new Error(`No quick reply set with name "${name}" found.`);
         }
+        // @ts-expect-error TS(2339): Property 'disableSend' does not exist on type 'nev... Remove this comment to see the full error message
         set.disableSend = disableSend ?? false;
+        // @ts-expect-error TS(2339): Property 'placeBeforeInput' does not exist on type... Remove this comment to see the full error message
         set.placeBeforeInput = placeBeforeInput ?? false;
+        // @ts-expect-error TS(2339): Property 'injectInput' does not exist on type 'nev... Remove this comment to see the full error message
         set.injectInput = injectInput ?? false;
+        // @ts-expect-error TS(2339): Property 'save' does not exist on type 'never'.
         await set.save();
         this.settingsUi.rerender();
         return set;
@@ -443,6 +456,7 @@ export class QuickReplyApi {
         if (!set) {
             throw new Error(`No quick reply set with name "${name}" found.`);
         }
+        // @ts-expect-error TS(2339): Property 'delete' does not exist on type 'never'.
         await set.delete();
         this.settingsUi.rerender();
     }
@@ -454,6 +468,7 @@ export class QuickReplyApi {
      * @returns array with the names of all quick reply sets
      */
     listSets() {
+        // @ts-expect-error TS(2339): Property 'name' does not exist on type 'never'.
         return QuickReplySet.list.map(it => it.name);
     }
     /**
@@ -484,6 +499,7 @@ export class QuickReplyApi {
         if (!set) {
             throw new Error(`No quick reply set with name "${name}" found.`);
         }
+        // @ts-expect-error TS(2339): Property 'qrList' does not exist on type 'never'.
         return set.qrList.map((it: any) => it.label);
     }
 

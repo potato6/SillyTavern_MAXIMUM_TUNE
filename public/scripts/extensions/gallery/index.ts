@@ -7,6 +7,7 @@ import {
     animation_duration,
     animation_easing,
 } from '../../../script.js';
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable '$'.
 declare const $: any; declare const toastr: any;
 import { groups, selected_group } from '../../group-chats.js';
 import { loadFileToDocument, delay, getBase64Async, getSanitizedFilename, saveBase64AsFile, getFileExtension, getVideoThumbnail, clamp } from '../../utils.js';
@@ -78,6 +79,7 @@ const defaultSettings = Object.freeze({
  */
 function initSettings() {
     let shouldSave = false;
+    // @ts-expect-error TS(2304): Cannot find name 'SillyTavern'.
     const context = SillyTavern.getContext();
     if (!context.extensionSettings.gallery) {
         context.extensionSettings.gallery = structuredClone(defaultSettings);
@@ -85,6 +87,7 @@ function initSettings() {
     }
     for (const key of Object.keys(defaultSettings)) {
         if (!Object.hasOwn(context.extensionSettings.gallery, key)) {
+            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             context.extensionSettings.gallery[key] = structuredClone(defaultSettings[key]);
             shouldSave = true;
         }
@@ -93,6 +96,7 @@ function initSettings() {
         context.saveSettingsDebounced();
     }
 }
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable '$'.
 declare const $: any; declare const toastr: any;
 
 /**
@@ -101,6 +105,7 @@ declare const $: any; declare const toastr: any;
  * @returns {string} The gallery folder for the character
  */
 function getGalleryFolder(char: any) {
+    // @ts-expect-error TS(2304): Cannot find name 'SillyTavern'.
     return SillyTavern.getContext().extensionSettings.gallery.folders[char?.avatar] ?? char?.name;
 }
 
@@ -141,6 +146,7 @@ async function getGalleryItems(url: any) {
             try {
                 // 150px of max height with some allowance for various aspect ratios
                 const maxSide = Math.round(150 * 1.5);
+                // @ts-expect-error TS(2322): Type 'unknown' is not assignable to type 'string'.
                 item.srct = await getVideoThumbnail(item.src, maxSide, maxSide);
             } catch (error) {
                 console.error('Failed to generate video thumbnail for gallery:', error);
@@ -191,6 +197,7 @@ async function deleteGalleryItem(url: any) {
  * @param {string} order Sort order
  */
 function setSortOrder(order: any) {
+    // @ts-expect-error TS(2304): Cannot find name 'SillyTavern'.
     const context = SillyTavern.getContext();
     context.extensionSettings.gallery.sort = order;
     context.saveSettingsDebounced();
@@ -201,6 +208,7 @@ function setSortOrder(order: any) {
  * @returns {string} The current sort order for the gallery.
  */
 function getSortOrder() {
+    // @ts-expect-error TS(2304): Cannot find name 'SillyTavern'.
     return SillyTavern.getContext().extensionSettings.gallery.sort ?? defaultSettings.sort;
 }
 
@@ -353,6 +361,7 @@ async function uploadFile(file: any, url: any) {
     try {
         // Convert the file to a base64 string
         const fileBase64 = await getBase64Async(file);
+        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         const base64Data = fileBase64.split(',')[1];
         const extension = getFileExtension(file);
         const path = await saveBase64AsFile(base64Data, url, '', extension);
@@ -404,6 +413,7 @@ async function makeMovable(url: any) {
     }
 
     sortSelect.addEventListener('change', async () => {
+        // @ts-expect-error TS(2532): Object is possibly 'undefined'.
         const selectedOption = sortSelect.options[sortSelect.selectedIndex].value;
         setSortOrder(selectedOption);
         closeButton.trigger('click');
@@ -434,7 +444,9 @@ async function makeMovable(url: any) {
     // Handle file selection
     fileInput.addEventListener('change', async () => {
         const files = fileInput.files;
+        // @ts-expect-error TS(2531): Object is possibly 'null'.
         if (files.length > 0) {
+            // @ts-expect-error TS(2531): Object is possibly 'null'.
             for (const file of files) {
                 await uploadFile(file, url);
             }
@@ -473,6 +485,7 @@ async function makeMovable(url: any) {
             galleryFolderInput.value = newUrl;
         } catch (error) {
             console.error('Failed to change gallery folder:', error);
+            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             toastr.error(error?.message || t`Unknown error`, t`Failed to change gallery folder`);
         }
     };
@@ -484,6 +497,7 @@ async function makeMovable(url: any) {
             await showCharGallery();
         } catch (error) {
             console.error('Failed to restore gallery folder:', error);
+            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             toastr.error(error?.message || t`Unknown error`, t`Failed to restore gallery folder`);
         }
     };
@@ -572,6 +586,7 @@ function updateGalleryFolder(newUrl: any) {
     if (!newUrl) {
         throw new Error('Folder name cannot be empty');
     }
+    // @ts-expect-error TS(2304): Cannot find name 'SillyTavern'.
     const context = SillyTavern.getContext();
     if (context.groupId) {
         throw new Error('Cannot change gallery folder in group chat');
@@ -598,6 +613,7 @@ function updateGalleryFolder(newUrl: any) {
  * Restores the gallery folder to the default value.
  */
 function restoreGalleryFolder() {
+    // @ts-expect-error TS(2304): Cannot find name 'SillyTavern'.
     const context = SillyTavern.getContext();
     if (context.groupId) {
         throw new Error('Cannot change gallery folder in group chat');
@@ -667,8 +683,10 @@ function makeDragImg(id: any, url: any) {
         draggableElem.classList.add('galleryImageDraggable');
 
         // Ensure that the newly added element is displayed as block
+        // @ts-expect-error TS(2339): Property 'style' does not exist on type 'Element'.
         draggableElem.style.display = 'block';
         //and has no padding unlike other non-zoomed-avatar draggables
+        // @ts-expect-error TS(2339): Property 'style' does not exist on type 'Element'.
         draggableElem.style.padding = '0';
 
         // Add an id to the close button
@@ -676,6 +694,7 @@ function makeDragImg(id: any, url: any) {
         const closeButton = /** @type {HTMLElement} */ (draggableElem.querySelector('.dragClose'));
         if (closeButton) {
             closeButton.id = `${uniqueId}close`;
+            // @ts-expect-error TS(2339): Property 'dataset' does not exist on type 'Element... Remove this comment to see the full error message
             closeButton.dataset.relatedId = uniqueId;
         }
 
@@ -687,6 +706,7 @@ function makeDragImg(id: any, url: any) {
     }
 
     // Step 3: Attach it to the movingDivs container
+    // @ts-expect-error TS(2531): Object is possibly 'null'.
     document.getElementById('movingDivs').appendChild(newElement);
 
     // Step 4: Call dragElement and loadMovingUIState
@@ -822,6 +842,7 @@ function addGalleryWandButton() {
 export async function init() {
     initSettings();
     eventSource.on(event_types.CHARACTER_RENAMED, (oldAvatar: any, newAvatar: any) => {
+        // @ts-expect-error TS(2304): Cannot find name 'SillyTavern'.
         const context = SillyTavern.getContext();
         const galleryFolder = context.extensionSettings.gallery.folders[oldAvatar];
         if (galleryFolder) {
@@ -833,6 +854,7 @@ export async function init() {
     eventSource.on(event_types.CHARACTER_DELETED, (data: any) => {
         const avatar = data?.character?.avatar;
         if (!avatar) return;
+        // @ts-expect-error TS(2304): Cannot find name 'SillyTavern'.
         const context = SillyTavern.getContext();
         delete context.extensionSettings.gallery.folders[avatar];
         context.saveSettingsDebounced();

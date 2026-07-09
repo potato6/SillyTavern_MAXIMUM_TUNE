@@ -43,9 +43,11 @@ const languageLabels = {
 };
 
 function throwIfModuleMissing() {
+    // @ts-expect-error TS(2345): Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
     if (!modules.includes('coqui-tts')) {
         const message = 'Coqui TTS module not loaded. Add coqui-tts to enable-modules and restart the Extras API.';
         // toastr.error(message, { timeOut: 10000, extendedTimeOut: 20000, preventDuplicates: true });
+        // @ts-expect-error TS(2769): No overload matches this call.
         throw new Error(DEBUG_PREFIX, message);
     }
 }
@@ -235,6 +237,7 @@ class CoquiTtsProvider {
 
     onSettingsChange() {
         console.debug(DEBUG_PREFIX, 'Settings changes', this.settings);
+        // @ts-expect-error TS(2339): Property 'Coqui' does not exist on type '{}'.
         extension_settings.tts.Coqui = this.settings;
     }
 
@@ -311,11 +314,13 @@ class CoquiTtsProvider {
         if (model_origin == 'coqui-api-full')
             modelDict = coquiApiModelsFull;
 
+        // @ts-expect-error TS(2447): The '&' operator is not allowed for boolean types.... Remove this comment to see the full error message
         if (model_setting_language == null & 'languages' in modelDict[model_language][model_dataset][model_label]) {
             toastr.error('Model language not selected, please select one.', DEBUG_PREFIX + ' voice mapping model language', { timeOut: 10000, extendedTimeOut: 20000, preventDuplicates: true });
             return;
         }
 
+        // @ts-expect-error TS(2447): The '&' operator is not allowed for boolean types.... Remove this comment to see the full error message
         if (model_setting_speaker == null & 'speakers' in modelDict[model_language][model_dataset][model_label]) {
             toastr.error('Model speaker not selected, please select one.', DEBUG_PREFIX + ' voice mapping model speaker', { timeOut: 10000, extendedTimeOut: 20000, preventDuplicates: true });
             return;
@@ -342,6 +347,7 @@ class CoquiTtsProvider {
 
     async getVoice(voiceName: any) {
         let match = await this.fetchTtsVoiceObjects();
+        // @ts-expect-error TS(2322): Type '{ name: string; voice_id: string; preview_ur... Remove this comment to see the full error message
         match = match.filter(
             voice => voice.name == voiceName,
         )[0];
@@ -389,6 +395,7 @@ class CoquiTtsProvider {
             for (let language in coquiApiModels) {
                 let languageLabel = language;
                 if (language in languageLabels)
+                    // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                     languageLabel = languageLabels[language];
                 $('#coqui_api_language').append(new Option(languageLabel, language));
                 console.log(DEBUG_PREFIX, 'added language', languageLabel, '(', language, ')');
@@ -411,6 +418,7 @@ class CoquiTtsProvider {
             for (let language in coquiApiModelsFull) {
                 let languageLabel = language;
                 if (language in languageLabels)
+                    // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                     languageLabel = languageLabels[language];
                 $('#coqui_api_language').append(new Option(languageLabel, language));
                 console.log(DEBUG_PREFIX, 'added language', languageLabel, '(', language, ')');
@@ -452,7 +460,9 @@ class CoquiTtsProvider {
         if (model_origin == 'coqui-api-full')
             modelDict = coquiApiModelsFull;
 
+        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         for (let model_dataset in modelDict[model_language])
+            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             for (let model_name in modelDict[model_language][model_dataset]) {
                 const model_id = model_dataset + '/' + model_name;
                 const model_label = model_name + ' (' + model_dataset + ' dataset)';
@@ -483,6 +493,7 @@ class CoquiTtsProvider {
         if (model_origin == 'coqui-api-full')
             modelDict = coquiApiModelsFull;
 
+        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         const model_settings = modelDict[model_language][model_dataset][model_name];
 
         if ('languages' in model_settings) {
@@ -497,6 +508,7 @@ class CoquiTtsProvider {
 
             for (let i = 0; i < model_settings.languages.length; i++) {
                 const language_label = JSON.stringify(model_settings.languages[i]).replaceAll('"', '');
+                // @ts-expect-error TS(2345): Argument of type 'number' is not assignable to par... Remove this comment to see the full error message
                 $('#coqui_api_model_settings_language').append(new Option(language_label, i));
             }
         } else {
@@ -515,6 +527,7 @@ class CoquiTtsProvider {
 
             for (let i = 0; i < model_settings.speakers.length; i++) {
                 const speaker_label = JSON.stringify(model_settings.speakers[i]).replaceAll('"', '');
+                // @ts-expect-error TS(2345): Argument of type 'number' is not assignable to par... Remove this comment to see the full error message
                 $('#coqui_api_model_settings_speaker').append(new Option(speaker_label, i));
             }
         } else {
@@ -525,6 +538,7 @@ class CoquiTtsProvider {
         $('#coqui_api_model_install_status').show();
 
         // Check if already installed and propose to do it otherwise
+        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         const model_id = modelDict[model_language][model_dataset][model_name].id;
         console.debug(DEBUG_PREFIX, 'Check if model is already installed', model_id);
         const result = await CoquiTtsProvider.checkmodel_state(model_id);
@@ -742,6 +756,7 @@ class CoquiTtsProvider {
 }
 
 async function initLocalModels() {
+    // @ts-expect-error TS(2345): Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
     if (!modules.includes('coqui-tts'))
         return;
 

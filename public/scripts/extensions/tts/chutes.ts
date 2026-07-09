@@ -40,8 +40,10 @@ class ChutesTtsProvider {
     }
 
     constructor() {
+        // @ts-expect-error TS(2339): Property 'handler' does not exist on type 'ChutesT... Remove this comment to see the full error message
         this.handler = async function(this: any, /** @type {string} */ key: any) {
             if (key !== SECRET_KEYS.CHUTES) return;
+            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             $('#chutes_tts_key').toggleClass('success', !!secret_state[SECRET_KEYS.CHUTES]);
             await this.onRefreshClick();
         }.bind(this);
@@ -49,6 +51,7 @@ class ChutesTtsProvider {
 
     dispose() {
         [event_types.SECRET_WRITTEN, event_types.SECRET_DELETED, event_types.SECRET_ROTATED].forEach(event => {
+            // @ts-expect-error TS(2339): Property 'handler' does not exist on type 'ChutesT... Remove this comment to see the full error message
             eventSource.removeListener(event, this.handler);
         });
     }
@@ -75,8 +78,10 @@ class ChutesTtsProvider {
         $('#chutes_tts_speed').val(this.settings.speed);
         $('#chutes_tts_speed_output').text(this.settings.speed);
 
+        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         $('#chutes_tts_key').toggleClass('success', !!secret_state[SECRET_KEYS.CHUTES]);
         [event_types.SECRET_WRITTEN, event_types.SECRET_DELETED, event_types.SECRET_ROTATED].forEach(event => {
+            // @ts-expect-error TS(2339): Property 'handler' does not exist on type 'ChutesT... Remove this comment to see the full error message
             eventSource.on(event, this.handler);
         });
 
@@ -104,6 +109,7 @@ class ChutesTtsProvider {
 
     async updateModels() {
         // For Chutes TTS, we always use the Kokoro model currently.
+        // @ts-expect-error TS(2322): Type 'string' is not assignable to type 'never'.
         this.models = ['kokoro'];
 
         $('#chutes_tts_model').empty();
@@ -172,6 +178,7 @@ class ChutesTtsProvider {
             { id: 'zm_yunyang', name: 'Yunyang (Chinese Male)', lang: 'zh-CN' },
         ];
 
+        // @ts-expect-error TS(2322): Type '{ name: string; voice_id: string; lang: stri... Remove this comment to see the full error message
         this.voices = kokoroVoices.map(v => ({
             name: v.name,
             voice_id: v.id,
@@ -183,7 +190,9 @@ class ChutesTtsProvider {
         if (this.voices.length === 0) {
             await this.updateVoices();
         }
+        // @ts-expect-error TS(2339): Property 'name' does not exist on type 'never'.
         const voice = this.voices.find(v => v.name === voiceName || v.voice_id === voiceName);
+        // @ts-expect-error TS(2339): Property 'voice_id' does not exist on type 'never'... Remove this comment to see the full error message
         return voice || this.voices.find(v => v.voice_id === 'af_heart');
     }
 
@@ -193,6 +202,7 @@ class ChutesTtsProvider {
     }
 
     async fetchTtsGeneration(text: any, voiceId: any) {
+        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         const apiKey = secret_state[SECRET_KEYS.CHUTES];
 
         if (!apiKey) {
@@ -223,6 +233,7 @@ class ChutesTtsProvider {
         }
 
         const voiceIds = this.voices
+            // @ts-expect-error TS(2339): Property 'name' does not exist on type 'never'.
             .map(voice => ({ name: voice.name, voice_id: voice.voice_id, preview_url: false }));
         return voiceIds;
     }
