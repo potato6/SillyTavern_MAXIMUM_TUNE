@@ -478,7 +478,7 @@ export const DEFAULT_PRINT_TIMEOUT = debounce_timeout.quick;
 
 export const saveSettingsDebounced = debounce((loopCounter = 0) => saveSettings(loopCounter), DEFAULT_SAVE_EDIT_TIMEOUT);
 // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-export const saveCharacterDebounced = debounce(() => $('#create_button').trigger('click'), DEFAULT_SAVE_EDIT_TIMEOUT);
+export const saveCharacterDebounced = debounce(() => document.getElementById('create_button')?.click(), DEFAULT_SAVE_EDIT_TIMEOUT);
 
 /**
  * Prints the character list in a debounced fashion without blocking, with a delay of 100 milliseconds.
@@ -9997,38 +9997,28 @@ export function select_selected_character(chid, { switchMenu = true } = {}) {
     $('#selected_chat_pole').val(characters[chid].chat);
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#create_date_pole').val(timestampToMoment(characters[chid].create_date).toISOString());
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#avatar_url_pole').val(characters[chid].avatar);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#chat_import_avatar_url').val(characters[chid].avatar);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#chat_import_character_name').val(characters[chid].name);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#character_json_data').val(characters[chid].json_data);
+    (document.getElementById('avatar_url_pole') as HTMLInputElement).value = characters[chid].avatar;
+    (document.getElementById('chat_import_avatar_url') as HTMLInputElement).value = characters[chid].avatar;
+    (document.getElementById('chat_import_character_name') as HTMLInputElement).value = characters[chid].name;
+    (document.getElementById('character_json_data') as HTMLTextAreaElement).value = characters[chid].json_data;
 
     updateFavButtonState(characters[chid].fav || characters[chid].fav == 'true');
 
     const avatarUrl = characters[chid].avatar != 'none' ? getThumbnailUrl('avatar', characters[chid].avatar) : default_avatar;
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#avatar_load_preview').attr('src', avatarUrl);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('.open_alternate_greetings').data('chid', chid);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#set_character_world').data('chid', chid);
+    document.getElementById('avatar_load_preview')?.setAttribute('src', avatarUrl);
+    document.querySelector('.open_alternate_greetings')?.setAttribute('data-chid', String(chid));
+    document.getElementById('set_character_world')?.setAttribute('data-chid', String(chid));
     setWorldInfoButtonClass(chid);
     checkEmbeddedWorld(chid);
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#name_div').removeClass('displayBlock');
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#name_div').addClass('displayNone');
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#renameCharButton').css('display', '');
+    document.getElementById('name_div')?.classList.remove('displayBlock');
+    document.getElementById('name_div')?.classList.add('displayNone');
+    const renameCharButton = document.getElementById('renameCharButton');
+    if (renameCharButton) renameCharButton.style.display = '';
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#form_create').attr('actiontype', 'editcharacter');
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('.form_create_bottom_buttons_block .chat_lorebook_button').show();
+    document.getElementById('form_create')?.setAttribute('actiontype', 'editcharacter');
+    const lorebookBtn = document.querySelector('.form_create_bottom_buttons_block .chat_lorebook_button');
+    if (lorebookBtn instanceof HTMLElement) lorebookBtn.style.display = '';
 
     const externalMediaState = isExternalMediaAllowed();
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
