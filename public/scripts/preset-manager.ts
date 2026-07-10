@@ -1153,10 +1153,10 @@ export async function initPresetManager() {
     }));
 
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document).on('click', '[data-preset-manager-update]', async function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const apiId = $(this).data('preset-manager-update');
+    document.addEventListener('click', async function (e) {
+        const target = e.target.closest('[data-preset-manager-update]');
+        if (!target) return;
+        const apiId = target.dataset.presetManagerUpdate;
         const presetManager = getPresetManager(apiId);
 
         if (!presetManager) {
@@ -1167,10 +1167,10 @@ export async function initPresetManager() {
         await presetManager.updatePreset();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document).on('click', '[data-preset-manager-new]', async function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const apiId = $(this).data('preset-manager-new');
+    document.addEventListener('click', async function (e) {
+        const target = e.target.closest('[data-preset-manager-new]');
+        if (!target) return;
+        const apiId = target.dataset.presetManagerNew;
         const presetManager = getPresetManager(apiId);
 
         if (!presetManager) {
@@ -1181,10 +1181,10 @@ export async function initPresetManager() {
         await presetManager.savePresetAs();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document).on('click', '[data-preset-manager-rename]', async function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const apiId = $(this).data('preset-manager-rename');
+    document.addEventListener('click', async function (e) {
+        const target = e.target.closest('[data-preset-manager-rename]');
+        if (!target) return;
+        const apiId = target.dataset.presetManagerRename;
         const presetManager = getPresetManager(apiId);
 
         if (!presetManager) {
@@ -1200,7 +1200,6 @@ export async function initPresetManager() {
             return;
         }
         if (equalsIgnoreCaseAndAccents(oldName, newName)) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.warning(t`Name not accepted, as it is the same as before (ignoring case and accents).`, t`Rename Preset`);
             return;
         }
@@ -1213,20 +1212,18 @@ export async function initPresetManager() {
 
         if (apiId === 'openai') {
             // This is a horrible mess, but prevents the renamed preset from being corrupted.
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#update_oai_preset').trigger('click');
+            document.getElementById('update_oai_preset')?.click();
             return;
         }
 
         const successToast = !presetManager.isAdvancedFormatting() ? t`Preset renamed` : t`Template renamed`;
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.success(successToast);
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document).on('click', '[data-preset-manager-export]', async function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const apiId = $(this).data('preset-manager-export');
+    document.addEventListener('click', async function (e) {
+        const target = e.target.closest('[data-preset-manager-export]');
+        if (!target) return;
+        const apiId = target.dataset.presetManagerExport;
         const presetManager = getPresetManager(apiId);
 
         if (!presetManager) {
@@ -1234,26 +1231,25 @@ export async function initPresetManager() {
             return;
         }
 
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const selected = $(presetManager.select[0].options[presetManager.select[0].selectedIndex]);
-        const name = selected.text();
+        const selected = presetManager.select[0].options[presetManager.select[0].selectedIndex];
+        const name = selected.text;
         const preset = presetManager.getPresetSettings(name);
         const data = JSON.stringify(preset, null, 4);
         download(data, `${name}.json`, 'application/json');
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document).on('click', '[data-preset-manager-import]', async function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const apiId = $(this).data('preset-manager-import');
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(`[data-preset-manager-file="${apiId}"]`).trigger('click');
+    document.addEventListener('click', async function (e) {
+        const target = e.target.closest('[data-preset-manager-import]');
+        if (!target) return;
+        const apiId = target.dataset.presetManagerImport;
+        const fileInput = document.querySelector(`[data-preset-manager-file="${apiId}"]`);
+        if (fileInput) fileInput.click();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document).on('change', '[data-preset-manager-file]', async function (e) {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const apiId = $(this).data('preset-manager-file');
+    document.addEventListener('change', async function (e) {
+        const target = e.target.closest('[data-preset-manager-file]');
+        if (!target) return;
+        const apiId = target.dataset.presetManagerFile;
         const presetManager = getPresetManager(apiId);
 
         if (!presetManager) {
@@ -1269,22 +1265,19 @@ export async function initPresetManager() {
 
         const fileName = file.name.replace('.json', '').replace('.settings', '');
         const data = await parseJsonFile(file);
-        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         const name = data?.name ?? fileName;
-        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         data.name = name;
 
         await presetManager.savePreset(name, data);
         const successToast = !presetManager.isAdvancedFormatting() ? t`Preset imported` : t`Template imported`;
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.success(successToast);
         e.target.value = null;
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document).on('click', '[data-preset-manager-delete]', async function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const apiId = $(this).data('preset-manager-delete');
+    document.addEventListener('click', async function (e) {
+        const target = e.target.closest('[data-preset-manager-delete]');
+        if (!target) return;
+        const apiId = target.dataset.presetManagerDelete;
         const presetManager = getPresetManager(apiId);
 
         if (!presetManager) {
@@ -1303,22 +1296,20 @@ export async function initPresetManager() {
 
         if (result) {
             const successToast = !presetManager.isAdvancedFormatting() ? t`Preset deleted` : t`Template deleted`;
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.success(successToast);
             await eventSource.emit(event_types.PRESET_DELETED, { apiId, name });
         } else {
             const warningToast = !presetManager.isAdvancedFormatting() ? t`Preset was not deleted from server` : t`Template was not deleted from server`;
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.warning(warningToast);
         }
 
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document).on('click', '[data-preset-manager-restore]', async function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const apiId = $(this).data('preset-manager-restore');
+    document.addEventListener('click', async function (e) {
+        const target = e.target.closest('[data-preset-manager-restore]');
+        if (!target) return;
+        const apiId = target.dataset.presetManagerRestore;
         const presetManager = getPresetManager(apiId);
 
         if (!presetManager) {
@@ -1379,14 +1370,11 @@ export async function initPresetManager() {
         }
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#af_master_import').on('click', () => {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#af_master_import_file').trigger('click');
+    document.getElementById('af_master_import')?.addEventListener('click', () => {
+        document.getElementById('af_master_import_file')?.click();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#af_master_import_file').on('change', async function (e) {
+    document.getElementById('af_master_import_file')?.addEventListener('change', async function (e) {
         if (!(e.target instanceof HTMLInputElement)) {
             return;
         }
@@ -1402,8 +1390,7 @@ export async function initPresetManager() {
         e.target.value = null;
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#af_master_export').on('click', async () => {
+    document.getElementById('af_master_export')?.addEventListener('click', async () => {
         const data = await PresetManager.performMasterExport();
 
         if (!data) {

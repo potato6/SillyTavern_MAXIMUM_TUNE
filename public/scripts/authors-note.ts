@@ -682,47 +682,29 @@ function onAllowWIScanCheckboxChanged() {
  */
 // Inserts the extension first since it's statically imported
 export function initAuthorsNote() {
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#extension_floating_prompt').on('input', onExtensionFloatingPromptInput);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#extension_floating_interval').on('input', onExtensionFloatingIntervalInput);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#extension_floating_depth').on('input', onExtensionFloatingDepthInput);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#extension_floating_chara').on('input', onExtensionFloatingCharaPromptInput);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#extension_use_floating_chara').on('input', onExtensionFloatingCharaCheckboxChanged);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#extension_floating_default').on('input', onExtensionFloatingDefaultInput);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#extension_default_depth').on('input', onDefaultDepthInput);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#extension_default_interval').on('input', onDefaultIntervalInput);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#extension_floating_allow_wi_scan').on('input', onAllowWIScanCheckboxChanged);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#extension_floating_role').on('input', onExtensionFloatingRoleInput);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#extension_default_role').on('input', onExtensionDefaultRoleInput);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('input[name="extension_floating_position"]').on('change', onExtensionFloatingPositionInput);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('input[name="extension_default_position"]').on('change', onDefaultPositionInput);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('input[name="extension_floating_char_position"]').on('change', onExtensionFloatingCharPositionInput);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#ANClose').on('click', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    document.getElementById('extension_floating_prompt')?.addEventListener('input', onExtensionFloatingPromptInput);
+    document.getElementById('extension_floating_interval')?.addEventListener('input', onExtensionFloatingIntervalInput);
+    document.getElementById('extension_floating_depth')?.addEventListener('input', onExtensionFloatingDepthInput);
+    document.getElementById('extension_floating_chara')?.addEventListener('input', onExtensionFloatingCharaPromptInput);
+    document.getElementById('extension_use_floating_chara')?.addEventListener('input', onExtensionFloatingCharaCheckboxChanged);
+    document.getElementById('extension_floating_default')?.addEventListener('input', onExtensionFloatingDefaultInput);
+    document.getElementById('extension_default_depth')?.addEventListener('input', onDefaultDepthInput);
+    document.getElementById('extension_default_interval')?.addEventListener('input', onDefaultIntervalInput);
+    document.getElementById('extension_floating_allow_wi_scan')?.addEventListener('input', onAllowWIScanCheckboxChanged);
+    document.getElementById('extension_floating_role')?.addEventListener('input', onExtensionFloatingRoleInput);
+    document.getElementById('extension_default_role')?.addEventListener('input', onExtensionDefaultRoleInput);
+    document.querySelector('input[name="extension_floating_position"]')?.addEventListener('change', onExtensionFloatingPositionInput);
+    document.querySelector('input[name="extension_default_position"]')?.addEventListener('change', onDefaultPositionInput);
+    document.querySelector('input[name="extension_floating_char_position"]')?.addEventListener('change', onExtensionFloatingCharPositionInput);
+    document.getElementById('ANClose')?.addEventListener('click', function () {
         $('#floatingPrompt').transition({
             opacity: 0,
             duration: animation_duration,
             easing: 'ease-in-out',
         });
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         setTimeout(function () { $('#floatingPrompt').hide(); }, animation_duration);
     });
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#option_toggle_AN').on('click', onANMenuItemClick);
+    document.getElementById('option_toggle_AN')?.addEventListener('click', onANMenuItemClick);
 
     SlashCommandParser.addCommandObject(SlashCommand.fromProps({
         name: 'note',

@@ -3906,146 +3906,106 @@ jQuery(() => {
     });
 
     // Settings that go to settings.json
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#collapse-newlines-checkbox').on('change', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        power_user.collapse_newlines = !!$(this).prop('checked');
+    document.getElementById('collapse-newlines-checkbox')?.addEventListener('change', function () {
+        power_user.collapse_newlines = !!this.checked;
         saveSettingsDebounced();
     });
 
     // include newline is the child of trim sentences
     // if include newline is checked, trim sentences must be checked
     // if trim sentences is unchecked, include newline must be unchecked
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#trim_sentences_checkbox').on('change', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        power_user.trim_sentences = !!$(this).prop('checked');
+    document.getElementById('trim_sentences_checkbox')?.addEventListener('change', function () {
+        power_user.trim_sentences = !!this.checked;
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#single_line').on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const value = !!$(this).prop('checked');
+    document.getElementById('single_line')?.addEventListener('input', function () {
+        const value = !!this.checked;
         power_user.single_line = value;
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#context_derived').on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const value = !!$(this).prop('checked');
+    document.getElementById('context_derived')?.addEventListener('input', function () {
+        const value = !!this.checked;
         power_user.context_derived = value;
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#context_derived').on('change', function () {
-        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
+    document.getElementById('context_derived')?.addEventListener('change', function () {
         this.parentElement.querySelector('i').classList.toggle('toggleEnabled', !!power_user.context_derived);
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#instruct_derived').on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const value = !!$(this).prop('checked');
+    document.getElementById('instruct_derived')?.addEventListener('input', function () {
+        const value = !!this.checked;
         power_user.instruct_derived = value;
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#instruct_derived').on('change', function () {
-        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
+    document.getElementById('instruct_derived')?.addEventListener('change', function () {
         this.parentElement.querySelector('i').classList.toggle('toggleEnabled', !!power_user.instruct_derived);
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#context_size_derived').on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const value = !!$(this).prop('checked');
+    document.getElementById('context_size_derived')?.addEventListener('input', function () {
+        const value = !!this.checked;
         power_user.context_size_derived = value;
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#context_size_derived').on('change', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#context_size_derived').prop('checked', !!power_user.context_size_derived);
+    document.getElementById('context_size_derived')?.addEventListener('change', function () {
+        document.getElementById('context_size_derived').checked = !!power_user.context_size_derived;
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#context_story_string_position').on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const value = Number($(this).val());
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#context_story_string_inject_settings').toggle(value === extension_prompt_types.IN_CHAT);
+    document.getElementById('context_story_string_position')?.addEventListener('input', function () {
+        const value = Number(this.value);
+        document.getElementById('context_story_string_inject_settings')?.toggleAttribute('hidden', value !== extension_prompt_types.IN_CHAT);
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#bind_model_templates').on('input', function () {
-        // @ts-expect-error TS(2801) FIXME: This condition will always return true since this ... Remove this comment to see the full error message
+    document.getElementById('bind_model_templates')?.addEventListener('input', function () {
         if (bindModelTemplates(power_user, online_status)) {
             saveSettingsDebounced();
         }
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#bind_model_templates').on('change', updateBindModelTemplatesState);
+    document.getElementById('bind_model_templates')?.addEventListener('change', updateBindModelTemplatesState);
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#always-force-name2-checkbox').on('change', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        power_user.always_force_name2 = !!$(this).prop('checked');
+    document.getElementById('always-force-name2-checkbox')?.addEventListener('change', function () {
+        power_user.always_force_name2 = !!this.checked;
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#markdown_escape_strings').on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        power_user.markdown_escape_strings = String($(this).val());
+    document.getElementById('markdown_escape_strings')?.addEventListener('input', function () {
+        power_user.markdown_escape_strings = String(this.value);
         saveSettingsDebounced();
         reloadMarkdownProcessor();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#start_reply_with').on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        power_user.user_prompt_bias = String($(this).val());
+    document.getElementById('start_reply_with')?.addEventListener('input', function () {
+        power_user.user_prompt_bias = String(this.value);
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#chat-show-reply-prefix-checkbox').on('change', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        power_user.show_user_prompt_bias = !!$(this).prop('checked');
+    document.getElementById('chat-show-reply-prefix-checkbox')?.addEventListener('change', function () {
+        power_user.show_user_prompt_bias = !!this.checked;
         reloadCurrentChat();
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#auto_continue_enabled').on('change', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        power_user.auto_continue.enabled = $(this).prop('checked');
+    document.getElementById('auto_continue_enabled')?.addEventListener('change', function () {
+        power_user.auto_continue.enabled = this.checked;
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#auto_continue_allow_chat_completions').on('change', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        power_user.auto_continue.allow_chat_completions = !!$(this).prop('checked');
+    document.getElementById('auto_continue_allow_chat_completions')?.addEventListener('change', function () {
+        power_user.auto_continue.allow_chat_completions = !!this.checked;
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#auto_continue_target_length').on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        power_user.auto_continue.target_length = Number($(this).val());
+    document.getElementById('auto_continue_target_length')?.addEventListener('input', function () {
+        power_user.auto_continue.target_length = Number(this.value);
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#example_messages_behavior').on('change', function () {
-        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
+    document.getElementById('example_messages_behavior')?.addEventListener('change', function () {
         const selectedOption = String(this.value);
         console.log('Setting example messages behavior to', selectedOption);
 
@@ -4070,300 +4030,228 @@ jQuery(() => {
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#fast_ui_mode').on('change', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        power_user.fast_ui_mode = $(this).prop('checked');
+    document.getElementById('fast_ui_mode')?.addEventListener('change', function () {
+        power_user.fast_ui_mode = this.checked;
         switchUiMode();
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#waifuMode').on('change', () => {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        power_user.waifuMode = !!$('#waifuMode').prop('checked');
+    document.getElementById('waifuMode')?.addEventListener('change', () => {
+        power_user.waifuMode = !!document.getElementById('waifuMode').checked;
         switchWaifuMode();
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#customCSS').on('input', () => {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        power_user.custom_css = String($('#customCSS').val());
+    document.getElementById('customCSS')?.addEventListener('input', () => {
+        power_user.custom_css = String(document.getElementById('customCSS').value);
         saveSettingsDebounced();
         applyCustomCSS();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#movingUImode').on('change', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        power_user.movingUI = $(this).prop('checked');
+    document.getElementById('movingUImode')?.addEventListener('change', function () {
+        power_user.movingUI = this.checked;
         switchMovingUI();
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#noShadowsmode').on('change', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        power_user.noShadows = $(this).prop('checked');
+    document.getElementById('noShadowsmode')?.addEventListener('change', function () {
+        power_user.noShadows = this.checked;
         applyNoShadows();
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#movingUIreset').on('click', resetMovablePanels);
+    document.getElementById('movingUIreset')?.addEventListener('click', resetMovablePanels);
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#avatar_style').on('change', function () {
-        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
+    document.getElementById('avatar_style')?.addEventListener('change', function () {
         const value = this.value;
         power_user.avatar_style = Number(value);
         applyAvatarStyle();
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#chat_display').on('change', function () {
-        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
+    document.getElementById('chat_display')?.addEventListener('change', function () {
         const value = this.value;
         power_user.chat_display = Number(value);
         applyChatDisplay();
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#toastr_position').on('change', function () {
-        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
+    document.getElementById('toastr_position')?.addEventListener('change', function () {
         const value = this.value;
         power_user.toastr_position = String(value);
         applyToastrPosition();
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#chat_width_slider').on('input', function (e, data) {
-        const applyMode = data?.forced ? 'forced' : 'normal';
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        power_user.chat_width = Number($(this).val());
+    document.getElementById('chat_width_slider')?.addEventListener('input', function (e) {
+        const applyMode = e?.forced ? 'forced' : 'normal';
+        power_user.chat_width = Number(this.value);
         applyChatWidth(applyMode);
         saveSettingsDebounced();
         setHotswapsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#chat_truncation').on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        power_user.chat_truncation = Number($('#chat_truncation').val());
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#chat_truncation_counter').val(power_user.chat_truncation);
+    document.getElementById('chat_truncation')?.addEventListener('input', function () {
+        power_user.chat_truncation = Number(document.getElementById('chat_truncation').value);
+        document.getElementById('chat_truncation_counter').value = String(power_user.chat_truncation);
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#streaming_fps').on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        power_user.streaming_fps = Number($('#streaming_fps').val());
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#streaming_fps_counter').val(power_user.streaming_fps);
+    document.getElementById('streaming_fps')?.addEventListener('input', function () {
+        power_user.streaming_fps = Number(document.getElementById('streaming_fps').value);
+        document.getElementById('streaming_fps_counter').value = String(power_user.streaming_fps);
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#smooth_streaming').on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        power_user.smooth_streaming = !!$(this).prop('checked');
+    document.getElementById('smooth_streaming')?.addEventListener('input', function () {
+        power_user.smooth_streaming = !!this.checked;
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#smooth_streaming_no_think').on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        power_user.smooth_streaming_no_think = !!$(this).prop('checked');
+    document.getElementById('smooth_streaming_no_think')?.addEventListener('input', function () {
+        power_user.smooth_streaming_no_think = !!this.checked;
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#smooth_streaming_speed').on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        power_user.smooth_streaming_speed = Number($('#smooth_streaming_speed').val());
+    document.getElementById('smooth_streaming_speed')?.addEventListener('input', function () {
+        power_user.smooth_streaming_speed = Number(document.getElementById('smooth_streaming_speed').value);
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#stream_fade_in').on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        power_user.stream_fade_in = !!$(this).prop('checked');
+    document.getElementById('stream_fade_in')?.addEventListener('input', function () {
+        power_user.stream_fade_in = !!this.checked;
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('input[name="font_scale"]').on('input', async function (e, data) {
-        const applyMode = data?.forced ? 'forced' : 'normal';
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        power_user.font_scale = Number($(this).val());
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#font_scale_counter').val(power_user.font_scale);
+    document.querySelector('input[name="font_scale"]')?.addEventListener('input', async function (e) {
+        const applyMode = e?.forced ? 'forced' : 'normal';
+        power_user.font_scale = Number(this.value);
+        document.getElementById('font_scale_counter').value = String(power_user.font_scale);
         applyFontScale(applyMode);
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('input[name="blur_strength"]').on('input', async function (e) {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        power_user.blur_strength = Number($(this).val());
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#blur_strength_counter').val(power_user.blur_strength);
+    document.querySelector('input[name="blur_strength"]')?.addEventListener('input', async function () {
+        power_user.blur_strength = Number(this.value);
+        document.getElementById('blur_strength_counter').value = String(power_user.blur_strength);
         applyBlurStrength();
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('input[name="shadow_width"]').on('input', async function (e) {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        power_user.shadow_width = Number($(this).val());
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#shadow_width_counter').val(power_user.shadow_width);
+    document.querySelector('input[name="shadow_width"]')?.addEventListener('input', async function () {
+        power_user.shadow_width = Number(this.value);
+        document.getElementById('shadow_width_counter').value = String(power_user.shadow_width);
         applyShadowWidth();
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#main-text-color-picker').on('change', (/** @type {ColorPickerEvent} */ evt) => {
+    document.getElementById('main-text-color-picker')?.addEventListener('change', (/** @type {ColorPickerEvent} */ evt) => {
         power_user.main_text_color = evt.detail.rgba;
         applyThemeColor('main');
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#italics-color-picker').on('change', (/** @type {ColorPickerEvent} */ evt) => {
+    document.getElementById('italics-color-picker')?.addEventListener('change', (/** @type {ColorPickerEvent} */ evt) => {
         power_user.italics_text_color = evt.detail.rgba;
         applyThemeColor('italics');
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#underline-color-picker').on('change', (/** @type {ColorPickerEvent} */ evt) => {
+    document.getElementById('underline-color-picker')?.addEventListener('change', (/** @type {ColorPickerEvent} */ evt) => {
         power_user.underline_text_color = evt.detail.rgba;
         applyThemeColor('underline');
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#quote-color-picker').on('change', (/** @type {ColorPickerEvent} */ evt) => {
+    document.getElementById('quote-color-picker')?.addEventListener('change', (/** @type {ColorPickerEvent} */ evt) => {
         power_user.quote_text_color = evt.detail.rgba;
         applyThemeColor('quote');
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#blur-tint-color-picker').on('change', (/** @type {ColorPickerEvent} */ evt) => {
+    document.getElementById('blur-tint-color-picker')?.addEventListener('change', (/** @type {ColorPickerEvent} */ evt) => {
         power_user.blur_tint_color = evt.detail.rgba;
         applyThemeColor('blurTint');
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#chat-tint-color-picker').on('change', (/** @type {ColorPickerEvent} */ evt) => {
+    document.getElementById('chat-tint-color-picker')?.addEventListener('change', (/** @type {ColorPickerEvent} */ evt) => {
         power_user.chat_tint_color = evt.detail.rgba;
         applyThemeColor('chatTint');
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#user-mes-blur-tint-color-picker').on('change', (/** @type {ColorPickerEvent} */ evt) => {
+    document.getElementById('user-mes-blur-tint-color-picker')?.addEventListener('change', (/** @type {ColorPickerEvent} */ evt) => {
         power_user.user_mes_blur_tint_color = evt.detail.rgba;
         applyThemeColor('userMesBlurTint');
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#bot-mes-blur-tint-color-picker').on('change', (/** @type {ColorPickerEvent} */ evt) => {
+    document.getElementById('bot-mes-blur-tint-color-picker')?.addEventListener('change', (/** @type {ColorPickerEvent} */ evt) => {
         power_user.bot_mes_blur_tint_color = evt.detail.rgba;
         applyThemeColor('botMesBlurTint');
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#shadow-color-picker').on('change', (/** @type {ColorPickerEvent} */ evt) => {
+    document.getElementById('shadow-color-picker')?.addEventListener('change', (/** @type {ColorPickerEvent} */ evt) => {
         power_user.shadow_color = evt.detail.rgba;
         applyThemeColor('shadow');
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#border-color-picker').on('change', (/** @type {ColorPickerEvent} */ evt) => {
+    document.getElementById('border-color-picker')?.addEventListener('change', (/** @type {ColorPickerEvent} */ evt) => {
         power_user.border_color = evt.detail.rgba;
         applyThemeColor('border');
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#themes').on('change', function () {
-        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
+    document.getElementById('themes')?.addEventListener('change', function () {
         const themeSelected = String(this.value);
         power_user.theme = themeSelected;
         applyTheme(themeSelected);
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#movingUIPresets').on('change', async function () {
+    document.getElementById('movingUIPresets')?.addEventListener('change', async function () {
         console.log('saw MUI preset change');
-        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
         const movingUIPresetSelected = String(this.value);
         power_user.movingUIPreset = movingUIPresetSelected;
         applyMovingUIPreset(movingUIPresetSelected);
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#ui-preset-save-button').on('click', () => saveTheme());
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#ui-preset-update-button').on('click', () => updateTheme());
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#ui-preset-delete-button').on('click', () => deleteTheme());
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#movingui-preset-save-button').on('click', saveMovingUI);
+    document.getElementById('ui-preset-save-button')?.addEventListener('click', () => saveTheme());
+    document.getElementById('ui-preset-update-button')?.addEventListener('click', () => updateTheme());
+    document.getElementById('ui-preset-delete-button')?.addEventListener('click', () => deleteTheme());
+    document.getElementById('movingui-preset-save-button')?.addEventListener('click', saveMovingUI);
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#never_resize_avatars').on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        power_user.never_resize_avatars = !!$(this).prop('checked');
+    document.getElementById('never_resize_avatars')?.addEventListener('input', function () {
+        power_user.never_resize_avatars = !!this.checked;
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#show_card_avatar_urls').on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        power_user.show_card_avatar_urls = !!$(this).prop('checked');
+    document.getElementById('show_card_avatar_urls')?.addEventListener('input', function () {
+        power_user.show_card_avatar_urls = !!this.checked;
         printCharactersDebounced();
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#play_message_sound').on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        power_user.play_message_sound = !!$(this).prop('checked');
+    document.getElementById('play_message_sound')?.addEventListener('input', function () {
+        power_user.play_message_sound = !!this.checked;
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#play_sound_unfocused').on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        power_user.play_sound_unfocused = !!$(this).prop('checked');
+    document.getElementById('play_sound_unfocused')?.addEventListener('input', function () {
+        power_user.play_sound_unfocused = !!this.checked;
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#auto_save_msg_edits').on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        power_user.auto_save_msg_edits = !!$(this).prop('checked');
+    document.getElementById('auto_save_msg_edits')?.addEventListener('input', function () {
+        power_user.auto_save_msg_edits = !!this.checked;
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#character_sort_order').on('change', function () {
-        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
+    document.getElementById('character_sort_order')?.addEventListener('change', function () {
         const selectedOption = this.options[this.selectedIndex];
         const field = String(selectedOption?.dataset.field ?? '');
         // Save sort order, but do not save search sorting, as this is a temporary sorting option
@@ -4376,24 +4264,18 @@ jQuery(() => {
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#gestures-checkbox').on('change', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        power_user.gestures = !!$('#gestures-checkbox').prop('checked');
+    document.getElementById('gestures-checkbox')?.addEventListener('change', function () {
+        power_user.gestures = !!document.getElementById('gestures-checkbox').checked;
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#auto_swipe').on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        power_user.auto_swipe = !!$(this).prop('checked');
+    document.getElementById('auto_swipe')?.addEventListener('input', function () {
+        power_user.auto_swipe = !!this.checked;
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#auto_swipe_blacklist').on('input', function () {
-        // @ts-expect-error TS(2322) FIXME: Type 'string[]' is not assignable to type 'never[]... Remove this comment to see the full error message
-        power_user.auto_swipe_blacklist = String($(this).val())
+    document.getElementById('auto_swipe_blacklist')?.addEventListener('input', function () {
+        power_user.auto_swipe_blacklist = String(this.value)
             .split(',')
             .map(str => str.trim())
             .filter(str => str);
@@ -4401,65 +4283,49 @@ jQuery(() => {
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#auto_swipe_minimum_length').on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const number = Number($(this).val());
+    document.getElementById('auto_swipe_minimum_length')?.addEventListener('input', function () {
+        const number = Number(this.value);
         if (!isNaN(number)) {
             power_user.auto_swipe_minimum_length = number;
             saveSettingsDebounced();
         }
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#auto_swipe_blacklist_threshold').on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const number = Number($(this).val());
+    document.getElementById('auto_swipe_blacklist_threshold')?.addEventListener('input', function () {
+        const number = Number(this.value);
         if (!isNaN(number)) {
             power_user.auto_swipe_blacklist_threshold = number;
             saveSettingsDebounced();
         }
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#auto_fix_generated_markdown').on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        power_user.auto_fix_generated_markdown = !!$(this).prop('checked');
+    document.getElementById('auto_fix_generated_markdown')?.addEventListener('input', function () {
+        power_user.auto_fix_generated_markdown = !!this.checked;
         reloadCurrentChat();
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#console_log_prompts').on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        power_user.console_log_prompts = !!$(this).prop('checked');
+    document.getElementById('console_log_prompts')?.addEventListener('input', function () {
+        power_user.console_log_prompts = !!this.checked;
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#request_token_probabilities').on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        power_user.request_token_probabilities = !!$(this).prop('checked');
+    document.getElementById('request_token_probabilities')?.addEventListener('input', function () {
+        power_user.request_token_probabilities = !!this.checked;
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#show_group_chat_queue').on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        power_user.show_group_chat_queue = !!$(this).prop('checked');
+    document.getElementById('show_group_chat_queue')?.addEventListener('input', function () {
+        power_user.show_group_chat_queue = !!this.checked;
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#auto_scroll_chat_to_bottom').on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        power_user.auto_scroll_chat_to_bottom = !!$(this).prop('checked');
+    document.getElementById('auto_scroll_chat_to_bottom')?.addEventListener('input', function () {
+        power_user.auto_scroll_chat_to_bottom = !!this.checked;
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#tokenizer').on('change', function () {
-        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
+    document.getElementById('tokenizer')?.addEventListener('change', function () {
         const value = this.value;
         power_user.tokenizer = Number(value);
         BIAS_CACHE.clear();
@@ -4469,23 +4335,18 @@ jQuery(() => {
         forceCharacterEditorTokenize();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#send_on_enter').on('change', function () {
-        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
+    document.getElementById('send_on_enter')?.addEventListener('change', function () {
         const value = this.value;
         power_user.send_on_enter = Number(value);
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#confirm_message_delete').on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        power_user.confirm_message_delete = !!$(this).prop('checked');
+    document.getElementById('confirm_message_delete')?.addEventListener('input', function () {
+        power_user.confirm_message_delete = !!this.checked;
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#reload_chat').on('click', async function () {
+    document.getElementById('reload_chat')?.addEventListener('click', async function () {
         const currentChatId = getCurrentChatId();
         if (currentChatId !== undefined && currentChatId !== null) {
             await saveSettings();
@@ -4494,84 +4355,65 @@ jQuery(() => {
         }
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#allow_name1_display').on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        power_user.allow_name1_display = !!$(this).prop('checked');
+    document.getElementById('allow_name1_display')?.addEventListener('input', function () {
+        power_user.allow_name1_display = !!this.checked;
         reloadCurrentChat();
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#allow_name2_display').on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        power_user.allow_name2_display = !!$(this).prop('checked');
+    document.getElementById('allow_name2_display')?.addEventListener('input', function () {
+        power_user.allow_name2_display = !!this.checked;
         reloadCurrentChat();
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#token_padding').on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        power_user.token_padding = Number($(this).val());
+    document.getElementById('token_padding')?.addEventListener('input', function () {
+        power_user.token_padding = Number(this.value);
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#messageTimerEnabled').on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const value = !!$(this).prop('checked');
+    document.getElementById('messageTimerEnabled')?.addEventListener('input', function () {
+        const value = !!this.checked;
         power_user.timer_enabled = value;
         switchTimer();
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#messageTimestampsEnabled').on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const value = !!$(this).prop('checked');
+    document.getElementById('messageTimestampsEnabled')?.addEventListener('input', function () {
+        const value = !!this.checked;
         power_user.timestamps_enabled = value;
         switchTimestamps();
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#messageModelIconEnabled').on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const value = !!$(this).prop('checked');
+    document.getElementById('messageModelIconEnabled')?.addEventListener('input', function () {
+        const value = !!this.checked;
         power_user.timestamp_model_icon = value;
         switchIcons();
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#messageTokensEnabled').on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const value = !!$(this).prop('checked');
+    document.getElementById('messageTokensEnabled')?.addEventListener('input', function () {
+        const value = !!this.checked;
         power_user.message_token_count_enabled = value;
         switchTokenCount();
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#expandMessageActions').on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const value = !!$(this).prop('checked');
+    document.getElementById('expandMessageActions')?.addEventListener('input', function () {
+        const value = !!this.checked;
         power_user.expand_message_actions = value;
         switchMessageActions();
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#enableZenSliders').on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const value = !!$(this).prop('checked');
+    document.getElementById('enableZenSliders')?.addEventListener('input', function () {
+        const value = !!this.checked;
         if (power_user.enableLabMode === true && value === true) {
             //disallow zenSliders while Lab Mode is active
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.warning('Disable Mad Lab Mode before enabling Zen Sliders');
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(this).prop('checked', false).trigger('input');
+            this.checked = false;
+            this.dispatchEvent(new Event('input'));
             return;
         }
         power_user.enableZenSliders = value;
@@ -4579,208 +4421,156 @@ jQuery(() => {
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#enableLabMode').on('input', function (event, { fromInit = false } = {}) {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const value = !!$(this).prop('checked');
+    document.getElementById('enableLabMode')?.addEventListener('input', function (event) {
+        const value = !!this.checked;
         if (power_user.enableZenSliders === true && value === true) {
             //disallow Lab Mode if ZenSliders are active
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.warning('Disable Zen Sliders before enabling Mad Lab Mode');
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(this).prop('checked', false).trigger('input');
+            this.checked = false;
+            this.dispatchEvent(new Event('input'));
             return;
         }
 
         power_user.enableLabMode = value;
-        switchLabMode({ noReset: fromInit });
+        switchLabMode({ noReset: false });
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#mesIDDisplayEnabled').on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const value = !!$(this).prop('checked');
+    document.getElementById('mesIDDisplayEnabled')?.addEventListener('input', function () {
+        const value = !!this.checked;
         power_user.mesIDDisplay_enabled = value;
         switchMesIDDisplay();
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#hideChatAvatarsEnabled').on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const value = !!$(this).prop('checked');
+    document.getElementById('hideChatAvatarsEnabled')?.addEventListener('input', function () {
+        const value = !!this.checked;
         power_user.hideChatAvatars_enabled = value;
         switchHideChatAvatars();
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#hotswapEnabled').on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const value = !!$(this).prop('checked');
+    document.getElementById('hotswapEnabled')?.addEventListener('input', function () {
+        const value = !!this.checked;
         power_user.hotswap_enabled = value;
         switchHotswap();
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#prefer_character_prompt').on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const value = !!$(this).prop('checked');
+    document.getElementById('prefer_character_prompt')?.addEventListener('input', function () {
+        const value = !!this.checked;
         power_user.prefer_character_prompt = value;
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#prefer_character_jailbreak').on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const value = !!$(this).prop('checked');
+    document.getElementById('prefer_character_jailbreak')?.addEventListener('input', function () {
+        const value = !!this.checked;
         power_user.prefer_character_jailbreak = value;
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#continue_on_send').on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const value = !!$(this).prop('checked');
+    document.getElementById('continue_on_send')?.addEventListener('input', function () {
+        const value = !!this.checked;
         power_user.continue_on_send = value;
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#quick_continue').on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const value = !!$(this).prop('checked');
+    document.getElementById('quick_continue')?.addEventListener('input', function () {
+        const value = !!this.checked;
         power_user.quick_continue = value;
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#mes_continue').css('display', value ? '' : 'none');
+        document.getElementById('mes_continue').style.display = value ? '' : 'none';
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#quick_impersonate').on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const value = !!$(this).prop('checked');
+    document.getElementById('quick_impersonate')?.addEventListener('input', function () {
+        const value = !!this.checked;
         power_user.quick_impersonate = value;
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#mes_impersonate').css('display', value ? '' : 'none');
+        document.getElementById('mes_impersonate').style.display = value ? '' : 'none';
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#trim_spaces').on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const value = !!$(this).prop('checked');
+    document.getElementById('trim_spaces')?.addEventListener('input', function () {
+        const value = !!this.checked;
         power_user.trim_spaces = value;
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#relaxed_api_urls').on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const value = !!$(this).prop('checked');
+    document.getElementById('relaxed_api_urls')?.addEventListener('input', function () {
+        const value = !!this.checked;
         power_user.relaxed_api_urls = value;
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#world_import_dialog').on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const value = !!$(this).prop('checked');
+    document.getElementById('world_import_dialog')?.addEventListener('input', function () {
+        const value = !!this.checked;
         power_user.world_import_dialog = value;
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#enable_auto_select_input').on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const value = !!$(this).prop('checked');
+    document.getElementById('enable_auto_select_input')?.addEventListener('input', function () {
+        const value = !!this.checked;
         power_user.enable_auto_select_input = value;
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#enable_md_hotkeys').on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const value = !!$(this).prop('checked');
+    document.getElementById('enable_md_hotkeys')?.addEventListener('input', function () {
+        const value = !!this.checked;
         power_user.enable_md_hotkeys = value;
         toggleMDHotkeyIconDisplay();
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#spoiler_free_mode').on('input', function () {
-        // @ts-expect-error TS(2339) FIXME: Property 'spoiler_free_mode' does not exist on typ... Remove this comment to see the full error message
-        power_user.spoiler_free_mode = !!$(this).prop('checked');
+    document.getElementById('spoiler_free_mode')?.addEventListener('input', function () {
+        power_user.spoiler_free_mode = !!this.checked;
         switchSpoilerMode();
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#spoiler_free_desc_button').on('click', function (e) {
+    document.getElementById('spoiler_free_desc_button')?.addEventListener('click', function (e) {
         e.stopPropagation();
         peekSpoilerMode();
-        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
         this.classList.toggle('fa-eye');
-        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
         this.classList.toggle('fa-eye-slash');
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#custom_stopping_strings').on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        power_user.custom_stopping_strings = String($(this).val()).trim();
+    document.getElementById('custom_stopping_strings')?.addEventListener('input', function () {
+        power_user.custom_stopping_strings = String(this.value).trim();
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#custom_stopping_strings_macro').on('change', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        power_user.custom_stopping_strings_macro = !!$(this).prop('checked');
+    document.getElementById('custom_stopping_strings_macro')?.addEventListener('change', function () {
+        power_user.custom_stopping_strings_macro = !!this.checked;
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#fuzzy_search_checkbox').on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        power_user.fuzzy_search = !!$(this).prop('checked');
+    document.getElementById('fuzzy_search_checkbox')?.addEventListener('input', function () {
+        power_user.fuzzy_search = !!this.checked;
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#persona_show_notifications').on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        power_user.persona_show_notifications = !!$(this).prop('checked');
+    document.getElementById('persona_show_notifications')?.addEventListener('input', function () {
+        power_user.persona_show_notifications = !!this.checked;
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#persona_allow_multi_connections').on('input', function () {
-        // @ts-expect-error TS(2339) FIXME: Property 'persona_allow_multi_connections' does no... Remove this comment to see the full error message
-        power_user.persona_allow_multi_connections = !!$(this).prop('checked');
+    document.getElementById('persona_allow_multi_connections')?.addEventListener('input', function () {
+        power_user.persona_allow_multi_connections = !!this.checked;
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#persona_auto_lock').on('input', function () {
-        // @ts-expect-error TS(2339) FIXME: Property 'persona_auto_lock' does not exist on typ... Remove this comment to see the full error message
-        power_user.persona_auto_lock = !!$(this).prop('checked');
+    document.getElementById('persona_auto_lock')?.addEventListener('input', function () {
+        power_user.persona_auto_lock = !!this.checked;
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#encode_tags').on('input', async function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        power_user.encode_tags = !!$(this).prop('checked');
+    document.getElementById('encode_tags')?.addEventListener('input', async function () {
+        power_user.encode_tags = !!this.checked;
         await reloadCurrentChat();
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#experimental_macro_engine').on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        power_user.experimental_macro_engine = !!$(this).prop('checked');
+    document.getElementById('experimental_macro_engine')?.addEventListener('input', function () {
+        power_user.experimental_macro_engine = !!this.checked;
         saveSettingsDebounced();
 
         // Check if the app is ready before showing the toast
@@ -4802,124 +4592,93 @@ jQuery(() => {
         });
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#disable_group_trimming').on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        power_user.disable_group_trimming = !!$(this).prop('checked');
+    document.getElementById('disable_group_trimming')?.addEventListener('input', function () {
+        power_user.disable_group_trimming = !!this.checked;
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#debug_menu').on('click', function () {
+    document.getElementById('debug_menu')?.addEventListener('click', function () {
         showDebugMenu();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#bogus_folders').on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        power_user.bogus_folders = !!$(this).prop('checked');
+    document.getElementById('bogus_folders')?.addEventListener('input', function () {
+        power_user.bogus_folders = !!this.checked;
         printCharactersDebounced();
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#zoomed_avatar_magnification').on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        power_user.zoomed_avatar_magnification = !!$(this).prop('checked');
+    document.getElementById('zoomed_avatar_magnification')?.addEventListener('input', function () {
+        power_user.zoomed_avatar_magnification = !!this.checked;
         printCharactersDebounced();
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#aux_field').on('change', function () {
-        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
+    document.getElementById('aux_field')?.addEventListener('change', function () {
         const value = this.value;
         power_user.aux_field = String(value);
         printCharactersDebounced();
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#tag_import_setting').on('change', function () {
-        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
+    document.getElementById('tag_import_setting')?.addEventListener('change', function () {
         const value = this.value;
         power_user.tag_import_setting = Number(value);
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#stscript_autocomplete_state').on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        power_user.stscript.autocomplete.state = Number($(this).val());
+    document.getElementById('stscript_autocomplete_state')?.addEventListener('input', function () {
+        power_user.stscript.autocomplete.state = Number(this.value);
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#stscript_autocomplete_autoHide').on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        power_user.stscript.autocomplete.autoHide = !!$(this).prop('checked');
+    document.getElementById('stscript_autocomplete_autoHide')?.addEventListener('input', function () {
+        power_user.stscript.autocomplete.autoHide = !!this.checked;
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#stscript_autocomplete_showInAllMacroFields').on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        power_user.stscript.autocomplete.showInAllMacroFields = !!$(this).prop('checked');
+    document.getElementById('stscript_autocomplete_showInAllMacroFields')?.addEventListener('input', function () {
+        power_user.stscript.autocomplete.showInAllMacroFields = !!this.checked;
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#stscript_matching').on('change', function () {
-        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
+    document.getElementById('stscript_matching')?.addEventListener('change', function () {
         const value = this.value;
         power_user.stscript.matching = String(value);
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#stscript_autocomplete_style').on('change', function () {
-        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
+    document.getElementById('stscript_autocomplete_style')?.addEventListener('change', function () {
         const value = this.value;
         power_user.stscript.autocomplete.style = String(value);
         document.body.setAttribute('data-stscript-style', power_user.stscript.autocomplete.style);
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#stscript_autocomplete_select').on('change', function () {
-        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
+    document.getElementById('stscript_autocomplete_select')?.addEventListener('change', function () {
         const value = this.value;
         power_user.stscript.autocomplete.select = parseInt(String(value));
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#stscript_autocomplete_font_scale').on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const value = $(this).val();
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#stscript_autocomplete_font_scale_counter').val(value);
+    document.getElementById('stscript_autocomplete_font_scale')?.addEventListener('input', function () {
+        const value = this.value;
+        document.getElementById('stscript_autocomplete_font_scale_counter').value = String(value);
         power_user.stscript.autocomplete.font.scale = Number(value);
         document.body.style.setProperty('--ac-font-scale', value.toString());
         window.dispatchEvent(new Event('resize', { bubbles: true }));
         saveSettingsDebounced();
     });
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#stscript_autocomplete_font_scale_counter').on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const value = $(this).val();
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#stscript_autocomplete_font_scale').val(value);
+    document.getElementById('stscript_autocomplete_font_scale_counter')?.addEventListener('input', function () {
+        const value = this.value;
+        document.getElementById('stscript_autocomplete_font_scale').value = String(value);
         power_user.stscript.autocomplete.font.scale = Number(value);
         document.body.style.setProperty('--ac-font-scale', value.toString());
         window.dispatchEvent(new Event('resize', { bubbles: true }));
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#stscript_autocomplete_width_left').on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const value = $(this).val();
+    document.getElementById('stscript_autocomplete_width_left')?.addEventListener('input', function () {
+        const value = this.value;
         power_user.stscript.autocomplete.width.left = Number(value);
         // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
         /**@type {HTMLElement}*/(this.closest('.doubleRangeInputContainer')).style.setProperty('--value', value.toString());
@@ -4927,112 +4686,81 @@ jQuery(() => {
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#stscript_autocomplete_width_right').on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const value = $(this).val();
+    document.getElementById('stscript_autocomplete_width_right')?.addEventListener('input', function () {
+        const value = this.value;
         power_user.stscript.autocomplete.width.right = Number(value);
-        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
         /**@type {HTMLElement}*/(this.closest('.doubleRangeInputContainer')).style.setProperty('--value', value.toString());
         window.dispatchEvent(new Event('resize', { bubbles: true }));
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#stscript_parser_flag_strict_escaping').on('click', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const value = $(this).prop('checked');
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
+    document.getElementById('stscript_parser_flag_strict_escaping')?.addEventListener('click', function () {
+        const value = this.checked;
         power_user.stscript.parser.flags[PARSER_FLAG.STRICT_ESCAPING] = value;
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#stscript_parser_flag_replace_getvar').on('click', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const value = $(this).prop('checked');
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
+    document.getElementById('stscript_parser_flag_replace_getvar')?.addEventListener('click', function () {
+        const value = this.checked;
         power_user.stscript.parser.flags[PARSER_FLAG.REPLACE_GETVAR] = value;
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#restore_user_input').on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        power_user.restore_user_input = !!$(this).prop('checked');
+    document.getElementById('restore_user_input')?.addEventListener('input', function () {
+        power_user.restore_user_input = !!this.checked;
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#reduced_motion').on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        power_user.reduced_motion = !!$(this).prop('checked');
+    document.getElementById('reduced_motion')?.addEventListener('input', function () {
+        power_user.reduced_motion = !!this.checked;
         switchReducedMotion();
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#compact_input_area').on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        power_user.compact_input_area = !!$(this).prop('checked');
+    document.getElementById('compact_input_area')?.addEventListener('input', function () {
+        power_user.compact_input_area = !!this.checked;
         switchCompactInputArea();
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#show_swipe_num_all_messages').on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        power_user.show_swipe_num_all_messages = !!$(this).prop('checked');
+    document.getElementById('show_swipe_num_all_messages')?.addEventListener('input', function () {
+        power_user.show_swipe_num_all_messages = !!this.checked;
         switchSwipeNumAllMessages();
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#auto-connect-checkbox').on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        power_user.auto_connect = !!$(this).prop('checked');
+    document.getElementById('auto-connect-checkbox')?.addEventListener('input', function () {
+        power_user.auto_connect = !!this.checked;
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#auto-load-chat-checkbox').on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        power_user.auto_load_chat = !!$(this).prop('checked');
+    document.getElementById('auto-load-chat-checkbox')?.addEventListener('input', function () {
+        power_user.auto_load_chat = !!this.checked;
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#forbid_external_media').on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        power_user.forbid_external_media = !!$(this).prop('checked');
+    document.getElementById('forbid_external_media')?.addEventListener('input', function () {
+        power_user.forbid_external_media = !!this.checked;
         saveSettingsDebounced();
         reloadCurrentChat();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#pin_styles').on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        power_user.pin_styles = !!$(this).prop('checked');
+    document.getElementById('pin_styles')?.addEventListener('input', function () {
+        power_user.pin_styles = !!this.checked;
         saveSettingsDebounced();
         applyStylePins();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#click_to_edit').on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        power_user.click_to_edit = !!$(this).prop('checked');
+    document.getElementById('click_to_edit')?.addEventListener('input', function () {
+        power_user.click_to_edit = !!this.checked;
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#ui_preset_import_button').on('click', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#ui_preset_import_file').trigger('click');
+    document.getElementById('ui_preset_import_button')?.addEventListener('click', function () {
+        document.getElementById('ui_preset_import_file')?.click();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#ui_preset_import_file').on('change', async function () {
-        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
+    document.getElementById('ui_preset_import_file')?.addEventListener('change', async function () {
         const inputElement = this instanceof HTMLInputElement && this;
 
         try {
@@ -5040,7 +4768,6 @@ jQuery(() => {
             await importTheme(file);
         } catch (error) {
             console.error('Error importing UI theme', error);
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.error(String(error), 'Failed to import UI theme');
         } finally {
             if (inputElement) {
@@ -5049,33 +4776,27 @@ jQuery(() => {
         }
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#ui_preset_export_button').on('click', async function () {
+    document.getElementById('ui_preset_export_button')?.addEventListener('click', async function () {
         await exportTheme();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#media_display').on('input', async function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        power_user.media_display = $(this).val().toString();
+    document.getElementById('media_display')?.addEventListener('input', async function () {
+        power_user.media_display = this.value.toString();
         saveSettingsDebounced();
         if (isMediaDisplayReloadNeeded()) {
             await reloadCurrentChat();
         }
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#image_overswipe').on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        power_user.image_overswipe = $(this).val().toString();
+    document.getElementById('image_overswipe')?.addEventListener('input', function () {
+        power_user.image_overswipe = this.value.toString();
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document).on('click', '#debug_table [data-debug-function]', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const functionId = $(this).data('debug-function');
-        // @ts-expect-error TS(7005) FIXME: Variable 'debug_functions' implicitly has an 'any[... Remove this comment to see the full error message
+    document.addEventListener('click', function (e) {
+        const target = e.target.closest('#debug_table [data-debug-function]');
+        if (!target) return;
+        const functionId = target.dataset.debugFunction;
         const functionRecord = debug_functions.find(f => f.functionId === functionId);
 
         if (functionRecord) {
@@ -5085,13 +4806,11 @@ jQuery(() => {
         }
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(window).on('focus', function () {
+    window.addEventListener('focus', function () {
         browser_has_focus = true;
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(window).on('blur', function () {
+    window.addEventListener('blur', function () {
         browser_has_focus = false;
     });
 
