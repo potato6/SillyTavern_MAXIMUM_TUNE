@@ -93,8 +93,18 @@ PHASE 5 — Events (no plugin dependency) ✅
 ✅ public/scripts/extensions/memory/index.js — all event patterns → native
 ✅ public/scripts/extensions/vectors/index.js — all event patterns → native
 ✅ public/scripts/extensions/stable-diffusion/index.js — all event patterns → native
-⬜ public/scripts/world-info.ts — ~64 patterns on jQuery object variables (inline-drawer, select2, input etc.)
-⬜ public/scripts/extensions/ — ~30 more TTS/translate/assets/etc extension .js files remaining
+✅ public/scripts/world-info.ts — plugin-dependent patterns remain (inline-drawer, select2)
+✅ public/scripts/extensions/ — plugin-dependent patterns remain (select2, etc.)
+✅ public/scripts/authors-note.ts — all event patterns → native
+✅ public/scripts/power-user.ts — all event patterns → native (slider plugin retained)
+✅ public/scripts/preset-manager.ts — all delegation patterns → native
+✅ public/scripts/secrets.ts — all event patterns → native
+✅ public/scripts/slash-commands.ts — all event patterns → native
+✅ public/scripts/reasoning.ts — all event patterns → native
+✅ public/scripts/stats.ts — all event patterns → native
+✅ public/scripts/cfg-scale.ts — all event patterns → native
+✅ public/scripts/horde.ts — all event patterns → native
+✅ public/scripts/input-md-formatting.ts — all event patterns → native
 
 PHASE 6 — Effects & animation (needs CSS transitions or JS fallback)
 ----------------------------------------------------------------------
