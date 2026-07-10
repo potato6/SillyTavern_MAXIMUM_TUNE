@@ -25,7 +25,7 @@ import {
 import { power_user } from './power-user.js';
 import { getTokenCountAsync } from './tokenizers.js';
 import {
-    PAGINATION_TEMPLATE,
+    createPaginator,
     clearInfoBlock,
     debounce,
     delay,
@@ -39,8 +39,6 @@ import {
     onlyUnique,
     parseJsonFile,
     setInfoBlock,
-    localizePagination,
-    renderPaginationDropdown,
     paginationDropdownChangeHandler,
     addLongPressEvent,
     stringToRange,
@@ -100,6 +98,8 @@ export const persona_description_positions = {
 const USER_AVATAR_PATH = 'User Avatars/';
 
 let savePersonasPage = 0;
+// @ts-expect-error TS(7034) FIXME: Variable 'personaPaginator' implicitly has type 'any'.
+let personaPaginator;
 const GRID_STORAGE_KEY = 'Personas_GridView';
 const DEFAULT_DEPTH = 2;
 const DEFAULT_ROLE = 0;
@@ -341,60 +341,47 @@ export async function getUserAvatars(doRender = true, openPageAt = '') {
         entities = sortPersonas(entities);
 
         const storageKey = 'Personas_PerPage';
-        const listId = '#user_avatar_block';
+        const listId = document.getElementById('user_avatar_block');
         const perPage = Number(accountStorage.getItem(storageKey)) || 5;
         const sizeChangerOptions = [5, 10, 25, 50, 100, 250, 500, 1000];
 
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#persona_pagination_container').pagination({
-            dataSource: entities,
-            pageSize: perPage,
-            sizeChangerOptions,
-            pageRange: 1,
-            pageNumber: savePersonasPage || 1,
-            position: 'top',
-            showPageNumbers: false,
-            showSizeChanger: true,
-            formatSizeChanger: renderPaginationDropdown(perPage, sizeChangerOptions),
-            prevText: '<',
-            nextText: '>',
-            formatNavigator: PAGINATION_TEMPLATE,
-            showNavigator: true,
-            // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
-            callback: function (data) {
-                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                $(listId).empty();
-                for (const item of data) {
-                    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                    $(listId).append(getUserAvatarBlock(item));
-                }
-                updatePersonaUIStates();
-                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                localizePagination($('#persona_pagination_container'));
-            },
-            // @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
-            afterSizeSelectorChange: function (e, size) {
-                accountStorage.setItem(storageKey, e.target.value);
-                paginationDropdownChangeHandler(e, size);
-            },
-            // @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
-            afterPaging: function (e) {
-                savePersonasPage = e;
-            },
-            afterRender: function () {
-                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                $(listId).scrollTop(0);
-            },
-        });
+        const pagContainer = document.getElementById('persona_pagination_container');
+        if (pagContainer) {
+            personaPaginator = createPaginator(pagContainer, {
+                dataSource: entities,
+                pageSize: perPage,
+                pageNumber: savePersonasPage || 1,
+                showSizeChanger: true,
+                sizeChangerOptions,
+                showNavigator: true,
+                prevText: '<',
+                nextText: '>',
+                // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
+                callback: function (data) {
+                    if (listId) {
+                        listId.innerHTML = '';
+                        for (const item of data) {
+                            listId.append(getUserAvatarBlock(item));
+                        }
+                    }
+                    updatePersonaUIStates();
+                },
+                // @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
+                onPageSizeChange: function (e, size) {
+                    accountStorage.setItem(storageKey, e.target.value);
+                    paginationDropdownChangeHandler(e, size);
+                },
+            });
+        }
 
         // @ts-expect-error TS(2322) FIXME: Type '(avatarId: any) => void' is not assignable t... Remove this comment to see the full error message
         navigateToAvatar = (avatarId) => {
             const avatarIndex = entities.indexOf(avatarId);
             const page = Math.floor(avatarIndex / perPage) + 1;
 
-            if (avatarIndex !== -1) {
-                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                $('#persona_pagination_container').pagination('go', page);
+            // @ts-expect-error TS(7005) FIXME: Variable 'personaPaginator' implicitly has an 'any' type.
+            if (avatarIndex !== -1 && personaPaginator) {
+                personaPaginator.go(page);
             }
         };
 
