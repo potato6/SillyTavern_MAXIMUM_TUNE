@@ -357,11 +357,11 @@ function loadNovelSettingsUi(ui_settings) {
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     document.getElementById('rep_pen_size_novel').value = ui_settings.repetition_penalty_range;
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('rep_pen_size_counter_novel').value = Number(ui_settings.repetition_penalty_range.toFixed(0));
+    document.getElementById('rep_pen_size_counter_novel').value = Number(ui_settings.repetition_penalty_range).toFixed(0);
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     document.getElementById('rep_pen_slope_novel').value = ui_settings.repetition_penalty_slope;
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('rep_pen_slope_counter_novel').value = Number(`${ui_settings.repetition_penalty_slope}`.toFixed(2));
+    document.getElementById('rep_pen_slope_counter_novel').value = Number(ui_settings.repetition_penalty_slope).toFixed(2);
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     document.getElementById('rep_pen_freq_novel').value = ui_settings.repetition_penalty_frequency;
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
