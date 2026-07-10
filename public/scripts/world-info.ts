@@ -64,9 +64,9 @@ export const scan_state = {
 };
 
 // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-const WI_ENTRY_HEADER_TEMPLATE = $('#entry_edit_template .world_entry');
+const WI_ENTRY_HEADER_TEMPLATE = /** @type {HTMLElement} */ (document.querySelector('#entry_edit_template .world_entry'));
 // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-const WI_ENTRY_EDIT_TEMPLATE = $('#entry_edit_template .world_entry_edit');
+const WI_ENTRY_EDIT_TEMPLATE = /** @type {HTMLElement} */ (document.querySelector('#entry_edit_template .world_entry_edit'));
 
 export let world_info = {};
 export let selected_world_info = [];
@@ -3808,7 +3808,7 @@ function setCommentPlaceholder(keys, commentInput) {
 export async function getWorldEntry(name, data, entry) {
     if (!data.entries[entry.uid]) return;
 
-    const headerTemplate = WI_ENTRY_HEADER_TEMPLATE.clone();
+    const headerTemplate = WI_ENTRY_HEADER_TEMPLATE?.cloneNode(true);
     headerTemplate.data('uid', entry.uid);
     headerTemplate.attr('uid', entry.uid);
 
@@ -4033,7 +4033,7 @@ export async function getWorldEntry(name, data, entry) {
      *
      */
     function addEditorDrawerContent() {
-        const editTemplate = WI_ENTRY_EDIT_TEMPLATE.clone();
+        const editTemplate = WI_ENTRY_EDIT_TEMPLATE?.cloneNode(true);
 
         // UID display
         editTemplate.find('.world_entry_form_uid_value').text(`(UID: ${entry.uid})`);
