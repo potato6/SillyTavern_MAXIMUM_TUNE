@@ -413,7 +413,7 @@ export function initDefaultSlashCommands() {
                 }
 
                 // Prevent generate recursion
-                $('#send_textarea').val('')[0].dispatchEvent(new Event('input', { bubbles: true }));
+                const ta = document.querySelector('#send_textarea') as HTMLTextAreaElement; ta.value = ''; ta.dispatchEvent(new Event('input', { bubbles: true }));
 
                 outerResolve(new Promise(innerResolve => setTimeout(() => innerResolve(Generate('impersonate', options)), 1)));
             }, 1));
@@ -3454,7 +3454,7 @@ export function initDefaultSlashCommands() {
             // @ts-expect-error TS(2345) FIXME: Argument of type 'number' is not assignable to par... Remove this comment to see the full error message
             await showMoreMessages(number && !isNaN(Number(number)) ? Number(number) : Number.MAX_SAFE_INTEGER);
             if (isTrueBoolean(String(args?.scroll ?? ''))) {
-                $('#chat').scrollTop(0);
+                document.querySelector('#chat').scrollTop = 0;
             }
             return '';
         },
@@ -3781,7 +3781,7 @@ export function initDefaultSlashCommands() {
 
             // 'none' value must be coerced to an empty string
             oai_settings.custom_prompt_post_processing = stringValue === 'none' ? '' : stringValue;
-            $('#custom_prompt_post_processing').val(oai_settings.custom_prompt_post_processing);
+            /** @type {HTMLInputElement} */ (document.querySelector('#custom_prompt_post_processing')).value = oai_settings.custom_prompt_post_processing;
             saveSettingsDebounced();
 
             return oai_settings.custom_prompt_post_processing;
@@ -4164,7 +4164,7 @@ export function processChatSlashCommands() {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
 function setInputCallback(_, value) {
-    $('#send_textarea').val(value || '')[0].dispatchEvent(new Event('input', { bubbles: true }));
+    const ta = document.querySelector('#send_textarea') as HTMLTextAreaElement; ta.value = value || ''; ta.dispatchEvent(new Event('input', { bubbles: true }));
     return value;
 }
 
@@ -4754,7 +4754,7 @@ async function generateRawCallback(args, value) {
     }
 
     // Prevent generate recursion
-    $('#send_textarea').val('')[0].dispatchEvent(new Event('input', { bubbles: true }));
+    const ta = document.querySelector('#send_textarea') as HTMLTextAreaElement; ta.value = ''; ta.dispatchEvent(new Event('input', { bubbles: true }));
     const lock = isTrueBoolean(args?.lock);
     const as = args?.as || 'system';
     const quietToLoud = as === 'char';
@@ -4804,7 +4804,7 @@ async function generateRawCallback(args, value) {
 // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
 async function generateCallback(args, value) {
     // Prevent generate recursion
-    $('#send_textarea').val('')[0].dispatchEvent(new Event('input', { bubbles: true }));
+    const ta = document.querySelector('#send_textarea') as HTMLTextAreaElement; ta.value = ''; ta.dispatchEvent(new Event('input', { bubbles: true }));
     const lock = isTrueBoolean(args?.lock);
     const trim = isTrueBoolean(args?.trim?.toString());
     const as = args?.as || 'system';
@@ -5054,7 +5054,7 @@ async function deleteSwipeCallback(_, arg) {
 // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
 async function askCharacter(args, text) {
     // Prevent generate recursion
-    $('#send_textarea').val('')[0].dispatchEvent(new Event('input', { bubbles: true }));
+    const ta = document.querySelector('#send_textarea') as HTMLTextAreaElement; ta.value = ''; ta.dispatchEvent(new Event('input', { bubbles: true }));
 
     // Not supported in group chats
     // TODO: Maybe support group chats?
@@ -5202,10 +5202,12 @@ function performGroupMemberAction(chid, action) {
     let paginationValue = null;
     let pageValue = null;
 
-    if ($(memberSelector).length === 0) {
+    if (!document.querySelector(memberSelector)) {
         wasOffscreen = true;
-        paginationValue = Number($(pageSizeSelector).val());
-        pageValue = $(paginationSelector).pagination('getCurrentPageNum');
+        paginationValue = Number((/** @type {HTMLSelectElement} */ (document.querySelector(pageSizeSelector))).value);
+        const paginationEl = document.querySelector(paginationSelector);
+        const activePage = paginationEl?.querySelector('.paginationjs-page.active');
+        pageValue = activePage ? Number(activePage.getAttribute('data-num')) : 1;
 
         const pageSizeEl = document.querySelector(pageSizeSelector) as HTMLSelectElement;
         const lastOption = pageSizeEl?.querySelector('option:last-of-type') as HTMLOptionElement;
@@ -5225,8 +5227,11 @@ function performGroupMemberAction(chid, action) {
             pageSizeEl.value = String(paginationValue);
             pageSizeEl.dispatchEvent(new Event('change'));
         }
-        if ($(paginationSelector).length) {
-            $(paginationSelector).pagination('go', pageValue);
+        if (document.querySelector(paginationSelector)) {
+            const pageLink = document.querySelector(paginationSelector)?.querySelector(`.J-paginationjs-page[data-num="${pageValue}"]`);
+            if (pageLink) {
+                pageLink.click();
+            }
         }
     }
 }
@@ -5462,7 +5467,7 @@ async function triggerGenerationCallback(args, value) {
         }
 
         // Prevent generate recursion
-        $('#send_textarea').val('')[0].dispatchEvent(new Event('input', { bubbles: true }));
+        const ta = document.querySelector('#send_textarea') as HTMLTextAreaElement; ta.value = ''; ta.dispatchEvent(new Event('input', { bubbles: true }));
 
         let chid = undefined;
 
@@ -6171,7 +6176,7 @@ async function continueChatCallback(args, prompt) {
 
         try {
             // Prevent infinite recursion
-            $('#send_textarea').val('')[0].dispatchEvent(new Event('input', { bubbles: true }));
+            const ta = document.querySelector('#send_textarea') as HTMLTextAreaElement; ta.value = ''; ta.dispatchEvent(new Event('input', { bubbles: true }));
 
             const options = prompt?.trim() ? { quiet_prompt: prompt.trim(), quietToLoud: true } : {};
             await Generate('continue', options);
@@ -6268,7 +6273,7 @@ async function swipeChatCallback(args) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
 export async function generateSystemMessage(args, prompt) {
-    $('#send_textarea').val('')[0].dispatchEvent(new Event('input', { bubbles: true }));
+    const ta = document.querySelector('#send_textarea') as HTMLTextAreaElement; ta.value = ''; ta.dispatchEvent(new Event('input', { bubbles: true }));
 
     if (!prompt) {
         console.warn('WARN: No prompt provided for /sysgen command');
@@ -6458,8 +6463,8 @@ async function messageRoleCallback(args, role) {
     message.is_user = role === 'user';
 
     await eventSource.emit(event_types.MESSAGE_EDITED, modifyAt);
-    const existingMessage = $(chatElement[0].querySelector(`.mes[mesid="${modifyAt}"]`));
-    if (existingMessage.length) {
+    const existingMessage = chatElement?.querySelector(`.mes[mesid="${modifyAt}"]`);
+    if (existingMessage) {
         const newMessageElement = updateMessageElement(message, { messageId: modifyAt });
         existingMessage.after(newMessageElement);
         existingMessage.remove();
@@ -6539,8 +6544,8 @@ async function messageNameCallback(args, name) {
     }
 
     await eventSource.emit(event_types.MESSAGE_EDITED, modifyAt);
-    const existingMessage = $(chatElement[0].querySelector(`.mes[mesid="${modifyAt}"]`));
-    if (existingMessage.length) {
+    const existingMessage = chatElement?.querySelector(`.mes[mesid="${modifyAt}"]`);
+    if (existingMessage) {
         const newMessageElement = updateMessageElement(message, { messageId: modifyAt });
         existingMessage.after(newMessageElement);
         existingMessage.remove();
