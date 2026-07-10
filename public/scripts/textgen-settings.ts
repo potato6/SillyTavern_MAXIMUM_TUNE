@@ -1270,10 +1270,8 @@ export function initTextGenSettings() {
  */
 function showSamplerControls(apiType = null) {
     document.querySelectorAll('#textgenerationwebui_api-settings [data-tg-samplers], #textgenerationwebui_api [data-tg-samplers]').forEach(el => {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const typeSpecificControlled = $(el).data('tg-type') !== undefined;
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        if (!typeSpecificControlled) $(el).show();
+        const typeSpecificControlled = (el as HTMLElement).dataset.tgType !== undefined;
+        if (!typeSpecificControlled) (el as HTMLElement).style.display = '';
     });
 
     showTypeSpecificControls(apiType ?? textgenerationwebui_settings.type);
@@ -1289,12 +1287,10 @@ function showSamplerControls(apiType = null) {
 
         for (const tgSampler of tgSamplers) {
             if (samplersActivatedManually.includes(tgSampler)) {
-                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                $(el).show();
+                (el as HTMLElement).style.display = '';
                 return;
             } else {
-                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                $(el).hide();
+                (el as HTMLElement).style.display = 'none';
             }
         }
     });
@@ -1312,19 +1308,16 @@ function showTypeSpecificControls(apiType) {
         const tgTypes = el.getAttribute('data-tg-type').split(',').map(x => x.trim());
 
         if (mode === 'except') {
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(el)[tgTypes.includes(apiType) ? 'hide' : 'show']();
+            (el as HTMLElement).style.display = tgTypes.includes(apiType) ? 'none' : '';
             return;
         }
 
         for (const tgType of tgTypes) {
             if (tgType === apiType || tgType == 'all') {
-                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                $(el).show();
+                (el as HTMLElement).style.display = '';
                 return;
             } else {
-                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                $(el).hide();
+                (el as HTMLElement).style.display = 'none';
             }
         }
     });
