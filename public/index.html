@@ -8248,7 +8248,7 @@ siblings(s){return[...el.parentElement.children].filter(c=>c!==el)},parent(){ret
 scrollTop(v){return v===void 0?el.scrollTop:(el.scrollTop=v,el)},
 position(){var r=el.getBoundingClientRect();return{top:r.top,left:r.left}},
 is(s){return el.matches(s)},get(i){return i===void 0?el:el},toArray(){return[el]},
-length:1});};window.jQuery=$;</script>
+});try{Object.defineProperty(el,'length',{get(){return 1}})}catch(e){};window.jQuery=$;</script>
     <script src="lib/cropper.min.js"></script>
     <script src="lib/toastr.min.js"></script>
     <script src="lib/toolcool-color-picker.js"></script>
