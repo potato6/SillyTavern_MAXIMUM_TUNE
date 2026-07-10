@@ -1,3 +1,5 @@
+declare const TomSelect: any;
+
 import { Fuse } from '../lib.js';
 
 import { saveSettings, substituteParams, getRequestHeaders, chat_metadata, this_chid, characters, saveCharacterDebounced, menu_type, eventSource, event_types, getExtensionPromptByName, saveMetadata, getCurrentChatId, extension_prompt_roles, create_save, createOrEditCharacter, name1, getOneCharacter, select_selected_character } from '../script.js';
@@ -4531,46 +4533,47 @@ function getOutletNameCallback(data) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'input' implicitly has an 'any' type.
 function createEntryInputAutocomplete(input, callback, { allowMultiple = false } = {}) {
-    // @ts-expect-error TS(7006) FIXME: Parameter 'event' implicitly has an 'any' type.
-    const handleSelect = (event, ui) => {
-        // Prevent default autocomplete select, so we can manually set the value
-        event.preventDefault();
+    const onValueChange = () => {
+        const value = input.tomSelect.getValue();
         if (!allowMultiple) {
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(input).val(ui.item.value).trigger('input').trigger('blur');
+            $(input).val(value).trigger('input').trigger('blur');
         } else {
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const terms = String($(input).val()).split(/,\s*/);
-            terms.pop(); // remove the current input
-            terms.push(ui.item.value); // add the selected item
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(input).val(terms.filter(x => x).join(', ')).trigger('input').trigger('blur');
+            $(input).val(Array.isArray(value) ? value.join(', ') : '').trigger('input').trigger('blur');
         }
     };
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(input).autocomplete({
+    input.tomSelect = new TomSelect(input, {
+        maxItems: allowMultiple ? null : 1,
+        create: false,
         minLength: 0,
-        // @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
-        source: function (request, response) {
-            if (!allowMultiple) {
-                callback(input, request, response);
-            } else {
-                const term = request.term.split(/,\s*/).pop();
-                request.term = term;
-                callback(input, request, response);
+        valueField: 'value',
+        labelField: 'label',
+        searchField: ['label'],
+        // @ts-expect-error TS(7006) FIXME: Parameter 'query' implicitly has an 'any' type.
+        load: function (query, loadCallback) {
+            // @ts-expect-error TS(7006) FIXME: Parameter 'results' implicitly has an 'any' type.
+            callback(input, { term: query }, function (results) {
+                // @ts-expect-error TS(7006) FIXME: Parameter 's' implicitly has an 'any' type.
+                loadCallback(results.map(s => ({ value: s, label: s })));
+            });
+        },
+        onChange: function () {
+            onValueChange();
+        },
+        onItemRemove: function () {
+            if (allowMultiple) {
+                onValueChange();
             }
         },
-        select: handleSelect,
     });
 
     input.addEventListener('focus', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(input).autocomplete('search', allowMultiple ? String($(input).val()).split(/,\s*/).pop() : String($(input).val()));
+        input.tomSelect.open();
     });
     input.addEventListener('click', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(input).autocomplete('search', allowMultiple ? String($(input).val()).split(/,\s*/).pop() : String($(input).val()));
+        input.tomSelect.open();
     });
 }
 
@@ -7254,12 +7257,10 @@ export function initWorldInfo() {
 
     (document.getElementById('WorldInfo') as HTMLElement).addEventListener('scroll', () => {
         document.querySelectorAll('.world_entry input[name="group"], .world_entry input[name="automationId"]').forEach(el => {
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const instance = $(el).autocomplete('instance');
-
-            if (instance !== undefined) {
-                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                $(el).autocomplete('close');
+            // @ts-expect-error TS(2339) FIXME: Property 'tomSelect' does not exist on type 'Element'.
+            if (el.tomSelect) {
+                // @ts-expect-error TS(2339) FIXME: Property 'tomSelect' does not exist on type 'Element'.
+                el.tomSelect.close();
             }
         });
     });
