@@ -590,41 +590,42 @@ function onANMenuItemClick() {
     }
 
     //show AN if it's hidden
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const $ANcontainer = $('#floatingPrompt');
-    if ($ANcontainer.css('display') !== 'flex') {
-        $ANcontainer.addClass('resizing');
-        $ANcontainer.css('display', 'flex');
-        $ANcontainer.css('opacity', 0.0);
-        $ANcontainer.transition({
-            opacity: 1.0,
+    const anContainer = document.getElementById('floatingPrompt');
+    if (anContainer && anContainer.style.display !== 'flex') {
+        anContainer.classList.add('resizing');
+        anContainer.style.display = 'flex';
+        anContainer.style.opacity = '0';
+        const anim = anContainer.animate([{ opacity: 0 }, { opacity: 1 }], {
             duration: animation_duration,
-        }, async function () {
-            await delay(50);
-            $ANcontainer.removeClass('resizing');
+            fill: 'forwards',
         });
+        anim.onfinish = async function () {
+            await delay(50);
+            anContainer.classList.remove('resizing');
+        };
 
         //auto-open the main AN inline drawer
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        if ($('#ANBlockToggle')
-            .siblings('.inline-drawer-content')
-            .css('display') !== 'block') {
-            $ANcontainer.addClass('resizing');
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#ANBlockToggle').trigger('click');
+        if (document.getElementById('ANBlockToggle')
+            ?.closest('.inline-drawer-content')
+            ?.style.display !== 'block') {
+            anContainer?.classList.add('resizing');
+            document.getElementById('ANBlockToggle')?.click();
         }
     } else {
         //hide AN if it's already displayed
-        $ANcontainer.addClass('resizing');
-        $ANcontainer.transition({
-            opacity: 0.0,
-            duration: animation_duration,
-        }, async function () {
-            await delay(50);
-            $ANcontainer.removeClass('resizing');
-        });
+        if (anContainer) {
+            anContainer.classList.add('resizing');
+            const anim = anContainer.animate([{ opacity: 1 }, { opacity: 0 }], {
+                duration: animation_duration,
+                fill: 'forwards',
+            });
+            anim.onfinish = async function () {
+                await delay(50);
+                anContainer.classList.remove('resizing');
+            };
+        }
         setTimeout(function () {
-            $ANcontainer.hide();
+            if (anContainer) anContainer.style.display = 'none';
         }, animation_duration);
     }
 
@@ -702,11 +703,14 @@ export function initAuthorsNote() {
     document.querySelector('input[name="extension_default_position"]')?.addEventListener('change', onDefaultPositionInput);
     document.querySelector('input[name="extension_floating_char_position"]')?.addEventListener('change', onExtensionFloatingCharPositionInput);
     document.getElementById('ANClose')?.addEventListener('click', function () {
-        $('#floatingPrompt').transition({
-            opacity: 0,
-            duration: animation_duration,
-            easing: 'ease-in-out',
-        });
+        const fp = document.getElementById('floatingPrompt');
+        if (fp) {
+            fp.animate([{ opacity: 1 }, { opacity: 0 }], {
+                duration: animation_duration,
+                easing: 'ease-in-out',
+                fill: 'forwards',
+            });
+        }
         setTimeout(function () { $('#floatingPrompt').hide(); }, animation_duration);
     });
     document.getElementById('option_toggle_AN')?.addEventListener('click', onANMenuItemClick);

@@ -137,16 +137,20 @@ function onCfgMenuItemClick() {
     }
 
     if ($('#cfgConfig').css('display') !== 'flex') {
-        $('#cfgConfig').addClass('resizing');
-        $('#cfgConfig').css('display', 'flex');
-        $('#cfgConfig').css('opacity', 0.0);
-        $('#cfgConfig').transition({
-            opacity: 1.0,
-            duration: animation_duration,
-        }, async function () {
-            await delay(50);
-            $('#cfgConfig').removeClass('resizing');
-        });
+        const cfgEl = document.getElementById('cfgConfig');
+        if (cfgEl) {
+            cfgEl.classList.add('resizing');
+            cfgEl.style.display = 'flex';
+            cfgEl.style.opacity = '0';
+            const anim = cfgEl.animate([{ opacity: 0 }, { opacity: 1 }], {
+                duration: animation_duration,
+                fill: 'forwards',
+            });
+            anim.onfinish = async function () {
+                await delay(50);
+                cfgEl.classList.remove('resizing');
+            };
+        }
 
         if ($('#CFGBlockToggle')
             .siblings('.inline-drawer-content')
@@ -155,16 +159,21 @@ function onCfgMenuItemClick() {
             document.getElementById('CFGBlockToggle')?.click();
         }
     } else {
-        $('#cfgConfig').addClass('resizing');
-        $('#cfgConfig').transition({
-            opacity: 0.0,
-            duration: animation_duration,
-        }, async function () {
-            await delay(50);
-            $('#cfgConfig').removeClass('resizing');
-        });
+        const cfgEl = document.getElementById('cfgConfig');
+        if (cfgEl) {
+            cfgEl.classList.add('resizing');
+            const anim = cfgEl.animate([{ opacity: 1 }, { opacity: 0 }], {
+                duration: animation_duration,
+                fill: 'forwards',
+            });
+            anim.onfinish = async function () {
+                await delay(50);
+                cfgEl.classList.remove('resizing');
+            };
+        }
         setTimeout(function () {
-            $('#cfgConfig').hide();
+            const cfgEl = document.getElementById('cfgConfig');
+            if (cfgEl) cfgEl.style.display = 'none';
         }, animation_duration);
     }
     const el = document.getElementById('options');
@@ -318,12 +327,18 @@ export function initCfg() {
     const _ext = extension_settings as any;
 
     document.getElementById('CFGClose')?.addEventListener('click', function () {
-        $('#cfgConfig').transition({
-            opacity: 0,
-            duration: animation_duration,
-            easing: 'ease-in-out',
-        });
-        setTimeout(function () { $('#cfgConfig').hide(); }, animation_duration);
+        const cfgEl = document.getElementById('cfgConfig');
+        if (cfgEl) {
+            cfgEl.animate([{ opacity: 1 }, { opacity: 0 }], {
+                duration: animation_duration,
+                easing: 'ease-in-out',
+                fill: 'forwards',
+            });
+        }
+        setTimeout(function () { 
+            const cfgEl = document.getElementById('cfgConfig');
+            if (cfgEl) cfgEl.style.display = 'none';
+        }, animation_duration);
     });
 
     document.getElementById('chat_cfg_guidance_scale')?.addEventListener('input', function (this: HTMLInputElement) {
