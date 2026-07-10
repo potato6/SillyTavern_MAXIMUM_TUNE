@@ -8231,7 +8231,8 @@
     <script src="lib/polyfill.js"></script>
 <script>
 // micro-$ polyfill
-var $=function(s){if(typeof s==='function'){document.addEventListener('DOMContentLoaded',s);return}
+window.$=function(s){if(typeof s==='function'){document.addEventListener('DOMContentLoaded',s);return}
+$.extend=function(){var t={};for(var i=1;i<arguments.length;i++){var a=arguments[i];for(var k in a){if(a.hasOwnProperty(k))t[k]=a[k]}}return t};$.each=function(a,f){if(Array.isArray(a)){for(var i=0;i<a.length;i++){if(f.call(a[i],i,a[i])===false)break}}else{for(var k in a){if(f.call(a[k],k,a[k])===false)break}}return a};
 var D={on:function(){return D},val:function(){return''},prop:function(){return D},css:function(){return D},
 text:function(){return''},html:function(){return''},show:function(){return D},hide:function(){return D},
 toggle:function(){return D},empty:function(){return D},remove:function(){},addClass:function(){return D},
