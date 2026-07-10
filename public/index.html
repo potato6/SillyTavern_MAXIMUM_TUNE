@@ -8236,11 +8236,12 @@
     <script type="module" src="lib/eventemitter.js"></script>
     <script type="module" src="scripts/i18n.js"></script>
     <script>
-        window.addEventListener('load', (event) => {
-                const doc = document.documentElement;
-            }
-            window.addEventListener('resize', documentHeight);
-            documentHeight();
+        function onPageLoaded() {
+            const doc = document.documentElement;
+        }
+        window.addEventListener('load', onPageLoaded);
+        window.addEventListener('resize', documentHeight);
+        window.addEventListener('load', documentHeight);
     </script>
 <script src="lib/tom-select.min.js"></script>
 <script src="lib/sortablejs.min.js"></script>
