@@ -809,8 +809,9 @@ export function initBookmarks() {
             return;
         }
 
-        const fileName = el.classList.contains('mes_bookmark')
-            ? el.closest('.mes').getAttribute('bookmark_link')
+        const mesElement = el.classList.contains('mes_bookmark') ? el.closest('.mes') : null;
+        const fileName = mesElement
+            ? mesElement.getAttribute('bookmark_link')
             : el.getAttribute('file_name');
 
         if (!fileName) {

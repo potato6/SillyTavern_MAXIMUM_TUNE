@@ -4567,8 +4567,11 @@ function createEntryInputAutocomplete(input, callback, { allowMultiple = false }
         select: handleSelect,
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(input).on('focus click', function () {
+    input.addEventListener('focus', function () {
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        $(input).autocomplete('search', allowMultiple ? String($(input).val()).split(/,\s*/).pop() : String($(input).val()));
+    });
+    input.addEventListener('click', function () {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(input).autocomplete('search', allowMultiple ? String($(input).val()).split(/,\s*/).pop() : String($(input).val()));
     });
