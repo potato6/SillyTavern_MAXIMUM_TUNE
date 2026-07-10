@@ -154,7 +154,7 @@ async function openSwipePicker(messageId) {
         const swipeBlocks = await Promise.all(message.swipes.map(async (swipe, index) => {
             const swipeText = String(swipe ?? '');
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const template = $('#past_chat_template .select_chat_block_wrapper').clone();
+                        const template = document.querySelector('#past_chat_template .select_chat_block_wrapper').cloneNode(true);
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const block = template.querySelector('.select_chat_block');
             block.removeClass('select_chat_block').classList.add('swipe_picker_block');

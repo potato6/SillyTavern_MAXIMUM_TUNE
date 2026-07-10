@@ -256,8 +256,8 @@ function showHideExtensionsMenu() {
     }
 
     // Show or hide the menu button
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#extensionsMenuButton').toggle(hasMenuItems);
+    const menuButton = document.getElementById('extensionsMenuButton');
+    if (menuButton) menuButton.style.display = hasMenuItems ? '' : 'none';
 }
 
 // Periodically check for new extensions
@@ -345,8 +345,7 @@ async function discoverExtensions() {
  *
  */
 function onDisableExtensionClick() {
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const name = $(this).data('name');
+    const name = this.dataset.name;
     disableExtension(name, false);
 }
 
@@ -354,8 +353,7 @@ function onDisableExtensionClick() {
  *
  */
 function onEnableExtensionClick() {
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const name = $(this).data('name');
+    const name = this.dataset.name;
     enableExtension(name, false);
 }
 
@@ -410,12 +408,13 @@ function onToggleAllExtensions(extensionsToToggle, toggleContainer) {
                 extensionsToToggle.push({ name, toggleHandler, enable });
             }
 
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(toggleContainer[0]?.querySelector(`.extension_block[data-name="${getNameSelector(name)}"] .extension_toggle input`))
-                .prop('checked', enable)
-                .toggleClass('toggle_enable', !enable)
-                .toggleClass('toggle_disable', enable)
-                .toggleClass('checkbox_disabled', !enable);
+            const toggleEl = toggleContainer.querySelector(`.extension_block[data-name="${getNameSelector(name)}"] .extension_toggle input`);
+            if (toggleEl) {
+                toggleEl.checked = enable;
+                toggleEl.classList.toggle('toggle_enable', !enable);
+                toggleEl.classList.toggle('toggle_disable', enable);
+                toggleEl.classList.toggle('checkbox_disabled', !enable);
+            }
         }
     }
 
@@ -723,19 +722,16 @@ async function activateExtensions() {
     }
 
     await Promise.allSettled(promises);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#extensions_details').toggleClass('warning', extensionLoadErrors.size > 0);
+    document.getElementById('extensions_details')?.classList.toggle('warning', extensionLoadErrors.size > 0);
 }
 
 /**
  *
  */
 async function connectClickHandler() {
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const baseUrl = String($('#extensions_url').val());
+    const baseUrl = String(document.getElementById('extensions_url')?.value ?? '');
     extension_settings.apiUrl = baseUrl;
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const testApiKey = $('#extensions_api_key').val();
+    const testApiKey = document.getElementById('extensions_api_key')?.value ?? '';
     extension_settings.apiKey = String(testApiKey);
     saveSettingsDebounced();
     await connectToApi(baseUrl);
@@ -745,13 +741,11 @@ async function connectClickHandler() {
  *
  */
 function autoConnectInputHandler() {
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const value = $(this).prop('checked');
+    const value = this.checked;
     extension_settings.autoConnect = !!value;
 
     if (value && !connectedToApi) {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#extensions_connect').trigger('click');
+        document.getElementById('extensions_connect')?.click();
     }
 
     saveSettingsDebounced();
@@ -804,8 +798,7 @@ async function addExtensionsButtonAndMenu() {
  *
  */
 function notifyUpdatesInputHandler() {
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    extension_settings.notifyUpdates = !!$('#extensions_notify_updates').prop('checked');
+    extension_settings.notifyUpdates = !!(document.getElementById('extensions_notify_updates')?.checked ?? false);
     saveSettingsDebounced();
 
     if (extension_settings.notifyUpdates) {
@@ -852,10 +845,11 @@ function updateStatus(success) {
     connectedToApi = success;
     const _text = success ? t`Connected to API` : t`Could not connect to API`;
     const _class = success ? 'success' : 'failure';
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#extensions_status').text(_text);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#extensions_status').attr('class', _class);
+    const statusEl = document.getElementById('extensions_status');
+    if (statusEl) {
+        statusEl.textContent = _text;
+        statusEl.className = _class;
+    }
 }
 
 /**
@@ -874,8 +868,7 @@ function addExtensionStyle(name, manifest) {
         const url = `/scripts/extensions/${name}/${manifest.css}`;
         const id = sanitizeSelector(`${name}-css`);
 
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        if ($(`link[id="${id}"]`).length === 0) {
+        if (!document.querySelector(`link[id="${id}"]`)) {
             const link = document.createElement('link');
             link.id = id;
             link.rel = 'stylesheet';
@@ -910,8 +903,7 @@ function addExtensionScript(name, manifest) {
         const id = sanitizeSelector(`${name}-js`);
         let ready = false;
 
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        if ($(`script[id="${id}"]`).length === 0) {
+        if (!document.querySelector(`script[id="${id}"]`)) {
             const script = document.createElement('script');
             script.id = id;
             script.type = 'module';
@@ -1317,7 +1309,7 @@ async function showExtensionsDetails() {
 
             toggleAllExtensionsButton.addEventListener('click', () => {
                 // @ts-expect-error TS(7005) FIXME: Variable 'extensionsToToggle' implicitly has an 'a... Remove this comment to see the full error message
-                extensionsToToggle = onToggleAllExtensions(extensionsToToggle, $(externalContainer));
+                extensionsToToggle = onToggleAllExtensions(extensionsToToggle, externalContainer);
 
                 for (const extension of extensionsToToggle) {
                     const { name } = extension;
@@ -1342,12 +1334,12 @@ async function showExtensionsDetails() {
                     const isDisabled = extension_settings.disabledExtensions.includes(name);
 
                     const toggleInput = externalContainer.querySelector(`.extension_block[data-name="${getNameSelector(name)}"] .extension_toggle input`);
-                    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                    $(toggleInput)
-                        .prop('checked', !isDisabled)
-                        .toggleClass('toggle_enable', isDisabled)
-                        .toggleClass('toggle_disable', !isDisabled)
-                        .toggleClass('checkbox_disabled', isDisabled);
+                    if (toggleInput) {
+                        toggleInput.checked = !isDisabled;
+                        toggleInput.classList.toggle('toggle_enable', isDisabled);
+                        toggleInput.classList.toggle('toggle_disable', !isDisabled);
+                        toggleInput.classList.toggle('checkbox_disabled', isDisabled);
+                    }
                 }
 
                 extensionsToToggle = [];
@@ -1445,8 +1437,7 @@ async function showExtensionsDetails() {
  */
 async function onUpdateClick() {
     const isCurrentUserAdmin = isAdmin();
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const extensionName = $(this).data('name');
+    const extensionName = this.dataset.name;
     const isGlobal = getExtensionType(extensionName) === 'global';
     if (isGlobal && !isCurrentUserAdmin) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
@@ -1454,12 +1445,11 @@ async function onUpdateClick() {
         return;
     }
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const icon = $(this.querySelector('i'));
-    icon.addClass('fa-spin');
+    const icon = this.querySelector('i');
+    icon?.classList.add('fa-spin');
     await updateExtension(extensionName, false);
     // updateExtension eats the error, but we can at least stop the spinner
-    icon.removeClass('fa-spin');
+    icon?.classList.remove('fa-spin');
 }
 
 /**
@@ -1520,8 +1510,7 @@ async function updateExtension(extensionName, quiet, timeout = null) {
  * If the extension has a 'clean' hook, an optional checkbox to also run the cleanup is shown.
  */
 async function onDeleteClick() {
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const extensionName = $(this).data('name');
+    const extensionName = this.dataset.name;
     const isCurrentUserAdmin = isAdmin();
     const isGlobal = getExtensionType(extensionName) === 'global';
     if (isGlobal && !isCurrentUserAdmin) {
@@ -1549,8 +1538,7 @@ async function onDeleteClick() {
  * Runs the extension's 'clean' hook after user confirmation, then reloads the page.
  */
 async function onCleanClick() {
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const extensionName = $(this).data('name');
+    const extensionName = this.dataset.name;
 
     const confirmation = await Popup.show.confirm(t`Clean extension data`, t`Are you sure you want to clean up data for ${escapeHtml(extensionName)}? This action cannot be undone.`);
     if (!confirmation) {
@@ -1582,8 +1570,7 @@ async function cleanExtension(extensionName) {
  *
  */
 async function onBranchClick() {
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const extensionName = $(this).data('name');
+    const extensionName = this.dataset.name;
     const isCurrentUserAdmin = isAdmin();
     const isGlobal = getExtensionType(extensionName) === 'global';
     if (isGlobal && !isCurrentUserAdmin) {
@@ -1625,8 +1612,7 @@ async function onBranchClick() {
  *
  */
 async function onMoveClick() {
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const extensionName = $(this).data('name');
+    const extensionName = this.dataset.name;
     const isCurrentUserAdmin = isAdmin();
     const isGlobal = getExtensionType(extensionName) === 'global';
     if (isGlobal && !isCurrentUserAdmin) {
@@ -1649,8 +1635,7 @@ async function onMoveClick() {
         return;
     }
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(this.querySelector('i')).addClass('fa-spin');
+    this.querySelector('i')?.classList.add('fa-spin');
     await moveExtension(extensionName, source, destination);
 }
 
@@ -1937,14 +1922,14 @@ export async function loadExtensionSettings(settings, versionChanged, enableAuto
         Object.assign(extension_settings, settings.extension_settings);
     }
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#extensions_url').val(extension_settings.apiUrl);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#extensions_api_key').val(extension_settings.apiKey);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#extensions_autoconnect').prop('checked', extension_settings.autoConnect);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#extensions_notify_updates').prop('checked', extension_settings.notifyUpdates);
+    const elUrl = document.getElementById('extensions_url');
+    if (elUrl) elUrl.value = extension_settings.apiUrl;
+    const elKey = document.getElementById('extensions_api_key');
+    if (elKey) elKey.value = extension_settings.apiKey;
+    const elAuto = document.getElementById('extensions_autoconnect');
+    if (elAuto) elAuto.checked = extension_settings.autoConnect;
+    const elNotify = document.getElementById('extensions_notify_updates');
+    if (elNotify) elNotify.checked = extension_settings.notifyUpdates;
 
     // Activate offline extensions
     await eventSource.emit(event_types.EXTENSIONS_FIRST_LOAD);
@@ -2286,8 +2271,8 @@ export async function writeExtensionField(characterId, key, value) {
 
         // Make sure the data doesn't get lost when saving the current character
         if (Number(characterId) === Number(context.characterId)) {
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#character_json_data').val(character.json_data);
+            const charJsonEl = document.getElementById('character_json_data');
+            if (charJsonEl) charJsonEl.value = character.json_data;
         }
     }
 
@@ -2408,8 +2393,8 @@ export async function writeExtensionFieldBulk(avatars, key, value, {
     if (context.characterId !== undefined) {
         const activeChar = context.characters[context.characterId];
         if (activeChar && updatedSet.has(activeChar.avatar) && activeChar.json_data) {
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#character_json_data').val(activeChar.json_data);
+            const charJsonEl = document.getElementById('character_json_data');
+            if (charJsonEl) charJsonEl.value = activeChar.json_data;
         }
     }
 
@@ -2504,8 +2489,8 @@ export function getAuthorFromUrl(url) {
  */
 export async function initExtensions() {
     await addExtensionsButtonAndMenu();
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#extensionsMenuButton').css('display', 'flex');
+    const menuButton = document.getElementById('extensionsMenuButton');
+    if (menuButton) menuButton.style.display = 'flex';
 
     document.getElementById('extensions_connect')?.addEventListener('click', connectClickHandler);
     document.getElementById('extensions_autoconnect')?.addEventListener('input', autoConnectInputHandler);

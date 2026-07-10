@@ -1928,12 +1928,13 @@ function getOpenRouterModelTemplate(option) {
 
     const price = 0 === Number(model.pricing?.prompt) ? 'Free' : `${tokens_rounded}k t/$ `;
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    return $((`
+    const _div = document.createElement('div');
+    _div.innerHTML = `
         <div class="flex-container flexFlowColumn" title="${DOMPurify.sanitize((model as Record<string, unknown>).id as string)}">
             <div><strong>${DOMPurify.sanitize((model as Record<string, unknown>).name as string)}</strong> | ${String((model as Record<string, unknown>).context_length ?? '')} ctx | <small>${price}</small></div>
         </div>
-    `));
+    `;
+    return _div.firstElementChild ?? _div;
 }
 
 /**
@@ -1996,8 +1997,8 @@ function getElectronHubModelTemplate(option) {
 
     const capabilities = (iconsContainer.children.length) ? ` | ${iconsContainer.innerHTML}` : '';
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    return $((`
+    const _div = document.createElement('div');
+    _div.innerHTML = `
         // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
         // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
         // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
@@ -2011,7 +2012,8 @@ function getElectronHubModelTemplate(option) {
             // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
             <strong>${DOMPurify.sanitize(model.name)}</strong> | ${model.tokens} ctx | <small>${price}</small>${capabilities}
         </div>
-    `));
+    `;
+    return _div.firstElementChild ?? _div;
 }
 
 /**
@@ -2077,8 +2079,8 @@ function getChutesModelTemplate(option) {
 
     const capabilities = (iconsContainer.children.length) ? ` | ${iconsContainer.innerHTML}` : '';
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    return $((`
+    const _div = document.createElement('div');
+    _div.innerHTML = `
         // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
         // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
         // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
@@ -2092,7 +2094,8 @@ function getChutesModelTemplate(option) {
             // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
             <strong>${DOMPurify.sanitize(model.id)}</strong> | ${contextLength} ctx | <small>${price}</small>${capabilities}
         </div>
-    `));
+    `;
+    return _div.firstElementChild ?? _div;
 }
 
 /**
@@ -2184,8 +2187,8 @@ function getNanoGptModelTemplate(option) {
     const contextLength = model.context_length || 'Unknown';
     const modelName = model.name || model.id;
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    return $((`
+    const _div = document.createElement('div');
+    _div.innerHTML = `
         // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
         // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
         // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
@@ -2194,7 +2197,8 @@ function getNanoGptModelTemplate(option) {
         <div class="flex-container alignItemsBaseline" title="${DOMPurify.sanitize(model.id)}">
             <strong>${DOMPurify.sanitize(modelName)}</strong> | ${contextLength} ctx | <small>${price}</small>${capabilities}
         </div>
-    `));
+    `;
+    return _div.firstElementChild ?? _div;
 }
 
 /**
@@ -2211,8 +2215,8 @@ function getAimlapiModelTemplate(option) {
 
     const vendor = model.id.split('/')[0];
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    return $((`
+    const _div = document.createElement('div');
+    _div.innerHTML = `
         // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
         // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
         // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
@@ -2226,7 +2230,8 @@ function getAimlapiModelTemplate(option) {
             // @ts-expect-error TS(2339) FIXME: Property 'info' does not exist on type 'never'.
             <div><strong>${DOMPurify.sanitize(model.info?.name || model.name || model.id)}</strong> | ${vendor}</div>
         </div>
-    `));
+    `;
+    return _div.firstElementChild ?? _div;
 }
 
 /**
@@ -4823,8 +4828,8 @@ function loadOpenAISettings(data, settings) {
                 if ($element.matches('input[type="range"]')) {
                     const id = $element.getAttribute('id');
                     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                    const $counter = $(`input[type="number"][data-for="${id}"]`);
-                    if ($counter.length > 0) {
+                    const $counter = document.querySelector(`input[type="number"][data-for="${id}"]`);
+                    if ($counter) {
                         // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                         $counter.value = Number(oai_settings[key]);
                     }
@@ -5446,11 +5451,12 @@ async function onExportPresetClick() {
     }
 
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const exportConnectionTemplate = $(await renderTemplateAsync('exportPreset'));
+    const exportConnectionTemplate = document.createElement('div');
+    exportConnectionTemplate.innerHTML = await renderTemplateAsync('exportPreset');
     await (new Popup(exportConnectionTemplate, POPUP_TYPE.TEXT)).show();
 
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const removeConnectionData = $(exportConnectionTemplate[0].querySelector('input[name="export_connection_data"]:checked')).value === 'false';
+    const removeConnectionData = exportConnectionTemplate.querySelector('input[name="export_connection_data"]:checked')?.value === 'false';
     if (removeConnectionData) {
         for (const [, [, settingName, , isConnection]] of Object.entries(settingsToUpdate)) {
             if (isConnection) {
@@ -6940,7 +6946,7 @@ function toggleChatCompletionForms() {
     }
 
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    for (const el of $('[data-source]')) {
+    for (const el of document.querySelectorAll('[data-source]')) {
         const mode = el.dataset.sourceMode;
         const validSources = el.dataset.source.split(',');
         const matchesSource = validSources.includes(oai_settings.chat_completion_source);
@@ -7000,7 +7006,8 @@ function onProxyPasswordShowClick() {
  */
 async function onCustomizeParametersClick() {
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const template = $(await renderTemplateAsync('customEndpointAdditionalParameters'));
+    const template = document.createElement('div');
+    template.innerHTML = await renderTemplateAsync('customEndpointAdditionalParameters');
 
     template.querySelector('#custom_include_body').value = oai_settings.custom_include_body; template.querySelector('#custom_include_body')?.addEventListener('input', function () {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
@@ -7453,11 +7460,13 @@ function onVertexAIAuthModeChange() {
     oai_settings.vertexai_auth_mode = authMode;
 
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    for (const el of $('#vertexai_form [data-mode]')) {
+    for (const el of document.querySelectorAll('#vertexai_form [data-mode]')) {
         const mode = el.dataset.mode;
         ((() => { if (el) { el.style.display = mode === authMode ? '' : 'none'; } })());
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(el.querySelectorAll('option')).toggle(mode === authMode);
+        for (const opt of el.querySelectorAll('option')) {
+            (opt as HTMLElement).style.display = mode === authMode ? '' : 'none';
+        }
     }
 
     saveSettingsDebounced();
