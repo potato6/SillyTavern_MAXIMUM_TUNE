@@ -6860,9 +6860,11 @@ function helpCommandCallback(_, type) {
     return '';
 }
 
-$(document).on('click', '[data-displayHelp]', function (this: any, e: any) {
+document.addEventListener('click', function (this: any, e: any) {
+    const target = e.target instanceof Element ? e.target.closest('[data-displayHelp]') : null;
+    if (!target) return;
     e.preventDefault();
-    const page = String($(this).data('displayhelp'));
+    const page = String(target.getAttribute('data-displayhelp'));
     helpCommandCallback(null, page);
 });
 
