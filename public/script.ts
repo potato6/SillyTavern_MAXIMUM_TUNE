@@ -1904,8 +1904,7 @@ export async function sendTextareaMessage() {
     let generateType = 'normal';
     // "Continue on send" is activated when the user hits "send" (or presses enter) on an empty chat box, and the last
     // message was sent from a character (not the user or the system).
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const textareaText = String($('#send_textarea').val());
+    const textareaText = String(document.getElementById('send_textarea')?.value ?? '');
     const lastMessage = chat[chat.length - 1];
     if (power_user.continue_on_send &&
         !hasPendingFileAttachment() &&
@@ -8826,8 +8825,7 @@ export function setUserName(value, { toastPersonaNameChange = true } = {}) {
     if (name1 === undefined || name1 == '')
         name1 = default_user_name;
     console.log(`User name changed to ${name1}`);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#your_name').text(name1);
+    document.querySelector('#your_name').textContent = name1;
     if (toastPersonaNameChange && power_user.persona_show_notifications && !isPersonaPanelOpen()) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.success(t`Your messages will now be sent as ${name1}`, t`Persona Changed`);
