@@ -61,12 +61,9 @@ export {
 const CHARACTER_FILTER_SELECTOR = '#rm_characters_block .rm_tag_filter';
 const GROUP_FILTER_SELECTOR = '#rm_group_add_members_header ~ .rm_tag_controls .rm_tag_filter';
 const GROUP_MEMBERS_FILTER_SELECTOR = '#rm_group_members_header ~ .rm_tag_controls .rm_tag_filter';
-// @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-const TAG_TEMPLATE = $('#tag_template .tag');
-// @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-const FOLDER_TEMPLATE = $('#bogus_folder_template .bogus_folder_select');
-// @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-const VIEW_TAG_TEMPLATE = $('#tag_view_template .tag_view_item');
+const TAG_TEMPLATE = document.querySelector('#tag_template .tag');
+const FOLDER_TEMPLATE = document.querySelector('#bogus_folder_template .bogus_folder_select');
+const VIEW_TAG_TEMPLATE = document.querySelector('#tag_view_template .tag_view_item');
 
 /**
  * Gets the context information (selector and search input) for a filter helper.
@@ -102,16 +99,15 @@ function getFilterContext(filterHelper) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'listSelector' implicitly has an 'any' t... Remove this comment to see the full error message
 function getFilterHelper(listSelector) {
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const $element = typeof listSelector === 'string' ? $(listSelector) : listSelector;
+        const $element = typeof listSelector === 'string' ? document.querySelector(listSelector) : listSelector;
 
     // Check if this filter is in the group members section
-    if ($element[0]?.closest('#currentGroupMembers')) {
+    if ($element?.closest('#currentGroupMembers')) {
         return groupMembersFilter;
     }
 
     // Check if this filter is in the group candidates (add members) section
-    if ($element[0]?.closest('#unaddedCharList')) {
+    if ($element?.closest('#unaddedCharList')) {
         return groupCandidatesFilter;
     }
 
@@ -524,8 +520,7 @@ function chooseBogusFolder(source, tagId, remove = false) {
     // Instead of manually updating the filter conditions, we just "click" on the filter tag
     // We search inside which filter block we are located in and use that one
     const FILTER_SELECTOR = (source.closest('#rm_characters_block') ?? source.closest('#rm_group_chats_block'))?.querySelector('.rm_tag_filter');
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const tagElement = $(FILTER_SELECTOR?.querySelector(`.tag[id=${tagId}]`));
+    const tagElement = FILTER_SELECTOR?.querySelector(`.tag[id=${tagId}]`);
 
     // @ts-expect-error TS(2322) FIXME: Type 'string | { key: string; class: string; }' is... Remove this comment to see the full error message
     toggleTagThreeState(tagElement, { stateOverride: !remove ? FILTER_STATES.SELECTED : DEFAULT_FILTER_STATE, simulateClick: true });
@@ -546,26 +541,34 @@ function getTagBlock(tag, entities, hidden = 0, isUseless = false) {
     // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     const tagFolder = TAG_FOLDER_TYPES[tag.folder_type];
 
-    const template = FOLDER_TEMPLATE.clone();
-    template.addClass(tagFolder.class);
-    template.attr({ 'tagid': tag.id, 'id': `BogusFolder${tag.id}` });
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(template[0]?.querySelector('.avatar')).css({ 'background-color': tag.color, 'color': tag.color2 }).attr('title', `[Folder] ${tag.name}`);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(template[0]?.querySelector('.ch_name')).text(tag.name).attr('title', `[Folder] ${tag.name}`);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(template[0]?.querySelector('.bogus_folder_hidden_counter')).text(hidden > 0 ? `${hidden} hidden` : '');
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(template[0]?.querySelector('.bogus_folder_counter')).text(`${count} ` + (count != 1 ? t`characters` : t`character`));
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(template[0]?.querySelector('.bogus_folder_icon')).addClass(tagFolder.fa_icon);
-    if (isUseless) template.addClass('useless');
+    const template = FOLDER_TEMPLATE.cloneNode(true);
+    template.classList.add(tagFolder.class);
+    template.setAttribute('tagid', tag.id);
+    template.setAttribute('id', `BogusFolder${tag.id}`);
+    const avatar = template.querySelector('.avatar');
+    if (avatar) {
+        avatar.style.backgroundColor = tag.color;
+        avatar.style.color = tag.color2;
+        avatar.setAttribute('title', `[Folder] ${tag.name}`);
+    }
+    const chName = template.querySelector('.ch_name');
+    if (chName) {
+        chName.textContent = tag.name;
+        chName.setAttribute('title', `[Folder] ${tag.name}`);
+    }
+    const hiddenCounter = template.querySelector('.bogus_folder_hidden_counter');
+    if (hiddenCounter) hiddenCounter.textContent = hidden > 0 ? `${hidden} hidden` : '';
+    const counter = template.querySelector('.bogus_folder_counter');
+    if (counter) counter.textContent = `${count} ` + (count != 1 ? t`characters` : t`character`);
+    const icon = template.querySelector('.bogus_folder_icon');
+    if (icon) icon.classList.add(tagFolder.fa_icon);
+    if (isUseless) template.classList.add('useless');
 
     // Fill inline character images
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    buildAvatarList($(template[0]?.querySelector('.bogus_folder_avatars_block')), entities);
+    const avatarsBlock = template.querySelector('.bogus_folder_avatars_block');
+    if (avatarsBlock) buildAvatarList(avatarsBlock, entities);
 
-    return template[0];
+    return template;
 }
 
 /**
@@ -578,8 +581,7 @@ function getTagBlock(tag, entities, hidden = 0, isUseless = false) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'filterHelper' implicitly has an 'any' t... Remove this comment to see the full error message
 function applyActionableTagFilter(filterHelper, tag, filterType, storageKey) {
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const state = toggleTagThreeState($(this));
+    const state = toggleTagThreeState(this);
 
     // Persist to storage for all contexts
     const storagePrefix = getFilterStorageKey(filterHelper);
@@ -655,8 +657,11 @@ function filterByGroups(filterHelper) {
 // @ts-expect-error TS(7006) FIXME: Parameter 'filterHelper' implicitly has an 'any' t... Remove this comment to see the full error message
 function filterByFolder(filterHelper) {
     if (!power_user.bogus_folders) {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#bogus_folders').prop('checked', true).trigger('input');
+        const bogusFolders = document.getElementById('bogus_folders');
+        if (bogusFolders) {
+            bogusFolders.checked = true;
+            bogusFolders.dispatchEvent(new Event('input', { bubbles: true }));
+        }
         onViewTagsListClick();
         flashHighlight(document.querySelector('#tag_view_list .tag_as_folder, #tag_view_list .tag_folder_indicator'));
         return;
@@ -699,10 +704,8 @@ function renameTagKey(oldKey, newKey) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'listElement' implicitly has an 'any' ty... Remove this comment to see the full error message
 function createTagMapFromList(listElement, key) {
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const $listEl = $(listElement);
-    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-    const tagIds = Array.from($listEl[0]?.querySelectorAll('.tag') ?? [], el => el.getAttribute('id'));
+    const $listEl = typeof listElement === 'string' ? document.querySelector(listElement) : listElement;
+    const tagIds = Array.from($listEl?.querySelectorAll('.tag') ?? [], el => el.getAttribute('id'));
     // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     tag_map[key] = tagIds;
     saveSettingsDebounced();
@@ -902,8 +905,7 @@ export function addTagsToEntity(tag, entityId, { tagListSelector = null, tagList
     if (tagListSelector) printTagList(tagListSelector, tagListOptions);
     const inlineSelector = getInlineListSelector();
     if (inlineSelector) {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        printTagList($(inlineSelector), tagListOptions);
+        printTagList(document.querySelector(inlineSelector), tagListOptions);
     }
 
     return result;
@@ -934,14 +936,15 @@ export function removeTagFromEntity(tag, entityId, { tagListSelector = null, tag
 
     // We don't reprint the lists, we can just remove the html elements from them.
     if (tagListSelector) {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const $selector = (typeof tagListSelector === 'string') ? $(tagListSelector) : tagListSelector;
-        $selector[0]?.querySelector(`.tag[id="${tag.id}"]`)?.remove();
+        const selectorEl = (typeof tagListSelector === 'string') ? document.querySelector(tagListSelector) : tagListSelector;
+        selectorEl?.querySelector(`.tag[id="${tag.id}"]`)?.remove();
     }
     // @ts-expect-error TS(2339) FIXME: Property 'remove' does not exist on type 'never'.
     if (tagElement) tagElement.remove();
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(`${getInlineListSelector()} .tag[id="${tag.id}"]`).remove();
+    const inlineListSelector = getInlineListSelector();
+    if (inlineListSelector) {
+        document.querySelector(`${inlineListSelector} .tag[id="${tag.id}"]`)?.remove();
+    }
 
     return result;
 }
@@ -1014,10 +1017,8 @@ function removeTagFromMap(tagId, characterId = null) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 function findTag(request, resolve, listSelector) {
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const $listEl = $(listSelector);
-    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-    const skipIds = Array.from($listEl[0]?.querySelectorAll('.tag') ?? [], el => el.getAttribute('id'));
+    const $listEl = typeof listSelector === 'string' ? document.querySelector(listSelector) : listSelector;
+    const skipIds = Array.from($listEl?.querySelectorAll('.tag') ?? [], el => el.getAttribute('id'));
     // @ts-expect-error TS(7005) FIXME: Variable 'tags' implicitly has an 'any[]' type.
     const haystack = tags.filter(t => !skipIds.includes(t.id)).sort(compareTagsForSort).map(t => t.name);
     const needle = request.term;
@@ -1051,8 +1052,10 @@ function selectTag(event, ui, listSelector, { tagListOptions = {} } = {}) {
     }
 
     // unfocus and clear the input
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(event.target).val('').trigger('input');
+    if (event.target instanceof HTMLInputElement) {
+        event.target.value = '';
+        event.target.dispatchEvent(new Event('input', { bubbles: true }));
+    }
 
     // Optional, check for multiple character ids being present.
     const characterData = event.target.closest('#bulk_tags_div')?.dataset.characters;
@@ -1189,17 +1192,14 @@ async function showTagImportPopup(character, existingTags, newTags, folderTags) 
         [importButtons.EXISTING.result]: tag_import_setting.ONLY_EXISTING,
     };
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const popupContent = $(await renderTemplateAsync('charTagImport', { charName: character.name }));
-    const popupEl = popupContent[0];
+    const popupContent = document.createElement('div');
+    popupContent.innerHTML = await renderTemplateAsync('charTagImport', { charName: character.name });
+    const popupEl = popupContent;
 
     // Print tags after popup is shown, so that events can be added
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    printTagList($(popupEl?.querySelector('#import_existing_tags_list')), { tags: existingTags, tagOptions: { removable: true, removeAction: tag => removeFromArray(existingTags, tag) } });
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    printTagList($(popupEl?.querySelector('#import_new_tags_list')), { tags: newTags, tagOptions: { removable: true, removeAction: tag => removeFromArray(newTags, tag) } });
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    printTagList($(popupEl?.querySelector('#import_folder_tags_list')), { tags: folderTags, tagOptions: { removable: true, removeAction: tag => removeFromArray(folderTags, tag) } });
+    printTagList(popupEl?.querySelector('#import_existing_tags_list'), { tags: existingTags, tagOptions: { removable: true, removeAction: tag => removeFromArray(existingTags, tag) } });
+    printTagList(popupEl?.querySelector('#import_new_tags_list'), { tags: newTags, tagOptions: { removable: true, removeAction: tag => removeFromArray(newTags, tag) } });
+    printTagList(popupEl?.querySelector('#import_folder_tags_list'), { tags: folderTags, tagOptions: { removable: true, removeAction: tag => removeFromArray(folderTags, tag) } });
 
     if (folderTags.length === 0) {
         const folderTagsBlock = popupEl?.querySelector('#folder_tags_block') as HTMLElement | null;
@@ -1216,8 +1216,10 @@ async function showTagImportPopup(character, existingTags, newTags, folderTags) 
             const setting = buttonSettingsMap[popup.result];
             if (!setting) return;
             power_user.tag_import_setting = setting;
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#tag_import_setting').val(power_user.tag_import_setting);
+            const tagImportSetting = document.getElementById('tag_import_setting');
+            if (tagImportSetting instanceof HTMLSelectElement) {
+                tagImportSetting.value = power_user.tag_import_setting;
+            }
             saveSettingsDebounced();
             // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             console.log('Remembered tag import setting:', Object.entries(tag_import_setting).find(x => x[1] === setting)[0], setting);
@@ -1343,8 +1345,7 @@ function newTag(tagName) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'element' implicitly has an 'any' type.
 function printTagList(element, { tags = undefined, addTag = undefined, forEntityOrKey = undefined, empty = true, sort = true, tagActionSelector = undefined, tagOptions = {}, inactiveTags = [] } = {}) {
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const $element = (typeof element === 'string') ? $(element) : element;
+    const listElement = (typeof element === 'string') ? document.querySelector(element) : element;
     const key = forEntityOrKey !== undefined ? getTagKeyForEntity(forEntityOrKey) : getTagKey();
     // @ts-expect-error TS(2349) FIXME: This expression is not callable.
     let printableTags = tags ? (typeof tags === 'function' ? tags() : tags) : getTagsList(key, sort);
@@ -1357,7 +1358,7 @@ function printTagList(element, { tags = undefined, addTag = undefined, forEntity
 
     // @ts-expect-error TS(2367) FIXME: This condition will always return 'false' since th... Remove this comment to see the full error message
     if (empty === 'always' || (empty && (printableTags?.length > 0 || key))) {
-        $element.empty();
+        if (listElement) listElement.innerHTML = '';
     }
 
     if (addTag) {
@@ -1373,7 +1374,7 @@ function printTagList(element, { tags = undefined, addTag = undefined, forEntity
 
     // Well, lets check if the tag list was expanded. Based on either a css class, or when any expand was clicked yet, then we search whether this element id matches
     // @ts-expect-error TS(7005) FIXME: Variable 'expanded_tags_cache' implicitly has an '... Remove this comment to see the full error message
-    const expanded = $element.hasClass('tags-expanded') || (expanded_tags_cache.length && expanded_tags_cache.indexOf(key ?? getTagKeyForEntityElement(element)) >= 0);
+    const expanded = listElement?.classList.contains('tags-expanded') || (expanded_tags_cache.length && expanded_tags_cache.indexOf(key ?? getTagKeyForEntityElement(element)) >= 0);
 
     // We prepare some stuff. No matter which list we have, there is a maximum value of tags we are going to display
     // Constants to define tag printing limits
@@ -1412,7 +1413,7 @@ function printTagList(element, { tags = undefined, addTag = undefined, forEntity
             // Check if this tag is in the inactive list
             // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
             const isInactive = inactiveTags.includes(tag.id);
-            appendTagToList($element, tag, { ...tagOptions, isInactive });
+            appendTagToList(listElement, tag, { ...tagOptions, isInactive });
         } else {
             tagsSkipped++;
         }
@@ -1426,16 +1427,16 @@ function printTagList(element, { tags = undefined, addTag = undefined, forEntity
         // Add click event
         // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
         const showHiddenTags = (_, event) => {
-            const elementKey = key ?? getTagKeyForEntityElement($element);
+            const elementKey = key ?? getTagKeyForEntityElement(listElement);
             console.log(`Hidden tags shown for element ${elementKey}`);
 
             // Mark the current char/group as expanded if we were in any. This will be kept in memory until reload
-            $element.addClass('tags-expanded');
+            listElement?.classList.add('tags-expanded');
             expanded_tags_cache.push(elementKey);
 
             // Do not bubble further, we are just expanding
             event.stopPropagation();
-            printTagList($element, { tags: tags, addTag: addTag, forEntityOrKey: forEntityOrKey, empty: empty, tagActionSelector: tagActionSelector, tagOptions: tagOptions, inactiveTags: inactiveTags });
+            printTagList(listElement, { tags: tags, addTag: addTag, forEntityOrKey: forEntityOrKey, empty: empty, tagActionSelector: tagActionSelector, tagOptions: tagOptions, inactiveTags: inactiveTags });
         };
 
         // Print the placeholder object with its styling and action to show the remaining tags
@@ -1444,7 +1445,7 @@ function printTagList(element, { tags = undefined, addTag = undefined, forEntity
         // It should never be marked as a removable tag, because it's just an expander action
         /** @type {TagOptions} */
         const placeholderTagOptions = { ...tagOptions, removable: false };
-        appendTagToList($element, placeholderTag, placeholderTagOptions);
+        appendTagToList(listElement, placeholderTag, placeholderTagOptions);
     }
 }
 
@@ -1460,25 +1461,24 @@ function appendTagToList(listElement, tag, { removable = false, isFilter = false
     if (!listElement) {
         return;
     }
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    if (!skipExistsCheck && $(listElement)[0]?.querySelector(`.tag[id="${tag.id}"]`)) {
+    if (!skipExistsCheck && listElement.querySelector(`.tag[id="${tag.id}"]`)) {
         return;
     }
 
-    const tagElement = TAG_TEMPLATE.clone();
-    const tagEl = tagElement[0];
-    tagElement.attr('id', tag.id);
+    const tagElement = TAG_TEMPLATE.cloneNode(true);
+    const tagEl = tagElement;
+    tagElement.setAttribute('id', tag.id);
 
-    //tagElement.css('color', 'var(--SmartThemeBodyColor)');
-    tagElement.css('background-color', tag.color);
-    tagElement.css('color', tag.color2);
+    //tagElement.style.color ('var(--SmartThemeBodyColor)');
+    tagElement.style.backgroundColor = tag.color;
+    tagElement.style.color = tag.color2;
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(tagEl?.querySelector('.tag_name')).text(tag.name);
+    const tagNameEl = tagEl?.querySelector('.tag_name');
+    if (tagNameEl) tagNameEl.textContent = tag.name;
     const removeButton = tagEl?.querySelector('.tag_remove') as HTMLElement | null;
     if (removable) { if (removeButton) removeButton.style.display = ''; } else { if (removeButton) removeButton.style.display = 'none'; }
     if (removable && removeAction) {
-        tagElement.attr('custom-remove-action', String(true));
+        tagElement.setAttribute('custom-remove-action', String(true));
         removeButton?.addEventListener('click', () => {
             // @ts-expect-error TS(2349) FIXME: This expression is not callable.
             const result = removeAction(tag);
@@ -1487,18 +1487,21 @@ function appendTagToList(listElement, tag, { removable = false, isFilter = false
     }
 
     if (tag.class) {
-        tagElement.addClass(tag.class);
+        tagElement.classList.add(tag.class);
     }
     if (tag.title) {
-        tagElement.attr('title', tag.title);
+        tagElement.setAttribute('title', tag.title);
     }
     if (tag.icon) {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(tagEl?.querySelector('.tag_name')).text('').attr('title', `${translate(tag.name)} ${tag.title || ''}`.trim()).addClass(tag.icon);
-        tagElement.addClass('actionable');
+        if (tagNameEl) {
+            tagNameEl.textContent = '';
+            tagNameEl.setAttribute('title', `${translate(tag.name)} ${tag.title || ''}`.trim());
+            tagNameEl.classList.add(tag.icon);
+        }
+        tagElement.classList.add('actionable');
     }
     if (isInactive) {
-        tagElement.addClass('tag-absent');
+        tagElement.classList.add('tag-absent');
     }
 
     // We could have multiple ways of actions passed in. The manual arguments have precendence in front of a specified tag action
@@ -1506,8 +1509,7 @@ function appendTagToList(listElement, tag, { removable = false, isFilter = false
 
     // If this is a tag for a general list and its either a filter or actionable, lets mark its current state
     if ((isFilter || clickableAction) && isGeneralList) {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const filterHelper = getFilterHelper($(listElement));
+        const filterHelper = getFilterHelper(listElement);
         const isFilterActionable = clickableAction && 'filter_state' in tag;
 
         if (isFilter || isFilterActionable) {
@@ -1517,20 +1519,18 @@ function appendTagToList(listElement, tag, { removable = false, isFilter = false
     }
 
     if (isFilter) {
-        tagElement[0]?.addEventListener('click', () => onTagFilterClick.call(tagElement[0], listElement));
-        tagElement.addClass(INTERACTABLE_CONTROL_CLASS);
+        tagElement?.addEventListener('click', () => onTagFilterClick.call(tagElement, listElement));
+        tagElement.classList.add(INTERACTABLE_CONTROL_CLASS);
     }
 
     if (clickableAction) {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const filter = getFilterHelper($(listElement));
+        const filter = getFilterHelper(listElement);
         // @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
-        tagElement[0]?.addEventListener('click', (e) => clickableAction.call(tagElement[0], filter, e));
-        tagElement.addClass('clickable-action').addClass(INTERACTABLE_CONTROL_CLASS);
+        tagElement?.addEventListener('click', (e) => clickableAction.call(tagElement, filter, e));
+        tagElement.classList.add('clickable-action', INTERACTABLE_CONTROL_CLASS);
     }
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(listElement).append(tagElement);
+    listElement?.appendChild(tagElement);
 }
 
 /**
@@ -1539,18 +1539,15 @@ function appendTagToList(listElement, tag, { removable = false, isFilter = false
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'listElement' implicitly has an 'any' ty... Remove this comment to see the full error message
 function onTagFilterClick(listElement) {
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const tagId = $(this).attr('id');
+    const tagId = this?.getAttribute('id');
     // @ts-expect-error TS(7005) FIXME: Variable 'tags' implicitly has an 'any[]' type.
     const existingTag = tags.find((tag) => tag.id === tagId);
     // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
     const parent = this.closest('.tags');
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const state = toggleTagThreeState($(this));
+    const state = toggleTagThreeState(this);
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const filterHelper = getFilterHelper($(listElement));
+    const filterHelper = getFilterHelper(listElement);
 
     // Update the tag's filter_state for the main character list (backward compatibility)
     if (existingTag && isMainCharacterList(filterHelper)) {
@@ -1653,7 +1650,7 @@ function toggleTagThreeState(element, { stateOverride = undefined, simulateClick
     // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     const overrideKey = typeof stateOverride == 'string' && states.includes(stateOverride) ? stateOverride : Object.keys(FILTER_STATES).find(key => FILTER_STATES[key] === stateOverride);
 
-    const currentStateIndex = getStateIndex(element.attr('data-toggle-state'), DEFAULT_FILTER_STATE);
+    const currentStateIndex = getStateIndex(element?.getAttribute('data-toggle-state'), DEFAULT_FILTER_STATE);
     const targetStateIndex = overrideKey !== undefined ? getStateIndex(overrideKey, DEFAULT_FILTER_STATE) : (currentStateIndex + 1) % states.length;
 
     if (simulateClick) {
@@ -1666,18 +1663,17 @@ function toggleTagThreeState(element, { stateOverride = undefined, simulateClick
         }
 
         for (let i = 0; i < clickCount; i++) {
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(element).trigger('click');
+            element?.dispatchEvent(new Event('click'));
         }
 
         console.debug('manually click-toggle three-way filter from', states[currentStateIndex], 'to', states[targetStateIndex], 'on', element);
     } else {
-        element.attr('data-toggle-state', states[targetStateIndex]);
+        element?.setAttribute('data-toggle-state', states[targetStateIndex]);
 
         // Update css class and remove all others
         states.forEach(state => {
             // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-            element.toggleClass(FILTER_STATES[state].class, state === states[targetStateIndex]);
+            element?.classList.toggle(FILTER_STATES[state].class, state === states[targetStateIndex]);
         });
 
         if (states[currentStateIndex] !== states[targetStateIndex]) {
@@ -1695,14 +1691,10 @@ function toggleTagThreeState(element, { stateOverride = undefined, simulateClick
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'listElement' implicitly has an 'any' ty... Remove this comment to see the full error message
 function runTagFilters(listElement) {
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const $listEl = $(listElement);
-    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-    const tagIds = Array.from($listEl[0]?.querySelectorAll('.tag.selected:not(.actionable)') ?? [], el => el.getAttribute('id'));
-    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-    const excludedTagIds = Array.from($listEl[0]?.querySelectorAll('.tag.excluded:not(.actionable)') ?? [], el => el.getAttribute('id'));
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const filterHelper = getFilterHelper($(listElement));
+    const $listEl = typeof listElement === 'string' ? document.querySelector(listElement) : listElement;
+    const tagIds = Array.from($listEl?.querySelectorAll('.tag.selected:not(.actionable)') ?? [], el => el.getAttribute('id'));
+    const excludedTagIds = Array.from($listEl?.querySelectorAll('.tag.excluded:not(.actionable)') ?? [], el => el.getAttribute('id'));
+    const filterHelper = getFilterHelper(listElement);
     filterHelper.setFilterData(FILTER_TYPES.TAG, { excluded: excludedTagIds, selected: tagIds });
 }
 
@@ -1729,8 +1721,8 @@ function printTagFilters(type = tag_filter_type.character) {
             break;
     }
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(FILTER_SELECTOR).empty();
+    const filterSelectorEl = document.querySelector(FILTER_SELECTOR);
+    if (filterSelectorEl) filterSelectorEl.innerHTML = '';
 
     // Print all action tags. (Rework 'Folder' button to some kind of onboarding if no folders are enabled yet)
     let actionTags = Object.values(ACTIONABLE_TAGS);
@@ -1742,12 +1734,10 @@ function printTagFilters(type = tag_filter_type.character) {
         actionTags = filterActionableTagsForGroupContext(actionTags);
     }
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    printTagList($(FILTER_SELECTOR), { empty: false, sort: false, tags: actionTags, tagActionSelector: tag => tag.action, tagOptions: { isGeneralList: true } });
+    printTagList(filterSelectorEl, { empty: false, sort: false, tags: actionTags, tagActionSelector: tag => tag.action, tagOptions: { isGeneralList: true } });
 
     const inListActionTags = Object.values(InListActionable);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    printTagList($(FILTER_SELECTOR), { empty: false, sort: false, tags: inListActionTags, tagActionSelector: tag => tag.action, tagOptions: { isGeneralList: true } });
+    printTagList(filterSelectorEl, { empty: false, sort: false, tags: inListActionTags, tagActionSelector: tag => tag.action, tagOptions: { isGeneralList: true } });
 
     // Determine which character tags to display based on context
     let tagsToDisplay;
@@ -1788,21 +1778,16 @@ function printTagFilters(type = tag_filter_type.character) {
         tagsToDisplay = tags.filter(x => characterTagIds.includes(x.id)).sort(compareTagsForSort);
     }
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    printTagList($(FILTER_SELECTOR), { empty: false, tags: tagsToDisplay, tagOptions: { isFilter: true, isGeneralList: true }, inactiveTags: inactiveTags });
+    printTagList(filterSelectorEl, { empty: false, tags: tagsToDisplay, tagOptions: { isFilter: true, isGeneralList: true }, inactiveTags: inactiveTags });
 
 
     // Print bogus folder navigation
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const filterSelectorEl = $(FILTER_SELECTOR);
-    const parentEl = filterSelectorEl[0]?.parentElement;
+    const parentEl = filterSelectorEl?.parentElement;
     const bogusDrilldownEl = parentEl?.querySelector(':scope > .rm_tag_bogus_drilldown');
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const bogusDrilldown = $(bogusDrilldownEl);
-    bogusDrilldown.empty();
+    if (bogusDrilldownEl) bogusDrilldownEl.innerHTML = '';
     if (power_user.bogus_folders && bogusDrilldownEl) {
         const navigatedTags = getOpenBogusFolders();
-        printTagList(bogusDrilldown, { tags: navigatedTags, tagOptions: { removable: true } });
+        printTagList(bogusDrilldownEl, { tags: navigatedTags, tagOptions: { removable: true } });
     }
 
     // Don't call runTagFilters here - it would overwrite the loaded filter states with the DOM state.
@@ -1811,11 +1796,10 @@ function printTagFilters(type = tag_filter_type.character) {
 
     // Initialize the tag list visibility based on saved settings for this context
     const shouldShowTags = getTagFilterVisibility(type);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const showTagListButton = $(document.querySelector(FILTER_SELECTOR)?.closest('.rm_tag_controls')?.querySelector('.showTagList'));
+    const showTagListButton = document.querySelector(FILTER_SELECTOR)?.closest('.rm_tag_controls')?.querySelector('.showTagList');
 
     // Update button state to match the saved setting
-    showTagListButton.toggleClass('selected', shouldShowTags);
+    showTagListButton?.classList.toggle('selected', shouldShowTags);
 
     if (shouldShowTags) {
         document.querySelectorAll(`${FILTER_SELECTOR} .tag:not(.actionable)`).forEach(el => (el as HTMLElement).style.display = '');
@@ -1833,14 +1817,12 @@ function printTagFilters(type = tag_filter_type.character) {
 // @ts-expect-error TS(7006) FIXME: Parameter 'filterSelector' implicitly has an 'any'... Remove this comment to see the full error message
 function updateTagFilterIndicator(filterSelector) {
     const selector = filterSelector || CHARACTER_FILTER_SELECTOR;
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const tagFilter = typeof selector === 'string' ? $(selector) : selector;
-    const tagFilterEl = tagFilter[0];
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const showTagListButton = $(tagFilterEl?.closest('.rm_tag_controls')?.querySelector('.showTagList'));
+    const tagFilter = typeof selector === 'string' ? document.querySelector(selector) : selector;
+    const tagFilterEl = tagFilter;
+    const showTagListButton = tagFilterEl?.closest('.rm_tag_controls')?.querySelector('.showTagList');
     const filterTags = tagFilterEl?.querySelectorAll('.tag:not(.actionable)');
     const hasActiveTags = filterTags ? [...filterTags].some(el => el.matches('.selected, .excluded')) : false;
-    showTagListButton.toggleClass('indicator', hasActiveTags);
+    showTagListButton?.classList.toggle('indicator', hasActiveTags);
 }
 
 /**
@@ -1887,8 +1869,7 @@ function onTagRemoveClick(event) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'event' implicitly has an 'any' type.
 function onTagInput(event) {
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const val = $(this).val();
+    const val = (this instanceof HTMLInputElement) ? this.value : '';
     if (getTag(String(val))) return;
     // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any'.
     if (this.tomSelect) {
@@ -1912,16 +1893,16 @@ function onTagInputFocus() {
  *
  */
 function onCharacterCreateClick() {
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#tagList').empty();
+    const tagList = document.getElementById('tagList');
+    if (tagList) tagList.innerHTML = '';
 }
 
 /**
  *
  */
 function onGroupCreateClick() {
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#groupTagList').empty();
+    const groupTagList = document.getElementById('groupTagList');
+    if (groupTagList) groupTagList.innerHTML = '';
 }
 
 /**
@@ -1936,15 +1917,13 @@ export function applyTagsOnCharacterSelect(chid = null) {
         const currentTagIds = Array.from(tagEls, el => el.getAttribute('id'));
         // @ts-expect-error TS(7005) FIXME: Variable 'tags' implicitly has an 'any[]' type.
         const currentTags = tags.filter(x => currentTagIds.includes(x.id));
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        printTagList($('#tagList'), { forEntityOrKey: undefined, tags: currentTags, tagOptions: { removable: true } });
+        printTagList(document.getElementById('tagList'), { forEntityOrKey: undefined, tags: currentTags, tagOptions: { removable: true } });
         return;
     }
 
     // @ts-expect-error TS(2322) FIXME: Type 'number | undefined' is not assignable to typ... Remove this comment to see the full error message
     chid = chid ?? (this_chid !== undefined ? Number(this_chid) : undefined);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    printTagList($('#tagList'), { forEntityOrKey: chid, tagOptions: { removable: true } });
+    printTagList(document.getElementById('tagList'), { forEntityOrKey: chid, tagOptions: { removable: true } });
 }
 
 /**
@@ -1959,15 +1938,13 @@ export function applyTagsOnGroupSelect(groupId = null) {
         const currentTagIds = Array.from(tagEls, el => el.getAttribute('id'));
         // @ts-expect-error TS(7005) FIXME: Variable 'tags' implicitly has an 'any[]' type.
         const currentTags = tags.filter(x => currentTagIds.includes(x.id));
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        printTagList($('#groupTagList'), { forEntityOrKey: undefined, tags: currentTags, tagOptions: { removable: true } });
+        printTagList(document.getElementById('groupTagList'), { forEntityOrKey: undefined, tags: currentTags, tagOptions: { removable: true } });
         return;
     }
 
     // @ts-expect-error TS(2322) FIXME: Type 'number | undefined' is not assignable to typ... Remove this comment to see the full error message
     groupId = groupId ?? (selected_group ? Number(selected_group) : undefined);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    printTagList($('#groupTagList'), { forEntityOrKey: groupId, tagOptions: { removable: true } });
+    printTagList(document.getElementById('groupTagList'), { forEntityOrKey: groupId, tagOptions: { removable: true } });
     printTagFilters(tag_filter_type.group_candidates_list);
     printTagFilters(tag_filter_type.group_members_list);
 }
@@ -2018,21 +1995,20 @@ export function createTagInput(inputSelector, listSelector, tagListOptions = {})
  *
  */
 async function onViewTagsListClick() {
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const html = $(document.createElement('div'));
-    html.attr('id', 'tag_view_list');
-    html.append(await renderTemplateAsync('tagManagement', { bogus_folders: power_user.bogus_folders }));
+    const html = document.createElement('div');
+    html.setAttribute('id', 'tag_view_list');
+    html.innerHTML = await renderTemplateAsync('tagManagement', { bogus_folders: power_user.bogus_folders });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const tagContainer = $('<div class="tag_view_list_tags ui-sortable"></div>');
-    html.append(tagContainer);
+    const tagContainer = document.createElement('div');
+    tagContainer.className = 'tag_view_list_tags ui-sortable';
+    html.appendChild(tagContainer);
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const $sortModeSelect = $(html[0]?.querySelector('#tag_sort_mode_select'));
-    $sortModeSelect.val(power_user.tag_sort_mode);
-    html[0]?.querySelector('#tag_sort_mode_select')?.addEventListener('change', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const newMode = $(this).val().toString();
+    const sortModeSelect = html.querySelector('#tag_sort_mode_select');
+    if (sortModeSelect instanceof HTMLSelectElement) {
+        sortModeSelect.value = power_user.tag_sort_mode;
+    }
+    html.querySelector('#tag_sort_mode_select')?.addEventListener('change', function () {
+        const newMode = (this instanceof HTMLSelectElement) ? this.value : '';
         power_user.tag_sort_mode = newMode;
         saveSettingsDebounced();
         printViewTagList(tagContainer);
@@ -2053,7 +2029,7 @@ async function onViewTagsListClick() {
 function makeTagListDraggable(tagContainer) {
     const onTagsSort = () => {
         // @ts-expect-error TS(7006) FIXME: Parameter 'tagElement' implicitly has an 'any' typ... Remove this comment to see the full error message
-        tagContainer[0]?.querySelectorAll('.tag_view_item').forEach(function (tagElement, i) {
+        tagContainer?.querySelectorAll('.tag_view_item').forEach(function (tagElement, i) {
             const id = tagElement.getAttribute('id');
             // @ts-expect-error TS(7005) FIXME: Variable 'tags' implicitly has an 'any[]' type.
             const tag = tags.find(x => x.id === id);
@@ -2065,8 +2041,10 @@ function makeTagListDraggable(tagContainer) {
         // If tags were dragged manually, we have to disable auto sorting
         if (power_user.tag_sort_mode !== tag_sort_mode.MANUAL) {
             power_user.tag_sort_mode = tag_sort_mode.MANUAL;
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#tag_sort_mode_select').val(tag_sort_mode.MANUAL);
+            const sortModeSelect = document.getElementById('tag_sort_mode_select');
+            if (sortModeSelect instanceof HTMLSelectElement) {
+                sortModeSelect.value = tag_sort_mode.MANUAL;
+            }
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.info('Switched to Manual sorting mode.');
         }
@@ -2076,8 +2054,7 @@ function makeTagListDraggable(tagContainer) {
         saveSettingsDebounced();
     };
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const tagContainerEl = tagContainer[0];
+    const tagContainerEl = tagContainer;
     tagContainerEl.sortableInstance = new Sortable(tagContainerEl, {
         delay: getSortableDelay(),
         onEnd: () => onTagsSort(),
@@ -2265,15 +2242,12 @@ async function onTagRestoreFileSelect(e) {
         toastr.success('Tags restored successfully.', 'Tag Restore');
     }
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#tag_view_restore_input').val('');
+    document.getElementById('tag_view_restore_input').value = '';
     printCharactersDebounced();
     saveSettingsDebounced();
 
     // Reprint the tag management popup, without having it to be opened again
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const tagContainer = $('#tag_view_list .tag_view_list_tags');
-    printViewTagList(tagContainer);
+    printViewTagList(document.querySelector('#tag_view_list .tag_view_list_tags'));
 }
 
 /**
@@ -2342,8 +2316,7 @@ async function onTagsPruneClick() {
     saveSettingsDebounced();
 
     // Reprint the tag management popup, without having it to be opened again
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const tagContainer = $('#tag_view_list .tag_view_list_tags');
+    const tagContainer = document.querySelector('#tag_view_list .tag_view_list_tags');
     printViewTagList(tagContainer);
 
     // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
@@ -2357,8 +2330,7 @@ function onTagCreateClick() {
     // @ts-expect-error TS(7005) FIXME: Variable 'tags' implicitly has an 'any[]' type.
     const tagName = getFreeName('New Tag', tags.map(x => x.name));
     const tag = createNewTag(tagName);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    printViewTagList($('#tag_view_list .tag_view_list_tags'));
+    printViewTagList(document.querySelector('#tag_view_list .tag_view_list_tags'));
 
     const tagContainer = document.querySelector('#tag_view_list .tag_view_list_tags');
     const tagElement = tagContainer?.querySelector(`.tag_view_item[id="${tag.id}"]`);
@@ -2380,20 +2352,18 @@ function onTagCreateClick() {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'list' implicitly has an 'any' type.
 function appendViewTagToList(list, tag, count) {
-    const template = VIEW_TAG_TEMPLATE.clone();
-    const templateEl = template[0];
-    template.attr('id', tag.id);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(templateEl?.querySelector('.tag_view_counter_value')).text(count);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(templateEl?.querySelector('.tag_view_name')).text(tag.name);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(templateEl?.querySelector('.tag_view_name')).addClass('tag');
-
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(templateEl?.querySelector('.tag_view_name')).css('background-color', tag.color);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(templateEl?.querySelector('.tag_view_name')).css('color', tag.color2);
+    const template = VIEW_TAG_TEMPLATE.cloneNode(true);
+    const templateEl = template;
+    template.setAttribute('id', tag.id);
+    const counterValue = templateEl?.querySelector('.tag_view_counter_value');
+    if (counterValue) counterValue.textContent = count;
+    const tagViewName = templateEl?.querySelector('.tag_view_name');
+    if (tagViewName) {
+        tagViewName.textContent = tag.name;
+        tagViewName.classList.add('tag');
+        tagViewName.style.backgroundColor = tag.color;
+        tagViewName.style.color = tag.color2;
+    }
 
     const tagAsFolderId = tag.id + '-tag-folder';
     const colorPickerId = tag.id + '-tag-color';
@@ -2404,33 +2374,42 @@ function appendViewTagToList(list, tag, count) {
         if (tagAsFolder) tagAsFolder.style.display = 'none';
     }
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const primaryColorPicker = $('<toolcool-color-picker></toolcool-color-picker>')
-        .addClass('tag-color')
-        .attr({ id: colorPickerId, color: tag.color || 'rgba(0, 0, 0, 0.5)', 'data-default-color': 'rgba(0, 0, 0, 0.5)' });
+    const primaryColorPicker = document.createElement('toolcool-color-picker');
+    primaryColorPicker.classList.add('tag-color');
+    primaryColorPicker.setAttribute('id', colorPickerId);
+    primaryColorPicker.setAttribute('color', tag.color || 'rgba(0, 0, 0, 0.5)');
+    primaryColorPicker.setAttribute('data-default-color', 'rgba(0, 0, 0, 0.5)');
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const secondaryColorPicker = $('<toolcool-color-picker></toolcool-color-picker>')
-        .addClass('tag-color2')
-        .attr({ id: colorPicker2Id, color: tag.color2 || power_user.main_text_color, 'data-default-color': power_user.main_text_color });
+    const secondaryColorPicker = document.createElement('toolcool-color-picker');
+    secondaryColorPicker.classList.add('tag-color2');
+    secondaryColorPicker.setAttribute('id', colorPicker2Id);
+    secondaryColorPicker.setAttribute('color', tag.color2 || power_user.main_text_color);
+    secondaryColorPicker.setAttribute('data-default-color', power_user.main_text_color);
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(templateEl?.querySelector('.tag_view_color_picker[data-value="color"]')).append(primaryColorPicker)
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        .append($('<div class="fas fa-link fa-xs link_icon right_menu_button" title="Link to theme color"></div>'));
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(templateEl?.querySelector('.tag_view_color_picker[data-value="color2"]')).append(secondaryColorPicker)
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        .append($('<div class="fas fa-link fa-xs link_icon right_menu_button" title="Link to theme color"></div>'));
+    const colorPickerContainer1 = templateEl?.querySelector('.tag_view_color_picker[data-value="color"]');
+    if (colorPickerContainer1) {
+        colorPickerContainer1.appendChild(primaryColorPicker);
+        const linkIcon1 = document.createElement('div');
+        linkIcon1.className = 'fas fa-link fa-xs link_icon right_menu_button';
+        linkIcon1.setAttribute('title', 'Link to theme color');
+        colorPickerContainer1.appendChild(linkIcon1);
+    }
+    const colorPickerContainer2 = templateEl?.querySelector('.tag_view_color_picker[data-value="color2"]');
+    if (colorPickerContainer2) {
+        colorPickerContainer2.appendChild(secondaryColorPicker);
+        const linkIcon2 = document.createElement('div');
+        linkIcon2.className = 'fas fa-link fa-xs link_icon right_menu_button';
+        linkIcon2.setAttribute('title', 'Link to theme color');
+        colorPickerContainer2.appendChild(linkIcon2);
+    }
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(templateEl?.querySelector('.tag_as_folder')).attr('id', tagAsFolderId);
+    const tagAsFolderEl = templateEl?.querySelector('.tag_as_folder');
+    tagAsFolderEl?.setAttribute('id', tagAsFolderId);
 
     // @ts-expect-error TS(7006) FIXME: Parameter 'evt' implicitly has an 'any' type.
-    primaryColorPicker[0]?.addEventListener('change', (evt) => onTagColorize(evt, (tag, color) => tag.color = color, 'background-color'));
+    primaryColorPicker.addEventListener('change', (evt) => onTagColorize(evt, (tag, color) => tag.color = color, 'background-color'));
     // @ts-expect-error TS(7006) FIXME: Parameter 'evt' implicitly has an 'any' type.
-    secondaryColorPicker[0]?.addEventListener('change', (evt) => onTagColorize(evt, (tag, color) => tag.color2 = color, 'color'));
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    secondaryColorPicker.addEventListener('change', (evt) => onTagColorize(evt, (tag, color) => tag.color2 = color, 'color'));
     templateEl?.querySelector('.tag_view_color_picker .link_icon')?.addEventListener('click', (evt) => {
         const colorPickerEl = evt.target.closest('.tag_view_color_picker')?.querySelector('toolcool-color-picker');
         const defaultColor = colorPickerEl?.getAttribute('data-default-color');
@@ -2438,31 +2417,32 @@ function appendViewTagToList(list, tag, count) {
     });
 
     const getHideTooltip = () => tag.is_hidden_on_character_card ? t`Hide on character card` : t`Show on character card`;
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const hideToggle = $(templateEl?.querySelector('.eye-toggle'));
-    hideToggle.toggleClass('fa-eye-slash', tag.is_hidden_on_character_card);
-    hideToggle.toggleClass('fa-eye', !tag.is_hidden_on_character_card);
-    hideToggle.attr('title', getHideTooltip());
+    const hideToggle = templateEl?.querySelector('.eye-toggle');
+    if (hideToggle) {
+        hideToggle.classList.toggle('fa-eye-slash', tag.is_hidden_on_character_card);
+        hideToggle.classList.toggle('fa-eye', !tag.is_hidden_on_character_card);
+        hideToggle.setAttribute('title', getHideTooltip());
+    }
 
-    hideToggle[0]?.addEventListener('click', () => {
+    hideToggle?.addEventListener('click', () => {
         tag.is_hidden_on_character_card = !tag.is_hidden_on_character_card;
-        hideToggle.toggleClass('fa-eye-slash', tag.is_hidden_on_character_card);
-        hideToggle.toggleClass('fa-eye', !tag.is_hidden_on_character_card);
-        hideToggle.attr('title', getHideTooltip());
+        hideToggle?.classList.toggle('fa-eye-slash', tag.is_hidden_on_character_card);
+        hideToggle?.classList.toggle('fa-eye', !tag.is_hidden_on_character_card);
+        hideToggle?.setAttribute('title', getHideTooltip());
         printCharactersDebounced();
         saveSettingsDebounced();
     });
 
-    list.append(template);
+    list?.appendChild(template);
 
     // We prevent the popup from auto-close on Escape press on the color pickups. If the user really wants to, he can hit it again
     // Not the "cleanest" way, that would be actually using and observer, remembering whether the popup was open just before, but eh
     // Not gonna invest too much time into this small control here
     let lastHit = 0;
     // @ts-expect-error TS(7006) FIXME: Parameter 'evt' implicitly has an 'any' type.
-    template[0]?.addEventListener('keydown', (evt) => {
+    template?.addEventListener('keydown', (evt) => {
         if (evt.key === 'Escape') {
-            if (evt.target === primaryColorPicker[0] || evt.target === secondaryColorPicker[0]) {
+            if (evt.target === primaryColorPicker || evt.target === secondaryColorPicker) {
                 if (Date.now() - lastHit < 5000) // If user hits it twice in five seconds
                     return;
                 lastHit = Date.now();
@@ -2479,9 +2459,8 @@ function appendViewTagToList(list, tag, count) {
  *
  */
 function onTagAsFolderClick() {
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const element = $(this.closest('.tag_view_item'));
-    const id = element.attr('id');
+    const element = this.closest('.tag_view_item');
+    const id = element?.getAttribute('id');
     // @ts-expect-error TS(7005) FIXME: Variable 'tags' implicitly has an 'any[]' type.
     const tag = tags.find(x => x.id === id);
 
@@ -2506,23 +2485,21 @@ function onTagAsFolderClick() {
 function updateDrawTagFolder(element, tag) {
     // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     const tagFolder = TAG_FOLDER_TYPES[tag.folder_type] || TAG_FOLDER_TYPES[TAG_FOLDER_DEFAULT_TYPE];
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const folderElement = $(element[0]?.querySelector('.tag_as_folder'));
+    const folderElement = element?.querySelector('.tag_as_folder');
 
     // Update css class and remove all others
     Object.keys(TAG_FOLDER_TYPES).forEach(x => {
         // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        folderElement.toggleClass(TAG_FOLDER_TYPES[x].class, TAG_FOLDER_TYPES[x] === tagFolder);
+        folderElement?.classList.toggle(TAG_FOLDER_TYPES[x].class, TAG_FOLDER_TYPES[x] === tagFolder);
     });
 
     // Draw/update css attributes for this class
-    folderElement.attr('title', tagFolder.tooltip);
-    folderElement.attr('data-i18n', '[title]' + tagFolder.tooltip);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const indicator = $(folderElement[0]?.querySelector('.tag_folder_indicator'));
-    indicator.text(tagFolder.icon);
-    indicator.css('color', tagFolder.color);
-    indicator.css('font-size', `calc(var(--mainFontSize) * ${tagFolder.size})`);
+    folderElement?.setAttribute('title', tagFolder.tooltip);
+    folderElement?.setAttribute('data-i18n', '[title]' + tagFolder.tooltip);
+    const indicator = folderElement?.querySelector('.tag_folder_indicator');
+    if (indicator) indicator.textContent = tagFolder.icon;
+    if (indicator) indicator.style.color = tagFolder.color;
+    if (indicator) indicator.style.fontSize = `calc(var(--mainFontSize) * ${tagFolder.size})`;
 }
 
 /**
@@ -2536,16 +2513,15 @@ async function onTagDeleteClick() {
     // @ts-expect-error TS(7005) FIXME: Variable 'tags' implicitly has an 'any[]' type.
     const otherTags = sortTags(tags.filter(x => x.id !== id).map(x => ({ id: x.id, name: x.name })));
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const popupContent = $(await renderTemplateAsync('deleteTag', { otherTags }));
+    const popupContent = document.createElement('div');
+    popupContent.innerHTML = await renderTemplateAsync('deleteTag', { otherTags });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    appendTagToList($(popupContent[0]?.querySelector('#tag_to_delete')), tag);
+    appendTagToList(popupContent.querySelector('#tag_to_delete'), tag);
 
     // Make the select control more fancy on not mobile
     if (!isMobile()) {
         // Delete the empty option in the dropdown, and make the selection be empty by default
-        popupContent[0]?.querySelector('#merge_tag_select option[value=""]')?.remove();
+        popupContent.querySelector('#merge_tag_select option[value=""]')?.remove();
         new TomSelect(popupContent?.querySelector('#merge_tag_select'), {
             maxItems: 1,
             placeholder: 'Select tag to merge into',
@@ -2558,8 +2534,8 @@ async function onTagDeleteClick() {
         return;
     }
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const mergeTagId = $('#merge_tag_select').val() ? String($('#merge_tag_select').val()) : null;
+    const mergeTagSelect = popupContent.querySelector('#merge_tag_select');
+    const mergeTagId = mergeTagSelect?.value ? String(mergeTagSelect.value) : null;
 
     // Remove the tag from all entities that use it
     // If we have a replacement tag, add that one instead
@@ -2577,10 +2553,8 @@ async function onTagDeleteClick() {
     const index = tags.findIndex(x => x.id === id);
     // @ts-expect-error TS(7005) FIXME: Variable 'tags' implicitly has an 'any[]' type.
     tags.splice(index, 1);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(`.tag[id="${id}"]`).remove();
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(`.tag_view_item[id="${id}"]`).remove();
+    document.querySelectorAll(`.tag[id="${id}"]`).forEach(el => el.remove());
+    document.querySelectorAll(`.tag_view_item[id="${id}"]`).forEach(el => el.remove());
 
     // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
     toastr.success(`'${tag.name}' deleted${mergeTagId ? ` and merged into '${tags.find(x => x.id === mergeTagId).name}'` : ''}`, 'Delete Tag');
@@ -2597,15 +2571,12 @@ async function onTagDeleteClick() {
 function onTagRenameInput() {
     // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
     const id = this.closest('.tag_view_item')?.getAttribute('id');
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const newName = $(this).text();
+    const newName = this.textContent;
     // @ts-expect-error TS(7005) FIXME: Variable 'tags' implicitly has an 'any[]' type.
     const tag = tags.find(x => x.id === id);
     tag.name = newName;
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(this).attr('dirty', '');
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(`.tag[id="${id}"] .tag_name`).text(newName);
+    this.setAttribute('dirty', '');
+    document.querySelectorAll(`.tag[id="${id}"] .tag_name`).forEach(el => el.textContent = newName);
     saveSettingsDebounced();
 
     applyCharacterTagsToMessageDivs();
@@ -2619,19 +2590,18 @@ function onTagRenameInput() {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'evt' implicitly has an 'any' type.
 function onTagColorize(evt, setColor, cssProperty) {
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const isDefaultColor = $(evt.target).data('default-color') === evt.detail.rgba;
+    const isDefaultColor = evt.target.dataset?.defaultColor === evt.detail.rgba;
     const colorPickerEl = evt.target.closest('.tag_view_color_picker');
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(colorPickerEl?.querySelector('.link_icon')).toggle(!isDefaultColor);
+    const linkIcon = colorPickerEl?.querySelector('.link_icon');
+    if (linkIcon) linkIcon.style.display = isDefaultColor ? 'none' : '';
 
     const tagViewItem = evt.target.closest('.tag_view_item');
     const id = tagViewItem?.getAttribute('id');
     let newColor = evt.detail.rgba;
     if (isDefaultColor) newColor = '';
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(tagViewItem?.querySelector('.tag_view_name')).css(cssProperty, newColor);
+    const tagViewName = tagViewItem?.querySelector('.tag_view_name');
+    if (tagViewName) tagViewName.style.setProperty(cssProperty, newColor);
     // @ts-expect-error TS(7005) FIXME: Variable 'tags' implicitly has an 'any[]' type.
     const tag = tags.find(x => x.id === id);
     setColor(tag, newColor);
@@ -2643,18 +2613,15 @@ function onTagColorize(evt, setColor, cssProperty) {
 
 // @ts-expect-error TS(7006) FIXME: Parameter 'tagId' implicitly has an 'any' type.
 const debouncedTagColoring = debounce((tagId, cssProperty, newColor) => {
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(`.tag[id="${tagId}"]`).css(cssProperty, newColor);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(`.bogus_folder_select[tagid="${tagId}"] .avatar`).css(cssProperty, newColor);
+    document.querySelectorAll(`.tag[id="${tagId}"]`).forEach(el => el.style.setProperty(cssProperty, newColor));
+    document.querySelectorAll(`.bogus_folder_select[tagid="${tagId}"] .avatar`).forEach(el => el.style.setProperty(cssProperty, newColor));
 }, debounce_timeout.quick);
 
 /**
  *
  */
 function onTagListHintClick() {
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(this).toggleClass('selected');
+    this.classList.toggle('selected');
 
     // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
     const siblingTags = [...this.parentElement.querySelectorAll(':scope > .tag:not(.actionable)')] as HTMLElement[];
@@ -2667,8 +2634,7 @@ function onTagListHintClick() {
 
     // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
     const innerSiblings = [...this.parentElement.querySelectorAll(':scope > .innerActionable')];
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(innerSiblings).toggleClass('hidden');
+    innerSiblings.forEach(el => el.classList.toggle('hidden'));
 
     // Determine which context this button belongs to and save the setting
     let filterType = tag_filter_type.character;
@@ -2683,8 +2649,7 @@ function onTagListHintClick() {
         filterType = tag_filter_type.group_members_list;
     }
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const isSelected = $(this).hasClass('selected');
+    const isSelected = this.classList.contains('selected');
     setTagFilterVisibility(filterType, isSelected);
     console.debug('show_tag_filters for type', filterType, ':', isSelected);
 }
@@ -2709,14 +2674,16 @@ function onClearAllFiltersClick(filterHelper) {
     for (const tag of filterTags) {
         const toggleState = tag.getAttribute('data-toggle-state');
         if (toggleState !== undefined && !isFilterState(toggleState ?? FILTER_STATES.UNDEFINED, FILTER_STATES.UNDEFINED)) {
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            toggleTagThreeState($(tag), { stateOverride: FILTER_STATES.UNDEFINED, simulateClick: true });
+            toggleTagThreeState(tag, { stateOverride: FILTER_STATES.UNDEFINED, simulateClick: true });
         }
     }
 
     // Reset search input for this context
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(context.searchInput).val('').trigger('input');
+    const searchInputEl = document.querySelector(context.searchInput);
+    if (searchInputEl) {
+        searchInputEl.value = '';
+        searchInputEl.dispatchEvent(new Event('input'));
+    }
 }
 
 /**
@@ -2740,7 +2707,7 @@ function copyTags(data) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'tagContainer' implicitly has an 'any' t... Remove this comment to see the full error message
 function printViewTagList(tagContainer, empty = true) {
-    if (empty) tagContainer.empty();
+    if (empty) tagContainer.innerHTML = '';
     const everything = Object.values(tag_map).flat();
     // @ts-expect-error TS(7005) FIXME: Variable 'tags' implicitly has an 'any[]' type.
     const counts = new Map(tags.map(tag => [tag.id, everything.filter(x => x === tag.id).length]));
@@ -3134,8 +3101,7 @@ export function applyCharacterTagsToMessageDivs({ mesIds = [] as number[] } = {}
 
         // Iterate each message div
         messages.forEach(element => {
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const $this = $(element);
+            const $this = element;
             const avatarFileName = extractCharacterAvatar(element.querySelector('.avatar img')?.getAttribute('src'));
 
             if (!avatarFileName) {
@@ -3216,7 +3182,7 @@ function buildMessagesFilter(mesIds) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter '$element' implicitly has an 'any' type.
 function applyTags($element, tagData) {
-    $element.attr('data-char-tags', tagData.joinedTagNames);
+    $element.setAttribute('data-char-tags', tagData.joinedTagNames);
     // @ts-expect-error TS(7006) FIXME: Parameter 'tagName' implicitly has an 'any' type.
     tagData.tagNames.forEach(tagName => {
         const normalizedTagName = normalizeTagName(tagName);
@@ -3225,7 +3191,7 @@ function applyTags($element, tagData) {
             return; // Skip empty tag names
         }
 
-        $element.attr(`data-char-tag-${normalizedTagName}`, '');
+        $element.setAttribute(`data-char-tag-${normalizedTagName}`, '');
     });
 }
 
@@ -3364,8 +3330,7 @@ export function initTags() {
         const tagViewItems = document.querySelectorAll('#tag_view_list .tag_view_item');
         const oldOrder = Array.from(tagViewItems, el => el.id);
 
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type definitions for jQuery?
-        printViewTagList($('#tag_view_list .tag_view_list_tags'));
+        printViewTagList(document.querySelector('#tag_view_list .tag_view_list_tags'));
 
         // If the new focus would've been inside the now redrawn tag list, we should at least move back the focus to the current name
         // Otherwise tab-navigation gets a bit weird
