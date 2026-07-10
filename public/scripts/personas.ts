@@ -259,7 +259,7 @@ function verifyPersonaSearchSortRule() {
 function getUserAvatarBlock(avatarId) {
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const template = $('#user_avatar_template .avatar-container').clone();
-    const templateEl = template[0];
+    const templateEl = template;
     // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     const personaName = power_user.personas[avatarId];
     // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message

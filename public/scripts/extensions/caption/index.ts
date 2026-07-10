@@ -501,7 +501,7 @@ export async function init() {
         </div>`);
 
         $('#caption_wand_container').append(sendButton);
-        sendButton[0].addEventListener('click', () => {
+        sendButton.addEventListener('click', () => {
             const hasCaptionModule = (() => {
                 const settings = extension_settings.caption;
 

@@ -173,7 +173,7 @@ class RegexPresetManager {
         }
 
         // @ts-expect-error TS(2339): Property 'addEventListener' does not exist on type... Remove this comment to see the full error message
-        this.presetSelect.addEventListener('change', async (event: any) => {
+        this.presetSelect?.addEventListener('change', async (event: any) => {
             // @ts-expect-error TS(2531): Object is possibly 'null'.
             const selectedPresetId = this.presetSelect.value;
             const fromSlashCommand = event instanceof CustomEvent && event?.detail?.fromSlashCommand === true;
