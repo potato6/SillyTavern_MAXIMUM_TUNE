@@ -88,17 +88,17 @@ PHASE 8 — jQuery plugins (hard, requires replacement strategy)
 ----------------------------------------------------------------
 Tightest couplings — these plugins require jQuery and must be replaced or the lib must be kept:
 
-[ ] **select2** (~466 refs): Heaviest plugin dependency. Replace with Choices.js, Tom Select, or vanilla custom dropdown. Found in: openai.ts, textgen-settings.ts, power-user.ts, world-info.ts, slash-commands.ts, utils.ts, tags.ts, etc.
-[ ] **autocomplete** (jQuery UI, ~70 refs): Replace with custom datalist-based autocomplete or dedicated lib. Found in: autocomplete/AutoComplete.ts, world-info.ts, utils.ts
-[ ] **cropper** (~58 refs): `jquery-cropper` wrapping Cropper.js. Can use Cropper.js directly (no jQuery needed). Found in: popup.ts, power-user.ts, group-chats.ts
-[ ] **sortable** (~20 refs): Replace SortableJS lib (works standalone, no jQuery). Found in: power-user.ts, tags.ts, world-info.ts
-[ ] **tooltip** (~21 refs): jQuery UI tooltip. Replace with CSS-only tooltips or a lightweight lib. Found in: power-user.ts, textgen-models.ts
-[ ] **slider** (~7 refs): jQuery UI slider. Replace with native `<input type="range">` with + custom styling, or lightweight lib. Found in: textgen-settings.ts, kai-settings.ts, server-history.ts
-[ ] **draggable** (~6 refs): jQuery UI draggable. Found in: RossAscends-mods.ts, group-chats.ts, dragdrop.ts
-[ ] **pagination** (~12 refs): Custom pagination plugin on jQuery. Need to reverse-engineer or replace.
-[ ] **toastr**: Already used as standalone global. Remove jQuery dependency if possible, or switch to a vanilla toast library.
-[ ] **izoomify** (~2 refs): jQuery image zoom plugin. Find vanilla alternative if needed.
-[ ] **nanogallery2**: Type declarations only? Verify if still actively used.
+[x] **cropper** — Done! Converted to native `new Cropper()` in popup.ts
+[x] **tooltip** — 0 actual `.tooltip()` jQuery UI calls — all CSS tooltips
+[x] **draggable** — 0 actual `.draggable()` calls — SortableJS handles drag
+[x] **izoomify** — Not found in codebase
+[x] **nanogallery2** — Type declarations only, no active usage
+[ ] **select2** (~30 calls): Heaviest plugin dependency. Replace with Choices.js or Tom Select.
+[ ] **sortable** (~20 calls): SortableJS works standalone — just remove `$(el).sortable()` wrapper
+[ ] **autocomplete** (~12 calls): jQuery UI autocomplete. Replace with `<datalist>` or custom.
+[ ] **pagination** (~9 calls): Custom jQuery plugin. Reverse-engineer or replace.
+[ ] **slider** (~7 calls): jQuery UI slider. Complex zen slider system in power-user.ts.
+[ ] **toastr** (~636 calls): Already standalone — just cleanup `declare const toastr: any;` types.
 
 PHASE 9 — Cleanup
 -------------------
