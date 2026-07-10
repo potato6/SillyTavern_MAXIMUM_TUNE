@@ -863,60 +863,52 @@ export class PromptReasoning {
  */
 function loadReasoningSettings() {
     UI.$addToPrompts.prop('checked', power_user.reasoning.add_to_prompts);
-    UI.$addToPrompts.on('change', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        power_user.reasoning.add_to_prompts = !!$(this).prop('checked');
+    UI.$addToPrompts[0].addEventListener('change', function (this: HTMLInputElement) {
+        power_user.reasoning.add_to_prompts = this.checked;
         saveSettingsDebounced();
     });
 
     UI.$prefix.val(power_user.reasoning.prefix);
-    UI.$prefix.on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        power_user.reasoning.prefix = String($(this).val());
+    UI.$prefix[0].addEventListener('input', function (this: HTMLInputElement) {
+        power_user.reasoning.prefix = String(this.value);
         saveSettingsDebounced();
     });
 
     UI.$suffix.val(power_user.reasoning.suffix);
-    UI.$suffix.on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        power_user.reasoning.suffix = String($(this).val());
+    UI.$suffix[0].addEventListener('input', function (this: HTMLInputElement) {
+        power_user.reasoning.suffix = String(this.value);
         saveSettingsDebounced();
     });
 
     UI.$separator.val(power_user.reasoning.separator);
-    UI.$separator.on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        power_user.reasoning.separator = String($(this).val());
+    UI.$separator[0].addEventListener('input', function (this: HTMLInputElement) {
+        power_user.reasoning.separator = String(this.value);
         saveSettingsDebounced();
     });
 
     UI.$maxAdditions.val(power_user.reasoning.max_additions);
-    UI.$maxAdditions.on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        power_user.reasoning.max_additions = Number($(this).val());
+    UI.$maxAdditions[0].addEventListener('input', function (this: HTMLInputElement) {
+        power_user.reasoning.max_additions = Number(this.value);
         saveSettingsDebounced();
     });
 
     UI.$autoParse.prop('checked', power_user.reasoning.auto_parse);
-    UI.$autoParse.on('change', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        power_user.reasoning.auto_parse = !!$(this).prop('checked');
+    UI.$autoParse[0].addEventListener('change', function (this: HTMLInputElement) {
+        power_user.reasoning.auto_parse = this.checked;
         saveSettingsDebounced();
     });
 
     UI.$autoExpand.prop('checked', power_user.reasoning.auto_expand);
-    UI.$autoExpand.on('change', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        power_user.reasoning.auto_expand = !!$(this).prop('checked');
+    UI.$autoExpand[0].addEventListener('change', function (this: HTMLInputElement) {
+        power_user.reasoning.auto_expand = this.checked;
         toggleReasoningAutoExpand();
         saveSettingsDebounced();
     });
     toggleReasoningAutoExpand();
 
     UI.$showHidden.prop('checked', power_user.reasoning.show_hidden);
-    UI.$showHidden.on('change', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        power_user.reasoning.show_hidden = !!$(this).prop('checked');
+    UI.$showHidden[0].addEventListener('change', function (this: HTMLInputElement) {
+        power_user.reasoning.show_hidden = this.checked;
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#chat').attr('data-show-hidden-reasoning', power_user.reasoning.show_hidden ? 'true' : null);
         saveSettingsDebounced();
@@ -924,9 +916,8 @@ function loadReasoningSettings() {
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#chat').attr('data-show-hidden-reasoning', power_user.reasoning.show_hidden ? 'true' : null);
 
-    UI.$select.on('change', async function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const name = String($(this).val());
+    UI.$select[0].addEventListener('change', async function (this: HTMLSelectElement) {
+        const name = String(this.value);
         // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
         const template = reasoning_templates.find(p => p.name === name);
         if (!template) {
@@ -1344,47 +1335,52 @@ function setReasoningEventHandlers() {
         message.extra.reasoning_type = message.extra.reasoning_type ? ReasoningType.Edited : ReasoningType.Manual;
     }
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document).on('click', '.mes_reasoning_details', function (e) {
-        if (!e.target.closest('.mes_reasoning_actions') && !e.target.closest('.mes_reasoning_header')) {
+    document.addEventListener('click', function (e: Event) {
+        if (!(e.target instanceof Element)) return;
+        const el = e.target;
+        const details = el.closest('.mes_reasoning_details');
+        if (!details) return;
+        if (!el.closest('.mes_reasoning_actions') && !el.closest('.mes_reasoning_header')) {
             e.preventDefault();
         }
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document).on('click', '.mes_reasoning_header', function (e) {
-        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-        const details = this.closest('.mes_reasoning_details');
+    document.addEventListener('click', function (e: Event) {
+        if (!(e.target instanceof Element)) return;
+        const header = e.target.closest('.mes_reasoning_header');
+        if (!header) return;
+        const details = header.closest('.mes_reasoning_details');
         const reasoningEl = details?.querySelector('.mes_reasoning');
         if (reasoningEl && !reasoningEl.hasChildNodes()) {
             e.preventDefault();
             return;
         }
 
-        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-        const mes = this.closest('.mes');
-        const mesEditArea = mes.querySelector('#curEditTextarea');
+        const mes = header.closest('.mes');
+        const mesEditArea = mes?.querySelector('#curEditTextarea');
         if (mesEditArea) {
             const summary = mes.querySelector('.mes_reasoning_summary');
             if (summary && !summary.hasAttribute('open')) {
                 const editBtn = summary.querySelector('.mes_reasoning_edit');
-                if (editBtn) editBtn.click();
+                if (editBtn) (editBtn as HTMLElement).click();
             }
         }
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document).on('click', '.mes_reasoning_copy', (e) => {
+    document.addEventListener('click', function (e: Event) {
+        if (!(e.target instanceof Element)) return;
+        if (!e.target.closest('.mes_reasoning_copy')) return;
         e.stopPropagation();
         e.preventDefault();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document).on('click', '.mes_reasoning_edit', function (e) {
+    document.addEventListener('click', function (e: Event) {
+        if (!(e.target instanceof Element)) return;
+        const editBtn = e.target.closest('.mes_reasoning_edit');
+        if (!editBtn) return;
         e.stopPropagation();
         e.preventDefault();
-        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-        const { message, messageBlock } = getMessageFromJquery(this);
+        const { message, messageBlock } = getMessageFromJquery(editBtn);
         // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type 'never'.
         if (!message?.extra) {
             return;
@@ -1429,20 +1425,22 @@ function setReasoningEventHandlers() {
         }
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document).on('click', '.mes_reasoning_close_all', function (e) {
+    document.addEventListener('click', function (e: Event) {
+        if (!(e.target instanceof Element)) return;
+        if (!e.target.closest('.mes_reasoning_close_all')) return;
         e.stopPropagation();
         e.preventDefault();
 
         document.querySelectorAll('.mes_reasoning_details[open] .mes_reasoning_header').forEach(el => (el instanceof HTMLElement) && el.click());
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document).on('click', '.mes_reasoning_edit_done', async function (e) {
+    document.addEventListener('click', async function (e: Event) {
+        if (!(e.target instanceof Element)) return;
+        const editDone = e.target.closest('.mes_reasoning_edit_done');
+        if (!editDone) return;
         e.stopPropagation();
         e.preventDefault();
-        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-        const { message, messageId, messageBlock } = getMessageFromJquery(this);
+        const { message, messageId, messageBlock } = getMessageFromJquery(editDone);
         // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type 'never'.
         if (!message?.extra) {
             return;
@@ -1464,13 +1462,14 @@ function setReasoningEventHandlers() {
         await eventSource.emit(event_types.MESSAGE_REASONING_EDITED, messageId);
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document).on('click', '.mes_reasoning_edit_cancel', function (e) {
+    document.addEventListener('click', function (e: Event) {
+        if (!(e.target instanceof Element)) return;
+        const editCancel = e.target.closest('.mes_reasoning_edit_cancel');
+        if (!editCancel) return;
         e.stopPropagation();
         e.preventDefault();
 
-        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-        const { messageBlock } = getMessageFromJquery(this);
+        const { messageBlock } = getMessageFromJquery(editCancel);
         const textarea = messageBlock.querySelector('.reasoning_edit_textarea');
         textarea.remove();
 
@@ -1479,10 +1478,11 @@ function setReasoningEventHandlers() {
         updateReasoningUI(messageBlock);
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document).on('click', '.mes_edit_add_reasoning', async function () {
-        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-        const { message, messageBlock } = getMessageFromJquery(this);
+    document.addEventListener('click', async function (e: Event) {
+        if (!(e.target instanceof Element)) return;
+        const addReasoning = e.target.closest('.mes_edit_add_reasoning');
+        if (!addReasoning) return;
+        const { message, messageBlock } = getMessageFromJquery(addReasoning);
         // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type 'never'.
         if (!message?.extra) {
             return;
@@ -1509,8 +1509,10 @@ function setReasoningEventHandlers() {
         await saveChatConditional();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document).on('click', '.mes_reasoning_delete', async function (e) {
+    document.addEventListener('click', async function (e: Event) {
+        if (!(e.target instanceof Element)) return;
+        const delReasoning = e.target.closest('.mes_reasoning_delete');
+        if (!delReasoning) return;
         e.stopPropagation();
         e.preventDefault();
 
@@ -1538,10 +1540,11 @@ function setReasoningEventHandlers() {
         await eventSource.emit(event_types.MESSAGE_REASONING_DELETED, messageId);
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document).on('pointerup', '.mes_reasoning_copy', async function () {
-        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-        const { message } = getMessageFromJquery(this);
+    document.addEventListener('pointerup', async function (e: Event) {
+        if (!(e.target instanceof Element)) return;
+        const copyEl = e.target.closest('.mes_reasoning_copy');
+        if (!copyEl) return;
+        const { message } = getMessageFromJquery(copyEl);
         // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type 'never'.
         const reasoning = String(message?.extra?.reasoning ?? '');
 
@@ -1554,21 +1557,21 @@ function setReasoningEventHandlers() {
         toastr.info(t`Copied!`, '', { timeOut: 2000 });
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document).on('input', '.reasoning_edit_textarea', function () {
+    document.addEventListener('input', function (e: Event) {
+        if (!(e.target instanceof Element)) return;
+        const textarea = e.target.closest('.reasoning_edit_textarea');
+        if (!textarea) return;
         if (!power_user.auto_save_msg_edits) {
             return;
         }
 
-        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-        const { message, messageBlock } = getMessageFromJquery(this);
+        const { message, messageBlock } = getMessageFromJquery(textarea);
         // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type 'never'.
         if (!message?.extra) {
             return;
         }
 
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        updateReasoningFromValue(message, String($(this).val()));
+        updateReasoningFromValue(message, String((textarea as HTMLTextAreaElement).value));
         updateReasoningUI(messageBlock);
         saveChatDebounced();
     });
