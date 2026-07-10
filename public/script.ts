@@ -2371,15 +2371,15 @@ export function getMediaIndex(mes) {
 /**
  * Appends image or file to the message element.
  * @param {ChatMessage} mes Message object
- * @param {JQuery<HTMLElement>} messageElement Message element
+ * @param {Element} messageElement Message element
  * @param {string} [scrollBehavior] Scroll behavior when adjusting scroll position
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'mes' implicitly has an 'any' type.
 export function appendMediaToMessage(mes, messageElement, scrollBehavior = SCROLL_BEHAVIOR.ADJUST) {
     ensureMessageMediaIsArray(mes);
 
-    const fileWrapper = messageElement.find('.mes_file_wrapper');
-    const mediaWrapper = messageElement.find('.mes_media_wrapper');
+    const fileWrapper = messageElement?.querySelector('.mes_file_wrapper');
+    const mediaWrapper = messageElement?.querySelector('.mes_media_wrapper');
 
     const hasMedia = Array.isArray(mes?.extra?.media) && mes.extra.media.length > 0;
     const hasFiles = Array.isArray(mes?.extra?.files) && mes.extra.files.length > 0;
@@ -2410,51 +2410,53 @@ export function appendMediaToMessage(mes, messageElement, scrollBehavior = SCROL
     };
 
     // Set media display attribute
-    messageElement.attr('data-media-display', mediaDisplay);
+    messageElement?.setAttribute('data-media-display', mediaDisplay);
     // Toggle text visibility
-    messageElement.find('.mes_text').toggleClass('inline_media', hideMessageText);
+    messageElement?.querySelector('.mes_text')?.classList.toggle('inline_media', hideMessageText);
 
     /**
      * Appends a single image attachment to the message element.
      * @param {MediaAttachment} attachment Image attachment object
      * @param {number} index Index of the image attachment
-     * @returns {JQuery<HTMLElement>} The appended image container element
+     * @returns {Element} The appended image container element
      */
     // @ts-expect-error TS(7006) FIXME: Parameter 'attachment' implicitly has an 'any' typ... Remove this comment to see the full error message
     function appendImageAttachment(attachment, index) {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const template = $(document.querySelector('#message_image_template .mes_img_container').cloneNode(true));
-        template.attr('data-index', index);
+        const template = /** @type {HTMLElement} */ (document.querySelector('#message_image_template .mes_img_container')?.cloneNode(true));
+        if (!template) return document.createElement('div');
+        template.dataset.index = String(index);
 
-        const image = template.find('.mes_img');
-        image.attr('src', attachment.url);
-        image.attr('title', attachment.title || mes.extra.title || '');
-        mediaPromises.push(new Promise((resolve) => {
-            /**
-             *
-             */
-            function onLoad() {
-                image.removeAttr('alt');
-                image.removeClass('error');
-                // @ts-expect-error TS(2794) FIXME: Expected 1 arguments, but got 0. Did you forget to... Remove this comment to see the full error message
-                resolve();
-            }
-            /**
-             *
-             */
-            function onError() {
-                image.attr('alt', '');
-                image.addClass('error');
-                // @ts-expect-error TS(2794) FIXME: Expected 1 arguments, but got 0. Did you forget to... Remove this comment to see the full error message
-                resolve();
-            }
-            if (image.prop('complete')) {
-                onLoad();
-            } else {
-                image.off('load').on('load', onLoad);
-                image.off('error').on('error', onError);
-            }
-        }));
+        const image = /** @type {HTMLImageElement} */ (template.querySelector('.mes_img'));
+        if (image) {
+            image.src = attachment.url;
+            image.title = attachment.title || mes.extra.title || '';
+            mediaPromises.push(new Promise((resolve) => {
+                /**
+                 *
+                 */
+                function onLoad() {
+                    image.removeAttribute('alt');
+                    image.classList.remove('error');
+                    // @ts-expect-error TS(2794) FIXME: Expected 1 arguments, but got 0. Did you forget to... Remove this comment to see the full error message
+                    resolve();
+                }
+                /**
+                 *
+                 */
+                function onError() {
+                    image.alt = '';
+                    image.classList.add('error');
+                    // @ts-expect-error TS(2794) FIXME: Expected 1 arguments, but got 0. Did you forget to... Remove this comment to see the full error message
+                    resolve();
+                }
+                if (image.complete) {
+                    onLoad();
+                } else {
+                    image.addEventListener('load', onLoad);
+                    image.addEventListener('error', onError);
+                }
+            }));
+        }
 
         mediaBlocks.push(template);
         return template;
@@ -2464,40 +2466,42 @@ export function appendMediaToMessage(mes, messageElement, scrollBehavior = SCROL
      * Appends a single video attachment to the message element.
      * @param {MediaAttachment} attachment Video attachment object
      * @param {number} index Index of the video attachment
-     * @returns {JQuery<HTMLElement>} The appended video container element
+     * @returns {Element} The appended video container element
      */
     // @ts-expect-error TS(7006) FIXME: Parameter 'attachment' implicitly has an 'any' typ... Remove this comment to see the full error message
     function appendVideoAttachment(attachment, index) {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const template = $(document.querySelector('#message_video_template .mes_video_container').cloneNode(true));
-        template.attr('data-index', index);
+        const template = /** @type {HTMLElement} */ (document.querySelector('#message_video_template .mes_video_container')?.cloneNode(true));
+        if (!template) return document.createElement('div');
+        template.dataset.index = String(index);
 
-        const video = template.find('.mes_video');
-        video.attr('src', attachment.url);
-        video.attr('title', attachment.title || mes.extra.title || '');
-        mediaPromises.push(new Promise((resolve) => {
-            /**
-             *
-             */
-            function onLoad() {
-                // @ts-expect-error TS(2794) FIXME: Expected 1 arguments, but got 0. Did you forget to... Remove this comment to see the full error message
-                resolve();
-            }
-            /**
-             *
-             */
-            function onError() {
-                video.addClass('error');
-                // @ts-expect-error TS(2794) FIXME: Expected 1 arguments, but got 0. Did you forget to... Remove this comment to see the full error message
-                resolve();
-            }
-            if (video.prop('readyState') >= HTMLMediaElement.HAVE_CURRENT_DATA) {
-                onLoad();
-            } else {
-                video.off('loadeddata').on('loadeddata', onLoad);
-                video.off('error').on('error', onError);
-            }
-        }));
+        const video = /** @type {HTMLVideoElement} */ (template.querySelector('.mes_video'));
+        if (video) {
+            video.src = attachment.url;
+            video.title = attachment.title || mes.extra.title || '';
+            mediaPromises.push(new Promise((resolve) => {
+                /**
+                 *
+                 */
+                function onLoad() {
+                    // @ts-expect-error TS(2794) FIXME: Expected 1 arguments, but got 0. Did you forget to... Remove this comment to see the full error message
+                    resolve();
+                }
+                /**
+                 *
+                 */
+                function onError() {
+                    video.classList.add('error');
+                    // @ts-expect-error TS(2794) FIXME: Expected 1 arguments, but got 0. Did you forget to... Remove this comment to see the full error message
+                    resolve();
+                }
+                if (video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
+                    onLoad();
+                } else {
+                    video.addEventListener('loadeddata', onLoad);
+                    video.addEventListener('error', onError);
+                }
+            }));
+        }
 
         mediaBlocks.push(template);
         return template;
@@ -2507,42 +2511,43 @@ export function appendMediaToMessage(mes, messageElement, scrollBehavior = SCROL
      * Appends a single audio attachment to the message element.
      * @param {MediaAttachment} attachment Audio attachment object
      * @param {number} index Index of the audio attachment
-     * @returns {JQuery<HTMLElement>} The appended audio container element
+     * @returns {Element} The appended audio container element
      */
     // @ts-expect-error TS(7006) FIXME: Parameter 'attachment' implicitly has an 'any' typ... Remove this comment to see the full error message
     function appendAudioAttachment(attachment, index) {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const template = $(document.querySelector('#message_audio_template .mes_audio_container').cloneNode(true));
-        template.attr('data-index', index);
-        const audio = template.find('.mes_audio');
-        audio.attr('src', attachment.url);
-        audio.attr('title', attachment.title || mes.extra.title || '');
+        const template = /** @type {HTMLElement} */ (document.querySelector('#message_audio_template .mes_audio_container')?.cloneNode(true));
+        if (!template) return document.createElement('div');
+        template.dataset.index = String(index);
+        const audio = /** @type {HTMLAudioElement} */ (template.querySelector('.mes_audio'));
+        if (audio) {
+            audio.src = attachment.url;
+            audio.title = attachment.title || mes.extra.title || '';
+            mediaPromises.push(new Promise((resolve) => {
+                /**
+                 *
+                 */
+                function onLoad() {
+                    // @ts-expect-error TS(2794) FIXME: Expected 1 arguments, but got 0. Did you forget to... Remove this comment to see the full error message
+                    resolve();
+                }
+                /**
+                 *
+                 */
+                function onError() {
+                    audio.classList.add('error');
+                    // @ts-expect-error TS(2794) FIXME: Expected 1 arguments, but got 0. Did you forget to... Remove this comment to see the full error message
+                    resolve();
+                }
+                if (audio.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
+                    onLoad();
+                } else {
+                    audio.addEventListener('loadeddata', onLoad);
+                    audio.addEventListener('error', onError);
+                }
+            }));
 
-        mediaPromises.push(new Promise((resolve) => {
-            /**
-             *
-             */
-            function onLoad() {
-                // @ts-expect-error TS(2794) FIXME: Expected 1 arguments, but got 0. Did you forget to... Remove this comment to see the full error message
-                resolve();
-            }
-            /**
-             *
-             */
-            function onError() {
-                audio.addClass('error');
-                // @ts-expect-error TS(2794) FIXME: Expected 1 arguments, but got 0. Did you forget to... Remove this comment to see the full error message
-                resolve();
-            }
-            if (audio.prop('readyState') >= HTMLMediaElement.HAVE_CURRENT_DATA) {
-                onLoad();
-            } else {
-                audio.off('loadeddata').on('loadeddata', onLoad);
-                audio.off('error').on('error', onError);
-            }
-        }));
-
-        new AudioPlayer(audio.get(0), template.get(0));
+            new AudioPlayer(audio, template);
+        }
 
         mediaBlocks.push(template);
         return template;
@@ -2552,7 +2557,7 @@ export function appendMediaToMessage(mes, messageElement, scrollBehavior = SCROL
      * Appends a media attachment to the message element.
      * @param {MediaAttachment} attachment Media attachment object
      * @param {number} index Index of the media attachment
-     * @returns {JQuery<HTMLElement>} The appended media container element
+     * @returns {Element} The appended media container element
      */
     // @ts-expect-error TS(7006) FIXME: Parameter 'attachment' implicitly has an 'any' typ... Remove this comment to see the full error message
     function appendMediaAttachment(attachment, index) {
@@ -2578,9 +2583,8 @@ export function appendMediaToMessage(mes, messageElement, scrollBehavior = SCROL
      */
     function saveMediaStates() {
         const states = new Map();
-        const media = mediaWrapper.find('video, audio');
-        // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
-        media.each((_, element) => {
+        const media = mediaWrapper?.querySelectorAll('video, audio') ?? [];
+        media.forEach((element) => {
             if (element instanceof HTMLMediaElement) {
                 if (!element.currentSrc || element.readyState === HTMLMediaElement.HAVE_NOTHING) {
                     return;
@@ -2598,9 +2602,8 @@ export function appendMediaToMessage(mes, messageElement, scrollBehavior = SCROL
      */
     // @ts-expect-error TS(7006) FIXME: Parameter 'states' implicitly has an 'any' type.
     function restoreMediaStates(states) {
-        const media = mediaWrapper.find('video, audio');
-        // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
-        media.each((_, element) => {
+        const media = mediaWrapper?.querySelectorAll('video, audio') ?? [];
+        media.forEach((element) => {
             if (element instanceof HTMLMediaElement) {
                 const restoreState = () => {
                     if (!states.has(element.currentSrc)) {
@@ -2626,14 +2629,15 @@ export function appendMediaToMessage(mes, messageElement, scrollBehavior = SCROL
         const mediaIndex = getMediaIndex(mes);
         const selectedMedia = mes.extra.media[mediaIndex];
 
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const galleryControls = $(document.querySelector('#message_gallery_controls .mes_img_swipes').cloneNode(true));
-        const counter = galleryControls.find('.mes_img_swipe_counter');
-        counter.text(`${mediaIndex + 1}/${mes.extra.media.length}`);
+        const galleryControls = /** @type {HTMLElement} */ (document.querySelector('#message_gallery_controls .mes_img_swipes')?.cloneNode(true));
+        if (galleryControls) {
+            const counter = galleryControls.querySelector('.mes_img_swipe_counter');
+            if (counter) counter.textContent = `${mediaIndex + 1}/${mes.extra.media.length}`;
 
-        const template = appendMediaAttachment(selectedMedia, mediaIndex);
-        template.addClass('img_swipes');
-        template[0].append(galleryControls[0]);
+            const template = appendMediaAttachment(selectedMedia, mediaIndex);
+            template.classList.add('img_swipes');
+            template.append(galleryControls);
+        }
     }
 
     // Add media as a list to message
@@ -2645,24 +2649,27 @@ export function appendMediaToMessage(mes, messageElement, scrollBehavior = SCROL
     }
 
     // Remove existing file containers
-    fileWrapper[0].innerHTML = '';
+    if (fileWrapper) fileWrapper.innerHTML = '';
 
     // Add files to message
     if (hasFiles) {
         for (let index = 0; index < mes.extra.files.length; index++) {
             const file = mes.extra.files[index];
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const template = $(document.querySelector('#message_file_template .mes_file_container').cloneNode(true));
-            template.attr('data-index', index);
-            template.find('.mes_file_name').text(file.name).attr('title', file.name);
-            template.find('.mes_file_size').text(humanFileSize(file.size)).attr('title', file.size);
-            fileWrapper[0].append(template[0]);
+            const template = /** @type {HTMLElement} */ (document.querySelector('#message_file_template .mes_file_container')?.cloneNode(true));
+            if (template) {
+                template.dataset.index = String(index);
+                const nameEl = template.querySelector('.mes_file_name');
+                if (nameEl) { nameEl.textContent = file.name; nameEl.setAttribute('title', file.name); }
+                const sizeEl = template.querySelector('.mes_file_size');
+                if (sizeEl) { sizeEl.textContent = humanFileSize(file.size); sizeEl.setAttribute('title', file.size); }
+                fileWrapper?.append(template);
+            }
         }
     }
 
     // Early return if no media
     if (!hasMedia) {
-        mediaWrapper[0].innerHTML = '';
+        if (mediaWrapper) mediaWrapper.innerHTML = '';
         doAdjustScroll();
         return;
     }
@@ -2671,9 +2678,9 @@ export function appendMediaToMessage(mes, messageElement, scrollBehavior = SCROL
     // @ts-expect-error TS(7005) FIXME: Variable 'mediaPromises' implicitly has an 'any[]'... Remove this comment to see the full error message
     Promise.race([Promise.all(mediaPromises), delay(debounce_timeout.short)]).then(() => {
         const states = saveMediaStates();
-        mediaWrapper[0].innerHTML = '';
+        if (mediaWrapper) mediaWrapper.innerHTML = '';
         // @ts-expect-error TS(7005) FIXME: Variable 'mediaBlocks' implicitly has an 'any[]' t... Remove this comment to see the full error message
-        mediaWrapper[0].append(...mediaBlocks.map(el => el[0]));
+        if (mediaWrapper) mediaWrapper.append(...mediaBlocks);
         restoreMediaStates(states);
         doAdjustScroll();
     });
@@ -8839,8 +8846,7 @@ export function setUserName(value, { toastPersonaNameChange = true } = {}) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'avatarId' implicitly has an 'any' type.
 async function doOnboarding(avatarId) {
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const template = $('#onboarding_template .onboarding');
+    const template = document.querySelector('#onboarding_template .onboarding');
     let userName = await callGenericPopup(template, POPUP_TYPE.INPUT, currentUser?.name || name1, { wider: true, cancelButton: false });
 
     if (userName) {
@@ -8896,8 +8902,7 @@ export async function getSettings(initLoaderHandle = null) {
         settings = JSON.parse(data.settings);
         if (settings.username !== undefined && settings.username !== '') {
             name1 = settings.username;
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#your_name').text(name1);
+            document.querySelector('#your_name').textContent = name1;
         }
 
         accountStorage.init(settings?.accountStorage);
@@ -8913,8 +8918,7 @@ export async function getSettings(initLoaderHandle = null) {
             max_context = parseInt(settings.max_context);
 
         swipes = settings.swipes !== undefined ? !!settings.swipes : true;  // enable swipes by default
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#swipes-checkbox').prop('checked', swipes); /// swipecode
+        document.querySelector('#swipes-checkbox').checked = swipes; /// swipecode
         refreshSwipeButtons();
 
         // Kobold
@@ -8951,15 +8955,15 @@ export async function getSettings(initLoaderHandle = null) {
         await eventSource.emit(event_types.SETTINGS_LOADED_AFTER, settings);
 
         // Set context size after loading power user (may override the max value)
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#max_context').val(max_context);
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#max_context_counter').val(max_context);
+        const maxContextElement = document.querySelector('#max_context');
+        const maxContextCounterElement = document.querySelector('#max_context_counter');
+        if (maxContextElement) maxContextElement.value = max_context;
+        if (maxContextCounterElement) maxContextCounterElement.value = max_context;
 
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#amount_gen').val(amount_gen);
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#amount_gen_counter').val(amount_gen);
+        const amountGenElement = document.querySelector('#amount_gen');
+        const amountGenCounterElement = document.querySelector('#amount_gen_counter');
+        if (amountGenElement) amountGenElement.value = amount_gen;
+        if (amountGenCounterElement) amountGenCounterElement.value = amount_gen;
 
         //Load which API we are using
         if (settings.main_api == undefined) {
@@ -8971,10 +8975,9 @@ export async function getSettings(initLoaderHandle = null) {
         }
 
         main_api = settings.main_api;
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#main_api').val(main_api);
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(`#main_api option[value=${main_api}]`).attr('selected', 'true');
+        document.querySelector('#main_api').value = main_api;
+        const mainApiOption = document.querySelector(`#main_api option[value="${main_api}"]`);
+        if (mainApiOption) mainApiOption.setAttribute('selected', 'true');
         changeMainAPI();
 
         //Load User's Name and Avatar
@@ -9000,20 +9003,13 @@ export async function getSettings(initLoaderHandle = null) {
             await eventSource.emit(event_types.EXTENSION_SETTINGS_LOADED);
         } else {
             Object.assign(extension_settings, (settings.extension_settings ?? {}));
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#third_party_extension_button').addClass('disabled');
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#extensions_details').addClass('disabled');
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#extensions_connect').addClass('disabled');
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#extensions_notify_updates').attr('disabled', 'disabled');
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#extensions_autoconnect').attr('disabled', 'disabled');
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#extensions_url').attr('disabled', 'disabled');
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#extensions_api_key').attr('disabled', 'disabled');
+            document.querySelector('#third_party_extension_button')?.classList.add('disabled');
+            document.querySelector('#extensions_details')?.classList.add('disabled');
+            document.querySelector('#extensions_connect')?.classList.add('disabled');
+            document.querySelector('#extensions_notify_updates')?.setAttribute('disabled', 'disabled');
+            document.querySelector('#extensions_autoconnect')?.setAttribute('disabled', 'disabled');
+            document.querySelector('#extensions_url')?.setAttribute('disabled', 'disabled');
+            document.querySelector('#extensions_api_key')?.setAttribute('disabled', 'disabled');
         }
 
         firstRun = !!settings.firstRun;
@@ -9110,23 +9106,26 @@ export async function saveSettings(loopCounter = 0) {
 // @ts-expect-error TS(7006) FIXME: Parameter 'preset' implicitly has an 'any' type.
 export function setGenerationParamsFromPreset(preset) {
     const needsUnlock = (preset.max_length ?? max_context) > MAX_CONTEXT_DEFAULT || (preset.genamt ?? amount_gen) > MAX_RESPONSE_DEFAULT;
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#max_context_unlocked').prop('checked', needsUnlock).trigger('change');
+    const unlockedCheckbox = document.querySelector('#max_context_unlocked');
+    if (unlockedCheckbox) {
+        unlockedCheckbox.checked = needsUnlock;
+        unlockedCheckbox.dispatchEvent(new Event('change', { bubbles: true }));
+    }
 
     if (preset.genamt !== undefined) {
         amount_gen = preset.genamt;
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#amount_gen').val(amount_gen);
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#amount_gen_counter').val(amount_gen);
+        const amountGenEl = document.querySelector('#amount_gen');
+        const amountGenCounterEl = document.querySelector('#amount_gen_counter');
+        if (amountGenEl) amountGenEl.value = amount_gen;
+        if (amountGenCounterEl) amountGenCounterEl.value = amount_gen;
     }
 
     if (preset.max_length !== undefined) {
         max_context = preset.max_length;
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#max_context').val(max_context);
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#max_context_counter').val(max_context);
+        const maxContextEl = document.querySelector('#max_context');
+        const maxContextCounterEl = document.querySelector('#max_context_counter');
+        if (maxContextEl) maxContextEl.value = max_context;
+        if (maxContextCounterEl) maxContextCounterEl.value = max_context;
     }
 }
 
