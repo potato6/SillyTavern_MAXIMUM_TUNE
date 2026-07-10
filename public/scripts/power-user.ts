@@ -2500,7 +2500,7 @@ async function loadContextSettings() {
         // If the setting already exists, no need to duplicate it
         // TODO: Maybe check the power_user object for the setting instead of a flag?
         $element[0]?.addEventListener('input', async function (this: HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement) {
-            let value = control.isCheckbox ? !!(this as HTMLInputElement).checked : this.value;
+            let value: string | boolean | number = control.isCheckbox ? !!(this as HTMLInputElement).checked : this.value;
             if (typeof control.defaultValue === 'number') {
                 value = Number(value);
             }
