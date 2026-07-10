@@ -3987,7 +3987,7 @@ export async function getWorldEntry(name, data, entry) {
         if (drawerInitialized) {
             drawerDestroyTimeout = setTimeout(() => {
                 // Drawer was reopened, so we don't destroy it
-                if (editOutlet.is(':visible')) {
+                if (editOutlet.offsetParent !== null) {
                     return;
                 }
                 drawerInitialized = false;
@@ -6701,7 +6701,7 @@ export async function importWorldInfo(file) {
 export function openWorldInfoEditor(worldName) {
     console.log(`Opening lorebook for ${worldName}`);
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    if (!document.getElementById('WorldInfo').is(':visible')) {
+    if (!document.getElementById('WorldInfo').offsetParent !== null) {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         document.getElementById('WIDrawerIcon').dispatchEvent(new Event('click', { bubbles: true }));
     }

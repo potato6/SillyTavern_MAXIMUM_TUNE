@@ -156,14 +156,14 @@ async function openSwipePicker(messageId) {
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const template = $('#past_chat_template .select_chat_block_wrapper').clone();
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const block = $(template[0].querySelector('.select_chat_block'));
+            const block = template.querySelector('.select_chat_block');
             block.removeClass('select_chat_block').classList.add('swipe_picker_block');
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(block[0].querySelector('.select_chat_actions')).classList.remove('gap10px');
+                        block.querySelector('.select_chat_actions').classList.remove('gap10px');
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const branchButton = $(template[0].querySelector('.exportRawChatButton'));
+            const branchButton = template.querySelector('.exportRawChatButton');
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const deleteButton = $(template[0].querySelector('.PastChat_cross'));
+            const deleteButton = template.querySelector('.PastChat_cross');
             const swipeInfo = Array.isArray(message.swipe_info) ? message.swipe_info[index] : null;
             const sendDate = swipeInfo?.send_date ? timestampToMoment(swipeInfo.send_date).format('lll') : '';
             const previewText = swipeText.replace(/\s+/g, ' ').trim();
@@ -186,7 +186,7 @@ async function openSwipePicker(messageId) {
             });
 
             // @ts-expect-error TS(7006) FIXME: Parameter 'el' implicitly has an 'any' type.
-            template[0].querySelectorAll('.renameChatButton, .exportChatButton').forEach(el => el.remove());
+            template.querySelectorAll('.renameChatButton, .exportChatButton').forEach(el => el.remove());
             branchButton
                 .removeAttr('data-format')
                 .attr({
@@ -271,7 +271,7 @@ async function openSwipePicker(messageId) {
             expandCheckbox.type = 'checkbox';
             expandCheckbox.id = expandCheckboxId;
             expandCheckbox.classList.add('swipe_picker_expand_toggle');
-            block[0].prepend(expandCheckbox);
+            block.prepend(expandCheckbox);
 
             const expandLabel = document.createElement('label');
             expandLabel.htmlFor = expandCheckboxId;
@@ -309,8 +309,8 @@ async function openSwipePicker(messageId) {
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             template.querySelector('.select_chat_block_mes').textContent = previewText ? swipeText : t`(empty swipe)`;
 
-            block[0]?.addEventListener('click', () => setSelectedSwipe(index));
-            block[0]?.addEventListener('dblclick', async () => {
+            block?.addEventListener('click', () => setSelectedSwipe(index));
+            block?.addEventListener('dblclick', async () => {
                 if (!canJumpToSwipe) {
                     return;
                 }
@@ -319,7 +319,7 @@ async function openSwipePicker(messageId) {
                 await popup.completeAffirmative();
             });
 
-            return template[0];
+            return template;
         }));
 
         listContainer.replaceChildren(...swipeBlocks);

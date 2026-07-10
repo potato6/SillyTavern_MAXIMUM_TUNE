@@ -335,17 +335,17 @@ async function changePassword(handle, callback) {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const template = $(await renderTemplateAsync('changePassword'));
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(template[0].querySelector('.currentPasswordBlock')).toggle(!isAdmin());
+        template.querySelector('.currentPasswordBlock').toggle(!isAdmin());
         let newPassword = '';
         let confirmPassword = '';
         let oldPassword = '';
-        template[0].querySelector('input[name="current"]').addEventListener('input', function (this: HTMLInputElement) {
+        template.querySelector('input[name="current"]').addEventListener('input', function (this: HTMLInputElement) {
             oldPassword = String(this.value);
         });
-        template[0].querySelector('input[name="password"]').addEventListener('input', function (this: HTMLInputElement) {
+        template.querySelector('input[name="password"]').addEventListener('input', function (this: HTMLInputElement) {
             newPassword = String(this.value);
         });
-        template[0].querySelector('input[name="confirm"]').addEventListener('input', function (this: HTMLInputElement) {
+        template.querySelector('input[name="confirm"]').addEventListener('input', function (this: HTMLInputElement) {
             confirmPassword = String(this.value);
         });
         const result = await callGenericPopup(template, POPUP_TYPE.CONFIRM, '', { okButton: 'Change', cancelButton: 'Cancel', wide: false, large: false });
@@ -401,11 +401,11 @@ async function deleteUser(handle, callback) {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const template = $(await renderTemplateAsync('deleteUser'));
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(template[0].querySelector('#deleteUserName')).textContent = handle;
-        template[0].querySelector('input[name="deleteUserData"]').addEventListener('input', function (this: HTMLInputElement) {
+        template.querySelector('#deleteUserName').textContent = handle;
+        template.querySelector('input[name="deleteUserData"]').addEventListener('input', function (this: HTMLInputElement) {
             purge = this.checked;
         });
-        template[0].querySelector('input[name="deleteUserHandle"]').addEventListener('input', function (this: HTMLInputElement) {
+        template.querySelector('input[name="deleteUserHandle"]').addEventListener('input', function (this: HTMLInputElement) {
             confirmHandle = String(this.value);
         });
 
@@ -453,7 +453,7 @@ async function resetSettings(handle, callback) {
         let password = '';
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const template = $(await renderTemplateAsync('resetSettings'));
-        template[0].querySelector('input[name="password"]').addEventListener('input', function (this: HTMLInputElement) {
+        template.querySelector('input[name="password"]').addEventListener('input', function (this: HTMLInputElement) {
             password = String(this.value);
         });
         const result = await callGenericPopup(template, POPUP_TYPE.CONFIRM, '', { okButton: 'Reset', cancelButton: 'Cancel', wide: false, large: false });
@@ -658,36 +658,36 @@ async function viewSettingsSnapshots() {
     async function renderSnapshots() {
         const snapshots = await getSnapshots();
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(template[0].querySelector('.snapshotList')).innerHTML = '';
+        template.querySelector('.snapshotList').innerHTML = '';
 
         // @ts-expect-error TS(7006) FIXME: Parameter 'a' implicitly has an 'any' type.
         for (const snapshot of snapshots.sort((a, b) => b.date - a.date)) {
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const snapshotBlock = $(template[0].querySelector('.snapshotTemplate .snapshot')).clone();
+            const snapshotBlock = template.querySelector('.snapshotTemplate .snapshot').clone();
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(snapshotBlock[0].querySelector('.snapshotName')).textContent = snapshot.name;
+            snapshotBlock.querySelector('.snapshotName').textContent = snapshot.name;
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(snapshotBlock[0].querySelector('.snapshotDate')).textContent = new Date(snapshot.date.toLocaleString());
+            snapshotBlock.querySelector('.snapshotDate').textContent = new Date(snapshot.date.toLocaleString());
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(snapshotBlock[0].querySelector('.snapshotSize')).textContent = humanFileSize(snapshot.size);
-            snapshotBlock[0].querySelector('.snapshotRestoreButton').addEventListener('click', async (e: Event) => {
+            snapshotBlock.querySelector('.snapshotSize').textContent = humanFileSize(snapshot.size);
+            snapshotBlock.querySelector('.snapshotRestoreButton').addEventListener('click', async (e: Event) => {
                 e.stopPropagation();
                 restoreSnapshot(snapshot.name, () => location.reload());
             });
-            snapshotBlock[0].querySelector('.inline-drawer-toggle').addEventListener('click', async () => {
-                const contentBlock = snapshotBlock[0].querySelector('.snapshotContent');
+            snapshotBlock.querySelector('.inline-drawer-toggle').addEventListener('click', async () => {
+                const contentBlock = snapshotBlock.querySelector('.snapshotContent');
                 if (contentBlock && !contentBlock.value) {
                     const content = await loadSnapshotContent(snapshot.name);
                     contentBlock.value = content;
                 }
             });
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(template[0].querySelector('.snapshotList')).append(snapshotBlock);
+            template.querySelector('.snapshotList').append(snapshotBlock);
         }
     }
 
     callGenericPopup(template, POPUP_TYPE.TEXT, '', { okButton: 'Close', wide: false, large: false, allowVerticalScrolling: true });
-    template[0].querySelector('.makeSnapshotButton').addEventListener('click', () => makeSnapshot(renderSnapshots));
+    template.querySelector('.makeSnapshotButton').addEventListener('click', () => makeSnapshot(renderSnapshots));
     renderSnapshots();
 }
 
@@ -715,10 +715,10 @@ async function resetEverything(callback) {
 
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const template = $(await renderTemplateAsync('userReset'));
-        template[0].querySelector('input[name="password"]').addEventListener('input', function (this: HTMLInputElement) {
+        template.querySelector('input[name="password"]').addEventListener('input', function (this: HTMLInputElement) {
             password = String(this.value);
         });
-        template[0].querySelector('input[name="code"]').addEventListener('input', function (this: HTMLInputElement) {
+        template.querySelector('input[name="code"]').addEventListener('input', function (this: HTMLInputElement) {
             code = String(this.value);
         });
         const confirm = await callGenericPopup(
@@ -761,41 +761,41 @@ async function openUserProfile() {
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const template = $(await renderTemplateAsync('userProfile'));
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(template[0].querySelector('.userName')).textContent = currentUser.name;
+    template.querySelector('.userName').textContent = currentUser.name;
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(template[0].querySelector('.userHandle')).textContent = currentUser.handle;
+    template.querySelector('.userHandle').textContent = currentUser.handle;
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(template[0].querySelector('.avatar img')).setAttribute('src', currentUser.avatar);
+    template.querySelector('.avatar img').setAttribute('src', currentUser.avatar);
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(template[0].querySelector('.userRole')).textContent = currentUser.admin ? 'Admin' : 'User';
+    template.querySelector('.userRole').textContent = currentUser.admin ? 'Admin' : 'User';
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(template[0].querySelector('.userCreated')).textContent = new Date(currentUser.created.toLocaleString());
+    template.querySelector('.userCreated').textContent = new Date(currentUser.created.toLocaleString());
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(template[0].querySelector('.hasPassword')).toggle(currentUser.password);
+    template.querySelector('.hasPassword').toggle(currentUser.password);
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(template[0].querySelector('.noPassword')).toggle(!currentUser.password);
-    template[0].querySelector('.userSettingsSnapshotsButton').addEventListener('click', () => viewSettingsSnapshots());
-    template[0].querySelector('.userChangeNameButton').addEventListener('click', async () => changeName(currentUser!.handle, currentUser!.name, async () => {
+    template.querySelector('.noPassword').toggle(!currentUser.password);
+    template.querySelector('.userSettingsSnapshotsButton').addEventListener('click', () => viewSettingsSnapshots());
+    template.querySelector('.userChangeNameButton').addEventListener('click', async () => changeName(currentUser!.handle, currentUser!.name, async () => {
         await getCurrentUser();
-        template[0].querySelector('.userName').textContent = currentUser!.name;
+        template.querySelector('.userName').textContent = currentUser!.name;
     }));
-    template[0].querySelector('.userChangePasswordButton').addEventListener('click', () => changePassword(currentUser!.handle, async () => {
+    template.querySelector('.userChangePasswordButton').addEventListener('click', () => changePassword(currentUser!.handle, async () => {
         await getCurrentUser();
-        const hasPasswordEl = template[0].querySelector('.hasPassword');
-        const noPasswordEl = template[0].querySelector('.noPassword');
+        const hasPasswordEl = template.querySelector('.hasPassword');
+        const noPasswordEl = template.querySelector('.noPassword');
         if (hasPasswordEl) hasPasswordEl.style.display = currentUser!.password ? '' : 'none';
         if (noPasswordEl) noPasswordEl.style.display = !currentUser!.password ? '' : 'none';
     }));
-    template[0].querySelector('.userBackupButton').addEventListener('click', function (this: HTMLElement) {
+    template.querySelector('.userBackupButton').addEventListener('click', function (this: HTMLElement) {
         this.classList.add('disabled');
         backupUserData(currentUser!.handle, () => {
             this.classList.remove('disabled');
         });
     });
-    template[0].querySelector('.userResetSettingsButton').addEventListener('click', () => resetSettings(currentUser!.handle, () => location.reload()));
-    template[0].querySelector('.userResetAllButton').addEventListener('click', () => resetEverything(() => location.reload()));
-    template[0].querySelector('.userAvatarChange').addEventListener('click', () => template[0].querySelector('.avatarUpload').dispatchEvent(new Event('click')));
-    template[0].querySelector('.avatarUpload').addEventListener('change', async function (this: HTMLInputElement) {
+    template.querySelector('.userResetSettingsButton').addEventListener('click', () => resetSettings(currentUser!.handle, () => location.reload()));
+    template.querySelector('.userResetAllButton').addEventListener('click', () => resetEverything(() => location.reload()));
+    template.querySelector('.userAvatarChange').addEventListener('click', () => template.querySelector('.avatarUpload').dispatchEvent(new Event('click')));
+    template.querySelector('.avatarUpload').addEventListener('change', async function (this: HTMLInputElement) {
         if (!(this instanceof HTMLInputElement)) {
             return;
         }
@@ -807,19 +807,19 @@ async function openUserProfile() {
 
         await cropAndUploadAvatar(currentUser!.handle, file);
         await getCurrentUser();
-        const avatarImg = template[0].querySelector('.avatar img');
+        const avatarImg = template.querySelector('.avatar img');
         if (avatarImg) avatarImg.setAttribute('src', currentUser!.avatar);
     });
-    template[0].querySelector('.userAvatarRemove').addEventListener('click', async function (this: HTMLElement) {
+    template.querySelector('.userAvatarRemove').addEventListener('click', async function (this: HTMLElement) {
         await changeAvatar(currentUser!.handle, '');
         await getCurrentUser();
-        const avatarImg = template[0].querySelector('.avatar img');
+        const avatarImg = template.querySelector('.avatar img');
         if (avatarImg) avatarImg.setAttribute('src', currentUser!.avatar);
     });
 
     if (!accountsEnabled) {
-        template[0].querySelectorAll('[data-require-accounts]').forEach(el => (el as HTMLElement).style.display = 'none');
-        const accountsDisabledHint = template[0].querySelector('.accountsDisabledHint') as HTMLElement | null;
+        template.querySelectorAll('[data-require-accounts]').forEach(el => (el as HTMLElement).style.display = 'none');
+        const accountsDisabledHint = template.querySelector('.accountsDisabledHint') as HTMLElement | null;
         if (accountsDisabledHint) accountsDisabledHint.style.display = '';
     }
 
@@ -888,49 +888,49 @@ async function openAdminPanel() {
     async function renderUsers() {
         const users = await getUsers();
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(template[0].querySelector('.usersList')).innerHTML = '';
+        template.querySelector('.usersList').innerHTML = '';
         for (const user of users) {
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const userBlock = $(template[0].querySelector('.userAccountTemplate .userAccount')).clone();
+            const userBlock = template.querySelector('.userAccountTemplate .userAccount').clone();
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(userBlock[0].querySelector('.userName')).textContent = user.name;
+            userBlock.querySelector('.userName').textContent = user.name;
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(userBlock[0].querySelector('.userHandle')).textContent = user.handle;
+            userBlock.querySelector('.userHandle').textContent = user.handle;
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(userBlock[0].querySelector('.userStatus')).textContent = user.enabled ? 'Enabled' : 'Disabled';
+            userBlock.querySelector('.userStatus').textContent = user.enabled ? 'Enabled' : 'Disabled';
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(userBlock[0].querySelector('.userRole')).textContent = user.admin ? 'Admin' : 'User';
+            userBlock.querySelector('.userRole').textContent = user.admin ? 'Admin' : 'User';
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(userBlock[0].querySelector('.avatar img')).setAttribute('src', user.avatar);
+            userBlock.querySelector('.avatar img').setAttribute('src', user.avatar);
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(userBlock[0].querySelector('.hasPassword')).toggle(user.password);
+            userBlock.querySelector('.hasPassword').toggle(user.password);
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(userBlock[0].querySelector('.noPassword')).toggle(!user.password);
+            userBlock.querySelector('.noPassword').toggle(!user.password);
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(userBlock[0].querySelector('.userCreated')).textContent = new Date(user.created.toLocaleString());
-            const enableBtn = userBlock[0].querySelector('.userEnableButton');
+            userBlock.querySelector('.userCreated').textContent = new Date(user.created.toLocaleString());
+            const enableBtn = userBlock.querySelector('.userEnableButton');
             enableBtn.style.display = !user.enabled ? '' : 'none';
             enableBtn.addEventListener('click', () => enableUser(user.handle, renderUsers));
-            const disableBtn = userBlock[0].querySelector('.userDisableButton');
+            const disableBtn = userBlock.querySelector('.userDisableButton');
             disableBtn.style.display = user.enabled ? '' : 'none';
             disableBtn.addEventListener('click', () => disableUser(user.handle, renderUsers));
-            const promoteBtn = userBlock[0].querySelector('.userPromoteButton');
+            const promoteBtn = userBlock.querySelector('.userPromoteButton');
             promoteBtn.style.display = !user.admin ? '' : 'none';
             promoteBtn.addEventListener('click', () => promoteUser(user.handle, renderUsers));
-            const demoteBtn = userBlock[0].querySelector('.userDemoteButton');
+            const demoteBtn = userBlock.querySelector('.userDemoteButton');
             demoteBtn.style.display = user.admin ? '' : 'none';
             demoteBtn.addEventListener('click', () => demoteUser(user.handle, renderUsers));
-            userBlock[0].querySelector('.userChangePasswordButton').addEventListener('click', () => changePassword(user.handle, renderUsers));
-            userBlock[0].querySelector('.userDelete').addEventListener('click', () => deleteUser(user.handle, renderUsers));
-            userBlock[0].querySelector('.userChangeNameButton').addEventListener('click', async () => changeName(user.handle, user.name, renderUsers));
-            userBlock[0].querySelector('.userBackupButton').addEventListener('click', function (this: HTMLElement) {
+            userBlock.querySelector('.userChangePasswordButton').addEventListener('click', () => changePassword(user.handle, renderUsers));
+            userBlock.querySelector('.userDelete').addEventListener('click', () => deleteUser(user.handle, renderUsers));
+            userBlock.querySelector('.userChangeNameButton').addEventListener('click', async () => changeName(user.handle, user.name, renderUsers));
+            userBlock.querySelector('.userBackupButton').addEventListener('click', function (this: HTMLElement) {
                 this.classList.add('disabled');
                 // Remove any existing listeners to prevent double-click
                 // (original used .off('click'))
                 backupUserData(user.handle, renderUsers);
             });
-            userBlock[0].querySelector('.userAvatarChange').addEventListener('click', () => userBlock[0].querySelector('.avatarUpload').dispatchEvent(new Event('click')));
-            userBlock[0].querySelector('.avatarUpload').addEventListener('change', async function (this: HTMLInputElement) {
+            userBlock.querySelector('.userAvatarChange').addEventListener('click', () => userBlock.querySelector('.avatarUpload').dispatchEvent(new Event('click')));
+            userBlock.querySelector('.avatarUpload').addEventListener('change', async function (this: HTMLInputElement) {
                 if (!(this instanceof HTMLInputElement)) {
                     return;
                 }
@@ -943,38 +943,38 @@ async function openAdminPanel() {
                 await cropAndUploadAvatar(user.handle, file);
                 renderUsers();
             });
-            userBlock[0].querySelector('.userAvatarRemove').addEventListener('click', async function (this: HTMLElement) {
+            userBlock.querySelector('.userAvatarRemove').addEventListener('click', async function (this: HTMLElement) {
                 await changeAvatar(user.handle, '');
                 renderUsers();
             });
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(template[0].querySelector('.usersList')).append(userBlock);
+            template.querySelector('.usersList').append(userBlock);
         }
     }
 
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const template = $(await renderTemplateAsync('admin'));
 
-    template[0].querySelectorAll('.adminNav > button').forEach((el: Element) => el.addEventListener('click', function (this: HTMLElement) {
+    template.querySelectorAll('.adminNav > button').forEach((el: Element) => el.addEventListener('click', function (this: HTMLElement) {
     const target = String(this.dataset.targetTab);
-    template[0].querySelectorAll('.navTab').forEach((tab: Element) => {
+    template.querySelectorAll('.navTab').forEach((tab: Element) => {
         (tab as HTMLElement).style.display = tab.classList.contains(target) ? '' : 'none';
         });
     }));
 
-    template[0].querySelector('.createUserDisplayName').addEventListener('input', async function (this: HTMLInputElement) {
+    template.querySelector('.createUserDisplayName').addEventListener('input', async function (this: HTMLInputElement) {
         const slug = await slugify(String(this.value));
-        (template[0].querySelector('.createUserHandle') as HTMLInputElement).value = slug;
+        (template.querySelector('.createUserHandle') as HTMLInputElement).value = slug;
     });
 
-    template[0].querySelector('.userCreateForm').addEventListener('submit', function (event: Event) {
+    template.querySelector('.userCreateForm').addEventListener('submit', function (event: Event) {
         if (!(event.target instanceof HTMLFormElement)) {
             return;
         }
 
         event.preventDefault();
         createUser(event.target, () => {
-            template[0].querySelector('.manageUsersButton').dispatchEvent(new Event('click'));
+            template.querySelector('.manageUsersButton').dispatchEvent(new Event('click'));
             renderUsers();
         });
     });

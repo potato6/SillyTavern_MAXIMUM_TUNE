@@ -1890,14 +1890,14 @@ async function openAttachmentManager() {
     }));
 
     template.querySelector('.bulkActionSelectAll')?.addEventListener('click', () => {
-        document.querySelectorAll('.attachmentListItemCheckbox:visible').forEach(checkbox => {
+                [...document.querySelectorAll('.attachmentListItemCheckbox')].filter(c=>c.offsetParent!==null).forEach(checkbox => {
             if (checkbox instanceof HTMLInputElement) {
                 checkbox.checked = true;
             }
         });
     });
     template.querySelector('.bulkActionSelectNone')?.addEventListener('click', () => {
-        document.querySelectorAll('.attachmentListItemCheckbox:visible').forEach(checkbox => {
+                [...document.querySelectorAll('.attachmentListItemCheckbox')].filter(c=>c.offsetParent!==null).forEach(checkbox => {
             if (checkbox instanceof HTMLInputElement) {
                 checkbox.checked = false;
             }

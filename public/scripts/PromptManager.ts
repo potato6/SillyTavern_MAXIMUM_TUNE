@@ -2246,7 +2246,7 @@ class PromptManager {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             onUpdate: (event: any, ui: any) => {
                 const promptOrder = this.getPromptOrderForCharacter(this.activeCharacter);
-                const promptListElement = sortableInstance.toArray();
+                const promptListElement = sortableInstance;
                 // @ts-expect-error TS(7006) FIXME: Parameter 'prompt' implicitly has an 'any' type.
                 const idToObjectMap = new Map(promptOrder.map(prompt => [prompt.identifier, prompt]));
                 // @ts-expect-error TS(7006) FIXME: Parameter 'identifier' implicitly has an 'any' typ... Remove this comment to see the full error message
