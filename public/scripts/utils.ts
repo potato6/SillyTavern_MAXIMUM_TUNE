@@ -1,3 +1,5 @@
+declare const TomSelect: any;
+
 import {
     moment,
     DOMPurify,
@@ -2730,11 +2732,11 @@ export function dynamicSelect2DataViaAjax(dataProvider) {
  * @param {JQuery<HTMLElement>|HTMLElement} element - The element to check
  * @returns {boolean} Whether this is a choice element
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'element' implicitly has an 'any' type.
+// @ts-expect-error TS(7006) FIXME: Parameter 'item' implicitly has an 'any' type.
 export function isSelect2ChoiceElement(element) {
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const $element = $(element);
-    return ($element.hasClass('select2-selection__choice__display') || $element[0]?.closest('.select2-selection__choice__display') !== null);
+    return ($element.hasClass('item') && $element.closest('.ts-wrapper').length > 0) || ($element[0]?.closest('.ts-wrapper .item') !== null);
 }
 
 /**
@@ -2752,23 +2754,26 @@ export function select2ChoiceClickSubscribe(control, action, { buttonStyle = fal
     control.addClass('select2_choice_clickable');
     if (buttonStyle) control.addClass('select2_choice_clickable_buttonstyle');
 
-    // Get the real container below and create a click handler on that one
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const select2Container = $(control[0].nextElementSibling?.matches('span.select2-container') ? control[0].nextElementSibling : null);
+    // Get the TomSelect wrapper and create a click handler on that one
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this description to see the full error message
+    const tsWrapper = control[0].closest('.ts-wrapper');
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this description to see the full error message
+    const select2Container = $(tsWrapper);
     // @ts-expect-error TS(7006) FIXME: Parameter 'event' implicitly has an 'any' type.
     select2Container.on('click', function (event) {
         const isChoice = isSelect2ChoiceElement(event.target);
         if (isChoice) {
             event.preventDefault();
 
-            // select2 still bubbles the event to open the dropdown. So we close it here and remove focus if we want that
+            // TomSelect still bubbles the event to open the dropdown. So we close it here and remove focus if we want that
             if (closeDrawer) {
-                control.select2('close');
-                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                setTimeout(() => $(select2Container[0].querySelector('textarea')).trigger('blur'), debounce_timeout.quick);
+                control[0]?.tomSelect?.close();
+                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this description to see the full error message
+                const tsInput = select2Container[0]?.querySelector('.ts-control input');
+                if (tsInput) setTimeout(() => tsInput.blur(), debounce_timeout.quick);
             }
             if (openDrawer) {
-                control.select2('open');
+                control[0]?.tomSelect?.open();
             }
 
             // Now execute the actual action that was subscribed

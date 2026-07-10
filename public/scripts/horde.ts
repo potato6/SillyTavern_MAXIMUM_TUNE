@@ -1,3 +1,5 @@
+declare const TomSelect: any;
+
 import {
     amount_gen,
     getRequestHeaders,
@@ -438,13 +440,13 @@ export function isHordeGenerationNotAllowed() {
 // @ts-expect-error TS(7006) FIXME: Parameter 'option' implicitly has an 'any' type.
 function getHordeModelTemplate(option) {
     // @ts-expect-error TS(7005) FIXME: Variable 'models' implicitly has an 'any[]' type.
-    const model = models.find(x => x.name === option?.element?.value);
+    const model = models.find(x => x.name === option?.value);
 
     if (!option.id || !model) {
-        console.debug('No model found for option', option, option?.element?.value);
+        console.debug('No model found for option', option, option?.value);
         // @ts-expect-error TS(7005) FIXME: Variable 'models' implicitly has an 'any[]' type.
         console.debug('Models', models);
-        return option.text;
+        return `<div>${option.text}</div>`;
     }
 
     // @ts-expect-error TS(7006) FIXME: Parameter 'html' implicitly has an 'any' type.
@@ -477,8 +479,7 @@ function getHordeModelTemplate(option) {
         tagSpans ? `<span class="tags tags_inline inline-flex margin-r2">${tagSpans}</span>` : '',
     ].filter(Boolean).join(' | ');
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    return $((`
+    return ((`
         <div class="flex-container flexFlowColumn">
             <div>
                 ${isPopular ? '<span class="fa-fw fa-solid fa-star" title="Popular"></span>' : ''}
@@ -555,18 +556,16 @@ export function initHorde() {
 
     // Not needed on mobile
     if (!isMobile()) {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#horde_model').select2({
-            width: '100%',
+        new TomSelect(document.getElementById('horde_model'), {
+            maxItems: null,
             placeholder: t`Select Horde models`,
-            allowClear: true,
-            closeOnSelect: false,
-            // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
-            templateSelection: function (data) {
-                // Customize the pillbox text by shortening the full text
-                return data.id;
+            allowEmptyOption: true,
+            plugins: ['remove_button'],
+            render: {
+                option: function (data, escape) {
+                    return getHordeModelTemplate(data);
+                },
             },
-            templateResult: getHordeModelTemplate,
         });
     }
 }

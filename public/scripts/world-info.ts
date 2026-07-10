@@ -1,3 +1,4 @@
+declare const $: any;
 declare const TomSelect: any;
 
 import { Fuse } from '../lib.js';
@@ -2584,15 +2585,16 @@ function clearEntryList($list) {
 
     // @ts-expect-error TS(7006) FIXME: Parameter 'select' implicitly has an 'any' type.
     listElement.querySelectorAll('select').forEach(function (select) {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const $select = $(select);
-        if ($select.data('select2')) {
+        const tomSelect = select.tomSelect;
+        if (tomSelect) {
             try {
-                $select.select2('destroy');
+                tomSelect.destroy();
             } catch (e) {
-                console.debug('Select2 destroy failed:', e);
+                console.debug('TomSelect destroy failed:', e);
             }
         }
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        const $select = $(select);
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const $container = $($select[0].parentElement);
         if ($container.length) {
@@ -3295,17 +3297,29 @@ function enableKeysInputHelper({ template, entry, entryPropName, originalDataVal
     if (isFancyInput) {
         // @ts-expect-error TS(2322) FIXME: Type '{ skipReset: true; noSave: true; }' is not a... Remove this comment to see the full error message
         select2ModifyOptions(input, entry[entryPropName], { select: true, changeEventArgs: { skipReset: true, noSave: true } });
-        input.select2({
-            // @ts-expect-error TS(7005) FIXME: Variable 'worldEntryKeyOptionsCache' implicitly ha... Remove this comment to see the full error message
-            ajax: dynamicSelect2DataViaAjax(() => worldEntryKeyOptionsCache),
-            tags: true,
-            tokenSeparators: [','],
-            tokenizer: customTokenizer,
+        new TomSelect(input[0], {
+            maxItems: null,
+            plugins: ['remove_button'],
+            create: true,
+            createFilter: null,
             placeholder: input.attr('placeholder'),
-            // @ts-expect-error TS(7006) FIXME: Parameter 'item' implicitly has an 'any' type.
-            templateResult: item => templateStyling(item, { searchStyle: true }),
-            // @ts-expect-error TS(7006) FIXME: Parameter 'item' implicitly has an 'any' type.
-            templateSelection: item => templateStyling(item),
+            valueField: 'id',
+            labelField: 'text',
+            searchField: ['text'],
+            render: {
+                // @ts-expect-error TS(7006) FIXME: Parameter 'item' implicitly has an 'any' type.
+                option: item => templateStyling(item, { searchStyle: true }),
+                // @ts-expect-error TS(7006) FIXME: Parameter 'item' implicitly has an 'any' type.
+                item: item => templateStyling(item),
+            },
+            onItemAdd: function (value) {
+                const option = this.options[value];
+                if (option) updateWorldEntryKeyOptionsCache([option]);
+            },
+            onItemRemove: function (value) {
+                const option = this.options[value];
+                if (option) updateWorldEntryKeyOptionsCache([option], { remove: true });
+            },
         });
 
         // TypeScript-safe event handler
@@ -3317,8 +3331,8 @@ function enableKeysInputHelper({ template, entry, entryPropName, originalDataVal
         input.on('change', async function (_event, arg) {
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const uid = $(this).data('uid');
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const keys = ($(this).select2('data')).map(x => x.text);
+            const tomSelect = this.tomSelect;
+            const keys = tomSelect ? tomSelect.items.map(id => tomSelect.options[id]?.text || id) : [];
             const skipReset = arg?.skipReset ?? false;
             const noSave = arg?.noSave ?? false;
             // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
@@ -3339,22 +3353,27 @@ function enableKeysInputHelper({ template, entry, entryPropName, originalDataVal
         });
 
         input[0].classList.toggle('empty', !entry[entryPropName].length);
-        // @ts-expect-error TS(7006) FIXME: Parameter 'event' implicitly has an 'any' type.
-        input.on('select2:select', event => updateWorldEntryKeyOptionsCache([event.params.data]));
-        // @ts-expect-error TS(7006) FIXME: Parameter 'event' implicitly has an 'any' type.
-        input.on('select2:unselect', event => updateWorldEntryKeyOptionsCache([event.params.data], { remove: true }));
 
         // @ts-expect-error TS(7006) FIXME: Parameter 'target' implicitly has an 'any' type.
         select2ChoiceClickSubscribe(input, target => {
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const key = $(target.closest('.regex-highlight, .item')).text();
-            const selected = input.val();
-            if (!Array.isArray(selected)) return;
-            const index = selected.indexOf(getSelect2OptionId(key));
-            if (index > -1) selected.splice(index, 1);
-            input.val(selected).trigger('change');
+            const tomSelect = input[0].tomSelect;
+            if (!tomSelect) return;
+            const values = tomSelect.getValue() ? tomSelect.getValue().split(',') : [];
+            const id = getSelect2OptionId(key);
+            const index = values.indexOf(id);
+            if (index > -1) {
+                values.splice(index, 1);
+                tomSelect.setValue(values.join(','));
+            }
             updateWorldEntryKeyOptionsCache([key], { remove: true });
-            input.next('span.select2-container').find('textarea').val(key).trigger('input');
+            // Set the search input value to allow re-adding
+            const tsInput = input[0].closest('.ts-wrapper')?.querySelector('.ts-control input');
+            if (tsInput) {
+                tsInput.value = key;
+                tsInput.dispatchEvent(new Event('input', { bubbles: true }));
+            }
         }, { openDrawer: true });
     } else {
 const selEl = template[0]?.querySelector(`select[name="${entryPropName}"]`); if (selEl) selEl.style.display = 'none';
@@ -3448,12 +3467,11 @@ function updatePosOrdDisplayHelper({ template, data, uid }) {
 // @ts-expect-error TS(7006) FIXME: Parameter 'characterFilter' implicitly has an 'any... Remove this comment to see the full error message
 function initCharacterFilterSelect2Helper(characterFilter) {
     if (!isMobile()) {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(characterFilter).select2({
-            width: '100%',
+        new TomSelect(characterFilter, {
+            maxItems: null,
             placeholder: t`Tie this entry to specific characters or characters with specific tags`,
-            allowClear: true,
-            closeOnSelect: false,
+            allowEmptyOption: true,
+            plugins: ['remove_button'],
         });
     }
 }
@@ -4357,11 +4375,11 @@ export async function getWorldEntry(name, data, entry) {
             if (!noSave) await saveWorldInfo(name, data);
         });
         if (!isMobile()) {
-            generationTypeTriggers.select2({
+            new TomSelect(generationTypeTriggers[0], {
+                maxItems: null,
                 placeholder: t`All types (default)`,
-                width: '100%',
-                closeOnSelect: false,
-                allowClear: true,
+                allowEmptyOption: true,
+                plugins: ['remove_button'],
             });
         }
         generationTypeTriggers
@@ -7220,25 +7238,19 @@ export function initWorldInfo() {
 
     // Not needed on mobile
     if (!isMobile()) {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#world_editor_select').select2({
+        new TomSelect(document.getElementById('world_editor_select'), {
+            maxItems: 1,
             placeholder: t`--- Pick to Edit ---`,
-            searchInputPlaceholder: t`Search...`,
-            allowClear: true,
-            closeOnSelect: true,
-            multiple: false,
         });
 
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#world_info').select2({
-            width: '100%',
+        new TomSelect(document.getElementById('world_info'), {
+            maxItems: null,
             placeholder: t`No Worlds active. Click here to select.`,
-            allowClear: true,
-            closeOnSelect: false,
+            allowEmptyOption: true,
+            plugins: ['remove_button'],
         });
 
-        // Subscribe world loading to the select2 multiselect items (We need to target the specific select2 control)
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        // Subscribe world loading to the TomSelect multiselect items (We need to target the specific ts-control)
         select2ChoiceClickSubscribe($('#world_info'), target => {
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const name = $(target).text();

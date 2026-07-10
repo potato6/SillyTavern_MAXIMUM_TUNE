@@ -2542,14 +2542,13 @@ async function onTagDeleteClick() {
 
     // Make the select control more fancy on not mobile
     if (!isMobile()) {
-        // Delete the empty option in the dropdown, and make the select2 be empty by default
+        // Delete the empty option in the dropdown, and make the selection be empty by default
         popupContent[0]?.querySelector('#merge_tag_select option[value=""]')?.remove();
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(popupContent[0]?.querySelector('#merge_tag_select')).select2({
-            width: '50%',
+        new TomSelect(popupContent?.querySelector('#merge_tag_select'), {
+            maxItems: 1,
             placeholder: 'Select tag to merge into',
-            allowClear: true,
-        }).val(null).trigger('change');
+            allowEmptyOption: true,
+        });
     }
 
     const result = await callGenericPopup(popupContent, POPUP_TYPE.CONFIRM);

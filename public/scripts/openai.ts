@@ -82,6 +82,8 @@ import { accountStorage } from './util/AccountStorage.js';
 import { COMETAPI_IGNORE_PATTERNS, IGNORE_SYMBOL, MEDIA_DISPLAY, MEDIA_TYPE } from './constants.js';
 import { syncNanoGptProvidersForModel, syncOpenRouterProvidersForModel, updateNanoGptProvidersWarning, updateOpenRouterProvidersWarning } from './textgen-models.js';
 
+declare const TomSelect: any;
+
 export {
     openai_messages_count,
     oai_settings,
@@ -8146,55 +8148,31 @@ export function initOpenAI() {
     }
 
     if (!isMobile()) {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#model_openrouter_select').select2({
+        new TomSelect(document.getElementById('model_openrouter_select'), {
+            maxItems: 1,
             placeholder: t`Select a model`,
-            searchInputPlaceholder: t`Search models...`,
-            searchInputCssClass: 'text_pole',
-            width: '100%',
-            templateResult: getOpenRouterModelTemplate,
-            matcher: textValueMatcher,
         });
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#model_aimlapi_select').select2({
+        new TomSelect(document.getElementById('model_aimlapi_select'), {
+            maxItems: 1,
             placeholder: t`Select a model`,
-            searchInputPlaceholder: t`Search models...`,
-            searchInputCssClass: 'text_pole',
-            width: '100%',
-            templateResult: getAimlapiModelTemplate,
         });
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#model_electronhub_select').select2({
+        new TomSelect(document.getElementById('model_electronhub_select'), {
+            maxItems: 1,
             placeholder: t`Select a model`,
-            searchInputPlaceholder: t`Search models...`,
-            searchInputCssClass: 'text_pole',
-            width: '100%',
-            templateResult: getElectronHubModelTemplate,
-            matcher: textValueMatcher,
         });
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#model_chutes_select').select2({
+        new TomSelect(document.getElementById('model_chutes_select'), {
+            maxItems: 1,
             placeholder: t`Select a model`,
-            searchInputPlaceholder: t`Search models...`,
-            searchInputCssClass: 'text_pole',
-            width: '100%',
-            templateResult: getChutesModelTemplate,
-            matcher: textValueMatcher,
         });
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#model_nanogpt_select').select2({
+        new TomSelect(document.getElementById('model_nanogpt_select'), {
+            maxItems: 1,
             placeholder: t`Select a model`,
-            searchInputPlaceholder: t`Search models...`,
-            searchInputCssClass: 'text_pole',
-            width: '100%',
-            templateResult: getNanoGptModelTemplate,
-            matcher: textValueMatcher,
         });
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#completion_prompt_manager_popup_entry_form_injection_trigger').select2({
+        new TomSelect(document.getElementById('completion_prompt_manager_popup_entry_form_injection_trigger'), {
+            maxItems: null,
             placeholder: t`All types (default)`,
-            width: '100%',
-            closeOnSelect: false,
+            allowEmptyOption: true,
+            plugins: ['remove_button'],
         });
     }
 
