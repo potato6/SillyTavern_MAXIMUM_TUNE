@@ -6854,7 +6854,7 @@ async function onConnectButtonClick(e) {
     const config = apiSourceConfig[oai_settings.chat_completion_source];
     if (config) {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const apiKey = String(config.selector.value).trim();
+        const apiKey = String(document.querySelector(config.selector)?.value ?? '').trim();
         if (apiKey.length) {
             // @ts-expect-error TS(2554) FIXME: Expected 3-4 arguments, but got 2.
             await writeSecret(config.key, apiKey);
