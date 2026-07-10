@@ -3,6 +3,7 @@
 import { DOMPurify } from '../lib.js';
 
 import { event_types, eventSource, is_send_press, main_api, substituteParams } from '../script.js';
+declare const Sortable: any;
 import { is_group_generating } from './group-chats.js';
 import { Message, TokenHandler } from './openai.js';
 import { power_user } from './power-user.js';
@@ -2236,16 +2237,15 @@ class PromptManager {
      * @returns {void}
      */
     makeDraggable() {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(`#${this.configuration.prefix}prompt_manager_list`).sortable({
+        const listEl = document.getElementById(`${this.configuration.prefix}prompt_manager_list`);
+        if (!listEl) return;
+        const sortableInstance = new Sortable(listEl, {
             delay: this.configuration.sortableDelay,
-            handle: isMobile() ? '.drag-handle' : null,
-            items: `.${this.configuration.prefix}prompt_manager_prompt_draggable`,
-            // @ts-expect-error TS(7006) FIXME: Parameter 'event' implicitly has an 'any' type.
-            update: (event, ui) => {
+            handle: isMobile() ? '.drag-handle' : undefined,
+            dataIdAttr: 'data-pm-identifier',
+            onUpdate: (event, ui) => {
                 const promptOrder = this.getPromptOrderForCharacter(this.activeCharacter);
-                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                const promptListElement = $(`#${this.configuration.prefix}prompt_manager_list`).sortable('toArray', { attribute: 'data-pm-identifier' });
+                const promptListElement = sortableInstance.toArray();
                 // @ts-expect-error TS(7006) FIXME: Parameter 'prompt' implicitly has an 'any' type.
                 const idToObjectMap = new Map(promptOrder.map(prompt => [prompt.identifier, prompt]));
                 // @ts-expect-error TS(7006) FIXME: Parameter 'identifier' implicitly has an 'any' typ... Remove this comment to see the full error message

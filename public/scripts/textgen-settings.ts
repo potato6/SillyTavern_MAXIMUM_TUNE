@@ -24,6 +24,7 @@ import { getActiveManualApiSamplers, loadApiSelectedSamplers, isSamplerManualPri
 import { SECRET_KEYS, writeSecret } from './secrets.js';
 import { getEventSourceStream } from './sse-stream.js';
 import { getCurrentDreamGenModelTokenizer, getCurrentOpenRouterModelTokenizer, loadAphroditeModels, loadDreamGenModels, loadFeatherlessModels, loadGenericModels, loadInfermaticAIModels, loadLlamaCppModels, loadMancerModels, loadOllamaModels, loadOpenRouterModels, loadTabbyModels, loadTogetherAIModels, loadVllmModels, updateOpenRouterProvidersWarning } from './textgen-models.js';
+declare const Sortable: any;
 import { ENCODE_TOKENIZERS, TEXTGEN_TOKENIZERS, TOKENIZER_SUPPORTED_KEY, getTextTokens, getTokenizerBestMatch, tokenizers } from './tokenizers.js';
 import { AbortReason } from './util/AbortReason.js';
 import { getSortableDelay, onlyUnique, arraysEqual, isObject } from './utils.js';
@@ -919,14 +920,12 @@ export function initTextGenSettings() {
                 : t`Banned tokens/strings are NOT being sent in the request.`);
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#koboldcpp_order').sortable({
+    new Sortable(document.getElementById('koboldcpp_order'), {
         delay: getSortableDelay(),
-        stop: function () {
+        onEnd: function () {
             // @ts-expect-error TS(7034) FIXME: Variable 'order' implicitly has type 'any[]' in so... Remove this comment to see the full error message
             const order = [];
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            document.querySelectorAll('#koboldcpp_order > *').forEach(el => order.push($(el).data('id')));
+            document.querySelectorAll('#koboldcpp_order > *').forEach(el => order.push((el as HTMLElement).dataset.id));
             // @ts-expect-error TS(7005) FIXME: Variable 'order' implicitly has an 'any[]' type.
             textgenerationwebui_settings.sampler_order = order;
             console.log('Samplers reordered:', textgenerationwebui_settings.sampler_order);
@@ -940,14 +939,12 @@ export function initTextGenSettings() {
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#llamacpp_samplers_sortable').sortable({
+    new Sortable(document.getElementById('llamacpp_samplers_sortable'), {
         delay: getSortableDelay(),
-        stop: function () {
+        onEnd: function () {
             // @ts-expect-error TS(7034) FIXME: Variable 'order' implicitly has type 'any[]' in so... Remove this comment to see the full error message
             const order = [];
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            document.querySelectorAll('#llamacpp_samplers_sortable > *').forEach(el => order.push($(el).data('name')));
+            document.querySelectorAll('#llamacpp_samplers_sortable > *').forEach(el => order.push((el as HTMLElement).dataset.name));
             // @ts-expect-error TS(7005) FIXME: Variable 'order' implicitly has an 'any[]' type.
             textgenerationwebui_settings.samplers = order;
             console.log('Samplers reordered:', textgenerationwebui_settings.samplers);
@@ -962,14 +959,12 @@ export function initTextGenSettings() {
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#sampler_priority_container').sortable({
+    new Sortable(document.getElementById('sampler_priority_container'), {
         delay: getSortableDelay(),
-        stop: function () {
+        onEnd: function () {
             // @ts-expect-error TS(7034) FIXME: Variable 'order' implicitly has type 'any[]' in so... Remove this comment to see the full error message
             const order = [];
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            document.querySelectorAll('#sampler_priority_container > *').forEach(el => order.push($(el).data('name')));
+            document.querySelectorAll('#sampler_priority_container > *').forEach(el => order.push((el as HTMLElement).dataset.name));
             // @ts-expect-error TS(7005) FIXME: Variable 'order' implicitly has an 'any[]' type.
             textgenerationwebui_settings.sampler_priority = order;
             console.log('Samplers reordered:', textgenerationwebui_settings.sampler_priority);
@@ -977,14 +972,12 @@ export function initTextGenSettings() {
         },
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#sampler_priority_container_aphrodite').sortable({
+    new Sortable(document.getElementById('sampler_priority_container_aphrodite'), {
         delay: getSortableDelay(),
-        stop: function () {
+        onEnd: function () {
             // @ts-expect-error TS(7034) FIXME: Variable 'order' implicitly has type 'any[]' in so... Remove this comment to see the full error message
             const order = [];
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            document.querySelectorAll('#sampler_priority_container_aphrodite > *').forEach(el => order.push($(el).data('name')));
+            document.querySelectorAll('#sampler_priority_container_aphrodite > *').forEach(el => order.push((el as HTMLElement).dataset.name));
             // @ts-expect-error TS(7005) FIXME: Variable 'order' implicitly has an 'any[]' type.
             textgenerationwebui_settings.samplers_priorities = order;
             console.log('Samplers reordered:', textgenerationwebui_settings.samplers_priorities);
