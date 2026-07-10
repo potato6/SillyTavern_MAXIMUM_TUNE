@@ -3,6 +3,7 @@ import { characters, event_types, eventSource, main_api, nai_settings, online_st
 import { power_user, registerDebugFunction } from './power-user.js';
 import { chat_completion_sources, model_list, oai_settings } from './openai.js';
 import { groups, selected_group } from './group-chats.js';
+declare const toastr: any;
 import { getStringHash } from './utils.js';
 import { kai_flags, kai_settings } from './kai-settings.js';
 import { textgen_types, textgenerationwebui_settings as textgen_settings, getTextGenServer, getTextGenModel } from './textgen-settings.js';
@@ -203,7 +204,6 @@ async function resetTokenCache() {
         // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         Object.keys(tokenCache).forEach(key => delete tokenCache[key]);
         await objectStore.removeItem('tokenCache');
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.success('Token cache cleared. Please reload the chat to re-tokenize it.');
     } catch (e) {
         console.log('Chat Completions: unable to reset token cache', e);
@@ -226,7 +226,6 @@ export function getAvailableTokenizers() {
     return tokenizerOptions.map(tokenizerOption => ({
         // @ts-expect-error TS(2339) FIXME: Property 'value' does not exist on type 'Element'.
         tokenizerId: Number(tokenizerOption.value),
-        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         tokenizerKey: Object.entries(tokenizers).find(([_, value]) => value === Number(tokenizerOption.value))[0].toLocaleLowerCase(),
         // @ts-expect-error TS(2339) FIXME: Property 'text' does not exist on type 'Element'.
         tokenizerName: tokenizerOption.text,
@@ -247,7 +246,6 @@ export function selectTokenizer(tokenizerId) {
         }
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#tokenizer').val(tokenizer.tokenizerId).trigger('change');
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.info(`Tokenizer: "${tokenizer.tokenizerName}" selected`);
     }
 }
@@ -293,7 +291,6 @@ export function getFriendlyTokenizerName(forApi) {
         ? tokenizers.OPENAI
         : tokenizerId;
 
-    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
     const tokenizerKey = Object.entries(tokenizers).find(([_, value]) => value === tokenizerId)[0].toLocaleLowerCase();
 
     return { tokenizerName, tokenizerKey, tokenizerId };
@@ -838,7 +835,7 @@ export function getTokenizerModel() {
  * @deprecated Use countTokensOpenAIAsync instead.
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'messages' implicitly has an 'any' type.
-export function countTokensOpenAI(messages, full = false) {
+export async function countTokensOpenAI(messages, full = false) {
     const tokenizerEndpoint = `/api/tokenizers/openai/count?model=${getTokenizerModel()}`;
     const cacheObject = getTokenCacheObject();
 
@@ -862,20 +859,14 @@ export function countTokensOpenAI(messages, full = false) {
         if (typeof cachedCount === 'number') {
             token_count += cachedCount;
         } else {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'jQuery'.
-            jQuery.ajax({
-                async: false,
-                type: 'POST', //
-                url: tokenizerEndpoint,
-                data: JSON.stringify([message]),
-                dataType: 'json',
-                contentType: 'application/json',
-                // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
-                success: function (data) {
-                    token_count += Number(data.token_count);
-                    cacheObject[cacheKey] = Number(data.token_count);
-                },
+            const response = await fetch(tokenizerEndpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify([message]),
             });
+            const data = await response.json();
+            token_count += Number(data.token_count);
+            cacheObject[cacheKey] = Number(data.token_count);
         }
     }
 
@@ -915,15 +906,12 @@ export async function countTokensOpenAIAsync(messages, full = false) {
         if (typeof cachedCount === 'number') {
             token_count += cachedCount;
         } else {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'jQuery'.
-            const data = await jQuery.ajax({
-                async: true,
-                type: 'POST', //
-                url: tokenizerEndpoint,
-                data: JSON.stringify([message]),
-                dataType: 'json',
-                contentType: 'application/json',
+            const response = await fetch(tokenizerEndpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify([message]),
             });
+            const data = await response.json();
 
             token_count += Number(data.token_count);
             cacheObject[cacheKey] = Number(data.token_count);
@@ -971,29 +959,23 @@ function getTokenCacheObject() {
  * @returns {number} Token count.
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'endpoint' implicitly has an 'any' type.
-function countTokensFromServer(endpoint, str, resolve) {
+async function countTokensFromServer(endpoint, str, resolve) {
     const isAsync = typeof resolve === 'function';
     let tokenCount = 0;
 
-    // @ts-expect-error TS(2304) FIXME: Cannot find name 'jQuery'.
-    jQuery.ajax({
-        async: isAsync,
-        type: 'POST',
-        url: endpoint,
-        data: JSON.stringify({ text: str }),
-        dataType: 'json',
-        contentType: 'application/json',
-        // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
-        success: function (data) {
-            if (typeof data.count === 'number') {
-                tokenCount = data.count;
-            } else {
-                tokenCount = apiFailureTokenCount(str);
-            }
-
-            if (isAsync) resolve(tokenCount);
-        },
+    const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: str }),
     });
+    const data = await response.json();
+    if (typeof data.count === 'number') {
+        tokenCount = data.count;
+    } else {
+        tokenCount = apiFailureTokenCount(str);
+    }
+
+    if (isAsync) resolve(tokenCount);
 
     return tokenCount;
 }
@@ -1005,38 +987,35 @@ function countTokensFromServer(endpoint, str, resolve) {
  * @returns {number} Token count.
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'str' implicitly has an 'any' type.
-function countTokensFromKoboldAPI(str, resolve) {
+async function countTokensFromKoboldAPI(str, resolve) {
     const isAsync = typeof resolve === 'function';
     let tokenCount = 0;
 
-    // @ts-expect-error TS(2304) FIXME: Cannot find name 'jQuery'.
-    jQuery.ajax({
-        async: isAsync,
-        type: 'POST',
-        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-        url: TOKENIZER_URLS[tokenizers.API_KOBOLD].count,
-        data: JSON.stringify({
-            text: str,
-            url: kai_settings.api_server,
-        }),
-        dataType: 'json',
-        contentType: 'application/json',
-        // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
-        success: function (data) {
-            if (typeof data.count === 'number') {
-                tokenCount = data.count;
-            } else {
-                tokenCount = apiFailureTokenCount(str);
-            }
-
-            if (isAsync) resolve(tokenCount);
+    const response = await fetch(
+        TOKENIZER_URLS[tokenizers.API_KOBOLD].count, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                text: str,
+                url: kai_settings.api_server,
+            }),
         },
-    });
+    );
+    const data = await response.json();
+    if (typeof data.count === 'number') {
+        tokenCount = data.count;
+    } else {
+        tokenCount = apiFailureTokenCount(str);
+    }
+
+    if (isAsync) resolve(tokenCount);
 
     return tokenCount;
 }
 
 /**
+ *
+ *
  *
  * @param str
  */
@@ -1057,30 +1036,25 @@ function getTextgenAPITokenizationParams(str) {
  * @returns {number} Token count.
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'str' implicitly has an 'any' type.
-function countTokensFromTextgenAPI(str, resolve) {
+async function countTokensFromTextgenAPI(str, resolve) {
     const isAsync = typeof resolve === 'function';
     let tokenCount = 0;
 
-    // @ts-expect-error TS(2304) FIXME: Cannot find name 'jQuery'.
-    jQuery.ajax({
-        async: isAsync,
-        type: 'POST',
-        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-        url: TOKENIZER_URLS[tokenizers.API_TEXTGENERATIONWEBUI].count,
-        data: JSON.stringify(getTextgenAPITokenizationParams(str)),
-        dataType: 'json',
-        contentType: 'application/json',
-        // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
-        success: function (data) {
-            if (typeof data.count === 'number') {
-                tokenCount = data.count;
-            } else {
-                tokenCount = apiFailureTokenCount(str);
-            }
-
-            if (isAsync) resolve(tokenCount);
+    const response = await fetch(
+        TOKENIZER_URLS[tokenizers.API_TEXTGENERATIONWEBUI].count, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(getTextgenAPITokenizationParams(str)),
         },
-    });
+    );
+    const data = await response.json();
+    if (typeof data.count === 'number') {
+        tokenCount = data.count;
+    } else {
+        tokenCount = apiFailureTokenCount(str);
+    }
+
+    if (isAsync) resolve(tokenCount);
 
     return tokenCount;
 }
@@ -1119,29 +1093,25 @@ function apiFailureTokenCount(str) {
  * @returns {number[]} Array of token ids.
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'endpoint' implicitly has an 'any' type.
-function getTextTokensFromServer(endpoint, str, resolve) {
+async function getTextTokensFromServer(endpoint, str, resolve) {
     const isAsync = typeof resolve === 'function';
     // @ts-expect-error TS(7034) FIXME: Variable 'ids' implicitly has type 'any[]' in some... Remove this comment to see the full error message
     let ids = [];
-    // @ts-expect-error TS(2304) FIXME: Cannot find name 'jQuery'.
-    jQuery.ajax({
-        async: isAsync,
-        type: 'POST',
-        url: endpoint,
-        data: JSON.stringify({ text: str }),
-        dataType: 'json',
-        contentType: 'application/json',
-        // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
-        success: function (data) {
-            ids = data.ids;
-
-            // Don't want to break reverse compatibility, so sprinkle in some of the JS magic
-            if (Array.isArray(data.chunks)) {
-                Object.defineProperty(ids, 'chunks', { value: data.chunks });
-            }
-
-            if (isAsync) resolve(ids);        },
+    const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: str }),
     });
+    const data = await response.json();
+    ids = data.ids;
+
+    // Don't want to break reverse compatibility, so sprinkle in some of the JS magic
+    if (Array.isArray(data.chunks)) {
+        Object.defineProperty(ids, 'chunks', { value: data.chunks });
+    }
+
+    if (isAsync) resolve(ids);
+
     // @ts-expect-error TS(7005) FIXME: Variable 'ids' implicitly has an 'any[]' type.
     return ids;
 }
@@ -1153,24 +1123,21 @@ function getTextTokensFromServer(endpoint, str, resolve) {
  * @returns {number[]} Array of token ids.
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'str' implicitly has an 'any' type.
-function getTextTokensFromTextgenAPI(str, resolve) {
+async function getTextTokensFromTextgenAPI(str, resolve) {
     const isAsync = typeof resolve === 'function';
     // @ts-expect-error TS(7034) FIXME: Variable 'ids' implicitly has type 'any[]' in some... Remove this comment to see the full error message
     let ids = [];
-    // @ts-expect-error TS(2304) FIXME: Cannot find name 'jQuery'.
-    jQuery.ajax({
-        async: isAsync,
-        type: 'POST',
-        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-        url: TOKENIZER_URLS[tokenizers.API_TEXTGENERATIONWEBUI].encode,
-        data: JSON.stringify(getTextgenAPITokenizationParams(str)),
-        dataType: 'json',
-        contentType: 'application/json',
-        // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
-        success: function (data) {
-            ids = data.ids;
-            if (isAsync) resolve(ids);        },
-    });
+    const response = await fetch(
+        TOKENIZER_URLS[tokenizers.API_TEXTGENERATIONWEBUI].encode, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(getTextgenAPITokenizationParams(str)),
+        },
+    );
+    const data = await response.json();
+    ids = data.ids;
+    if (isAsync) resolve(ids);
+
     // @ts-expect-error TS(7005) FIXME: Variable 'ids' implicitly has an 'any[]' type.
     return ids;
 }
@@ -1182,28 +1149,24 @@ function getTextTokensFromTextgenAPI(str, resolve) {
  * @returns {number[]} Array of token ids.
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'str' implicitly has an 'any' type.
-function getTextTokensFromKoboldAPI(str, resolve) {
+async function getTextTokensFromKoboldAPI(str, resolve) {
     const isAsync = typeof resolve === 'function';
     // @ts-expect-error TS(7034) FIXME: Variable 'ids' implicitly has type 'any[]' in some... Remove this comment to see the full error message
     let ids = [];
 
-    // @ts-expect-error TS(2304) FIXME: Cannot find name 'jQuery'.
-    jQuery.ajax({
-        async: isAsync,
-        type: 'POST',
-        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-        url: TOKENIZER_URLS[tokenizers.API_KOBOLD].encode,
-        data: JSON.stringify({
-            text: str,
-            url: kai_settings.api_server,
-        }),
-        dataType: 'json',
-        contentType: 'application/json',
-        // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
-        success: function (data) {
-            ids = data.ids;
-            if (isAsync) resolve(ids);        },
-    });
+    const response = await fetch(
+        TOKENIZER_URLS[tokenizers.API_KOBOLD].encode, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                text: str,
+                url: kai_settings.api_server,
+            }),
+        },
+    );
+    const data = await response.json();
+    ids = data.ids;
+    if (isAsync) resolve(ids);
 
     // @ts-expect-error TS(7005) FIXME: Variable 'ids' implicitly has an 'any[]' type.
     return ids;
@@ -1211,31 +1174,24 @@ function getTextTokensFromKoboldAPI(str, resolve) {
 
 /**
  * Calls the underlying tokenizer model to decode token ids to text.
- * @param {string} endpoint API endpoint.
- * @param {number[]} ids Array of token ids
- * @param {function} [resolve] Promise resolve function.
  * @returns {({ text: string, chunks?: string[] })} Decoded token text as a single string and individual chunks (if available).
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'endpoint' implicitly has an 'any' type.
-function decodeTextTokensFromServer(endpoint, ids, resolve) {
+async function decodeTextTokensFromServer(endpoint, ids, resolve) {
     const isAsync = typeof resolve === 'function';
     let text = '';
     // @ts-expect-error TS(7034) FIXME: Variable 'chunks' implicitly has type 'any[]' in s... Remove this comment to see the full error message
     let chunks = [];
-    // @ts-expect-error TS(2304) FIXME: Cannot find name 'jQuery'.
-    jQuery.ajax({
-        async: isAsync,
-        type: 'POST',
-        url: endpoint,
-        data: JSON.stringify({ ids: ids }),
-        dataType: 'json',
-        contentType: 'application/json',
-        // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
-        success: function (data) {
-            text = data.text;
-            chunks = data.chunks;
-            if (isAsync) resolve({ text, chunks });        },
+    const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: ids }),
     });
+    const data = await response.json();
+    text = data.text;
+    chunks = data.chunks;
+    if (isAsync) resolve({ text, chunks });
+
     // @ts-expect-error TS(7005) FIXME: Variable 'chunks' implicitly has an 'any[]' type.
     return { text, chunks };
 }
