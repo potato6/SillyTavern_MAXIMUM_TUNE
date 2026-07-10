@@ -525,9 +525,10 @@ async function getClientVersion() {
         }
 
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#version_display').text(displayVersion);
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#version_display_welcome').text(displayVersion);
+        const versionDisplay = document.getElementById('version_display');
+        if (versionDisplay) versionDisplay.textContent = displayVersion;
+        const versionDisplayWelcome = document.getElementById('version_display_welcome');
+        if (versionDisplayWelcome) versionDisplayWelcome.textContent = displayVersion;
     } catch (err) {
         console.error('Couldn\'t get client version', err);
     }
@@ -6057,8 +6058,9 @@ export async function Generate(type, {
         });
 
         if (isImpersonate) {
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#send_textarea').val(getMessage)[0].dispatchEvent(new Event('input', { bubbles: true }));
+            const sendTextarea = document.querySelector('#send_textarea');
+            sendTextarea.value = getMessage;
+            sendTextarea.dispatchEvent(new Event('input', { bubbles: true }));
             await eventSource.emit(event_types.IMPERSONATE_READY, getMessage);
         } else if (type == 'quiet') {
             unblockGeneration(type);
@@ -10021,16 +10023,22 @@ export function select_selected_character(chid, { switchMenu = true } = {}) {
     if (lorebookBtn instanceof HTMLElement) lorebookBtn.style.display = '';
 
     const externalMediaState = isExternalMediaAllowed();
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#character_open_media_overrides').toggle(!selected_group);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#character_media_allowed_icon').toggle(externalMediaState);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#character_media_forbidden_icon').toggle(!externalMediaState);
+    const mediaOverrides = document.getElementById('character_open_media_overrides');
+    if (mediaOverrides) mediaOverrides.style.display = !selected_group ? '' : 'none';
+    const mediaAllowedIcon = document.getElementById('character_media_allowed_icon');
+    if (mediaAllowedIcon) mediaAllowedIcon.style.display = externalMediaState ? '' : 'none';
+    const mediaForbiddenIcon = document.getElementById('character_media_forbidden_icon');
+    if (mediaForbiddenIcon) mediaForbiddenIcon.style.display = !externalMediaState ? '' : 'none';
 
     // Update some stuff about the char management dropdown
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#character_source').attr('disabled', !getCharacterSource(chid) ? '' : null);
+    const charSource = document.getElementById('character_source');
+    if (charSource) {
+        if (!getCharacterSource(chid)) {
+            charSource.removeAttribute('disabled');
+        } else {
+            charSource.setAttribute('disabled', '');
+        }
+    }
 
     eventSource.emit(event_types.CHARACTER_EDITOR_OPENED, chid);
 
@@ -10047,8 +10055,7 @@ function select_rm_create({ switchMenu = true } = {}) {
 
     //console.log('select_rm_Create() -- selected button: '+selected_button);
     if (selected_button == 'create' && create_save.avatar) {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const addAvatarInput = /** @type {HTMLInputElement} */ ($('#add_avatar_button').get(0));
+        const addAvatarInput = document.getElementById('add_avatar_button') as HTMLInputElement;
         addAvatarInput.files = create_save.avatar;
         read_avatar_load(addAvatarInput);
     }
