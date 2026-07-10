@@ -1836,7 +1836,7 @@ export async function loadPowerUserSettings(settings, data) {
     (document.getElementById('zoomed_avatar_magnification') as HTMLInputElement).checked = power_user.zoomed_avatar_magnification;
     const tokOpt = document.querySelector(`#tokenizer option[value="${power_user.tokenizer}"]`) as HTMLOptionElement | null;
     if (tokOpt) tokOpt.selected = true;
-    const sendOpt = document.querySelector(`#send_on_enter option[value=${power_user.send_on_enter}]`) as HTMLOptionElement | null;
+    const sendOpt = document.querySelector(`#send_on_enter option[value="${power_user.send_on_enter}"]`) as HTMLOptionElement | null;
     if (sendOpt) sendOpt.selected = true;
     (document.getElementById('confirm_message_delete') as HTMLInputElement).checked = power_user.confirm_message_delete !== undefined ? !!power_user.confirm_message_delete : true;
     (document.getElementById('spoiler_free_mode') as HTMLInputElement).checked = power_user.spoiler_free_mode;
@@ -1876,9 +1876,9 @@ export async function loadPowerUserSettings(settings, data) {
     (document.getElementById('enableLabMode') as HTMLInputElement | null)?.dispatchEvent(new Event('input', { bubbles: true, ...{ fromInit: true } }));
     const avStyle = document.querySelector(`input[name="avatar_style"][value="${power_user.avatar_style}"]`) as HTMLInputElement | null;
     if (avStyle) avStyle.checked = true;
-    const cdOpt = document.querySelector(`#chat_display option[value=${power_user.chat_display}]`) as HTMLOptionElement | null;
+    const cdOpt = document.querySelector(`#chat_display option[value="${power_user.chat_display}"]`) as HTMLOptionElement | null;
     if (cdOpt) { cdOpt.selected = true; cdOpt.dispatchEvent(new Event('change', { bubbles: true })); }
-    const tpOpt2 = document.querySelector(`#toastr_position option[value=${power_user.toastr_position}]`) as HTMLOptionElement | null;
+    const tpOpt2 = document.querySelector(`#toastr_position option[value="${power_user.toastr_position}"]`) as HTMLOptionElement | null;
     if (tpOpt2) { tpOpt2.selected = true; tpOpt2.dispatchEvent(new Event('change', { bubbles: true })); }
     (document.getElementById('chat_width_slider') as HTMLInputElement).value = String(power_user.chat_width);
     (document.getElementById('token_padding') as HTMLInputElement).value = String(power_user.token_padding);
