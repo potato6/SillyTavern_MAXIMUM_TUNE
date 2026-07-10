@@ -8241,6 +8241,27 @@
         });
         window.addEventListener('resize', function () {});
     </script>
+<script>
+// micro-$ polyfill for legacy code
+window.$=function(s){if(typeof s==='function'){document.addEventListener('DOMContentLoaded',s);return}
+if(typeof s!=='string'){return Object.assign(s,{on(e,h){s.addEventListener(e,h);return s},off(e,h){s.removeEventListener(e,h);return s},trigger(e){s.dispatchEvent(new Event(e,{bubbles:true}));return s}})}
+const el=document.querySelector(s);if(!el)return null;return Object.assign(el,{
+val(v){return v===void 0?el.value:(el.value=v,el)},prop(k,v){return v===void 0?el[k]:(el[k]=v,el)},
+css(k,v){if(typeof k==='object'){Object.assign(el.style,k);return el}return v===void 0?getComputedStyle(el)[k]:(el.style[k]=v,el)},
+on(e,h){el.addEventListener(e,h);return el},off(e,h){el.removeEventListener(e,h);return el},trigger(e){el.dispatchEvent(new Event(e,{bubbles:true}));return el},
+text(v){return v===void 0?el.textContent:(el.textContent=v,el)},html(v){return v===void 0?el.innerHTML:(el.innerHTML=v,el)},
+show(){el.style.display='';return el},hide(){el.style.display='none';return el},toggle(v){el.style.display=v?'':'none';return el},
+empty(){el.innerHTML='';return el},remove(){el.remove();return el},
+addClass(c){el.classList.add(c);return el},removeClass(c){el.classList.remove(c);return el},
+toggleClass(c,f){el.classList.toggle(c,f);return el},hasClass(c){return el.classList.contains(c)},
+attr(k,v){return v===void 0?el.getAttribute(k):(el.setAttribute(k,v),el)},removeAttr(k){el.removeAttribute(k);return el},
+data(k,v){return v===void 0?el.dataset[k]:(el.dataset[k]=v,el)},find(s){return el.querySelectorAll(s)},
+closest(s){return el.closest(s)},first(){return el},last(){return el},eq(){return el},
+children(s){return s?el.querySelectorAll(s):el.children},parent(){return el.parentElement},
+scrollTop(v){return v===void 0?el.scrollTop:(el.scrollTop=v,el)},
+position(){var r=el.getBoundingClientRect();return{top:r.top,left:r.left}},
+is(s){return el.matches(s)},get(i){return i===void 0?el:el},toArray(){return[el]},
+length:1});};window.jQuery=$;</script>
 <script src="lib/tom-select.min.js"></script>
 <script src="lib/sortablejs.min.js"></script>
 <script src="lib/nouislider.min.js"></script>
