@@ -691,10 +691,7 @@ export function getSlideToggleOptions() {
     };
 }
 
-// @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-$.ajaxPrefilter((options, originalOptions, xhr) => {
-    xhr.setRequestHeader('X-CSRF-Token', token);
-});
+
 
 /**
  * Pings the STserver to check if it is reachable.
