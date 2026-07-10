@@ -452,10 +452,8 @@ export let CLIENT_VERSION = 'SillyTavern:UNKNOWN:Cohee#1207'; // For Horde heade
 
 
 // Saved here for performance reasons
-// @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-const messageTemplate = $('#message_template .mes');
-// @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-export const chatElement = $('#chat');
+const messageTemplate = /** @type {HTMLElement} */ (document.querySelector('#message_template .mes'));
+export const chatElement = document.querySelector('#chat');
 
 // @ts-expect-error TS(7034) FIXME: Variable 'dialogueResolve' implicitly has type 'an... Remove this comment to see the full error message
 let dialogueResolve = null;
