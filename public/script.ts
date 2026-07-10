@@ -1184,8 +1184,8 @@ export async function printCharacters(fullRefresh = false) {
             saveCharactersPage = e;
         },
         afterRender: function () {
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(listId).scrollTop(currentScrollTop);
+            const listEl = document.querySelector(listId);
+            if (listEl) listEl.scrollTop = currentScrollTop;
         },
     });
 
@@ -1196,23 +1196,21 @@ export async function printCharacters(fullRefresh = false) {
 /** Checks the state of the current search, and adds/removes the search sorting option accordingly */
 function verifyCharactersSearchSortRule() {
     const searchTerm = entitiesFilter.getFilterData(FILTER_TYPES.SEARCH);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const searchOption = $('#character_sort_order option[data-field="search"]');
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const selector = $('#character_sort_order');
-    const isHidden = searchOption.attr('hidden') !== undefined;
+    const sortOrder = document.getElementById('character_sort_order');
+    const searchOption = sortOrder?.querySelector('option[data-field="search"]') ?? null;
+    const isHidden = searchOption?.getAttribute('hidden') !== null;
 
     // If we have a search term, we are displaying the sorting option for it
     if (searchTerm && isHidden) {
-        searchOption.removeAttr('hidden');
-        searchOption.prop('selected', true);
-        flashHighlight(selector);
+        searchOption?.removeAttribute('hidden');
+        if (searchOption) searchOption.selected = true;
+        if (sortOrder) flashHighlight(sortOrder);
     }
     // If search got cleared, we make sure to hide the option and go back to the one before
     if (!searchTerm && !isHidden) {
-        searchOption.attr('hidden', '');
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(`#character_sort_order option[data-order="${power_user.sort_order}"][data-field="${power_user.sort_field}"]`).prop('selected', true);
+        searchOption?.setAttribute('hidden', '');
+        const correctOption = sortOrder?.querySelector(`option[data-order="${power_user.sort_order}"][data-field="${power_user.sort_field}"]`);
+        if (correctOption) correctOption.selected = true;
     }
 }
 
@@ -8677,8 +8675,7 @@ export async function openCharacterChat(file_name) {
     characters[this_chid].chat = file_name;
     chat_metadata = {};
     await getChat();
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#selected_chat_pole').val(file_name);
+    document.querySelector('#selected_chat_pole').value = file_name;
     await createOrEditCharacter(new CustomEvent('newChat'));
 }
 
@@ -10901,10 +10898,8 @@ function updateAlternateGreetingsHintVisibility(root) {
  *
  */
 async function openCharacterWorldPopup() {
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const chid = $('#set_character_world').data('chid');
+    const chid = document.getElementById('set_character_world')?.getAttribute('data-chid');
     if (menu_type != 'create' && chid === undefined) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.error('Does not have an Id for this character in world select menu.');
         return;
     }
@@ -10913,9 +10908,9 @@ async function openCharacterWorldPopup() {
     const fileName = getCharaFilename(chid);
     const charName = (menu_type == 'create' ? create_save.name : characters[chid]?.data?.name) || 'Nameless';
     const worldId = (menu_type == 'create' ? create_save.world : characters[chid]?.data?.extensions?.world) || '';
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const template = $(document.querySelector('#character_world_template .character_world').cloneNode(true));
-    template.find('.character_name').text(charName);
+    const template = document.querySelector('#character_world_template .character_world')?.cloneNode(true) as HTMLElement;
+    if (!template) return;
+    template.querySelector('.character_name')!.textContent = charName;
 
     // --- Event Handlers ---
     /**
