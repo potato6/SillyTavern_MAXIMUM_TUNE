@@ -12,10 +12,6 @@ import { selected_group } from './group-chats.js';
 import { getCharaFilename, delay } from './utils.js';
 import { power_user } from './power-user.js';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-declare const $: any;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-
 const extensionName = 'cfg';
 const defaultSettings = {
     global: {
@@ -135,44 +131,39 @@ function onCfgMenuItemClick() {
         return;
     }
 
-    if ($('#cfgConfig').css('display') !== 'flex') {
-        const cfgEl = document.getElementById('cfgConfig');
-        if (cfgEl) {
-            cfgEl.classList.add('resizing');
-            cfgEl.style.display = 'flex';
-            cfgEl.style.opacity = '0';
-            const anim = cfgEl.animate([{ opacity: 0 }, { opacity: 1 }], {
-                duration: animation_duration,
-                fill: 'forwards',
-            });
-            anim.onfinish = async function () {
-                await delay(50);
-                cfgEl.classList.remove('resizing');
-            };
-        }
+    const cfgEl = document.getElementById('cfgConfig');
+    if (cfgEl && getComputedStyle(cfgEl).display !== 'flex') {
+        cfgEl.classList.add('resizing');
+        cfgEl.style.display = 'flex';
+        cfgEl.style.opacity = '0';
+        const anim = cfgEl.animate([{ opacity: 0 }, { opacity: 1 }], {
+            duration: animation_duration,
+            fill: 'forwards',
+        });
+        anim.onfinish = async function () {
+            await delay(50);
+            cfgEl.classList.remove('resizing');
+        };
 
-        if ($('#CFGBlockToggle')
-            .siblings('.inline-drawer-content')
-            .css('display') !== 'block') {
-            $('#floatingPrompt').addClass('resizing');
-            document.getElementById('CFGBlockToggle')?.click();
+        const cfgBlockToggle = document.getElementById('CFGBlockToggle');
+        const inlineDrawerContent = cfgBlockToggle?.parentElement?.querySelector('.inline-drawer-content');
+        if (inlineDrawerContent && getComputedStyle(inlineDrawerContent).display !== 'block') {
+            document.getElementById('floatingPrompt')?.classList.add('resizing');
+            cfgBlockToggle?.click();
         }
-    } else {
-        const cfgEl = document.getElementById('cfgConfig');
-        if (cfgEl) {
-            cfgEl.classList.add('resizing');
-            const anim = cfgEl.animate([{ opacity: 1 }, { opacity: 0 }], {
-                duration: animation_duration,
-                fill: 'forwards',
-            });
-            anim.onfinish = async function () {
-                await delay(50);
-                cfgEl.classList.remove('resizing');
-            };
-        }
+    } else if (cfgEl) {
+        cfgEl.classList.add('resizing');
+        const anim = cfgEl.animate([{ opacity: 1 }, { opacity: 0 }], {
+            duration: animation_duration,
+            easing: 'ease-in-out',
+            fill: 'forwards',
+        });
+        anim.onfinish = async function () {
+            await delay(50);
+            cfgEl.classList.remove('resizing');
+        };
         setTimeout(function () {
-            const cfgEl = document.getElementById('cfgConfig');
-            if (cfgEl) cfgEl.style.display = 'none';
+            cfgEl.style.display = 'none';
         }, animation_duration);
     }
     const el = document.getElementById('options');
@@ -210,16 +201,16 @@ async function modifyCharaHtml() {
  *
  */
 function loadSettings() {
-    $('#chat_cfg_guidance_scale').val(chat_metadata[metadataKeys.guidance_scale] ?? (1.0).toFixed(2));
-    $('#chat_cfg_guidance_scale_counter').val(chat_metadata[metadataKeys.guidance_scale]?.toFixed(2) ?? (1.0).toFixed(2));
-    $('#chat_cfg_negative_prompt').val(chat_metadata[metadataKeys.negative_prompt] ?? '');
-    $('#chat_cfg_positive_prompt').val(chat_metadata[metadataKeys.positive_prompt] ?? '');
-    $('#groupchat_cfg_use_chara').prop('checked', chat_metadata[metadataKeys.groupchat_individual_chars] ?? false);
+    (document.getElementById('chat_cfg_guidance_scale') as HTMLInputElement).value = chat_metadata[metadataKeys.guidance_scale] ?? (1.0).toFixed(2);
+    (document.getElementById('chat_cfg_guidance_scale_counter') as HTMLInputElement).value = chat_metadata[metadataKeys.guidance_scale]?.toFixed(2) ?? (1.0).toFixed(2);
+    (document.getElementById('chat_cfg_negative_prompt') as HTMLInputElement).value = chat_metadata[metadataKeys.negative_prompt] ?? '';
+    (document.getElementById('chat_cfg_positive_prompt') as HTMLInputElement).value = chat_metadata[metadataKeys.positive_prompt] ?? '';
+    (document.getElementById('groupchat_cfg_use_chara') as HTMLInputElement).checked = chat_metadata[metadataKeys.groupchat_individual_chars] ?? false;
     if (chat_metadata[metadataKeys.prompt_combine]?.length > 0) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         chat_metadata[metadataKeys.prompt_combine].forEach((element: any) => {
-            $(`input[name="cfg_prompt_combine"][value="${element}"]`)
-                .prop('checked', true);
+            const cb = document.querySelector(`input[name="cfg_prompt_combine"][value="${element}"]`) as HTMLInputElement | null;
+            if (cb) cb.checked = true;
         });
     }
 
@@ -236,17 +227,17 @@ function loadSettings() {
         }
     }
 
-    $('#cfg_prompt_separator').val(promptSeparatorDisplay.length === 0 ? '' : promptSeparatorDisplay.join(''));
+    (document.getElementById('cfg_prompt_separator') as HTMLInputElement).value = promptSeparatorDisplay.length === 0 ? '' : promptSeparatorDisplay.join('');
 
-    $('#cfg_prompt_insertion_depth').val(chat_metadata[metadataKeys.prompt_insertion_depth] ?? 1);
+    (document.getElementById('cfg_prompt_insertion_depth') as HTMLInputElement).value = String(chat_metadata[metadataKeys.prompt_insertion_depth] ?? 1);
 
     if (!selected_group) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const charaCfg = (extension_settings as any).cfg.chara.find((e: Record<string, unknown>) => e.name === getCharaFilename());
-        $('#chara_cfg_guidance_scale').val(charaCfg?.guidance_scale ?? 1.00);
-        $('#chara_cfg_guidance_scale_counter').val(charaCfg?.guidance_scale?.toFixed(2) ?? (1.0).toFixed(2));
-        $('#chara_cfg_negative_prompt').val(charaCfg?.negative_prompt ?? '');
-        $('#chara_cfg_positive_prompt').val(charaCfg?.positive_prompt ?? '');
+        (document.getElementById('chara_cfg_guidance_scale') as HTMLInputElement).value = String(charaCfg?.guidance_scale ?? 1.00);
+        (document.getElementById('chara_cfg_guidance_scale_counter') as HTMLInputElement).value = charaCfg?.guidance_scale?.toFixed(2) ?? (1.0).toFixed(2);
+        (document.getElementById('chara_cfg_negative_prompt') as HTMLInputElement).value = charaCfg?.negative_prompt ?? '';
+        (document.getElementById('chara_cfg_positive_prompt') as HTMLInputElement).value = charaCfg?.positive_prompt ?? '';
     }
 }
 
@@ -263,10 +254,10 @@ async function initialLoadSettings() {
         saveSettingsDebounced();
     }
 
-    $('#global_cfg_guidance_scale').val(_ext.cfg.global.guidance_scale);
-    $('#global_cfg_guidance_scale_counter').val(_ext.cfg.global.guidance_scale.toFixed(2));
-    $('#global_cfg_negative_prompt').val(_ext.cfg.global.negative_prompt);
-    $('#global_cfg_positive_prompt').val(_ext.cfg.global.positive_prompt);
+    (document.getElementById('global_cfg_guidance_scale') as HTMLInputElement).value = String(_ext.cfg.global.guidance_scale);
+    (document.getElementById('global_cfg_guidance_scale_counter') as HTMLInputElement).value = _ext.cfg.global.guidance_scale.toFixed(2);
+    (document.getElementById('global_cfg_negative_prompt') as HTMLInputElement).value = _ext.cfg.global.negative_prompt;
+    (document.getElementById('global_cfg_positive_prompt') as HTMLInputElement).value = _ext.cfg.global.positive_prompt;
 }
 
 /**

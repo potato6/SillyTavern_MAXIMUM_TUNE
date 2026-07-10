@@ -923,8 +923,8 @@ export function getGroupBlock(group) {
     // @ts-expect-error TS(2339) FIXME: Property 'querySelector' does not exist on type 'N... Remove this comment to see the full error message
     template.querySelector('.group_select_block_list').textContent = namesList.join(', ');
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const tagsElement = $(template.querySelector('.tags'));
+    // @ts-expect-error TS(2339) FIXME: Property 'querySelector' does not exist on type 'Node'. Remove this comment to see the full error message
+    const tagsElement = template.querySelector('.tags');
     printTagList(tagsElement, { forEntityOrKey: group.id, tagOptions: { isCharacterList: true } });
 
     const avatar = getGroupAvatar(group);
@@ -2019,8 +2019,8 @@ function getGroupCharacterBlock(character) {
     // @ts-expect-error TS(2339) FIXME: Property 'classList' does not exist on type 'Node'... Remove this comment to see the full error message
     template.classList.toggle('disabled', isGroupMemberDisabled(character.avatar));
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const tagsElement = $(template.querySelector('.tags'));
+    // @ts-expect-error TS(2339) FIXME: Property 'querySelector' does not exist on type 'Node'. Remove this comment to see the full error message
+    const tagsElement = template.querySelector('.tags');
     // @ts-expect-error TS(2322) FIXME: Type 'number' is not assignable to type 'undefined... Remove this comment to see the full error message
     printTagList(tagsElement, { forEntityOrKey: characters.indexOf(character), tagOptions: { isCharacterList: true } });
 
