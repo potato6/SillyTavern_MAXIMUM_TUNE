@@ -583,6 +583,7 @@ export function dragElement(elmnt) {
         // @ts-expect-error TS(7034) FIXME: Variable 'maxX' implicitly has type 'any' in some ... Remove this comment to see the full error message
         maxX, maxY, winHeight, winWidth;
 
+    if (!elmnt) return;
     const elmntName = elmnt.id;
 
     /**
