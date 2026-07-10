@@ -628,7 +628,7 @@ async function switchLabMode({ noReset = false } = {}) {
                 .attr('step', slider.step)
                 .trigger('input');
         });
-        $('#advanced-ai-config-block input[type=\'range\']').show();
+        document.querySelectorAll("#advanced-ai-config-block input[type='range']").forEach(el => el.style.display = '');
         document.getElementById('labModeWarning').classList.add('displayNone');
 
         // To set the correct amount_gen back, we just call the function calculating it correctly
@@ -645,11 +645,11 @@ async function switchZenSliders() {
     $('#enableZenSliders').prop('checked', power_user.enableZenSliders);
 
     if (power_user.enableZenSliders) {
-        $('#clickSlidersTips').hide();
-        $('#pro-settings-block input[type=\'number\']').hide();
+        document.getElementById('clickSlidersTips')?.style.display = 'none';
+        document.querySelectorAll("#pro-settings-block input[type=number]").forEach(el => el.style.display = 'none');
         //hide number inputs that are not 'seed' inputs
-        $(`#textgenerationwebui_api-settings :input[type='number']:not([id^='seed']):not([id^='n_']),
-            #kobold_api-settings :input[type='number']:not([id^='seed'])`).hide();
+        document.querySelectorAll(`#textgenerationwebui_api-settings input[type=number]:not([id^='seed']):not([id^='n_']),
+            #kobold_api-settings input[type=number]:not([id^='seed'])`).forEach(el => el.style.display = 'none');
         //hide original sliders
         document.querySelectorAll(`#textgenerationwebui_api-settings input[type='range'],
             #kobold_api-settings input[type='range'],
@@ -660,7 +660,7 @@ async function switchZenSliders() {
         //this is for when zensliders is toggled after pageload
         switchMaxContextSize();
     } else {
-        $('#clickSlidersTips').show();
+        document.getElementById('clickSlidersTips')?.style.display = '';
         revertOriginalSliders();
     }
 
@@ -668,9 +668,9 @@ async function switchZenSliders() {
      *
      */
     function revertOriginalSliders() {
-        $('#pro-settings-block input[type=\'number\']').show();
-        $(`#textgenerationwebui_api-settings input[type='number'],
-            #kobold_api-settings input[type='number']`).show();
+        document.querySelectorAll("#pro-settings-block input[type=number]").forEach(el => el.style.display = '');
+        document.querySelectorAll(`#textgenerationwebui_api-settings input[type='number'],
+            #kobold_api-settings input[type='number']`).forEach(el => el.style.display = '');
         document.querySelectorAll(`#textgenerationwebui_api-settings input[type='range'],
             #kobold_api-settings input[type='range'],
             #pro-settings-block input[type='range']`).forEach(el => {
@@ -1053,15 +1053,15 @@ function switchWaifuMode() {
  */
 function switchSpoilerMode() {
     if (power_user.spoiler_free_mode) {
-        $('#descriptionWrapper').hide();
-        $('#firstMessageWrapper').hide();
+        document.getElementById('descriptionWrapper')?.style.display = 'none';
+        document.getElementById('firstMessageWrapper')?.style.display = 'none';
         document.getElementById('spoiler_free_desc').classList.add('flex1');
-        $('#creators_note_desc_hidden').show();
+        document.getElementById('creators_note_desc_hidden')?.style.display = '';
     } else {
-        $('#descriptionWrapper').show();
-        $('#firstMessageWrapper').show();
+        document.getElementById('descriptionWrapper')?.style.display = '';
+        document.getElementById('firstMessageWrapper')?.style.display = '';
         document.getElementById('spoiler_free_desc').classList.remove('flex1');
-        $('#creators_note_desc_hidden').hide();
+        document.getElementById('creators_note_desc_hidden')?.style.display = 'none';
     }
 }
 
@@ -1069,10 +1069,11 @@ function switchSpoilerMode() {
  *
  */
 function peekSpoilerMode() {
-    $('#descriptionWrapper').toggle();
-    $('#firstMessageWrapper').toggle();
+    const toggleEl = (id) => { const el = document.getElementById(id); if (el) el.style.display = el.style.display === 'none' ? '' : 'none'; };
+    toggleEl('descriptionWrapper');
+    toggleEl('firstMessageWrapper');
+    toggleEl('creators_note_desc_hidden');
     document.getElementById('spoiler_free_desc').classList.toggle('flex1');
-    $('#creators_note_desc_hidden').toggle();
 }
 
 /**
