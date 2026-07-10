@@ -700,7 +700,8 @@ async function openKeyManagerDialog(key) {
     const name = FRIENDLY_NAMES[key] || key;
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const template = $(await renderTemplateAsync('secretKeyManager', { name, key }));
-    template.find('button[data-action="add-secret"]').on('click', async function () {
+    const addSecretBtn = template[0]?.querySelector('button[data-action="add-secret"]');
+    if (addSecretBtn) addSecretBtn.addEventListener('click', async function () {
         let label = '';
         let result = POPUP_RESULT.CANCELLED;
         const value = await Popup.show.input(t`Add Secret`, t`Secret value (can be empty):`, '', {
@@ -749,16 +750,19 @@ async function openKeyManagerDialog(key) {
         for (const secret of secrets) {
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const itemTemplate = $(await renderTemplateAsync('secretKeyManagerListItem', secret));
-            itemTemplate.find('[data-action="copy-id"]').on('click', async function () {
+            const copyIdBtn = itemTemplate[0]?.querySelector('[data-action="copy-id"]');
+            if (copyIdBtn) copyIdBtn.addEventListener('click', async function () {
                 await copyText(secret.id);
                 // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                 toastr.info(t`Secret ID copied to clipboard.`);
             });
-            itemTemplate.find('button[data-action="rotate-secret"]').on('click', async function () {
+            const rotateSecretBtn = itemTemplate[0]?.querySelector('button[data-action="rotate-secret"]');
+            if (rotateSecretBtn) rotateSecretBtn.addEventListener('click', async function () {
                 await rotateSecret(key, secret.id);
                 await renderSecretsList();
             });
-            itemTemplate.find('button[data-action="copy-secret"]').on('click', async function () {
+            const copySecretBtn = itemTemplate[0]?.querySelector('button[data-action="copy-secret"]');
+            if (copySecretBtn) copySecretBtn.addEventListener('click', async function () {
                 const secretValue = await findSecret(key, secret.id);
                 if (secretValue === null) {
                     // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
@@ -769,7 +773,8 @@ async function openKeyManagerDialog(key) {
                 // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                 toastr.info(t`Secret value copied to clipboard.`);
             });
-            itemTemplate.find('button[data-action="rename-secret"]').on('click', async function () {
+            const renameSecretBtn = itemTemplate[0]?.querySelector('button[data-action="rename-secret"]');
+            if (renameSecretBtn) renameSecretBtn.addEventListener('click', async function () {
                 const label = await Popup.show.input(t`Rename Secret`, t`Enter new label for the secret:`, secret?.label || getLabel());
                 if (!label) {
                     return;
@@ -777,7 +782,8 @@ async function openKeyManagerDialog(key) {
                 await renameSecret(key, secret.id, label);
                 await renderSecretsList();
             });
-            itemTemplate.find('button[data-action="delete-secret"]').on('click', async function () {
+            const deleteSecretBtn = itemTemplate[0]?.querySelector('button[data-action="delete-secret"]');
+            if (deleteSecretBtn) deleteSecretBtn.addEventListener('click', async function () {
                 const confirm = await Popup.show.confirm(t`Delete Secret: ${secret?.label}`, t`Are you sure you want to delete this secret? This action cannot be undone.`);
                 if (!confirm) {
                     return;
@@ -1232,29 +1238,26 @@ function registerSecretSlashCommands() {
  *
  */
 export async function initSecrets() {
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#viewSecrets').on('click', viewSecrets);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document).on('click', '.manage-api-keys', async function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const key = $(this).data('key');
+    document.getElementById('viewSecrets')?.addEventListener('click', viewSecrets);
+    document.addEventListener('click', async function (e: Event) {
+        if (!(e.target instanceof Element)) return;
+        const manageBtn = e.target.closest('.manage-api-keys');
+        if (!manageBtn) return;
+        const key = manageBtn.getAttribute('data-key');
         if (!key || !Object.values(SECRET_KEYS).includes(key)) {
             console.error('Invalid key for manage-api-keys:', key);
             return;
         }
         await openKeyManagerDialog(key);
     });
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document).on('input', Object.values(INPUT_MAP).join(','), function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const id = $(this).attr('id');
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const value = $(this).val();
+    document.addEventListener('input', function (this: HTMLElement, e: Event) {
+        if (!(e.target instanceof Element)) return;
+        const id = e.target.getAttribute('id');
+        const value = (e.target as HTMLInputElement).value;
 
         // Find the key based on the entered value
         for (const [key, inputSelector] of Object.entries(INPUT_MAP)) {
-            // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-            if (!value || !this.matches(inputSelector)) {
+            if (!value || !e.target.matches(inputSelector)) {
                 continue;
             }
             // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
@@ -1264,23 +1267,23 @@ export async function initSecrets() {
             }
             const secretMatch = secrets.find(secret => secret.id === value);
             if (secretMatch) {
-                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                $(this).val('');
+                (e.target as HTMLInputElement).value = '';
                 return rotateSecret(key, secretMatch.id);
             }
         }
 
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const warningElement = $(`[data-for="${id}"]`);
-        warningElement.toggle(value.length > 0);
+        const warningElement = document.querySelector(`[data-for="${id}"]`);
+        if (warningElement) {
+            warningElement.classList.toggle('hidden', !(value.length > 0));
+        }
     });
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('.openrouter_authorize').on('click', authorizeOpenRouter);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document).on('click', '.openrouter_view_credits', async function (event) {
-        event.preventDefault();
-        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-        const display = this.parentElement.querySelector('.openrouter_credits_display');
+    document.querySelector('.openrouter_authorize')?.addEventListener('click', authorizeOpenRouter);
+    document.addEventListener('click', async function (e: Event) {
+        const creditsBtn = e.target instanceof Element ? e.target.closest('.openrouter_view_credits') : null;
+        if (!creditsBtn) return;
+        e.preventDefault();
+        const display = creditsBtn.parentElement?.querySelector('.openrouter_credits_display');
+        if (!display) return;
         display.textContent = t`Loading…`;
         try {
             const response = await fetch('/api/openrouter/credits', {
@@ -1297,7 +1300,7 @@ export async function initSecrets() {
             display.textContent = `$${data.remaining.toFixed(2)}`;
         } catch (error) {
             console.error('Failed to fetch OpenRouter credits:', error);
-            display.text('');
+            display.textContent = '';
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.error(t`Could not fetch OpenRouter credits. Please try again.`);
         }
@@ -1353,11 +1356,12 @@ export async function initSecrets() {
         return root;
     };
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document).on('click', '.nanogpt_view_credits', async function (event) {
+    document.addEventListener('click', async function (event: Event) {
+        const target = event.target instanceof Element ? event.target.closest('.nanogpt_view_credits') : null;
+        if (!target) return;
         event.preventDefault();
-        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-        const display = this.parentElement.querySelector('.nanogpt_credits_display');
+        const display = target.parentElement?.querySelector('.nanogpt_credits_display');
+        if (!display) return;
         display.textContent = t`Loading…`;
 
         try {
@@ -1392,27 +1396,27 @@ export async function initSecrets() {
 
             display.textContent = shortInlineText + ' ';
 
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const infoBtn = $('<i class="fa-solid fa-circle-info cursor-pointer nanogpt_info_btn"></i>');
-            infoBtn.attr('title', t`View details`);
-            infoBtn.data('credits', {
+            const infoBtn = document.createElement('i');
+            infoBtn.className = 'fa-solid fa-circle-info cursor-pointer nanogpt_info_btn';
+            infoBtn.title = t`View details`;
+            (infoBtn as any).__creditsData = {
                 usdBalance,
                 nanoBalance,
                 subscription: data.subscription,
-            });
-            display.append(infoBtn);
+            };
+            display.appendChild(infoBtn);
         } catch (error) {
             console.error('Failed to fetch NanoGPT credits:', error);
-            display.empty().text('');
+            if (display) display.textContent = '';
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.error(t`Could not fetch NanoGPT credits. Please try again.`);
         }
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document).on('click', '.nanogpt_info_btn', async function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const credits = $(this).data('credits');
+    document.addEventListener('click', async function (e: Event) {
+        const target = e.target instanceof Element ? e.target.closest('.nanogpt_info_btn') : null;
+        if (!target) return;
+        const credits = (target as any).__creditsData;
         if (credits) {
             await callGenericPopup(createNanoGptCreditsPopup(credits), POPUP_TYPE.TEXT);
         }
