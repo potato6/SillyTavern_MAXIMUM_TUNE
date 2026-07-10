@@ -1130,14 +1130,10 @@ export function initTextGenSettings() {
                 if (power_user.enableZenSliders) {
                     const masterElementID = inputElement.prop('id');
                     console.log(masterElementID);
-                    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                    const zenSlider = $(`#${masterElementID}_zenslider`).slider();
-                    zenSlider.slider('option', 'value', value);
-                    zenSlider.slider('option', 'slide')
-                        .call(zenSlider, null, {
-                            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                            handle: $('.ui-slider-handle', zenSlider), value: value,
-                        });
+                    const zenEl = document.getElementById(`${masterElementID}_zenslider`);
+                    if (zenEl?.noUiSlider) {
+                        zenEl.noUiSlider.set(value);
+                    }
                 }
             }
         }
@@ -1421,14 +1417,10 @@ function setSettingByName(setting, value, trigger) {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(`#${setting}_counter_textgenerationwebui`).val(val);
         if (power_user.enableZenSliders) {
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const zenSlider = $(`#${setting}_textgenerationwebui_zenslider`).slider();
-            zenSlider.slider('option', 'value', val);
-            zenSlider.slider('option', 'slide')
-                .call(zenSlider, null, {
-                    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                    handle: $('.ui-slider-handle', zenSlider), value: val,
-                });
+            const zenEl = document.getElementById(`${setting}_textgenerationwebui_zenslider`);
+            if (zenEl?.noUiSlider) {
+                zenEl.noUiSlider.set(val);
+            }
         }
     }
 
