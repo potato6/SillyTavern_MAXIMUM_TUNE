@@ -1,3 +1,5 @@
+declare const TomSelect: any;
+
 import { DOMPurify } from '../lib.js';
 
 import {
@@ -1887,16 +1889,22 @@ function onTagInput(event) {
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const val = $(this).val();
     if (getTag(String(val))) return;
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(this).autocomplete('search', val);
+    // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any'.
+    if (this.tomSelect) {
+        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any'.
+        this.tomSelect.open();
+    }
 }
 
 /**
  *
  */
 function onTagInputFocus() {
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(this).autocomplete('search', $(this).val());
+    // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any'.
+    if (this.tomSelect) {
+        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any'.
+        this.tomSelect.open();
+    }
 }
 
 /**
@@ -1971,16 +1979,38 @@ export function applyTagsOnGroupSelect(groupId = null) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'inputSelector' implicitly has an 'any' ... Remove this comment to see the full error message
 export function createTagInput(inputSelector, listSelector, tagListOptions = {}) {
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const $el = $(inputSelector)
-        .autocomplete({
-            // @ts-expect-error TS(7006) FIXME: Parameter 'i' implicitly has an 'any' type.
-            source: (i, o) => findTag(i, o, listSelector),
-            // @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
-            select: (e, u) => selectTag(e, u, listSelector, { tagListOptions: tagListOptions }),
-            minLength: 0,
-        });
-    $el[0]?.addEventListener('focus', onTagInputFocus); // <== show tag list on click
+    const el = document.querySelector(inputSelector);
+    if (!el) return;
+
+    el.tomSelect = new TomSelect(el, {
+        maxItems: null,
+        create: false,
+        minLength: 0,
+        valueField: 'value',
+        labelField: 'label',
+        searchField: ['label'],
+        // @ts-expect-error TS(7006) FIXME: Parameter 'query' implicitly has an 'any' type.
+        load: function (query, loadCallback) {
+            // @ts-expect-error TS(7006) FIXME: Parameter 'results' implicitly has an 'any' type.
+            findTag({ term: query }, function (results) {
+                // @ts-expect-error TS(7006) FIXME: Parameter 's' implicitly has an 'any' type.
+                loadCallback(results.map(s => ({ value: s, label: s })));
+            }, listSelector);
+        },
+        // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
+        onItemAdd: function (value) {
+            let tag = getTag(value);
+            if (!tag) {
+                tag = createNewTag(value);
+            }
+            const characterData = el.closest('#bulk_tags_div')?.dataset.characters;
+            const characterIds = characterData ? JSON.parse(characterData).characterIds : null;
+            addTagsToEntity(tag, characterIds, { tagListSelector: listSelector, tagListOptions: tagListOptions });
+            applyCharacterTagsToMessageDivs();
+        },
+    });
+
+    el.addEventListener('focus', onTagInputFocus);
 }
 
 /**
