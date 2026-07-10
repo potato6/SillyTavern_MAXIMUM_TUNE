@@ -2558,7 +2558,7 @@ function updateWorldEntryKeyOptionsCache(keyOptions, { remove = false, reset = f
 function clearEntryList($list) {
     console.time('clearEntryList');
 
-    const listElement = $list[0];
+    const listElement = $list?.tagName ? $list : $list[0];
 
     if (!listElement.children.length) {
         console.timeEnd('clearEntryList');
@@ -2640,10 +2640,9 @@ function clearEntryList($list) {
 async function displayWorldEntries(name, data, navigation = navigation_option.none, flashOnNav = true) {
     updateEditor = async (navigation, flashOnNav = true) => await displayWorldEntries(name, data, navigation, flashOnNav);
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const worldEntriesList = $('#world_popup_entries_list');
+    const worldEntriesList = document.getElementById('world_popup_entries_list');
     clearEntryList(worldEntriesList);
-    worldEntriesList.show();
+    if (worldEntriesList) worldEntriesList.style.display = '';
 
     if (!data || !('entries' in data)) {
         document.getElementById('world_popup_new')!.addEventListener('click', nullWorldInfo);
@@ -2651,7 +2650,7 @@ async function displayWorldEntries(name, data, navigation = navigation_option.no
         document.getElementById('world_popup_export')!.addEventListener('click', nullWorldInfo);
         document.getElementById('world_popup_delete')!.addEventListener('click', nullWorldInfo);
         document.getElementById('world_duplicate')!.addEventListener('click', nullWorldInfo);
-        worldEntriesList.hide();
+        if (worldEntriesList) worldEntriesList.style.display = 'none';
 
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#world_info_pagination').html('');
@@ -3352,8 +3351,8 @@ function enableKeysInputHelper({ template, entry, entryPropName, originalDataVal
             input.next('span.select2-container').find('textarea').val(key).trigger('input');
         }, { openDrawer: true });
     } else {
-        template.find(`select[name="${entryPropName}"]`).hide();
-        input.show();
+        template[0]?.querySelector(`select[name="${entryPropName}"]`)?.style?.display = 'none';
+        input[0]?.style?.display = '';
         /**
          * @param {Event} _event
          * @param {{ skipReset?: boolean, noSave?: boolean }} [arg]
@@ -3601,10 +3600,9 @@ function handleProbabilityToggleHelper({ probabilityToggle, data, entry, name, p
         const value = $(this).prop('checked');
         const data_noSave = e instanceof CustomEvent ? e.detail?.noSave : false;
         data.entries[uid].useProbability = value;
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const probabilityContainer = $(this.closest('.world_entry').querySelector('.probabilityContainer'));
+        const probabilityContainer = this.closest('.world_entry')?.querySelector('.probabilityContainer');
         if (!data_noSave) await saveWorldInfo(name, data);
-        if (value) probabilityContainer.show(); else probabilityContainer.hide();
+        if (value && probabilityContainer) probabilityContainer.style.display = ''; else if (probabilityContainer) probabilityContainer.style.display = 'none';
         if (value && data.entries[uid].probability === null) {
             data.entries[uid].probability = 100;
         }
@@ -3616,8 +3614,7 @@ function handleProbabilityToggleHelper({ probabilityToggle, data, entry, name, p
     });
     probabilityToggle[0].checked = true;
     probabilityToggle[0].dispatchEvent(new CustomEvent('input', { detail: { noSave: true } }));
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(probabilityToggle[0].parentElement).hide();
+    probabilityToggle[0]?.parentElement?.style?.display = 'none';
 }
 
 /**
@@ -4053,16 +4050,14 @@ export async function getWorldEntry(name, data, entry) {
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const value = $(this).prop('checked');
             const data_noSave = e instanceof CustomEvent ? e.detail?.noSave : false;
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const commentContainer = $(this.closest('.world_entry').querySelector('.commentContainer'));
+            const commentContainer = this.closest('.world_entry')?.querySelector('.commentContainer');
             data.entries[uid].addMemo = value;
             if (!data_noSave) await saveWorldInfo(name, data);
-            if (value) commentContainer.show(); else commentContainer.hide();
+            if (value && commentContainer) commentContainer.style.display = ''; else if (commentContainer) commentContainer.style.display = 'none';
         });
         commentToggle[0].checked = true;
         commentToggle[0].dispatchEvent(new CustomEvent('input', { detail: { noSave: true } }));
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(commentToggle[0].parentElement).hide();
+        commentToggle[0]?.parentElement?.style?.display = 'none';
 
         // Logic AND/NOT
         const selectiveLogicDropdown = editTemplate.find('select[name="entryLogicType"]');
@@ -4093,20 +4088,18 @@ export async function getWorldEntry(name, data, entry) {
             data.entries[uid].selective = value;
             setWIOriginalDataValue(data, uid, 'selective', data.entries[uid].selective);
             if (!data_noSave) await saveWorldInfo(name, data);
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const keysecondary = $(this.closest('.world_entry').querySelector('.keysecondary'));
+            const keysecondary = this.closest('.world_entry')?.querySelector('.keysecondary');
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const keysecondarytextpole = $(this.closest('.world_entry').querySelector('.keysecondarytextpole'));
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const keyprimaryselect = $(this.closest('.world_entry').querySelector('.keyprimaryselect'));
             const keyprimaryHeight = keyprimaryselect.outerHeight();
             keysecondarytextpole.css('height', keyprimaryHeight + 'px');
-            if (value) keysecondary.show(); else keysecondary.hide();
+            if (keysecondary) keysecondary.style.display = value ? '' : 'none';
         });
         selectiveInput[0].checked = true;
         selectiveInput[0].dispatchEvent(new CustomEvent('input', { detail: { noSave: true } }));
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(selectiveInput[0].parentElement).hide();
+        selectiveInput[0]?.parentElement?.style?.display = 'none';
 
         // Character filter
         const characterFilterLabel = editTemplate.find('label[for="characterFilter"] > small');
@@ -6407,16 +6400,18 @@ export function setWorldInfoButtonClass(chid, forceValue = undefined) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'chid' implicitly has an 'any' type.
 export function checkEmbeddedWorld(chid) {
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#import_character_info').hide();
+    const importInfoEl = document.getElementById('import_character_info');
+    if (importInfoEl) importInfoEl.style.display = 'none';
 
     if (chid === undefined) {
         return false;
     }
 
     if (characters[chid]?.data?.character_book) {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#import_character_info').data('chid', chid).show();
+        if (importInfoEl) {
+            importInfoEl.dataset.chid = String(chid);
+            importInfoEl.style.display = '';
+        }
 
         // Only show the alert once per character
         const checkKey = `AlertWI_${characters[chid].avatar}`;
