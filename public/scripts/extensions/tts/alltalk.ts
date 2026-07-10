@@ -10,7 +10,7 @@ class AllTalkTtsProvider {
     // Config //
     //########//
 
-    settings = {};
+    settings: Record<string, any> = {};
     constructor() {
         // Initialize with default settings if they are not already set
         this.settings = {

@@ -1434,7 +1434,6 @@ function setReasoningEventHandlers() {
         e.stopPropagation();
         e.preventDefault();
 
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         document.querySelectorAll('.mes_reasoning_details[open] .mes_reasoning_header').forEach(el => (el instanceof HTMLElement) && el.click());
     });
 

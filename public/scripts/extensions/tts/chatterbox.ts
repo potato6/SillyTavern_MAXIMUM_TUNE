@@ -8,7 +8,7 @@ class ChatterboxTtsProvider {
     // Config //
     //########//
 
-    settings = {};
+    settings: Record<string, any> = {};
     constructor() {
         // Initialize with default settings
         this.settings = {

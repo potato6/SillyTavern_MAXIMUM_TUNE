@@ -4,6 +4,7 @@ import { debounceAsync, splitRecursive } from '../../utils.js';
 import { getPreviewString, saveTtsProviderSettings } from './index.js';
 
 export class KokoroTtsProvider {
+    settings: Record<string, any>;
     constructor() {
         // @ts-expect-error TS(2339): Property 'settings' does not exist on type 'Kokoro... Remove this comment to see the full error message
         this.settings = {
