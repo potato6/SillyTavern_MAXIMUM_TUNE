@@ -3,6 +3,7 @@ declare const $: any;
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
 declare let toastr: any;
+declare const noUiSlider: any;
 /* eslint-enable @typescript-eslint/no-unused-vars */
 
 import {
@@ -657,7 +658,7 @@ async function switchZenSliders() {
             #kobold_api-settings input[type='range'],
             #pro-settings-block input[type='range']:not(#max_context)`).forEach(el => {
             el.style.display = 'none';
-            CreateZenSliders($(el));
+            CreateZenSliders(el);
         });
         //this is for when zensliders is toggled after pageload
         switchMaxContextSize();
@@ -678,7 +679,10 @@ async function switchZenSliders() {
             #pro-settings-block input[type='range']`).forEach(el => {
             el.style.display = '';
         });
-        $('div[id$="_zenslider"]').remove();
+        document.querySelectorAll('div[id$="_zenslider"]').forEach(el => {
+            if (el.noUiSlider) el.noUiSlider.destroy();
+            el.remove();
+        });
     }
 }
 /**
@@ -687,10 +691,10 @@ async function switchZenSliders() {
  */
 async function CreateZenSliders(elmnt) {
     const originalSlider = elmnt;
-    const sliderID = originalSlider.attr('id');
-    let sliderMin = Number(originalSlider.attr('min'));
-    let sliderMax = Number(originalSlider.attr('max'));
-    let sliderValue = originalSlider.val();
+    const sliderID = originalSlider.id;
+    let sliderMin = Number(originalSlider.min);
+    let sliderMax = Number(originalSlider.max);
+    let sliderValue = Number(originalSlider.value);
     const sliderRange = sliderMax - sliderMin;
     let numSteps = 20;
     let decimals = 2;
@@ -847,176 +851,118 @@ async function CreateZenSliders(elmnt) {
     if (sliderID !== 'amount_gen' && sliderID !== 'rep_pen_range_textgenerationwebui') {
         stepScale = sliderRange / numSteps;
     }
-    const newSlider = $('<div>')
-        .attr('id', `${sliderID}_zenslider`)
-        .css('width', '100%')
-        .insertBefore(originalSlider);
-    newSlider.slider({
-        value: sliderValue,
+
+    const newSlider = document.createElement('div');
+    newSlider.id = `${sliderID}_zenslider`;
+    newSlider.style.width = '100%';
+    originalSlider.parentNode.insertBefore(newSlider, originalSlider);
+
+    noUiSlider.create(newSlider, {
+        start: [sliderValue],
         step: stepScale,
-        min: sliderMin,
-        max: sliderMax,
-        create: async function () {
-            await delay(100);
-            const handle = $(this.querySelector('.ui-slider-handle'));
-            let handleText, stepNumber, leftMargin;
-
-            //handling creation of amt_gen
-            if (newSlider.attr('id') == 'amount_gen_zenslider') {
-                handleText = steps[sliderValue];
-                stepNumber = sliderValue;
-                leftMargin = ((stepNumber) / numSteps) * 50 * -1;
-                handle.text(handleText)
-                    .css('margin-left', `${leftMargin}px`);
-                //console.log(`${newSlider.attr('id')} initial value:${handleText}, stepNum:${stepNumber}, numSteps:${numSteps}, left-margin:${leftMargin}`)
-            } else if (newSlider.attr('id') == 'rep_pen_range_textgenerationwebui_zenslider') {
-                //handling creation of rep_pen_range for ooba
-                if ($('#rep_pen_range_textgenerationwebui_zensliders').length !== 0) {
-                    $('#rep_pen_range_textgenerationwebui_zensliders').remove();
-                }
-                handleText = steps[sliderValue];
-                stepNumber = sliderValue;
-                leftMargin = ((stepNumber) / numSteps) * 50 * -1;
-                if (sliderValue === offVal) {
-                    handleText = 'Off';
-                    handle.css('color', 'rgba(128,128,128,0.5)');
-                } else if (sliderValue === allVal) { handleText = 'All'; } else { handle.css('color', ''); }
-                handle.text(handleText)
-                    .css('margin-left', `${leftMargin}px`);
-                //console.log(sliderValue, handleText, offVal, allVal)
-                //console.log(`${newSlider.attr('id')} sliderValue = ${sliderValue}, handleText:${handleText}, stepNum:${stepNumber}, numSteps:${numSteps}, left-margin:${leftMargin}`)
-                originalSlider.val(steps[sliderValue]);
-            } else {
-                //create all other sliders
-                const numVal = Number(sliderValue).toFixed(decimals);
-                offVal = Number(offVal).toFixed(decimals);
-                if (numVal === offVal) {
-                    handle.text('Off').css('color', 'rgba(128,128,128,0.5)');
-                } else {
-                    handle.text(numVal).css('color', '');
-                }
-                stepNumber = ((sliderValue - sliderMin) / stepScale);
-                leftMargin = (stepNumber / numSteps) * 50 * -1;
-                originalSlider.val(numVal)
-                    .data('newSlider', newSlider);
-                //console.log(`${newSlider.attr('id')} sliderValue = ${sliderValue}, handleText:${handleText, numVal}, stepNum:${stepNumber}, numSteps:${numSteps}, left-margin:${leftMargin}`)
-                let isManualInput = false;
-                let valueBeforeManualInput;
-                handle.css('margin-left', `${leftMargin}px`)
-
-                    .attr('contenteditable', 'true')
-                    //these sliders need listeners for manual inputs
-                    .on('click', function () {
-                        //this just selects all the text in the handle so user can overwrite easily
-                        //needed because JQUery UI uses left/right arrow keys as well as home/end to move the slider..
-                        valueBeforeManualInput = newSlider.val();
-                        console.log(valueBeforeManualInput);
-                        const handleElement = handle[0];
-                        const range = document.createRange();
-                        range.selectNodeContents(handleElement);
-                        const selection = window.getSelection();
-                        selection.removeAllRanges();
-                        selection.addRange(range);
-                    })
-                    .on('keyup', function (e) {
-                        valueBeforeManualInput = numVal;
-                        //console.log(valueBeforeManualInput, numVal, handleText);
-                        isManualInput = true;
-                        //allow enter to trigger slider update
-                        if (e.key === 'Enter') {
-                            e.preventDefault();
-                            handle.trigger('blur');
-                        }
-                    })
-                    //trigger slider changes when user clicks away
-                    .on('mouseup blur', function () {
-                        const manualInput = parseFloat(parseFloat(handle.text()).toFixed(decimals));
-                        if (isManualInput) {
-                            //disallow manual inputs outside acceptable range
-                            if (manualInput >= sliderMin && manualInput <= sliderMax) {
-                                //if value is ok, assign to slider and update handle text and position
-                                newSlider.val(manualInput);
-                                handleSlideEvent.call(newSlider, null, { value: manualInput }, 'manual');
-                                valueBeforeManualInput = manualInput;
-                            } else {
-                                //if value not ok, warn and reset to last known valid value
-                                toastr.warning(`Invalid value. Must be between ${sliderMin} and ${sliderMax}`);
-                                console.log(valueBeforeManualInput);
-                                newSlider.val(valueBeforeManualInput);
-                                handle.text(valueBeforeManualInput);
-                                handleSlideEvent.call(newSlider, null, { value: parseFloat(valueBeforeManualInput) }, 'manual');
-                            }
-                        }
-                        isManualInput = false;
-                    });
-            }
-            //zenSlider creation done, hide the original
-            originalSlider.hide();
+        range: {
+            'min': sliderMin,
+            'max': sliderMax,
         },
-        slide: handleSlideEvent,
+        tooltips: {
+            to: function (value) {
+                const stepNumber = Math.round((value - sliderMin) / stepScale);
+                if (sliderID === 'amount_gen') {
+                    return steps ? String(steps[stepNumber] ?? steps[steps.length - 1]) : String(Math.round(value));
+                } else if (sliderID === 'rep_pen_range_textgenerationwebui') {
+                    if (value === offVal) return 'Off';
+                    if (value === allVal) return 'All';
+                    return steps ? String(steps[stepNumber] ?? steps[steps.length - 1]) : String(Math.round(value));
+                } else {
+                    const numStr = Number(value).toFixed(decimals);
+                    if (offVal !== undefined && value === offVal) {
+                        return 'Off';
+                    }
+                    return numStr;
+                }
+            },
+            from: function (value) {
+                if (typeof value === 'string') {
+                    if (value === 'Off') return offVal;
+                    if (value === 'All') return allVal;
+                    return Number(value);
+                }
+                return value;
+            },
+        },
     });
 
-    /**
-     *
-     * @param event
-     * @param ui
-     * @param type
-     */
-    function handleSlideEvent(event, ui, type) {
-        const handle = $(this.querySelector('.ui-slider-handle'));
-        let numVal = parseFloat(Number(ui.value).toFixed(decimals));
-        offVal = parseFloat(Number(offVal).toFixed(decimals));
-        allVal = parseFloat(Number(allVal).toFixed(decimals));
-        console.log(numVal, sliderMin, sliderMax, numVal > sliderMax, numVal < sliderMin);
-        if (numVal > sliderMax) { numVal = sliderMax; }
-        if (numVal < sliderMin) { numVal = sliderMin; }
-        const stepNumber = parseFloat(((ui.value - sliderMin) / stepScale).toFixed(0));
-        let handleText = (ui.value);
-        const leftMargin = (stepNumber / numSteps) * 50 * -1;
-        const perStepPercent = 1 / numSteps; //how far in % each step should be on the slider
-        const leftPos = newSlider.width() * (stepNumber * perStepPercent); //how big of a left margin to give the slider for manual inputs
-        /*         console.log(`
-                numVal: ${numVal},
-                sliderMax: ${sliderMax}
-                sliderMin: ${sliderMin}
-                sliderValRange: ${sliderValRange}
-                stepScale: ${stepScale}
-                Step: ${stepNumber} of ${numSteps}
-                offVal: ${offVal}
-                allVal = ${allVal}
-                initial value: ${handleText}
-                left-margin: ${leftMargin}
-                width: ${newSlider.width()}
-                percent of max: ${percentOfMax}
-                left: ${leftPos}`) */
-        if (newSlider.attr('id') == 'amount_gen_zenslider') {
-            //special handling for response length slider, pulls text aliases for step values from an array
-            handleText = steps[stepNumber];
-            handle.text(handleText);
-            newSlider.val(stepNumber);
-            numVal = steps[stepNumber];
-        } else if (newSlider.attr('id') == 'rep_pen_range_textgenerationwebui_zenslider') {
-            //special handling for TextCompletion rep pen range slider, pulls text aliases for step values from an array
-            handleText = steps[stepNumber];
-            handle.text(handleText);
-            newSlider.val(stepNumber);
-            if (numVal === offVal) { handle.text('Off').css('color', 'rgba(128,128,128,0.5)'); } else if (numVal === allVal) { handle.text('All'); } else { handle.css('color', ''); }
-            numVal = steps[stepNumber];
-        } else {
-            //everything else uses the flat slider value
-            //also note: the above sliders are not custom inputtable due to the array aliasing
-            //show 'off' if disabled value is set
-            if (numVal === offVal) { handle.text('Off').css('color', 'rgba(128,128,128,0.5)'); } else { handle.text(ui.value.toFixed(decimals)).css('color', ''); }
-            newSlider.val(handleText);
+    await delay(100);
+
+    const tooltip = newSlider.querySelector('.noUi-tooltip');
+
+    if (sliderID !== 'amount_gen' && sliderID !== 'rep_pen_range_textgenerationwebui') {
+        // Make tooltip contenteditable for manual input
+        if (tooltip) {
+            tooltip.setAttribute('contenteditable', 'true');
+
+            let isManualInput = false;
+            let valueBeforeManualInput = sliderValue;
+
+            tooltip.addEventListener('mousedown', function (e) {
+                e.stopPropagation();
+                valueBeforeManualInput = parseFloat(newSlider.noUiSlider.get());
+                const range = document.createRange();
+                range.selectNodeContents(this);
+                const selection = window.getSelection();
+                if (selection) {
+                    selection.removeAllRanges();
+                    selection.addRange(range);
+                }
+            });
+
+            tooltip.addEventListener('keyup', function (e) {
+                isManualInput = true;
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    this.blur();
+                }
+            });
+
+            tooltip.addEventListener('blur', function () {
+                const manualInput = parseFloat(parseFloat(this.textContent).toFixed(decimals));
+                if (isManualInput) {
+                    if (manualInput >= sliderMin && manualInput <= sliderMax) {
+                        newSlider.noUiSlider.set(manualInput);
+                        valueBeforeManualInput = manualInput;
+                    } else {
+                        toastr.warning(`Invalid value. Must be between ${sliderMin} and ${sliderMax}`);
+                        newSlider.noUiSlider.set(valueBeforeManualInput);
+                    }
+                }
+                isManualInput = false;
+            });
         }
-        //for manually typed-in values we must adjust left position because JQUI doesn't do it for us
-        handle.css('left', leftPos);
-        //adjust a negative left margin to avoid overflowing right side of slider body
-        handle.css('margin-left', `${leftMargin}px`);
-        originalSlider.val(numVal);
-        originalSlider.trigger('input');
-        originalSlider.trigger('change');
     }
+
+    // Hide original slider
+    originalSlider.style.display = 'none';
+
+    // Sync hidden input on slider changes
+    newSlider.noUiSlider.on('update', function (values, handle) {
+        const rawValue = parseFloat(values[handle]);
+        const stepNumber = Math.round((rawValue - sliderMin) / stepScale);
+        let numVal;
+
+        if (sliderID === 'amount_gen') {
+            const idx = Math.min(stepNumber, steps.length - 1);
+            numVal = steps[idx];
+        } else if (sliderID === 'rep_pen_range_textgenerationwebui') {
+            const idx = Math.min(stepNumber, steps.length - 1);
+            numVal = steps[idx];
+        } else {
+            numVal = rawValue;
+        }
+
+        originalSlider.value = numVal;
+        originalSlider.dispatchEvent(new Event('input', { bubbles: true }));
+        originalSlider.dispatchEvent(new Event('change', { bubbles: true }));
+    });
 }
 /**
  *
