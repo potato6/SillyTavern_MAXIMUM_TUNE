@@ -95,7 +95,7 @@ Tightest couplings — these plugins require jQuery and must be replaced or the 
 [x] **nanogallery2** — Type declarations only, no active usage
 [ ] **select2** (~30 calls): Heaviest plugin dependency. Replace with Choices.js or Tom Select.
 [ ] **sortable** (~20 calls): SortableJS works standalone — just remove `$(el).sortable()` wrapper
-[ ] **autocomplete** (~12 calls): jQuery UI autocomplete. Replace with `<datalist>` or custom.
+[x] **autocomplete** (~12 calls): Replaced with TomSelect (standalone, no jQuery)
 [x] **pagination** (~9 calls): Replaced with native `createPaginator()` helper using Array.slice()
 [ ] **slider** (~7 calls): jQuery UI slider. Complex zen slider system in power-user.ts.
 [ ] **toastr** (~636 calls): Already standalone — just cleanup `declare const toastr: any;` types.
