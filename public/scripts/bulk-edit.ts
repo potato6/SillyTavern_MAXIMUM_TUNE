@@ -8,8 +8,7 @@ const enableBulkEdit = () => {
     enableBulkSelect();
     characterGroupOverlay.selectState();
     // show the bulk edit option buttons
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('.bulkEditOptionElement').show();
+    document.querySelectorAll('.bulkEditOptionElement').forEach(el => (el as HTMLElement).style.display = '');
     is_bulk_edit = true;
     // @ts-expect-error TS(2345) FIXME: Argument of type '0' is not assignable to paramete... Remove this comment to see the full error message
     characterGroupOverlay.updateSelectedCount(0);
@@ -19,8 +18,7 @@ const disableBulkEdit = () => {
     disableBulkSelect();
     characterGroupOverlay.browseState();
     // hide the bulk edit option buttons
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('.bulkEditOptionElement').hide();
+    document.querySelectorAll('.bulkEditOptionElement').forEach(el => (el as HTMLElement).style.display = 'none');
     is_bulk_edit = false;
     // @ts-expect-error TS(2345) FIXME: Argument of type '0' is not assignable to paramete... Remove this comment to see the full error message
     characterGroupOverlay.updateSelectedCount(0);
