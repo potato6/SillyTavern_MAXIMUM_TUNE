@@ -844,8 +844,7 @@ async function fixViewport() {
 function initStandaloneMode() {
     const isPwaMode = window.matchMedia('(display-mode: standalone)').matches;
     if (isPwaMode) {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('body').addClass('PWA');
+        document.body.classList.add('PWA');
     }
 }
 
@@ -6309,7 +6308,7 @@ export function shouldAutoContinue(messageChunk, isImpersonate) {
     }
 
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const textareaText = String($('#send_textarea').val());
+    const textareaText = String(document.querySelector('#send_textarea').value);
     const USABLE_LENGTH = 5;
 
     if (textareaText.length > 0) {
@@ -6349,8 +6348,7 @@ export function triggerAutoContinue(messageChunk, isImpersonate) {
     }
 
     if (shouldAutoContinue(messageChunk, isImpersonate)) {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#option_continue').trigger('click');
+        document.querySelector('#option_continue').dispatchEvent(new Event('click', { bubbles: true }));
     }
 }
 
@@ -10062,38 +10060,33 @@ function select_rm_create({ switchMenu = true } = {}) {
 
     if (switchMenu) selectRightMenuWithAnimation('rm_ch_create_block');
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#set_chat_character_settings').hide();
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#delete_button_div').css('display', 'none');
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#delete_button').css('display', 'none');
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#export_button').css('display', 'none');
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#create_button_label').css('display', '');
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#create_button').attr('value', 'Create');
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#dupe_button').hide();
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#char_connections_button').hide();
+    const chatCharSettings = document.getElementById('set_chat_character_settings');
+    if (chatCharSettings) chatCharSettings.style.display = 'none';
+    const deleteButtonDiv = document.getElementById('delete_button_div');
+    if (deleteButtonDiv) deleteButtonDiv.style.display = 'none';
+    const deleteButton = document.getElementById('delete_button');
+    if (deleteButton) deleteButton.style.display = 'none';
+    const exportButton = document.getElementById('export_button');
+    if (exportButton) exportButton.style.display = 'none';
+    const createButtonLabel = document.getElementById('create_button_label');
+    if (createButtonLabel) createButtonLabel.style.display = '';
+    document.getElementById('create_button')?.setAttribute('value', 'Create');
+    const dupeButton = document.getElementById('dupe_button');
+    if (dupeButton) dupeButton.style.display = 'none';
+    const charConnectionsButton = document.getElementById('char_connections_button');
+    if (charConnectionsButton) charConnectionsButton.style.display = 'none';
 
     //create text poles
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#rm_button_back').css('display', '');
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#character_import_button').css('display', '');
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#character_popup-button-h3').text('Create character');
+    const rmButtonBack = document.getElementById('rm_button_back');
+    if (rmButtonBack) rmButtonBack.style.display = '';
+    const charImportButton = document.getElementById('character_import_button');
+    if (charImportButton) charImportButton.style.display = '';
+    document.getElementById('character_popup-button-h3')!.textContent = 'Create character';
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     document.querySelector('#character_name_pole')?.value = create_save.name;
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#description_textarea').val(create_save.description);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#character_world').val(create_save.world);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#creator_notes_textarea').val(create_save.creator_notes);
+    (document.getElementById('description_textarea') as HTMLTextAreaElement).value = create_save.description;
+    (document.getElementById('character_world') as HTMLInputElement).value = create_save.world;
+    (document.getElementById('creator_notes_textarea') as HTMLTextAreaElement).value = create_save.creator_notes;
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#creator_notes_spoiler').html(formatCreatorNotes(create_save.creator_notes, ''));
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
