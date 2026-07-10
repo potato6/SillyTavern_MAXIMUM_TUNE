@@ -911,10 +911,8 @@ async function getStatusTextgen() {
  *
  */
 export function initTextGenSettings() {
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#send_banned_tokens_textgenerationwebui').on('change', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const checked = !!$(this).prop('checked');
+    document.getElementById('send_banned_tokens_textgenerationwebui')?.addEventListener('change', function () {
+        const checked = !!(this as HTMLInputElement).checked;
         toggleBannedStringsKillSwitch(checked,
             checked
                 ? t`Banned tokens/strings are being sent in the request.`
@@ -936,8 +934,7 @@ export function initTextGenSettings() {
         },
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#koboldcpp_default_order').on('click', function () {
+    document.getElementById('koboldcpp_default_order')?.addEventListener('click', function () {
         textgenerationwebui_settings.sampler_order = KOBOLDCPP_ORDER;
         sortKoboldItemsByOrder(textgenerationwebui_settings.sampler_order);
         saveSettingsDebounced();
@@ -958,8 +955,7 @@ export function initTextGenSettings() {
         },
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#llamacpp_samplers_default_order').on('click', function () {
+    document.getElementById('llamacpp_samplers_default_order')?.addEventListener('click', function () {
         sortLlamacppItemsByOrder(LLAMACPP_DEFAULT_ORDER);
         textgenerationwebui_settings.samplers = LLAMACPP_DEFAULT_ORDER;
         console.log('Default samplers order loaded:', textgenerationwebui_settings.samplers);
@@ -1014,8 +1010,7 @@ export function initTextGenSettings() {
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#textgenerationwebui_default_order').on('click', function () {
+    document.getElementById('textgenerationwebui_default_order')?.addEventListener('click', function () {
         sortOobaItemsByOrder(OOBA_DEFAULT_ORDER);
         textgenerationwebui_settings.sampler_priority = OOBA_DEFAULT_ORDER;
         console.log('Default samplers order loaded:', textgenerationwebui_settings.sampler_priority);
@@ -1070,10 +1065,8 @@ export function initTextGenSettings() {
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#settings_preset_textgenerationwebui').on('change', async function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const presetName = $(this).val();
+    document.getElementById('settings_preset_textgenerationwebui')?.addEventListener('change', async function () {
+        const presetName = (this as HTMLSelectElement).value;
         await selectPreset(presetName);
         await eventSource.emit(event_types.PRESET_CHANGED, { apiId: 'textgenerationwebui', name: presetName });
     });
@@ -1200,13 +1193,10 @@ export function initTextGenSettings() {
         });
     }
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#textgen_logit_bias_new_entry').on('click', () => createNewLogitBiasEntry(textgenerationwebui_settings.logit_bias, BIAS_KEY));
+    document.getElementById('textgen_logit_bias_new_entry')?.addEventListener('click', () => createNewLogitBiasEntry(textgenerationwebui_settings.logit_bias, BIAS_KEY));
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#openrouter_providers_text').on('change', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const selectedProviders = $(this).val();
+    document.getElementById('openrouter_providers_text')?.addEventListener('change', function () {
+        const selectedProviders = (this as HTMLSelectElement).value;
 
         // Not a multiple select?
         if (!Array.isArray(selectedProviders)) {
@@ -1225,10 +1215,8 @@ export function initTextGenSettings() {
         updateOpenRouterProvidersWarning('#openrouter_providers_text');
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#openrouter_quantizations_text').on('change', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const selectedQuantizations = $(this).val();
+    document.getElementById('openrouter_quantizations_text')?.addEventListener('change', function () {
+        const selectedQuantizations = (this as HTMLSelectElement).value;
 
         // Not a multiple select?
         if (!Array.isArray(selectedQuantizations)) {
@@ -1241,8 +1229,7 @@ export function initTextGenSettings() {
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#api_button_textgenerationwebui').on('click', async function (e) {
+    document.getElementById('api_button_textgenerationwebui')?.addEventListener('click', async function (e) {
         const keys = [
             { id: 'api_key_mancer', secret: SECRET_KEYS.MANCER },
             { id: 'api_key_vllm', secret: SECRET_KEYS.VLLM },
