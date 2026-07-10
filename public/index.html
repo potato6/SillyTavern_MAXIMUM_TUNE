@@ -8245,7 +8245,7 @@ toggleClass(c,f){el.classList.toggle(c,f);return el},hasClass(c){return el.class
 attr(k,v){return v===void 0?el.getAttribute(k):(el.setAttribute(k,v),el)},removeAttr(k){el.removeAttribute(k);return el},
 data(k,v){return v===void 0?el.dataset[k]:(el.dataset[k]=v,el)},find(s){return el.querySelectorAll(s)},
 closest(s){return el.closest(s)},first(){return el},last(){return el},eq(){return el},
-children(s){return s?el.querySelectorAll(s):el.children},parent(){return el.parentElement},
+siblings(s){return[...el.parentElement.children].filter(c=>c!==el)},parent(){return el.parentElement},
 scrollTop(v){return v===void 0?el.scrollTop:(el.scrollTop=v,el)},
 position(){var r=el.getBoundingClientRect();return{top:r.top,left:r.left}},
 is(s){return el.matches(s)},get(i){return i===void 0?el:el},toArray(){return[el]},
