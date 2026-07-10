@@ -277,7 +277,7 @@ function getUserAvatarBlock(avatarId) {
     template.attr('data-avatar-id', avatarId);
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(templateEl.querySelector('.avatar')).attr('data-avatar-id', avatarId).setAttribute('title', avatarId);
-    template[0].classList.toggle('default_persona', avatarId === power_user.default_persona);
+    template.classList.toggle('default_persona', avatarId === power_user.default_persona);
     const avatarUrl = getThumbnailUrl('persona', avatarId, isFirefox());
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(templateEl.querySelector('img')).setAttribute('src', avatarUrl);
