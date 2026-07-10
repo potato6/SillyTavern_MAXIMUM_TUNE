@@ -392,7 +392,8 @@ export async function writeSecret(key, value, label, {
 
         const { id } = await response.json();
         // Clear the input field
-        const inputEl = document.querySelector(INPUT_MAP[key]);
+        const inputSelector = INPUT_MAP[key];
+        const inputEl = inputSelector ? document.querySelector(inputSelector) : null;
         if (inputEl instanceof HTMLInputElement) {
             inputEl.value = '';
             inputEl.dispatchEvent(new Event('input'));
