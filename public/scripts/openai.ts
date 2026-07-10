@@ -7569,10 +7569,8 @@ function onVertexAIServiceAccountJsonChange() {
  * @param {string} message - Status message to display
  */
 function updateVertexAIServiceAccountStatus(isValid = false, message = '') {
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const statusDiv = $('#vertexai_service_account_status');
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const infoSpan = $('#vertexai_service_account_info');
+    const statusDiv = document.getElementById('vertexai_service_account_status');
+    const infoSpan = document.getElementById('vertexai_service_account_info');
 
     // If no explicit message provided, check if we have a saved service account
     // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
@@ -7582,13 +7580,13 @@ function updateVertexAIServiceAccountStatus(isValid = false, message = '') {
     }
 
     if (isValid && message) {
-        infoSpan.html(`<i class="fa-solid fa-check-circle" style="color: green;"></i> ${message}`);
-        statusDiv.show();
+        if (infoSpan) infoSpan.innerHTML = `<i class="fa-solid fa-check-circle" style="color: green;"></i> ${message}`;
+        if (statusDiv) statusDiv.style.display = '';
     } else if (!isValid && message) {
-        infoSpan.html(`<i class="fa-solid fa-exclamation-triangle" style="color: orange;"></i> ${message}`);
-        statusDiv.show();
+        if (infoSpan) infoSpan.innerHTML = `<i class="fa-solid fa-exclamation-triangle" style="color: orange;"></i> ${message}`;
+        if (statusDiv) statusDiv.style.display = '';
     } else {
-        statusDiv.hide();
+        if (statusDiv) statusDiv.style.display = 'none';
     }
 }
 
