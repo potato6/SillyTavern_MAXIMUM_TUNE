@@ -1074,8 +1074,7 @@ function getCharacterBlock(item, id) {
 
     // Display inline tags
     const tagsElement = templateClone.querySelector('.tags');
-    // printTagList may expect a jQuery element; wrap if needed
-    printTagList(tagsElement ? $(tagsElement) : $(templateClone), { forEntityOrKey: id, tagOptions: { isCharacterList: true } });
+    printTagList(tagsElement, { forEntityOrKey: id, tagOptions: { isCharacterList: true } });
 
     // Add to the list
     return templateClone;
@@ -1092,8 +1091,7 @@ export async function printCharacters(fullRefresh = false) {
     const storageKey = 'Characters_PerPage';
     const listId = '#rm_print_characters_block';
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    let currentScrollTop = $(listId).scrollTop();
+    let currentScrollTop = (document.querySelector(listId)?.scrollTop ?? 0);
 
     if (fullRefresh) {
         saveCharactersPage = 0;
@@ -6653,8 +6651,7 @@ export async function duplicateCharacter({ avatar = null, silent = false } = {})
 
     // Show confirmation unless silent
     if (!silent) {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const confirmMessage = $(await renderTemplateAsync('duplicateConfirm'));
+        const confirmMessage = await renderTemplateAsync('duplicateConfirm');
         const confirm = await callGenericPopup(confirmMessage, POPUP_TYPE.CONFIRM);
 
         if (!confirm) {
@@ -8397,11 +8394,9 @@ async function read_avatar_load(input) {
             }
 
             crop_data = dlg.cropData;
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#avatar_load_preview').attr('src', String(croppedImage));
+            document.querySelector('#avatar_load_preview').setAttribute('src', String(croppedImage));
         } else {
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#avatar_load_preview').attr('src', fileData);
+            document.querySelector('#avatar_load_preview').setAttribute('src', fileData);
         }
 
         if (menu_type == 'create') {
@@ -8411,8 +8406,7 @@ async function read_avatar_load(input) {
         // @ts-expect-error TS(2554) FIXME: Expected 1 arguments, but got 0.
         await createOrEditCharacter();
 
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const formData = new FormData(/** @type {HTMLFormElement} */($('#form_create').get(0)));
+        const formData = new FormData(/** @type {HTMLFormElement} */(document.querySelector('#form_create')));
         const avatarKey = formData.get('avatar_url')?.toString() ?? '';
 
         // Bust cache for the avatar thumbnail and character image
@@ -8461,54 +8455,55 @@ export function getThumbnailUrl(type, file, t = false) {
 // @ts-expect-error TS(7006) FIXME: Parameter 'block' implicitly has an 'any' type.
 export function buildAvatarList(block, entities, { templateId = 'inline_avatar_template', empty = true, interactable = false, highlightFavs = true } = {}) {
     if (empty) {
-        block[0].innerHTML = '';
+        block.innerHTML = '';
     }
 
     for (const entity of entities) {
         const id = entity.id;
 
         // Populate the template
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const avatarTemplate = $(document.querySelector(`#${templateId} .avatar`).cloneNode(true));
+        /** @type {Element} */
+        const avatarTemplate = document.querySelector(`#${templateId} .avatar`).cloneNode(true);
 
         let this_avatar = default_avatar;
         if (entity.item.avatar !== undefined && entity.item.avatar != 'none') {
             this_avatar = getThumbnailUrl('avatar', entity.item.avatar);
         }
 
-        avatarTemplate.attr('data-type', entity.type);
-        avatarTemplate.attr('data-chid', id);
-        avatarTemplate.find('img').attr('src', this_avatar).attr('alt', entity.item.name);
-        avatarTemplate.attr('title', `[Character] ${entity.item.name}\nFile: ${entity.item.avatar}`);
+        avatarTemplate.setAttribute('data-type', entity.type);
+        avatarTemplate.setAttribute('data-chid', id);
+        avatarTemplate.querySelector('img').setAttribute('src', this_avatar);
+        avatarTemplate.querySelector('img').setAttribute('alt', entity.item.name);
+        avatarTemplate.setAttribute('title', `[Character] ${entity.item.name}\nFile: ${entity.item.avatar}`);
         if (highlightFavs) {
-            avatarTemplate.toggleClass('is_fav', entity.item.fav || entity.item.fav == 'true');
-            avatarTemplate.find('.ch_fav').val(entity.item.fav);
+            avatarTemplate.classList.toggle('is_fav', entity.item.fav || entity.item.fav == 'true');
+            const favInput = avatarTemplate.querySelector('.ch_fav');
+            if (favInput) favInput.value = entity.item.fav;
         }
 
         // If this is a group, we need to hack slightly. We still want to keep most of the css classes and layout, but use a group avatar instead.
         if (entity.type === 'group') {
             const grpTemplate = getGroupAvatar(entity.item);
-
-            // @ts-expect-error TS(2339) FIXME: Property 'attr' does not exist on type 'Node'.
-            avatarTemplate.addClass(grpTemplate.attr('class'));
-            avatarTemplate[0].innerHTML = '';
-            // @ts-expect-error TS(2339) FIXME: Property 'children' does not exist on type 'Node'.
-            avatarTemplate[0].append(...grpTemplate.children().toArray());
-            avatarTemplate.attr({ 'data-grid': id, 'data-chid': null });
-            avatarTemplate.attr('title', `[Group] ${entity.item.name}`);
+            avatarTemplate.classList.add(grpTemplate.className);
+            avatarTemplate.innerHTML = '';
+            avatarTemplate.append(...Array.from(grpTemplate.children));
+            avatarTemplate.setAttribute('data-grid', id);
+            avatarTemplate.setAttribute('data-chid', null);
+            avatarTemplate.setAttribute('title', `[Group] ${entity.item.name}`);
         } else if (entity.type === 'persona') {
-            avatarTemplate.attr({ 'data-pid': id, 'data-chid': null });
-            avatarTemplate.find('img').attr('src', getThumbnailUrl('persona', entity.item.avatar));
-            avatarTemplate.attr('title', `[Persona] ${entity.item.name}\nFile: ${entity.item.avatar}`);
+            avatarTemplate.setAttribute('data-pid', id);
+            avatarTemplate.setAttribute('data-chid', null);
+            avatarTemplate.querySelector('img').setAttribute('src', getThumbnailUrl('persona', entity.item.avatar));
+            avatarTemplate.setAttribute('title', `[Persona] ${entity.item.name}\nFile: ${entity.item.avatar}`);
         }
 
         if (interactable) {
-            avatarTemplate.addClass(INTERACTABLE_CONTROL_CLASS);
-            avatarTemplate.toggleClass('character_select', entity.type === 'character');
-            avatarTemplate.toggleClass('group_select', entity.type === 'group');
+            avatarTemplate.classList.add(INTERACTABLE_CONTROL_CLASS);
+            avatarTemplate.classList.toggle('character_select', entity.type === 'character');
+            avatarTemplate.classList.toggle('group_select', entity.type === 'group');
         }
 
-        block[0].append(avatarTemplate[0]);
+        block.append(avatarTemplate);
     }
 }
 
@@ -8588,12 +8583,10 @@ export async function getChat() {
 
         // Focus on the textarea if not already focused on a visible text input
         delay(debounce_timeout.short).then(() => {
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            if ($(document.activeElement).is('input:visible, textarea:visible')) {
+            const activeElement = document.activeElement;
+            if (activeElement && (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA')) {
                 return;
             }
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            document.querySelector('#send_textarea')?.click();
             document.querySelector('#send_textarea')?.focus();
         });
     } catch (error) {
@@ -10220,12 +10213,10 @@ function updateFavButtonState(state) {
     // Update global state of the flag
     // TODO: This is bad and needs to be refactored.
     fav_ch_checked = state;
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#fav_checkbox').prop('checked', state);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#favorite_button').toggleClass('fav_on', state);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#favorite_button').toggleClass('fav_off', !state);
+    const favCheckbox = document.getElementById('fav_checkbox') as HTMLInputElement;
+    if (favCheckbox) favCheckbox.checked = state;
+    document.getElementById('favorite_button')?.classList.toggle('fav_on', state);
+    document.getElementById('favorite_button')?.classList.toggle('fav_off', !state);
 }
 
 /**
@@ -10342,49 +10333,54 @@ export async function callPopup(text, type, inputValue = '', {
         popup_type = type;
     }
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const $dialoguePopup = $('#dialogue_popup');
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const $dialoguePopupCancel = $('#dialogue_popup_cancel');
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const $dialoguePopupOk = $('#dialogue_popup_ok');
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const $dialoguePopupInput = $('#dialogue_popup_input');
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const $dialoguePopupText = $('#dialogue_popup_text');
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const $shadowPopup = $('#shadow_popup');
+    const $dialoguePopup = document.getElementById('dialogue_popup');
+    const $dialoguePopupCancel = document.getElementById('dialogue_popup_cancel');
+    const $dialoguePopupOk = document.getElementById('dialogue_popup_ok');
+    const $dialoguePopupInput = document.getElementById('dialogue_popup_input') as HTMLInputElement;
+    const $dialoguePopupText = document.getElementById('dialogue_popup_text');
+    const $shadowPopup = document.getElementById('shadow_popup');
 
-    $dialoguePopup.toggleClass('wide_dialogue_popup', !!wide)
-        .toggleClass('wider_dialogue_popup', !!wider)
-        .toggleClass('large_dialogue_popup', !!large)
-        .toggleClass('horizontal_scrolling_dialogue_popup', !!allowHorizontalScrolling)
-        .toggleClass('vertical_scrolling_dialogue_popup', !!allowVerticalScrolling);
+    if ($dialoguePopup) {
+        $dialoguePopup.classList.toggle('wide_dialogue_popup', !!wide);
+        $dialoguePopup.classList.toggle('wider_dialogue_popup', !!wider);
+        $dialoguePopup.classList.toggle('large_dialogue_popup', !!large);
+        $dialoguePopup.classList.toggle('horizontal_scrolling_dialogue_popup', !!allowHorizontalScrolling);
+        $dialoguePopup.classList.toggle('vertical_scrolling_dialogue_popup', !!allowVerticalScrolling);
+    }
 
-    $dialoguePopupCancel.css('display', 'inline-block');
-    $dialoguePopupOk.text(getOkButtonText());
-    $dialoguePopupInput.toggle(popup_type === 'input').val(inputValue).attr('rows', rows ?? 1);
-    const dpTextEl = $dialoguePopupText[0];
-    dpTextEl.innerHTML = '';
+    if ($dialoguePopupCancel) $dialoguePopupCancel.style.display = 'inline-block';
+    if ($dialoguePopupOk) $dialoguePopupOk.textContent = getOkButtonText();
+    if ($dialoguePopupInput) {
+        $dialoguePopupInput.type = 'text';
+        $dialoguePopupInput.style.display = popup_type === 'input' ? '' : 'none';
+        $dialoguePopupInput.value = inputValue;
+        $dialoguePopupInput.setAttribute('rows', String(rows ?? 1));
+    }
+    const dpTextEl = $dialoguePopupText;
+    if (dpTextEl) dpTextEl.innerHTML = '';
     if (typeof text === 'string') {
-        dpTextEl.insertAdjacentHTML('beforeend', text);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    } else if (text instanceof $) {
-        dpTextEl.append(text[0]);
+        dpTextEl?.insertAdjacentHTML('beforeend', text);
+    } else if (text && typeof text === 'object' && (text as any).tagName) {
+        dpTextEl?.append(text);
     } else {
-        dpTextEl.append(text);
+        dpTextEl?.append(text);
     }
-    $shadowPopup.css('display', 'block');
+    if ($shadowPopup) $shadowPopup.style.display = 'block';
 
-    if (popup_type == 'input') {
-        $dialoguePopupInput.trigger('focus');
+    if (popup_type == 'input' && $dialoguePopupInput) {
+        $dialoguePopupInput.focus();
     }
 
-    $shadowPopup.transition({
-        opacity: 1,
-        duration: animation_duration,
-        easing: animation_easing,
-    });
+    if ($shadowPopup) {
+        $shadowPopup.animate([
+            { opacity: 0 },
+            { opacity: 1 },
+        ], {
+            duration: animation_duration,
+            easing: animation_easing,
+            fill: 'forwards',
+        });
+    }
 
     } catch (error) {
         console.error('Error in callPopup:', error);
@@ -10543,14 +10539,12 @@ export function refreshSwipeButtons(updateCounters = false, fade = true) {
 
     //If swipes are disabled or hidden, hide all swipe buttons.
     if (!isSwipingAllowed()) {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('body').addClass('hideAllSwipeButtons');
+        document.body.classList.add('hideAllSwipeButtons');
         return;
         //Don't hide all swipe buttons.
     } else {
         //CSS will hide all messages.
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('body').removeClass('hideAllSwipeButtons');
+        document.body.classList.remove('hideAllSwipeButtons');
     }
     //Non-messages can appear in chat. '.mes' is required.
     const messageElements = chatElement.children('.mes[mesid]');
@@ -10576,8 +10570,7 @@ export function refreshSwipeButtons(updateCounters = false, fade = true) {
             // @ts-expect-error TS(2339) FIXME: Property 'swipes' does not exist on type 'never'.
             const hasSwipes = (message?.swipes?.length > 1);
             const overswipe = getOverswipeBehavior(messageId, message);
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const swipePickerButton = $(div).find('.mes_swipe_picker');
+            const swipePickerButton = div.querySelector('.mes_swipe_picker');
             const canOpenSwipePicker = canOpenSwipePickerForMessage(messageId);
 
             // Chevrons should always be shown on pristine greetings: https://github.com/SillyTavern/SillyTavern/pull/4712#issuecomment-3557893373
@@ -10592,16 +10585,15 @@ export function refreshSwipeButtons(updateCounters = false, fade = true) {
 
             //If there's only one swipe, the left arrow should not be shown.
             div.classList.toggle('swipes_visible', hasSwipes || pristineGreeting);
-            swipePickerButton.toggle(canOpenSwipePicker);
+            if (swipePickerButton instanceof HTMLElement) swipePickerButton.style.display = canOpenSwipePicker ? '' : 'none';
 
             //updateSwipeCounter does not need to be awaited, It can run a bit later.
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            if (updateCounters) updateSwipeCounter(messageId, { message, messageElement: $(div) });
+            if (updateCounters) updateSwipeCounter(messageId, { message, messageElement: div });
         } else {
             //Hide all messages that are not swipeable.
             div.classList.remove('swipes_visible', 'last_swipe');
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(div).find('.mes_swipe_picker').toggle(canOpenSwipePickerForMessage(messageId));
+            const swipePickerEl = div.querySelector('.mes_swipe_picker');
+            if (swipePickerEl instanceof HTMLElement) swipePickerEl.style.display = canOpenSwipePickerForMessage(messageId) ? '' : 'none';
         }
     });
 }
@@ -10794,16 +10786,14 @@ export async function importCharacterChat(formData, { refresh = true } = {}) {
 export function updateViewMessageIds(startIndex = null) {
     const minId = startIndex ?? getFirstDisplayedMessageId();
 
-    // @ts-expect-error TS(7006) FIXME: Parameter 'index' implicitly has an 'any' type.
-    chatElement.find('.mes').each(function (index, element) {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(element).attr('mesid', minId + index);
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(element).find('.mesIDDisplay').text(`#${minId + index}`);
+    chatElement.querySelectorAll('.mes').forEach((element, index) => {
+        element.setAttribute('mesid', String(minId + index));
+        element.querySelector('.mesIDDisplay')!.textContent = `#${minId + index}`;
     });
 
-    chatElement.find('.mes').removeClass('last_mes');
-    chatElement.find('.mes').last().addClass('last_mes');
+    chatElement.querySelectorAll('.mes').forEach(el => el.classList.remove('last_mes'));
+    const lastMes = chatElement.querySelector('.mes:last-child');
+    if (lastMes) lastMes.classList.add('last_mes');
 
     updateEditArrowClasses();
 }
