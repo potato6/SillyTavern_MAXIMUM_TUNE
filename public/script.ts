@@ -910,20 +910,16 @@ export function setActiveGroup(entityOrKey) {
  *
  */
 export function startStatusLoading() {
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('.api_loading').show();
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('.api_button').addClass('disabled');
+    document.querySelector('.api_loading')?.classList.remove('displayNone');
+    document.querySelectorAll('.api_button').forEach(el => el.classList.add('disabled'));
 }
 
 /**
  *
  */
 export function stopStatusLoading() {
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('.api_loading').hide();
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('.api_button').removeClass('disabled');
+    document.querySelector('.api_loading')?.classList.add('displayNone');
+    document.querySelectorAll('.api_button').forEach(el => el.classList.remove('disabled'));
 }
 
 /**
@@ -10101,20 +10097,15 @@ function select_rm_create({ switchMenu = true } = {}) {
     (document.getElementById('depth_prompt_role') as HTMLInputElement).value = create_save.depth_prompt_role;
     (document.getElementById('mes_example_textarea') as HTMLTextAreaElement).value = create_save.mes_example;
     (document.getElementById('character_json_data') as HTMLTextAreaElement).value = '';
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#avatar_div').css('display', 'flex');
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#avatar_load_preview').attr('src', default_avatar);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#renameCharButton').css('display', 'none');
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#name_div').removeClass('displayNone');
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#name_div').addClass('displayBlock');
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('.open_alternate_greetings').data('chid', -1);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#set_character_world').data('chid', -1);
+    const avatarDiv = document.getElementById('avatar_div');
+    if (avatarDiv) avatarDiv.style.display = 'flex';
+    document.getElementById('avatar_load_preview')?.setAttribute('src', default_avatar);
+    const renameBtn = document.getElementById('renameCharButton');
+    if (renameBtn) renameBtn.style.display = 'none';
+    document.getElementById('name_div')?.classList.remove('displayNone');
+    document.getElementById('name_div')?.classList.add('displayBlock');
+    document.querySelector('.open_alternate_greetings')?.setAttribute('data-chid', '-1');
+    document.getElementById('set_character_world')?.setAttribute('data-chid', '-1');
     // @ts-expect-error TS(2345) FIXME: Argument of type 'boolean' is not assignable to pa... Remove this comment to see the full error message
     setWorldInfoButtonClass(undefined, !!create_save.world);
     updateFavButtonState(false);
