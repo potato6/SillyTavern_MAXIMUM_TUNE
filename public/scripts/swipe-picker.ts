@@ -307,8 +307,8 @@ async function openSwipePicker(messageId) {
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(template[0].querySelector('.select_chat_block_mes')).text(previewText ? swipeText : t`(empty swipe)`);
 
-            block.on('click', () => setSelectedSwipe(index));
-            block.on('dblclick', async () => {
+            block[0]?.addEventListener('click', () => setSelectedSwipe(index));
+            block[0]?.addEventListener('dblclick', async () => {
                 if (!canJumpToSwipe) {
                     return;
                 }
@@ -475,25 +475,26 @@ export function initSwipePicker() {
     if (isMobile()) {
         addLongPressEvent('.swipes-counter.swipe-picker-enabled', onSwipeCounterClick);
     } else {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(document).on('click', '.swipes-counter.swipe-picker-enabled', onSwipeCounterClick);
+        document.addEventListener('click', function (e: Event) {
+            const target = e.target instanceof Element ? e.target.closest('.swipes-counter.swipe-picker-enabled') : null;
+            if (target) onSwipeCounterClick.call(target, e);
+        });
     }
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document).on('keydown', '.swipes-counter.swipe-picker-enabled', async function (e) {
-        if (e.key !== ' ') {
+    document.addEventListener('keydown', async function (e: KeyboardEvent) {
+        const target = e.target instanceof Element ? e.target.closest('.swipes-counter.swipe-picker-enabled') : null;
+        if (!target || e.key !== ' ') {
             return;
         }
 
-        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-        onSwipeCounterClick.call(this, e);
+        onSwipeCounterClick.call(target, e);
     });
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document).on('click', '.mes_swipe_picker', async function (e) {
+    document.addEventListener('click', async function (e: Event) {
+        const target = e.target instanceof Element ? e.target.closest('.mes_swipe_picker') : null;
+        if (!target) return;
         e.preventDefault();
         e.stopPropagation();
 
-        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-        const mesId = Number(this.closest('.mes')?.getAttribute('mesid'));
+        const mesId = Number(target.closest('.mes')?.getAttribute('mesid'));
         await openSwipePicker(mesId);
     });
 }
