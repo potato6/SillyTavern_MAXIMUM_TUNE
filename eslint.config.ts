@@ -117,7 +117,6 @@ export default [
             sourceType: "module",
             globals: {
                 ...globals.browser,
-                jquery: true,
                 globalThis: "readonly",
                 ePub: "readonly",
                 pdfjsLib: "readonly",

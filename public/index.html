@@ -22,12 +22,9 @@
     <link rel="preload" as="style" href="css/fontawesome.min.css">
     <link rel="preload" as="style" href="css/solid.min.css">
     <link rel="preload" as="style" href="css/brands.min.css">
-    <link rel="preload" as="style" href="css/jquery-ui.min.css">
     <link rel="preload" as="style" href="css/bright.min.css">
     <link rel="preload" as="style" href="css/cropper.min.css">
     <link rel="preload" as="style" href="css/toastr.min.css">
-    <link rel="preload" as="style" href="css/select2.min.css">
-    <link rel="preload" as="style" href="css/animations.css">
     <link rel="preload" as="style" href="css/popup.css">
     <link rel="preload" as="style" href="css/promptmanager.css">
     <link rel="preload" as="style" href="css/loader.css">
@@ -49,9 +46,7 @@
     <link rel="preload" as="style" href="css/toggle-dependent.css">
     <link rel="preload" as="style" href="css/world-info.css">
     <link rel="preload" as="style" href="css/extensions-panel.css">
-    <link rel="preload" as="style" href="css/select2-overrides.css">
     <link rel="preload" as="style" href="css/mobile-styles.css">
-    <link rel="preload" as="style" href="css/macros.css">
     <link rel="preload" as="style" href="css/user.css">
     <link rel="manifest" crossorigin="use-credentials" href="manifest.json">
     <link href="webfonts/NotoSans/stylesheet.css" rel="stylesheet">
@@ -59,15 +54,11 @@
     <link href="css/fontawesome.min.css" rel="stylesheet">
     <link href="css/solid.min.css" rel="stylesheet">
     <link href="css/brands.min.css" rel="stylesheet">
-    <link href="css/jquery-ui.min.css" rel="stylesheet">
     <link href="css/bright.min.css" rel="stylesheet">
     <link href="css/cropper.min.css" rel="stylesheet">
-    <link href="css/toastr.min.css" rel="stylesheet">
-    <link href="css/select2.min.css" rel="stylesheet">
     <link rel="apple-touch-icon" sizes="57x57" href="img/apple-icon-57x57.png" />
     <link rel="apple-touch-icon" sizes="72x72" href="img/apple-icon-72x72.png" />
     <link rel="apple-touch-icon" sizes="114x114" href="img/apple-icon-114x114.png" />
-    <link rel="apple-touch-icon" sizes="144x144" href="img/apple-icon-144x144.png" />
     <link rel="stylesheet" href="css/animations.css">
     <link rel="stylesheet" href="css/popup.css">
     <link rel="stylesheet" href="css/promptmanager.css">
@@ -92,12 +83,10 @@
     <link rel="stylesheet" type="text/css" href="css/toggle-dependent.css">
     <link rel="stylesheet" type="text/css" href="css/world-info.css">
     <link rel="stylesheet" type="text/css" href="css/extensions-panel.css">
-    <link rel="stylesheet" type="text/css" href="css/select2-overrides.css">
     <link rel="stylesheet" type="text/css" href="css/mobile-styles.css">
     <link rel="stylesheet" type="text/css" href="css/macros.css">
     <link rel="stylesheet" type="text/css" href="css/user.css">
     <link rel="icon" type="image/x-icon" href="favicon.ico">
-    <!-- Scripts are loaded at the end of the body to improve page load speed -->
 <link href="css/tom-select.min.css" rel="stylesheet">
 <link href="css/tom-select-overrides.css" rel="stylesheet">
 <link href="css/nouislider.min.css" rel="stylesheet">
@@ -8240,33 +8229,18 @@
 
     <!-- Script includes -->
     <script src="lib/polyfill.js"></script>
-    <script src="lib/jquery-3.5.1.min.js"></script>
-    <script src="lib/jquery-ui.min.js"></script>
-    <script src="lib/jquery.transit.min.js"></script>
-    <script src="lib/jquery-cookie-1.4.1.min.js"></script>
-    <script src="lib/jquery.ui.touch-punch.min.js"></script>
     <script src="lib/cropper.min.js"></script>
-    <script src="lib/jquery-cropper.min.js"></script>
     <script src="lib/toastr.min.js"></script>
-    <script src="lib/select2.min.js"></script>
-    <script src="lib/select2-search-placeholder.js"></script>
-    <script src="lib/pagination.js"></script>
     <script src="lib/toolcool-color-picker.js"></script>
-    <script src="lib/jquery.izoomify.js"></script>
     <script type="module" src="lib/structured-clone/monkey-patch.js"></script>
-    <script type="module" src="lib/swiped-events.js"></script>
     <script type="module" src="lib/eventemitter.js"></script>
     <script type="module" src="scripts/i18n.js"></script>
-    <script type="module" src="script.js"></script>
     <script>
         window.addEventListener('load', (event) => {
-            const documentHeight = () => {
                 const doc = document.documentElement;
-                doc.style.setProperty('--doc-height', `${window.innerHeight}px`);
             }
             window.addEventListener('resize', documentHeight);
             documentHeight();
-        });
     </script>
 <script src="lib/tom-select.min.js"></script>
 <script src="lib/sortablejs.min.js"></script>
