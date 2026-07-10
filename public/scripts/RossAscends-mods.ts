@@ -1494,8 +1494,7 @@ export function initRossMods() {
                     .not('#cfgConfig')
                     .not('#logprobsViewer')
                     .not('#movingDivs > div');
-                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                $(visibleDrawerContent[0].parentElement.querySelector('.drawer-icon')).dispatchEvent(new Event('click', { bubbles: true }));
+                visibleDrawerContent[0].parentElement.querySelector('.drawer-icon')?.dispatchEvent(new Event('click', { bubbles: true }));
                 return;
             }
 
@@ -1532,8 +1531,7 @@ export function initRossMods() {
             for (const div of movingDivs) {
                 // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 if (div.is(':visible')) {
-                    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                    $(div.querySelector('.floating_panel_close, .dragClose')).dispatchEvent(new Event('click', { bubbles: true }));
+                    div.querySelector('.floating_panel_close, .dragClose')?.dispatchEvent(new Event('click', { bubbles: true }));
                     return;
                 }
             }

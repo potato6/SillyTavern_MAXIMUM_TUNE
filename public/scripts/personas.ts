@@ -187,7 +187,7 @@ export async function setUserAvatar(imgfile, { toastPersonaNameChange = true, na
 function reloadUserAvatar(force = false) {
     document.querySelectorAll('.mes').forEach(el => {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const avatarImg = $(el.querySelector('.avatar img'));
+        const avatarImg = el.querySelector('.avatar img');
         if (force) {
             avatarImg.setAttribute('src', avatarImg.attr('src'));
         }
@@ -206,7 +206,7 @@ function reloadUserAvatar(force = false) {
 // @ts-expect-error TS(7006) FIXME: Parameter 'personas' implicitly has an 'any' type.
 function sortPersonas(personas) {
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const option = $(document.querySelector('#persona_sort_order').querySelector('option:checked'));
+    const option = document.querySelector('#persona_sort_order option:checked');
     if (option.getAttribute('value') === 'search') {
         // @ts-expect-error TS(7006) FIXME: Parameter 'a' implicitly has an 'any' type.
         personas.sort((a, b) => {
@@ -268,19 +268,19 @@ function getUserAvatarBlock(avatarId) {
     const personaTitle = power_user.persona_descriptions[avatarId]?.title;
 
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(templateEl.querySelector('.ch_name')).textContent = personaName || '[Unnamed Persona]';
+    templateEl.querySelector('.ch_name').textContent = personaName || '[Unnamed Persona]';
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(templateEl.querySelector('.ch_description')).textContent = personaDescription || document.getElementById('user_avatar_block')?.getAttribute('no_desc_text') || 'No description';
+    templateEl.querySelector('.ch_description').textContent = personaDescription || document.getElementById('user_avatar_block')?.getAttribute('no_desc_text') || 'No description';
     templateEl.querySelector('.ch_description').classList.toggle('text_muted', !personaDescription);
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(templateEl.querySelector('.ch_additional_info')).textContent = personaTitle || '';
+    templateEl.querySelector('.ch_additional_info').textContent = personaTitle || '';
     template.attr('data-avatar-id', avatarId);
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(templateEl.querySelector('.avatar')).attr('data-avatar-id', avatarId).setAttribute('title', avatarId);
+    templateEl.querySelector('.avatar').setAttribute('data-avatar-id', avatarId).setAttribute('title', avatarId);
     template.classList.toggle('default_persona', avatarId === power_user.default_persona);
     const avatarUrl = getThumbnailUrl('persona', avatarId, isFirefox());
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(templateEl.querySelector('img')).setAttribute('src', avatarUrl);
+    templateEl.querySelector('img').setAttribute('src', avatarUrl);
 
     // Make sure description block has at least three rows. Otherwise height looks inconsistent. I don't have a better idea for this.
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message

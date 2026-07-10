@@ -912,7 +912,7 @@ class BulkEditOverlay {
                 const avatarList = characterIds.map(id => characters[id]?.avatar).filter(a => a);
                 return CharacterContextMenu.delete(avatarList, deleteChats)
                     .then(() => this.browseState())
-                    .finally(() => loaderHandle.style.display = 'none');
+                    .finally(() => loaderHandle.hide());
             });
 
         // At this moment the popup is already changed in the dom, but not yet closed/resolved. We build the avatar list here

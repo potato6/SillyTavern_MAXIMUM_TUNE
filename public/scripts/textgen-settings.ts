@@ -1401,9 +1401,9 @@ function setSettingByName(setting, value, trigger) {
     }
 
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const isCheckbox = $(`#${setting}_textgenerationwebui`).getAttribute('type') == 'checkbox';
+    const isCheckbox = document.getElementById(`${setting}_textgenerationwebui`).getAttribute('type') == 'checkbox';
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const isText = $(`#${setting}_textgenerationwebui`).getAttribute('type') == 'text' || $(`#${setting}_textgenerationwebui`).is('textarea');
+    const isText = document.getElementById(`${setting}_textgenerationwebui`).getAttribute('type') == 'text' || document.getElementById(`${setting}_textgenerationwebui`).is('textarea');
     if (isCheckbox) {
         const val = Boolean(value);
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
@@ -1411,7 +1411,7 @@ function setSettingByName(setting, value, trigger) {
 
         if ('send_banned_tokens' === setting) {
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(`#${setting}_textgenerationwebui`).dispatchEvent(new Event('change', { bubbles: true }));
+            document.getElementById(`${setting}_textgenerationwebui`).dispatchEvent(new Event('change', { bubbles: true }));
         }
     } else if (isText) {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
@@ -1432,7 +1432,7 @@ function setSettingByName(setting, value, trigger) {
 
     if (trigger) {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(`#${setting}_textgenerationwebui`).dispatchEvent(new Event('input', { bubbles: true }));
+        document.getElementById(`${setting}_textgenerationwebui`).dispatchEvent(new Event('input', { bubbles: true }));
     }
 }
 
