@@ -1576,7 +1576,7 @@ export async function replaceCurrentChat() {
  * @param messagesToLoad
  */
 export async function showMoreMessages(messagesToLoad = null) {
-    const firstDisplayedMesId = ...chatElement.children('.mes').first().attr('mesid');
+    const firstDisplayedMesId = chatElement.children('.mes').first().attr('mesid');
     let messageId = Number(firstDisplayedMesId);
     const count = messagesToLoad || power_user.chat_truncation || Number.MAX_SAFE_INTEGER;
 
@@ -1588,7 +1588,7 @@ export async function showMoreMessages(messagesToLoad = null) {
     }
 
     console.debug('Inserting messages before', messageId, 'count', count, 'chat length', chat.length);
-    const prevHeight = chatElement.scrollHeight;
+    const prevHeight = chatElement.prop('scrollHeight');
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const showMoreButton = $('#show_more_messages');
     const isButtonInView = isElementInViewport(showMoreButton[0]);
@@ -1606,7 +1606,7 @@ export async function showMoreMessages(messagesToLoad = null) {
         showMoreButton[0].after(...messageElements.map(el => el[0]));
     } else {
         // @ts-expect-error TS(7005) FIXME: Variable 'messageElements' implicitly has an 'any[... Remove this comment to see the full error message
-        chatElement.prepend(...messageElements.map(el => el[0]));
+        chatElement[0].prepend(...messageElements.map(el => el[0]));
     }
 
     refreshSwipeButtons();
@@ -1616,8 +1616,8 @@ export async function showMoreMessages(messagesToLoad = null) {
     }
 
     if (isButtonInView) {
-        const newHeight = chatElement.scrollHeight;
-        chatElement.scrollTop = newHeight - prevHeight;
+        const newHeight = chatElement.prop('scrollHeight');
+        chatElement.scrollTop(newHeight - prevHeight);
     }
 
     applyStylePins();
@@ -1633,7 +1633,7 @@ export async function printMessages() {
 
     if (chat.length > count) {
         startIndex = chat.length - count;
-        chatElement.insertAdjacentHTML('beforeend', '<div id="show_more_messages">Show more messages</div>');
+        chatElement[0].insertAdjacentHTML('beforeend', '<div id="show_more_messages">Show more messages</div>');
     }
 
     await redisplayChat({ startIndex, fade: false });
@@ -1665,14 +1665,14 @@ export async function redisplayChat({ targetChat = chat, startIndex = 0, fade = 
             const i = startIndex + offset;
             const messageElement = updateMessageElement(message, { messageId: i });
 
-            return messageElement;
+            return messageElement[0];
         });
 
         //The last_mes has been removed, add it to the new last message.
         newMessageElements.at(-1).classList.add('last_mes');
 
         //Append to chat in one DOM update.
-        chatElement.append(...newMessageElements);
+        chatElement[0].append(...newMessageElements);
 
         applyCharacterTagsToMessageDivs({ mesIds: range(startIndex, targetChat.length) as number[] });
 
@@ -1754,7 +1754,7 @@ export async function clearChat({ clearData = false } = {}) {
         $('#dialogue_del_mes_cancel').trigger('click');
     }
     //This will also remove non '.mes' elements, e.g. '<div id="show_more_messages">Show more messages</div>'.
-    chatElement.innerHTML = '';
+    chatElement[0].innerHTML = '';
     const zoomedAvatars = document.querySelectorAll('.zoomed_avatar[forChar]');
     if (zoomedAvatars.length) {
         console.debug('saw avatars to remove');
@@ -1773,7 +1773,7 @@ export async function clearChat({ clearData = false } = {}) {
 export async function deleteLastMessage() {
     deleteItemizedPromptForMessage(chat.length - 1);
     chat.length = chat.length - 1;
-    const mesChildren = [......chatElement.children].filter(el => el.matches('.mes'));
+    const mesChildren = [...chatElement[0].children].filter(el => el.matches('.mes'));
     mesChildren[mesChildren.length - 1]?.remove();
     await eventSource.emit(event_types.MESSAGE_DELETED, chat.length);
 }
@@ -1827,7 +1827,7 @@ export async function deleteMessage(id, swipeDeletionIndex = undefined, askConfi
     }
 
     chat.splice(id, 1);
-    messageElement?.remove();
+    messageElement[0]?.remove();
 
     chat_metadata.tainted = true;
 
@@ -2379,8 +2379,8 @@ export function appendMediaToMessage(mes, messageElement, scrollBehavior = SCROL
     // @ts-expect-error TS(7034) FIXME: Variable 'mediaPromises' implicitly has type 'any[... Remove this comment to see the full error message
     const mediaPromises = [];
 
-    const chatHeight = (hasMedia || hasFiles) ? chatElement.scrollHeight : 0;
-    const scrollPosition = (hasMedia || hasFiles) ? chatElement.scrollTop : 0;
+    const chatHeight = (hasMedia || hasFiles) ? chatElement.prop('scrollHeight') : 0;
+    const scrollPosition = (hasMedia || hasFiles) ? chatElement.scrollTop() : 0;
     const doAdjustScroll = () => {
         if (!hasMedia && !hasFiles) {
             return;
@@ -2389,12 +2389,12 @@ export function appendMediaToMessage(mes, messageElement, scrollBehavior = SCROL
             return;
         }
         if (scrollBehavior === SCROLL_BEHAVIOR.KEEP) {
-            chatElement.scrollTop = scrollPosition;
+            chatElement.scrollTop(scrollPosition);
             return;
         }
-        const newChatHeight = chatElement.scrollHeight;
+        const newChatHeight = chatElement.prop('scrollHeight');
         const diff = newChatHeight - chatHeight;
-        chatElement.scrollTop = scrollPosition + diff;
+        chatElement.scrollTop(scrollPosition + diff);
     };
 
     // Set media display attribute
@@ -2784,12 +2784,12 @@ export function addOneMessage(mes, { type = undefined, insertAfter = null, scrol
         messageElement = updateMessageElement(mes, { messageId, adjustMediaScroll: scroll ? SCROLL_BEHAVIOR.ADJUST : SCROLL_BEHAVIOR.NONE });
         if (typeof insertAfter === 'number' && insertAfter >= 0) {
             const target = chatElement.find(`.mes[mesid="${insertAfter}"]`);
-            target[0].insertAdjacentElement('afterend', messageElement);
+            target[0].insertAdjacentElement('afterend', messageElement[0]);
         } else if (typeof insertBefore === 'number' && insertBefore >= 0) {
             const target = chatElement.find(`.mes[mesid="${insertBefore}"]`);
-            target[0].insertAdjacentElement('beforebegin', messageElement);
+            target[0].insertAdjacentElement('beforebegin', messageElement[0]);
         } else {
-            chatElement.append(messageElement);
+            chatElement[0].append(messageElement[0]);
         }
     }
 
@@ -2994,17 +2994,17 @@ export function scrollChatToBottom({
     }
 
     const doScroll = () => {
-        let position = chatElement.scrollHeight;
+        let position = chatElement[0].scrollHeight;
 
         if (power_user.waifuMode) {
             const lastMessage = chatElement.find('.mes').last();
             if (lastMessage.length) {
                 const lastMessagePosition = lastMessage.position().top;
-                position = chatElement.scrollTop + lastMessagePosition;
+                position = chatElement.scrollTop() + lastMessagePosition;
             }
         }
 
-        chatElement.scrollTop = position;
+        chatElement.scrollTop(position);
         requestId = null;
     };
 
@@ -4666,7 +4666,7 @@ class TempResponseLength {
  */
 function removeLastMessage() {
     return new Promise((resolve) => {
-        const lastMes = ...chatElement.children('.mes').last();
+        const lastMes = chatElement.children('.mes').last();
         if (lastMes.length === 0) {
             // @ts-expect-error TS(2794) FIXME: Expected 1 arguments, but got 0. Did you forget to... Remove this comment to see the full error message
             return resolve();
@@ -9312,7 +9312,7 @@ export async function messageEdit(editMessageId) {
 
     refreshSwipeButtons();
 
-    const chatScrollPosition = chatElement.scrollTop;
+    const chatScrollPosition = chatElement.scrollTop();
     const messageBlock = messageElement.find('.mes_block');
     const messageText = messageBlock.find('.mes_text');
 
@@ -9350,7 +9350,7 @@ export async function messageEdit(editMessageId) {
     editTextArea.setSelectionRange(text.length, text.length);
 
     if (Number(this_edit_mes_id) === chat.length - 1) {
-        chatElement.scrollTop = chatScrollPosition;
+        chatElement.scrollTop(chatScrollPosition);
     }
 
     updateEditArrowClasses();
@@ -9372,7 +9372,7 @@ async function messageEditCancel(messageId = this_edit_mes_id) {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         thisMesDiv = $(this).closest('.mes');
     } else {
-        thisMesDiv = ...chatElement.children('.mes').filter(`[mesid="${messageId}"]`);
+        thisMesDiv = chatElement.children('.mes').filter(`[mesid="${messageId}"]`);
     }
 
     const thisMesBlock = thisMesDiv.find('.mes_block');
@@ -10415,7 +10415,7 @@ export async function callPopup(text, type, inputValue = '', {
 // @ts-expect-error TS(7006) FIXME: Parameter 'mesId' implicitly has an 'any' type.
 export async function updateSwipeCounter(mesId, { message = undefined, messageElement = undefined } = {}) {
     message ??= chat[mesId];
-    messageElement ??= ...chatElement.children('.mes').filter(`[mesid="${mesId}"]`);
+    messageElement ??= chatElement.children('.mes').filter(`[mesid="${mesId}"]`);
 
     //If the message does not have swipes, create them.
     if (ensureSwipes(message)) {
@@ -10563,7 +10563,7 @@ export function refreshSwipeButtons(updateCounters = false, fade = true) {
         $('body').removeClass('hideAllSwipeButtons');
     }
     //Non-messages can appear in chat. '.mes' is required.
-    const messageElements = ...chatElement.children('.mes[mesid]');
+    const messageElements = chatElement.children('.mes[mesid]');
 
     const firstDisplayedMesId = Number(messageElements.first().attr('mesid'));
 
@@ -10837,7 +10837,7 @@ export function updateEditArrowClasses() {
     }
 
     // @ts-expect-error TS(7005) FIXME: Variable 'this_edit_mes_id' implicitly has an 'any... Remove this comment to see the full error message
-    const message = ...chatElement.children('.mes').filter(`.mes[mesid="${this_edit_mes_id}"]`);
+    const message = chatElement.children('.mes').filter(`.mes[mesid="${this_edit_mes_id}"]`);
 
     const downButton = message.find('.mes_edit_down');
     const upButton = message.find('.mes_edit_up');
@@ -11459,7 +11459,7 @@ export async function swipe(event, direction, {
     // @ts-expect-error TS(7034) FIXME: Variable 'generation' implicitly has type 'any' in... Remove this comment to see the full error message
     let generation;
 
-    const thisMesDiv = ...chatElement.children('.mes').filter(`[mesid="${mesId}"]`);
+    const thisMesDiv = chatElement.children('.mes').filter(`[mesid="${mesId}"]`);
     const thisMesText = thisMesDiv.find('.mes_block .mes_text');
     const thisMesDivHeight = thisMesDiv[0]?.scrollHeight;
     const thisMesTextHeight = thisMesText[0]?.scrollHeight;
@@ -11656,7 +11656,7 @@ export async function swipe(event, direction, {
         //Select MAXIMUM_ANIMATED messages after mesId. Ideally, only visible messages would be animated.
         const MAXIMUM_ANIMATED = 100;
 
-        const messages = ...chatElement.children('.mes');
+        const messages = chatElement.children('.mes');
         const firstDisplayedMesId = Number(messages.first().attr('mesid'));
 
         // @ts-expect-error TS(7006) FIXME: Parameter 'index' implicitly has an 'any' type.
@@ -11720,7 +11720,7 @@ export async function swipe(event, direction, {
     function getMessageBottomHeight(thisMesDiv) {
         const thisMesRect = thisMesDiv[0].getBoundingClientRect();
         //Scroll position + Chat height = Bottom of chat height.
-        const chatBottom = chatElement.scrollTop - chatElement.offsetHeight;
+        const chatBottom = chatElement.scrollTop() - chatElement.height();
         //Message offset from viewport top + height = Bottom of message offset.
         const messageBottom = thisMesRect.top + thisMesDiv.height();
         // Bottom of chat + Bottom of message offset = target scroll position.
@@ -11735,7 +11735,7 @@ export async function swipe(event, direction, {
     // @ts-expect-error TS(7006) FIXME: Parameter 'thisMesDiv' implicitly has an 'any' typ... Remove this comment to see the full error message
     function expandNewMessage(thisMesDiv) {
         //Only scroll if the view is not near the bottom.
-        const is_animation_scroll = (chatElement.scrollTop >= (chatElement.scrollHeight - chatElement.offsetHeight) - 10);
+        const is_animation_scroll = (chatElement.scrollTop() >= (chatElement.prop('scrollHeight') - chatElement.outerHeight()) - 10);
 
         let new_height = thisMesDivHeight - (thisMesTextHeight - thisMesText[0].scrollHeight);
         if (new_height < 103) new_height = 103;
@@ -11748,12 +11748,12 @@ export async function swipe(event, direction, {
             queue: false,
             // @ts-expect-error TS(7006) FIXME: Parameter 'animation' implicitly has an 'any' type... Remove this comment to see the full error message
             progress: function (animation, progress, remainingMs) {
-                if (is_animation_scroll) chatElement.scrollTop = getMessageBottomHeight(thisMesDiv);
+                if (is_animation_scroll) chatElement.scrollTop(getMessageBottomHeight(thisMesDiv));
             },
             complete: function () {
                 thisMesDiv.css('height', 'auto');
                 //Correct height auto offset.
-                if (is_animation_scroll) chatElement.scrollTop = getMessageBottomHeight(thisMesDiv);
+                if (is_animation_scroll) chatElement.scrollTop(getMessageBottomHeight(thisMesDiv));
             },
         });
     }
@@ -12853,11 +12853,11 @@ function initCharacterSearch() {
          */
         // @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
         function autoFitEditTextArea(e) {
-            const scrollTop = chatElement.scrollTop;
+            const scrollTop = chatElement.scrollTop();
             e.style.height = '0px';
             const newHeight = e.scrollHeight + 4;
             e.style.height = `${newHeight}px`;
-            chatElement.scrollTop = scrollTop;
+            chatElement.scrollTop(scrollTop);
         }
         const autoFitEditTextAreaDebounced = debounce(autoFitEditTextArea, debounce_timeout.short);
         document.addEventListener('input', e => {
@@ -13503,7 +13503,7 @@ function initCharacterSearch() {
             for (let i = (chat.length - 1); i >= this_del_mes; i--) {
                 deleteItemizedPromptForMessage(i);
             }
-            const mesEl = chatElement.querySelector(`.mes[mesid="${this_del_mes}"]`);
+            const mesEl = chatElement[0].querySelector(`.mes[mesid="${this_del_mes}"]`);
             if (mesEl) {
                 let sibling = mesEl.nextElementSibling;
                 while (sibling) {
@@ -13516,7 +13516,7 @@ function initCharacterSearch() {
             chat.length = this_del_mes;
             chat_metadata.tainted = true;
             await saveChatConditional();
-            chatElement.scrollTop = chatElement.scrollHeight;
+            chatElement.scrollTop(chatElement[0].scrollHeight);
             await eventSource.emit(event_types.MESSAGE_DELETED, chat.length);
             chatElement.find('.mes').removeClass('last_mes');
             chatElement.find('.mes').last().addClass('last_mes');
@@ -13796,7 +13796,7 @@ function initCharacterSearch() {
         }
 
         hideSwipeButtons();
-        const oldScroll = chatElement.scrollTop;
+        const oldScroll = chatElement[0].scrollTop;
         // @ts-expect-error TS(7005) FIXME: Variable 'this_edit_mes_id' implicitly has an 'any... Remove this comment to see the full error message
         const clone = structuredClone(chat[this_edit_mes_id]);
         // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
@@ -13818,7 +13818,7 @@ function initCharacterSearch() {
 
         updateViewMessageIds();
         await saveChatConditional();
-        chatElement.scrollTop = oldScroll;
+        chatElement[0].scrollTop = oldScroll;
         showSwipeButtons();
     });
 
