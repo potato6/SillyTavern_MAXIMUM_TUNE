@@ -2,6 +2,8 @@ import { saveSettingsDebounced } from '../script.js';
 import { getTextTokens } from './tokenizers.js';
 import { getSortableDelay, uuidv4 } from './utils.js';
 
+declare const Sortable: any;
+
 export const BIAS_CACHE = new Map();
 
 /**
@@ -28,19 +30,20 @@ export function displayLogitBias(logitBias, containerSelector) {
     }
 
     // Check if a sortable instance exists
-    if (list.sortable('instance') !== undefined) {
+    if (list[0].sortableInstance) {
         // Destroy the instance
-        list.sortable('destroy');
+        list[0].sortableInstance.destroy();
     }
 
     // Make the list sortable
-    list.sortable({
+    const sortableEl = list[0];
+    sortableEl.sortableInstance = new Sortable(sortableEl, {
         delay: getSortableDelay(),
         handle: '.drag-handle',
-        stop: function () {
+        onEnd: function () {
             // @ts-expect-error TS(7034) FIXME: Variable 'order' implicitly has type 'any[]' in so... Remove this comment to see the full error message
             const order = [];
-            for (const child of list[0].children) {
+            for (const child of sortableEl.children) {
                 order.unshift(child.dataset.id);
             }
             // @ts-expect-error TS(7005) FIXME: Variable 'order' implicitly has an 'any[]' type.
