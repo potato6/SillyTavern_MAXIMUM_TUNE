@@ -1,4 +1,5 @@
 declare const TomSelect: any;
+declare const Sortable: any;
 
 import { DOMPurify } from '../lib.js';
 
@@ -2076,9 +2077,10 @@ function makeTagListDraggable(tagContainer) {
     };
 
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(tagContainer).sortable({
+    const tagContainerEl = tagContainer[0];
+    tagContainerEl.sortableInstance = new Sortable(tagContainerEl, {
         delay: getSortableDelay(),
-        stop: () => onTagsSort(),
+        onEnd: () => onTagsSort(),
         handle: '.drag-handle',
     });
 }
