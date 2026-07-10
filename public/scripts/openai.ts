@@ -4802,24 +4802,24 @@ function loadOpenAISettings(data, settings) {
         if (settingToUpdate) {
             const [selector] = settingToUpdate;
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const $element = selector;
+            const $element = document.querySelector(selector);
 
-            if ($element.length === 0) {
+            if (!$element) {
                 continue;
             }
 
-            if ($element.is('input[type="checkbox"]')) {
+            if ($element.matches('input[type="checkbox"]')) {
                 // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 $element.checked = oai_settings[key];
-            } else if ($element.is('select')) {
+            } else if ($element.matches('select')) {
                 // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 $element.value = oai_settings[key];
                 // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                $($element[0].querySelector(`option[value="${CSS.escape(oai_settings[key])}"]`)).prop('selected', true);
+                $element.querySelector(`option[value="${CSS.escape(oai_settings[key])}"]`)?.setAttribute('selected', 'true');
             } else {
                 // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 $element.value = oai_settings[key];
-                if ($element.is('input[type="range"]')) {
+                if ($element.matches('input[type="range"]')) {
                     const id = $element.getAttribute('id');
                     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                     const $counter = $(`input[type="number"][data-for="${id}"]`);
