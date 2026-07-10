@@ -80,9 +80,9 @@ PHASE 6 — Effects & animation (needs CSS transitions or JS fallback) ✅
 
 Affected: power-user.ts (reduced_motion), various animations in script.ts, chats.ts, etc.
 
-PHASE 7 — ajax (only in tokenizers.ts)
+PHASE 7 — ajax (only in tokenizers.ts) ✅
 ----------------------------------------
-[ ] Replace `jQuery.ajax()` in tokenizers.ts with `fetch()` + AbortController
+[x] Replace `jQuery.ajax()` in tokenizers.ts with `fetch()` + AbortController
 
 PHASE 8 — jQuery plugins (hard, requires replacement strategy)
 ----------------------------------------------------------------
