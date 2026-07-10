@@ -103,6 +103,8 @@ export {
     executeSlashCommands, executeSlashCommandsWithOptions, getSlashCommandsHelp, registerSlashCommand,
 };
 
+declare const $: any;
+
 export const parser = new SlashCommandParser();
 /**
  * @deprecated Use SlashCommandParser.addCommandObject() instead
@@ -6858,7 +6860,7 @@ function helpCommandCallback(_, type) {
     return '';
 }
 
-$(document).on('click', '[data-displayHelp]', function (e) {
+$(document).on('click', '[data-displayHelp]', function (this: any, e: any) {
     e.preventDefault();
     const page = String($(this).data('displayhelp'));
     helpCommandCallback(null, page);
@@ -7029,9 +7031,9 @@ function modelCallback(args, model) {
 
     console.log('Set model to ' + model);
 
-    if (modelSelectControl instanceof HTMLInputElement) {
+    if ((modelSelectControl as any) instanceof HTMLInputElement) {
         modelSelectControl.value = model;
-        if (modelSelectControl instanceof HTMLInputElement || modelSelectControl instanceof HTMLSelectElement) {
+        if ((modelSelectControl as any) instanceof HTMLInputElement || (modelSelectControl as any) instanceof HTMLSelectElement) {
             modelSelectControl.dispatchEvent(new Event('input'));
         }
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
