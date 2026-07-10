@@ -1,5 +1,6 @@
 declare const $: any;
 declare const TomSelect: any;
+declare const Sortable: any;
 
 import { Fuse } from '../lib.js';
 
@@ -2945,17 +2946,19 @@ async function displayWorldEntries(name, data, navigation = navigation_option.no
     });
 
     // Check if a sortable instance exists
-    if (worldEntriesList.sortable('instance') !== undefined) {
+    const worldEntriesListAny = worldEntriesList as any;
+    if (worldEntriesListAny?.sortableInstance) {
         // Destroy the instance
-        worldEntriesList.sortable('destroy');
+        worldEntriesListAny.sortableInstance.destroy();
     }
 
-    worldEntriesList.sortable({
-        items: '.world_entry',
-        delay: getSortableDelay(),
-        handle: '.drag-handle',
+    if (worldEntriesListAny) {
         // @ts-expect-error TS(7006) FIXME: Parameter '_event' implicitly has an 'any' type.
-        stop: async function (_event, _ui) {
+        worldEntriesListAny.sortableInstance = new Sortable(worldEntriesListAny, {
+            delay: getSortableDelay(),
+            handle: '.drag-handle',
+            // @ts-expect-error TS(7006) FIXME: Parameter '_event' implicitly has an 'any' type.
+            onEnd: async function () {
                 // @ts-expect-error TS(2339) FIXME: Property 'dataset' does not exist on type 'Element... Remove this comment to see the full error message
                 const firstEntryUid = document.querySelector('#world_popup_entries_list .world_entry')?.dataset.uid;
             const minDisplayIndex = data?.entries[firstEntryUid]?.displayIndex ?? 0;
@@ -2980,6 +2983,7 @@ async function displayWorldEntries(name, data, navigation = navigation_option.no
             await saveWorldInfo(name, data);
         },
     });
+    }
 
     //$("#world_popup_entries_list").disableSelection();
 }
