@@ -8229,6 +8229,8 @@
 
     <!-- Script includes -->
     <script src="lib/polyfill.js"></script>
+                <script src="lib/cash.min.js"></script>
+        <script>window.jQuery=$;if(typeof $.fn.sortable==='undefined')$.fn.sortable=function(){};$.fn.fadeIn=$.fn.fadeIn||function(){};$.fn.bind=$.fn.bind||function(){return this};$.fn.scrollTop=function(v){return v===void 0?this[0]?.scrollTop:(this.each(function(){this.scrollTop=v}),this)};$.fn.pagination=function(o){return typeof o==='string'?this:this};$.fn.tabs=function(){return this};(function(){var o=DOMTokenList.prototype.add;DOMTokenList.prototype.add=function(){for(var a=[],i=0;i<arguments.length;i++)a.push.apply(a,arguments[i].split(/\s+/));o.apply(this,a)}})();(function(){var o=$;window.$=function(s){if(typeof s!=='string')return o(s);try{return o(s)}catch(e){try{return o(s.replace(/\[(\w+)=([^\]]*)\]/g,'[$1="$2"]'))}catch(e2){return o(s)}}};})();</script>
     <script src="lib/cropper.min.js"></script>
     <script src="lib/toastr.min.js"></script>
     <script src="lib/toolcool-color-picker.js"></script>

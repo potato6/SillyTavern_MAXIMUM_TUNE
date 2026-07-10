@@ -101,7 +101,7 @@ export function formatKoboldUrl(value) {
  *
  */
 function selectKoboldGuiPreset() {
-    const option = document.querySelector('#settings_preset option[value=gui]');
+        const option = document.querySelector('#settings_preset option[value="gui"]');
     option?.setAttribute('selected', 'true');
     option?.closest('select')?.dispatchEvent(new Event('change'));
 }
@@ -142,7 +142,7 @@ export function loadKoboldSettings(data, preset, settings) {
     } else {
         if (typeof koboldai_setting_names[kai_settings.preset_settings] !== 'undefined') {
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const presetOption = document.querySelector(`#settings_preset option[value=${koboldai_setting_names[kai_settings.preset_settings]}]`);
+                        const presetOption = document.querySelector(`#settings_preset option[value="${koboldai_setting_names[kai_settings.preset_settings]}"]`);
             if (presetOption) presetOption.setAttribute('selected', 'true');
         } else {
             kai_settings.preset_settings = 'gui';
@@ -581,7 +581,7 @@ export function initKoboldSettings() {
     });
 
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('streaming_kobold').on('input', function () {
+    $(document.getElementById('streaming_kobold')).on('input', function () {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const value = !!this.checked;
         kai_settings.streaming_kobold = value;
@@ -589,7 +589,7 @@ export function initKoboldSettings() {
     });
 
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('use_default_badwordsids').on('input', function () {
+    $(document.getElementById('use_default_badwordsids')).on('input', function () {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const value = !!this.checked;
         kai_settings.use_default_badwordsids = value;

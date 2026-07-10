@@ -244,14 +244,14 @@ export async function RA_CountCharTokens() {
         }
 
         if (!value) {
-            input.dataset['last-value-hash'] = '';
+            input.dataset.lastValueHash = '';
             counter.textContent = 0;
             continue;
         }
 
         const valueHash = getStringHash(value);
 
-        if (input.dataset['last-value-hash'] === valueHash) {
+        if (input.dataset.lastValueHash === valueHash) {
             total_tokens += Number(counter.textContent);
             permanent_tokens += isPermanent ? Number(counter.textContent) : 0;
         } else {
@@ -266,7 +266,7 @@ export async function RA_CountCharTokens() {
             counter.textContent = tokens;
             total_tokens += tokens;
             permanent_tokens += isPermanent ? tokens : 0;
-            input.dataset['last-value-hash'] = valueHash;
+            input.dataset.lastValueHash = valueHash;
         }
     }
 
@@ -280,7 +280,7 @@ export async function RA_CountCharTokens() {
     // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     document.getElementById('result_info_text').classList.toggle('neutral_warning', showWarning);
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('chartokenwarning').toggle(showWarning);
+    $(document.getElementById('chartokenwarning')).toggle(showWarning);
 }
 /**
  * Auto load chat with the last active character or group.

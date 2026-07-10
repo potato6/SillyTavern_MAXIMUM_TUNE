@@ -996,7 +996,7 @@ export function initTextGenSettings() {
     });
 
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('tabby_json_schema').on('input', function () {
+    $(document.getElementById('tabby_json_schema')).on('input', function () {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const json_schema_string = String(this.value);
 
@@ -1217,7 +1217,7 @@ export function initTextGenSettings() {
     });
 
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('openrouter_allow_fallbacks_textgenerationwebui').on('input', function () {
+    $(document.getElementById('openrouter_allow_fallbacks_textgenerationwebui')).on('input', function () {
         updateOpenRouterProvidersWarning('#openrouter_providers_text');
     });
 

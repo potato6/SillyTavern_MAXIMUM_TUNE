@@ -858,25 +858,25 @@ function loadReasoningSettings() {
         saveSettingsDebounced();
     });
 
-    UI.$prefix.val(power_user.reasoning.prefix);
+    UI.$prefix.value = power_user.reasoning.prefix;
     UI.$prefix[0].addEventListener('input', function (this: HTMLInputElement) {
         power_user.reasoning.prefix = String(this.value);
         saveSettingsDebounced();
     });
 
-    UI.$suffix.val(power_user.reasoning.suffix);
+    UI.$suffix.value = power_user.reasoning.suffix;
     UI.$suffix[0].addEventListener('input', function (this: HTMLInputElement) {
         power_user.reasoning.suffix = String(this.value);
         saveSettingsDebounced();
     });
 
-    UI.$separator.val(power_user.reasoning.separator);
+    UI.$separator.value = power_user.reasoning.separator;
     UI.$separator[0].addEventListener('input', function (this: HTMLInputElement) {
         power_user.reasoning.separator = String(this.value);
         saveSettingsDebounced();
     });
 
-    UI.$maxAdditions.val(power_user.reasoning.max_additions);
+    UI.$maxAdditions.value = power_user.reasoning.max_additions;
     UI.$maxAdditions[0].addEventListener('input', function (this: HTMLInputElement) {
         power_user.reasoning.max_additions = Number(this.value);
         saveSettingsDebounced();
@@ -913,11 +913,11 @@ function loadReasoningSettings() {
         }
 
         // @ts-expect-error TS(2339) FIXME: Property 'prefix' does not exist on type 'never'.
-        UI.$prefix.val(template.prefix);
+        UI.$prefix.value = template.prefix;
         // @ts-expect-error TS(2339) FIXME: Property 'suffix' does not exist on type 'never'.
-        UI.$suffix.val(template.suffix);
+        UI.$suffix.value = template.suffix;
         // @ts-expect-error TS(2339) FIXME: Property 'separator' does not exist on type 'never... Remove this comment to see the full error message
-        UI.$separator.val(template.separator);
+        UI.$separator.value = template.separator;
 
         power_user.reasoning.name = name;
         // @ts-expect-error TS(2339) FIXME: Property 'prefix' does not exist on type 'never'.
@@ -1867,7 +1867,7 @@ export async function loadReasoningTemplates(data) {
         saveSettingsDebounced();
     }
 
-    UI.$select.val(power_user.reasoning.name);
+        UI.$select.value = power_user.reasoning.name;
 }
 
 /**

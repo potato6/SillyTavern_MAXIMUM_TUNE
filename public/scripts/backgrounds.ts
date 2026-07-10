@@ -2187,7 +2187,7 @@ export function initBackgrounds() {
     });
 
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('bg_tabs').tabs();
+        $('#bg_tabs').tabs();
     document.getElementById('bg_tabs')?.addEventListener('tabsactivate', () => updateGroupFolderControlsVisibility());
     updateGroupFolderControlsVisibility();
     syncGroupSelectionUi();

@@ -275,7 +275,7 @@ function getUserAvatarBlock(avatarId) {
     templateEl.querySelector('.ch_additional_info').textContent = personaTitle || '';
     template.setAttribute('data-avatar-id', avatarId);
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    templateEl.querySelector('.avatar').setAttribute('data-avatar-id', avatarId).setAttribute('title', avatarId);
+    templateEl.querySelector('.avatar')?.setAttribute('data-avatar-id', avatarId)?.setAttribute('title', avatarId);
     template.classList.toggle('default_persona', avatarId === power_user.default_persona);
     const avatarUrl = getThumbnailUrl('persona', avatarId, isFirefox());
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
@@ -692,7 +692,7 @@ export function setPersonaDescription() {
     }
 
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('persona_depth_position_settings').toggle(power_user.persona_description_position === persona_description_positions.AT_DEPTH);
+    $(document.getElementById('persona_depth_position_settings')).toggle(power_user.persona_description_position === persona_description_positions.AT_DEPTH);
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     document.getElementById('persona_description').value = power_user.persona_description;
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
@@ -1484,13 +1484,13 @@ async function onPersonaDescriptionPositionInput() {
         saveSettingsDebounced();
         await eventSource.emit(event_types.PERSONA_UPDATED, user_avatar);
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        document.getElementById('persona_depth_position_settings').toggle(power_user.persona_description_position === persona_description_positions.AT_DEPTH);
+        $(document.getElementById('persona_depth_position_settings')).toggle(power_user.persona_description_position === persona_description_positions.AT_DEPTH);
         return;
     }
 
     saveSettingsDebounced();
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('persona_depth_position_settings').toggle(power_user.persona_description_position === persona_description_positions.AT_DEPTH);
+    $(document.getElementById('persona_depth_position_settings')).toggle(power_user.persona_description_position === persona_description_positions.AT_DEPTH);
 }
 
 /**
