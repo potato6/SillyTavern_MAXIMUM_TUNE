@@ -12,33 +12,33 @@ class ChatterboxTtsProvider {
     constructor() {
         // Initialize with default settings
         this.settings = {
-            // @ts-expect-error TS(2339): Property 'provider_endpoint' does not exist on typ... Remove this comment to see the full error message
+
             provider_endpoint: this.settings.provider_endpoint || 'http://localhost:8004',
-            // @ts-expect-error TS(2339): Property 'voice_mode' does not exist on type '{}'.
+
             voice_mode: this.settings.voice_mode || 'predefined',
-            // @ts-expect-error TS(2339): Property 'predefined_voice' does not exist on type... Remove this comment to see the full error message
+
             predefined_voice: this.settings.predefined_voice || 'S1',
-            // @ts-expect-error TS(2339): Property 'reference_voice' does not exist on type ... Remove this comment to see the full error message
+
             reference_voice: this.settings.reference_voice || '',
-            // @ts-expect-error TS(2339): Property 'temperature' does not exist on type '{}'... Remove this comment to see the full error message
+
             temperature: this.settings.temperature || 0.8,
-            // @ts-expect-error TS(2339): Property 'exaggeration' does not exist on type '{}... Remove this comment to see the full error message
+
             exaggeration: this.settings.exaggeration || 0.5,
-            // @ts-expect-error TS(2339): Property 'cfg_weight' does not exist on type '{}'.
+
             cfg_weight: this.settings.cfg_weight || 0.5,
-            // @ts-expect-error TS(2339): Property 'seed' does not exist on type '{}'.
+
             seed: this.settings.seed || -1,
-            // @ts-expect-error TS(2339): Property 'speed_factor' does not exist on type '{}... Remove this comment to see the full error message
+
             speed_factor: this.settings.speed_factor || 1.0,
-            // @ts-expect-error TS(2339): Property 'language' does not exist on type '{}'.
+
             language: this.settings.language || 'en',
-            // @ts-expect-error TS(2339): Property 'split_text' does not exist on type '{}'.
+
             split_text: this.settings.split_text || true,
-            // @ts-expect-error TS(2339): Property 'chunk_size' does not exist on type '{}'.
+
             chunk_size: this.settings.chunk_size || 120,
-            // @ts-expect-error TS(2339): Property 'output_format' does not exist on type '{... Remove this comment to see the full error message
+
             output_format: this.settings.output_format || 'wav',
-            // @ts-expect-error TS(2339): Property 'voiceMap' does not exist on type '{}'.
+
             voiceMap: this.settings.voiceMap || {},
         };
     }
@@ -79,7 +79,7 @@ class ChatterboxTtsProvider {
         // Server endpoint
         html += `<div class="chatterbox-setting-row">
             <label for="chatterbox-endpoint">Server Endpoint:</label>
-            // @ts-expect-error TS(2339): Property 'provider_endpoint' does not exist on typ... Remove this comment to see the full error message
+
             <input id="chatterbox-endpoint" type="text" class="text_pole" value="${this.settings.provider_endpoint}" />
         </div>`;
 
@@ -88,7 +88,7 @@ class ChatterboxTtsProvider {
             <label for="chatterbox-language">Language:</label>
             <select id="chatterbox-language">`;
         for (let language in this.languageLabels) {
-            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
+
             html += `<option value="${this.languageLabels[language]}" ${this.languageLabels[language] === this.settings.language ? 'selected' : ''}>${language}</option>`;
         }
         html += `</select>
@@ -100,57 +100,57 @@ class ChatterboxTtsProvider {
 
         // Temperature
         html += `<div class="chatterbox-setting-row">
-            // @ts-expect-error TS(2339): Property 'temperature' does not exist on type '{}'... Remove this comment to see the full error message
+
             <label for="chatterbox-temperature">Temperature: <span id="chatterbox-temperature-value">${this.settings.temperature}</span></label>
-            // @ts-expect-error TS(2339): Property 'temperature' does not exist on type '{}'... Remove this comment to see the full error message
+
             <input id="chatterbox-temperature" type="range" min="0" max="1" step="0.1" value="${this.settings.temperature}" />
         </div>`;
 
         // Exaggeration
         html += `<div class="chatterbox-setting-row">
-            // @ts-expect-error TS(2339): Property 'exaggeration' does not exist on type '{}... Remove this comment to see the full error message
+
             <label for="chatterbox-exaggeration">Exaggeration: <span id="chatterbox-exaggeration-value">${this.settings.exaggeration}</span></label>
-            // @ts-expect-error TS(2339): Property 'exaggeration' does not exist on type '{}... Remove this comment to see the full error message
+
             <input id="chatterbox-exaggeration" type="range" min="0" max="2" step="0.1" value="${this.settings.exaggeration}" />
         </div>`;
 
         // CFG Weight
         html += `<div class="chatterbox-setting-row">
-            // @ts-expect-error TS(2339): Property 'cfg_weight' does not exist on type '{}'.
+
             <label for="chatterbox-cfg-weight">CFG Weight: <span id="chatterbox-cfg-weight-value">${this.settings.cfg_weight}</span></label>
-            // @ts-expect-error TS(2339): Property 'cfg_weight' does not exist on type '{}'.
+
             <input id="chatterbox-cfg-weight" type="range" min="0" max="1" step="0.1" value="${this.settings.cfg_weight}" />
         </div>`;
 
         // Speed Factor
         html += `<div class="chatterbox-setting-row">
-            // @ts-expect-error TS(2339): Property 'speed_factor' does not exist on type '{}... Remove this comment to see the full error message
+
             <label for="chatterbox-speed">Speed Factor: <span id="chatterbox-speed-value">${this.settings.speed_factor}</span></label>
-            // @ts-expect-error TS(2339): Property 'speed_factor' does not exist on type '{}... Remove this comment to see the full error message
+
             <input id="chatterbox-speed" type="range" min="0.5" max="2" step="0.1" value="${this.settings.speed_factor}" />
         </div>`;
 
         // Seed
         html += `<div class="chatterbox-setting-row">
             <label for="chatterbox-seed">Seed (-1 for random):</label>
-            // @ts-expect-error TS(2339): Property 'seed' does not exist on type '{}'.
+
             <input id="chatterbox-seed" class="text_pole" type="number" min="-1" value="${this.settings.seed}" />
         </div>`;
 
         // Text chunking
         html += `<div class="chatterbox-setting-row">
             <label class="checkbox_label">
-                // @ts-expect-error TS(2339): Property 'split_text' does not exist on type '{}'.
+
                 <input type="checkbox" id="chatterbox-split-text" ${this.settings.split_text ? 'checked' : ''} />
                 Split long texts into chunks
             </label>
         </div>`;
 
         // Chunk size
-        // @ts-expect-error TS(2339): Property 'split_text' does not exist on type '{}'.
+
         html += `<div class="chatterbox-setting-row" id="chunk-size-row" ${!this.settings.split_text ? 'style="display: none;"' : ''}>
             <label for="chatterbox-chunk-size">Chunk Size:</label>
-            // @ts-expect-error TS(2339): Property 'chunk_size' does not exist on type '{}'.
+
             <input id="chatterbox-chunk-size" class="text_pole" type="number" min="50" max="500" value="${this.settings.chunk_size}" />
         </div>`;
 
@@ -158,9 +158,9 @@ class ChatterboxTtsProvider {
         html += `<div class="chatterbox-setting-row">
             <label for="chatterbox-format">Output Format:</label>
             <select id="chatterbox-format">
-                // @ts-expect-error TS(2339): Property 'output_format' does not exist on type '{... Remove this comment to see the full error message
+
                 <option value="wav" ${this.settings.output_format === 'wav' ? 'selected' : ''}>WAV</option>
-                // @ts-expect-error TS(2339): Property 'output_format' does not exist on type '{... Remove this comment to see the full error message
+
                 <option value="opus" ${this.settings.output_format === 'opus' ? 'selected' : ''}>Opus</option>
             </select>
         </div>`;
@@ -169,7 +169,7 @@ class ChatterboxTtsProvider {
 
         // Footer with links
         html += `<div class="chatterbox-footer">
-            // @ts-expect-error TS(2339): Property 'provider_endpoint' does not exist on typ... Remove this comment to see the full error message
+
             <a href="${this.settings.provider_endpoint}" target="_blank">Chatterbox Web UI</a> |
             <a href="https://github.com/devnen/Chatterbox-TTS-Server" target="_blank">Documentation</a>
         </div>`;
@@ -250,7 +250,7 @@ class ChatterboxTtsProvider {
             // Populate settings with provided values
             for (const key in settings) {
                 if (key in this.settings) {
-                    // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
+
                     this.settings[key] = settings[key];
                 }
             }
@@ -279,37 +279,37 @@ class ChatterboxTtsProvider {
     }
 
     updateUIFromSettings() {
-        // @ts-expect-error TS(2339): Property 'provider_endpoint' does not exist on typ... Remove this comment to see the full error message
+
         $('#chatterbox-endpoint').val(this.settings.provider_endpoint);
-        // @ts-expect-error TS(2339): Property 'language' does not exist on type '{}'.
+
         $('#chatterbox-language').val(this.settings.language);
-        // @ts-expect-error TS(2339): Property 'temperature' does not exist on type '{}'... Remove this comment to see the full error message
+
         $('#chatterbox-temperature').val(this.settings.temperature);
-        // @ts-expect-error TS(2339): Property 'temperature' does not exist on type '{}'... Remove this comment to see the full error message
+
         $('#chatterbox-temperature-value').text(this.settings.temperature);
-        // @ts-expect-error TS(2339): Property 'exaggeration' does not exist on type '{}... Remove this comment to see the full error message
+
         $('#chatterbox-exaggeration').val(this.settings.exaggeration);
-        // @ts-expect-error TS(2339): Property 'exaggeration' does not exist on type '{}... Remove this comment to see the full error message
+
         $('#chatterbox-exaggeration-value').text(this.settings.exaggeration);
-        // @ts-expect-error TS(2339): Property 'cfg_weight' does not exist on type '{}'.
+
         $('#chatterbox-cfg-weight').val(this.settings.cfg_weight);
-        // @ts-expect-error TS(2339): Property 'cfg_weight' does not exist on type '{}'.
+
         $('#chatterbox-cfg-weight-value').text(this.settings.cfg_weight);
-        // @ts-expect-error TS(2339): Property 'speed_factor' does not exist on type '{}... Remove this comment to see the full error message
+
         $('#chatterbox-speed').val(this.settings.speed_factor);
-        // @ts-expect-error TS(2339): Property 'speed_factor' does not exist on type '{}... Remove this comment to see the full error message
+
         $('#chatterbox-speed-value').text(this.settings.speed_factor);
-        // @ts-expect-error TS(2339): Property 'seed' does not exist on type '{}'.
+
         $('#chatterbox-seed').val(this.settings.seed);
-        // @ts-expect-error TS(2339): Property 'split_text' does not exist on type '{}'.
+
         $('#chatterbox-split-text').prop('checked', this.settings.split_text);
-        // @ts-expect-error TS(2339): Property 'chunk_size' does not exist on type '{}'.
+
         $('#chatterbox-chunk-size').val(this.settings.chunk_size);
-        // @ts-expect-error TS(2339): Property 'output_format' does not exist on type '{... Remove this comment to see the full error message
+
         $('#chatterbox-format').val(this.settings.output_format);
 
         // Show/hide chunk size based on split text
-        // @ts-expect-error TS(2339): Property 'split_text' does not exist on type '{}'.
+
         if (this.settings.split_text) {
             $('#chunk-size-row').show();
         } else {
@@ -323,7 +323,7 @@ class ChatterboxTtsProvider {
 
     async checkReady() {
         try {
-            // @ts-expect-error TS(2339): Property 'provider_endpoint' does not exist on typ... Remove this comment to see the full error message
+
             const response = await fetch(`${this.settings.provider_endpoint}/api/ui/initial-data`);
 
             if (!response.ok) {
@@ -353,7 +353,7 @@ class ChatterboxTtsProvider {
     async fetchTtsVoiceObjects() {
         try {
             // Always fetch predefined voices
-            // @ts-expect-error TS(2339): Property 'provider_endpoint' does not exist on typ... Remove this comment to see the full error message
+
             const predefinedResponse = await fetch(`${this.settings.provider_endpoint}/get_predefined_voices`);
             if (!predefinedResponse.ok) {
                 throw new Error(`HTTP ${predefinedResponse.status}: ${predefinedResponse.statusText}`);
@@ -372,7 +372,7 @@ class ChatterboxTtsProvider {
             // Always try to fetch reference voices
             let referenceVoices = [];
             try {
-                // @ts-expect-error TS(2339): Property 'provider_endpoint' does not exist on typ... Remove this comment to see the full error message
+
                 const refResponse = await fetch(`${this.settings.provider_endpoint}/get_reference_files`);
                 if (refResponse.ok) {
                     const refData = await refResponse.json();
@@ -388,7 +388,7 @@ class ChatterboxTtsProvider {
             }
 
             // Combine all voices
-            // @ts-expect-error TS(2322): Type 'any[]' is not assignable to type 'never[]'.
+
             this.voices = [...predefinedVoices, ...referenceVoices];
 
             console.log(`Loaded ${this.voices.length} voices (${predefinedVoices.length} predefined, ${referenceVoices.length} reference)`);
@@ -412,61 +412,61 @@ class ChatterboxTtsProvider {
     setupEventListeners() {
         // Server endpoint change
         $('#chatterbox-endpoint').on('input', () => {
-            // @ts-expect-error TS(2339): Property 'provider_endpoint' does not exist on typ... Remove this comment to see the full error message
+
             this.settings.provider_endpoint = $('#chatterbox-endpoint').val();
             this.onSettingsChange();
         });
 
         // Language
         $('#chatterbox-language').on('change', (e: any) => {
-            // @ts-expect-error TS(2339): Property 'language' does not exist on type '{}'.
+
             this.settings.language = e.target.value;
             this.onSettingsChange();
         });
 
         // Parameter sliders
         $('#chatterbox-temperature').on('input', (e: any) => {
-            // @ts-expect-error TS(2339): Property 'temperature' does not exist on type '{}'... Remove this comment to see the full error message
+
             this.settings.temperature = parseFloat(e.target.value);
-            // @ts-expect-error TS(2339): Property 'temperature' does not exist on type '{}'... Remove this comment to see the full error message
+
             $('#chatterbox-temperature-value').text(this.settings.temperature);
             this.onSettingsChange();
         });
 
         $('#chatterbox-exaggeration').on('input', (e: any) => {
-            // @ts-expect-error TS(2339): Property 'exaggeration' does not exist on type '{}... Remove this comment to see the full error message
+
             this.settings.exaggeration = parseFloat(e.target.value);
-            // @ts-expect-error TS(2339): Property 'exaggeration' does not exist on type '{}... Remove this comment to see the full error message
+
             $('#chatterbox-exaggeration-value').text(this.settings.exaggeration);
             this.onSettingsChange();
         });
 
         $('#chatterbox-cfg-weight').on('input', (e: any) => {
-            // @ts-expect-error TS(2339): Property 'cfg_weight' does not exist on type '{}'.
+
             this.settings.cfg_weight = parseFloat(e.target.value);
-            // @ts-expect-error TS(2339): Property 'cfg_weight' does not exist on type '{}'.
+
             $('#chatterbox-cfg-weight-value').text(this.settings.cfg_weight);
             this.onSettingsChange();
         });
 
         $('#chatterbox-speed').on('input', (e: any) => {
-            // @ts-expect-error TS(2339): Property 'speed_factor' does not exist on type '{}... Remove this comment to see the full error message
+
             this.settings.speed_factor = parseFloat(e.target.value);
-            // @ts-expect-error TS(2339): Property 'speed_factor' does not exist on type '{}... Remove this comment to see the full error message
+
             $('#chatterbox-speed-value').text(this.settings.speed_factor);
             this.onSettingsChange();
         });
 
         // Seed
         $('#chatterbox-seed').on('change', (e: any) => {
-            // @ts-expect-error TS(2339): Property 'seed' does not exist on type '{}'.
+
             this.settings.seed = parseInt(e.target.value);
             this.onSettingsChange();
         });
 
         // Text splitting
         $('#chatterbox-split-text').on('change', (e: any) => {
-            // @ts-expect-error TS(2339): Property 'split_text' does not exist on type '{}'.
+
             this.settings.split_text = e.target.checked;
             if (e.target.checked) {
                 $('#chunk-size-row').show();
@@ -477,14 +477,14 @@ class ChatterboxTtsProvider {
         });
 
         $('#chatterbox-chunk-size').on('change', (e: any) => {
-            // @ts-expect-error TS(2339): Property 'chunk_size' does not exist on type '{}'.
+
             this.settings.chunk_size = parseInt(e.target.value);
             this.onSettingsChange();
         });
 
         // Output format
         $('#chatterbox-format').on('change', (e: any) => {
-            // @ts-expect-error TS(2339): Property 'output_format' does not exist on type '{... Remove this comment to see the full error message
+
             this.settings.output_format = e.target.value;
             this.onSettingsChange();
         });
@@ -543,33 +543,33 @@ class ChatterboxTtsProvider {
             const requestBody = {
                 text: previewText,
                 voice_mode: isReferenceVoice ? 'clone' : 'predefined',
-                // @ts-expect-error TS(2339): Property 'temperature' does not exist on type '{}'... Remove this comment to see the full error message
+
                 temperature: this.settings.temperature,
-                // @ts-expect-error TS(2339): Property 'exaggeration' does not exist on type '{}... Remove this comment to see the full error message
+
                 exaggeration: this.settings.exaggeration,
-                // @ts-expect-error TS(2339): Property 'cfg_weight' does not exist on type '{}'.
+
                 cfg_weight: this.settings.cfg_weight,
-                // @ts-expect-error TS(2339): Property 'seed' does not exist on type '{}'.
+
                 seed: this.settings.seed >= 0 ? this.settings.seed : Math.floor(Math.random() * 2147483648), // Use random seed if -1
-                // @ts-expect-error TS(2339): Property 'speed_factor' does not exist on type '{}... Remove this comment to see the full error message
+
                 speed_factor: this.settings.speed_factor,
-                // @ts-expect-error TS(2339): Property 'language' does not exist on type '{}'.
+
                 language: this.settings.language,
                 split_text: false, // Don't split for preview
-                // @ts-expect-error TS(2339): Property 'output_format' does not exist on type '{... Remove this comment to see the full error message
+
                 output_format: this.settings.output_format,
             };
 
             // Add voice-specific parameters
             if (isReferenceVoice) {
-                // @ts-expect-error TS(2339): Property 'reference_audio_filename' does not exist... Remove this comment to see the full error message
+
                 requestBody.reference_audio_filename = actualVoiceId;
             } else {
-                // @ts-expect-error TS(2339): Property 'predefined_voice_id' does not exist on t... Remove this comment to see the full error message
+
                 requestBody.predefined_voice_id = actualVoiceId;
             }
 
-            // @ts-expect-error TS(2339): Property 'provider_endpoint' does not exist on typ... Remove this comment to see the full error message
+
             const response = await fetch(`${this.settings.provider_endpoint}/tts`, {
                 method: 'POST',
                 headers: {
@@ -612,11 +612,11 @@ class ChatterboxTtsProvider {
 
         // Find the voice object by name or voice_id
         let match = this.voices.find(voice =>
-            // @ts-expect-error TS(2339): Property 'name' does not exist on type 'never'.
+
             voice.name === voiceName ||
-            // @ts-expect-error TS(2339): Property 'voice_id' does not exist on type 'never'... Remove this comment to see the full error message
+
             voice.voice_id === voiceName ||
-            // @ts-expect-error TS(2339): Property 'display_name' does not exist on type 'ne... Remove this comment to see the full error message
+
             voice.display_name === voiceName,
         );
 
@@ -635,7 +635,7 @@ class ChatterboxTtsProvider {
             // Return a default voice object
             return {
                 name: voiceName || 'Default',
-                // @ts-expect-error TS(2339): Property 'predefined_voice' does not exist on type... Remove this comment to see the full error message
+
                 voice_id: voiceName || this.settings.predefined_voice || 'S1',
                 preview_url: null,
                 lang: 'en',
@@ -666,38 +666,38 @@ class ChatterboxTtsProvider {
             const requestBody = {
                 text: inputText,
                 voice_mode: isReferenceVoice ? 'clone' : 'predefined',
-                // @ts-expect-error TS(2339): Property 'temperature' does not exist on type '{}'... Remove this comment to see the full error message
+
                 temperature: this.settings.temperature,
-                // @ts-expect-error TS(2339): Property 'exaggeration' does not exist on type '{}... Remove this comment to see the full error message
+
                 exaggeration: this.settings.exaggeration,
-                // @ts-expect-error TS(2339): Property 'cfg_weight' does not exist on type '{}'.
+
                 cfg_weight: this.settings.cfg_weight,
-                // @ts-expect-error TS(2339): Property 'seed' does not exist on type '{}'.
+
                 seed: this.settings.seed >= 0 ? this.settings.seed : Math.floor(Math.random() * 2147483648), // Use random seed if -1
-                // @ts-expect-error TS(2339): Property 'speed_factor' does not exist on type '{}... Remove this comment to see the full error message
+
                 speed_factor: this.settings.speed_factor,
-                // @ts-expect-error TS(2339): Property 'language' does not exist on type '{}'.
+
                 language: this.settings.language,
-                // @ts-expect-error TS(2339): Property 'split_text' does not exist on type '{}'.
+
                 split_text: this.settings.split_text,
-                // @ts-expect-error TS(2339): Property 'chunk_size' does not exist on type '{}'.
+
                 chunk_size: this.settings.chunk_size,
-                // @ts-expect-error TS(2339): Property 'output_format' does not exist on type '{... Remove this comment to see the full error message
+
                 output_format: this.settings.output_format,
             };
 
             // Add voice-specific parameters
             if (isReferenceVoice) {
-                // @ts-expect-error TS(2339): Property 'reference_audio_filename' does not exist... Remove this comment to see the full error message
+
                 requestBody.reference_audio_filename = actualVoiceId;
             } else {
-                // @ts-expect-error TS(2339): Property 'predefined_voice_id' does not exist on t... Remove this comment to see the full error message
+
                 requestBody.predefined_voice_id = actualVoiceId || this.settings.predefined_voice;
             }
 
             console.log('Generating TTS with params:', requestBody);
 
-            // @ts-expect-error TS(2339): Property 'provider_endpoint' does not exist on typ... Remove this comment to see the full error message
+
             const response = await fetch(`${this.settings.provider_endpoint}/tts`, {
                 method: 'POST',
                 headers: {
