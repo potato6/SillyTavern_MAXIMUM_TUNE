@@ -1560,15 +1560,15 @@ export async function replaceCurrentChat() {
             // pick existing chat
             // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             characters[this_chid].chat = chats[0].file_name.replace('.jsonl', '');
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#selected_chat_pole').val(characters[this_chid].chat);
+            const selectedChatPole = document.getElementById('selected_chat_pole');
+            if (selectedChatPole) selectedChatPole.value = characters[this_chid].chat;
             saveCharacterDebounced();
             await getChat();
         } else {
             // start new chat
             characters[this_chid].chat = `${name2} - ${humanizedDateTime()}`;
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#selected_chat_pole').val(characters[this_chid].chat);
+            const selectedChatPole = document.getElementById('selected_chat_pole');
+            if (selectedChatPole) selectedChatPole.value = characters[this_chid].chat;
             saveCharacterDebounced();
             await getChat();
         }
@@ -8686,89 +8686,53 @@ export async function openCharacterChat(file_name) {
  * @param api
  */
 export function changeMainAPI(api = null) {
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const selectedVal = api ?? $('#main_api').val();
+    const selectedVal = api ?? document.querySelector('#main_api').value;
     //console.log(selectedVal);
     const apiElements = {
         'koboldhorde': {
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            apiStreaming: $('#NULL_SELECTOR'),
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            apiSettings: $('#kobold_api-settings'),
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            apiConnector: $('#kobold_horde'),
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            apiPresets: $('#kobold_api-presets'),
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            apiRanges: $('#range_block'),
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            maxContextElem: $('#max_context_block'),
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            amountGenElem: $('#amount_gen_block'),
+            apiStreaming: document.querySelector('#NULL_SELECTOR'),
+            apiSettings: document.querySelector('#kobold_api-settings'),
+            apiConnector: document.querySelector('#kobold_horde'),
+            apiPresets: document.querySelector('#kobold_api-presets'),
+            apiRanges: document.querySelector('#range_block'),
+            maxContextElem: document.querySelector('#max_context_block'),
+            amountGenElem: document.querySelector('#amount_gen_block'),
         },
         'kobold': {
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            apiStreaming: $('#streaming_kobold_block'),
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            apiSettings: $('#kobold_api-settings'),
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            apiConnector: $('#kobold_api'),
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            apiPresets: $('#kobold_api-presets'),
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            apiRanges: $('#range_block'),
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            maxContextElem: $('#max_context_block'),
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            amountGenElem: $('#amount_gen_block'),
+            apiStreaming: document.querySelector('#streaming_kobold_block'),
+            apiSettings: document.querySelector('#kobold_api-settings'),
+            apiConnector: document.querySelector('#kobold_api'),
+            apiPresets: document.querySelector('#kobold_api-presets'),
+            apiRanges: document.querySelector('#range_block'),
+            maxContextElem: document.querySelector('#max_context_block'),
+            amountGenElem: document.querySelector('#amount_gen_block'),
         },
         'textgenerationwebui': {
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            apiStreaming: $('#streaming_textgenerationwebui_block'),
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            apiSettings: $('#textgenerationwebui_api-settings'),
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            apiConnector: $('#textgenerationwebui_api'),
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            apiPresets: $('#textgenerationwebui_api-presets'),
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            apiRanges: $('#range_block_textgenerationwebui'),
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            maxContextElem: $('#max_context_block'),
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            amountGenElem: $('#amount_gen_block'),
+            apiStreaming: document.querySelector('#streaming_textgenerationwebui_block'),
+            apiSettings: document.querySelector('#textgenerationwebui_api-settings'),
+            apiConnector: document.querySelector('#textgenerationwebui_api'),
+            apiPresets: document.querySelector('#textgenerationwebui_api-presets'),
+            apiRanges: document.querySelector('#range_block_textgenerationwebui'),
+            maxContextElem: document.querySelector('#max_context_block'),
+            amountGenElem: document.querySelector('#amount_gen_block'),
         },
         'novel': {
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            apiStreaming: $('#streaming_novel_block'),
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            apiSettings: $('#novel_api-settings'),
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            apiConnector: $('#novel_api'),
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            apiPresets: $('#novel_api-presets'),
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            apiRanges: $('#range_block_novel'),
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            maxContextElem: $('#max_context_block'),
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            amountGenElem: $('#amount_gen_block'),
+            apiStreaming: document.querySelector('#streaming_novel_block'),
+            apiSettings: document.querySelector('#novel_api-settings'),
+            apiConnector: document.querySelector('#novel_api'),
+            apiPresets: document.querySelector('#novel_api-presets'),
+            apiRanges: document.querySelector('#range_block_novel'),
+            maxContextElem: document.querySelector('#max_context_block'),
+            amountGenElem: document.querySelector('#amount_gen_block'),
         },
         'openai': {
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            apiStreaming: $('#NULL_SELECTOR'),
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            apiSettings: $('#openai_settings'),
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            apiConnector: $('#openai_api'),
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            apiPresets: $('#openai_api-presets'),
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            apiRanges: $('#range_block_openai'),
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            maxContextElem: $('#max_context_block'),
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            amountGenElem: $('#amount_gen_block'),
+            apiStreaming: document.querySelector('#NULL_SELECTOR'),
+            apiSettings: document.querySelector('#openai_settings'),
+            apiConnector: document.querySelector('#openai_api'),
+            apiPresets: document.querySelector('#openai_api-presets'),
+            apiRanges: document.querySelector('#range_block_openai'),
+            maxContextElem: document.querySelector('#max_context_block'),
+            amountGenElem: document.querySelector('#amount_gen_block'),
         },
     };
     //console.log('--- apiElements--- ');
@@ -8782,11 +8746,11 @@ export function changeMainAPI(api = null) {
         if (selectedVal === apiName) {
             continue;
         }
-        apiObj.apiSettings.css('display', 'none');
-        apiObj.apiConnector.css('display', 'none');
-        apiObj.apiRanges.css('display', 'none');
-        apiObj.apiPresets.css('display', 'none');
-        apiObj.apiStreaming.css('display', 'none');
+        if (apiObj.apiSettings) apiObj.apiSettings.style.display = 'none';
+        if (apiObj.apiConnector) apiObj.apiConnector.style.display = 'none';
+        if (apiObj.apiRanges) apiObj.apiRanges.style.display = 'none';
+        if (apiObj.apiPresets) apiObj.apiPresets.style.display = 'none';
+        if (apiObj.apiStreaming) apiObj.apiStreaming.style.display = 'none';
     }
 
     //then, find and enable the active item.
@@ -8794,43 +8758,48 @@ export function changeMainAPI(api = null) {
     // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     const activeItem = apiElements[selectedVal];
 
-    activeItem.apiStreaming.css('display', 'block');
-    activeItem.apiSettings.css('display', 'block');
-    activeItem.apiConnector.css('display', 'block');
-    activeItem.apiRanges.css('display', 'block');
-    activeItem.apiPresets.css('display', 'block');
+    if (activeItem.apiStreaming) activeItem.apiStreaming.style.display = 'block';
+    if (activeItem.apiSettings) activeItem.apiSettings.style.display = 'block';
+    if (activeItem.apiConnector) activeItem.apiConnector.style.display = 'block';
+    if (activeItem.apiRanges) activeItem.apiRanges.style.display = 'block';
+    if (activeItem.apiPresets) activeItem.apiPresets.style.display = 'block';
 
     if (selectedVal === 'openai') {
-        activeItem.apiPresets.css('display', 'flex');
+        if (activeItem.apiPresets) activeItem.apiPresets.style.display = 'flex';
     }
 
     if (selectedVal === 'textgenerationwebui' || selectedVal === 'novel') {
         console.debug('enabling amount_gen for ooba/novel');
-        activeItem.amountGenElem.find('input').prop('disabled', false);
-        activeItem.amountGenElem.css('opacity', 1.0);
+        if (activeItem.amountGenElem) {
+            const input = activeItem.amountGenElem.querySelector('input');
+            if (input) input.disabled = false;
+        }
+        if (activeItem.amountGenElem) activeItem.amountGenElem.style.opacity = '1';
     }
 
     //custom because streaming has been moved up under response tokens, which exists inside common settings block
     if (selectedVal === 'novel') {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#ai_module_block_novel').css('display', 'block');
+        const novelAiBlock = document.querySelector('#ai_module_block_novel');
+        if (novelAiBlock) novelAiBlock.style.display = 'block';
     } else {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#ai_module_block_novel').css('display', 'none');
+        const novelAiBlock = document.querySelector('#ai_module_block_novel');
+        if (novelAiBlock) novelAiBlock.style.display = 'none';
     }
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#prompt_cost_block').toggle(selectedVal === 'textgenerationwebui' && textgen_settings.type === textgen_types.OPENROUTER);
+    const promptCostBlock = document.querySelector('#prompt_cost_block');
+    if (promptCostBlock) {
+        promptCostBlock.style.display = (selectedVal === 'textgenerationwebui' && textgen_settings.type === textgen_types.OPENROUTER) ? '' : 'none';
+    }
 
     // Hide common settings for OpenAI
     console.debug('value?', selectedVal);
     if (selectedVal == 'openai') {
         console.debug('hiding settings?');
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#common-gen-settings-block').css('display', 'none');
+        const commonSettingsBlock = document.querySelector('#common-gen-settings-block');
+        if (commonSettingsBlock) commonSettingsBlock.style.display = 'none';
     } else {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#common-gen-settings-block').css('display', 'block');
+        const commonSettingsBlock = document.querySelector('#common-gen-settings-block');
+        if (commonSettingsBlock) commonSettingsBlock.style.display = 'block';
     }
 
     main_api = selectedVal;
@@ -10912,13 +10881,8 @@ async function openCharacterWorldPopup() {
     if (!template) return;
     template.querySelector('.character_name')!.textContent = charName;
 
-    // --- Event Handlers ---
-    /**
-     *
-     */
     async function handlePrimaryWorldSelect() {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const selectedValue = $(this).val();
+        const selectedValue = (this as HTMLSelectElement).value;
         const worldIndex = selectedValue !== '' ? Number(selectedValue) : NaN;
         const name = !isNaN(worldIndex) ? world_names[worldIndex] : '';
         await charUpdatePrimaryWorld(name);
@@ -10928,49 +10892,41 @@ async function openCharacterWorldPopup() {
      *
      * @param evt
      */
-    // @ts-expect-error TS(7006) FIXME: Parameter 'evt' implicitly has an 'any' type.
-    function handleExtrasWorldSelect(evt) {
-        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
+    async function handleExtrasWorldSelect(evt: any) {
         const el = evt?.currentTarget ?? this;
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const selectedValues = $(el).val();
+        const selectedValues = (el as HTMLSelectElement).value;
         const selected = Array.isArray(selectedValues) ? selectedValues : [];
         const fileName = getCharaFilename(null, {});
-        const nextList = selected.map(i => world_names[i]).filter(Boolean);
+        const nextList = selected.map((i: any) => world_names[i]).filter(Boolean);
         charSetAuxWorlds(fileName, nextList);
     }
 
     // --- Populate Dropdowns ---
     // Append to primary dropdown.
-    const primarySelect = template.find('.character_world_info_selector');
-    // @ts-expect-error TS(7006) FIXME: Parameter 'item' implicitly has an 'any' type.
+    const primarySelect = template.querySelector('.character_world_info_selector') as HTMLSelectElement;
     world_names.forEach((item, i) => {
-        primarySelect[0].append(new Option(item, String(i), item === worldId, item === worldId));
+        primarySelect.append(new Option(item, String(i), item === worldId, item === worldId));
     });
 
     // Append to extras dropdown.
-    const extrasSelect = template.find('.character_extra_world_info_selector');
-    // @ts-expect-error TS(2339) FIXME: Property 'charLore' does not exist on type '{}'.
-    const existingCharLore = world_info.charLore?.find((e) => e.name === fileName);
-    // @ts-expect-error TS(7006) FIXME: Parameter 'item' implicitly has an 'any' type.
+    const extrasSelect = template.querySelector('.character_extra_world_info_selector') as HTMLSelectElement;
+    const existingCharLore = world_info.charLore?.find((e: any) => e.name === fileName);
     world_names.forEach((item, i) => {
         const array = (menu_type == 'create' ? create_save.extra_books : existingCharLore?.extraBooks);
         const isSelected = !!array?.includes(item);
-        extrasSelect[0].append(new Option(item, String(i), isSelected, isSelected));
+        extrasSelect.append(new Option(item, String(i), isSelected, isSelected));
     });
 
     const popup = new Popup(template, POPUP_TYPE.TEXT, '', {
-        // @ts-expect-error TS(2322) FIXME: Type '(popup: any) => void' is not assignable to t... Remove this comment to see the full error message
-        onOpen: function (popup) {
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const popupDialog = $(popup.dlg);
+        onOpen: function (this: any, popup: any) {
+            const popupDialog = popup.dlg;
 
-            primarySelect.on('change', handlePrimaryWorldSelect);
-            extrasSelect.on('change', handleExtrasWorldSelect);
+            primarySelect.addEventListener('change', handlePrimaryWorldSelect);
+            extrasSelect.addEventListener('change', handleExtrasWorldSelect);
 
             // Not needed on mobile.
             if (!isMobile()) {
-                extrasSelect.select2({
+                $(extrasSelect).select2({
                     width: '100%',
                     placeholder: t`No auxiliary Lorebooks set. Click here to select.`,
                     allowClear: true,
