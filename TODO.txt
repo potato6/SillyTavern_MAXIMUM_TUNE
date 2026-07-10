@@ -94,7 +94,7 @@ Tightest couplings — these plugins require jQuery and must be replaced or the 
 [x] **izoomify** — Not found in codebase
 [x] **nanogallery2** — Type declarations only, no active usage
 [x] **select2** (~30 calls): Replaced with TomSelect (standalone, no jQuery)
-[ ] **sortable** (~20 calls): SortableJS works standalone — just remove `$(el).sortable()` wrapper
+[x] **sortable** (~20 calls): Replaced with SortableJS (standalone, no jQuery)
 [x] **autocomplete** (~12 calls): Replaced with TomSelect (standalone, no jQuery)
 [x] **pagination** (~9 calls): Replaced with native `createPaginator()` helper using Array.slice()
 [ ] **slider** (~7 calls): jQuery UI slider. Complex zen slider system in power-user.ts.
