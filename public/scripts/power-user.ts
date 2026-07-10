@@ -645,7 +645,8 @@ async function switchZenSliders() {
     $('#enableZenSliders').prop('checked', power_user.enableZenSliders);
 
     if (power_user.enableZenSliders) {
-        document.getElementById('clickSlidersTips')?.style.display = 'none';
+        const clickSlidersTips = document.getElementById('clickSlidersTips');
+        if (clickSlidersTips) clickSlidersTips.style.display = 'none';
         document.querySelectorAll("#pro-settings-block input[type=number]").forEach(el => el.style.display = 'none');
         //hide number inputs that are not 'seed' inputs
         document.querySelectorAll(`#textgenerationwebui_api-settings input[type=number]:not([id^='seed']):not([id^='n_']),
@@ -660,7 +661,7 @@ async function switchZenSliders() {
         //this is for when zensliders is toggled after pageload
         switchMaxContextSize();
     } else {
-        document.getElementById('clickSlidersTips')?.style.display = '';
+        { const el = document.getElementById('clickSlidersTips'); if (el) el.style.display = ''; }
         revertOriginalSliders();
     }
 
@@ -1053,15 +1054,15 @@ function switchWaifuMode() {
  */
 function switchSpoilerMode() {
     if (power_user.spoiler_free_mode) {
-        document.getElementById('descriptionWrapper')?.style.display = 'none';
-        document.getElementById('firstMessageWrapper')?.style.display = 'none';
+        { const el = document.getElementById('descriptionWrapper'); if (el) el.style.display = 'none'; }
+        { const el = document.getElementById('firstMessageWrapper'); if (el) el.style.display = 'none'; }
         document.getElementById('spoiler_free_desc').classList.add('flex1');
-        document.getElementById('creators_note_desc_hidden')?.style.display = '';
+        { const el = document.getElementById('creators_note_desc_hidden'); if (el) el.style.display = ''; }
     } else {
-        document.getElementById('descriptionWrapper')?.style.display = '';
-        document.getElementById('firstMessageWrapper')?.style.display = '';
+        { const el = document.getElementById('descriptionWrapper'); if (el) el.style.display = ''; }
+        { const el = document.getElementById('firstMessageWrapper'); if (el) el.style.display = ''; }
         document.getElementById('spoiler_free_desc').classList.remove('flex1');
-        document.getElementById('creators_note_desc_hidden')?.style.display = 'none';
+        { const el = document.getElementById('creators_note_desc_hidden'); if (el) el.style.display = 'none'; }
     }
 }
 
