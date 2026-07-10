@@ -4,7 +4,7 @@ import { power_user } from './power-user.js';
  *
  */
 export function initInputMarkdown() {
-    document.addEventListener('keydown', function (this: HTMLElement, e: KeyboardEvent) {
+    document.addEventListener('keydown', function (e: KeyboardEvent) {
         if (!(e.target instanceof Element)) return;
         const textarea = e.target.closest('textarea.mdHotkeys') as HTMLTextAreaElement | null;
         if (!textarea) return;

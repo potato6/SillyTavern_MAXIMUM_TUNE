@@ -1,4 +1,5 @@
 import { Fuse } from '../lib.js';
+declare const toastr: any;
 
 import {
     amount_gen,
@@ -1154,6 +1155,7 @@ export async function initPresetManager() {
 
 
     document.addEventListener('click', async function (e) {
+        if (!(e.target instanceof Element)) return;
         const target = e.target.closest('[data-preset-manager-update]');
         if (!target) return;
         const apiId = target.dataset.presetManagerUpdate;
@@ -1168,6 +1170,7 @@ export async function initPresetManager() {
     });
 
     document.addEventListener('click', async function (e) {
+        if (!(e.target instanceof Element)) return;
         const target = e.target.closest('[data-preset-manager-new]');
         if (!target) return;
         const apiId = target.dataset.presetManagerNew;
@@ -1182,6 +1185,7 @@ export async function initPresetManager() {
     });
 
     document.addEventListener('click', async function (e) {
+        if (!(e.target instanceof Element)) return;
         const target = e.target.closest('[data-preset-manager-rename]');
         if (!target) return;
         const apiId = target.dataset.presetManagerRename;
@@ -1221,6 +1225,7 @@ export async function initPresetManager() {
     });
 
     document.addEventListener('click', async function (e) {
+        if (!(e.target instanceof Element)) return;
         const target = e.target.closest('[data-preset-manager-export]');
         if (!target) return;
         const apiId = target.dataset.presetManagerExport;
@@ -1239,6 +1244,7 @@ export async function initPresetManager() {
     });
 
     document.addEventListener('click', async function (e) {
+        if (!(e.target instanceof Element)) return;
         const target = e.target.closest('[data-preset-manager-import]');
         if (!target) return;
         const apiId = target.dataset.presetManagerImport;
@@ -1247,6 +1253,7 @@ export async function initPresetManager() {
     });
 
     document.addEventListener('change', async function (e) {
+        if (!(e.target instanceof Element)) return;
         const target = e.target.closest('[data-preset-manager-file]');
         if (!target) return;
         const apiId = target.dataset.presetManagerFile;
@@ -1275,6 +1282,7 @@ export async function initPresetManager() {
     });
 
     document.addEventListener('click', async function (e) {
+        if (!(e.target instanceof Element)) return;
         const target = e.target.closest('[data-preset-manager-delete]');
         if (!target) return;
         const apiId = target.dataset.presetManagerDelete;
@@ -1307,6 +1315,7 @@ export async function initPresetManager() {
     });
 
     document.addEventListener('click', async function (e) {
+        if (!(e.target instanceof Element)) return;
         const target = e.target.closest('[data-preset-manager-restore]');
         if (!target) return;
         const apiId = target.dataset.presetManagerRestore;
