@@ -8232,6 +8232,9 @@
                 <script src="lib/cash.min.js"></script>
         <script>
         window.jQuery=$;
+        $.fn.sortable = $.fn.sortable || function() { return this; };
+        $.fn.fadeIn = $.fn.fadeIn || function() { return this; };
+        $.fn.bind = $.fn.bind || function() { return this; };
         $.fn.scrollTop = function(v) { return v === void 0 ? this[0]?.scrollTop : (this.each(function() { this.scrollTop = v; }), this); };
         $.fn.pagination = function() { return this; };
         $.fn.tabs = function() { return this; };
@@ -8247,6 +8250,20 @@
             };
         })();
         </script>
+    <script>
+        (function() {
+            var origAdd = DOMTokenList.prototype.add;
+            DOMTokenList.prototype.add = function() {
+                for (var args = [], i = 0; i < arguments.length; i++) {
+                    var parts = arguments[i].split(/\s+/);
+                    for (var j = 0; j < parts.length; j++) {
+                        if (parts[j]) args.push(parts[j]);
+                    }
+                }
+                origAdd.apply(this, args);
+            };
+        })();
+    </script>
     <script src="lib/cropper.min.js"></script>
     <script src="lib/toastr.min.js"></script>
     <script src="lib/toolcool-color-picker.js"></script>
