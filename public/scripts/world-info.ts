@@ -3351,8 +3351,8 @@ function enableKeysInputHelper({ template, entry, entryPropName, originalDataVal
             input.next('span.select2-container').find('textarea').val(key).trigger('input');
         }, { openDrawer: true });
     } else {
-        template[0]?.querySelector(`select[name="${entryPropName}"]`)?.style?.display = 'none';
-        input[0]?.style?.display = '';
+const selEl = template[0]?.querySelector(`select[name="${entryPropName}"]`); if (selEl) selEl.style.display = 'none';
+        if (input[0]) input[0].style.display = '';
         /**
          * @param {Event} _event
          * @param {{ skipReset?: boolean, noSave?: boolean }} [arg]
@@ -3614,7 +3614,7 @@ function handleProbabilityToggleHelper({ probabilityToggle, data, entry, name, p
     });
     probabilityToggle[0].checked = true;
     probabilityToggle[0].dispatchEvent(new CustomEvent('input', { detail: { noSave: true } }));
-    probabilityToggle[0]?.parentElement?.style?.display = 'none';
+    if (probabilityToggle[0]?.parentElement) probabilityToggle[0].parentElement.style.display = 'none';
 }
 
 /**
@@ -4057,7 +4057,7 @@ export async function getWorldEntry(name, data, entry) {
         });
         commentToggle[0].checked = true;
         commentToggle[0].dispatchEvent(new CustomEvent('input', { detail: { noSave: true } }));
-        commentToggle[0]?.parentElement?.style?.display = 'none';
+        if (commentToggle[0]?.parentElement) commentToggle[0].parentElement.style.display = 'none';
 
         // Logic AND/NOT
         const selectiveLogicDropdown = editTemplate.find('select[name="entryLogicType"]');
@@ -4099,7 +4099,7 @@ export async function getWorldEntry(name, data, entry) {
         });
         selectiveInput[0].checked = true;
         selectiveInput[0].dispatchEvent(new CustomEvent('input', { detail: { noSave: true } }));
-        selectiveInput[0]?.parentElement?.style?.display = 'none';
+        if (selectiveInput[0]?.parentElement) selectiveInput[0].parentElement.style.display = 'none';
 
         // Character filter
         const characterFilterLabel = editTemplate.find('label[for="characterFilter"] > small');
