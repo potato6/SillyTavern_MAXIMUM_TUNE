@@ -37,7 +37,7 @@ export function displayLogitBias(logitBias, containerSelector) {
     }
 
     // Make the list sortable
-    const sortableEl = list[0];
+    const sortableEl = list;
     sortableEl.sortableInstance = new Sortable(sortableEl, {
         delay: getSortableDelay(),
         handle: '.drag-handle',
