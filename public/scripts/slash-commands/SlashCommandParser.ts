@@ -571,7 +571,7 @@ export class SlashCommandParser {
                     if ('quickReplyApi' in globalThis) {
                         const qrApi = globalThis.quickReplyApi;
                         options.push(...qrApi.listSets()
-                            .map(set => qrApi.listQuickReplies(set).map(qr => `${set}.${qr}`))
+                            .map(set => qrApi.listQuickReplies(set).map((qr: any) => `${set}.${qr}`))
                             .flat()
                             .map(qr => new SlashCommandQuickReplyAutoCompleteOption(qr)),
                         );

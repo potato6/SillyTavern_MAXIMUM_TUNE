@@ -854,7 +854,7 @@ function joinQuotedBlocks(text: any, opts = {}) {
     const stack = []; // [{ opener, expectedClose, start }]
     for (let i = 0; i < text.length; i++) {
         const ch = text[i];
-        const top = stack[stack.length - 1];
+        const top: any = stack[stack.length - 1];
 
         // Prefer closing the current open pair if the char matches its expected closer
         if (top && ch === top.expectedClose) {
@@ -1437,7 +1437,7 @@ export function getCharacters(unrestricted: any) {
         characters.push(DEFAULT_VOICE_MARKER);
         characters.push(context.name1);
         const group = context.groups.find(group => context.groupId == group.id);
-        for (let member of group.members) {
+        for (let member of group?.members ?? []) {
             const character = context.characters.find(char => char.avatar == member);
             if (character) {
                 characters.push(character.name);
