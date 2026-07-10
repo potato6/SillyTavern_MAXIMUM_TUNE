@@ -234,9 +234,9 @@ export async function RA_CountCharTokens() {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const counter = tokenCounter;
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const input = $(document.getElementById(counter.data('token-counter')));
-        const isPermanent = counter.data('token-permanent') === true;
-        const value = String(input.value);
+        const input = document.getElementById(counter.getAttribute('data-token-counter') ?? '');
+        const isPermanent = counter.getAttribute('data-token-permanent') === 'true';
+        const value = String(input instanceof HTMLInputElement || input instanceof HTMLTextAreaElement ? input.value : '');
 
         if (input.length === 0) {
             counter.textContent = 'Invalid input reference';
@@ -244,16 +244,16 @@ export async function RA_CountCharTokens() {
         }
 
         if (!value) {
-            input.data('last-value-hash', '');
+            input.dataset['last-value-hash'] = '';
             counter.textContent = 0;
             continue;
         }
 
         const valueHash = getStringHash(value);
 
-        if (input.data('last-value-hash') === valueHash) {
-            total_tokens += Number(counter.text());
-            permanent_tokens += isPermanent ? Number(counter.text()) : 0;
+        if (input.dataset['last-value-hash'] === valueHash) {
+            total_tokens += Number(counter.textContent);
+            permanent_tokens += isPermanent ? Number(counter.textContent) : 0;
         } else {
             // We substitute macro for existing characters, but not for the character being created
             const valueToCount = menu_type === 'create' ? value : substituteParams(value);
@@ -266,7 +266,7 @@ export async function RA_CountCharTokens() {
             counter.textContent = tokens;
             total_tokens += tokens;
             permanent_tokens += isPermanent ? tokens : 0;
-            input.data('last-value-hash', valueHash);
+            input.dataset['last-value-hash'] = valueHash;
         }
     }
 
@@ -298,9 +298,8 @@ async function RA_autoloadchat() {
             await selectCharacterById(active_character_id);
 
             // Do a little tomfoolery to spoof the tag selector
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const selectedCharElement = $(`#rm_print_characters_block .character_select[chid="${active_character_id}"]`);
-            applyTagsOnCharacterSelect.call(selectedCharElement);
+            const selectedCharElement = document.querySelector(`#rm_print_characters_block .character_select[chid="${active_character_id}"]`);
+                applyTagsOnCharacterSelect.call(selectedCharElement);
         } else {
             setActiveCharacter(null);
             saveSettingsDebounced();
@@ -330,7 +329,7 @@ async function RA_autoloadchat() {
 export async function favsToHotswap() {
     const entities = getEntitiesList({ doFilter: false });
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const container = $('#right-nav-panel .hotswap');
+    const container = document.querySelector('#right-nav-panel .hotswap');
 
     // Hard limit is required because even if all hotswaps don't fit the screen, their images would still be loaded
     // 25 is roughly calculated as the maximum number of favs that can fit an ultrawide monitor with the default theme
@@ -339,7 +338,7 @@ export async function favsToHotswap() {
 
     //helpful instruction message if no characters are favorited
     if (favs.length == 0) {
-        container.innerHTML = `<small><span><i class="fa-solid fa-star"></i>&nbsp;${DOMPurify.sanitize(container.attr('no_favs'))}</span></small>`;
+        container.innerHTML = DOMPurify.sanitize(`<small><span><i class="fa-solid fa-star"></i>&nbsp;${container.getAttribute('no_favs') ?? ''}</span></small>`);
         return;
     }
 
@@ -354,7 +353,7 @@ function RA_checkOnlineStatus() {
     if (online_status == 'no_connection') {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const send_textarea = document.getElementById('send_textarea');
-        send_textarea.setAttribute('placeholder', send_textarea.attr('no_connection_text')); //Input bar placeholder tells users they are not connected
+        send_textarea?.setAttribute('placeholder', send_textarea.getAttribute('no_connection_text') ?? ''); //Input bar placeholder tells users they are not connected
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         document.getElementById('send_form').classList.add('no-connection');
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
@@ -372,7 +371,7 @@ function RA_checkOnlineStatus() {
         if (online_status !== undefined && online_status !== 'no_connection') {
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const send_textarea = document.getElementById('send_textarea');
-            send_textarea.setAttribute('placeholder', send_textarea.attr('connected_text')); //on connect, placeholder tells user to type message
+            send_textarea?.setAttribute('placeholder', send_textarea.getAttribute('connected_text') ?? ''); //on connect, placeholder tells user to type message
             // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             document.getElementById('send_form').classList.remove('no-connection');
             // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
@@ -901,9 +900,8 @@ export function initRossMods() {
 
             // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             if (LeftNavPanel.classList.contains('openDrawer') && document.querySelector('.openDrawer').length > 1) {
-                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                const toggle = $('#ai-config-button>.drawer-toggle');
-                doNavbarIconClick.call(toggle);
+                const toggle = document.querySelector('#ai-config-button>.drawer-toggle');
+                if (toggle) doNavbarIconClick.call(toggle);
             }
         }
     });
@@ -928,9 +926,8 @@ export function initRossMods() {
             // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             if (WorldInfo.classList.contains('openDrawer') && document.querySelector('.openDrawer').length > 1) {
                 console.debug('closing WI after lock removal');
-                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                const toggle = $('#WI-SP-button>.drawer-toggle');
-                doNavbarIconClick.call(toggle);
+                const toggle = document.querySelector('#WI-SP-button>.drawer-toggle');
+                if (toggle) doNavbarIconClick.call(toggle);
             }
         }
     });
@@ -1169,9 +1166,8 @@ export function initRossMods() {
      */
     function isInputElementInFocus() {
         //return $(document.activeElement).is(":input");
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const focused = $(':focus');
-        if (focused.is('input') || focused.is('textarea') || focused.prop('contenteditable') == 'true') {
+        const focused = document.activeElement;
+        if (focused && (focused.matches('input') || focused.matches('textarea') || focused.getAttribute('contenteditable') == 'true')) {
             if (focused.getAttribute('id') === 'send_textarea') {
                 return false;
             }

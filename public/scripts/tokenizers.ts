@@ -264,7 +264,11 @@ export function selectTokenizer(tokenizerId) {
             return;
         }
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        document.getElementById('tokenizer').value = tokenizer.tokenizerId.trigger('change');
+        const tokenizerEl = document.getElementById('tokenizer');
+        if (tokenizerEl instanceof HTMLSelectElement) {
+            tokenizerEl.value = String(tokenizer.tokenizerId);
+            tokenizerEl.dispatchEvent(new Event('change'));
+        }
         toastr.info(`Tokenizer: "${tokenizer.tokenizerName}" selected`);
     }
 }
@@ -297,7 +301,7 @@ export function getFriendlyTokenizerName(forApi) {
                 break;
             default:
                 // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                tokenizerName = $(`#tokenizer option[value="${tokenizerId}"]`).text();
+                tokenizerName = document.querySelector(`#tokenizer option[value="${tokenizerId}"]`)?.textContent ?? '';
                 break;
         }
     }

@@ -1240,12 +1240,11 @@ function getMancerModelTemplate(option) {
     const creditsPerCompletion = model.limits?.completion * model.pricing?.completion;
     const creditsTotal = Math.round(creditsPerPrompt + creditsPerCompletion).toFixed(0);
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    return $((`
+    return (`
         <div class="flex-container flexFlowColumn">
             <div><strong>${DOMPurify.sanitize(model.name)}</strong> | <span>${model.limits?.context} ctx</span> / <span>${model.limits?.completion} res</span> | <small>Credits per request (max): ${creditsTotal}</small></div>
         </div>
-    `));
+    `);
 }
 
 /**
@@ -1261,13 +1260,12 @@ function getTogetherModelTemplate(option) {
         return option.text;
     }
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    return $((`
+    return (`
         <div class="flex-container flexFlowColumn">
             <div><strong>${DOMPurify.sanitize(model.id)}</strong> | <span>${model.context_length || '???'} tokens</span></div>
             <div><small>${DOMPurify.sanitize(model.description)}</small></div>
         </div>
-    `));
+    `);
 }
 
 /**
@@ -1283,12 +1281,11 @@ function getInfermaticAIModelTemplate(option) {
         return option.text;
     }
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    return $((`
+    return (`
         <div class="flex-container flexFlowColumn">
             <div><strong>${DOMPurify.sanitize(model.id)}</strong></div>
         </div>
-    `));
+    `);
 }
 
 /**
@@ -1304,12 +1301,11 @@ function getDreamGenModelTemplate(option) {
         return option.text;
     }
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    return $((`
+    return (`
         <div class="flex-container flexFlowColumn">
             <div><strong>${DOMPurify.sanitize(model.id)}</strong></div>
         </div>
-    `));
+    `);
 }
 
 /**
@@ -1333,11 +1329,11 @@ function getOpenRouterModelTemplate(option) {
     const price = 0 === Number(model.pricing?.prompt) ? 'Free' : `${tokens_rounded}k t/$ `;
 
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    return $((`
+    return (`
         <div class="flex-container flexFlowColumn" title="${DOMPurify.sanitize((model as Record<string, unknown>).id as string)}">
             <div><strong>${DOMPurify.sanitize((model as Record<string, unknown>).name as string)}</strong> | ${String((model as Record<string, unknown>).context_length ?? '')} ctx | <small>${price}</small></div>
         </div>
-    `));
+    `);
 }
 
 /**
@@ -1353,12 +1349,11 @@ function getVllmModelTemplate(option) {
         return option.text;
     }
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    return $((`
+    return (`
         <div class="flex-container flexFlowColumn">
             <div><strong>${DOMPurify.sanitize(model.id)}</strong></div>
         </div>
-    `));
+    `);
 }
 
 /**
@@ -1374,12 +1369,11 @@ function getAphroditeModelTemplate(option) {
         return option.text;
     }
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    return $((`
+    return (`
         <div class="flex-container flexFlowColumn">
             <div><strong>${DOMPurify.sanitize(model.id)}</strong></div>
         </div>
-    `));
+    `);
 }
 
 /**
@@ -1446,7 +1440,9 @@ async function downloadTabbyModel() {
         }
 
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const downloadHtml = $(await renderTemplateAsync('tabbyDownloader'));
+        const downloadWrapper = document.createElement('div');
+        downloadWrapper.innerHTML = await renderTemplateAsync('tabbyDownloader');
+        const downloadHtml = downloadWrapper;
         const popupResult = await callGenericPopup(downloadHtml, POPUP_TYPE.CONFIRM, '', { okButton: 'Download', cancelButton: 'Cancel' });
 
         // User cancelled the download
@@ -1454,7 +1450,7 @@ async function downloadTabbyModel() {
             return;
         }
 
-        const repoId = String(downloadHtml[0].querySelector('input[name="hf_repo_id"]')?.value ?? '');
+        const repoId = String(downloadHtml.querySelector('input[name="hf_repo_id"]')?.value ?? '');
         if (!repoId) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.error('A HuggingFace repo ID must be provided. Skipping Download.');
@@ -1619,20 +1615,20 @@ export function initTextGenModels() {
     const providersSelect = document.querySelector('.openrouter_providers');
     for (const provider of OPENROUTER_PROVIDERS) {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        providersSelect.append($('<option>', {
-            value: provider,
-            text: provider,
-        }));
+        const option = document.createElement('option');
+        option.value = provider;
+        option.textContent = provider;
+        providersSelect?.appendChild(option);
     }
 
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const nanoGptProvidersSelect = document.getElementById('nanogpt_provider');
     for (const provider of NANOGPT_PROVIDERS) {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        nanoGptProvidersSelect.append($('<option>', {
-            value: provider.id,
-            text: provider.label,
-        }));
+        const option = document.createElement('option');
+        option.value = provider.id;
+        option.textContent = provider.label;
+        nanoGptProvidersSelect?.appendChild(option);
     }
 
     if (!isMobile()) {

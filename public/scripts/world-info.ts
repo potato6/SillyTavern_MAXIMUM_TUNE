@@ -7230,10 +7230,10 @@ export function initWorldInfo() {
         // Subscribe world loading to the TomSelect multiselect items (We need to target the specific ts-control)
         select2ChoiceClickSubscribe(document.getElementById('world_info'), target => {
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const name = target.text();
+            const name = target.textContent;
             const selectedIndex = world_names.indexOf(name);
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const alreadySelectedInEditor = $('#world_editor_select option:selected').text() === name;
+            const alreadySelectedInEditor = document.querySelector('#world_editor_select option:checked')?.textContent === name;
             if (selectedIndex !== -1 && !alreadySelectedInEditor) {
                 // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 document.getElementById('world_editor_select').value = String(selectedIndex);

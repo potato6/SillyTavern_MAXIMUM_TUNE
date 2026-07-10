@@ -231,20 +231,24 @@ function configureNormalLogin(userList) {
     const discreetLoginPrompt = document.getElementById('discreetLoginPrompt'); if (discreetLoginPrompt) discreetLoginPrompt.style.display = 'none';
     console.log(userList);
     for (const user of userList) {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const userBlock = $('<div></div>').classList.add('userSelect');
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const avatarBlock = $('<div></div>').classList.add('avatar');
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        avatarBlock.append($('<img>').setAttribute('src', user.avatar));
-        userBlock.append(avatarBlock);
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        userBlock.append($('<span></span>').addClass('userName').textContent = user.name);
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        userBlock.append($('<small></small>').addClass('userHandle').textContent = user.handle);
-        userBlock.on('click', () => onUserSelected(user));
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        document.getElementById('userList').append(userBlock);
+        const userBlock = document.createElement('div');
+        userBlock.classList.add('userSelect');
+        const avatarBlock = document.createElement('div');
+        avatarBlock.classList.add('avatar');
+        const img = document.createElement('img');
+        img.setAttribute('src', user.avatar);
+        avatarBlock.appendChild(img);
+        userBlock.appendChild(avatarBlock);
+        const nameSpan = document.createElement('span');
+        nameSpan.classList.add('userName');
+        nameSpan.textContent = user.name;
+        userBlock.appendChild(nameSpan);
+        const handleSmall = document.createElement('small');
+        handleSmall.classList.add('userHandle');
+        handleSmall.textContent = user.handle;
+        userBlock.appendChild(handleSmall);
+        userBlock.addEventListener('click', () => onUserSelected(user));
+        document.getElementById('userList')?.appendChild(userBlock);
     }
 }
 

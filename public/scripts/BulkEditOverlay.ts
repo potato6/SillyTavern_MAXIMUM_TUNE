@@ -777,8 +777,11 @@ class BulkEditOverlay {
      */
     updateSelectedCount = (countOverride = undefined) => {
         const count = countOverride ?? this.selectedCharacters.length;
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(`#${BulkEditOverlay.bulkSelectedCountId}`).textContent = count.attr('title', `${count} characters selected`);
+        const countEl = document.getElementById(BulkEditOverlay.bulkSelectedCountId);
+        if (countEl) {
+            countEl.textContent = String(count);
+            countEl.setAttribute('title', `${count} characters selected`);
+        }
     };
 
     /**
@@ -894,8 +897,9 @@ class BulkEditOverlay {
      */
     handleContextMenuDelete = () => {
         const characterIds = this.selectedCharacters;
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const popupContent = $(BulkEditOverlay.#getDeletePopupContentHtml(characterIds));
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = BulkEditOverlay.#getDeletePopupContentHtml(characterIds);
+        const popupContent = tempDiv;
         const checkbox = popupContent.querySelectorAll('#del_char_checkbox');
         const promise = callGenericPopup(popupContent, POPUP_TYPE.CONFIRM)
             .then((accept) => {

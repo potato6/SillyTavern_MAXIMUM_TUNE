@@ -352,9 +352,9 @@ export async function createNewBookmark(mesId, { forceName = null } = {}) {
     lastMes.extra.bookmark_link = name;
 
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const mes = $(`.mes[mesid="${mesId}"]`);
-    // @ts-expect-error TS(2345) FIXME: Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
-    updateBookmarkDisplay(mes, name);
+    const mes = document.querySelector(`.mes[mesid="${mesId}"]`);
+    // @ts-expect-error TS(2345) FIXME: Argument of type 'string' is not assignable to param... Remove this comment to see the full error message
+    if (mes) updateBookmarkDisplay(mes, name);
 
     await saveChatConditional();
     // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
@@ -371,8 +371,8 @@ export async function createNewBookmark(mesId, { forceName = null } = {}) {
 // @ts-expect-error TS(7006) FIXME: Parameter 'mes' implicitly has an 'any' type.
 export function updateBookmarkDisplay(mes, newBookmarkLink = null) {
         if (newBookmarkLink) mes.setAttribute('bookmark_link', newBookmarkLink);
-    const bookmarkFlag = mes.querySelectorAll('.mes_bookmark');
-    bookmarkFlag.setAttribute('title', `Checkpoint\n${mes.attr('bookmark_link')}\n\n${bookmarkFlag.data('tooltip')}`);
+    const bookmarkFlag = mes.querySelector('.mes_bookmark');
+    if (bookmarkFlag) bookmarkFlag.setAttribute('title', `Checkpoint\n${mes.getAttribute('bookmark_link') ?? ''}\n\n${bookmarkFlag.getAttribute('data-tooltip') ?? ''}`);
 }
 
 /**

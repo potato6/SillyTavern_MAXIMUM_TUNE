@@ -142,8 +142,8 @@ export function loadKoboldSettings(data, preset, settings) {
     } else {
         if (typeof koboldai_setting_names[kai_settings.preset_settings] !== 'undefined') {
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(`#settings_preset option[value=${koboldai_setting_names[kai_settings.preset_settings]}]`)
-                .setAttribute('selected', 'true');
+            const presetOption = document.querySelector(`#settings_preset option[value=${koboldai_setting_names[kai_settings.preset_settings]}]`);
+            if (presetOption) presetOption.setAttribute('selected', 'true');
         } else {
             kai_settings.preset_settings = 'gui';
             selectKoboldGuiPreset();
@@ -180,9 +180,11 @@ function loadKoboldSettingsFromPreset(preset) {
         const formattedValue = slider.format(value);
         slider.setValue(value);
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(slider.sliderId).value = value;
+        const sliderEl = document.querySelector(slider.sliderId);
+        if (sliderEl instanceof HTMLInputElement) sliderEl.value = String(value);
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(slider.counterId).value = formattedValue;
+        const counterEl = document.querySelector(slider.counterId);
+        if (counterEl instanceof HTMLInputElement) counterEl.value = formattedValue;
     }
 
     if (Object.hasOwn(preset, 'streaming_kobold')) {
@@ -470,8 +472,7 @@ export function setKoboldFlags(koboldUnitedVersion, koboldCppVersion) {
     kai_flags.can_use_grammar = versionCompare(koboldCppVersion, MIN_GRAMMAR_KCPPVERSION);
     kai_flags.can_use_min_p = versionCompare(koboldCppVersion, MIN_MIN_P_KCPPVERSION);
     const isKoboldCpp = versionCompare(koboldCppVersion, '1.0.0');
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('koboldcpp_hint').toggleClass('displayNone', !isKoboldCpp);
+    document.getElementById('koboldcpp_hint')?.classList.toggle('displayNone', !isKoboldCpp);
 }
 
 /**

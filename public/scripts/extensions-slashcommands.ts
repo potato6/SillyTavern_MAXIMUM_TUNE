@@ -54,8 +54,11 @@ function getExtensionActionCallback(action) {
 
             // Clear input, so it doesn't stay because the command didn't "finish",
             // and wait for a bit to both show the toast and let the clear bubble through.
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#send_textarea').val('')[0].dispatchEvent(new Event('input', { bubbles: true }));
+            const sendTextarea = document.getElementById('send_textarea');
+            if (sendTextarea instanceof HTMLTextAreaElement) {
+                sendTextarea.value = '';
+                sendTextarea.dispatchEvent(new Event('input', { bubbles: true }));
+            }
             await new Promise(resolve => setTimeout(resolve, 100));
         }
 

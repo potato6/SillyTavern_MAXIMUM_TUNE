@@ -94,9 +94,8 @@ function enableBulkSelect() {
         });
         el.prepend(checkbox);
     });
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#rm_print_characters_block.group_overlay_mode_select .bogus_folder_select, #rm_print_characters_block.group_overlay_mode_select .group_select')
-        .classList.add('disabled');
+    document.querySelectorAll('#rm_print_characters_block.group_overlay_mode_select .bogus_folder_select, #rm_print_characters_block.group_overlay_mode_select .group_select')
+        .forEach(el => el.classList.add('disabled'));
 
     // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     document.getElementById('rm_print_characters_block').classList.add('bulk_select');
@@ -117,9 +116,8 @@ function enableBulkSelect() {
 function disableBulkSelect() {
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     document.querySelector('.bulk_select_checkbox').remove();
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#rm_print_characters_block.group_overlay_mode_select .bogus_folder_select, #rm_print_characters_block.group_overlay_mode_select .group_select')
-        .classList.remove('disabled');
+    document.querySelectorAll('#rm_print_characters_block.group_overlay_mode_select .bogus_folder_select, #rm_print_characters_block.group_overlay_mode_select .group_select')
+        .forEach(el => el.classList.remove('disabled'));
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     document.getElementById('rm_print_characters_block').classList.remove('bulk_select');
 }

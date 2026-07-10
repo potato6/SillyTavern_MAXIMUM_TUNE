@@ -28,17 +28,19 @@ let selectedSamplers = {};
  */
 async function showSamplerSelectPopup() {
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const html = $(document.createElement('div'));
-    html.setAttribute('id', 'sampler_view_list')
-        .classList.add('flex-container flexFlowColumn');
-    html.append(await renderTemplateAsync('samplerSelector'));
+    const html = document.createElement('div');
+    html.setAttribute('id', 'sampler_view_list');
+    html.classList.add('flex-container', 'flexFlowColumn');
+    const samplerContainer = document.createElement('div');
+    samplerContainer.innerHTML = await renderTemplateAsync('samplerSelector');
+    html.appendChild(samplerContainer);
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const listContainer = $('<div id="apiSamplersList" class="flex-container flexNoGap"></div>');
+    const listContainer = document.createElement('div');
+    listContainer.setAttribute('id', 'apiSamplersList');
+    listContainer.classList.add('flex-container', 'flexNoGap');
     const APISamplers = await listSamplers(main_api);
-    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-    listContainer.append(APISamplers.toString());
-    html.append(listContainer);
+    if (APISamplers) listContainer.innerHTML = APISamplers.toString();
+    html.appendChild(listContainer);
 
     // @ts-expect-error TS(2345) FIXME: Argument of type 'null' is not assignable to param... Remove this comment to see the full error message
     const showPromise = new Popup(html, POPUP_TYPE.TEXT, null, { wide: true, large: true, allowVerticalScrolling: true }).show();
@@ -90,7 +92,7 @@ async function showSamplerSelectPopup() {
 function getRelatedDOMElement(samplerName) {
     const element = document.getElementById(`${samplerName}_${main_api}`);
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    let relatedDOMElement = element ? $(element.parentElement) : $();
+    let relatedDOMElement = element ? element.parentElement : null;
     let targetDisplayType = 'flex';
     let displayname;
 
@@ -208,42 +210,42 @@ function setSamplerListListeners() {
         const { relatedDOMElement, targetDisplayType } = getRelatedDOMElement(samplerName);
 
         // Get the current state of the custom data attribute
-        const previousState = relatedDOMElement.data(SELECT_SAMPLER.DATA);
+        const previousState = relatedDOMElement?.dataset[SELECT_SAMPLER.DATA] as string | undefined;
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const isChecked = this.checked;
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const popupInputLabel = $(this.parentElement ? this.parentElement.querySelector('.sampler_name') : null);
+        const popupInputLabel = this.parentElement ? this.parentElement.querySelector('.sampler_name') : null;
 
         if (isChecked === false) {
             if (previousState === SELECT_SAMPLER.SHOWN) {
                 console.log('saw previously custom shown sampler => new state:', isChecked, samplerName);
-                relatedDOMElement.removeData(SELECT_SAMPLER.DATA);
-                popupInputLabel.removeAttribute('style');
+                if (relatedDOMElement) delete relatedDOMElement.dataset[SELECT_SAMPLER.DATA];
+                popupInputLabel?.removeAttribute('style');
             } else {
                 console.log('saw previous untouched sampler => new state:', isChecked, samplerName);
-                relatedDOMElement.data(SELECT_SAMPLER.DATA, SELECT_SAMPLER.HIDDEN);
-                popupInputLabel.setAttribute('style', forcedOffColoring);
+                if (relatedDOMElement) relatedDOMElement.dataset[SELECT_SAMPLER.DATA] = SELECT_SAMPLER.HIDDEN;
+                if (popupInputLabel) popupInputLabel.setAttribute('style', forcedOffColoring);
             }
         } else {
             if (previousState === SELECT_SAMPLER.HIDDEN) {
                 console.log('saw previously custom hidden sampler => new state:', isChecked, samplerName);
-                relatedDOMElement.removeData(SELECT_SAMPLER.DATA);
-                popupInputLabel.removeAttribute('style');
+                if (relatedDOMElement) delete relatedDOMElement.dataset[SELECT_SAMPLER.DATA];
+                popupInputLabel?.removeAttribute('style');
             } else {
                 console.log('saw previous untouched sampler => new state:', isChecked, samplerName);
-                relatedDOMElement.data(SELECT_SAMPLER.DATA, SELECT_SAMPLER.SHOWN);
-                popupInputLabel.setAttribute('style', forcedOnColoring);
+                if (relatedDOMElement) relatedDOMElement.dataset[SELECT_SAMPLER.DATA] = SELECT_SAMPLER.SHOWN;
+                if (popupInputLabel) popupInputLabel.setAttribute('style', forcedOnColoring);
             }
         }
 
         await saveSettingsDebounced();
 
         const shouldDisplay = isChecked ? targetDisplayType : 'none';
-        relatedDOMElement.style.display = shouldDisplay;
+        if (relatedDOMElement instanceof HTMLElement) relatedDOMElement.style.display = shouldDisplay;
 
         if (main_api === 'textgenerationwebui') setApiSamplersState(samplerName, shouldDisplay !== 'none');
 
-        console.log(samplerName, relatedDOMElement.data(SELECT_SAMPLER.DATA), shouldDisplay);
+        console.log(samplerName, relatedDOMElement?.dataset[SELECT_SAMPLER.DATA], shouldDisplay);
     }));
 }
 
@@ -293,11 +295,11 @@ async function listSamplers(main_api, arrayOnly = false) {
         let { displayname } = getRelatedDOMElement(sampler);
 
         const isManuallyActivated = samplersActivatedManually.includes(sampler);
-        const displayModified = relatedDOMElement.data(SELECT_SAMPLER.DATA);
+        const displayModified = relatedDOMElement?.dataset[SELECT_SAMPLER.DATA] as string | undefined;
         const isInDefaultState = !displayModified;
 
         const shouldBeChecked = () => {
-            let finalState = isElementVisibleInDOM(relatedDOMElement[0]);
+            let finalState = relatedDOMElement ? isElementVisibleInDOM(relatedDOMElement) : false;
 
             if (prioritizeManualSamplerSelect) {
                 finalState = isManuallyActivated;
@@ -309,7 +311,7 @@ async function listSamplers(main_api, arrayOnly = false) {
             return finalState;
         };
 
-        console.log(sampler, relatedDOMElement.prop('id'), isInDefaultState, shouldBeChecked());
+        console.log(sampler, relatedDOMElement?.id, isInDefaultState, shouldBeChecked());
 
         if (displayname === undefined) displayname = sampler;
         if (main_api === 'textgenerationwebui') setApiSamplersState(sampler, shouldBeChecked());
@@ -346,13 +348,13 @@ export async function validateDisabledSamplers(redraw = false) {
 
         if (prioritizeManualSamplerSelect) {
             const isManuallyActivated = samplersActivatedManually.includes(sampler);
-            relatedDOMElement.style.display = isManuallyActivated ? targetDisplayType : 'none';
+            if (relatedDOMElement instanceof HTMLElement) relatedDOMElement.style.display = isManuallyActivated ? targetDisplayType : 'none';
         } else {
-            const selectSamplerData = relatedDOMElement.data(SELECT_SAMPLER.DATA);
-            relatedDOMElement.style.display = selectSamplerData === SELECT_SAMPLER.SHOWN ? targetDisplayType : 'none';
+            const selectSamplerData = relatedDOMElement?.dataset[SELECT_SAMPLER.DATA] as string | undefined;
+            if (relatedDOMElement instanceof HTMLElement) relatedDOMElement.style.display = selectSamplerData === SELECT_SAMPLER.SHOWN ? targetDisplayType : 'none';
         }
 
-        relatedDOMElement.removeData(SELECT_SAMPLER.DATA);
+        if (relatedDOMElement) delete relatedDOMElement.dataset[SELECT_SAMPLER.DATA];
     }
 
     if (!prioritizeManualSamplerSelect && main_api === 'textgenerationwebui') {
@@ -361,8 +363,8 @@ export async function validateDisabledSamplers(redraw = false) {
 
     if (redraw) {
         const samplersHTML = await listSamplers(main_api);
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        document.getElementById('apiSamplersList').innerHTML = ''.append(samplersHTML.toString());
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        document.getElementById('apiSamplersList').innerHTML = samplersHTML.toString();
         setSamplerListListeners();
     }
 

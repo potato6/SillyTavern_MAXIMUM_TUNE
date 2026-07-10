@@ -699,8 +699,10 @@ function updateInputDataLists() {
 async function openKeyManagerDialog(key) {
     const name = FRIENDLY_NAMES[key] || key;
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const template = $(await renderTemplateAsync('secretKeyManager', { name, key }));
-    const addSecretBtn = template[0]?.querySelector('button[data-action="add-secret"]');
+    const wrapper = document.createElement('div');
+    wrapper.innerHTML = await renderTemplateAsync('secretKeyManager', { name, key });
+    const template = wrapper;
+    const addSecretBtn = template.querySelector('button[data-action="add-secret"]');
     if (addSecretBtn) addSecretBtn.addEventListener('click', async function () {
         let label = '';
         let result = POPUP_RESULT.CANCELLED;
@@ -740,28 +742,32 @@ async function openKeyManagerDialog(key) {
     async function renderSecretsList() {
         // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         const secrets = secret_state[key] ?? [];
-        const list = template.querySelectorAll('.secretKeyManagerList');
-        const previousScrollTop = list.scrollTop();
+        const list = template.querySelector('.secretKeyManagerList');
+        const previousScrollTop = list?.scrollTop ?? 0;
 
-        const emptyMessage = template.querySelectorAll('.secretKeyManagerListEmpty');
-        emptyMessage.toggle(secrets.length === 0);
+        const emptyMessage = template.querySelector('.secretKeyManagerListEmpty');
+        if (emptyMessage instanceof HTMLElement) {
+            emptyMessage.style.display = secrets.length === 0 ? '' : 'none';
+        }
 
-        const itemBlocks = [];
+        const itemBlocks: HTMLElement[] = [];
         for (const secret of secrets) {
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const itemTemplate = $(await renderTemplateAsync('secretKeyManagerListItem', secret));
-            const copyIdBtn = itemTemplate[0]?.querySelector('[data-action="copy-id"]');
+            const itemWrapper = document.createElement('div');
+            itemWrapper.innerHTML = await renderTemplateAsync('secretKeyManagerListItem', secret);
+            const itemTemplate = itemWrapper;
+            const copyIdBtn = itemTemplate.querySelector('button[data-action="copy-id"]');
             if (copyIdBtn) copyIdBtn.addEventListener('click', async function () {
                 await copyText(secret.id);
                 // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                 toastr.info(t`Secret ID copied to clipboard.`);
             });
-            const rotateSecretBtn = itemTemplate[0]?.querySelector('button[data-action="rotate-secret"]');
+            const rotateSecretBtn = itemTemplate.querySelector('button[data-action="rotate-secret"]');
             if (rotateSecretBtn) rotateSecretBtn.addEventListener('click', async function () {
                 await rotateSecret(key, secret.id);
                 await renderSecretsList();
             });
-            const copySecretBtn = itemTemplate[0]?.querySelector('button[data-action="copy-secret"]');
+            const copySecretBtn = itemTemplate.querySelector('button[data-action="copy-secret"]');
             if (copySecretBtn) copySecretBtn.addEventListener('click', async function () {
                 const secretValue = await findSecret(key, secret.id);
                 if (secretValue === null) {
@@ -773,7 +779,7 @@ async function openKeyManagerDialog(key) {
                 // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                 toastr.info(t`Secret value copied to clipboard.`);
             });
-            const renameSecretBtn = itemTemplate[0]?.querySelector('button[data-action="rename-secret"]');
+            const renameSecretBtn = itemTemplate.querySelector('button[data-action="rename-secret"]');
             if (renameSecretBtn) renameSecretBtn.addEventListener('click', async function () {
                 const label = await Popup.show.input(t`Rename Secret`, t`Enter new label for the secret:`, secret?.label || getLabel());
                 if (!label) {
@@ -782,7 +788,7 @@ async function openKeyManagerDialog(key) {
                 await renameSecret(key, secret.id, label);
                 await renderSecretsList();
             });
-            const deleteSecretBtn = itemTemplate[0]?.querySelector('button[data-action="delete-secret"]');
+            const deleteSecretBtn = itemTemplate.querySelector('button[data-action="delete-secret"]');
             if (deleteSecretBtn) deleteSecretBtn.addEventListener('click', async function () {
                 const confirm = await Popup.show.confirm(t`Delete Secret: ${secret?.label}`, t`Are you sure you want to delete this secret? This action cannot be undone.`);
                 if (!confirm) {
@@ -794,18 +800,24 @@ async function openKeyManagerDialog(key) {
             itemBlocks.push(itemTemplate);
         }
 
-        list.innerHTML = ''.append(itemBlocks).scrollTop(previousScrollTop);
+        if (list) {
+            list.innerHTML = '';
+            for (const block of itemBlocks) {
+                list.appendChild(block);
+            }
+            list.scrollTop = previousScrollTop;
+        }
     }
 
     /**
      *
      */
     function scrollToActive() {
-        const list = template.querySelectorAll('.secretKeyManagerList');
-        const activeKey = list.querySelectorAll('.active');
-        if (activeKey.length > 0) {
-            const activeKeyScrollTop = activeKey.position().top + list.scrollTop() - list.height() / 2;
-            list.scrollTop(activeKeyScrollTop);
+        const list = template.querySelector('.secretKeyManagerList');
+        const activeKey = list?.querySelector('.active');
+        if (activeKey instanceof HTMLElement && list instanceof HTMLElement) {
+            const activeKeyScrollTop = activeKey.offsetTop + list.scrollTop - list.clientHeight / 2;
+            list.scrollTop = activeKeyScrollTop;
         }
     }
 }
@@ -1319,9 +1331,12 @@ export async function initSecrets() {
     // @ts-expect-error TS(7006) FIXME: Parameter 'credits' implicitly has an 'any' type.
     const createNanoGptCreditsPopup = (credits) => {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const root = $('<div class="nanogpt-credits-popup"></div>');
+        const root = document.createElement('div');
+        root.className = 'nanogpt-credits-popup';
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        root.append($('<h3></h3>').textContent = t`NanoGPT Credits & Usage`);
+        const heading = document.createElement('h3');
+        heading.textContent = t`NanoGPT Credits & Usage`;
+        root.appendChild(heading);
 
         const rows = [
             // @ts-expect-error TS(2345) FIXME: Argument of type '2' is not assignable to paramete... Remove this comment to see the full error message
@@ -1348,9 +1363,13 @@ export async function initSecrets() {
 
         for (const [label, value] of rows) {
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            root.append($('<div></div>').textContent = label);
+            const labelDiv = document.createElement('div');
+            labelDiv.textContent = label;
+            root.appendChild(labelDiv);
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            root.append($('<div></div>').textContent = value);
+            const valueDiv = document.createElement('div');
+            valueDiv.textContent = value;
+            root.appendChild(valueDiv);
         }
 
         return root;

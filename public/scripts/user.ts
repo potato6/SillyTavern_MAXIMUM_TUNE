@@ -333,9 +333,12 @@ async function backupUserData(handle, callback) {
 async function changePassword(handle, callback) {
     try {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const template = $(await renderTemplateAsync('changePassword'));
+        const wrapper = document.createElement('div');
+        wrapper.innerHTML = await renderTemplateAsync('changePassword');
+        const template = wrapper;
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        template.querySelector('.currentPasswordBlock').toggle(!isAdmin());
+        const currentPasswordBlock = template.querySelector('.currentPasswordBlock');
+        if (currentPasswordBlock instanceof HTMLElement) currentPasswordBlock.style.display = isAdmin() ? 'none' : '';
         let newPassword = '';
         let confirmPassword = '';
         let oldPassword = '';
@@ -399,7 +402,9 @@ async function deleteUser(handle, callback) {
         let confirmHandle = '';
 
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const template = $(await renderTemplateAsync('deleteUser'));
+        const wrapper = document.createElement('div');
+        wrapper.innerHTML = await renderTemplateAsync('deleteUser');
+        const template = wrapper;
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         template.querySelector('#deleteUserName').textContent = handle;
         template.querySelector('input[name="deleteUserData"]').addEventListener('input', function (this: HTMLInputElement) {
@@ -452,7 +457,9 @@ async function resetSettings(handle, callback) {
     try {
         let password = '';
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const template = $(await renderTemplateAsync('resetSettings'));
+        const wrapper = document.createElement('div');
+        wrapper.innerHTML = await renderTemplateAsync('resetSettings');
+        const template = wrapper;
         template.querySelector('input[name="password"]').addEventListener('input', function (this: HTMLInputElement) {
             password = String(this.value);
         });
@@ -493,7 +500,9 @@ async function resetSettings(handle, callback) {
 async function changeName(handle, name, callback) {
     try {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const template = $(await renderTemplateAsync('changeName'));
+        const wrapper = document.createElement('div');
+        wrapper.innerHTML = await renderTemplateAsync('changeName');
+        const template = wrapper;
         const result = await callGenericPopup(template, POPUP_TYPE.INPUT, name, { okButton: 'Change', cancelButton: 'Cancel', wide: false, large: false });
 
         if (!result) {
@@ -651,7 +660,9 @@ async function makeSnapshot(callback) {
  */
 async function viewSettingsSnapshots() {
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const template = $(await renderTemplateAsync('snapshotsView'));
+    const wrapper = document.createElement('div');
+    wrapper.innerHTML = await renderTemplateAsync('snapshotsView');
+    const template = wrapper;
     /**
      *
      */
@@ -714,7 +725,9 @@ async function resetEverything(callback) {
         let code = '';
 
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const template = $(await renderTemplateAsync('userReset'));
+        const wrapper = document.createElement('div');
+        wrapper.innerHTML = await renderTemplateAsync('userReset');
+        const template = wrapper;
         template.querySelector('input[name="password"]').addEventListener('input', function (this: HTMLInputElement) {
             password = String(this.value);
         });
@@ -759,7 +772,9 @@ async function resetEverything(callback) {
 async function openUserProfile() {
     await getCurrentUser();
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const template = $(await renderTemplateAsync('userProfile'));
+    const wrapper = document.createElement('div');
+    wrapper.innerHTML = await renderTemplateAsync('userProfile');
+    const template = wrapper;
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     template.querySelector('.userName').textContent = currentUser.name;
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
@@ -771,9 +786,11 @@ async function openUserProfile() {
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     template.querySelector('.userCreated').textContent = new Date(currentUser.created.toLocaleString());
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    template.querySelector('.hasPassword').toggle(currentUser.password);
+    const hasPasswordEl = template.querySelector('.hasPassword');
+    if (hasPasswordEl instanceof HTMLElement) hasPasswordEl.style.display = currentUser.password ? '' : 'none';
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    template.querySelector('.noPassword').toggle(!currentUser.password);
+    const noPasswordEl = template.querySelector('.noPassword');
+    if (noPasswordEl instanceof HTMLElement) noPasswordEl.style.display = !currentUser.password ? '' : 'none';
     template.querySelector('.userSettingsSnapshotsButton').addEventListener('click', () => viewSettingsSnapshots());
     template.querySelector('.userChangeNameButton').addEventListener('click', async () => changeName(currentUser!.handle, currentUser!.name, async () => {
         await getCurrentUser();
@@ -953,7 +970,9 @@ async function openAdminPanel() {
     }
 
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const template = $(await renderTemplateAsync('admin'));
+    const wrapper = document.createElement('div');
+    wrapper.innerHTML = await renderTemplateAsync('admin');
+    const template = wrapper;
 
     template.querySelectorAll('.adminNav > button').forEach((el: Element) => el.addEventListener('click', function (this: HTMLElement) {
     const target = String(this.dataset.targetTab);

@@ -301,7 +301,8 @@ export function loadNovelSettings(data, settings) {
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     document.getElementById('model_novel_select').value = nai_settings.model_novel;
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(`#model_novel_select option[value=${nai_settings.model_novel}]`).prop('selected', true);
+    const selectedOption = document.querySelector(`#model_novel_select option[value=${nai_settings.model_novel}]`);
+    if (selectedOption instanceof HTMLOptionElement) selectedOption.selected = true;
 
     if (settings.nai_preamble !== undefined) {
         nai_settings.preamble = settings.nai_preamble;
@@ -426,8 +427,8 @@ function loadNovelSettingsUi(ui_settings) {
     document.getElementById('math1_quad_entropy_scale_novel').value = ui_settings.math1_quad_entropy_scale;
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     document.getElementById('math1_quad_entropy_scale_counter_novel').value = Number(ui_settings.math1_quad_entropy_scale.toFixed(2));
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(`#settings_preset_novel option[value=${novelai_setting_names[nai_settings.preset_settings_novel]}]`).prop('selected', true);
+    const selectedPresetOption = document.querySelector(`#settings_preset_novel option[value=${novelai_setting_names[nai_settings.preset_settings_novel]}]`);
+    if (selectedPresetOption instanceof HTMLOptionElement) selectedPresetOption.selected = true;
 
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     document.getElementById('streaming_novel').checked = ui_settings.streaming_novel;
