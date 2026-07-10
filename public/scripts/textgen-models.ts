@@ -1074,7 +1074,7 @@ function onFeatherlessModelSelect(modelId) {
     const model = featherlessModels.find(x => x.id === modelId);
     textgen_settings.featherless_model = modelId;
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#featherless_model').val(modelId);
+    document.getElementById('featherless_model').value = modelId;
     document.getElementById('api_button_textgenerationwebui')?.click();
     setGenerationParamsFromPreset({ max_length: model.context_length });
 }
@@ -1112,7 +1112,7 @@ document.addEventListener('DOMContentLoaded', function () {
  */
 function onMancerModelSelect() {
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const modelId = String($('#mancer_model').val());
+    const modelId = String(document.getElementById('mancer_model').value);
     textgen_settings.mancer_model = modelId;
     document.getElementById('api_button_textgenerationwebui')?.click();
 
@@ -1126,7 +1126,7 @@ function onMancerModelSelect() {
  */
 function onTogetherModelSelect() {
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const modelName = String($('#model_togetherai_select').val());
+    const modelName = String(document.getElementById('model_togetherai_select').value);
     textgen_settings.togetherai_model = modelName;
     document.getElementById('api_button_textgenerationwebui')?.click();
     // @ts-expect-error TS(7005) FIXME: Variable 'togetherModels' implicitly has an 'any[]... Remove this comment to see the full error message
@@ -1139,7 +1139,7 @@ function onTogetherModelSelect() {
  */
 function onInfermaticAIModelSelect() {
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const modelName = String($('#model_infermaticai_select').val());
+    const modelName = String(document.getElementById('model_infermaticai_select').value);
     textgen_settings.infermaticai_model = modelName;
     document.getElementById('api_button_textgenerationwebui')?.click();
     // @ts-expect-error TS(7005) FIXME: Variable 'infermaticAIModels' implicitly has an 'a... Remove this comment to see the full error message
@@ -1152,7 +1152,7 @@ function onInfermaticAIModelSelect() {
  */
 function onDreamGenModelSelect() {
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const modelName = String($('#model_dreamgen_select').val());
+    const modelName = String(document.getElementById('model_dreamgen_select').value);
     textgen_settings.dreamgen_model = modelName;
     document.getElementById('api_button_textgenerationwebui')?.click();
     // TODO(DreamGen): Consider retuning max_tokens from API and setting it here.
@@ -1163,7 +1163,7 @@ function onDreamGenModelSelect() {
  */
 function onOllamaModelSelect() {
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const modelId = String($('#ollama_model').val());
+    const modelId = String(document.getElementById('ollama_model').value);
     textgen_settings.ollama_model = modelId;
     document.getElementById('api_button_textgenerationwebui')?.click();
 }
@@ -1173,7 +1173,7 @@ function onOllamaModelSelect() {
  */
 function onTabbyModelSelect() {
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const modelId = String($('#tabby_model').val());
+    const modelId = String(document.getElementById('tabby_model').value);
     textgen_settings.tabby_model = modelId;
     document.getElementById('api_button_textgenerationwebui')?.click();
 }
@@ -1183,7 +1183,7 @@ function onTabbyModelSelect() {
  */
 function onLlamaCppModelSelect() {
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const modelId = String($('#llamacpp_model').val());
+    const modelId = String(document.getElementById('llamacpp_model').value);
     textgen_settings.llamacpp_model = modelId;
     document.getElementById('api_button_textgenerationwebui')?.click();
 }
@@ -1193,7 +1193,7 @@ function onLlamaCppModelSelect() {
  */
 function onOpenRouterModelSelect() {
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const modelId = String($('#openrouter_model').val());
+    const modelId = String(document.getElementById('openrouter_model').value);
     textgen_settings.openrouter_model = modelId;
     document.getElementById('api_button_textgenerationwebui')?.click();
     // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
@@ -1208,7 +1208,7 @@ function onOpenRouterModelSelect() {
  */
 function onVllmModelSelect() {
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const modelId = String($('#vllm_model').val());
+    const modelId = String(document.getElementById('vllm_model').value);
     textgen_settings.vllm_model = modelId;
     document.getElementById('api_button_textgenerationwebui')?.click();
 }
@@ -1218,7 +1218,7 @@ function onVllmModelSelect() {
  */
 function onAphroditeModelSelect() {
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const modelId = String($('#aphrodite_model').val());
+    const modelId = String(document.getElementById('aphrodite_model').value);
     textgen_settings.aphrodite_model = modelId;
     document.getElementById('api_button_textgenerationwebui')?.click();
 }
@@ -1541,7 +1541,7 @@ function calculateOpenRouterCost() {
     }
 
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#or_prompt_cost').text(cost);
+    document.getElementById('or_prompt_cost').textContent = cost;
 
     // Schedule an update when settings change
     eventSource.removeListener(event_types.SETTINGS_UPDATED, calculateOpenRouterCost);
@@ -1616,7 +1616,7 @@ export function initTextGenModels() {
     document.getElementById('featherless_model')?.addEventListener('change', () => onFeatherlessModelSelect(String((document.getElementById('featherless_model') as HTMLSelectElement)?.value ?? '')));
 
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const providersSelect = $('.openrouter_providers');
+    const providersSelect = document.querySelector('.openrouter_providers');
     for (const provider of OPENROUTER_PROVIDERS) {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         providersSelect.append($('<option>', {
@@ -1626,7 +1626,7 @@ export function initTextGenModels() {
     }
 
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const nanoGptProvidersSelect = $('#nanogpt_provider');
+    const nanoGptProvidersSelect = document.getElementById('nanogpt_provider');
     for (const provider of NANOGPT_PROVIDERS) {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         nanoGptProvidersSelect.append($('<option>', {

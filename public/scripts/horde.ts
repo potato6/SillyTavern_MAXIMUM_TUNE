@@ -201,7 +201,7 @@ export async function adjustHordeGenerationParams(max_context_length, max_length
     }
     console.log(maxContextLength, maxLength);
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#adjustedHordeParams').text(t`Context` + `: ${maxContextLength}, ` + t`Response` + `: ${maxLength}`);
+    document.getElementById('adjustedHordeParams').textContent = t`Context` + `: ${maxContextLength}, ` + t`Response` + `: ${maxLength}`;
     return { maxContextLength, maxLength };
 }
 
@@ -213,7 +213,7 @@ function setContextSizePreview() {
         adjustHordeGenerationParams(max_context, amount_gen);
     } else {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#adjustedHordeParams').text(t`Context` + ': --, ' + t`Response` + ': --');
+        document.getElementById('adjustedHordeParams').textContent = t`Context` + ': --, ' + t`Response` + ': --';
     }
 }
 
@@ -365,11 +365,11 @@ export function loadHordeSettings(settings) {
     }
 
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#horde_auto_adjust_response_length').prop('checked', horde_settings.auto_adjust_response_length);
+    document.getElementById('horde_auto_adjust_response_length').checked = horde_settings.auto_adjust_response_length;
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#horde_auto_adjust_context_length').prop('checked', horde_settings.auto_adjust_context_length);
+    document.getElementById('horde_auto_adjust_context_length').checked = horde_settings.auto_adjust_context_length;
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#horde_trusted_workers_only').prop('checked', horde_settings.trusted_workers_only);
+    document.getElementById('horde_trusted_workers_only').checked = horde_settings.trusted_workers_only;
 }
 
 /**
@@ -514,7 +514,7 @@ export function initHorde() {
                 adjustHordeGenerationParams(max_context, amount_gen);
             } else {
                 // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                $('#adjustedHordeParams').text(t`Context` + ': --, ' + t`Response` + ': --');
+                document.getElementById('adjustedHordeParams').textContent = t`Context` + ': --, ' + t`Response` + ': --';
             }
 
             saveSettingsDebounced();

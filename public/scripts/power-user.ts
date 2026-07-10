@@ -605,7 +605,7 @@ async function switchLabMode({ noReset = false } = {}) {
     /*     if (power_user.enableZenSliders && power_user.enableLabMode) {
             toastr.warning("Can't start Lab Mode while Zen Sliders are active")
             return
-            //$("#enableZenSliders").trigger('click')
+            //$("#enableZenSliders").dispatchEvent(new Event('click', { bubbles: true }))
         }
      */
     await delay(100);
@@ -630,7 +630,7 @@ async function switchLabMode({ noReset = false } = {}) {
             el.setAttribute('step', '0.001');
         });
         document.getElementById('labModeWarning').classList.remove('displayNone');
-        //$("#advanced-ai-config-block input[type='range']").hide()
+        //$("#advanced-ai-config-block input[type='range']").style.display = 'none'
 
         const agcEl = document.getElementById('amount_gen_counter');
         if (agcEl) { agcEl.setAttribute('min', '1'); agcEl.setAttribute('max', '99999'); agcEl.setAttribute('step', '1'); }

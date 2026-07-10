@@ -336,8 +336,8 @@ export function validateTextGenUrl() {
     }
 
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const control = $(selector);
-    const url = String(control.val()).trim();
+    const control = selector;
+    const url = String(control.value).trim();
     const formattedUrl = formatTextGenURL(url);
 
     if (!formattedUrl) {
@@ -346,7 +346,7 @@ export function validateTextGenUrl() {
         return;
     }
 
-    control.val(formattedUrl);
+    control.value = formattedUrl;
 }
 
 /**
@@ -539,7 +539,7 @@ function getCustomTokenBans(settings = null) {
 // @ts-expect-error TS(7006) FIXME: Parameter 'isEnabled' implicitly has an 'any' type... Remove this comment to see the full error message
 function toggleBannedStringsKillSwitch(isEnabled, title) {
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#send_banned_tokens_textgenerationwebui').prop('checked', isEnabled);
+    document.getElementById('send_banned_tokens_textgenerationwebui').checked = isEnabled;
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document.querySelector('#send_banned_tokens_label .menu_button')).toggleClass('toggleEnabled', isEnabled).prop('title', title);
     textgenerationwebui_settings.send_banned_tokens = isEnabled;
@@ -679,7 +679,7 @@ export async function loadTextGenSettings(data, loadedSettings) {
 function sortKoboldItemsByOrder(orderArray) {
     console.debug('Preset samplers order: ' + orderArray);
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const $draggableItems = $('#koboldcpp_order');
+    const $draggableItems = document.getElementById('koboldcpp_order');
 
     for (let i = 0; i < orderArray.length; i++) {
         const index = orderArray[i];
@@ -697,7 +697,7 @@ function sortKoboldItemsByOrder(orderArray) {
 function sortLlamacppItemsByOrder(orderArray) {
     console.debug('Preset samplers order: ', orderArray);
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const $container = $('#llamacpp_samplers_sortable');
+    const $container = document.getElementById('llamacpp_samplers_sortable');
 
     // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
     orderArray.forEach((name) => {
@@ -715,7 +715,7 @@ function sortLlamacppItemsByOrder(orderArray) {
 function sortOobaItemsByOrder(orderArray) {
     console.debug('Preset samplers order: ', orderArray);
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const $container = $('#sampler_priority_container');
+    const $container = document.getElementById('sampler_priority_container');
 
     // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
     orderArray.forEach((name) => {
@@ -733,7 +733,7 @@ function sortOobaItemsByOrder(orderArray) {
 function sortAphroditeItemsByOrder(orderArray) {
     console.debug('Preset samplers order: ', orderArray);
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const $container = $('#sampler_priority_container_aphrodite');
+    const $container = document.getElementById('sampler_priority_container_aphrodite');
 
     // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
     orderArray.forEach((name) => {
@@ -986,9 +986,9 @@ export function initTextGenSettings() {
     });
 
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#tabby_json_schema').on('input', function () {
+    document.getElementById('tabby_json_schema').on('input', function () {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const json_schema_string = String($(this).val());
+        const json_schema_string = String(this.value);
 
         if (json_schema_string) {
             try {
@@ -1122,11 +1122,11 @@ export function initTextGenSettings() {
             const inputElement = $(`#${id}`);
             const valueToSet = typeof value === 'boolean' ? String(value) : value;
             if (inputElement.prop('type') === 'checkbox') {
-                inputElement.prop('checked', value).trigger('input');
+                inputElement.prop('checked', value).dispatchEvent(new Event('input', { bubbles: true }));
             } else if (inputElement.prop('type') === 'number') {
-                inputElement.val(valueToSet).trigger('input');
+                inputElement.value = valueToSet.trigger('input');
             } else {
-                inputElement.val(valueToSet).trigger('input');
+                inputElement.value = valueToSet.trigger('input');
                 if (power_user.enableZenSliders) {
                     const masterElementID = inputElement.prop('id');
                     console.log(masterElementID);
@@ -1144,38 +1144,38 @@ export function initTextGenSettings() {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $(`#${i}_textgenerationwebui`).attr('x-setting-id', i);
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(document).on('input', `#${i}_textgenerationwebui`, function () {
+        document.on('input', `#${i}_textgenerationwebui`, function () {
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const isCheckbox = $(this).attr('type') == 'checkbox';
+            const isCheckbox = this.getAttribute('type') == 'checkbox';
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const isText = $(this).attr('type') == 'text' || $(this).is('textarea');
+            const isText = this.getAttribute('type') == 'text' || $(this).is('textarea');
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const id = $(this).attr('x-setting-id');
+            const id = this.attr('x-setting-id');
 
             if (isCheckbox) {
                 // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                const value = $(this).prop('checked');
+                const value = this.checked;
                 // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 textgenerationwebui_settings[id] = value;
             } else if (isText) {
                 // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                const value = $(this).val();
+                const value = this.value;
                 // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 textgenerationwebui_settings[id] = value;
             } else {
                 // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                const value = Number($(this).val());
+                const value = Number(this.value);
                 // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                $(`#${id}_counter_textgenerationwebui`).val(value);
+                $(`#${id}_counter_textgenerationwebui`).value = value;
                 // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 textgenerationwebui_settings[id] = value;
                 //special handling for vLLM/Aphrodite using -1 as disabled instead of 0
                 // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                if ($(this).attr('id') === 'top_k_textgenerationwebui' && [INFERMATICAI, APHRODITE, VLLM].includes(textgenerationwebui_settings.type) && value === 0) {
+                if (this.getAttribute('id') === 'top_k_textgenerationwebui' && [INFERMATICAI, APHRODITE, VLLM].includes(textgenerationwebui_settings.type) && value === 0) {
                     // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                     textgenerationwebui_settings[id] = -1;
                     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                    $(this).val(-1);
+                    this.value = -1;
                 }
             }
             saveSettingsDebounced();
@@ -1200,7 +1200,7 @@ export function initTextGenSettings() {
     });
 
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#openrouter_allow_fallbacks_textgenerationwebui').on('input', function () {
+    document.getElementById('openrouter_allow_fallbacks_textgenerationwebui').on('input', function () {
         updateOpenRouterProvidersWarning('#openrouter_providers_text');
     });
 
@@ -1238,7 +1238,7 @@ export function initTextGenSettings() {
 
         for (const key of keys) {
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const keyValue = String($(`#${key.id}`).val()).trim();
+            const keyValue = String($(`#${key.id}`).value).trim();
             if (keyValue.length) {
                 // @ts-expect-error TS(2554) FIXME: Expected 3-4 arguments, but got 2.
                 await writeSecret(key.secret, keyValue);
@@ -1349,7 +1349,7 @@ function setSettingByName(setting, value, trigger) {
     if ('json_schema' === setting) {
         textgenerationwebui_settings.json_schema = value ?? null;
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#tabby_json_schema').val(value ? JSON.stringify(textgenerationwebui_settings.json_schema, null, 2) : '');
+        document.getElementById('tabby_json_schema').value = value ? JSON.stringify(textgenerationwebui_settings.json_schema, null, 2) : '';
         return;
     }
 
@@ -1395,27 +1395,27 @@ function setSettingByName(setting, value, trigger) {
     }
 
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const isCheckbox = $(`#${setting}_textgenerationwebui`).attr('type') == 'checkbox';
+    const isCheckbox = $(`#${setting}_textgenerationwebui`).getAttribute('type') == 'checkbox';
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const isText = $(`#${setting}_textgenerationwebui`).attr('type') == 'text' || $(`#${setting}_textgenerationwebui`).is('textarea');
+    const isText = $(`#${setting}_textgenerationwebui`).getAttribute('type') == 'text' || $(`#${setting}_textgenerationwebui`).is('textarea');
     if (isCheckbox) {
         const val = Boolean(value);
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(`#${setting}_textgenerationwebui`).prop('checked', val);
+        $(`#${setting}_textgenerationwebui`).checked = val;
 
         if ('send_banned_tokens' === setting) {
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(`#${setting}_textgenerationwebui`).trigger('change');
+            $(`#${setting}_textgenerationwebui`).dispatchEvent(new Event('change', { bubbles: true }));
         }
     } else if (isText) {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(`#${setting}_textgenerationwebui`).val(value);
+        $(`#${setting}_textgenerationwebui`).value = value;
     } else {
         const val = parseFloat(value);
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(`#${setting}_textgenerationwebui`).val(val);
+        $(`#${setting}_textgenerationwebui`).value = val;
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(`#${setting}_counter_textgenerationwebui`).val(val);
+        $(`#${setting}_counter_textgenerationwebui`).value = val;
         if (power_user.enableZenSliders) {
             const zenEl = document.getElementById(`${setting}_textgenerationwebui_zenslider`);
             if (zenEl?.noUiSlider) {
@@ -1426,7 +1426,7 @@ function setSettingByName(setting, value, trigger) {
 
     if (trigger) {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(`#${setting}_textgenerationwebui`).trigger('input');
+        $(`#${setting}_textgenerationwebui`).dispatchEvent(new Event('input', { bubbles: true }));
     }
 }
 

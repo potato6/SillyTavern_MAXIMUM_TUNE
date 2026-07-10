@@ -22,7 +22,7 @@ export function displayLogitBias(logitBias, containerSelector) {
 
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const list = $(document.querySelector(containerSelector).querySelector('.logit_bias_list'));
-    list.empty();
+    list.innerHTML = '';
 
     for (const entry of logitBias) {
         if (entry) {

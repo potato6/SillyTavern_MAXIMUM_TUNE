@@ -285,21 +285,21 @@ export function loadNovelSettings(data, settings) {
     });
 
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#settings_preset_novel').empty();
+    document.getElementById('settings_preset_novel').innerHTML = '';
     const presetNames = {};
     // @ts-expect-error TS(7006) FIXME: Parameter 'item' implicitly has an 'any' type.
     novelai_setting_names.forEach(function (item, i, arr) {
         // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         presetNames[item] = i;
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#settings_preset_novel').append(`<option value=${i}>${item}</option>`);
+        document.getElementById('settings_preset_novel').append(`<option value=${i}>${item}</option>`);
     });
     novelai_setting_names = presetNames;
 
     //load the rest of the Novel settings without any checks
     nai_settings.model_novel = settings.model_novel;
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#model_novel_select').val(nai_settings.model_novel);
+    document.getElementById('model_novel_select').value = nai_settings.model_novel;
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(`#model_novel_select option[value=${nai_settings.model_novel}]`).prop('selected', true);
 
@@ -347,90 +347,90 @@ export function loadNovelSettings(data, settings) {
 // @ts-expect-error TS(7006) FIXME: Parameter 'ui_settings' implicitly has an 'any' ty... Remove this comment to see the full error message
 function loadNovelSettingsUi(ui_settings) {
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#temp_novel').val(ui_settings.temperature);
+    document.getElementById('temp_novel').value = ui_settings.temperature;
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#temp_counter_novel').val(Number(ui_settings.temperature).toFixed(2));
+    document.getElementById('temp_counter_novel').value = Number(ui_settings.temperature.toFixed(2));
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#rep_pen_novel').val(ui_settings.repetition_penalty);
+    document.getElementById('rep_pen_novel').value = ui_settings.repetition_penalty;
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#rep_pen_counter_novel').val(Number(ui_settings.repetition_penalty).toFixed(3));
+    document.getElementById('rep_pen_counter_novel').value = Number(ui_settings.repetition_penalty.toFixed(3));
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#rep_pen_size_novel').val(ui_settings.repetition_penalty_range);
+    document.getElementById('rep_pen_size_novel').value = ui_settings.repetition_penalty_range;
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#rep_pen_size_counter_novel').val(Number(ui_settings.repetition_penalty_range).toFixed(0));
+    document.getElementById('rep_pen_size_counter_novel').value = Number(ui_settings.repetition_penalty_range.toFixed(0));
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#rep_pen_slope_novel').val(ui_settings.repetition_penalty_slope);
+    document.getElementById('rep_pen_slope_novel').value = ui_settings.repetition_penalty_slope;
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#rep_pen_slope_counter_novel').val(Number(`${ui_settings.repetition_penalty_slope}`).toFixed(2));
+    document.getElementById('rep_pen_slope_counter_novel').value = Number(`${ui_settings.repetition_penalty_slope}`.toFixed(2));
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#rep_pen_freq_novel').val(ui_settings.repetition_penalty_frequency);
+    document.getElementById('rep_pen_freq_novel').value = ui_settings.repetition_penalty_frequency;
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#rep_pen_freq_counter_novel').val(Number(ui_settings.repetition_penalty_frequency).toFixed(3));
+    document.getElementById('rep_pen_freq_counter_novel').value = Number(ui_settings.repetition_penalty_frequency.toFixed(3));
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#rep_pen_presence_novel').val(ui_settings.repetition_penalty_presence);
+    document.getElementById('rep_pen_presence_novel').value = ui_settings.repetition_penalty_presence;
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#rep_pen_presence_counter_novel').val(Number(ui_settings.repetition_penalty_presence).toFixed(3));
+    document.getElementById('rep_pen_presence_counter_novel').value = Number(ui_settings.repetition_penalty_presence.toFixed(3));
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#tail_free_sampling_novel').val(ui_settings.tail_free_sampling);
+    document.getElementById('tail_free_sampling_novel').value = ui_settings.tail_free_sampling;
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#tail_free_sampling_counter_novel').val(Number(ui_settings.tail_free_sampling).toFixed(3));
+    document.getElementById('tail_free_sampling_counter_novel').value = Number(ui_settings.tail_free_sampling.toFixed(3));
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#top_k_novel').val(ui_settings.top_k);
+    document.getElementById('top_k_novel').value = ui_settings.top_k;
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#top_k_counter_novel').val(Number(ui_settings.top_k).toFixed(0));
+    document.getElementById('top_k_counter_novel').value = Number(ui_settings.top_k.toFixed(0));
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#top_p_novel').val(ui_settings.top_p);
+    document.getElementById('top_p_novel').value = ui_settings.top_p;
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#top_p_counter_novel').val(Number(ui_settings.top_p).toFixed(3));
+    document.getElementById('top_p_counter_novel').value = Number(ui_settings.top_p.toFixed(3));
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#top_a_novel').val(ui_settings.top_a);
+    document.getElementById('top_a_novel').value = ui_settings.top_a;
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#top_a_counter_novel').val(Number(ui_settings.top_a).toFixed(3));
+    document.getElementById('top_a_counter_novel').value = Number(ui_settings.top_a.toFixed(3));
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#typical_p_novel').val(ui_settings.typical_p);
+    document.getElementById('typical_p_novel').value = ui_settings.typical_p;
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#typical_p_counter_novel').val(Number(ui_settings.typical_p).toFixed(3));
+    document.getElementById('typical_p_counter_novel').value = Number(ui_settings.typical_p.toFixed(3));
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#phrase_rep_pen_novel').val(ui_settings.phrase_rep_pen || 'off');
+    document.getElementById('phrase_rep_pen_novel').value = ui_settings.phrase_rep_pen || 'off';
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#mirostat_lr_novel').val(ui_settings.mirostat_lr);
+    document.getElementById('mirostat_lr_novel').value = ui_settings.mirostat_lr;
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#mirostat_lr_counter_novel').val(Number(ui_settings.mirostat_lr).toFixed(2));
+    document.getElementById('mirostat_lr_counter_novel').value = Number(ui_settings.mirostat_lr.toFixed(2));
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#mirostat_tau_novel').val(ui_settings.mirostat_tau);
+    document.getElementById('mirostat_tau_novel').value = ui_settings.mirostat_tau;
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#mirostat_tau_counter_novel').val(Number(ui_settings.mirostat_tau).toFixed(2));
+    document.getElementById('mirostat_tau_counter_novel').value = Number(ui_settings.mirostat_tau.toFixed(2));
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#min_length_novel').val(ui_settings.min_length);
+    document.getElementById('min_length_novel').value = ui_settings.min_length;
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#min_length_counter_novel').val(Number(ui_settings.min_length).toFixed(0));
+    document.getElementById('min_length_counter_novel').value = Number(ui_settings.min_length.toFixed(0));
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#nai_preamble_textarea').val(ui_settings.preamble);
+    document.getElementById('nai_preamble_textarea').value = ui_settings.preamble;
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#nai_prefix').val(ui_settings.prefix || 'vanilla');
+    document.getElementById('nai_prefix').value = ui_settings.prefix || 'vanilla';
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#nai_banned_tokens').val(ui_settings.banned_tokens || '');
+    document.getElementById('nai_banned_tokens').value = ui_settings.banned_tokens || '';
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#min_p_novel').val(ui_settings.min_p);
+    document.getElementById('min_p_novel').value = ui_settings.min_p;
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#min_p_counter_novel').val(Number(ui_settings.min_p).toFixed(3));
+    document.getElementById('min_p_counter_novel').value = Number(ui_settings.min_p.toFixed(3));
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#math1_temp_novel').val(ui_settings.math1_temp);
+    document.getElementById('math1_temp_novel').value = ui_settings.math1_temp;
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#math1_temp_counter_novel').val(Number(ui_settings.math1_temp).toFixed(2));
+    document.getElementById('math1_temp_counter_novel').value = Number(ui_settings.math1_temp.toFixed(2));
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#math1_quad_novel').val(ui_settings.math1_quad);
+    document.getElementById('math1_quad_novel').value = ui_settings.math1_quad;
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#math1_quad_counter_novel').val(Number(ui_settings.math1_quad).toFixed(2));
+    document.getElementById('math1_quad_counter_novel').value = Number(ui_settings.math1_quad.toFixed(2));
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#math1_quad_entropy_scale_novel').val(ui_settings.math1_quad_entropy_scale);
+    document.getElementById('math1_quad_entropy_scale_novel').value = ui_settings.math1_quad_entropy_scale;
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#math1_quad_entropy_scale_counter_novel').val(Number(ui_settings.math1_quad_entropy_scale).toFixed(2));
+    document.getElementById('math1_quad_entropy_scale_counter_novel').value = Number(ui_settings.math1_quad_entropy_scale.toFixed(2));
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(`#settings_preset_novel option[value=${novelai_setting_names[nai_settings.preset_settings_novel]}]`).prop('selected', true);
 
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#streaming_novel').prop('checked', ui_settings.streaming_novel);
+    document.getElementById('streaming_novel').checked = ui_settings.streaming_novel;
     sortItemsByOrder(ui_settings.order);
     displayLogitBias(ui_settings.logit_bias, BIAS_KEY);
 }
@@ -857,9 +857,9 @@ function sortItemsByOrder(orderArray) {
     // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     Array.from(draggableItems.children).forEach(function (child) {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const isEnabled = orderArray.includes(parseInt($(child).data('id')));
+        const isEnabled = orderArray.includes(parseInt(child.dataset.id));
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(child).toggleClass('disabled', !isEnabled);
+        child.toggleClass('disabled', !isEnabled);
 
         if (!isEnabled) {
             // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
@@ -877,10 +877,10 @@ function saveSamplingOrder() {
     // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     Array.from(document.getElementById('novel_order').children).forEach(function (child) {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const isEnabled = !$(child).hasClass('disabled');
+        const isEnabled = !child.hasClass('disabled');
         if (isEnabled) {
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            order.push($(child).data('id'));
+            order.push(child.dataset.id);
         }
     });
     // @ts-expect-error TS(7005) FIXME: Variable 'order' implicitly has an 'any[]' type.

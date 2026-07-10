@@ -261,11 +261,11 @@ class BulkTagPopupHandler {
         // @ts-expect-error TS(7006) FIXME: Parameter 'id' implicitly has an 'any' type.
         const entities = this.characterIds.map(id => characterToEntity(characters[id], id)).filter(entity => entity.item !== undefined);
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        buildAvatarList($('#bulk_tags_avatars_block'), entities);
+        buildAvatarList(document.getElementById('bulk_tags_avatars_block'), entities);
 
         // Print the tag list with all mutuable tags, marking them as removable. That is the initial fill
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        printTagList($('#bulkTagList'), { tags: () => this.getMutualTags(), tagOptions: { removable: true } });
+        printTagList(document.getElementById('bulkTagList'), { tags: () => this.getMutualTags(), tagOptions: { removable: true } });
 
         // Tag input with resolvable list for the mutual tags to get redrawn, so that newly added tags get sorted correctly
         createTagInput('#bulkTagInput', '#bulkTagList', { tags: () => this.getMutualTags(), tagOptions: { removable: true } });
@@ -554,7 +554,7 @@ class BulkEditOverlay {
                 this.clearSelectedCharacters();
                 this.disableContextMenu();
                 this.#disableBulkEditButtonHighlight();
-                CharacterContextMenu.hide();
+                CharacterContextMenu.style.display = 'none';
                 break;
             case BulkEditOverlayState.select:
                 // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
@@ -609,7 +609,7 @@ class BulkEditOverlay {
         if (this.#contextMenuOpen) {
             this.#contextMenuOpen = false;
             this.#cancelNextToggle = true;
-            CharacterContextMenu.hide();
+            CharacterContextMenu.style.display = 'none';
             return;
         }
 
@@ -778,7 +778,7 @@ class BulkEditOverlay {
     updateSelectedCount = (countOverride = undefined) => {
         const count = countOverride ?? this.selectedCharacters.length;
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(`#${BulkEditOverlay.bulkSelectedCountId}`).text(count).attr('title', `${count} characters selected`);
+        $(`#${BulkEditOverlay.bulkSelectedCountId}`).textContent = count.attr('title', `${count} characters selected`);
     };
 
     /**
@@ -822,7 +822,7 @@ class BulkEditOverlay {
         const contextMenu = document.getElementById(BulkEditOverlay.contextMenuId);
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         if (false === contextMenu.contains(event.target)) {
-            CharacterContextMenu.hide();
+            CharacterContextMenu.style.display = 'none';
             this.#contextMenuOpen = false;
         }
     };
@@ -896,12 +896,12 @@ class BulkEditOverlay {
         const characterIds = this.selectedCharacters;
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const popupContent = $(BulkEditOverlay.#getDeletePopupContentHtml(characterIds));
-        const checkbox = popupContent.find('#del_char_checkbox');
+        const checkbox = popupContent.querySelectorAll('#del_char_checkbox');
         const promise = callGenericPopup(popupContent, POPUP_TYPE.CONFIRM)
             .then((accept) => {
                 if (!accept) return;
 
-                const deleteChats = checkbox.prop('checked') ?? false;
+                const deleteChats = checkbox.checked ?? false;
 
                 const loaderHandle = loader.show({
                     slug: 'bulk-delete',
@@ -912,13 +912,13 @@ class BulkEditOverlay {
                 const avatarList = characterIds.map(id => characters[id]?.avatar).filter(a => a);
                 return CharacterContextMenu.delete(avatarList, deleteChats)
                     .then(() => this.browseState())
-                    .finally(() => loaderHandle.hide());
+                    .finally(() => loaderHandle.style.display = 'none');
             });
 
         // At this moment the popup is already changed in the dom, but not yet closed/resolved. We build the avatar list here
         const entities = characterIds.map(id => characterToEntity(characters[id], id)).filter(entity => entity.item !== undefined);
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        buildAvatarList($('#bulk_delete_avatars_block'), entities);
+        buildAvatarList(document.getElementById('bulk_delete_avatars_block'), entities);
 
         return promise;
     };

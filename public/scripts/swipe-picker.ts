@@ -157,9 +157,9 @@ async function openSwipePicker(messageId) {
             const template = $('#past_chat_template .select_chat_block_wrapper').clone();
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const block = $(template[0].querySelector('.select_chat_block'));
-            block.removeClass('select_chat_block').addClass('swipe_picker_block');
+            block.removeClass('select_chat_block').classList.add('swipe_picker_block');
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(block[0].querySelector('.select_chat_actions')).removeClass('gap10px');
+            $(block[0].querySelector('.select_chat_actions')).classList.remove('gap10px');
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const branchButton = $(template[0].querySelector('.exportRawChatButton'));
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
@@ -193,8 +193,8 @@ async function openSwipePicker(messageId) {
                     title: t`Create Branch`,
                     'data-i18n': '[title]Create Branch',
                 })
-                .removeClass('exportRawChatButton fa-solid fa-file-export')
-                .addClass('swipe_picker_branch mes_button fa-fw fa-regular fa-code-branch')
+                .classList.remove('exportRawChatButton fa-solid fa-file-export')
+                .classList.add('swipe_picker_branch mes_button fa-fw fa-regular fa-code-branch')
             branchButton[0]?.addEventListener('click', async (event: Event) => {
                 event.preventDefault();
                 event.stopPropagation();
@@ -203,23 +203,23 @@ async function openSwipePicker(messageId) {
                 await popup.completeCancelled();
             });
             deleteButton
-                .removeAttr('file_name')
+                .removeAttribute('file_name')
                 .attr('aria-disabled', String(!canDeleteSwipe))
-                .removeClass('fa-skull')
-                .addClass('swipe_picker_delete fa-fw fa-trash-can')
+                .classList.remove('fa-skull')
+                .classList.add('swipe_picker_delete fa-fw fa-trash-can')
                 .toggleClass('hoverglow', canDeleteSwipe)
                 .toggleClass('disabled', !canDeleteSwipe);
 
             for (const el of deleteButton) {
                 if (canDeleteSwipe) {
                     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                    $(el).attr({
+                    el.attr({
                         title: t`Delete Swipe`,
                         'data-i18n': '[title]Delete Swipe',
                     });
                 } else {
                     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                    $(el).removeAttr('title').removeAttr('data-i18n');
+                    el.removeAttribute('title').removeAttr('data-i18n');
                 }
             }
 
@@ -297,15 +297,17 @@ async function openSwipePicker(messageId) {
             branchButton.before(expandLabel, copyButton);
 
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(template[0].querySelector('.select_chat_block_filename')).text(`#${index + 1}${index === Number(message.swipe_id ?? 0) ? ` ${t`[Current]`}` : ''}`);
+            template.querySelector('.select_chat_block_filename').textContent = `#${index + 1}${index === Number(message.swipe_id ?? 0) ? ` ${t`[Current]`}` : ''}`;
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(template[0].querySelector('.chat_messages_date')).text(sendDate);
+            template.querySelector('.chat_messages_date').textContent = sendDate;
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(template[0].querySelector('.chat_file_size')).text(swipeDetails.length ? `(${swipeDetails[0]}${swipeDetails.length > 1 ? ',' : ')'}` : '');
+            const fileSizeText = swipeDetails.length ? '(' + swipeDetails[0] + (swipeDetails.length > 1 ? ',' : '') + ')' : '';
+            template.querySelector('.chat_file_size').textContent = fileSizeText;
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(template[0].querySelector('.chat_messages_num')).text(swipeDetails.length > 1 ? `${swipeDetails.slice(1).join(', ')})` : '');
+            const messagesNum = swipeDetails.length > 1 ? swipeDetails.slice(1).join(', ') : '';
+            template.querySelector('.chat_messages_num').textContent = messagesNum;
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(template[0].querySelector('.select_chat_block_mes')).text(previewText ? swipeText : t`(empty swipe)`);
+            template.querySelector('.select_chat_block_mes').textContent = previewText ? swipeText : t`(empty swipe)`;
 
             block[0]?.addEventListener('click', () => setSelectedSwipe(index));
             block[0]?.addEventListener('dblclick', async () => {

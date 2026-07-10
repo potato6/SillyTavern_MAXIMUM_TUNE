@@ -198,7 +198,7 @@ export class ActionLoaderHandle {
 
         // Show toast with no timeout (sticky)
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        this.#toast = toastr.info($(toastContent), title, {
+        this.#toast = toastr.info(toastContent, title, {
             timeOut: 0,
             extendedTimeOut: 0,
             tapToDismiss: false,
@@ -318,13 +318,13 @@ export class ActionLoaderHandle {
  * // Basic usage
  * const handle = loader.show({ message: 'Loading...' });
  * await someOperation();
- * handle.hide();
+ * handle.style.display = 'none';
  * @example
  * // Non-blocking background task
  * const handle = loader.show({ blocking: false, message: 'Processing...' });
  * @example
  * // Hide all active loaders
- * loader.hide();
+ * loader.style.display = 'none';
  */
 export const loader = {
     /**
@@ -392,7 +392,7 @@ export const loader = {
  *     const result = await generateRaw({ prompt });
  *     // process result
  * } finally {
- *     await loader.hide();
+ *     await loader.style.display = 'none';
  * }
  * @example
  * // With custom stop and hide handlers
@@ -406,8 +406,8 @@ export const loader = {
  * // Stacking multiple loaders
  * const loader1 = showActionLoader({ message: 'Task 1...' });
  * const loader2 = showActionLoader({ message: 'Task 2...' });
- * await loader1.hide(); // Overlay stays, loader2 still active
- * await loader2.hide(); // Now overlay hides
+ * await loader1.style.display = 'none'; // Overlay stays, loader2 still active
+ * await loader2.style.display = 'none'; // Now overlay hides
  * @example
  * // Non-blocking loader (toast only, no overlay)
  * const loader = showActionLoader({
@@ -566,9 +566,9 @@ async function hideOverlay() {
 
     return new Promise((resolve) => {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const loaderElement = $('#loader');
+        const loaderElement = document.getElementById('loader');
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const spinner = $('#load-spinner');
+        const spinner = document.getElementById('load-spinner');
 
         if (!loaderElement.length) {
             console.warn('Loader element not found, skipping animation');

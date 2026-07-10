@@ -1791,7 +1791,7 @@ function checkQuotaError(data, { quiet = false } = {}) {
 
     if (data.quota_error) {
         if (!quiet) {
-            renderTemplateAsync('quotaError').then((html) => Popup.show.text('Quota Error', html));
+            renderTemplateAsync('quotaError').then((html) => Popup.show.textContent = 'Quota Error', html);
         }
 
         // this does not throw correctly (equiv to Error("[object Object]"))
@@ -4802,7 +4802,7 @@ function loadOpenAISettings(data, settings) {
         if (settingToUpdate) {
             const [selector] = settingToUpdate;
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const $element = $(selector);
+            const $element = selector;
 
             if ($element.length === 0) {
                 continue;
@@ -4810,22 +4810,22 @@ function loadOpenAISettings(data, settings) {
 
             if ($element.is('input[type="checkbox"]')) {
                 // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-                $element.prop('checked', oai_settings[key]);
+                $element.checked = oai_settings[key];
             } else if ($element.is('select')) {
                 // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-                $element.val(oai_settings[key]);
+                $element.value = oai_settings[key];
                 // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $($element[0].querySelector(`option[value="${CSS.escape(oai_settings[key])}"]`)).prop('selected', true);
             } else {
                 // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-                $element.val(oai_settings[key]);
+                $element.value = oai_settings[key];
                 if ($element.is('input[type="range"]')) {
-                    const id = $element.attr('id');
+                    const id = $element.getAttribute('id');
                     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                     const $counter = $(`input[type="number"][data-for="${id}"]`);
                     if ($counter.length > 0) {
                         // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-                        $counter.val(Number(oai_settings[key]));
+                        $counter.value = Number(oai_settings[key]);
                     }
                 }
             }
@@ -4838,7 +4838,7 @@ function loadOpenAISettings(data, settings) {
     document.getElementById('bind_preset_to_connection').checked = oai_settings.bind_preset_to_connection;
     ((() => { const el = document.getElementById('openai_external_category'); if (el) { el.style.display = oai_settings.show_external_models ? '' : 'none'; } })());
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('.reverse_proxy_warning').toggle(oai_settings.reverse_proxy !== '');
+    document.querySelector('.reverse_proxy_warning').toggle(oai_settings.reverse_proxy !== '');
 
     // Don't display Service Account JSON in textarea - it's stored in backend secrets
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
@@ -5446,10 +5446,10 @@ async function onExportPresetClick() {
 
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const exportConnectionTemplate = $(await renderTemplateAsync('exportPreset'));
-    await new Popup(exportConnectionTemplate, POPUP_TYPE.TEXT).show();
+    await (new Popup(exportConnectionTemplate, POPUP_TYPE.TEXT)).show();
 
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const removeConnectionData = $(exportConnectionTemplate[0].querySelector('input[name="export_connection_data"]:checked')).val() === 'false';
+    const removeConnectionData = $(exportConnectionTemplate[0].querySelector('input[name="export_connection_data"]:checked')).value === 'false';
     if (removeConnectionData) {
         for (const [, [, settingName, , isConnection]] of Object.entries(settingsToUpdate)) {
             if (isConnection) {
@@ -6795,7 +6795,7 @@ function onReverseProxyInput() {
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     oai_settings.reverse_proxy = String(this.value);
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('.reverse_proxy_warning').toggle(oai_settings.reverse_proxy != '');
+    document.querySelector('.reverse_proxy_warning').toggle(oai_settings.reverse_proxy != '');
     saveSettingsDebounced();
 }
 
@@ -6891,7 +6891,7 @@ function toggleChatCompletionForms() {
         document.getElementById('model_vertexai_select')?.dispatchEvent(new Event('change'));
         // Update UI based on authentication mode
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        onVertexAIAuthModeChange.call($('#vertexai_auth_mode')[0]);
+        onVertexAIAuthModeChange.call(document.getElementById('vertexai_auth_mode')[0]);
     } else if (oai_settings.chat_completion_source == chat_completion_sources.OPENROUTER) {
         document.getElementById('model_openrouter_select')?.dispatchEvent(new Event('change'));
     } else if (oai_settings.chat_completion_source == chat_completion_sources.AI21) {
@@ -6987,11 +6987,11 @@ function reconnectOpenAi() {
  */
 function onProxyPasswordShowClick() {
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const $input = $('#openai_proxy_password');
-    const type = $input.attr('type') === 'password' ? 'text' : 'password';
-    $input.attr('type', type);
+    const $input = document.getElementById('openai_proxy_password');
+    const type = $input.getAttribute('type') === 'password' ? 'text' : 'password';
+    $input.setAttribute('type', type);
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(this).toggleClass('fa-eye-slash fa-eye');
+    this.classList.toggle('fa-eye-slash fa-eye');
 }
 
 /**
@@ -8140,9 +8140,9 @@ export function initOpenAI() {
 
     if (!CSS.supports('field-sizing', 'content')) {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(document).on('input', '#openai_settings .autoSetHeight', function () {
+        document.addEventListener('input', function () { const target = event.target.closest('#openai_settings .autoSetHeight'); if (!target) return;
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            resetScrollHeight($(this));
+            resetScrollHeight(this);
         });
     }
 
@@ -8226,7 +8226,7 @@ export function initOpenAI() {
     });
 
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#cc_group_models').on('input', async () => {
+    document.getElementById('cc_group_models').on('input', async () => {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         oai_settings.group_models = document.getElementById('cc_group_models').checked;
         reconnectOpenAi();
@@ -8234,7 +8234,7 @@ export function initOpenAI() {
     });
 
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#cc_sort_models').on('input', async () => {
+    document.getElementById('cc_sort_models').on('input', async () => {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         oai_settings.sort_models = document.getElementById('cc_sort_models').value.toString();
         reconnectOpenAi();

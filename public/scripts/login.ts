@@ -179,7 +179,7 @@ async function onUserSelected(user: { password?: string; handle: string }) {
 // @ts-expect-error TS(7006) FIXME: Parameter 'message' implicitly has an 'any' type.
 function displayError(message) {
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#errorMessage').text(message);
+    document.getElementById('errorMessage').textContent = message;
 }
 
 /**
@@ -232,19 +232,19 @@ function configureNormalLogin(userList) {
     console.log(userList);
     for (const user of userList) {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const userBlock = $('<div></div>').addClass('userSelect');
+        const userBlock = $('<div></div>').classList.add('userSelect');
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const avatarBlock = $('<div></div>').addClass('avatar');
+        const avatarBlock = $('<div></div>').classList.add('avatar');
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        avatarBlock.append($('<img>').attr('src', user.avatar));
+        avatarBlock.append($('<img>').setAttribute('src', user.avatar));
         userBlock.append(avatarBlock);
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        userBlock.append($('<span></span>').addClass('userName').text(user.name));
+        userBlock.append($('<span></span>').addClass('userName').textContent = user.name);
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        userBlock.append($('<small></small>').addClass('userHandle').text(user.handle));
+        userBlock.append($('<small></small>').addClass('userHandle').textContent = user.handle);
         userBlock.on('click', () => onUserSelected(user));
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#userList').append(userBlock);
+        document.getElementById('userList').append(userBlock);
     }
 }
 

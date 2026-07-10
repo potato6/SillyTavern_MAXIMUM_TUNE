@@ -143,7 +143,7 @@ export function loadKoboldSettings(data, preset, settings) {
         if (typeof koboldai_setting_names[kai_settings.preset_settings] !== 'undefined') {
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $(`#settings_preset option[value=${koboldai_setting_names[kai_settings.preset_settings]}]`)
-                .attr('selected', 'true');
+                .setAttribute('selected', 'true');
         } else {
             kai_settings.preset_settings = 'gui';
             selectKoboldGuiPreset();
@@ -154,7 +154,7 @@ export function loadKoboldSettings(data, preset, settings) {
 
     //Load the API server URL from settings
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#api_url_text').val(kai_settings.api_server);
+    document.getElementById('api_url_text').value = kai_settings.api_server;
 }
 
 /**
@@ -180,20 +180,20 @@ function loadKoboldSettingsFromPreset(preset) {
         const formattedValue = slider.format(value);
         slider.setValue(value);
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(slider.sliderId).val(value);
+        $(slider.sliderId).value = value;
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(slider.counterId).val(formattedValue);
+        $(slider.counterId).value = formattedValue;
     }
 
     if (Object.hasOwn(preset, 'streaming_kobold')) {
         kai_settings.streaming_kobold = preset.streaming_kobold;
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#streaming_kobold').prop('checked', kai_settings.streaming_kobold);
+        document.getElementById('streaming_kobold').checked = kai_settings.streaming_kobold;
     }
     if (Object.hasOwn(preset, 'use_default_badwordsids')) {
         kai_settings.use_default_badwordsids = preset.use_default_badwordsids;
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#use_default_badwordsids').prop('checked', kai_settings.use_default_badwordsids);
+        document.getElementById('use_default_badwordsids').checked = kai_settings.use_default_badwordsids;
     }
 }
 
@@ -471,7 +471,7 @@ export function setKoboldFlags(koboldUnitedVersion, koboldCppVersion) {
     kai_flags.can_use_min_p = versionCompare(koboldCppVersion, MIN_MIN_P_KCPPVERSION);
     const isKoboldCpp = versionCompare(koboldCppVersion, '1.0.0');
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#koboldcpp_hint').toggleClass('displayNone', !isKoboldCpp);
+    document.getElementById('koboldcpp_hint').toggleClass('displayNone', !isKoboldCpp);
 }
 
 /**
@@ -580,17 +580,17 @@ export function initKoboldSettings() {
     });
 
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#streaming_kobold').on('input', function () {
+    document.getElementById('streaming_kobold').on('input', function () {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const value = !!$(this).prop('checked');
+        const value = !!this.checked;
         kai_settings.streaming_kobold = value;
         saveSettingsDebounced();
     });
 
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#use_default_badwordsids').on('input', function () {
+    document.getElementById('use_default_badwordsids').on('input', function () {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const value = !!$(this).prop('checked');
+        const value = !!this.checked;
         kai_settings.use_default_badwordsids = value;
         saveSettingsDebounced();
     });
@@ -605,7 +605,7 @@ export function initKoboldSettings() {
                 // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
                 Array.from(document.getElementById('kobold_order').children).forEach(function (child) {
                     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                    order.push($(child).data('id'));
+                    order.push(child.dataset.id);
                 });
                 // @ts-expect-error TS(7005) FIXME: Variable 'order' implicitly has an 'any[]' type.
                 kai_settings.sampler_order = order;
@@ -634,8 +634,8 @@ export function initKoboldSettings() {
             document.getElementById('kobold_api-settings')?.style.removeProperty('opacity');
             document.getElementById('kobold_api-settings')?.style.setProperty('opacity', '1');
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#kobold_order')
-                .css('opacity', 1);
+            document.getElementById('kobold_order')
+                .style.opacity = 1;
             koboldOrderEl.sortableInstance?.option('disabled', false);
         } else {
             kai_settings.preset_settings = 'gui';
@@ -644,8 +644,8 @@ export function initKoboldSettings() {
             document.getElementById('kobold_api-settings')?.style.setProperty('opacity', '0.5');
 
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#kobold_order')
-                .css('opacity', 0.5);
+            document.getElementById('kobold_order')
+                .style.opacity = 0.5;
             koboldOrderEl.sortableInstance?.option('disabled', true);
         }
         saveSettingsDebounced();

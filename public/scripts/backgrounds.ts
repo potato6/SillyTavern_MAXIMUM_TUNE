@@ -219,9 +219,9 @@ function applyThumbnailColumns(count) {
     document.documentElement.style.setProperty('--bg-thumb-columns', newCount.toString());
 
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#bg_thumb_zoom_in').prop('disabled', newCount <= THUMBNAIL_COLUMNS_MIN);
+    document.getElementById('bg_thumb_zoom_in').disabled = newCount <= THUMBNAIL_COLUMNS_MIN;
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#bg_thumb_zoom_out').prop('disabled', newCount >= THUMBNAIL_COLUMNS_MAX);
+    document.getElementById('bg_thumb_zoom_out').disabled = newCount >= THUMBNAIL_COLUMNS_MAX;
 
     saveSettingsDebounced();
 }
@@ -262,11 +262,11 @@ export function loadBackgroundSettings(settings) {
     setBackground(backgroundSettings.name, backgroundSettings.url);
     setFittingClass(backgroundSettings.fitting);
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#background_fitting').val(backgroundSettings.fitting);
+    document.getElementById('background_fitting').value = backgroundSettings.fitting;
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#background_thumbnails_animation').prop('checked', background_settings.animation);
+    document.getElementById('background_thumbnails_animation').checked = background_settings.animation;
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#bg-sort').val(background_settings.sortOrder);
+    document.getElementById('bg-sort').value = background_settings.sortOrder;
     highlightSelectedBackground();
 }
 
@@ -278,7 +278,7 @@ export function loadBackgroundSettings(settings) {
 async function forceSetBackground(backgroundInfo) {
     saveBackgroundMetadata(backgroundInfo.url);
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#bg1').css('background-image', backgroundInfo.url);
+    document.getElementById('bg1').style.backgroundImage = backgroundInfo.url;
 
     const list = chat_metadata[LIST_METADATA_KEY] || [];
     const bg = backgroundInfo.path;
@@ -298,7 +298,7 @@ async function onChatChanged() {
     const lockedUrl = chat_metadata[BG_METADATA_KEY];
 
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#bg1').css('background-image', lockedUrl || background_settings.url);
+    document.getElementById('bg1').style.backgroundImage = lockedUrl || background_settings.url;
 
     // @ts-expect-error TS(2554) FIXME: Expected 1 arguments, but got 0.
     renderChatBackgrounds();
@@ -374,7 +374,7 @@ function onLockBackgroundClick(event = null) {
     const urlToLock = event ? event.target.closest('.bg_example')?.dataset.url : background_settings.url;
     saveBackgroundMetadata(urlToLock);
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#bg1').css('background-image', urlToLock);
+    document.getElementById('bg1').style.backgroundImage = urlToLock;
 
     // Update UI states to reflect the new lock.
     highlightLockedBackground();
@@ -391,7 +391,7 @@ function onUnlockBackgroundClick(_event = null) {
 
     // Revert the view to the current global background.
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#bg1').css('background-image', background_settings.url);
+    document.getElementById('bg1').style.backgroundImage = background_settings.url;
 
     // Update UI states to reflect the removal of the lock.
     highlightLockedBackground();
@@ -430,9 +430,9 @@ function removeBackgroundMetadata() {
 // @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
 function onSelectBackgroundClick(e) {
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const bgFile = $(this).attr('bgfile');
+    const bgFile = this.getAttribute('bgfile');
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const isCustom = $(this).attr('custom') === 'true';
+    const isCustom = this.getAttribute('custom') === 'true';
     if (isBackgroundSelectionMode && !isCustom) {
         toggleBackgroundGroupSelection(bgFile);
         return;
@@ -446,7 +446,7 @@ function onSelectBackgroundClick(e) {
         // If a background is locked, update the locked background directly
         saveBackgroundMetadata(backgroundCssUrl);
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#bg1').css('background-image', backgroundCssUrl);
+        document.getElementById('bg1').style.backgroundImage = backgroundCssUrl;
     } else {
         // Otherwise, update the global background setting
         setBackground(bgFile, backgroundCssUrl);
@@ -806,7 +806,7 @@ function renderChatBackgrounds(backgrounds) {
     // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     container.innerHTML = '';
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#bg_chat_hint').toggle(!sourceList.length);
+    document.getElementById('bg_chat_hint').style.display = !sourceList.length ? '' : 'none';
 
     if (sourceList.length === 0) return;
 
@@ -1032,7 +1032,7 @@ function onFolderDrillIn(folderId) {
     const bgFolderGrid = document.getElementById('bg_folder_grid'); if (bgFolderGrid) bgFolderGrid.style.display = 'none';
     const bgFolderBreadcrumb = document.getElementById('bg_folder_breadcrumb'); if (bgFolderBreadcrumb) bgFolderBreadcrumb.style.display = '';
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#bg_current_folder_name').text(folder.name);
+    document.getElementById('bg_current_folder_name').textContent = folder.name;
 
     // Render only this folder's images
     renderSystemBackgrounds(getFilteredImages());
@@ -1052,7 +1052,7 @@ function onBackToFolders() {
     const bgFolderGrid = document.getElementById('bg_folder_grid'); if (bgFolderGrid) bgFolderGrid.style.display = '';
     const bgFolderBreadcrumb = document.getElementById('bg_folder_breadcrumb'); if (bgFolderBreadcrumb) bgFolderBreadcrumb.style.display = 'none';
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#bg_current_folder_name').text('');
+    document.getElementById('bg_current_folder_name').textContent = '';
 
     // Show all images
     renderSystemBackgrounds(getFilteredImages());
@@ -1074,12 +1074,14 @@ function syncGroupSelectionUi() {
     // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     document.getElementById('bg_selection_mode_button').classList.toggle('active', isBackgroundSelectionMode);
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#bg_group_select_count').text(selectedCount > 0 ? ` (${selectedCount})` : '').toggle(selectedCount > 0);
+    const bgCount = document.getElementById('bg_group_select_count');
+    if (bgCount) bgCount.textContent = selectedCount > 0 ? ` (${selectedCount}` : '';
+    if (bgCount) bgCount.style.display = selectedCount > 0 ? '' : 'none';
 
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#bg_group_add_to_folder_button').toggle(showAddButton);
+    document.getElementById('bg_group_add_to_folder_button').style.display = showAddButton ? '' : 'none';
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#bg_folder_remove_selected_button').toggle(showRemoveFromCurrentFolderButton);
+    document.getElementById('bg_folder_remove_selected_button').style.display = showRemoveFromCurrentFolderButton ? '' : 'none';
 
     document.querySelectorAll('#bg_menu_content .bg_example').forEach(el => {
         const bgFile = String(el.getAttribute('bgfile') || '');
@@ -1131,7 +1133,7 @@ function clearBackgroundGroupSelection() {
 function updateGroupFolderControlsVisibility() {
     const isGlobalTab = getActiveBackgroundTab() === BG_SOURCES.GLOBAL;
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#bg_selection_mode_button').toggle(isGlobalTab);
+    document.getElementById('bg_selection_mode_button').style.display = isGlobalTab ? '' : 'none';
 
     if (!isGlobalTab && isBackgroundSelectionMode) {
         setBackgroundSelectionMode(false);
@@ -1177,7 +1179,7 @@ async function selectFoldersForGroupAction(headingText) {
     }
 
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const content = $(contentEl);
+    const content = contentEl;
     const result = await callGenericPopup(content, POPUP_TYPE.CONFIRM, '', {
         okButton: t`Apply`,
         cancelButton: t`Cancel`,
@@ -1486,7 +1488,7 @@ async function onAssignToFolder(bgFile) {
     }
 
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const content = $(contentEl);
+    const content = contentEl;
 
     const result = await callGenericPopup(content, POPUP_TYPE.CONFIRM, '', { okButton: t`Save`, cancelButton: t`Cancel` });
     if (!result) return;
@@ -1557,8 +1559,8 @@ async function onSetFolderCover(bgFile) {
                 const coverUrl = await getFolderCoverUrl(folder);
                 if (coverUrl) {
                     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                    $(`.bg_folder_tile[data-folder-id="${folder.id}"] .bg_folder_tile_cover`)
-                        .css('background-image', `url('${coverUrl}')`);
+                    const coverEl = document.querySelector(`.bg_folder_tile[data-folder-id="${folder.id}"] .bg_folder_tile_cover`);
+                    if (coverEl) coverEl.style.backgroundImage = `url('${coverUrl}')`;
                 }
             }
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
@@ -1682,7 +1684,7 @@ async function setBackground(bg, url) {
     // Only change the visual background if one is not locked for the current chat.
     if (!isChatBackgroundLocked()) {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#bg1').css('background-image', url);
+        document.getElementById('bg1').style.backgroundImage = url;
     }
     background_settings.name = bg;
     background_settings.url = url;
@@ -1930,7 +1932,7 @@ function highlightSelectedBackground() {
  */
 function onBackgroundFilterInput() {
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const filterValue = String($('#bg-filter').val()).toLowerCase();
+    const filterValue = String(document.getElementById('bg-filter').value).toLowerCase();
     document.querySelectorAll('#bg_menu_content > .bg_example, #bg_custom_content > .bg_example').forEach(function (el) {
         const title = el.getAttribute('title') || '';
         const hasMatch = title.toLowerCase().includes(filterValue);
@@ -1965,7 +1967,7 @@ const debouncedOnBackgroundFilterInput = debounce(onBackgroundFilterInput, debou
  */
 export function getActiveBackgroundTab() {
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const tabs = $('#bg_tabs');
+    const tabs = document.getElementById('bg_tabs');
     if (!tabs.length || !tabs.data('ui-tabs')) {
         return BG_SOURCES.GLOBAL;
     }
@@ -2185,7 +2187,7 @@ export function initBackgrounds() {
     });
 
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#bg_tabs').tabs();
+    document.getElementById('bg_tabs').tabs();
     document.getElementById('bg_tabs')?.addEventListener('tabsactivate', () => updateGroupFolderControlsVisibility());
     updateGroupFolderControlsVisibility();
     syncGroupSelectionUi();

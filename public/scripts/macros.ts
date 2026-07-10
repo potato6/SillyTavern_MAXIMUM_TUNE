@@ -663,7 +663,7 @@ export function evaluateMacros(content, env, postProcessFn) {
         { regex: /(?:\r?\n)*{{trim}}(?:\r?\n)*/gi, replace: () => '' },
         { regex: /{{noop}}/gi, replace: () => '' },
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        { regex: /{{input}}/gi, replace: () => String($('#send_textarea').val()) },
+        { regex: /{{input}}/gi, replace: () => String(document.getElementById('send_textarea').value) },
     ];
 
     /**

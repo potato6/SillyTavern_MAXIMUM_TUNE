@@ -268,11 +268,11 @@ export function updateSecretDisplay() {
         // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         const validSecret = !!secret_state[secret_key];
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const placeholder = $('#viewSecrets').attr(validSecret ? 'key_saved_text' : 'missing_key_text');
+        const placeholder = document.getElementById('viewSecrets').attr(validSecret ? 'key_saved_text' : 'missing_key_text');
         const label = getActiveSecretLabel(secret_key);
         const placeholderWithLabel = label ? `${placeholder} (${label})` : placeholder;
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(input_selector).attr('placeholder', placeholderWithLabel);
+        input_selector.setAttribute('placeholder', placeholderWithLabel);
     }
 }
 
@@ -340,11 +340,11 @@ async function viewSecrets() {
     const table = document.createElement('table');
     table.classList.add('responsiveTable');
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(table).append('<thead><th>Key</th><th>Value</th></thead>');
+    table.append('<thead><th>Key</th><th>Value</th></thead>');
 
     for (const [key, value] of Object.entries(data)) {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(table).append(`<tr><td>${DOMPurify.sanitize(key)}</td><td>${DOMPurify.sanitize(value)}</td></tr>`);
+        table.append(`<tr><td>${DOMPurify.sanitize(key)}</td><td>${DOMPurify.sanitize(value)}</td></tr>`);
     }
 
     await callGenericPopup(table.outerHTML, POPUP_TYPE.TEXT, '', { wide: true, large: true, allowVerticalScrolling: true });
@@ -740,10 +740,10 @@ async function openKeyManagerDialog(key) {
     async function renderSecretsList() {
         // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         const secrets = secret_state[key] ?? [];
-        const list = template.find('.secretKeyManagerList');
+        const list = template.querySelectorAll('.secretKeyManagerList');
         const previousScrollTop = list.scrollTop();
 
-        const emptyMessage = template.find('.secretKeyManagerListEmpty');
+        const emptyMessage = template.querySelectorAll('.secretKeyManagerListEmpty');
         emptyMessage.toggle(secrets.length === 0);
 
         const itemBlocks = [];
@@ -794,15 +794,15 @@ async function openKeyManagerDialog(key) {
             itemBlocks.push(itemTemplate);
         }
 
-        list.empty().append(itemBlocks).scrollTop(previousScrollTop);
+        list.innerHTML = ''.append(itemBlocks).scrollTop(previousScrollTop);
     }
 
     /**
      *
      */
     function scrollToActive() {
-        const list = template.find('.secretKeyManagerList');
-        const activeKey = list.find('.active');
+        const list = template.querySelectorAll('.secretKeyManagerList');
+        const activeKey = list.querySelectorAll('.active');
         if (activeKey.length > 0) {
             const activeKeyScrollTop = activeKey.position().top + list.scrollTop() - list.height() / 2;
             list.scrollTop(activeKeyScrollTop);
@@ -1321,7 +1321,7 @@ export async function initSecrets() {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const root = $('<div class="nanogpt-credits-popup"></div>');
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        root.append($('<h3></h3>').text(t`NanoGPT Credits & Usage`));
+        root.append($('<h3></h3>').textContent = t`NanoGPT Credits & Usage`);
 
         const rows = [
             // @ts-expect-error TS(2345) FIXME: Argument of type '2' is not assignable to paramete... Remove this comment to see the full error message
@@ -1348,9 +1348,9 @@ export async function initSecrets() {
 
         for (const [label, value] of rows) {
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            root.append($('<div></div>').text(label));
+            root.append($('<div></div>').textContent = label);
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            root.append($('<div></div>').text(value));
+            root.append($('<div></div>').textContent = value);
         }
 
         return root;

@@ -879,8 +879,8 @@ export function isElementInViewport(el) {
     return (
         rect.top >= 0 &&
         rect.left >= 0 &&
-        rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) && /* or $(window).height() */
-        rect.right <= (window.innerWidth || document.documentElement.clientWidth) /* or $(window).width() */
+        rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) && /* or window.height() */
+        rect.right <= (window.innerWidth || document.documentElement.clientWidth) /* or window.width() */
     );
 }
 
@@ -1041,9 +1041,9 @@ export function restoreCaretPosition(element, position) {
 // @ts-expect-error TS(7006) FIXME: Parameter 'element' implicitly has an 'any' type.
 export async function resetScrollHeight(element) {
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(element).css('height', '0px');
+    element.style.height = '0px';
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(element).css('height', $(element).prop('scrollHeight') + 3 + 'px');
+    element.style.height = element.prop('scrollHeight' + 3 + 'px');
 }
 
 /**
@@ -1056,9 +1056,9 @@ export async function initScrollHeight(element) {
     await delay(1);
 
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const curHeight = Number($(element).css('height').replace('px', ''));
+    const curHeight = Number(element.getComputedStyle?.(el).height.replace('px', ''));
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const curScrollHeight = Number($(element).prop('scrollHeight'));
+    const curScrollHeight = Number(element.prop('scrollHeight'));
     const diff = curScrollHeight - curHeight;
 
     if (diff < 3) { return; } //happens when the div isn't loaded yet
@@ -1066,9 +1066,9 @@ export async function initScrollHeight(element) {
     const newHeight = curHeight + diff + 3; //the +3 here is to account for padding/line-height on text inputs
     //console.log(`init height to ${newHeight}`);
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(element).css('height', '');
+    element.style.height = '';
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(element).css('height', `${newHeight}px`);
+    element.style.height = `${newHeight}px`;
     //resetScrollHeight(element);
 }
 
@@ -1081,9 +1081,9 @@ export async function initScrollHeight(element) {
 // @ts-expect-error TS(7006) FIXME: Parameter 'a' implicitly has an 'any' type.
 export function sortByCssOrder(a, b) {
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const _a = Number($(a).css('order'));
+    const _a = Number(a.getComputedStyle?.(el).order);
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const _b = Number($(b).css('order'));
+    const _b = Number(b.getComputedStyle?.(el).order);
     return _a - _b;
 }
 
@@ -2688,7 +2688,7 @@ export function select2ModifyOptions(element, items, { select = false, changeEve
     // @ts-expect-error TS(7005) FIXME: Variable 'newOptions' implicitly has an 'any[]' ty... Remove this comment to see the full error message
     element.append(newOptions);
     // @ts-expect-error TS(7005) FIXME: Variable 'optionsToSelect' implicitly has an 'any[... Remove this comment to see the full error message
-    if (optionsToSelect.length) element.val(optionsToSelect).trigger('change', changeEventArgs);
+    if (optionsToSelect.length) element.value = optionsToSelect.trigger('change', changeEventArgs);
 }
 
 /**
@@ -2735,7 +2735,7 @@ export function dynamicSelect2DataViaAjax(dataProvider) {
 // @ts-expect-error TS(7006) FIXME: Parameter 'item' implicitly has an 'any' type.
 export function isSelect2ChoiceElement(element) {
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const $element = $(element);
+    const $element = element;
     return ($element.hasClass('item') && $element.closest('.ts-wrapper').length > 0) || ($element[0]?.closest('.ts-wrapper .item') !== null);
 }
 
@@ -2751,14 +2751,14 @@ export function isSelect2ChoiceElement(element) {
 // @ts-expect-error TS(7006) FIXME: Parameter 'control' implicitly has an 'any' type.
 export function select2ChoiceClickSubscribe(control, action, { buttonStyle = false, closeDrawer = false, openDrawer = false } = {}) {
     // Add class for styling (hover color, changed cursor, etc)
-    control.addClass('select2_choice_clickable');
-    if (buttonStyle) control.addClass('select2_choice_clickable_buttonstyle');
+    control.classList.add('select2_choice_clickable');
+    if (buttonStyle) control.classList.add('select2_choice_clickable_buttonstyle');
 
     // Get the TomSelect wrapper and create a click handler on that one
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this description to see the full error message
     const tsWrapper = control[0].closest('.ts-wrapper');
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this description to see the full error message
-    const select2Container = $(tsWrapper);
+    const select2Container = tsWrapper;
     // @ts-expect-error TS(7006) FIXME: Parameter 'event' implicitly has an 'any' type.
     select2Container.on('click', function (event) {
         const isChoice = isSelect2ChoiceElement(event.target);

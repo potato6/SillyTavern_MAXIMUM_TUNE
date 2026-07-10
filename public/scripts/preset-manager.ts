@@ -108,7 +108,7 @@ function registerPresetManagers() {
         for (const apiId of forData.split(',')) {
             console.debug(`Registering preset manager for API: ${apiId}`);
             // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-            presetManagers[apiId] = new PresetManager($(e), apiId);
+            presetManagers[apiId] = new PresetManager(e, apiId);
         }
     });
 }
@@ -216,9 +216,9 @@ class PresetManager {
                 power_user.user_prompt_bias = data.value ?? '';
                 power_user.show_user_prompt_bias = data.show ?? false;
                 // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                $('#start_reply_with').val(power_user.user_prompt_bias);
+                document.getElementById('start_reply_with').value = power_user.user_prompt_bias;
                 // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                $('#chat-show-reply-prefix-checkbox').prop('checked', power_user.show_user_prompt_bias);
+                document.getElementById('chat-show-reply-prefix-checkbox').checked = power_user.show_user_prompt_bias;
                 return saveSettingsDebounced();
             },
             // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
@@ -464,7 +464,8 @@ class PresetManager {
             this.select.prop('selected', true);
         }
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(this.select).val(value).trigger('change');
+        $(this.select).value = value
+    el.dispatchEvent(new Event('change', { bubbles: true }));
     }
 
     /**
@@ -478,7 +479,7 @@ class PresetManager {
         const selected = $(this.select[0].options[this.select[0].selectedIndex]);
         console.log(selected);
 
-        if (selected.val() == 'gui') {
+        if (selected.value == 'gui') {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.info(t`Cannot update GUI preset`);
             return;
@@ -680,7 +681,8 @@ class PresetManager {
                 // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $(this.select[0].querySelector(`option[value="${CSS.escape(name)}"]`)).prop('selected', true);
                 // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                $(this.select).val(name).trigger('change');
+                $(this.select).value = name
+    el.dispatchEvent(new Event('change', { bubbles: true }));
             } else {
                 // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 const value = preset_names[name];
@@ -688,7 +690,8 @@ class PresetManager {
                 // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $(this.select[0].querySelector(`option[value="${CSS.escape(String(value))}"]`)).prop('selected', true);
                 // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                $(this.select).val(value).trigger('change');
+                $(this.select).value = value
+    el.dispatchEvent(new Event('change', { bubbles: true }));
             }
         } else {
             presets.push(preset);
@@ -702,7 +705,8 @@ class PresetManager {
                 // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $(this.select).append(option);
                 // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                $(this.select).val(name).trigger('change');
+                $(this.select).value = name
+    el.dispatchEvent(new Event('change', { bubbles: true }));
             } else {
                 // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 preset_names[name] = value;
@@ -711,7 +715,8 @@ class PresetManager {
                 // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $(this.select).append(option);
                 // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                $(this.select).val(value).trigger('change');
+                $(this.select).value = value
+    el.dispatchEvent(new Event('change', { bubbles: true }));
             }
         }
     }
@@ -912,9 +917,9 @@ class PresetManager {
             // @ts-expect-error TS(2538) FIXME: Type 'undefined' cannot be used as an index type.
             const newValue = preset_names[nextPresetName];
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(this.select[0].querySelector(`option[value="${CSS.escape(String(newValue))}"]`)).attr('selected', 'true');
+            $(this.select[0].querySelector(`option[value="${CSS.escape(String(newValue))}"]`)).setAttribute('selected', 'true');
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(this.select).trigger('change');
+            $(this.select).dispatchEvent(new Event('change', { bubbles: true }));
         }
 
         const response = await fetch('/api/presets/delete', {

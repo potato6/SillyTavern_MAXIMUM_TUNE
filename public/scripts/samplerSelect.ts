@@ -29,8 +29,8 @@ let selectedSamplers = {};
 async function showSamplerSelectPopup() {
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const html = $(document.createElement('div'));
-    html.attr('id', 'sampler_view_list')
-        .addClass('flex-container flexFlowColumn');
+    html.setAttribute('id', 'sampler_view_list')
+        .classList.add('flex-container flexFlowColumn');
     html.append(await renderTemplateAsync('samplerSelector'));
 
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
@@ -50,7 +50,7 @@ async function showSamplerSelectPopup() {
 
         if (main_api === 'textgenerationwebui') {
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#prioritizeManuallySelectedSamplers').toggleClass('toggleEnabled', false);
+            document.getElementById('prioritizeManuallySelectedSamplers').toggleClass('toggleEnabled', false);
             // @ts-expect-error TS(2345) FIXME: Argument of type 'null' is not assignable to param... Remove this comment to see the full error message
             await resetApiSelectedSamplers(null, true);
         }
@@ -62,13 +62,13 @@ async function showSamplerSelectPopup() {
         const prioritizeEl = document.getElementById('prioritizeManuallySelectedSamplers');
         if (prioritizeEl) prioritizeEl.style.display = '';
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#prioritizeManuallySelectedSamplers').toggleClass('toggleEnabled', isSamplerManualPriorityEnabled());
+        document.getElementById('prioritizeManuallySelectedSamplers').toggleClass('toggleEnabled', isSamplerManualPriorityEnabled());
         document.getElementById('prioritizeManuallySelectedSamplers')?.addEventListener('click', function () {
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(this).toggleClass('toggleEnabled');
+            this.classList.toggle('toggleEnabled');
 
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const isActive = $(this).hasClass('toggleEnabled');
+            const isActive = this.hasClass('toggleEnabled');
 
             toggleSamplerManualPriority(isActive);
         });
@@ -96,99 +96,99 @@ function getRelatedDOMElement(samplerName) {
 
     if (samplerName === 'json_schema') {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        relatedDOMElement = $('#json_schema_block');
+        relatedDOMElement = document.getElementById('json_schema_block');
         targetDisplayType = 'block';
         displayname = 'JSON Schema Block';
     }
 
     if (samplerName === 'grammar_string') {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        relatedDOMElement = $('#grammar_block_ooba');
+        relatedDOMElement = document.getElementById('grammar_block_ooba');
         targetDisplayType = 'block';
         displayname = 'Grammar Block';
     }
 
     if (samplerName === 'guidance_scale') {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        relatedDOMElement = $('#cfg_block_ooba');
+        relatedDOMElement = document.getElementById('cfg_block_ooba');
         targetDisplayType = 'block';
         displayname = 'CFG Block';
     }
 
     if (samplerName === 'mirostat_mode') {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        relatedDOMElement = $('#mirostat_block_ooba');
+        relatedDOMElement = document.getElementById('mirostat_block_ooba');
         targetDisplayType = 'block';
         displayname = 'Mirostat Block';
     }
 
     if (samplerName === 'dry_multiplier') {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        relatedDOMElement = $('#dryBlock');
+        relatedDOMElement = document.getElementById('dryBlock');
         targetDisplayType = 'block';
         displayname = 'DRY Rep Pen Block';
     }
 
     if (samplerName === 'xtc_probability') {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        relatedDOMElement = $('#xtc_block');
+        relatedDOMElement = document.getElementById('xtc_block');
         targetDisplayType = 'block';
         displayname = 'XTC Block';
     }
 
     if (samplerName === 'dynatemp') {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        relatedDOMElement = $('#dynatemp_block_ooba');
+        relatedDOMElement = document.getElementById('dynatemp_block_ooba');
         targetDisplayType = 'block';
         displayname = 'DynaTemp Block';
     }
 
     if (samplerName === 'banned_tokens') {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        relatedDOMElement = $('#banned_tokens_block_ooba');
+        relatedDOMElement = document.getElementById('banned_tokens_block_ooba');
         targetDisplayType = 'block';
     }
 
     if (samplerName === 'sampler_order') { //this is for kcpp sampler order
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        relatedDOMElement = $('#sampler_order_block_kcpp');
+        relatedDOMElement = document.getElementById('sampler_order_block_kcpp');
         displayname = 'KCPP Sampler Order Block';
     }
 
     if (samplerName === 'samplers') { //this is for lcpp sampler order
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        relatedDOMElement = $('#sampler_order_block_lcpp');
+        relatedDOMElement = document.getElementById('sampler_order_block_lcpp');
         displayname = 'LCPP Sampler Order Block';
     }
 
     if (samplerName === 'sampler_priority') { //this is for ooba's sampler priority
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        relatedDOMElement = $('#sampler_priority_block_ooba');
+        relatedDOMElement = document.getElementById('sampler_priority_block_ooba');
         displayname = 'Ooba Sampler Priority Block';
     }
 
     if (samplerName === 'samplers_priorities') { //this is for aphrodite's sampler priority
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        relatedDOMElement = $('#sampler_priority_block_aphrodite');
+        relatedDOMElement = document.getElementById('sampler_priority_block_aphrodite');
         displayname = 'Aphrodite Sampler Priority Block';
     }
 
     if (samplerName === 'penalty_alpha') { //contrastive search only has one sampler, does it need its own block?
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        relatedDOMElement = $('#contrastiveSearchBlock');
+        relatedDOMElement = document.getElementById('contrastiveSearchBlock');
         displayname = 'Contrast Search Block';
     }
 
     if (samplerName === 'num_beams') { // num_beams is the killswitch for Beam Search
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        relatedDOMElement = $('#beamSearchBlock');
+        relatedDOMElement = document.getElementById('beamSearchBlock');
         targetDisplayType = 'block';
         displayname = 'Beam Search Block';
     }
 
     if (samplerName === 'smoothing_factor') { // num_beams is the killswitch for Beam Search
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        relatedDOMElement = $('#smoothingBlock');
+        relatedDOMElement = document.getElementById('smoothingBlock');
         targetDisplayType = 'block';
         displayname = 'Smoothing Block';
     }
@@ -210,7 +210,7 @@ function setSamplerListListeners() {
         // Get the current state of the custom data attribute
         const previousState = relatedDOMElement.data(SELECT_SAMPLER.DATA);
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const isChecked = $(this).prop('checked');
+        const isChecked = this.checked;
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const popupInputLabel = $(this.parentElement ? this.parentElement.querySelector('.sampler_name') : null);
 
@@ -218,28 +218,28 @@ function setSamplerListListeners() {
             if (previousState === SELECT_SAMPLER.SHOWN) {
                 console.log('saw previously custom shown sampler => new state:', isChecked, samplerName);
                 relatedDOMElement.removeData(SELECT_SAMPLER.DATA);
-                popupInputLabel.removeAttr('style');
+                popupInputLabel.removeAttribute('style');
             } else {
                 console.log('saw previous untouched sampler => new state:', isChecked, samplerName);
                 relatedDOMElement.data(SELECT_SAMPLER.DATA, SELECT_SAMPLER.HIDDEN);
-                popupInputLabel.attr('style', forcedOffColoring);
+                popupInputLabel.setAttribute('style', forcedOffColoring);
             }
         } else {
             if (previousState === SELECT_SAMPLER.HIDDEN) {
                 console.log('saw previously custom hidden sampler => new state:', isChecked, samplerName);
                 relatedDOMElement.removeData(SELECT_SAMPLER.DATA);
-                popupInputLabel.removeAttr('style');
+                popupInputLabel.removeAttribute('style');
             } else {
                 console.log('saw previous untouched sampler => new state:', isChecked, samplerName);
                 relatedDOMElement.data(SELECT_SAMPLER.DATA, SELECT_SAMPLER.SHOWN);
-                popupInputLabel.attr('style', forcedOnColoring);
+                popupInputLabel.setAttribute('style', forcedOnColoring);
             }
         }
 
         await saveSettingsDebounced();
 
         const shouldDisplay = isChecked ? targetDisplayType : 'none';
-        relatedDOMElement.css('display', shouldDisplay);
+        relatedDOMElement.style.display = shouldDisplay;
 
         if (main_api === 'textgenerationwebui') setApiSamplersState(samplerName, shouldDisplay !== 'none');
 
@@ -346,10 +346,10 @@ export async function validateDisabledSamplers(redraw = false) {
 
         if (prioritizeManualSamplerSelect) {
             const isManuallyActivated = samplersActivatedManually.includes(sampler);
-            relatedDOMElement.css('display', isManuallyActivated ? targetDisplayType : 'none');
+            relatedDOMElement.style.display = isManuallyActivated ? targetDisplayType : 'none';
         } else {
             const selectSamplerData = relatedDOMElement.data(SELECT_SAMPLER.DATA);
-            relatedDOMElement.css('display', selectSamplerData === SELECT_SAMPLER.SHOWN ? targetDisplayType : 'none');
+            relatedDOMElement.style.display = selectSamplerData === SELECT_SAMPLER.SHOWN ? targetDisplayType : 'none';
         }
 
         relatedDOMElement.removeData(SELECT_SAMPLER.DATA);
@@ -362,7 +362,7 @@ export async function validateDisabledSamplers(redraw = false) {
     if (redraw) {
         const samplersHTML = await listSamplers(main_api);
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#apiSamplersList').empty().append(samplersHTML.toString());
+        document.getElementById('apiSamplersList').innerHTML = ''.append(samplersHTML.toString());
         setSamplerListListeners();
     }
 
