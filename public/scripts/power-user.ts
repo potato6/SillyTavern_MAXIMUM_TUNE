@@ -56,6 +56,8 @@ import { tokenizers } from './tokenizers.js';
 import { BIAS_CACHE } from './logit-bias.js';
 import { renderTemplateAsync } from './templates.js';
 
+declare const TomSelect: any;
+
 import { countOccurrences, debounce, delay, download, getFileText, getSanitizedFilename, getStringHash, isOdd, isTrueBoolean, onlyUnique, resetScrollHeight, shuffle, sortMoments, stringToRange, timestampToMoment } from './utils.js';
 import { FILTER_TYPES } from './filters.js';
 import { PARSER_FLAG, SlashCommandParser } from './slash-commands/SlashCommandParser.js';
@@ -3356,9 +3358,18 @@ export function forceCharacterEditorTokenize() {
 jQuery(() => {
     const adjustAutocompleteDebounced = debounce(() => {
         document.querySelectorAll('.ui-autocomplete-input').forEach(function (el) {
-            const isOpen = $(el).autocomplete('widget')[0].style.display !== 'none';
-            if (isOpen) {
-                $(el).autocomplete('search');
+            // @ts-expect-error TS(2339) FIXME: Property 'tomSelect' does not exist on type 'Element'.
+            if (el.tomSelect) {
+                // @ts-expect-error TS(2339) FIXME: Property 'tomSelect' does not exist on type 'Element'.
+                if (el.tomSelect.wrapper.classList.contains('dropdown-active')) {
+                    // @ts-expect-error TS(2339) FIXME: Property 'tomSelect' does not exist on type 'Element'.
+                    el.tomSelect.open();
+                }
+            } else {
+                const widget = $(el).autocomplete('widget');
+                if (widget[0] && widget[0].style.display !== 'none') {
+                    $(el).autocomplete('search');
+                }
             }
         });
     });
