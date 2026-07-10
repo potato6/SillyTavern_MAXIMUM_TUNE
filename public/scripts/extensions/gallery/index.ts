@@ -80,7 +80,7 @@ const defaultSettings = Object.freeze({
 function initSettings() {
     let shouldSave = false;
 
-    const context = SillyTavern.getContext();
+    const context = SillyTavern.getContext() as any;
     if (!context.extensionSettings.gallery) {
         context.extensionSettings.gallery = structuredClone(defaultSettings);
         shouldSave = true;
