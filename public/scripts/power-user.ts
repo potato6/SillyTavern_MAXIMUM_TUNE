@@ -2307,15 +2307,15 @@ export function loadMovingUIState() {
  *
  */
 function loadMaxContextUnlocked() {
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#max_context_unlocked').prop('checked', power_user.max_context_unlocked);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#max_context_unlocked').on('change', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        power_user.max_context_unlocked = !!$(this).prop('checked');
-        switchMaxContextSize();
-        saveSettingsDebounced();
-    });
+    const maxContextUnlocked = document.getElementById('max_context_unlocked') as HTMLInputElement | null;
+    if (maxContextUnlocked) {
+        maxContextUnlocked.checked = power_user.max_context_unlocked;
+        maxContextUnlocked.addEventListener('change', function (this: HTMLInputElement) {
+            power_user.max_context_unlocked = !!this.checked;
+            switchMaxContextSize();
+            saveSettingsDebounced();
+        });
+    }
     switchMaxContextSize();
 }
 
@@ -2499,9 +2499,8 @@ async function loadContextSettings() {
 
         // If the setting already exists, no need to duplicate it
         // TODO: Maybe check the power_user object for the setting instead of a flag?
-        $element.on('input', async function () {
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            let value = control.isCheckbox ? !!$(this).prop('checked') : $(this).val();
+        $element[0]?.addEventListener('input', async function (this: HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement) {
+            let value = control.isCheckbox ? !!(this as HTMLInputElement).checked : this.value;
             if (typeof control.defaultValue === 'number') {
                 value = Number(value);
             }
@@ -2513,10 +2512,8 @@ async function loadContextSettings() {
                 power_user.context[control.property] = value;
             }
             console.debug(`Setting ${$element.prop('id')} to ${value}`);
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            if (!CSS.supports('field-sizing', 'content') && $(this).is('textarea')) {
-                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                await resetScrollHeight($(this));
+            if (!CSS.supports('field-sizing', 'content') && this.matches('textarea')) {
+                await resetScrollHeight(this);
             }
             saveSettingsDebounced();
         });
@@ -2537,9 +2534,7 @@ async function loadContextSettings() {
         $('#context_presets').append(option);
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#context_presets').on('change', function () {
-        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
+    document.getElementById('context_presets')?.addEventListener('change', function (this: HTMLSelectElement) {
         const name = String(this.options[this.selectedIndex]?.textContent || '');
         // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
         const preset = context_presets.find(x => x.name === name);
@@ -3844,8 +3839,7 @@ jQuery(() => {
     let coreTruthWinWidth = window.innerWidth;
     let coreTruthWinHeight = window.innerHeight;
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(window).on('resize', async () => {
+    window.addEventListener('resize', async () => {
         adjustAutocompleteDebounced();
         setHotswapsDebounced();
 
