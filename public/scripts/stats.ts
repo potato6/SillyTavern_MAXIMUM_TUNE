@@ -342,8 +342,7 @@ async function statMesProcess(line, type, characters, this_chid, oldMessage) {
  *
  */
 export function initStats() {
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('.rm_stats_button').on('click', function () {
+    document.querySelector('.rm_stats_button')?.addEventListener('click', function (this: HTMLElement, e: Event) {
         characterStatsHandler(characters, this_chid);
     });
     // Wait for debug functions to load, then add the refresh stats function
