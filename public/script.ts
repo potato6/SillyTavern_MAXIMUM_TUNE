@@ -647,8 +647,7 @@ export let main_api;// = "kobold";
 let abortController = new AbortController();
 
 //css
-// @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-const css_send_form_display = $('<div id=send_form></div>').css('display');
+const css_send_form_display = getComputedStyle(document.createElement('div')).getPropertyValue('display');
 
 let kobold_horde_model = '';
 
