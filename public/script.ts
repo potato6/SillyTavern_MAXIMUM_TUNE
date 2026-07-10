@@ -1030,45 +1030,55 @@ function getCharacterBlock(item, id) {
         this_avatar = getThumbnailUrl('avatar', item.avatar);
     }
     // Populate the template
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const $templateClone = $(document.querySelector('#character_template .character_select').cloneNode(true));
-    $templateClone.attr({ 'data-chid': id, 'id': `CharID${id}` });
-    $templateClone.find('img').attr('src', this_avatar).attr('alt', item.name);
-    $templateClone.find('.avatar').attr('title', `[Character] ${item.name}\nFile: ${item.avatar}`);
-    $templateClone.find('.ch_name').text(item.name).attr('title', `[Character] ${item.name}`);
+    const templateClone = /** @type {HTMLElement} */ (document.querySelector('#character_template .character_select')?.cloneNode(true));
+    if (!templateClone) return document.createElement('div');
+    templateClone.dataset.chid = String(id);
+    templateClone.id = `CharID${id}`;
+    const img = templateClone.querySelector('img');
+    if (img) { img.src = this_avatar; img.alt = item.name; }
+    const avatar = templateClone.querySelector('.avatar');
+    if (avatar) avatar.title = `[Character] ${item.name}\nFile: ${item.avatar}`;
+    const chName = templateClone.querySelector('.ch_name');
+    if (chName) { chName.textContent = item.name; chName.title = `[Character] ${item.name}`; }
     if (power_user.show_card_avatar_urls) {
-        $templateClone.find('.ch_avatar_url').text(item.avatar);
+        const chAvatarUrl = templateClone.querySelector('.ch_avatar_url');
+        if (chAvatarUrl) chAvatarUrl.textContent = item.avatar;
     }
-    $templateClone.find('.ch_fav_icon').css('display', 'none');
-    $templateClone.toggleClass('is_fav', item.fav || item.fav == 'true');
-    $templateClone.find('.ch_fav').val(item.fav);
+    const chFavIcon = templateClone.querySelector('.ch_fav_icon');
+    if (chFavIcon) chFavIcon.style.display = 'none';
+    templateClone.classList.toggle('is_fav', item.fav || item.fav == 'true');
+    const chFav = /** @type {HTMLInputElement} */ (templateClone.querySelector('.ch_fav'));
+    if (chFav) chFav.value = item.fav;
 
     const isAssistant = item.avatar === getPermanentAssistantAvatar();
     if (!isAssistant) {
-        $templateClone.find('.ch_assistant')[0]?.remove();
+        templateClone.querySelector('.ch_assistant')?.remove();
     }
 
     const description = item.data?.creator_notes || '';
-    if (description) {
-        $templateClone.find('.ch_description').text(description);
-    } else {
-        $templateClone.find('.ch_description').hide();
+    const chDescription = templateClone.querySelector('.ch_description');
+    if (description && chDescription) {
+        chDescription.textContent = description;
+    } else if (chDescription) {
+        chDescription.style.display = 'none';
     }
 
     const auxFieldName = power_user.aux_field || 'character_version';
     const auxFieldValue = (item.data && item.data[auxFieldName]) || '';
-    if (auxFieldValue) {
-        $templateClone.find('.character_version').text(auxFieldValue);
-    } else {
-        $templateClone.find('.character_version').hide();
+    const charVersion = templateClone.querySelector('.character_version');
+    if (auxFieldValue && charVersion) {
+        charVersion.textContent = auxFieldValue;
+    } else if (charVersion) {
+        charVersion.style.display = 'none';
     }
 
     // Display inline tags
-    const tagsElement = $templateClone.find('.tags');
-    printTagList(tagsElement, { forEntityOrKey: id, tagOptions: { isCharacterList: true } });
+    const tagsElement = templateClone.querySelector('.tags');
+    // printTagList may expect a jQuery element; wrap if needed
+    printTagList(tagsElement ? $(tagsElement) : $(templateClone), { forEntityOrKey: id, tagOptions: { isCharacterList: true } });
 
     // Add to the list
-    return $templateClone[0];
+    return templateClone;
 }
 
 /**
@@ -10232,10 +10242,11 @@ export async function setCharacterSettingsOverrides() {
     const systemPromptValue = chat_metadata.system_prompt || '';
     const isGroup = !!selected_group;
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const $template = $(await renderTemplateAsync('scenarioOverride'));
-    $template.find('[data-group="true"]').toggle(isGroup);
-    $template.find('[data-character="true"]').toggle(!isGroup);
+    const templateWrapper = document.createElement('div');
+    templateWrapper.innerHTML = await renderTemplateAsync('scenarioOverride');
+    const $template = templateWrapper;
+    $template.querySelector('[data-group="true"]')?.toggleAttribute('hidden', !isGroup);
+    $template.querySelector('[data-character="true"]')?.toggleAttribute('hidden', isGroup);
     const pendingChanges = {
         scenario: scenarioOverrideValue,
         examples: exampleMessagesValue,
@@ -10243,33 +10254,33 @@ export async function setCharacterSettingsOverrides() {
     };
 
     // Keep edits local until the popup is closed/confirmed
-    const $scenario = $template.find('.chat_scenario');
-    $scenario.val(scenarioOverrideValue).on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        pendingChanges.scenario = String($(this).val());
+    const $scenario = $template.querySelector('.chat_scenario') as HTMLInputElement;
+    $scenario.value = scenarioOverrideValue;
+    $scenario.addEventListener('input', function () {
+        pendingChanges.scenario = String($scenario.value);
     });
-    const $examples = $template.find('.chat_examples');
-    $examples.val(exampleMessagesValue).on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        pendingChanges.examples = String($(this).val());
+    const $examples = $template.querySelector('.chat_examples') as HTMLTextAreaElement;
+    $examples.value = exampleMessagesValue;
+    $examples.addEventListener('input', function () {
+        pendingChanges.examples = String($examples.value);
     });
-    const $systemPrompt = $template.find('.chat_system_prompt');
-    $systemPrompt.val(systemPromptValue).on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        pendingChanges.system_prompt = String($(this).val());
+    const $systemPrompt = $template.querySelector('.chat_system_prompt') as HTMLTextAreaElement;
+    $systemPrompt.value = systemPromptValue;
+    $systemPrompt.addEventListener('input', function () {
+        pendingChanges.system_prompt = String($systemPrompt.value);
     });
 
-    $template.find('.remove_scenario_override').on('click', async function () {
+    $template.querySelector('.remove_scenario_override')?.addEventListener('click', async function () {
         const confirm = await Popup.show.confirm(t`Are you sure you want to remove all overrides?`, t`This action cannot be undone.`);
         if (!confirm) {
             return;
         }
 
-        $scenario.val('');
+        ($template.querySelector('.chat_scenario') as HTMLInputElement).value = '';
         pendingChanges.scenario = '';
-        $examples.val('');
+        ($template.querySelector('.chat_examples') as HTMLTextAreaElement).value = '';
         pendingChanges.examples = '';
-        $systemPrompt.val('');
+        ($template.querySelector('.chat_system_prompt') as HTMLTextAreaElement).value = '';
         pendingChanges.system_prompt = '';
     });
 
