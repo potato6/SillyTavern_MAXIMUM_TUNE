@@ -9,12 +9,10 @@ import {
     createThumbnail,
     extractAllWords,
     saveBase64AsFile,
-    PAGINATION_TEMPLATE,
+    createPaginator,
     getBase64Async,
     resetScrollHeight,
     initScrollHeight,
-    localizePagination,
-    renderPaginationDropdown,
     paginationDropdownChangeHandler,
     waitUntilCondition,
     uuidv4,
@@ -1910,24 +1908,22 @@ function printGroupCandidates() {
     const storageKey = 'GroupCandidates_PerPage';
     const pageSize = Number(accountStorage.getItem(storageKey)) || 5;
     const sizeChangerOptions = [5, 10, 25, 50, 100, 200, 500, 1000];
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#rm_group_add_members_pagination').pagination({
-        dataSource: getGroupCharacters({ doFilter: true, onlyMembers: false }),
-        pageRange: 1,
-        position: 'top',
-        showPageNumbers: false,
-        prevText: '<',
-        nextText: '>',
-        formatNavigator: PAGINATION_TEMPLATE,
-        formatSizeChanger: renderPaginationDropdown(pageSize, sizeChangerOptions),
-        showNavigator: true,
-        showSizeChanger: true,
-        pageSize,
-        // @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
-        afterSizeSelectorChange: function (e, size) {
-            accountStorage.setItem(storageKey, e.target.value);
-            paginationDropdownChangeHandler(e, size);
-        },
+
+    const pagContainer = document.getElementById('rm_group_add_members_pagination');
+    if (pagContainer) {
+        createPaginator(pagContainer, {
+            dataSource: getGroupCharacters({ doFilter: true, onlyMembers: false }),
+            pageSize,
+            showSizeChanger: true,
+            sizeChangerOptions,
+            showNavigator: true,
+            prevText: '<',
+            nextText: '>',
+            // @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
+            onPageSizeChange: function (e, size) {
+                accountStorage.setItem(storageKey, e.target.value);
+                paginationDropdownChangeHandler(e, size);
+            },
             // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
             callback: function (data) {
                 // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
@@ -1936,10 +1932,9 @@ function printGroupCandidates() {
                     // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
                     document.getElementById('rm_group_add_members').append(getGroupCharacterBlock(i.item));
                 }
-                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                localizePagination($('#rm_group_add_members_pagination'));
             },
-    });
+        });
+    }
 }
 
 /**
@@ -1951,21 +1946,18 @@ function printGroupMembers() {
         const that = el;
         const pageSize = Number(accountStorage.getItem(storageKey)) || 5;
         const sizeChangerOptions = [5, 10, 25, 50, 100, 200, 500, 1000];
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(el).pagination({
+
+        const pagContainer = el;
+        createPaginator(pagContainer, {
             dataSource: getGroupCharacters({ doFilter: true, onlyMembers: true }),
-            pageRange: 1,
-            position: 'top',
-            showPageNumbers: false,
+            pageSize,
+            showSizeChanger: true,
+            sizeChangerOptions,
+            showNavigator: true,
             prevText: '<',
             nextText: '>',
-            formatNavigator: PAGINATION_TEMPLATE,
-            showNavigator: true,
-            showSizeChanger: true,
-            formatSizeChanger: renderPaginationDropdown(pageSize, sizeChangerOptions),
-            pageSize,
             // @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
-            afterSizeSelectorChange: function (e, size) {
+            onPageSizeChange: function (e, size) {
                 accountStorage.setItem(storageKey, e.target.value);
                 paginationDropdownChangeHandler(e, size);
             },
@@ -1975,8 +1967,6 @@ function printGroupMembers() {
                 for (const i of data) {
                     document.querySelectorAll('.rm_group_members').forEach(el => el.append(getGroupCharacterBlock(i.item)));
                 }
-                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                localizePagination($(that));
             },
         });
     }
