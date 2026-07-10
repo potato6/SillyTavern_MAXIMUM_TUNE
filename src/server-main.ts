@@ -9,7 +9,6 @@ import http from 'node:http';
 import https from 'node:https';
 
 import cors from 'cors';
-import { csrfSync } from 'csrf-sync';
 import express from 'express';
 import compression from 'compression';
 import cookieSession from 'cookie-session';
@@ -173,41 +172,36 @@ app.use(setUserDataMiddleware);
 
 // CSRF Protection //
 if (!cliArgs.disableCsrf) {
-    const csrfSyncProtection = csrfSync({
-        getTokenFromState: (req) => {
-            if (!req.session) {
-                console.error('(CSRF error) getTokenFromState: Session object not initialized');
-                return;
-            }
-            return req.session.csrfToken;
-        },
-        getTokenFromRequest: (req) => {
-            return req.headers['x-csrf-token']?.toString();
-        },
-        storeTokenInState: (req, token) => {
-            if (!req.session) {
-                console.error('(CSRF error) storeTokenInState: Session object not initialized');
-                return;
-            }
-            req.session.csrfToken = token;
-        },
-        skipCsrfProtection: (req) => {
-            return cliArgs.enableCorsProxy ? /^\/proxy\//.test(req.path) : false;
-        },
-        size: 32,
-    });
+    const CSRF_SECRET = process.env['CSRF_SECRET'] || crypto.randomBytes(64).toString('hex');
 
     app.get('/csrf-token', (req, res) => {
-        res.json({
-            'token': csrfSyncProtection.generateToken(req),
+        const sessionId = req.sessionID || req.ip || 'anonymous';
+        const token = Bun.CSRF.generate(CSRF_SECRET, {
+            sessionId: sessionId,
+            expiresIn: 24 * 60 * 60 * 1000,
         });
+        res.json({ token });
     });
 
-    // Customize the error message
-    csrfSyncProtection.invalidCsrfTokenError.message = color.red('Invalid CSRF token. Please refresh the page and try again.');
-    csrfSyncProtection.invalidCsrfTokenError.stack = undefined;
+    app.use((req, res, next) => {
+        if (['GET', 'HEAD', 'OPTIONS'].includes(req.method)) {
+            return next();
+        }
+        if (cliArgs.enableCorsProxy && /^\/proxy\//.test(req.path)) {
+            return next();
+        }
 
-    app.use(csrfSyncProtection.csrfSynchronisedProtection);
+        const token = req.headers['x-csrf-token']?.toString();
+        const sessionId = req.sessionID || req.ip || 'anonymous';
+
+        if (!token || !Bun.CSRF.verify(token, { secret: CSRF_SECRET, sessionId: sessionId })) {
+            console.error(color.red('Invalid CSRF token. Please refresh the page and try again.'));
+            res.status(403).json({ error: 'Invalid CSRF token. Please refresh the page and try again.' });
+            return;
+        }
+
+        next();
+    });
 } else {
     console.warn('\nCSRF protection is disabled. This will make your server vulnerable to CSRF attacks.\n');
     app.get('/csrf-token', (req, res) => {
