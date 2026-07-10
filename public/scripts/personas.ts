@@ -270,7 +270,7 @@ function getUserAvatarBlock(avatarId) {
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(templateEl.querySelector('.ch_name')).textContent = personaName || '[Unnamed Persona]';
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(templateEl.querySelector('.ch_description')).textContent = personaDescription || document.getElementById('user_avatar_block'.attr('no_desc_text'));
+    $(templateEl.querySelector('.ch_description')).textContent = personaDescription || document.getElementById('user_avatar_block')?.getAttribute('no_desc_text') || 'No description';
     templateEl.querySelector('.ch_description').classList.toggle('text_muted', !personaDescription);
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(templateEl.querySelector('.ch_additional_info')).textContent = personaTitle || '';
