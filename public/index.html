@@ -8231,9 +8231,9 @@
     <script src="lib/polyfill.js"></script>
 <script>
 // micro-$ polyfill for legacy code
-window.$=function(s){if(typeof s==='function'){document.addEventListener('DOMContentLoaded',s);return}
+window.$=function(s){var D={on:function(){return D},off:function(){return D},trigger:function(){return D},val:function(){return''},prop:function(){return D},css:function(){return D},text:function(){return''},html:function(){return''},show:function(){return D},hide:function(){return D},toggle:function(){return D},empty:function(){return D},remove:function(){},addClass:function(){return D},removeClass:function(){return D},toggleClass:function(){return D},hasClass:function(){return!1},attr:function(){return''},removeAttr:function(){return D},data:function(){return D},find:function(){return[]},closest:function(){return null},first:function(){return D},last:function(){return D},eq:function(){return D},siblings:function(){return[]},parent:function(){return null},scrollTop:function(){return 0},position:function(){return{top:0,left:0}},is:function(){return!1},get:function(){return null},toArray:function(){return[]},length:0};if(typeof s==='function'){document.addEventListener('DOMContentLoaded',s);return D}
 if(typeof s!=='string'){return Object.assign(s,{on(e,h){s.addEventListener(e,h);return s},off(e,h){s.removeEventListener(e,h);return s},trigger(e){s.dispatchEvent(new Event(e,{bubbles:true}));return s}})}
-const el=document.querySelector(s);if(!el)return null;return Object.assign(el,{
+const el=document.querySelector(s);if(!el)return D;return Object.assign(el,{
 val(v){return v===void 0?el.value:(el.value=v,el)},prop(k,v){return v===void 0?el[k]:(el[k]=v,el)},
 css(k,v){if(typeof k==='object'){Object.assign(el.style,k);return el}return v===void 0?getComputedStyle(el)[k]:(el.style[k]=v,el)},
 on(e,h){el.addEventListener(e,h);return el},off(e,h){el.removeEventListener(e,h);return el},trigger(e){el.dispatchEvent(new Event(e,{bubbles:true}));return el},
