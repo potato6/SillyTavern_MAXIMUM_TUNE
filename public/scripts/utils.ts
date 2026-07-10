@@ -104,13 +104,104 @@ export const renderPaginationDropdown = function (pageSize, sizeChangerOptions) 
 // @ts-expect-error TS(7006) FIXME: Parameter 'event' implicitly has an 'any' type.
 export const paginationDropdownChangeHandler = function (event, size) {
     const container = event?.originalEvent?.currentTarget || event.delegateTarget;
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const dropdown = $(container.querySelector('select'));
+    const dropdown = container.querySelector('select');
     // @ts-expect-error TS(7006) FIXME: Parameter 'el' implicitly has an 'any' type.
-    dropdown[0]?.querySelectorAll('[selected]').forEach(el => el.removeAttribute('selected'));
+    dropdown?.querySelectorAll('[selected]').forEach(el => el.removeAttribute('selected'));
     // @ts-expect-error TS(7006) FIXME: Parameter 'el' implicitly has an 'any' type.
-    dropdown[0]?.querySelectorAll(`[value="${size}"]`).forEach(el => el.setAttribute('selected', ''));
+    dropdown?.querySelectorAll(`[value="${size}"]`).forEach(el => el.setAttribute('selected', ''));
 };
+
+/**
+ * Creates a pagination controller that replaces the jQuery paginationjs plugin.
+ * Manages page state, slices data with Array.slice(), and renders navigation UI.
+ * @param {HTMLElement} container Container element for pagination controls
+ * @param {object} options Pagination options
+ * @returns {{ getCurrentPage: () => number, go: (page: number) => void }}
+ */
+export function createPaginator(container: any, options: any) {
+    let currentPage = options.pageNumber || 1;
+    let pageSize = options.pageSize;
+    const prevText = options.prevText || '<';
+    const nextText = options.nextText || '>';
+
+    function getData() {
+        return typeof options.dataSource === 'function' ? options.dataSource() : options.dataSource;
+    }
+
+    function render() {
+        const data = getData();
+        const totalItems = data.length;
+        const totalPages = Math.ceil(totalItems / pageSize) || 1;
+
+        if (currentPage > totalPages) currentPage = totalPages;
+        if (currentPage < 1) currentPage = 1;
+
+        const start = (currentPage - 1) * pageSize;
+        const end = Math.min(start + pageSize, totalItems);
+        const pageData = data.slice(start, end);
+
+        if (typeof options.callback === 'function') {
+            Promise.resolve(options.callback(pageData)).catch(e => console.error('Pagination callback error:', e));
+        }
+
+        container.innerHTML = '';
+
+        // Navigator text
+        if (options.showNavigator !== false) {
+            const nav = document.createElement('span');
+            nav.className = 'paginationjs-nav';
+            nav.textContent = `${start + 1}-${end} .. ${totalItems}`;
+            container.appendChild(nav);
+        }
+
+        // Previous button
+        const prevBtn = document.createElement('button');
+        prevBtn.textContent = prevText;
+        prevBtn.disabled = currentPage <= 1;
+        prevBtn.addEventListener('click', () => { if (currentPage > 1) { currentPage--; render(); } });
+        container.appendChild(prevBtn);
+
+        // Next button
+        const nextBtn = document.createElement('button');
+        nextBtn.textContent = nextText;
+        nextBtn.disabled = currentPage >= totalPages;
+        nextBtn.addEventListener('click', () => { if (currentPage < totalPages) { currentPage++; render(); } });
+        container.appendChild(nextBtn);
+
+        // Size changer
+        if (options.showSizeChanger && options.sizeChangerOptions) {
+            const sizeSelect = document.createElement('select');
+            sizeSelect.className = 'J-paginationjs-size-select';
+            let optionsList = [...options.sizeChangerOptions];
+            if (!optionsList.includes(pageSize)) optionsList.unshift(pageSize);
+            optionsList.sort((a, b) => a - b);
+            for (const opt of optionsList) {
+                const option = document.createElement('option');
+                option.value = String(opt);
+                option.textContent = `${opt} / page`;
+                if (opt === pageSize) option.selected = true;
+                sizeSelect.appendChild(option);
+            }
+            sizeSelect.addEventListener('change', (e) => {
+                if (!(e.target instanceof HTMLSelectElement)) return;
+                pageSize = Number(e.target.value);
+                currentPage = 1;
+                if (typeof options.onPageSizeChange === 'function') {
+                    options.onPageSizeChange(e, pageSize);
+                }
+                render();
+            });
+            container.appendChild(sizeSelect);
+        }
+    }
+
+    render();
+
+    return {
+        getCurrentPage: () => currentPage,
+        go: function (page: any) { currentPage = Math.max(1, Math.min(Number(page), Math.ceil(getData().length / pageSize) || 1)); render(); },
+    };
+}
 
 /**
  * Navigation options for pagination.

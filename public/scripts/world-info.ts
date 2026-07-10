@@ -1,7 +1,7 @@
 import { Fuse } from '../lib.js';
 
 import { saveSettings, substituteParams, getRequestHeaders, chat_metadata, this_chid, characters, saveCharacterDebounced, menu_type, eventSource, event_types, getExtensionPromptByName, saveMetadata, getCurrentChatId, extension_prompt_roles, create_save, createOrEditCharacter, name1, getOneCharacter, select_selected_character } from '../script.js';
-import { download, debounce, initScrollHeight, resetScrollHeight, parseJsonFile, extractDataFromPng, getFileBuffer, getCharaFilename, getSortableDelay, escapeRegex, PAGINATION_TEMPLATE, navigation_option, waitUntilCondition, isTrueBoolean, setValueByPath, flashHighlight, select2ModifyOptions, getSelect2OptionId, dynamicSelect2DataViaAjax, highlightRegex, select2ChoiceClickSubscribe, isFalseBoolean, getSanitizedFilename, checkOverwriteExistingData, getStringHash, parseStringArray, cancelDebounce, findChar, onlyUnique, equalsIgnoreCaseAndAccents, uuidv4, normalizeArray, getUniqueName, logSlashCommandWarn, addLongPressEvent, escapeHtml } from './utils.js';
+import { download, debounce, initScrollHeight, resetScrollHeight, parseJsonFile, extractDataFromPng, getFileBuffer, getCharaFilename, getSortableDelay, escapeRegex, PAGINATION_TEMPLATE, navigation_option, waitUntilCondition, isTrueBoolean, setValueByPath, flashHighlight, select2ModifyOptions, getSelect2OptionId, dynamicSelect2DataViaAjax, highlightRegex, select2ChoiceClickSubscribe, isFalseBoolean, getSanitizedFilename, checkOverwriteExistingData, getStringHash, parseStringArray, cancelDebounce, findChar, onlyUnique, equalsIgnoreCaseAndAccents, uuidv4, normalizeArray, getUniqueName, logSlashCommandWarn, addLongPressEvent, escapeHtml, createPaginator } from './utils.js';
 import { extension_settings, getContext } from './extensions.js';
 import { NOTE_MODULE_NAME, metadata_keys, shouldWIAddPrompt } from './authors-note.js';
 import { isMobile } from './RossAscends-mods.js';
@@ -2652,8 +2652,8 @@ async function displayWorldEntries(name, data, navigation = navigation_option.no
         document.getElementById('world_duplicate')!.addEventListener('click', nullWorldInfo);
         if (worldEntriesList) worldEntriesList.style.display = 'none';
 
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#world_info_pagination').html('');
+        const pagEl = document.getElementById('world_info_pagination');
+        if (pagEl) pagEl.innerHTML = '';
         return;
     }
 
@@ -2725,10 +2725,13 @@ async function displayWorldEntries(name, data, navigation = navigation_option.no
     const storageKey = 'WI_PerPage';
     const perPageDefault = 25;
     let startPage = 1;
+    /** @type {{ getCurrentPage: () => number, go: (page: number) => void } | null} */
+    let wiPaginator = null;
 
-    if (navigation === navigation_option.previous) {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        startPage = $('#world_info_pagination').pagination('getCurrentPageNum');
+    const pagEl = document.getElementById('world_info_pagination');
+
+    if (navigation === navigation_option.previous && wiPaginator) {
+        startPage = wiPaginator.getCurrentPage();
     }
 
     if (typeof navigation === 'number' && Number(navigation) >= 0) {
@@ -2739,64 +2742,65 @@ async function displayWorldEntries(name, data, navigation = navigation_option.no
         startPage = Math.floor(uidIndex / perPage) + 1;
     }
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#world_info_pagination').pagination({
-        dataSource: getDataArray,
-        pageSize: Number(accountStorage.getItem(storageKey)) || perPageDefault,
-        sizeChangerOptions: [10, 25, 50, 100, 500, 1000],
-        showSizeChanger: true,
-        pageRange: 1,
-        pageNumber: startPage,
-        position: 'top',
-        showPageNumbers: false,
-        prevText: '<',
-        nextText: '>',
-        formatNavigator: PAGINATION_TEMPLATE,
-        showNavigator: true,
-        // @ts-expect-error TS(7006) FIXME: Parameter 'page' implicitly has an 'any' type.
-        callback: async function (/** @type {object[]} */ page) {
-            try {
-                clearEntryList(worldEntriesList);
+    if (pagEl) {
+        const storageKey = 'WI_PerPage';
+        const perPage = Number(accountStorage.getItem(storageKey)) || perPageDefault;
+        wiPaginator = createPaginator(pagEl, {
+            dataSource: getDataArray,
+            pageSize: perPage,
+            pageNumber: startPage,
+            showSizeChanger: true,
+            sizeChangerOptions: [10, 25, 50, 100, 500, 1000],
+            showNavigator: true,
+            prevText: '<',
+            nextText: '>',
+            callback: async function (/** @type {object[]} */ page) {
+                try {
+                    clearEntryList(worldEntriesList);
 
-                const keywordHeaders = await renderTemplateAsync('worldInfoKeywordHeaders');
-                const blocks = [];
+                    const keywordHeaders = await renderTemplateAsync('worldInfoKeywordHeaders');
+                    const blocks = [];
 
-                for (const entry of page) {
-                    try {
-                        const block = await getWorldEntry(name, data, entry);
-                        if (block) {
-                            blocks.push(block);
+                    for (const entry of page) {
+                        try {
+                            const block = await getWorldEntry(name, data, entry);
+                            if (block) {
+                                blocks.push(block);
+                            }
+                        } catch (error) {
+                            console.error(`Error while processing entry ${entry.uid}:`, error);
                         }
-                    } catch (error) {
-                        console.error(`Error while processing entry ${entry.uid}:`, error);
                     }
-                }
 
-                // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-                const isCustomOrder = document.getElementById('world_info_sort_order').options[document.getElementById('world_info_sort_order').selectedIndex]?.getAttribute('data-rule') === 'custom';
-                if (!isCustomOrder) {
-                    blocks.forEach(block => {
-                        block.find('.drag-handle').remove();
-                    });
-                }
+                    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
+                    const isCustomOrder = document.getElementById('world_info_sort_order').options[document.getElementById('world_info_sort_order').selectedIndex]?.getAttribute('data-rule') === 'custom';
+                    if (!isCustomOrder) {
+                        blocks.forEach(block => {
+                            block.find('.drag-handle').remove();
+                        });
+                    }
 
-                worldEntriesList.append(keywordHeaders);
-                worldEntriesList.append(blocks);
-            } catch (error) {
-                console.error('Error while rendering WI entries:', error);
-            }
-        },
-        // @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
-        afterSizeSelectorChange: function (e) {
-            accountStorage.setItem(storageKey, e.target.value);
-        },
-        afterPaging: function () {
-            document.querySelectorAll('#world_popup_entries_list textarea[name="comment"]').forEach(function (el) {
-                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                initScrollHeight($(el));
-            });
-        },
-    });
+                    worldEntriesList.append(keywordHeaders);
+                    worldEntriesList.append(blocks);
+                } catch (error) {
+                    console.error('Error while rendering WI entries:', error);
+                }
+            },
+            onPageSizeChange: function (e) {
+                accountStorage.setItem(storageKey, e.target.value);
+            },
+            afterPaging: function () {
+                document.querySelectorAll('#world_popup_entries_list textarea[name="comment"]').forEach(function (el) {
+                    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+                    initScrollHeight($(el));
+                });
+            },
+        });
+
+        if (typeof navigation === 'number' && Number(navigation) >= 0) {
+            wiPaginator.go(startPage);
+        }
+    }
 
     if (typeof navigation === 'number' && Number(navigation) >= 0) {
         const selector = `#world_popup_entries_list [uid="${navigation}"]`;
