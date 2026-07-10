@@ -68,14 +68,15 @@ PHASE 5 — Events (no plugin dependency) ✅
 [x] Replace `.serialize()` with manual `FormData` + iteration or `URLSearchParams(new FormData(form))`
 [x] Replace `.serializeArray()` with `Array.from(new FormData(form).entries())`
 
-PHASE 6 — Effects & animation (needs CSS transitions or JS fallback)
+PHASE 6 — Effects & animation (needs CSS transitions or JS fallback) ✅
 ----------------------------------------------------------------------
-[ ] Replace `.show()` / `.hide()` / `.toggle()` with `.style.display = 'block'/'none'/toggle
-[ ] Replace `.fadeIn()` / `.fadeOut()` with CSS transitions or Web Animations API (`el.animate()`)
-[ ] Replace `.slideUp()` / `.slideDown()` with CSS `max-height` transitions or Web Animations API
-[ ] Replace `.animate(props, dur)` with CSS transitions + `style` changes or Web Animations API
-[ ] Replace `.delay()` / `.stop()` / `.finish()` with `setTimeout` / `cancelAnimationFrame` equivalents
-[ ] Replace `jQuery.fx.off` with a global CSS transition disable or `matchMedia('prefers-reduced-motion')`
+[x] Replace `.show()` / `.hide()` / `.toggle()` with `.style.display = 'block'/'none'/toggle
+[x] Replace `.fadeIn()` / `.fadeOut()` with CSS transitions or Web Animations API (`el.animate()`)
+[x] Replace `.slideUp()` / `.slideDown()` with CSS `max-height` transitions or Web Animations API
+[x] Replace `.animate(props, dur)` with CSS transitions + `style` changes or Web Animations API
+[x] Replace `.delay()` / `.stop()` / `.finish()` with `setTimeout` / `cancelAnimationFrame` equivalents
+[x] Replace `jQuery.fx.off` with a global CSS transition disable or `matchMedia('prefers-reduced-motion')`
+[x] Replace `.transition()` (jQuery Transit) with Web Animations API
 
 Affected: power-user.ts (reduced_motion), various animations in script.ts, chats.ts, etc.
 
