@@ -903,7 +903,8 @@ export function getGroupBlock(group) {
     }
 
     // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    const template = document.querySelector('#group_list_template .group_select').cloneNode(true);
+    const template = document.querySelector('#group_list_template .group_select')?.cloneNode(true);
+    if (!template) return null;
     // @ts-expect-error TS(2339) FIXME: Property 'dataset' does not exist on type 'Node'.
     template.dataset.id = group.id;
     // @ts-expect-error TS(2339) FIXME: Property 'setAttribute' does not exist on type 'No... Remove this comment to see the full error message

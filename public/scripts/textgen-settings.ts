@@ -680,12 +680,15 @@ function sortKoboldItemsByOrder(orderArray) {
     console.debug('Preset samplers order: ' + orderArray);
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const $draggableItems = document.getElementById('koboldcpp_order');
+    if (!$draggableItems) return;
 
     for (let i = 0; i < orderArray.length; i++) {
         const index = orderArray[i];
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const $item = $($draggableItems[0].querySelector(`[data-id="${index}"]`)).detach();
-            $draggableItems[0].append($item[0]);
+        const $item = $draggableItems.querySelector(`[data-id="${index}"]`);
+        if ($item) {
+            $draggableItems.appendChild($item);
+        }
     }
 }
 
@@ -698,12 +701,13 @@ function sortLlamacppItemsByOrder(orderArray) {
     console.debug('Preset samplers order: ', orderArray);
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const $container = document.getElementById('llamacpp_samplers_sortable');
+    if (!$container) return;
 
     // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
     orderArray.forEach((name) => {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const $item = $($container[0].querySelector(`[data-name="${name}"]`)).detach();
-            $container[0].append($item[0]);
+        const $item = $container.querySelector(`[data-name="${name}"]`);
+        if ($item) $container.appendChild($item);
     });
 }
 
@@ -716,12 +720,13 @@ function sortOobaItemsByOrder(orderArray) {
     console.debug('Preset samplers order: ', orderArray);
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const $container = document.getElementById('sampler_priority_container');
+    if (!$container) return;
 
     // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
     orderArray.forEach((name) => {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const $item = $($container[0].querySelector(`[data-name="${name}"]`)).detach();
-            $container[0].append($item[0]);
+        const $item = $container.querySelector(`[data-name="${name}"]`);
+        if ($item) $container.appendChild($item);
     });
 }
 
@@ -734,12 +739,13 @@ function sortAphroditeItemsByOrder(orderArray) {
     console.debug('Preset samplers order: ', orderArray);
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const $container = document.getElementById('sampler_priority_container_aphrodite');
+    if (!$container) return;
 
     // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
     orderArray.forEach((name) => {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const $item = $($container[0].querySelector(`[data-name="${name}"]`)).detach();
-            $container[0].append($item[0]);
+        const $item = $container.querySelector(`[data-name="${name}"]`);
+        if ($item) $container.appendChild($item);
     });
 }
 
