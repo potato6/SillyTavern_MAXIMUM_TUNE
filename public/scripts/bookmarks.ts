@@ -146,41 +146,33 @@ function getMainChatName() {
  *
  */
 export function showBookmarksButtons() {
+    const optionConvertToGroup = document.getElementById('option_convert_to_group');
+    const optionBackToMain = document.getElementById('option_back_to_main');
+    const optionNewBookmark = document.getElementById('option_new_bookmark');
     try {
         if (selected_group) {
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#option_convert_to_group').hide();
+            if (optionConvertToGroup) optionConvertToGroup.style.display = 'none';
         } else {
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#option_convert_to_group').show();
+            if (optionConvertToGroup) optionConvertToGroup.style.display = '';
         }
 
         if (chat_metadata.main_chat) {
             // In bookmark chat
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#option_back_to_main').show();
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#option_new_bookmark').show();
+            if (optionBackToMain) optionBackToMain.style.display = '';
+            if (optionNewBookmark) optionNewBookmark.style.display = '';
         } else if (!selected_group && !characters[this_chid].chat) {
             // No chat recorded on character
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#option_back_to_main').hide();
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#option_new_bookmark').hide();
+            if (optionBackToMain) optionBackToMain.style.display = 'none';
+            if (optionNewBookmark) optionNewBookmark.style.display = 'none';
         } else {
             // In main chat
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#option_back_to_main').hide();
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#option_new_bookmark').show();
+            if (optionBackToMain) optionBackToMain.style.display = 'none';
+            if (optionNewBookmark) optionNewBookmark.style.display = '';
         }
     } catch {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#option_back_to_main').hide();
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#option_new_bookmark').hide();
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#option_convert_to_group').hide();
+        if (optionBackToMain) optionBackToMain.style.display = 'none';
+        if (optionNewBookmark) optionNewBookmark.style.display = 'none';
+        if (optionConvertToGroup) optionConvertToGroup.style.display = 'none';
     }
 }
 

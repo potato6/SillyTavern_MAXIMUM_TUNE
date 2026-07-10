@@ -68,44 +68,6 @@ PHASE 5 — Events (no plugin dependency) ✅
 [x] Replace `.serialize()` with manual `FormData` + iteration or `URLSearchParams(new FormData(form))`
 [x] Replace `.serializeArray()` with `Array.from(new FormData(form).entries())`
 
-✅ public/scripts/group-chats.ts — already clean, only Phase 8 plugin $() calls
-✅ public/scripts/data-maid.ts — already clean
-✅ public/scripts/extensions/shared.ts — already clean
-✅ public/scripts/bulk-edit.ts — delegation → native
-✅ public/scripts/tags.ts — all delegation + direct patterns → native
-✅ public/scripts/login.ts — all event patterns → native
-✅ public/scripts/kai-settings.ts — delegation + trigger → native
-✅ public/scripts/extensions.ts — all delegation + one() → native
-✅ public/scripts/RossAscends-mods.ts — delegation + keydown → native
-✅ public/scripts/swipe-picker.ts — click handlers → native
-✅ public/scripts/textgen-models.ts — off/on patterns → native
-✅ public/scripts/backgrounds.ts — all delegation chains + direct → native
-✅ public/scripts/nai-settings.ts — all triggers + on patterns → native
-✅ public/scripts/chats.ts — all delegations → native (hotfixed: chatElement is jQuery obj)
-✅ public/scripts/openai.ts — all trigger + delegation patterns → native (hotfixed: 2 .text().trim() bugs)
-✅ public/scripts/personas.ts — all event patterns → native
-✅ public/scripts/power-user.ts — slider event patterns → native
-✅ public/scripts/textgen-settings.ts — reset button event → native
-✅ public/scripts/samplerSelect.ts — all event patterns → native
-✅ public/scripts/user.ts — 37 .on() patterns → native
-✅ public/scripts/extensions/regex/index.js — all event patterns → native
-✅ public/scripts/extensions/caption/index.js — all event patterns → native
-✅ public/scripts/extensions/memory/index.js — all event patterns → native
-✅ public/scripts/extensions/vectors/index.js — all event patterns → native
-✅ public/scripts/extensions/stable-diffusion/index.js — all event patterns → native
-✅ public/scripts/world-info.ts — plugin-dependent patterns remain (inline-drawer, select2)
-✅ public/scripts/extensions/ — plugin-dependent patterns remain (select2, etc.)
-✅ public/scripts/authors-note.ts — all event patterns → native
-✅ public/scripts/power-user.ts — all event patterns → native (slider plugin retained)
-✅ public/scripts/preset-manager.ts — all delegation patterns → native
-✅ public/scripts/secrets.ts — all event patterns → native
-✅ public/scripts/slash-commands.ts — all event patterns → native
-✅ public/scripts/reasoning.ts — all event patterns → native
-✅ public/scripts/stats.ts — all event patterns → native
-✅ public/scripts/cfg-scale.ts — all event patterns → native
-✅ public/scripts/horde.ts — all event patterns → native
-✅ public/scripts/input-md-formatting.ts — all event patterns → native
-
 PHASE 6 — Effects & animation (needs CSS transitions or JS fallback)
 ----------------------------------------------------------------------
 [ ] Replace `.show()` / `.hide()` / `.toggle()` with `.style.display = 'block'/'none'/toggle
