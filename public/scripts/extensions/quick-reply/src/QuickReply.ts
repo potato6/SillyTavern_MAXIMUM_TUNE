@@ -1780,10 +1780,9 @@ export class QuickReply {
                     <pre style="text-align:left;">${ex.hint}</pre>
                 `;
             } else {
-                this.editorExecuteErrors.innerHTML = `
-                    // @ts-expect-error TS(2571): Object is of type 'unknown'.
-                    <div>${ex.message}</div>
-                `;
+                this.editorExecuteErrors.innerHTML = ex instanceof Error
+                    ? `<div>${ex.message}</div>`
+                    : `<div>${String(ex)}</div>`;
             }
         }
         if (noSyntax) {
