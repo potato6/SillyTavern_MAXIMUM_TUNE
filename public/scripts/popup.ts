@@ -3,6 +3,7 @@ import { shouldSendOnEnter } from './RossAscends-mods.js';
 import { t } from './i18n.js';
 import { power_user, toastPositionClasses } from './power-user.js';
 import { clamp, removeFromArray, runAfterAnimation, uuidv4 } from './utils.js';
+declare const Cropper: any;
 
 /** @readonly */
 /** @enum {number} */
@@ -185,6 +186,7 @@ export class Popup {
     /** @type {Map<string,string|boolean>?} */ inputResults;
     // @ts-expect-error TS(7008) FIXME: Member 'cropData' implicitly has an 'any' type.
     /** @type {any} */ cropData;
+    /** @type {any} */ cropper;
 
     // @ts-expect-error TS(7008) FIXME: Member 'lastFocus' implicitly has an 'any' type.
     /** @type {HTMLElement} */ lastFocus;
@@ -517,7 +519,7 @@ export class Popup {
                     autoCropArea: 1,
                     viewMode: 2,
                     rotatable: false,
-                    crop: (event) => {
+                    crop: (event: any) => {
                         this.cropData = event.detail;
                         this.cropData.want_resize = !power_user.never_resize_avatars;
                     },

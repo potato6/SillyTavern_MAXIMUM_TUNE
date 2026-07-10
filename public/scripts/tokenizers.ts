@@ -8,6 +8,26 @@ import { getStringHash } from './utils.js';
 import { kai_flags, kai_settings } from './kai-settings.js';
 import { textgen_types, textgenerationwebui_settings as textgen_settings, getTextGenServer, getTextGenModel } from './textgen-settings.js';
 import { getCurrentDreamGenModelTokenizer, getCurrentOpenRouterModelTokenizer, openRouterModels } from './textgen-models.js';
+
+/** @type {string} */
+let _csrfToken = '';
+
+/**
+ * Gets a CSRF token for API requests.
+ * @returns {Promise<string>}
+ */
+async function getCsrfToken() {
+    if (_csrfToken) return _csrfToken;
+    try {
+        const res = await fetch('/csrf-token');
+        const data = await res.json();
+        _csrfToken = data.token;
+    } catch {
+        _csrfToken = '';
+    }
+    return _csrfToken;
+}
+
 export { BYTES_PER_TOKEN as CHARACTERS_PER_TOKEN_RATIO };
 
 export const BYTES_PER_TOKEN = 3.35;
@@ -861,7 +881,7 @@ export async function countTokensOpenAI(messages, full = false) {
         } else {
             const response = await fetch(tokenizerEndpoint, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': await getCsrfToken() },
                 body: JSON.stringify([message]),
             });
             const data = await response.json();
@@ -908,7 +928,7 @@ export async function countTokensOpenAIAsync(messages, full = false) {
         } else {
             const response = await fetch(tokenizerEndpoint, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': await getCsrfToken() },
                 body: JSON.stringify([message]),
             });
             const data = await response.json();
