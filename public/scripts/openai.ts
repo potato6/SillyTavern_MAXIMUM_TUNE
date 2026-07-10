@@ -4802,6 +4802,7 @@ function loadOpenAISettings(data, settings) {
         if (settingToUpdate) {
             const [selector] = settingToUpdate;
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            if (!selector) continue;
             const $element = document.querySelector(selector);
 
             if (!$element) {
