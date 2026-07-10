@@ -163,7 +163,7 @@ async function visualNovelRemoveInactive(container: any) {
             const element = $(current);
             const avatar = element.data('avatar');
 
-            if (!group.members.includes(avatar) || group.disabled_members.includes(avatar)) {
+            if (!group?.members.includes(avatar) || group?.disabled_members.includes(avatar)) {
                 element.fadeOut(250, () => {
                     element.remove();
                     // @ts-expect-error TS(2794): Expected 1 arguments, but got 0. Did you forget to... Remove this comment to see the full error message
@@ -196,9 +196,9 @@ async function visualNovelSetCharacterSprites(vnContainer: any, spriteFolderName
 
     const setSpritePromises = [];
 
-    for (const avatar of group.members) {
+    for (const avatar of group?.members ?? []) {
         // skip disabled characters
-        const isDisabled = group.disabled_members.includes(avatar);
+        const isDisabled = group?.disabled_members.includes(avatar);
         if (isDisabled && hideMutedSprites) {
             continue;
         }
@@ -297,7 +297,7 @@ export async function visualNovelUpdateLayers(container: any) {
     const group = context.groups.find(x => x.id == context.groupId);
     // @ts-expect-error TS(2339): Property 'original_avatar' does not exist on type ... Remove this comment to see the full error message
     const recentMessages = context.chat.map(x => x.original_avatar).filter(x => x).reverse().filter(onlyUnique);
-    const filteredMembers = group.members.filter((x: any) => !group.disabled_members.includes(x));
+    const filteredMembers = group?.members.filter((x: any) => !group?.disabled_members.includes(x)) ?? [];
     const layerIndices = filteredMembers.slice().sort((a: any, b: any) => {
         const aRecentIndex = recentMessages.indexOf(a);
         const bRecentIndex = recentMessages.indexOf(b);
@@ -1033,8 +1033,8 @@ function parseLlmResponse(emotionResponse: any, labels: any) {
         console.debug('Using fuzzy search in labels:', labels);
         const result = fuse.search(emotionResponse);
         if (result.length > 0) {
-            console.debug(`fuzzy search found: ${result[0].item} as closest for the LLM response:`, emotionResponse);
-            return result[0].item;
+            console.debug(`fuzzy search found: ${result?.[0]?.item} as closest for the LLM response:`, emotionResponse);
+            return result?.[0]?.item;
         }
         const lowerCaseResponse = String(emotionResponse || '').toLowerCase();
         for (const label of labels) {
@@ -1618,7 +1618,7 @@ async function setExpression(spriteFolderName: any, expression: any, { force = f
             // If it's a folder, make sure we find the group member based on the actual name
             const memberName = spriteFolderName.split('/')[0] ?? spriteFolderName;
 
-            const groupMember = group.members
+            const groupMember = group?.members
                 .map((member: any) => context.characters.find(x => x.avatar === member))
                 .find((groupMember: any) => groupMember && groupMember.name === memberName);
             if (groupMember) {

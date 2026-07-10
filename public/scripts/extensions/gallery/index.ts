@@ -105,8 +105,7 @@ declare const $: any; declare const toastr: any;
  * @returns {string} The gallery folder for the character
  */
 function getGalleryFolder(char: any) {
-    // @ts-expect-error TS(2304): Cannot find name 'SillyTavern'.
-    return SillyTavern.getContext().extensionSettings.gallery.folders[char?.avatar] ?? char?.name;
+    return (SillyTavern.getContext() as any).extensionSettings.gallery.folders[char?.avatar] ?? char?.name;
 }
 
 /**
@@ -198,7 +197,7 @@ async function deleteGalleryItem(url: any) {
  */
 function setSortOrder(order: any) {
 
-    const context = SillyTavern.getContext();
+    const context = SillyTavern.getContext() as any;
     context.extensionSettings.gallery.sort = order;
     context.saveSettingsDebounced();
 }
@@ -208,8 +207,7 @@ function setSortOrder(order: any) {
  * @returns {string} The current sort order for the gallery.
  */
 function getSortOrder() {
-    // @ts-expect-error TS(2304): Cannot find name 'SillyTavern'.
-    return SillyTavern.getContext().extensionSettings.gallery.sort ?? defaultSettings.sort;
+    return (SillyTavern.getContext() as any).extensionSettings.gallery.sort ?? defaultSettings.sort;
 }
 
 /**
@@ -587,7 +585,7 @@ function updateGalleryFolder(newUrl: any) {
         throw new Error('Folder name cannot be empty');
     }
 
-    const context = SillyTavern.getContext();
+    const context = SillyTavern.getContext() as any;
     if (context.groupId) {
         throw new Error('Cannot change gallery folder in group chat');
     }
@@ -614,7 +612,7 @@ function updateGalleryFolder(newUrl: any) {
  */
 function restoreGalleryFolder() {
 
-    const context = SillyTavern.getContext();
+    const context = SillyTavern.getContext() as any;
     if (context.groupId) {
         throw new Error('Cannot change gallery folder in group chat');
     }
@@ -843,7 +841,7 @@ export async function init() {
     initSettings();
     eventSource.on(event_types.CHARACTER_RENAMED, (oldAvatar: any, newAvatar: any) => {
 
-        const context = SillyTavern.getContext();
+        const context = SillyTavern.getContext() as any;
         const galleryFolder = context.extensionSettings.gallery.folders[oldAvatar];
         if (galleryFolder) {
             context.extensionSettings.gallery.folders[newAvatar] = galleryFolder;
@@ -855,7 +853,7 @@ export async function init() {
         const avatar = data?.character?.avatar;
         if (!avatar) return;
 
-        const context = SillyTavern.getContext();
+        const context = SillyTavern.getContext() as any;
         delete context.extensionSettings.gallery.folders[avatar];
         context.saveSettingsDebounced();
     });
