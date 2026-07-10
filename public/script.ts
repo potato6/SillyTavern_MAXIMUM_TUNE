@@ -12718,9 +12718,8 @@ function initCharacterSearch() {
 (async function () {
     setTimeout(function () {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#groupControlsToggle').trigger('click');
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#groupCurrentMemberListToggle .inline-drawer-icon').trigger('click');
+        document.getElementById('groupControlsToggle')?.dispatchEvent(new Event('click', { bubbles: true }));
+        document.querySelector('#groupCurrentMemberListToggle .inline-drawer-icon')?.dispatchEvent(new Event('click', { bubbles: true }));
     }, 200);
 
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
@@ -14599,7 +14598,6 @@ function initCharacterSearch() {
         // @ts-expect-error TS(7005) FIXME: Variable 'this_edit_mes_id' implicitly has an 'any... Remove this comment to see the full error message
         if (isChatSaving || this_edit_mes_id >= 0) {
             e.preventDefault();
-            e.returnValue = true;
         }
-    });
-});
+    }); // closes beforeunload
+})(); // invokes async IIFE
