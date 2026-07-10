@@ -7141,7 +7141,6 @@ export function cleanUpMessage({
     }
 
     // Regex uses vars, so add before formatting
-    // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
     getMessage = getRegexedString(getMessage, isImpersonate ? regex_placement.USER_INPUT : regex_placement.AI_OUTPUT);
 
     if (power_user.collapse_newlines) {
