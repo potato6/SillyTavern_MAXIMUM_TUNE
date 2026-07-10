@@ -852,59 +852,59 @@ export class PromptReasoning {
  *
  */
 function loadReasoningSettings() {
-    UI.$addToPrompts.prop('checked', power_user.reasoning.add_to_prompts);
-    UI.$addToPrompts[0].addEventListener('change', function (this: HTMLInputElement) {
+        UI.$addToPrompts.checked = power_user.reasoning.add_to_prompts;
+        UI.$addToPrompts.addEventListener('change', function (this: HTMLInputElement) {
         power_user.reasoning.add_to_prompts = this.checked;
         saveSettingsDebounced();
     });
 
     UI.$prefix.value = power_user.reasoning.prefix;
-    UI.$prefix[0].addEventListener('input', function (this: HTMLInputElement) {
+    UI.$prefix.addEventListener('input', function (this: HTMLInputElement) {
         power_user.reasoning.prefix = String(this.value);
         saveSettingsDebounced();
     });
 
     UI.$suffix.value = power_user.reasoning.suffix;
-    UI.$suffix[0].addEventListener('input', function (this: HTMLInputElement) {
+    UI.$suffix.addEventListener('input', function (this: HTMLInputElement) {
         power_user.reasoning.suffix = String(this.value);
         saveSettingsDebounced();
     });
 
     UI.$separator.value = power_user.reasoning.separator;
-    UI.$separator[0].addEventListener('input', function (this: HTMLInputElement) {
+    UI.$separator.addEventListener('input', function (this: HTMLInputElement) {
         power_user.reasoning.separator = String(this.value);
         saveSettingsDebounced();
     });
 
     UI.$maxAdditions.value = power_user.reasoning.max_additions;
-    UI.$maxAdditions[0].addEventListener('input', function (this: HTMLInputElement) {
+    UI.$maxAdditions.addEventListener('input', function (this: HTMLInputElement) {
         power_user.reasoning.max_additions = Number(this.value);
         saveSettingsDebounced();
     });
 
-    UI.$autoParse.prop('checked', power_user.reasoning.auto_parse);
-    UI.$autoParse[0].addEventListener('change', function (this: HTMLInputElement) {
+    UI.$autoParse.checked = power_user.reasoning.auto_parse;
+    UI.$autoParse.addEventListener('change', function (this: HTMLInputElement) {
         power_user.reasoning.auto_parse = this.checked;
         saveSettingsDebounced();
     });
 
-    UI.$autoExpand.prop('checked', power_user.reasoning.auto_expand);
-    UI.$autoExpand[0].addEventListener('change', function (this: HTMLInputElement) {
+    UI.$autoExpand.checked = power_user.reasoning.auto_expand;
+    UI.$autoExpand.addEventListener('change', function (this: HTMLInputElement) {
         power_user.reasoning.auto_expand = this.checked;
         toggleReasoningAutoExpand();
         saveSettingsDebounced();
     });
     toggleReasoningAutoExpand();
 
-    UI.$showHidden.prop('checked', power_user.reasoning.show_hidden);
-    UI.$showHidden[0].addEventListener('change', function (this: HTMLInputElement) {
+    UI.$showHidden.checked = power_user.reasoning.show_hidden;
+    UI.$showHidden.addEventListener('change', function (this: HTMLInputElement) {
         power_user.reasoning.show_hidden = this.checked;
         document.getElementById('chat')?.setAttribute('data-show-hidden-reasoning', power_user.reasoning.show_hidden ? 'true' : null);
         saveSettingsDebounced();
     });
     document.getElementById('chat')?.setAttribute('data-show-hidden-reasoning', power_user.reasoning.show_hidden ? 'true' : null);
 
-    UI.$select[0].addEventListener('change', async function (this: HTMLSelectElement) {
+    UI.$select.addEventListener('change', async function (this: HTMLSelectElement) {
         const name = String(this.value);
         // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
         const template = reasoning_templates.find(p => p.name === name);

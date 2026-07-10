@@ -2751,29 +2751,28 @@ export function isSelect2ChoiceElement(element) {
 // @ts-expect-error TS(7006) FIXME: Parameter 'control' implicitly has an 'any' type.
 export function select2ChoiceClickSubscribe(control, action, { buttonStyle = false, closeDrawer = false, openDrawer = false } = {}) {
     // Add class for styling (hover color, changed cursor, etc)
-    control.classList.add('select2_choice_clickable');
-    if (buttonStyle) control.classList.add('select2_choice_clickable_buttonstyle');
+    const el = control?.[0] ?? control;
+    if (!el) return;
+    el.classList.add('select2_choice_clickable');
+    if (buttonStyle) el.classList.add('select2_choice_clickable_buttonstyle');
 
     // Get the TomSelect wrapper and create a click handler on that one
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this description to see the full error message
-    const tsWrapper = control[0].closest('.ts-wrapper');
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this description to see the full error message
+    const tsWrapper = el.closest('.ts-wrapper');
+    if (!tsWrapper) return;
     const select2Container = tsWrapper;
-    // @ts-expect-error TS(7006) FIXME: Parameter 'event' implicitly has an 'any' type.
-    select2Container.on('click', function (event) {
+    select2Container.addEventListener('click', function (event) {
         const isChoice = isSelect2ChoiceElement(event.target);
         if (isChoice) {
             event.preventDefault();
 
             // TomSelect still bubbles the event to open the dropdown. So we close it here and remove focus if we want that
-            if (closeDrawer) {
-                control[0]?.tomSelect?.close();
-                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this description to see the full error message
-                const tsInput = select2Container[0]?.querySelector('.ts-control input');
+                        if (closeDrawer) {
+                el?.tomSelect?.close();
+                const tsInput = tsWrapper?.querySelector('.ts-control input');
                 if (tsInput) setTimeout(() => tsInput.blur(), debounce_timeout.quick);
             }
             if (openDrawer) {
-                control[0]?.tomSelect?.open();
+                el?.tomSelect?.open();
             }
 
             // Now execute the actual action that was subscribed

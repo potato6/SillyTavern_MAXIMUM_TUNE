@@ -41,7 +41,7 @@ export class SettingsUi {
         const content = this.dom.querySelector('.inline-drawer-content');
         content.innerHTML = '';
         // @ts-ignore
-        Array.from(this.template.querySelector('.inline-drawer-content').cloneNode(true).children).forEach(el => {
+                Array.from(this.dom.querySelector('.inline-drawer-content')?.cloneNode(true)?.children ?? []).forEach(el => {
             content.append(el);
         });
         this.prepareDom();
@@ -55,9 +55,8 @@ export class SettingsUi {
             const response = await fetch('/scripts/extensions/quick-reply/html/settings.html', { cache: 'no-store' });
             if (response.ok) {
                 this.template = document.createRange().createContextualFragment(await response.text()).querySelector('#qr--settings');
-                // @ts-ignore
-                this.dom = this.template.cloneNode(true);
-                this.prepareDom();
+                                if (this.template) this.dom = this.template.cloneNode(true);
+                if (this.dom) this.prepareDom();
             } else {
                 warn('failed to fetch settings template');
             }

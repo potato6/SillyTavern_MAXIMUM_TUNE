@@ -14594,12 +14594,11 @@ function initCharacterSearch() {
     });
 
     // Added here to prevent execution before script.js is loaded and get rid of quirky timeouts
-    await firstLoadInit().catch(() => {});
+        await firstLoadInit().catch(() => {});
 
-    // Force-remove preloader and close any stale loader popup
-    document.getElementById('preloader')?.remove();
-    document.querySelector('dialog[open]')?.close();
-
+        // Force-remove preloader and close any stale loader popup
+        document.getElementById('preloader')?.remove();
+                        (document.querySelector('dialog') as HTMLDialogElement)?.close();
     window.addEventListener('beforeunload', (e) => {
         // @ts-expect-error TS(7005) FIXME: Variable 'this_edit_mes_id' implicitly has an 'any... Remove this comment to see the full error message
         if (isChatSaving || this_edit_mes_id >= 0) {
