@@ -629,8 +629,12 @@ function onANMenuItemClick() {
 
     //duplicate options menu close handler from script.js
     //because this listener takes priority
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#options').stop().fadeOut(animation_duration);
+    const optionsEl = document.getElementById('options');
+    if (optionsEl) {
+        optionsEl.style.transition = `opacity ${animation_duration}ms`;
+        optionsEl.style.opacity = '0';
+        setTimeout(() => { optionsEl.style.display = 'none'; }, animation_duration);
+    }
 }
 
 /**

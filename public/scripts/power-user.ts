@@ -559,8 +559,7 @@ function switchReducedMotion() {
     if (osReduced) {
         power_user.reduced_motion = true;
     }
-    // @ts-expect-error TS(2304) FIXME: Cannot find name 'jQuery'.
-    jQuery.fx.off = power_user.reduced_motion;
+    document.documentElement.classList.toggle('reduce-motion', power_user.reduced_motion);
     const overrideDuration = power_user.reduced_motion ? 0 : ANIMATION_DURATION_DEFAULT;
     // @ts-expect-error TS(2345) FIXME: Argument of type '0 | 125' is not assignable to pa... Remove this comment to see the full error message
     setAnimationDuration(overrideDuration);

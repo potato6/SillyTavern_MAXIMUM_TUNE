@@ -167,8 +167,12 @@ function onCfgMenuItemClick() {
             $('#cfgConfig').hide();
         }, animation_duration);
     }
-
-    $('#options').stop().fadeOut(animation_duration);
+    const el = document.getElementById('options');
+    if (el) {
+        el.style.transition = `opacity ${animation_duration}ms`;
+        el.style.opacity = '0';
+        setTimeout(() => { el.style.display = 'none'; }, animation_duration);
+    }
 }
 
 /**

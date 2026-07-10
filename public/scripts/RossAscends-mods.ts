@@ -1192,7 +1192,7 @@ export function initRossMods() {
             event.metaKey));
     }
 
-    document.addEventListener('keydown', async function (event) {
+    document.addEventListener('keydown', async function (event: KeyboardEvent) {
         await processHotkeys(event);
     });
 
@@ -1232,26 +1232,26 @@ export function initRossMods() {
         //ctrl+shift+up to scroll to context line
         if (event.shiftKey && event.ctrlKey && event.key == 'ArrowUp') {
             event.preventDefault();
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const contextLine = $('.lastInContext');
-            if (contextLine.length !== 0) {
-                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                $('#chat').animate({
-                    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                    scrollTop: contextLine.offset().top - $('#chat').offset().top + $('#chat').scrollTop(),
-                }, 300);
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            } else { toastr.warning('Context line not found, send a message first!'); }
+            const chatEl = document.getElementById('chat');
+            const contextLine = document.querySelector('.lastInContext');
+            if (chatEl && contextLine) {
+                chatEl.scrollTo({
+                    top: contextLine.getBoundingClientRect().top - chatEl.getBoundingClientRect().top + chatEl.scrollTop,
+                    behavior: 'smooth',
+                });
+            } else {
+                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
+                toastr.warning('Context line not found, send a message first!');
+            }
             return;
         }
         //ctrl+shift+down to scroll to bottom of chat
         if (event.shiftKey && event.ctrlKey && event.key == 'ArrowDown') {
             event.preventDefault();
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#chat').animate({
-                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                scrollTop: $('#chat').prop('scrollHeight'),
-            }, 300);
+            document.getElementById('chat')?.scrollTo({
+                top: 999999,
+                behavior: 'smooth',
+            });
             return;
         }
 

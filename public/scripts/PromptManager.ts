@@ -2272,10 +2272,12 @@ class PromptManager {
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         areaElement.style.display = 'flex';
 
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#' + this.configuration.prefix + 'prompt_manager_popup')
-            .slideDown(200, 'swing')
-            .addClass('openDrawer');
+        const popupEl = document.getElementById(this.configuration.prefix + 'prompt_manager_popup');
+        if (popupEl) {
+            popupEl.style.maxHeight = popupEl.scrollHeight + 'px';
+            popupEl.style.opacity = '1';
+            popupEl.classList.add('openDrawer');
+        }
     }
 
     /**
@@ -2283,10 +2285,12 @@ class PromptManager {
      * @returns {void}
      */
     hidePopup() {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#' + this.configuration.prefix + 'prompt_manager_popup')
-            .slideUp(200, 'swing')
-            .removeClass('openDrawer');
+        const popupEl = document.getElementById(this.configuration.prefix + 'prompt_manager_popup');
+        if (popupEl) {
+            popupEl.style.maxHeight = '0';
+            popupEl.style.opacity = '0';
+            popupEl.classList.remove('openDrawer');
+        }
     }
 
     /**
