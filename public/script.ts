@@ -12919,7 +12919,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         }
     }
 
-    document.addEventListener('click', function (e) {
+    document.addEventListener('click', async function (e) {
         const target = e.target;
         if (!(target instanceof HTMLElement)) return;
         const cross = target.closest('.PastChat_cross');
@@ -13385,55 +13385,51 @@ document.addEventListener('DOMContentLoaded', async function () {
         }
         menu?.hidePopover();
     });
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#newChatFromManageScreenButton').on('click', async function () {
+    document.getElementById('newChatFromManageScreenButton')?.addEventListener('click', async function () {
         await doNewChat({ deleteCurrentChat: false });
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#select_chat_cross').trigger('click');
+        document.getElementById('select_chat_cross')?.dispatchEvent(new Event('click', { bubbles: true }));
     });
 
     //////////////////////////////////////////////////////////////////////////////////////////////
 
     //functionality for the cancel delete messages button, reverts to normal display of input form
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#dialogue_del_mes_cancel').on('click', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#dialogue_del_mes').css('display', 'none');
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#send_form').css('display', css_send_form_display);
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('.del_checkbox').each(function () {
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(this).css('display', 'none');
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(this).parent().children('.for_checkbox').css('display', 'block');
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(this).parent().removeClass('selected');
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(this).prop('checked', false);
+    document.getElementById('dialogue_del_mes_cancel')?.addEventListener('click', function () {
+        const delMesEl = document.getElementById('dialogue_del_mes');
+        if (delMesEl) delMesEl.style.display = 'none';
+        const sendFormEl = document.getElementById('send_form');
+        if (sendFormEl) sendFormEl.style.display = css_send_form_display;
+        document.querySelectorAll('.del_checkbox').forEach(function (el) {
+            const htmlEl = /** @type {HTMLElement} */ (el);
+            htmlEl.style.display = 'none';
+            const parent = htmlEl.parentElement;
+            if (parent) {
+                const forCheckbox = parent.querySelector('.for_checkbox');
+                if (forCheckbox instanceof HTMLElement) forCheckbox.style.display = 'block';
+                parent.classList.remove('selected');
+            }
+            if (htmlEl instanceof HTMLInputElement) htmlEl.checked = false;
         });
         showSwipeButtons();
         this_del_mes = -1;
         is_delete_mode = false;
     });
 
-    //confirms message deletion with the "ok" button
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#dialogue_del_mes_ok').on('click', async function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#dialogue_del_mes').css('display', 'none');
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#send_form').css('display', css_send_form_display);
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('.del_checkbox').each(function () {
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(this).css('display', 'none');
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(this).parent().children('.for_checkbox').css('display', 'block');
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(this).parent().removeClass('selected');
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(this).prop('checked', false);
+    //confirms message deletion with the &quot;ok&quot; button
+    document.getElementById('dialogue_del_mes_ok')?.addEventListener('click', async function () {
+        const delMesEl = document.getElementById('dialogue_del_mes');
+        if (delMesEl) delMesEl.style.display = 'none';
+        const sendFormEl = document.getElementById('send_form');
+        if (sendFormEl) sendFormEl.style.display = css_send_form_display;
+        document.querySelectorAll('.del_checkbox').forEach(function (el) {
+            const htmlEl = /** @type {HTMLElement} */ (el);
+            htmlEl.style.display = 'none';
+            const parent = htmlEl.parentElement;
+            if (parent) {
+                const forCheckbox = parent.querySelector('.for_checkbox');
+                if (forCheckbox instanceof HTMLElement) forCheckbox.style.display = 'block';
+                parent.classList.remove('selected');
+            }
+            if (htmlEl instanceof HTMLInputElement) htmlEl.checked = false;
         });
 
         if (this_del_mes >= 0) {
@@ -13466,8 +13462,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         is_delete_mode = false;
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#main_api').on('change', async function () {
+    document.getElementById('main_api')?.addEventListener('change', async function () {
         cancelStatusCheck('Canceled because main api changed');
         changeMainAPI();
         saveSettingsDebounced();
@@ -13479,30 +13474,33 @@ document.addEventListener('DOMContentLoaded', async function () {
     let sliderLocked = true;
     let sliderTimer;
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('input[type=\'range\']').on('touchstart', function () {
-        // Unlock the slider after 300ms
-        setTimeout(function () {
-            sliderLocked = false;
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(this).css('background-color', 'var(--SmartThemeQuoteColor)');
-        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-        }.bind(this), 300);
+    const rangeInputs = document.querySelectorAll('input[type="range"]');
+
+    rangeInputs.forEach(function (el) {
+        el.addEventListener('touchstart', function () {
+            // Unlock the slider after 300ms
+            const self = this;
+            setTimeout(function () {
+                sliderLocked = false;
+                self.style.backgroundColor = 'var(--SmartThemeQuoteColor)';
+            }, 300);
+        });
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('input[type=\'range\']').on('touchend', function () {
-        clearTimeout(sliderTimer);
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(this).css('background-color', '');
-        sliderLocked = true;
+    rangeInputs.forEach(function (el) {
+        el.addEventListener('touchend', function () {
+            clearTimeout(sliderTimer);
+            this.style.backgroundColor = '';
+            sliderLocked = true;
+        });
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('input[type=\'range\']').on('touchmove', function (event) {
-        if (sliderLocked) {
-            event.preventDefault();
-        }
+    rangeInputs.forEach(function (el) {
+        el.addEventListener('touchmove', function (event) {
+            if (sliderLocked) {
+                event.preventDefault();
+            }
+        });
     });
 
     const sliders = [
@@ -13525,15 +13523,16 @@ document.addEventListener('DOMContentLoaded', async function () {
     ];
 
     sliders.forEach(slider => {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(document).on('input', slider.sliderId, function () {
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const value = $(this).val();
-            const formattedValue = slider.format(value);
-            slider.setValue(value);
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(slider.counterId).val(formattedValue);
-            saveSettingsDebounced();
+        document.body.addEventListener('input', function (e) {
+            const target = /** @type {HTMLElement} */ (e.target);
+            if (target.matches(slider.sliderId)) {
+                const value = /** @type {HTMLInputElement} */ (target).value;
+                const formattedValue = slider.format(value);
+                slider.setValue(value);
+                const counterEl = document.querySelector(slider.counterId);
+                if (counterEl instanceof HTMLInputElement) counterEl.value = formattedValue;
+                saveSettingsDebounced();
+            }
         });
     });
 
@@ -13955,16 +13954,23 @@ document.addEventListener('DOMContentLoaded', async function () {
         stopScriptExecution();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document).on('click', '.drawer-opener', doDrawerOpenClick);
+    document.addEventListener('click', function (event) {
+        const element = event.target.closest('.drawer-opener');
+        if (!element) return;
+        doDrawerOpenClick.call(element);
+    });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('.drawer-toggle').on('click', doNavbarIconClick);
+    document.querySelectorAll('.drawer-toggle').forEach(el => el.addEventListener('click', doNavbarIconClick));
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('html').on('touchstart mousedown', async function (e) {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const clickTarget = $(e.target);
+    document.addEventListener('touchstart', async function (e) {
+        await handleAppTouchStartMousedown(e);
+    }, { passive: true });
+    document.addEventListener('mousedown', async function (e) {
+        await handleAppTouchStartMousedown(e);
+    });
+
+    async function handleAppTouchStartMousedown(e) {
+        const clickTarget = e.target;
 
         const forbiddenTargets = [
             '#character_cross',
@@ -13979,24 +13985,26 @@ document.addEventListener('DOMContentLoaded', async function () {
         ];
 
         for (const id of forbiddenTargets) {
-            if (clickTarget.closest(id).length > 0) {
+            if (clickTarget.closest(id)) {
                 return;
             }
         }
 
         // This autocloses open drawers that are not pinned if a click happens inside the app which does not target them.
-        const targetParentHasOpenDrawer = clickTarget.parents('.openDrawer').length;
-        if (!clickTarget.hasClass('drawer-icon') && !clickTarget.hasClass('openDrawer')) {
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const $openDrawers = $('.openDrawer').not('.pinnedOpen');
-            if ($openDrawers.length && targetParentHasOpenDrawer === 0) {
+        const targetParentHasOpenDrawer = clickTarget.closest('.openDrawer');
+        if (!clickTarget.classList.contains('drawer-icon') && !clickTarget.classList.contains('openDrawer')) {
+            const openDrawers = document.querySelectorAll('.openDrawer:not(.pinnedOpen)');
+            if (openDrawers.length && !targetParentHasOpenDrawer) {
                 // Toggle icon and drawer classes
-                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                $('.openIcon').not('.drawerPinnedOpen').toggleClass('closedIcon openIcon');
-                $openDrawers.toggleClass('closedDrawer openDrawer');
+                document.querySelectorAll('.openIcon:not(.drawerPinnedOpen)').forEach(el => {
+                    el.classList.replace('openIcon', 'closedIcon');
+                });
+                openDrawers.forEach(el => {
+                    el.classList.replace('openDrawer', 'closedDrawer');
+                });
             }
         }
-    });
+    }
 
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document).on('click', '.inline-drawer-toggle', async function (e) {
@@ -14184,7 +14192,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     document.addEventListener('click', function (event) {
         const element = event.target.closest('.open_alternate_greetings');
         if (!element) return;
-        openAlternateGreetings.call(element, event);
+        openAlternateGreetings.call(element);
     });
     /* document.getElementById('set_character_world')?.addEventListener('click', openCharacterWorldPopup); */
 
@@ -14530,7 +14538,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     });
 
     // Added here to prevent execution before script.js is loaded and get rid of quirky timeouts
-    await firstLoadInit();
+    firstLoadInit();
 
     window.addEventListener('beforeunload', (e) => {
         // @ts-expect-error TS(7005) FIXME: Variable 'this_edit_mes_id' implicitly has an 'any... Remove this comment to see the full error message

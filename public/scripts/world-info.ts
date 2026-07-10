@@ -4932,7 +4932,8 @@ export async function deleteWorldInfo(worldInfoName) {
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     if (document.getElementById('character_world').value === worldInfoName) {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        document.getElementById('character_world').value = '').trigger('change');
+        document.getElementById('character_world').value = '';
+    document.getElementById('character_world')?.dispatchEvent(new Event('change', { bubbles: true }));
         // @ts-expect-error TS(2345) FIXME: Argument of type 'false' is not assignable to para... Remove this comment to see the full error message
         setWorldInfoButtonClass(undefined, false);
         if (menu_type != 'create') {
@@ -5034,7 +5035,8 @@ export async function createNewWorldInfo(worldName, { interactive = false } = {}
     const selectedIndex = world_names.indexOf(worldName);
     if (selectedIndex !== -1) {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        document.getElementById('world_editor_select').value = String(selectedIndex).trigger('change');
+        document.getElementById('world_editor_select').value = String(selectedIndex);
+    document.getElementById('world_editor_select')?.dispatchEvent(new Event('change', { bubbles: true }));
     } else {
         await hideWorldEditor();
     }
@@ -6473,7 +6475,8 @@ export async function importEmbeddedWorldInfo(skipPopup = false) {
     await saveWorldInfo(bookName, convertedBook, true);
     await updateWorldInfoList();
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('character_world').value = bookName).trigger('change');
+    document.getElementById('character_world').value = bookName;
+    document.getElementById('character_world')?.dispatchEvent(new Event('change', { bubbles: true }));
 
     // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
     toastr.success(t`The world '${bookName}' has been imported and linked to the character successfully.`, t`World/Lorebook imported`);
@@ -6485,7 +6488,8 @@ export async function importEmbeddedWorldInfo(skipPopup = false) {
         document.getElementById('WIDrawerIcon').trigger('click');
         //..auto-opening the new imported WI
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        document.getElementById('world_editor_select').value = String(newIndex).trigger('change');
+        document.getElementById('world_editor_select').value = String(newIndex);
+    document.getElementById('world_editor_select')?.dispatchEvent(new Event('change', { bubbles: true }));
     }
 
     // @ts-expect-error TS(2345) FIXME: Argument of type 'true' is not assignable to param... Remove this comment to see the full error message
@@ -6675,7 +6679,8 @@ export async function importWorldInfo(file) {
             const newIndex = world_names.indexOf(data.name);
             if (newIndex >= 0) {
                 // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                document.getElementById('world_editor_select').value = String(newIndex).trigger('change');
+                document.getElementById('world_editor_select').value = String(newIndex);
+    document.getElementById('world_editor_select')?.dispatchEvent(new Event('change', { bubbles: true }));
             }
 
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
@@ -6702,7 +6707,8 @@ export function openWorldInfoEditor(worldName) {
     }
     const index = world_names.indexOf(worldName);
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('world_editor_select').value = String(index).trigger('change');
+    document.getElementById('world_editor_select').value = String(index);
+    document.getElementById('world_editor_select')?.dispatchEvent(new Event('change', { bubbles: true }));
 }
 
 /**
@@ -6876,7 +6882,7 @@ export async function charUpdatePrimaryWorld(name) {
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const previousValue = document.getElementById('character_world').value;
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('character_world').value = name);
+    document.getElementById('character_world').value = name;
 
     console.debug('Character world selected:', name);
 
@@ -6896,7 +6902,7 @@ export async function charUpdatePrimaryWorld(name) {
             }
 
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            document.getElementById('character_json_data').value = JSON.stringify(data));
+            document.getElementById('character_json_data').value = JSON.stringify(data);
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.info(t`Embedded lorebook will be removed from this character.`);
         } catch {
@@ -7230,7 +7236,8 @@ export function initWorldInfo() {
             const alreadySelectedInEditor = $('#world_editor_select option:selected').text() === name;
             if (selectedIndex !== -1 && !alreadySelectedInEditor) {
                 // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                document.getElementById('world_editor_select').value = String(selectedIndex).trigger('change');
+                document.getElementById('world_editor_select').value = String(selectedIndex);
+    document.getElementById('world_editor_select')?.dispatchEvent(new Event('change', { bubbles: true }));
                 console.log('Quick selection of world', name);
             } else {
                 console.warn('lets not reload an already loaded list yes?');
