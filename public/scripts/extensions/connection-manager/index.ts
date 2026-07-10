@@ -214,7 +214,7 @@ function findProfileByName(value: any) {
     }
 
     const bestMatch = results[0];
-    return bestMatch.item;
+    return bestMatch?.item;
 }
 
 /**
@@ -566,7 +566,7 @@ async function generateStreamCallback(args: any, value: any) {
 
     // Compose the stop handler: abort the request + optionally invoke user closure
     const onStopHandler = enableStop ? async () => {
-        abortController.abort();
+        abortController?.abort();
         if (onStopClosure) {
             try {
                 const localClosure = onStopClosure.getCopy();
@@ -1037,7 +1037,7 @@ export async function init() {
                 }
             }
 
-            return profile.name;
+            return (profile as any).name;
         },
     }));
 
