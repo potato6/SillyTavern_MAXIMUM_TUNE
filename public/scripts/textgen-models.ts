@@ -7,7 +7,7 @@ import { renderTemplateAsync } from './templates.js';
 import { POPUP_TYPE, callGenericPopup } from './popup.js';
 import { t } from './i18n.js';
 import { accountStorage } from './util/AccountStorage.js';
-import { localizePagination, PAGINATION_TEMPLATE, textValueMatcher } from './utils.js';
+import { createPaginator, textValueMatcher } from './utils.js';
 
 // @ts-expect-error TS(7034) FIXME: Variable 'mancerModels' implicitly has type 'any[]... Remove this comment to see the full error message
 let mancerModels = [];
@@ -858,8 +858,7 @@ let featherlessCurrentPage = 1;
 export async function loadFeatherlessModels(data) {
     const searchBar = document.getElementById('featherless_model_search_bar');
     const modelCardBlock = document.getElementById('featherless_model_card_block');
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const paginationContainer = $('#featherless_model_pagination_container');
+    const paginationContainer = document.getElementById('featherless_model_pagination_container');
     const sortOrderSelect = document.getElementById('featherless_model_sort_order');
     const classSelect = document.getElementById('featherless_class_selection');
     const categoriesSelect = document.getElementById('featherless_category_selection');
@@ -899,20 +898,18 @@ export async function loadFeatherlessModels(data) {
      */
     // @ts-expect-error TS(7006) FIXME: Parameter 'models' implicitly has an 'any' type.
     function setupPagination(models, perPage, pageNumber = featherlessCurrentPage) {
-        paginationContainer.pagination({
+        if (!paginationContainer) return;
+        createPaginator(paginationContainer, {
             dataSource: models,
             pageSize: perPage,
             pageNumber: pageNumber,
             sizeChangerOptions: [6, 10, 26, 50, 100, 250, 500, 1000],
-            pageRange: 1,
-            showPageNumbers: true,
             showSizeChanger: false,
+            showNavigator: true,
             prevText: '<',
             nextText: '>',
-            formatNavigator: PAGINATION_TEMPLATE,
-            showNavigator: true,
-            // @ts-expect-error TS(7006) FIXME: Parameter 'modelsOnPage' implicitly has an 'any' t... Remove this comment to see the full error message
-            callback: function (modelsOnPage, pagination) {
+            // @ts-expect-error TS(7006) FIXME: Parameter 'modelsOnPage' implicitly has an 'any' type.
+            callback: function (modelsOnPage) {
                 // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
                 modelCardBlock.innerHTML = '';
 
@@ -964,16 +961,6 @@ export async function loadFeatherlessModels(data) {
                         onFeatherlessModelSelect(model.id);
                     });
                 });
-
-                // Update the current page value whenever the page changes
-                featherlessCurrentPage = pagination.pageNumber;
-                localizePagination(paginationContainer);
-            },
-            // @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
-            afterSizeSelectorChange: function (e) {
-                const newPerPage = e.target.value;
-                accountStorage.setItem(storageKey, newPerPage);
-                setupPagination(models, Number(newPerPage), featherlessCurrentPage); // Use the stored current page number
             },
         });
     }
