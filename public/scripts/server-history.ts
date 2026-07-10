@@ -1,6 +1,7 @@
 import { saveSettingsDebounced } from '../script.js';
 import { power_user } from './power-user.js';
 import { isValidUrl } from './utils.js';
+declare const TomSelect: any;
 
 /**
  * @param {{ term: string; }} request
@@ -54,28 +55,51 @@ function selectServer(event, ui, serverLabel) {
  *
  */
 function createServerAutocomplete() {
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const inputElement = $(this);
     // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
     const serverLabel = this.dataset.serverHistory;
-
-    inputElement.autocomplete({
-        // @ts-expect-error TS(7006) FIXME: Parameter 'i' implicitly has an 'any' type.
-        source: (i, o) => findServers(i, o, serverLabel),
-        // @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
-        select: (e, u) => selectServer(e, u, serverLabel),
-        minLength: 0,
-    });
     // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-    this.addEventListener('focus', onInputFocus);
+    const input = this;
+
+    if (input) {
+        input.tomSelectInstance = new TomSelect(input, {
+            maxItems: 1,
+            create: false,
+            valueField: 'url',
+            labelField: 'url',
+            searchField: ['url'],
+            // @ts-expect-error TS(7006) FIXME: Parameter implicit any
+            load: function (query, callback) {
+                if (!power_user.servers) {
+                    power_user.servers = [];
+                }
+                const needle = query.toLowerCase();
+                const result = power_user.servers
+                    .filter((x: any) => x.label == serverLabel)
+                    .sort((a: any, b: any) => b.lastConnection - a.lastConnection)
+                    .map((x: any) => ({ url: x.url }))
+                    .slice(0, 5);
+                const hasExactMatch = result.findIndex((x: any) => x.url.toLowerCase() == needle) !== -1;
+                if (query && !hasExactMatch) {
+                    result.unshift({ url: query });
+                }
+                callback(result);
+            },
+            // @ts-expect-error TS(7006) FIXME: Parameter implicit any
+            onChange: function (value) {
+                if (value) {
+                    input.value = value;
+                    input.dispatchEvent(new Event('input', { bubbles: true }));
+                    input.dispatchEvent(new Event('blur', { bubbles: true }));
+                }
+            },
+        });
+    }
 }
 
 /**
  *
  */
 function onInputFocus() {
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(this).autocomplete('search', this.value);
 }
 
 /**
