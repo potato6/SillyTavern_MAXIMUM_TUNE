@@ -1293,8 +1293,7 @@ export function initRossMods() {
                     console.debug('Regenerating with Ctrl+Enter');
                     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                     $('#option_regenerate').trigger('click');
-                    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                    $('#options').hide();
+                    const optionsEl = document.getElementById('options'); if (optionsEl) optionsEl.style.display = 'none';
                 }
 
                 // If there is input text, we do not trigger a regenerate - we just send it

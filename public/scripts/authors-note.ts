@@ -711,7 +711,7 @@ export function initAuthorsNote() {
                 fill: 'forwards',
             });
         }
-        setTimeout(function () { $('#floatingPrompt').hide(); }, animation_duration);
+        setTimeout(function () { const fp = document.getElementById('floatingPrompt'); if (fp) fp.style.display = 'none'; }, animation_duration);
     });
     document.getElementById('option_toggle_AN')?.addEventListener('click', onANMenuItemClick);
 

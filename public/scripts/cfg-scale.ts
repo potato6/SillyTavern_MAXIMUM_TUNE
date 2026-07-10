@@ -196,12 +196,14 @@ async function onChatChanged() {
  *
  */
 async function modifyCharaHtml() {
+    const charaCfgContainer = document.getElementById('chara_cfg_container');
+    const groupchatCfgUseCharaContainer = document.getElementById('groupchat_cfg_use_chara_container');
     if (selected_group) {
-        $('#chara_cfg_container').hide();
-        $('#groupchat_cfg_use_chara_container').show();
+        if (charaCfgContainer) charaCfgContainer.style.display = 'none';
+        if (groupchatCfgUseCharaContainer) groupchatCfgUseCharaContainer.style.display = '';
     } else {
-        $('#chara_cfg_container').show();
-        $('#groupchat_cfg_use_chara_container').hide();
+        if (charaCfgContainer) charaCfgContainer.style.display = '';
+        if (groupchatCfgUseCharaContainer) groupchatCfgUseCharaContainer.style.display = 'none';
     }
 }
 

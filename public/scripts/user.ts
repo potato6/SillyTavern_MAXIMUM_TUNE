@@ -818,10 +818,9 @@ async function openUserProfile() {
     });
 
     if (!accountsEnabled) {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(template[0].querySelectorAll('[data-require-accounts]')).hide();
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(template[0].querySelector('.accountsDisabledHint')).show();
+        template[0].querySelectorAll('[data-require-accounts]').forEach(el => (el as HTMLElement).style.display = 'none');
+        const accountsDisabledHint = template[0].querySelector('.accountsDisabledHint') as HTMLElement | null;
+        if (accountsDisabledHint) accountsDisabledHint.style.display = '';
     }
 
     const popupOptions = {
