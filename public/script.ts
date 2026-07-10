@@ -10112,12 +10112,11 @@ function select_rm_create({ switchMenu = true } = {}) {
     // @ts-expect-error TS(2554) FIXME: Expected 1 arguments, but got 0.
     checkEmbeddedWorld();
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#form_create').attr('actiontype', 'createcharacter');
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('.form_create_bottom_buttons_block .chat_lorebook_button').hide();
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#character_open_media_overrides').hide();
+    document.getElementById('form_create')?.setAttribute('actiontype', 'createcharacter');
+    const lorebookBtnHide = document.querySelector('.form_create_bottom_buttons_block .chat_lorebook_button');
+    if (lorebookBtnHide instanceof HTMLElement) lorebookBtnHide.style.display = 'none';
+    const mediaOverridesHide = document.getElementById('character_open_media_overrides');
+    if (mediaOverridesHide) mediaOverridesHide.style.display = 'none';
 }
 
 /**
