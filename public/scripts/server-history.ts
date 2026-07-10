@@ -1,6 +1,7 @@
 import { saveSettingsDebounced } from '../script.js';
 import { power_user } from './power-user.js';
 import { isValidUrl } from './utils.js';
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 declare const TomSelect: any;
 
 /**
@@ -9,6 +10,7 @@ declare const TomSelect: any;
  * @param {string} serverLabel
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function findServers(request, resolve, serverLabel) {
     if (!power_user.servers) {
         power_user.servers = [];
@@ -33,6 +35,7 @@ function findServers(request, resolve, serverLabel) {
  * @param serverLabel
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'event' implicitly has an 'any' type.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function selectServer(event, ui, serverLabel) {
     // unfocus the input
     if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) {
@@ -56,8 +59,10 @@ function selectServer(event, ui, serverLabel) {
  */
 function createServerAutocomplete() {
     // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const serverLabel = this.dataset.serverHistory;
     // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const input = this;
 
     if (input) {
@@ -74,11 +79,15 @@ function createServerAutocomplete() {
                 }
                 const needle = query.toLowerCase();
                 const result = power_user.servers
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     .filter((x: any) => x.label == serverLabel)
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     .sort((a: any, b: any) => b.lastConnection - a.lastConnection)
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     .map((x: any) => ({ url: x.url }))
                     .slice(0, 5);
-                const hasExactMatch = result.findIndex((x: any) => x.url.toLowerCase() == needle) !== -1;
+                const hasExactMatch = result.findIndex((// eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    x: any) => x.url.toLowerCase() == needle) !== -1;
                 if (query && !hasExactMatch) {
                     result.unshift({ url: query });
                 }
@@ -99,6 +108,7 @@ function createServerAutocomplete() {
 /**
  *
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function onInputFocus() {
 }
 

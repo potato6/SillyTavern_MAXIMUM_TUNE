@@ -1,8 +1,11 @@
 import { Fuse, Handlebars } from '../lib.js';
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 declare const $: any;
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 declare let toastr: any;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 declare const noUiSlider: any;
 /* eslint-enable @typescript-eslint/no-unused-vars */
 
@@ -56,6 +59,7 @@ import { tokenizers } from './tokenizers.js';
 import { BIAS_CACHE } from './logit-bias.js';
 import { renderTemplateAsync } from './templates.js';
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any
 declare const TomSelect: any;
 
 import { countOccurrences, debounce, delay, download, getFileText, getSanitizedFilename, getStringHash, isOdd, isTrueBoolean, onlyUnique, resetScrollHeight, shuffle, sortMoments, stringToRange, timestampToMoment } from './utils.js';
@@ -377,6 +381,7 @@ const contextControls = [
 ];
 
 let browser_has_focus = true;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const debug_functions: any[] = [];
 
 const setHotswapsDebounced = debounce(favsToHotswap);
@@ -4253,6 +4258,7 @@ jQuery(() => {
     });
 
     document.getElementById('ui_preset_import_file')?.addEventListener('change', async function (this: HTMLInputElement) {
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
         const inputElement: HTMLInputElement = this;
 
         try {
@@ -4289,7 +4295,8 @@ jQuery(() => {
         const target = (e.target instanceof Element) ? (e.target as HTMLElement).closest('#debug_table [data-debug-function]') : null;
         if (!target) return;
         const functionId = (target as HTMLElement).dataset.debugFunction;
-        const functionRecord = (debug_functions as any[]).find(f => f.functionId === functionId);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const functionRecord = (debug_functions as any[]).find(f => f.functionId === functionId);
 
         if (functionRecord) {
             functionRecord.func();

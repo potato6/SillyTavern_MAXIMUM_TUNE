@@ -2,6 +2,7 @@ import { saveSettingsDebounced } from '../script.js';
 import { getTextTokens } from './tokenizers.js';
 import { getSortableDelay, uuidv4 } from './utils.js';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 declare const Sortable: any;
 
 export const BIAS_CACHE = new Map();

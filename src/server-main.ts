@@ -172,6 +172,7 @@ app.use(setUserDataMiddleware);
 
 // CSRF Protection //
 if (!cliArgs.disableCsrf) {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const nodeCrypto = require('node:crypto');
     const CSRF_SECRET = process.env['CSRF_SECRET'] || nodeCrypto.randomBytes(64).toString('hex');
 
@@ -180,6 +181,7 @@ if (!cliArgs.disableCsrf) {
         const token = Bun.CSRF.generate(CSRF_SECRET, {
             sessionId: sessionId,
             expiresIn: 24 * 60 * 60 * 1000,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } as any);
         res.json({ token });
     });
@@ -195,6 +197,7 @@ if (!cliArgs.disableCsrf) {
         const token = req.headers['x-csrf-token']?.toString();
         const sessionId = req.ip || 'anonymous';
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if (!token || !Bun.CSRF.verify(token, { secret: CSRF_SECRET, sessionId: sessionId } as any)) {
             console.error(color.red('Invalid CSRF token. Please refresh the page and try again.'));
             res.status(403).json({ error: 'Invalid CSRF token. Please refresh the page and try again.' });
