@@ -512,13 +512,11 @@ export class Popup {
             case POPUP_TYPE.CROP: {
                 this.cropWrap.style.display = 'block';
                 this.cropImage.src = cropImage;
-                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                $(this.cropImage).cropper({
+                this.cropper = new Cropper(this.cropImage, {
                     aspectRatio: cropAspect ?? 2 / 3,
                     autoCropArea: 1,
                     viewMode: 2,
                     rotatable: false,
-                    // @ts-expect-error TS(7006) FIXME: Parameter 'event' implicitly has an 'any' type.
                     crop: (event) => {
                         this.cropData = event.detail;
                         this.cropData.want_resize = !power_user.never_resize_avatars;
@@ -808,8 +806,7 @@ export class Popup {
         // Cropped image should be returned as a data URL
         if (this.type === POPUP_TYPE.CROP) {
             value = result >= POPUP_RESULT.AFFIRMATIVE
-                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                ? $(this.cropImage).data('cropper').getCroppedCanvas().toDataURL('image/jpeg')
+                ? this.cropper.getCroppedCanvas().toDataURL('image/jpeg')
                 : null;
         }
 
