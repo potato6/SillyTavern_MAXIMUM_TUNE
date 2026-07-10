@@ -1988,55 +1988,63 @@ function loadMaxContextUnlocked() {
  */
 function switchMaxContextSize() {
     const elements = [
-        $('#max_context'),
-        $('#max_context_counter'),
-        $('#rep_pen_range'),
-        $('#rep_pen_range_counter'),
-        $('#rep_pen_range_textgenerationwebui'),
-        $('#rep_pen_range_counter_textgenerationwebui'),
-        $('#dry_penalty_last_n_textgenerationwebui'),
-        $('#dry_penalty_last_n_counter_textgenerationwebui'),
-        $('#rep_pen_decay_textgenerationwebui'),
-        $('#rep_pen_decay_counter_textgenerationwebui'),
+        document.getElementById('max_context'),
+        document.getElementById('max_context_counter'),
+        document.getElementById('rep_pen_range'),
+        document.getElementById('rep_pen_range_counter'),
+        document.getElementById('rep_pen_range_textgenerationwebui'),
+        document.getElementById('rep_pen_range_counter_textgenerationwebui'),
+        document.getElementById('dry_penalty_last_n_textgenerationwebui'),
+        document.getElementById('dry_penalty_last_n_counter_textgenerationwebui'),
+        document.getElementById('rep_pen_decay_textgenerationwebui'),
+        document.getElementById('rep_pen_decay_counter_textgenerationwebui'),
     ];
     const maxValue = power_user.max_context_unlocked ? MAX_CONTEXT_UNLOCKED : MAX_CONTEXT_DEFAULT;
     const minValue = power_user.max_context_unlocked ? maxContextMin : maxContextMin;
     const steps = power_user.max_context_unlocked ? unlockedMaxContextStep : maxContextStep;
-    $('#rep_pen_range_textgenerationwebui_zenslider').remove(); //unsure why, but this is necessary.
-    $('#dry_penalty_last_n_textgenerationwebui_zenslider').remove();
-    $('#rep_pen_decay_textgenerationwebui_zenslider').remove();
+    document.getElementById('rep_pen_range_textgenerationwebui_zenslider')?.remove(); //unsure why, but this is necessary.
+    document.getElementById('dry_penalty_last_n_textgenerationwebui_zenslider')?.remove();
+    document.getElementById('rep_pen_decay_textgenerationwebui_zenslider')?.remove();
     for (const element of elements) {
-        const id = element.attr('id');
-        element.attr('max', maxValue);
+        if (!element) continue;
+        const id = element.id;
+        element.setAttribute('max', String(maxValue));
 
         if (typeof id === 'string' && id?.indexOf('max_context') !== -1) {
-            element.attr('min', minValue);
-            element.attr('step', steps); //only change setps for max context, because rep pen range needs step of 1 due to important values of -1 and 0
+            element.setAttribute('min', String(minValue));
+            element.setAttribute('step', String(steps));
         }
-        const value = Number(element.val());
+        const value = Number(element.value);
 
         if (value >= maxValue) {
-            element.val(maxValue).trigger('input');
+            element.value = maxValue;
+            element.dispatchEvent(new Event('input', { bubbles: true }));
         }
     }
 
     const maxAmountGen = power_user.max_context_unlocked ? MAX_RESPONSE_UNLOCKED : MAX_RESPONSE_DEFAULT;
-    $('#amount_gen').attr('max', maxAmountGen);
-    $('#amount_gen_counter').attr('max', maxAmountGen);
+    document.getElementById('amount_gen')?.setAttribute('max', String(maxAmountGen));
+    document.getElementById('amount_gen_counter')?.setAttribute('max', String(maxAmountGen));
 
-    if (Number($('#amount_gen').val()) >= maxAmountGen) {
-        $('#amount_gen').val(maxAmountGen).trigger('input');
+    const amountGenEl = document.getElementById('amount_gen');
+    if (amountGenEl && Number(amountGenEl.value) >= maxAmountGen) {
+        amountGenEl.value = maxAmountGen;
+        amountGenEl.dispatchEvent(new Event('input', { bubbles: true }));
     }
 
     if (power_user.enableZenSliders) {
-        $('#max_context_zenslider').remove();
-        CreateZenSliders($('#max_context'));
-        $('#rep_pen_range_textgenerationwebui_zenslider').remove();
-        CreateZenSliders($('#rep_pen_range_textgenerationwebui'));
-        $('#dry_penalty_last_n_textgenerationwebui_zenslider').remove();
-        CreateZenSliders($('#dry_penalty_last_n_textgenerationwebui'));
-        $('#rep_pen_decay_textgenerationwebui_zenslider').remove();
-        CreateZenSliders($('#rep_pen_decay_textgenerationwebui'));
+        const zensToRecreate = [
+            'max_context',
+            'rep_pen_range_textgenerationwebui',
+            'dry_penalty_last_n_textgenerationwebui',
+            'rep_pen_decay_textgenerationwebui',
+        ];
+        for (const id of zensToRecreate) {
+            const z = document.getElementById(`${id}_zenslider`);
+            if (z) { if (z.noUiSlider) z.noUiSlider.destroy(); z.remove(); }
+            const orig = document.getElementById(id);
+            if (orig) CreateZenSliders(orig);
+        }
     }
 }
 
