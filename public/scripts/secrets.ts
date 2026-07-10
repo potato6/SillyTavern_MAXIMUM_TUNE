@@ -268,11 +268,11 @@ export function updateSecretDisplay() {
         // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         const validSecret = !!secret_state[secret_key];
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const placeholder = document.getElementById('viewSecrets').attr(validSecret ? 'key_saved_text' : 'missing_key_text');
+        const placeholder = document.getElementById('viewSecrets')?.getAttribute(validSecret ? 'key_saved_text' : 'missing_key_text');
         const label = getActiveSecretLabel(secret_key);
         const placeholderWithLabel = label ? `${placeholder} (${label})` : placeholder;
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        input_selector.setAttribute('placeholder', placeholderWithLabel);
+        document.querySelector(input_selector)?.setAttribute('placeholder', placeholderWithLabel);
     }
 }
 
