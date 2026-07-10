@@ -9,7 +9,7 @@ import {
     saveSettingsDebounced,
     this_chid,
 } from '../script.js';
-declare const $: any; declare const toastr: any;
+declare const toastr: any;
 import { selected_group } from './group-chats.js';
 import { extension_settings, getContext, saveMetadataDebounced } from './extensions.js';
 import { getCharaFilename, debounce, delay } from './utils.js';
@@ -51,7 +51,9 @@ const chara_note_position = {
 function setNoteTextCommand(_, text) {
     if (text) {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#extension_floating_prompt').val(text).trigger('input');
+        const fp = document.getElementById('extension_floating_prompt');
+        fp.value = text;
+        fp.dispatchEvent(new Event('input', { bubbles: true }));
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.success(t`Author's Note text updated`);
     }
@@ -75,7 +77,9 @@ function setNoteDepthCommand(_, text) {
         }
 
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#extension_floating_depth').val(Math.abs(value)).trigger('input');
+        const fd = document.getElementById('extension_floating_depth');
+        fd.value = Math.abs(value);
+        fd.dispatchEvent(new Event('input', { bubbles: true }));
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.success(t`Author's Note depth updated`);
     }
@@ -99,7 +103,9 @@ function setNoteIntervalCommand(_, text) {
         }
 
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#extension_floating_interval').val(Math.abs(value)).trigger('input');
+        const fi = document.getElementById('extension_floating_interval');
+        fi.value = Math.abs(value);
+        fi.dispatchEvent(new Event('input', { bubbles: true }));
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.success(t`Author's Note frequency updated`);
     }
@@ -131,8 +137,11 @@ function setNotePositionCommand(_, text) {
             return;
         }
 
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(`input[name="extension_floating_position"][value="${position}"]`).prop('checked', true).trigger('input');
+        const posEl = document.querySelector(`input[name="extension_floating_position"][value="${position}"]`);
+        if (posEl) {
+            posEl.checked = true;
+            posEl.dispatchEvent(new Event('input', { bubbles: true }));
+        }
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.info(t`Author's Note position updated`);
     }
@@ -164,7 +173,9 @@ function setNoteRoleCommand(_, text) {
         }
 
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#extension_floating_role').val(Math.abs(role)).trigger('input');
+        const fr = document.getElementById('extension_floating_role');
+        fr.value = Math.abs(role);
+        fr.dispatchEvent(new Event('input', { bubbles: true }));
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.info(t`Author's Note role updated`);
     }
@@ -182,18 +193,18 @@ function updateSettings() {
 }
 
 // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
-const setMainPromptTokenCounterDebounced = debounce(async (value) => $('#extension_floating_prompt_token_counter').text(await getTokenCountAsync(value)), debounce_timeout.relaxed);
+const setMainPromptTokenCounterDebounced = debounce(async (value) => document.getElementById('extension_floating_prompt_token_counter').textContent = await getTokenCountAsync(value), debounce_timeout.relaxed);
 // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
-const setCharaPromptTokenCounterDebounced = debounce(async (value) => $('#extension_floating_chara_token_counter').text(await getTokenCountAsync(value)), debounce_timeout.relaxed);
+const setCharaPromptTokenCounterDebounced = debounce(async (value) => document.getElementById('extension_floating_chara_token_counter').textContent = await getTokenCountAsync(value), debounce_timeout.relaxed);
 // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
-const setDefaultPromptTokenCounterDebounced = debounce(async (value) => $('#extension_floating_default_token_counter').text(await getTokenCountAsync(value)), debounce_timeout.relaxed);
+const setDefaultPromptTokenCounterDebounced = debounce(async (value) => document.getElementById('extension_floating_default_token_counter').textContent = await getTokenCountAsync(value), debounce_timeout.relaxed);
 
 /**
  *
  */
 async function onExtensionFloatingPromptInput() {
     // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-    chat_metadata[metadata_keys.prompt] = $(this).val();
+    chat_metadata[metadata_keys.prompt] = this.value;
     setMainPromptTokenCounterDebounced(chat_metadata[metadata_keys.prompt]);
     updateSettings();
     saveMetadataDebounced();
@@ -204,7 +215,7 @@ async function onExtensionFloatingPromptInput() {
  */
 async function onExtensionFloatingIntervalInput() {
     // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-    chat_metadata[metadata_keys.interval] = Number($(this).val());
+    chat_metadata[metadata_keys.interval] = Number(this.value);
     updateSettings();
     saveMetadataDebounced();
 }
@@ -214,12 +225,12 @@ async function onExtensionFloatingIntervalInput() {
  */
 async function onExtensionFloatingDepthInput() {
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    let value = Number($(this).val());
+    let value = Number(this.value);
 
     if (value < 0) {
         value = Math.abs(value);
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(this).val(value);
+        this.value = value;
     }
 
     chat_metadata[metadata_keys.depth] = value;
@@ -252,12 +263,12 @@ async function onDefaultPositionInput(e) {
  */
 async function onDefaultDepthInput() {
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    let value = Number($(this).val());
+    let value = Number(this.value);
 
     if (value < 0) {
         value = Math.abs(value);
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(this).val(value);
+        this.value = value;
     }
 
     // @ts-expect-error TS(2339) FIXME: Property 'defaultDepth' does not exist on type '{ ... Remove this comment to see the full error message
@@ -270,7 +281,7 @@ async function onDefaultDepthInput() {
  */
 async function onDefaultIntervalInput() {
     // @ts-expect-error TS(2339) FIXME: Property 'defaultInterval' does not exist on type ... Remove this comment to see the full error message
-    extension_settings.note.defaultInterval = Number($(this).val());
+    extension_settings.note.defaultInterval = Number(this.value);
     saveSettingsDebounced();
 }
 
@@ -314,7 +325,7 @@ async function onExtensionFloatingCharPositionInput(e) {
  */
 function onExtensionFloatingCharaPromptInput() {
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const tempPrompt = $(this).val();
+    const tempPrompt = this.value;
     const avatarName = getCharaFilename();
     const tempCharaNote = {
         name: avatarName,
@@ -367,7 +378,7 @@ function onExtensionFloatingCharaPromptInput() {
  */
 function onExtensionFloatingCharaCheckboxChanged() {
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const value = !!$(this).prop('checked');
+    const value = !!this.checked;
     // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
     const charaNote = extension_settings.note.chara.find((e) => e.name === getCharaFilename());
 
@@ -384,7 +395,7 @@ function onExtensionFloatingCharaCheckboxChanged() {
  */
 function onExtensionFloatingDefaultInput() {
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    extension_settings.note.default = $(this).val();
+    extension_settings.note.default = this.value;
     setDefaultPromptTokenCounterDebounced(extension_settings.note.default);
     updateSettings();
 }
@@ -432,47 +443,51 @@ function loadSettings() {
     // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     chat_metadata[metadata_keys.role] = chat_metadata[metadata_keys.role] ?? extension_settings.note.defaultRole ?? DEFAULT_ROLE;
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#extension_floating_prompt').val(chat_metadata[metadata_keys.prompt]);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#extension_floating_interval').val(chat_metadata[metadata_keys.interval]);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#extension_floating_allow_wi_scan').prop('checked', extension_settings.note.allowWIScan ?? false);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#extension_floating_depth').val(chat_metadata[metadata_keys.depth]);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#extension_floating_role').val(chat_metadata[metadata_keys.role]);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(`input[name="extension_floating_position"][value="${chat_metadata[metadata_keys.position]}"]`).prop('checked', true);
+    document.getElementById('extension_floating_prompt').value = chat_metadata[metadata_keys.prompt];
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ...
+    document.getElementById('extension_floating_interval').value = chat_metadata[metadata_keys.interval];
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ...
+    document.getElementById('extension_floating_allow_wi_scan').checked = extension_settings.note.allowWIScan ?? false;
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ...
+    document.getElementById('extension_floating_depth').value = chat_metadata[metadata_keys.depth];
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ...
+    document.getElementById('extension_floating_role').value = chat_metadata[metadata_keys.role];
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ...
+    const fpPosEl = document.querySelector(`input[name="extension_floating_position"][value="${chat_metadata[metadata_keys.position]}"]`);
+    if (fpPosEl) fpPosEl.checked = true;
 
     if (extension_settings.note.chara && getContext().characterId !== undefined) {
         // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
         const charaNote = extension_settings.note.chara.find((e) => e.name === getCharaFilename());
 
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#extension_floating_chara').val(charaNote ? charaNote.prompt : '');
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#extension_use_floating_chara').prop('checked', charaNote ? charaNote.useChara : false);
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(`input[name="extension_floating_char_position"][value="${charaNote?.position ?? chara_note_position.replace}"]`).prop('checked', true);
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ...
+        document.getElementById('extension_floating_chara').value = charaNote ? charaNote.prompt : '';
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ...
+        document.getElementById('extension_use_floating_chara').checked = charaNote ? charaNote.useChara : false;
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ...
+        const fcpEl = document.querySelector(`input[name="extension_floating_char_position"][value="${charaNote?.position ?? chara_note_position.replace}"]`);
+        if (fcpEl) fcpEl.checked = true;
     } else {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#extension_floating_chara').val('');
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#extension_use_floating_chara').prop('checked', false);
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(`input[name="extension_floating_char_position"][value="${chara_note_position.replace}"]`).prop('checked', true);
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ...
+        document.getElementById('extension_floating_chara').value = '';
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ...
+        document.getElementById('extension_use_floating_chara').checked = false;
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ...
+        const fcpEl2 = document.querySelector(`input[name="extension_floating_char_position"][value="${chara_note_position.replace}"]`);
+        if (fcpEl2) fcpEl2.checked = true;
     }
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#extension_floating_default').val(extension_settings.note.default);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#extension_default_depth').val(extension_settings.note.defaultDepth);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#extension_default_interval').val(extension_settings.note.defaultInterval);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#extension_default_role').val(extension_settings.note.defaultRole);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(`input[name="extension_default_position"][value="${extension_settings.note.defaultPosition}"]`).prop('checked', true);
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ...
+    document.getElementById('extension_floating_default').value = extension_settings.note.default;
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ...
+    document.getElementById('extension_default_depth').value = extension_settings.note.defaultDepth;
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ...
+    document.getElementById('extension_default_interval').value = extension_settings.note.defaultInterval;
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ...
+    document.getElementById('extension_default_role').value = extension_settings.note.defaultRole;
+    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ...
+    const dpEl = document.querySelector(`input[name="extension_default_position"][value="${extension_settings.note.defaultPosition}"]`);
+    if (dpEl) dpEl.checked = true;
 }
 
 /**
@@ -529,7 +544,7 @@ export function setFloatingPrompt() {
     if (lastMessageNumber <= 0 || chat_metadata[metadata_keys.interval] <= 0) {
         context.setExtensionPrompt(MODULE_NAME, '', extension_prompt_types.NONE, MAX_INJECTION_DEPTH);
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#extension_floating_counter').text('(disabled)');
+        document.getElementById('extension_floating_counter').textContent = '(disabled)';
         shouldWIAddPrompt = false;
         return;
     }
@@ -541,7 +556,7 @@ export function setFloatingPrompt() {
     shouldWIAddPrompt = shouldAddPrompt;
 
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    let prompt = shouldAddPrompt ? $('#extension_floating_prompt').val() : '';
+    let prompt = shouldAddPrompt ? document.getElementById('extension_floating_prompt').value : '';
     if (shouldAddPrompt && extension_settings.note.chara && getContext().characterId !== undefined) {
         // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
         const charaNote = extension_settings.note.chara.find((e) => e.name === getCharaFilename());
@@ -576,7 +591,7 @@ export function setFloatingPrompt() {
         chat_metadata[metadata_keys.role],
     );
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#extension_floating_counter').text(shouldAddPrompt ? '0' : messagesTillInsertion);
+    document.getElementById('extension_floating_counter').textContent = shouldAddPrompt ? '0' : messagesTillInsertion;
 }
 
 /**
@@ -649,11 +664,11 @@ async function onChatChanged() {
 
     // Disable the chara note if in a group
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#extension_floating_chara').prop('disabled', !!context.groupId);
+    document.getElementById('extension_floating_chara').disabled = !!context.groupId;
 
     const tokenCounter1 = chat_metadata[metadata_keys.prompt] ? await getTokenCountAsync(chat_metadata[metadata_keys.prompt]) : 0;
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#extension_floating_prompt_token_counter').text(tokenCounter1);
+    document.getElementById('extension_floating_prompt_token_counter').textContent = tokenCounter1;
 
     let tokenCounter2;
     if (extension_settings.note.chara && context.characterId !== undefined) {
@@ -667,11 +682,11 @@ async function onChatChanged() {
     }
 
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#extension_floating_chara_token_counter').text(tokenCounter2 || 0);
+    document.getElementById('extension_floating_chara_token_counter').textContent = tokenCounter2 || 0;
 
     const tokenCounter3 = extension_settings.note.default ? await getTokenCountAsync(extension_settings.note.default) : 0;
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#extension_floating_default_token_counter').text(tokenCounter3);
+    document.getElementById('extension_floating_default_token_counter').textContent = tokenCounter3;
 }
 
 /**
@@ -679,7 +694,7 @@ async function onChatChanged() {
  */
 function onAllowWIScanCheckboxChanged() {
     // @ts-expect-error TS(2339) FIXME: Property 'allowWIScan' does not exist on type '{ d... Remove this comment to see the full error message
-    extension_settings.note.allowWIScan = !!$(this).prop('checked');
+    extension_settings.note.allowWIScan = !!this.checked;
     updateSettings();
 }
 
