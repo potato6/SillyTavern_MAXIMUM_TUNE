@@ -136,12 +136,9 @@ export function initBulkEdit() {
         if (state === BulkEditOverlayState.browse) disableBulkEdit();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#bulkEditButton').on('click', onEditButtonClick);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#bulkSelectAllButton').on('click', onSelectAllButtonClick);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#bulkDeleteButton').on('click', onDeleteButtonClick);
+    document.getElementById('bulkEditButton')?.addEventListener('click', onEditButtonClick);
+    document.getElementById('bulkSelectAllButton')?.addEventListener('click', onSelectAllButtonClick);
+    document.getElementById('bulkDeleteButton')?.addEventListener('click', onDeleteButtonClick);
 
     const characterContextMenu = new CharacterContextMenu(characterGroupOverlay);
     eventSource.on(event_types.CHARACTER_PAGE_LOADED, characterGroupOverlay.onPageLoad);
