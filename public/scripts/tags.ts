@@ -1198,8 +1198,10 @@ async function showTagImportPopup(character, existingTags, newTags, folderTags) 
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     printTagList($(popupEl?.querySelector('#import_folder_tags_list')), { tags: folderTags, tagOptions: { removable: true, removeAction: tag => removeFromArray(folderTags, tag) } });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    if (folderTags.length === 0) $(popupEl?.querySelector('#folder_tags_block')).hide();
+    if (folderTags.length === 0) {
+        const folderTagsBlock = popupEl?.querySelector('#folder_tags_block') as HTMLElement | null;
+        if (folderTagsBlock) folderTagsBlock.style.display = 'none';
+    }
 
     /**
      *
@@ -1470,12 +1472,11 @@ function appendTagToList(listElement, tag, { removable = false, isFilter = false
 
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(tagEl?.querySelector('.tag_name')).text(tag.name);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const removeButton = $(tagEl?.querySelector('.tag_remove'));
-    if (removable) { removeButton.show(); } else { removeButton.hide(); }
+    const removeButton = tagEl?.querySelector('.tag_remove') as HTMLElement | null;
+    if (removable) { if (removeButton) removeButton.style.display = ''; } else { if (removeButton) removeButton.style.display = 'none'; }
     if (removable && removeAction) {
         tagElement.attr('custom-remove-action', String(true));
-        removeButton[0]?.addEventListener('click', () => {
+        removeButton?.addEventListener('click', () => {
             // @ts-expect-error TS(2349) FIXME: This expression is not callable.
             const result = removeAction(tag);
             if (result !== false) tagElement.remove();
@@ -1814,11 +1815,9 @@ function printTagFilters(type = tag_filter_type.character) {
     showTagListButton.toggleClass('selected', shouldShowTags);
 
     if (shouldShowTags) {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(`${FILTER_SELECTOR} .tag:not(.actionable)`).show();
+        document.querySelectorAll(`${FILTER_SELECTOR} .tag:not(.actionable)`).forEach(el => (el as HTMLElement).style.display = '');
     } else {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(`${FILTER_SELECTOR} .tag:not(.actionable)`).hide();
+        document.querySelectorAll(`${FILTER_SELECTOR} .tag:not(.actionable)`).forEach(el => (el as HTMLElement).style.display = 'none');
     }
 
     updateTagFilterIndicator(FILTER_SELECTOR);
@@ -2369,8 +2368,8 @@ function appendViewTagToList(list, tag, count) {
     const colorPicker2Id = tag.id + '-tag-color2';
 
     if (!power_user.bogus_folders) {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(templateEl?.querySelector('.tag_as_folder')).hide();
+        const tagAsFolder = templateEl?.querySelector('.tag_as_folder') as HTMLElement | null;
+        if (tagAsFolder) tagAsFolder.style.display = 'none';
     }
 
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
@@ -2627,15 +2626,12 @@ function onTagListHintClick() {
     $(this).toggleClass('selected');
 
     // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-    const siblingTags = [...this.parentElement.querySelectorAll(':scope > .tag:not(.actionable)')];
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const $tagSiblings = $(siblingTags);
+    const siblingTags = [...this.parentElement.querySelectorAll(':scope > .tag:not(.actionable)')] as HTMLElement[];
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    if ($(this).hasClass('selected')) {
-        $tagSiblings.show();
+    if (this.classList.contains('selected')) {
+        siblingTags.forEach(el => el.style.display = '');
     } else {
-        $tagSiblings.hide();
+        siblingTags.forEach(el => el.style.display = 'none');
     }
 
     // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
