@@ -98,7 +98,7 @@ Tightest couplings — these plugins require jQuery and must be replaced or the 
 [x] **autocomplete** (~12 calls): Replaced with TomSelect (standalone, no jQuery)
 [x] **pagination** (~9 calls): Replaced with native `createPaginator()` helper using Array.slice()
 [ ] **slider** (~7 calls): jQuery UI slider. Complex zen slider system in power-user.ts.
-[ ] **toastr** (~636 calls): Already standalone — just cleanup `declare const toastr: any;` types.
+[x] **toastr** (~636 calls): Type declarations consolidated into global.d.ts
 
 PHASE 9 — Cleanup
 -------------------
