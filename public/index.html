@@ -8230,25 +8230,40 @@
     <!-- Script includes -->
     <script src="lib/polyfill.js"></script>
 <script>
-// micro-$ polyfill for legacy code
-window.$=function(s){var D={on:function(e,s2,h){return D},off:function(){return D},trigger:function(){return D},val:function(v){return v===void 0?'':D},prop:function(k,v){return v===void 0?void 0:D},css:function(k,v){return v===void 0?'':D},text:function(v){return v===void 0?'':D},html:function(v){return v===void 0?'':D},show:function(){return D},hide:function(){return D},toggle:function(){return D},empty:function(){return D},remove:function(){},addClass:function(){return D},removeClass:function(){return D},toggleClass:function(){return D},hasClass:function(){return!1},attr:function(k,v){return v===void 0?'':D},removeAttr:function(){return D},data:function(k,v){return v===void 0?void 0:D},find:function(){return[]},closest:function(){return null},first:function(){return D},last:function(){return D},eq:function(){return D},siblings:function(){return[]},parent:function(){return null},scrollTop:function(v){return v===void 0?0:D},position:function(){return{top:0,left:0}},is:function(){return!1},get:function(){return null},toArray:function(){return[]},length:0};if(typeof s==='function'){document.addEventListener('DOMContentLoaded',s);return D}
-if(typeof s!=='string'){return Object.assign(s,{on(e,s2,h){if(h){s.addEventListener(e,function(ev){var t=ev.target.closest(s2);if(t)h.call(t,ev)});return s}return s.addEventListener(e,s2),s},off(e,h){s.removeEventListener(e,h);return s},trigger(e){s.dispatchEvent(new Event(e,{bubbles:true}));return s},val(v){return v===void 0?s.value:(s.value=v,s)},prop(k,v){return v===void 0?s[k]:(s[k]=v,s)},css(k,v){if(typeof k==='object'){Object.assign(s.style,k);return s}return v===void 0?getComputedStyle(s)[k]:(s.style[k]=v,s)},text(v){return v===void 0?s.textContent:(s.textContent=v,s)},html(v){return v===void 0?s.innerHTML:(s.innerHTML=v,s)},show(){s.style.display='';return s},hide(){s.style.display='none';return s},toggle(v){s.style.display=v?'':'none';return s},addClass(c){s.classList.add(c);return s},removeClass(c){s.classList.remove(c);return s},toggleClass(c,f){s.classList.toggle(c,f);return s},hasClass(c){return s.classList.contains(c)},attr(k,v){return v===void 0?s.getAttribute(k):(s.setAttribute(k,v),s)},removeAttr(k){s.removeAttribute(k);return s},data(k,v){return v===void 0?s.dataset[k]:(s.dataset[k]=v,s)},find(sel){return s.querySelectorAll(sel)},parent(){return s.parentElement},empty(){s.innerHTML='';return s},remove(){s.remove();return s},first(){return s},last(){return s},eq(){return s},scrollTop(v){return v===void 0?s.scrollTop:(s.scrollTop=v,s)},is(sel){return s.matches(sel)},get(i){return i===void 0?s:s}})}
-const el=document.querySelector(s);if(!el)return D;return Object.assign(el,{
-val(v){return v===void 0?el.value:(el.value=v,el)},prop(k,v){return v===void 0?el[k]:(el[k]=v,el)},
-css(k,v){if(typeof k==='object'){Object.assign(el.style,k);return el}return v===void 0?getComputedStyle(el)[k]:(el.style[k]=v,el)},
-on(e,s2,h){if(h){el.addEventListener(e,function(ev){var t=ev.target.closest(s2);if(t)h.call(t,ev)});return el}return el.addEventListener(e,s2),el},off(e,h){el.removeEventListener(e,h);return el},trigger(e){el.dispatchEvent(new Event(e,{bubbles:true}));return el},
-text(v){return v===void 0?el.textContent:(el.textContent=v,el)},html(v){return v===void 0?el.innerHTML:(el.innerHTML=v,el)},
-show(){el.style.display='';return el},hide(){el.style.display='none';return el},toggle(v){el.style.display=v?'':'none';return el},
-empty(){el.innerHTML='';return el},remove(){el.remove();return el},
-addClass(c){el.classList.add(c);return el},removeClass(c){el.classList.remove(c);return el},
-toggleClass(c,f){el.classList.toggle(c,f);return el},hasClass(c){return el.classList.contains(c)},
-attr(k,v){return v===void 0?el.getAttribute(k):(el.setAttribute(k,v),el)},removeAttr(k){el.removeAttribute(k);return el},
-data(k,v){return v===void 0?el.dataset[k]:(el.dataset[k]=v,el)},find(s){return el.querySelectorAll(s)},
-siblings(s){return[...el.parentElement.children].filter(c=>c!==el)},parent(){return el.parentElement},
-scrollTop(v){return v===void 0?el.scrollTop:(el.scrollTop=v,el)},
-position(){var r=el.getBoundingClientRect();return{top:r.top,left:r.left}},
-is(s){return el.matches(s)},get(i){return i===void 0?el:el},toArray(){return[el]},
-});try{Object.defineProperty(el,'length',{get(){return 1}})}catch(e){};window.jQuery=$;</script>
+// micro-$ polyfill
+var $=function(s){if(typeof s==='function'){document.addEventListener('DOMContentLoaded',s);return}
+var D={on:function(){return D},val:function(){return''},prop:function(){return D},css:function(){return D},
+text:function(){return''},html:function(){return''},show:function(){return D},hide:function(){return D},
+toggle:function(){return D},empty:function(){return D},remove:function(){},addClass:function(){return D},
+removeClass:function(){return D},toggleClass:function(){return D},hasClass:function(){return!1},
+attr:function(){return D},removeAttr:function(){return D},data:function(){return D},
+find:function(){return[]},closest:function(){return null},first:function(){return D},
+last:function(){return D},eq:function(){return D},parent:function(){return null},
+scrollTop:function(){return 0},length:0};
+if(typeof s!=='string'){s.on=function(e,h){s.addEventListener(e,h);return s};s.trigger=function(e){s.dispatchEvent(new Event(e,{bubbles:true}));return s};return s}
+var el=document.querySelector(s);if(!el)return D;
+el.on=function(e,h){el.addEventListener(e,h);return el};
+el.trigger=function(e){el.dispatchEvent(new Event(e,{bubbles:true}));return el};
+el.val=function(v){return v===void 0?el.value:(el.value=v,el)};
+el.prop=function(k,v){return v===void 0?el[k]:(el[k]=v,el)};
+el.text=function(v){return v===void 0?el.textContent:(el.textContent=v,el)};
+el.html=function(v){return v===void 0?el.innerHTML:(el.innerHTML=v,el)};
+el.css=function(k,v){if(typeof k==='object'){Object.assign(el.style,k);return el}return v===void 0?getComputedStyle(el)[k]:(el.style[k]=v,el)};
+el.show=function(){el.style.display='';return el};
+el.hide=function(){el.style.display='none';return el};
+el.toggle=function(v){el.style.display=v?'':'none';return el};
+el.empty=function(){el.innerHTML='';return el};
+el.addClass=function(c){el.classList.add(c);return el};
+el.removeClass=function(c){el.classList.remove(c);return el};
+el.toggleClass=function(c,f){el.classList.toggle(c,f);return el};
+el.hasClass=function(c){return el.classList.contains(c)};
+el.attr=function(k,v){return v===void 0?el.getAttribute(k):(el.setAttribute(k,v),el)};
+el.removeAttr=function(k){el.removeAttribute(k);return el};
+el.data=function(k,v){return v===void 0?el.dataset[k]:(el.dataset[k]=v,el)};
+el.find=function(s){return el.querySelectorAll(s)};
+el.siblings=function(){return[...el.parentElement.children].filter(function(c){return c!==el})};
+el.scrollTop=function(v){return v===void 0?el.scrollTop:(el.scrollTop=v,el)};
+el.length=1;return el};window.jQuery=$;</script>
     <script src="lib/cropper.min.js"></script>
     <script src="lib/toastr.min.js"></script>
     <script src="lib/toolcool-color-picker.js"></script>
