@@ -862,16 +862,15 @@ export function cancelStatusCheck(reason = 'Manually cancelled status check') {
  *
  */
 export function displayOnlineStatus() {
+    const indicator = document.querySelector('.online_status_indicator');
+    const text = document.querySelector('.online_status_text');
     if (online_status == 'no_connection') {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('.online_status_indicator').removeClass('success');
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('.online_status_text').text($('#API-status-top').attr('no_connection_text'));
+        indicator?.classList.remove('success');
+        const apiStatus = document.getElementById('API-status-top');
+        if (text && apiStatus) text.textContent = apiStatus.getAttribute('no_connection_text') ?? '';
     } else {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('.online_status_indicator').addClass('success');
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('.online_status_text').text(online_status);
+        indicator?.classList.add('success');
+        if (text) text.textContent = online_status;
     }
 }
 
@@ -10087,36 +10086,21 @@ function select_rm_create({ switchMenu = true } = {}) {
     (document.getElementById('description_textarea') as HTMLTextAreaElement).value = create_save.description;
     (document.getElementById('character_world') as HTMLInputElement).value = create_save.world;
     (document.getElementById('creator_notes_textarea') as HTMLTextAreaElement).value = create_save.creator_notes;
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#creator_notes_spoiler').html(formatCreatorNotes(create_save.creator_notes, ''));
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#post_history_instructions_textarea').val(create_save.post_history_instructions);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#system_prompt_textarea').val(create_save.system_prompt);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#tags_textarea').val(create_save.tags);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#creator_textarea').val(create_save.creator);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#character_version_textarea').val(create_save.character_version);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#personality_textarea').val(create_save.personality);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#firstmessage_textarea').val(create_save.first_message);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#talkativeness_slider').val(create_save.talkativeness);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#scenario_pole').val(create_save.scenario);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#depth_prompt_prompt').val(create_save.depth_prompt_prompt);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#depth_prompt_depth').val(create_save.depth_prompt_depth);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#depth_prompt_role').val(create_save.depth_prompt_role);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#mes_example_textarea').val(create_save.mes_example);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#character_json_data').val('');
+    document.getElementById('creator_notes_spoiler')!.innerHTML = formatCreatorNotes(create_save.creator_notes, '');
+    (document.getElementById('post_history_instructions_textarea') as HTMLTextAreaElement).value = create_save.post_history_instructions;
+    (document.getElementById('system_prompt_textarea') as HTMLTextAreaElement).value = create_save.system_prompt;
+    (document.getElementById('tags_textarea') as HTMLTextAreaElement).value = create_save.tags;
+    (document.getElementById('creator_textarea') as HTMLTextAreaElement).value = create_save.creator;
+    (document.getElementById('character_version_textarea') as HTMLTextAreaElement).value = create_save.character_version;
+    (document.getElementById('personality_textarea') as HTMLTextAreaElement).value = create_save.personality;
+    (document.getElementById('firstmessage_textarea') as HTMLTextAreaElement).value = create_save.first_message;
+    (document.getElementById('talkativeness_slider') as HTMLInputElement).value = create_save.talkativeness;
+    (document.getElementById('scenario_pole') as HTMLInputElement).value = create_save.scenario;
+    (document.getElementById('depth_prompt_prompt') as HTMLInputElement).value = create_save.depth_prompt_prompt;
+    (document.getElementById('depth_prompt_depth') as HTMLInputElement).value = create_save.depth_prompt_depth;
+    (document.getElementById('depth_prompt_role') as HTMLInputElement).value = create_save.depth_prompt_role;
+    (document.getElementById('mes_example_textarea') as HTMLTextAreaElement).value = create_save.mes_example;
+    (document.getElementById('character_json_data') as HTMLTextAreaElement).value = '';
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#avatar_div').css('display', 'flex');
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
