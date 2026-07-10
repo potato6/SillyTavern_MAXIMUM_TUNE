@@ -12723,7 +12723,7 @@ function initCharacterSearch() {
     }, 200);
 
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document).on('click', '.api_loading', () => cancelStatusCheck('Canceled because connecting was manually canceled'));
+    document.addEventListener('click', function (e) { if (e.target.closest('.api_loading')) { cancelStatusCheck('Canceled because connecting was manually canceled'); } });
 
     //////////INPUT BAR FOCUS-KEEPING LOGIC/////////////
     let S_TAPreviouslyFocused = false;
