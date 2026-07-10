@@ -613,10 +613,9 @@ export async function loadTextGenSettings(data, loadedSettings) {
     for (const [type, selector] of Object.entries(SERVER_INPUTS)) {
         const control = document.querySelector(selector);
         if (control) {
-            (control as HTMLInputElement).value = textgenerationwebui_settings.server_urls[type] ?? '';
-            control.addEventListener('input', function () {
-                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-                textgenerationwebui_settings.server_urls[type] = String((this as HTMLInputElement).value).trim();
+            (control as HTMLInputElement).value = (textgenerationwebui_settings as any).server_urls[type] ?? '';
+            control.addEventListener('input', function (this: any) {
+                (textgenerationwebui_settings as any).server_urls[type] = String((this as HTMLInputElement).value).trim();
                 saveSettingsDebounced();
             });
         }
@@ -648,12 +647,12 @@ export async function loadTextGenSettings(data, loadedSettings) {
     (document.getElementById('textgen_type') as HTMLSelectElement).value = textgenerationwebui_settings.type;
     const orProviders = document.getElementById('openrouter_providers_text');
     if (orProviders) {
-        (orProviders as HTMLInputElement).value = textgenerationwebui_settings.openrouter_providers;
+        (orProviders as HTMLInputElement).value = String(textgenerationwebui_settings.openrouter_providers ?? '');
         orProviders.dispatchEvent(new Event('change'));
     }
     const orQuant = document.getElementById('openrouter_quantizations_text');
     if (orQuant) {
-        (orQuant as HTMLInputElement).value = textgenerationwebui_settings.openrouter_quantizations;
+        (orQuant as HTMLInputElement).value = String(textgenerationwebui_settings.openrouter_quantizations ?? '');
         orQuant.dispatchEvent(new Event('change'));
     }
     // @ts-expect-error TS(2345) FIXME: Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
