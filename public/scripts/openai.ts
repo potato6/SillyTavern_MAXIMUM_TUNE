@@ -6942,7 +6942,7 @@ function toggleChatCompletionForms() {
         const mode = el.dataset.sourceMode;
         const validSources = el.dataset.source.split(',');
         const matchesSource = validSources.includes(oai_settings.chat_completion_source);
-        ((() => { if (el) { el.style.display = mode !== 'except' ? matchesSource : !matchesSource ? '' : 'none'; } })());
+        ((() => { if (el) { el.style.display = mode !== 'except' ? (matchesSource ? '' : 'none') : (!matchesSource ? '' : 'none'); } })());
     }
 
     setToolReasoningControls();
@@ -7638,7 +7638,7 @@ export function initOpenAI() {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         oai_settings.temp_openai = Number(this.value);
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        document.getElementById('temp_counter_openai').value = Number(this.value.toFixed(2));
+        document.getElementById('temp_counter_openai').value = parseFloat(this.value).toFixed(2);
         saveSettingsDebounced();
     });
 
@@ -7646,7 +7646,7 @@ export function initOpenAI() {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         oai_settings.freq_pen_openai = Number(this.value);
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        document.getElementById('freq_pen_counter_openai').value = Number(this.value.toFixed(2));
+        document.getElementById('freq_pen_counter_openai').value = parseFloat(this.value).toFixed(2);
         saveSettingsDebounced();
     });
 
@@ -7654,7 +7654,7 @@ export function initOpenAI() {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         oai_settings.pres_pen_openai = Number(this.value);
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        document.getElementById('pres_pen_counter_openai').value = Number(this.value.toFixed(2));
+        document.getElementById('pres_pen_counter_openai').value = parseFloat(this.value).toFixed(2);
         saveSettingsDebounced();
     });
 
@@ -7662,15 +7662,15 @@ export function initOpenAI() {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         oai_settings.top_p_openai = Number(this.value);
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        document.getElementById('top_p_counter_openai').value = Number(this.value.toFixed(2));
+        document.getElementById('top_p_counter_openai').value = parseFloat(this.value).toFixed(2);
         saveSettingsDebounced();
     });
 
-    document.getElementById('top_k_openai')?.addEventListener('input', function () {
+    document.getElementById('top_k_openai')?.addEventListener('change', function () {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         oai_settings.top_k_openai = Number(this.value);
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        document.getElementById('top_k_counter_openai').value = Number(this.value.toFixed(0));
+        document.getElementById('top_k_counter_openai').value = parseFloat(this.value).toFixed(0);
         saveSettingsDebounced();
     });
 
