@@ -83,6 +83,7 @@ import { COMETAPI_IGNORE_PATTERNS, IGNORE_SYMBOL, MEDIA_DISPLAY, MEDIA_TYPE } fr
 import { syncNanoGptProvidersForModel, syncOpenRouterProvidersForModel, updateNanoGptProvidersWarning, updateOpenRouterProvidersWarning } from './textgen-models.js';
 
 declare const TomSelect: any;
+declare const Sortable: any;
 
 export {
     openai_messages_count,
@@ -5166,19 +5167,17 @@ function onLogitBiasPresetChange() {
     }
 
     // Check if a sortable instance exists
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    if ($(list).sortable('instance') !== undefined) {
+    const listAny = list as any;
+    if (listAny.sortableInstance) {
         // Destroy the instance
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(list).sortable('destroy');
+        listAny.sortableInstance.destroy();
     }
 
     // Make the list sortable
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(list).sortable({
+    listAny.sortableInstance = new Sortable(listAny, {
         delay: getSortableDelay(),
         handle: '.drag-handle',
-        stop: function () {
+        onEnd: function () {
             // @ts-expect-error TS(7034) FIXME: Variable 'order' implicitly has type 'any[]' in so... Remove this comment to see the full error message
             const order = [];
             // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
