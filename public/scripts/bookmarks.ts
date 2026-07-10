@@ -793,30 +793,25 @@ function registerBookmarksSlashCommands() {
  *
  */
 export function initBookmarks() {
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#option_new_bookmark').on('click', saveBookmarkMenu);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#option_back_to_main').on('click', backToMainChat);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#option_convert_to_group').on('click', convertSoloToGroupChat);
+    document.getElementById('option_new_bookmark')?.addEventListener('click', saveBookmarkMenu);
+    document.getElementById('option_back_to_main')?.addEventListener('click', backToMainChat);
+    document.getElementById('option_convert_to_group')?.addEventListener('click', convertSoloToGroupChat);
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document).on('click', '.select_chat_block, .mes_bookmark', async function (e) {
+    document.addEventListener('click', async function (e) {
+        if (!(e.target instanceof Element)) return;
+        const el = e.target.closest('.select_chat_block, .mes_bookmark');
+        if (!el) return;
         // If shift is held down, we are not following the bookmark, but creating a new one
-        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-        const mes = this.closest('.mes');
+        const mes = el.closest('.mes');
         if (e.shiftKey && mes) {
             const selectedMesId = mes.getAttribute('mesid');
             await createNewBookmark(Number(selectedMesId));
             return;
         }
 
-        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-        const fileName = this.classList.contains('mes_bookmark')
-            // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-            ? this.closest('.mes').getAttribute('bookmark_link')
-            // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-            : this.getAttribute('file_name');
+        const fileName = el.classList.contains('mes_bookmark')
+            ? el.closest('.mes').getAttribute('bookmark_link')
+            : el.getAttribute('file_name');
 
         if (!fileName) {
             return;
@@ -839,24 +834,26 @@ export function initBookmarks() {
             await loaderHandle.hide();
         }
 
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#shadow_select_chat_popup').css('display', 'none');
+        const shadowPopup = document.getElementById('shadow_select_chat_popup');
+        if (shadowPopup) shadowPopup.style.display = 'none';
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document).on('click', '.mes_create_bookmark', async function () {
-        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-        const mesId = this.closest('.mes').getAttribute('mesid');
-        if (mesId !== undefined) {
+    document.addEventListener('click', async function (e) {
+        if (!(e.target instanceof Element)) return;
+        const el = e.target.closest('.mes_create_bookmark');
+        if (!el) return;
+        const mesId = el.closest('.mes')?.getAttribute('mesid');
+        if (mesId !== undefined && mesId !== null) {
             await createNewBookmark(Number(mesId));
         }
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document).on('click', '.mes_create_branch', async function () {
-        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-        const mesId = this.closest('.mes').getAttribute('mesid');
-        if (mesId !== undefined) {
+    document.addEventListener('click', async function (e) {
+        if (!(e.target instanceof Element)) return;
+        const el = e.target.closest('.mes_create_branch');
+        if (!el) return;
+        const mesId = el.closest('.mes')?.getAttribute('mesid');
+        if (mesId !== undefined && mesId !== null) {
             await branchChat(Number(mesId));
         }
     });
