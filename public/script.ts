@@ -12715,8 +12715,7 @@ function initCharacterSearch() {
 }
 
 // MARK: DOM Handlers Start
-// @ts-expect-error TS(2304) FIXME: Cannot find name 'jQuery'.
-jQuery(async function () {
+(async function () {
     setTimeout(function () {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#groupControlsToggle').trigger('click');
