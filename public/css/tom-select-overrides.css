@@ -1,0 +1,103 @@
+/* TomSelect theme overrides for SillyTavern */
+.ts-control {
+    border: 1px solid var(--SmartThemeBorderColor);
+    background-color: var(--SmartThemeBlurTintColor);
+    color: var(--SmartThemeBodyColor);
+    box-shadow: none;
+}
+
+.ts-control input {
+    color: var(--SmartThemeBodyColor);
+}
+
+.focus .ts-control {
+    border-color: var(--SmartThemeBorderColor);
+    box-shadow: none;
+}
+
+.ts-dropdown {
+    background-color: var(--SmartThemeBlurTintColor);
+    border: 1px solid var(--SmartThemeBorderColor);
+    border-top: none;
+    color: var(--SmartThemeBodyColor);
+    backdrop-filter: blur(calc(var(--SmartThemeBlurStrength) * 2));
+    text-shadow: 0px 0px calc(var(--shadowWidth) * 1px) var(--SmartThemeShadowColor);
+    z-index: 40000;
+}
+
+.ts-dropdown-content {
+    scrollbar-width: thin;
+}
+
+.ts-dropdown .option,
+.ts-dropdown .create,
+.ts-dropdown .no-results {
+    color: var(--SmartThemeBodyColor);
+}
+
+.ts-dropdown .active {
+    background-color: var(--white20a);
+    color: var(--SmartThemeBodyColor);
+}
+
+.ts-dropdown .active.create {
+    color: var(--SmartThemeBodyColor);
+}
+
+.ts-wrapper .ts-control > input::placeholder {
+    color: var(--SmartThemeBodyColor);
+    opacity: 0.5;
+}
+
+.ts-wrapper.multi .ts-control > div {
+    background: var(--white20a);
+    border: 1px solid var(--SmartThemeBorderColor);
+    color: var(--SmartThemeBodyColor);
+    border-radius: 5px;
+    text-shadow: none;
+    box-shadow: none;
+}
+
+.ts-wrapper.multi .ts-control > div.active {
+    background: var(--white30a);
+    border-color: var(--SmartThemeBorderColor);
+    color: var(--SmartThemeBodyColor);
+}
+
+.ts-wrapper.single .ts-control {
+    background: var(--SmartThemeBlurTintColor);
+    box-shadow: none;
+    border-color: var(--SmartThemeBorderColor);
+}
+
+.ts-wrapper.single .ts-control::after {
+    border-top-color: var(--SmartThemeBodyColor);
+}
+
+.ts-wrapper.single.dropdown-active .ts-control::after {
+    border-bottom-color: var(--SmartThemeBodyColor);
+}
+
+.ts-wrapper.disabled .ts-control {
+    background-color: var(--black30a);
+    opacity: 0.5;
+}
+
+.ts-wrapper .clear-button {
+    color: var(--SmartThemeBodyColor) !important;
+}
+
+.ts-dropdown .optgroup-header {
+    background: transparent;
+    color: var(--SmartThemeBodyColor);
+    font-weight: bold;
+    border-top: 1px solid var(--SmartThemeBorderColor);
+}
+
+.ts-dropdown .optgroup {
+    border-top-color: var(--SmartThemeBorderColor);
+}
+
+.ts-dropdown .spinner::after {
+    border-color: var(--SmartThemeBodyColor) transparent;
+}
