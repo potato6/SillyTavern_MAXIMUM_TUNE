@@ -14,16 +14,11 @@ import { isTrueBoolean, resetScrollHeight } from './utils.js';
 
 export let system_prompts = [];
 
-// @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-const $enabled = $('#sysprompt_enabled');
-// @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-const $select = $('#sysprompt_select');
-// @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-const $content = $('#sysprompt_content');
-// @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-const $postHistory = $('#sysprompt_post_history');
-// @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-const $contentBlock = $('#SystemPromptBlock');
+const $enabled = document.getElementById('sysprompt_enabled') as HTMLInputElement;
+const $select = document.getElementById('sysprompt_select') as HTMLSelectElement;
+const $content = document.getElementById('sysprompt_content') as HTMLTextAreaElement;
+const $postHistory = document.getElementById('sysprompt_post_history') as HTMLTextAreaElement;
+const $contentBlock = document.getElementById('SystemPromptBlock') as HTMLElement;
 
 /**
  *
@@ -71,13 +66,13 @@ export async function loadSystemPrompts(data) {
         option.value = prompt.name;
         // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
         option.textContent = prompt.name;
-        $select.append(option);
+        $select.appendChild(option);
     }
 
-    $enabled.prop('checked', power_user.sysprompt.enabled);
-    $select.val(power_user.sysprompt.name);
-    $content.val(power_user.sysprompt.content || '');
-    $postHistory.val(power_user.sysprompt.post_history || '');
+    $enabled.checked = power_user.sysprompt.enabled;
+    $select.value = power_user.sysprompt.name;
+    $content.value = power_user.sysprompt.content || '';
+    $postHistory.value = power_user.sysprompt.post_history || '';
     if (!CSS.supports('field-sizing', 'content')) {
         await resetScrollHeight($content);
     }
@@ -120,7 +115,7 @@ export async function checkForSystemPromptInInstructTemplate(name, template) {
 function toggleSystemPromptDisabledControls() {
     // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     document.getElementById('sysprompt_enabled').parentElement.querySelector('i').classList.toggle('toggleEnabled', !!power_user.sysprompt.enabled);
-    $contentBlock.toggleClass('disabled', !power_user.sysprompt.enabled);
+    $contentBlock.classList.toggle('disabled', !power_user.sysprompt.enabled);
 }
 
 /**
@@ -131,7 +126,7 @@ function toggleSystemPromptDisabledControls() {
 // @ts-expect-error TS(7006) FIXME: Parameter 'state' implicitly has an 'any' type.
 function setSystemPromptStateCallback(state) {
     power_user.sysprompt.enabled = state;
-    $enabled.prop('checked', state);
+    $enabled.checked = state;
     toggleSystemPromptDisabledControls();
     saveSettingsDebounced();
     return '';
@@ -186,7 +181,8 @@ function selectSystemPromptCallback(args, name) {
         foundName = result[0]!.item;
     }
 
-    $select.val(foundName).trigger('change');
+    $select.value = foundName;
+    $select.dispatchEvent(new Event('change', {bubbles: true}));
     // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
     if (!quiet) toastr.success(`System prompt "${foundName}" selected`);
     return foundName;
@@ -196,27 +192,26 @@ function selectSystemPromptCallback(args, name) {
  *
  */
 export function initSystemPrompts() {
-    $enabled.on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        power_user.sysprompt.enabled = !!$(this).prop('checked');
+    $enabled.addEventListener('input', function () {
+        power_user.sysprompt.enabled = this.checked;
         toggleSystemPromptDisabledControls();
         saveSettingsDebounced();
     });
 
-    $select.on('change', async function () {
+    $select.addEventListener('change', async function () {
         if (!power_user.sysprompt.enabled) {
-            $enabled.prop('checked', true).trigger('input');
+            $enabled.checked = true;
+            $enabled.dispatchEvent(new Event('input', {bubbles: true}));
         }
 
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const name = String($(this).val());
+        const name = String(this.value);
         // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
         const prompt = system_prompts.find(p => p.name === name);
         if (prompt) {
             // @ts-expect-error TS(2339) FIXME: Property 'content' does not exist on type 'never'.
-            $content.val(prompt.content || '');
+            $content.value = prompt.content || '';
             // @ts-expect-error TS(2339) FIXME: Property 'post_history' does not exist on type 'ne... Remove this comment to see the full error message
-            $postHistory.val(prompt.post_history || '');
+            $postHistory.value = prompt.post_history || '';
 
             if (!CSS.supports('field-sizing', 'content')) {
                 await resetScrollHeight($content);
@@ -232,15 +227,13 @@ export function initSystemPrompts() {
         saveSettingsDebounced();
     });
 
-    $content.on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        power_user.sysprompt.content = String($(this).val());
+    $content.addEventListener('input', function () {
+        power_user.sysprompt.content = String(this.value);
         saveSettingsDebounced();
     });
 
-    $postHistory.on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        power_user.sysprompt.post_history = String($(this).val());
+    $postHistory.addEventListener('input', function () {
+        power_user.sysprompt.post_history = String(this.value);
         saveSettingsDebounced();
     });
 
