@@ -494,26 +494,31 @@ function getHordeModelTemplate(option) {
  *
  */
 export function initHorde() {
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#horde_model').on('mousedown change', async function (e) {
-        console.log('Horde model change', e);
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const modelValue = $('#horde_model').val();
-        // @ts-expect-error TS(2322) FIXME: Type 'any[]' is not assignable to type 'never[]'.
-        horde_settings.models = Array.isArray(modelValue) ? modelValue : [];
-        console.log('Updated Horde models', horde_settings.models);
+    const hordeModelSelect = document.getElementById('horde_model');
+    if (hordeModelSelect) {
+        hordeModelSelect.addEventListener('mousedown', async function (this: HTMLSelectElement, e: Event) {
+            // Allow the mousedown to propagate for select2 to work
+            console.log('Horde model mousedown', e);
+        });
+        hordeModelSelect.addEventListener('change', async function (this: HTMLSelectElement) {
+            console.log('Horde model change');
+            const modelValue = Array.from(this.selectedOptions).map(option => option.value);
+            // @ts-expect-error TS(2322) FIXME: Type 'string[]' is not assignable to type 'never[]'.
+            horde_settings.models = modelValue;
+            console.log('Updated Horde models', horde_settings.models);
 
-        // Try select instruct preset
-        autoSelectInstructPreset(horde_settings.models.join(' '));
-        if (horde_settings.models.length) {
-            adjustHordeGenerationParams(max_context, amount_gen);
-        } else {
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#adjustedHordeParams').text(t`Context` + ': --, ' + t`Response` + ': --');
-        }
+            // Try select instruct preset
+            autoSelectInstructPreset(horde_settings.models.join(' '));
+            if (horde_settings.models.length) {
+                adjustHordeGenerationParams(max_context, amount_gen);
+            } else {
+                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+                $('#adjustedHordeParams').text(t`Context` + ': --, ' + t`Response` + ': --');
+            }
 
-        saveSettingsDebounced();
-    });
+            saveSettingsDebounced();
+        });
+    }
 
 
     document.getElementById('horde_auto_adjust_response_length')?.addEventListener('input', function (this: HTMLInputElement) {
