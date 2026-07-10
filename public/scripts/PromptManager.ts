@@ -3,6 +3,7 @@
 import { DOMPurify } from '../lib.js';
 
 import { event_types, eventSource, is_send_press, main_api, substituteParams } from '../script.js';
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 declare const Sortable: any;
 import { is_group_generating } from './group-chats.js';
 import { Message, TokenHandler } from './openai.js';
@@ -820,7 +821,6 @@ class PromptManager {
                                 const data = JSON.parse(fileContent.toString());
                                 this.import(data);
                             } catch (err) {
-                                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                                 toastr.error(t`An error occurred while importing prompts. More info available in console.`);
                                 console.log('An error occurred while importing prompts');
                                 // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
@@ -2243,6 +2243,7 @@ class PromptManager {
             delay: this.configuration.sortableDelay,
             handle: isMobile() ? '.drag-handle' : undefined,
             dataIdAttr: 'data-pm-identifier',
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             onUpdate: (event: any, ui: any) => {
                 const promptOrder = this.getPromptOrderForCharacter(this.activeCharacter);
                 const promptListElement = sortableInstance.toArray();

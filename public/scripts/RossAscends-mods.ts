@@ -1240,7 +1240,6 @@ export function initRossMods() {
                     behavior: 'smooth',
                 });
             } else {
-                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                 toastr.warning('Context line not found, send a message first!');
             }
             return;
