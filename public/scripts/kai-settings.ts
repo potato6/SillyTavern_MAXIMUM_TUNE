@@ -22,6 +22,8 @@ import {
 import { getEventSourceStream } from './sse-stream.js';
 import { getSortableDelay, versionCompare } from './utils.js';
 
+declare const Sortable: any;
+
 // @ts-expect-error TS(7005) FIXME: Variable 'koboldai_settings' implicitly has an 'an... Remove this comment to see the full error message
 export let koboldai_settings;
 // @ts-expect-error TS(7005) FIXME: Variable 'koboldai_setting_names' implicitly has a... Remove this comment to see the full error message
@@ -593,23 +595,25 @@ export function initKoboldSettings() {
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#kobold_order').sortable({
-        delay: getSortableDelay(),
-        stop: function () {
-            // @ts-expect-error TS(7034) FIXME: Variable 'order' implicitly has type 'any[]' in so... Remove this comment to see the full error message
-            const order = [];
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-            Array.from(document.getElementById('kobold_order').children).forEach(function (child) {
-                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                order.push($(child).data('id'));
-            });
-            // @ts-expect-error TS(7005) FIXME: Variable 'order' implicitly has an 'any[]' type.
-            kai_settings.sampler_order = order;
-            console.log('Samplers reordered:', kai_settings.sampler_order);
-            saveSettingsDebounced();
-        },
-    });
+    const koboldOrderEl = document.getElementById('kobold_order') as any;
+    if (koboldOrderEl) {
+        koboldOrderEl.sortableInstance = new Sortable(koboldOrderEl, {
+            delay: getSortableDelay(),
+            onEnd: function () {
+                // @ts-expect-error TS(7034) FIXME: Variable 'order' implicitly has type 'any[]' in so... Remove this comment to see the full error message
+                const order = [];
+                // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
+                Array.from(document.getElementById('kobold_order').children).forEach(function (child) {
+                    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+                    order.push($(child).data('id'));
+                });
+                // @ts-expect-error TS(7005) FIXME: Variable 'order' implicitly has an 'any[]' type.
+                kai_settings.sampler_order = order;
+                console.log('Samplers reordered:', kai_settings.sampler_order);
+                saveSettingsDebounced();
+            },
+        });
+    }
 
     document.getElementById('samplers_order_recommended')?.addEventListener('click', function () {
         kai_settings.sampler_order = KOBOLDCPP_ORDER;
@@ -631,8 +635,8 @@ export function initKoboldSettings() {
             document.getElementById('kobold_api-settings')?.style.setProperty('opacity', '1');
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#kobold_order')
-                .css('opacity', 1)
-                .sortable('enable');
+                .css('opacity', 1);
+            koboldOrderEl.sortableInstance?.option('disabled', false);
         } else {
             kai_settings.preset_settings = 'gui';
 
@@ -641,8 +645,8 @@ export function initKoboldSettings() {
 
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#kobold_order')
-                .css('opacity', 0.5)
-                .sortable('disable');
+                .css('opacity', 0.5);
+            koboldOrderEl.sortableInstance?.option('disabled', true);
         }
         saveSettingsDebounced();
         await eventSource.emit(event_types.PRESET_CHANGED, { apiId: 'kobold', name: kai_settings.preset_settings });
