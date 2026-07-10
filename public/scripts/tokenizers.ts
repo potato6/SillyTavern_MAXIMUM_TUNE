@@ -3,7 +3,6 @@ import { characters, event_types, eventSource, main_api, nai_settings, online_st
 import { power_user, registerDebugFunction } from './power-user.js';
 import { chat_completion_sources, model_list, oai_settings } from './openai.js';
 import { groups, selected_group } from './group-chats.js';
-declare const toastr: any;
 import { getStringHash } from './utils.js';
 import { kai_flags, kai_settings } from './kai-settings.js';
 import { textgen_types, textgenerationwebui_settings as textgen_settings, getTextGenServer, getTextGenModel } from './textgen-settings.js';

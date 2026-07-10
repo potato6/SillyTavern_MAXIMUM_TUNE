@@ -1,5 +1,4 @@
 import { Fuse } from '../lib.js';
-declare const toastr: any;
 
 import {
     amount_gen,

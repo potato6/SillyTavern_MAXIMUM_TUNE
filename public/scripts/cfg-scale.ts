@@ -15,7 +15,6 @@ import { power_user } from './power-user.js';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 declare const $: any;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-declare const toastr: any;
 
 const extensionName = 'cfg';
 const defaultSettings = {

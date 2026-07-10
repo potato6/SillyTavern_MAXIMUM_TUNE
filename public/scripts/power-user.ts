@@ -1,6 +1,5 @@
 import { Fuse, Handlebars } from '../lib.js';
 declare const $: any;
-declare const toastr: any;
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
 declare let toastr: any;
