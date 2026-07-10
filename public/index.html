@@ -8229,18 +8229,6 @@
 
     <!-- Script includes -->
     <script src="lib/polyfill.js"></script>
-    <script src="lib/cropper.min.js"></script>
-    <script src="lib/toastr.min.js"></script>
-    <script src="lib/toolcool-color-picker.js"></script>
-    <script type="module" src="lib/structured-clone/monkey-patch.js"></script>
-    <script type="module" src="lib/eventemitter.js"></script>
-    <script type="module" src="scripts/i18n.js"></script>
-    <script>
-        window.addEventListener('load', function onPageLoaded() {
-            const doc = document.documentElement;
-        });
-        window.addEventListener('resize', function () {});
-    </script>
 <script>
 // micro-$ polyfill for legacy code
 window.$=function(s){if(typeof s==='function'){document.addEventListener('DOMContentLoaded',s);return}
@@ -8262,7 +8250,19 @@ scrollTop(v){return v===void 0?el.scrollTop:(el.scrollTop=v,el)},
 position(){var r=el.getBoundingClientRect();return{top:r.top,left:r.left}},
 is(s){return el.matches(s)},get(i){return i===void 0?el:el},toArray(){return[el]},
 length:1});};window.jQuery=$;</script>
-<script src="lib/tom-select.min.js"></script>
+    <script src="lib/cropper.min.js"></script>
+    <script src="lib/toastr.min.js"></script>
+    <script src="lib/toolcool-color-picker.js"></script>
+    <script type="module" src="lib/structured-clone/monkey-patch.js"></script>
+    <script type="module" src="lib/eventemitter.js"></script>
+    <script type="module" src="scripts/i18n.js"></script>
+    <script>
+        window.addEventListener('load', function onPageLoaded() {
+            const doc = document.documentElement;
+        });
+        window.addEventListener('resize', function () {});
+    </script>
+    <script src="lib/tom-select.min.js"></script>
 <script src="lib/sortablejs.min.js"></script>
 <script src="lib/nouislider.min.js"></script>
 </body>
