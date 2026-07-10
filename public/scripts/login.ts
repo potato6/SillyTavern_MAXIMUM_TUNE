@@ -205,10 +205,8 @@ function redirectToHome() {
  * Hides the password entry block and shows the password recovery block.
  */
 function showRecoveryBlock() {
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#passwordEntryBlock').hide();
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#passwordRecoveryBlock').show();
+    const pwEntryBlock = document.getElementById('passwordEntryBlock'); if (pwEntryBlock) pwEntryBlock.style.display = 'none';
+    const pwRecoveryBlock = document.getElementById('passwordRecoveryBlock'); if (pwRecoveryBlock) pwRecoveryBlock.style.display = '';
     displayError('');
 }
 
@@ -216,10 +214,8 @@ function showRecoveryBlock() {
  * Hides the password recovery block and shows the password entry block.
  */
 function onCancelRecoveryClick() {
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#passwordRecoveryBlock').hide();
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#passwordEntryBlock').show();
+    const pwRecoveryBlock = document.getElementById('passwordRecoveryBlock'); if (pwRecoveryBlock) pwRecoveryBlock.style.display = 'none';
+    const pwEntryBlock = document.getElementById('passwordEntryBlock'); if (pwEntryBlock) pwEntryBlock.style.display = '';
     displayError('');
 }
 
@@ -230,12 +226,9 @@ function onCancelRecoveryClick() {
 // @ts-expect-error TS(7006) FIXME: Parameter 'userList' implicitly has an 'any' type.
 function configureNormalLogin(userList) {
     console.log('Discreet login is disabled');
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#handleEntryBlock').hide();
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#normalLoginPrompt').show();
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#discreetLoginPrompt').hide();
+    const handleEntryBlock = document.getElementById('handleEntryBlock'); if (handleEntryBlock) handleEntryBlock.style.display = 'none';
+    const normalLoginPrompt = document.getElementById('normalLoginPrompt'); if (normalLoginPrompt) normalLoginPrompt.style.display = '';
+    const discreetLoginPrompt = document.getElementById('discreetLoginPrompt'); if (discreetLoginPrompt) discreetLoginPrompt.style.display = 'none';
     console.log(userList);
     for (const user of userList) {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
