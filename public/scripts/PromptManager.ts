@@ -2243,7 +2243,7 @@ class PromptManager {
             delay: this.configuration.sortableDelay,
             handle: isMobile() ? '.drag-handle' : undefined,
             dataIdAttr: 'data-pm-identifier',
-            onUpdate: (event, ui) => {
+            onUpdate: (event: any, ui: any) => {
                 const promptOrder = this.getPromptOrderForCharacter(this.activeCharacter);
                 const promptListElement = sortableInstance.toArray();
                 // @ts-expect-error TS(7006) FIXME: Parameter 'prompt' implicitly has an 'any' type.
