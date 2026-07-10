@@ -5226,7 +5226,6 @@ function performGroupMemberAction(chid, action) {
             pageSizeEl.dispatchEvent(new Event('change'));
         }
         if ($(paginationSelector).length) {
-            // @ts-expect-error TS(2592) FIXME: pagination plugin still used
             $(paginationSelector).pagination('go', pageValue);
         }
     }
