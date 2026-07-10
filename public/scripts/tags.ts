@@ -1475,7 +1475,7 @@ function appendTagToList(listElement, tag, { removable = false, isFilter = false
     if (removable) { removeButton.show(); } else { removeButton.hide(); }
     if (removable && removeAction) {
         tagElement.attr('custom-remove-action', String(true));
-        removeButton.on('click', () => {
+        removeButton[0]?.addEventListener('click', () => {
             // @ts-expect-error TS(2349) FIXME: This expression is not callable.
             const result = removeAction(tag);
             if (result !== false) tagElement.remove();
@@ -1513,7 +1513,7 @@ function appendTagToList(listElement, tag, { removable = false, isFilter = false
     }
 
     if (isFilter) {
-        tagElement.on('click', () => onTagFilterClick.bind(tagElement)(listElement));
+        tagElement[0]?.addEventListener('click', () => onTagFilterClick.call(tagElement[0], listElement));
         tagElement.addClass(INTERACTABLE_CONTROL_CLASS);
     }
 
@@ -1521,7 +1521,7 @@ function appendTagToList(listElement, tag, { removable = false, isFilter = false
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const filter = getFilterHelper($(listElement));
         // @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
-        tagElement.on('click', (e) => clickableAction.bind(tagElement)(filter, e));
+        tagElement[0]?.addEventListener('click', (e) => clickableAction.call(tagElement[0], filter, e));
         tagElement.addClass('clickable-action').addClass(INTERACTABLE_CONTROL_CLASS);
     }
 
@@ -1973,15 +1973,15 @@ export function applyTagsOnGroupSelect(groupId = null) {
 // @ts-expect-error TS(7006) FIXME: Parameter 'inputSelector' implicitly has an 'any' ... Remove this comment to see the full error message
 export function createTagInput(inputSelector, listSelector, tagListOptions = {}) {
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(inputSelector)
+    const $el = $(inputSelector)
         .autocomplete({
             // @ts-expect-error TS(7006) FIXME: Parameter 'i' implicitly has an 'any' type.
             source: (i, o) => findTag(i, o, listSelector),
             // @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
             select: (e, u) => selectTag(e, u, listSelector, { tagListOptions: tagListOptions }),
             minLength: 0,
-        })
-        .on('focus', onTagInputFocus); // <== show tag list on click
+        });
+    $el[0]?.addEventListener('focus', onTagInputFocus); // <== show tag list on click
 }
 
 /**
@@ -2000,7 +2000,7 @@ async function onViewTagsListClick() {
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const $sortModeSelect = $(html[0]?.querySelector('#tag_sort_mode_select'));
     $sortModeSelect.val(power_user.tag_sort_mode);
-    $sortModeSelect.on('change', function () {
+    html[0]?.querySelector('#tag_sort_mode_select')?.addEventListener('change', function () {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const newMode = $(this).val().toString();
         power_user.tag_sort_mode = newMode;
@@ -2396,11 +2396,11 @@ function appendViewTagToList(list, tag, count) {
     $(templateEl?.querySelector('.tag_as_folder')).attr('id', tagAsFolderId);
 
     // @ts-expect-error TS(7006) FIXME: Parameter 'evt' implicitly has an 'any' type.
-    primaryColorPicker.on('change', (evt) => onTagColorize(evt, (tag, color) => tag.color = color, 'background-color'));
+    primaryColorPicker[0]?.addEventListener('change', (evt) => onTagColorize(evt, (tag, color) => tag.color = color, 'background-color'));
     // @ts-expect-error TS(7006) FIXME: Parameter 'evt' implicitly has an 'any' type.
-    secondaryColorPicker.on('change', (evt) => onTagColorize(evt, (tag, color) => tag.color2 = color, 'color'));
+    secondaryColorPicker[0]?.addEventListener('change', (evt) => onTagColorize(evt, (tag, color) => tag.color2 = color, 'color'));
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(templateEl?.querySelector('.tag_view_color_picker .link_icon')).on('click', (evt) => {
+    templateEl?.querySelector('.tag_view_color_picker .link_icon')?.addEventListener('click', (evt) => {
         const colorPickerEl = evt.target.closest('.tag_view_color_picker')?.querySelector('toolcool-color-picker');
         const defaultColor = colorPickerEl?.getAttribute('data-default-color');
         if (colorPickerEl) colorPickerEl.color = defaultColor;
@@ -2413,7 +2413,7 @@ function appendViewTagToList(list, tag, count) {
     hideToggle.toggleClass('fa-eye', !tag.is_hidden_on_character_card);
     hideToggle.attr('title', getHideTooltip());
 
-    hideToggle.on('click', () => {
+    hideToggle[0]?.addEventListener('click', () => {
         tag.is_hidden_on_character_card = !tag.is_hidden_on_character_card;
         hideToggle.toggleClass('fa-eye-slash', tag.is_hidden_on_character_card);
         hideToggle.toggleClass('fa-eye', !tag.is_hidden_on_character_card);
@@ -2429,7 +2429,7 @@ function appendViewTagToList(list, tag, count) {
     // Not gonna invest too much time into this small control here
     let lastHit = 0;
     // @ts-expect-error TS(7006) FIXME: Parameter 'evt' implicitly has an 'any' type.
-    template.on('keydown', (evt) => {
+    template[0]?.addEventListener('keydown', (evt) => {
         if (evt.key === 'Escape') {
             if (evt.target === primaryColorPicker[0] || evt.target === secondaryColorPicker[0]) {
                 if (Date.now() - lastHit < 5000) // If user hits it twice in five seconds
