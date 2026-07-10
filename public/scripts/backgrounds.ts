@@ -1029,10 +1029,8 @@ function onFolderDrillIn(folderId) {
     document.getElementById('Backgrounds').classList.add('in-folder-view');
 
     // Hide folder grid, show breadcrumb
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#bg_folder_grid').hide();
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#bg_folder_breadcrumb').show();
+    const bgFolderGrid = document.getElementById('bg_folder_grid'); if (bgFolderGrid) bgFolderGrid.style.display = 'none';
+    const bgFolderBreadcrumb = document.getElementById('bg_folder_breadcrumb'); if (bgFolderBreadcrumb) bgFolderBreadcrumb.style.display = '';
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#bg_current_folder_name').text(folder.name);
 
@@ -1051,10 +1049,8 @@ function onBackToFolders() {
     document.getElementById('Backgrounds').classList.remove('in-folder-view');
 
     // Show folder grid, hide breadcrumb
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#bg_folder_grid').show();
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#bg_folder_breadcrumb').hide();
+    const bgFolderGrid = document.getElementById('bg_folder_grid'); if (bgFolderGrid) bgFolderGrid.style.display = '';
+    const bgFolderBreadcrumb = document.getElementById('bg_folder_breadcrumb'); if (bgFolderBreadcrumb) bgFolderBreadcrumb.style.display = 'none';
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#bg_current_folder_name').text('');
 
