@@ -31,7 +31,7 @@ export function displayLogitBias(logitBias, containerSelector) {
     }
 
     // Check if a sortable instance exists
-    if (list[0].sortableInstance) {
+    if (list[0]?.sortableInstance) {
         // Destroy the instance
         list[0].sortableInstance.destroy();
     }

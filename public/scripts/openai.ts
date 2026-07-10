@@ -1791,7 +1791,7 @@ function checkQuotaError(data, { quiet = false } = {}) {
 
     if (data.quota_error) {
         if (!quiet) {
-            renderTemplateAsync('quotaError').then((html) => Popup.show.textContent = 'Quota Error', html);
+            renderTemplateAsync('quotaError').then((html) => Popup.show.text('Quota Error', html));
         }
 
         // this does not throw correctly (equiv to Error("[object Object]"))
@@ -5168,7 +5168,7 @@ function onLogitBiasPresetChange() {
 
     // Check if a sortable instance exists
     const listAny = list as any;
-    if (listAny.sortableInstance) {
+    if (listAny?.sortableInstance) {
         // Destroy the instance
         listAny.sortableInstance.destroy();
     }
