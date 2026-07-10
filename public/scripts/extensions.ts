@@ -767,29 +767,37 @@ async function addExtensionsButtonAndMenu() {
     document.body.insertAdjacentHTML('beforeend', extensionsMenuHTML);
     document.getElementById('leftSendForm')?.insertAdjacentHTML('beforeend', buttonHTML);
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const button = $('#extensionsMenuButton');
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const dropdown = $('#extensionsMenu');
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(button).on('pointerdown mousedown', function (e) {
-        e.stopPropagation();
-    }).on('click', function () {
-        if (dropdown[0].matches(':popover-open')) {
-            dropdown[0].hidePopover();
-        } else {
-            // Close the other popover before opening this one
-            const options = document.getElementById('options');
-            if (options?.matches(':popover-open')) {
-                options.hidePopover();
+    const button = document.getElementById('extensionsMenuButton');
+    const dropdown = document.getElementById('extensionsMenu');
+    if (button && dropdown) {
+        button.addEventListener('pointerdown', function (e: Event) {
+            e.stopPropagation();
+        });
+        button.addEventListener('mousedown', function (e: Event) {
+            e.stopPropagation();
+        });
+        button.addEventListener('click', function () {
+            if (dropdown.matches(':popover-open')) {
+                dropdown.hidePopover();
+            } else {
+                // Close the other popover before opening this one
+                const options = document.getElementById('options');
+                if (options?.matches(':popover-open')) {
+                    options.hidePopover();
+                }
+                dropdown.showPopover();
             }
-            dropdown[0].showPopover();
-        }
-    });
+        });
+    }
     // Close extensions menu when clicking interactive items inside it
-    dropdown.on('click', '.interactable, .menu_button, button, a, [data-i18n]', function () {
-        dropdown[0].hidePopover();
-    });
+    if (dropdown) {
+        dropdown.addEventListener('click', function (e: Event) {
+            if (!(e.target instanceof Element)) return;
+            const el = e.target.closest('.interactable, .menu_button, button, a, [data-i18n]');
+            if (!el) return;
+            dropdown.hidePopover();
+        });
+    }
 }
 
 /**
