@@ -18,6 +18,8 @@ import {
     getStringHash,
     onlyUnique,
 } from './utils.js';
+
+declare const Sortable: any;
 import { BIAS_CACHE, createNewLogitBiasEntry, displayLogitBias, getLogitBiasListResult } from './logit-bias.js';
 import { SECRET_KEYS, secret_state, writeSecret } from './secrets.js';
 
@@ -1177,11 +1179,13 @@ export function initNovelAISettings() {
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#novel_order').sortable({
-        delay: getSortableDelay(),
-        stop: saveSamplingOrder,
-    });
+    const novelOrderEl = document.getElementById('novel_order') as any;
+    if (novelOrderEl) {
+        novelOrderEl.sortableInstance = new Sortable(novelOrderEl, {
+            delay: getSortableDelay(),
+            onEnd: saveSamplingOrder,
+        });
+    }
 
     document.addEventListener('click', function (event) {
         if (!(event.target instanceof Element)) return;
