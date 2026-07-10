@@ -1653,32 +1653,19 @@ export function getCurrentDreamGenModelTokenizer() {
  *
  */
 export function initTextGenModels() {
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#mancer_model').on('change', onMancerModelSelect);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#model_togetherai_select').on('change', onTogetherModelSelect);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#model_infermaticai_select').on('change', onInfermaticAIModelSelect);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#model_dreamgen_select').on('change', onDreamGenModelSelect);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#ollama_model').on('change', onOllamaModelSelect);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#openrouter_model').on('change', onOpenRouterModelSelect);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#ollama_download_model').on('click', downloadOllamaModel);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#vllm_model').on('change', onVllmModelSelect);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#aphrodite_model').on('change', onAphroditeModelSelect);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#tabby_download_model').on('click', downloadTabbyModel);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#tabby_model').on('change', onTabbyModelSelect);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#llamacpp_model').on('change', onLlamaCppModelSelect);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#featherless_model').on('change', () => onFeatherlessModelSelect(String($('#featherless_model').val())));
+    document.getElementById('mancer_model')?.addEventListener('change', onMancerModelSelect);
+    document.getElementById('model_togetherai_select')?.addEventListener('change', onTogetherModelSelect);
+    document.getElementById('model_infermaticai_select')?.addEventListener('change', onInfermaticAIModelSelect);
+    document.getElementById('model_dreamgen_select')?.addEventListener('change', onDreamGenModelSelect);
+    document.getElementById('ollama_model')?.addEventListener('change', onOllamaModelSelect);
+    document.getElementById('openrouter_model')?.addEventListener('change', onOpenRouterModelSelect);
+    document.getElementById('ollama_download_model')?.addEventListener('click', downloadOllamaModel);
+    document.getElementById('vllm_model')?.addEventListener('change', onVllmModelSelect);
+    document.getElementById('aphrodite_model')?.addEventListener('change', onAphroditeModelSelect);
+    document.getElementById('tabby_download_model')?.addEventListener('click', downloadTabbyModel);
+    document.getElementById('tabby_model')?.addEventListener('change', onTabbyModelSelect);
+    document.getElementById('llamacpp_model')?.addEventListener('change', onLlamaCppModelSelect);
+    document.getElementById('featherless_model')?.addEventListener('change', () => onFeatherlessModelSelect(String((document.getElementById('featherless_model') as HTMLSelectElement)?.value ?? '')));
 
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const providersSelect = $('.openrouter_providers');

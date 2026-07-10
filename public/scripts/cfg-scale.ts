@@ -313,7 +313,7 @@ export function initCfg() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const _ext = extension_settings as any;
 
-    $('#CFGClose').on('click', function () {
+    document.getElementById('CFGClose')?.addEventListener('click', function () {
         $('#cfgConfig').transition({
             opacity: 0,
             duration: animation_duration,
@@ -405,8 +405,7 @@ export function initCfg() {
     if (_ext.cfg) {
         migrateSettings();
     }
-
-    $('#option_toggle_CFG').on('click', onCfgMenuItemClick);
+    document.getElementById('option_toggle_CFG')?.addEventListener('click', onCfgMenuItemClick);
 
     eventSource.on(event_types.CHAT_CHANGED, async () => {
         await onChatChanged();
