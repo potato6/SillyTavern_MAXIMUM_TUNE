@@ -59,8 +59,8 @@ async function showSamplerSelectPopup() {
     });
 
     if (main_api === 'textgenerationwebui') {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#prioritizeManuallySelectedSamplers').show();
+        const prioritizeEl = document.getElementById('prioritizeManuallySelectedSamplers');
+        if (prioritizeEl) prioritizeEl.style.display = '';
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         $('#prioritizeManuallySelectedSamplers').toggleClass('toggleEnabled', isSamplerManualPriorityEnabled());
         document.getElementById('prioritizeManuallySelectedSamplers')?.addEventListener('click', function () {
@@ -73,8 +73,8 @@ async function showSamplerSelectPopup() {
             toggleSamplerManualPriority(isActive);
         });
     } else {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#prioritizeManuallySelectedSamplers').hide();
+        const prioritizeEl = document.getElementById('prioritizeManuallySelectedSamplers');
+        if (prioritizeEl) prioritizeEl.style.display = 'none';
 
     }
 
