@@ -88,7 +88,6 @@ class CharacterContextMenu {
         });
 
         if (!mergeResponse.ok) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             mergeResponse.json().then(json => toastr.error(`Character not saved. Error: ${json.message}. Field: ${json.error}`));
         }
 
@@ -798,7 +797,6 @@ class BulkEditOverlay {
 
         for (let i = Math.min(startIndex, endIndex); i <= Math.max(startIndex, endIndex); i++) {
             const character = characters[i];
-            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             const characterId = Number(character.getAttribute('data-chid'));
             // @ts-expect-error TS(2345) FIXME: Argument of type 'number' is not assignable to par... Remove this comment to see the full error message
             const isCharacterSelected = this.selectedCharacters.includes(characterId);

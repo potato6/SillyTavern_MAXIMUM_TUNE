@@ -70,7 +70,6 @@ export const slashCommandReturnHelper = {
 
                 if (type.startsWith('popup')) await callGenericPopup(htmlOrNotHtml, POPUP_TYPE.TEXT, '', { allowVerticalScrolling: true, wide: true });
                 if (type.startsWith('chat')) sendSystemMessage(system_message_types.GENERIC, htmlOrNotHtml);
-                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                 if (type.startsWith('toast')) toastr.info(htmlOrNotHtml, null, { escapeHtml: !shouldHtml });
 
                 return '';

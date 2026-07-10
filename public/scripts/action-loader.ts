@@ -211,7 +211,6 @@ export class ActionLoaderHandle {
      */
     #clearToast() {
         if (this.#toast) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.clear(this.#toast, { force: true }); // Need to force as the toast might have focus/hover
             this.#toast = null;
         }

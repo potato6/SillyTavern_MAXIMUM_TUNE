@@ -48,7 +48,6 @@ async function migrateSystemPromptFromInstructMode() {
         }
 
         saveSettingsDebounced();
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.info('System prompt settings have been moved from the Instruct Mode.', 'Migration notice', { timeOut: 5000 });
     }
 }

@@ -242,7 +242,6 @@ async function validateGroup(group) {
         const character = characters.find(x => x.avatar === member || x.name === member);
         if (!character) {
             const msg = t`Warning: Listed member ${member} does not exist as a character. It will be removed from the group.`;
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.warning(msg, t`Group Validation`);
             console.warn(msg);
             dirty = true;
@@ -1155,7 +1154,6 @@ async function generateGroupWrapper(byAutoMode, type = null, params = {}) {
             activatedMembers = activateSwipe(group.members, { allowSystem: false });
 
             if (activatedMembers.length === 0) {
-                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                 toastr.warning(t`Deleted group member swiped. To get a reply, add them back to the group.`);
                 throw new Error('Deleted group member swiped');
             }
@@ -1943,6 +1941,7 @@ function printGroupCandidates() {
 function printGroupMembers() {
     const storageKey = 'GroupMembers_PerPage';
     for (const el of document.querySelectorAll('.rm_group_members_pagination')) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const that = el;
         const pageSize = Number(accountStorage.getItem(storageKey)) || 5;
         const sizeChangerOptions = [5, 10, 25, 50, 100, 200, 500, 1000];

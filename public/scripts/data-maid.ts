@@ -120,7 +120,6 @@ class DataMaidDialog {
      */
     async handleScanClick() {
         if (this.isScanning) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.warning(t`The scan is already running. Please wait for it to finish.`);
             return;
         }

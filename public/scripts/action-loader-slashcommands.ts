@@ -366,7 +366,6 @@ export function registerActionLoaderSlashCommands() {
             const handleId = args.handle ? String(args.handle) : null;
 
             if (!handleId) {
-                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                 toastr.warning(t`No handle provided. You must specify which loader to stop.`);
                 return 'false';
             }

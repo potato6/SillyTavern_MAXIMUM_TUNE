@@ -247,7 +247,6 @@ export async function populateFileAttachment(message, inputId = 'file_form_input
                         const fileText = await converter(file);
                         base64Data = convertTextToBase64(fileText);
                     } catch (error) {
-                        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                         toastr.error(String(error), t`Could not convert file`);
                         console.error('Could not convert file', error);
                     }
@@ -273,7 +272,6 @@ export async function populateFileAttachment(message, inputId = 'file_form_input
         }
     } catch (error) {
         console.error('Could not upload file', error);
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.error(t`Either the file is corrupted or its format is not supported.`, t`Could not upload the file`);
     } finally {
         // @ts-expect-error TS(2339) FIXME: Property 'reset' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
@@ -307,7 +305,6 @@ export async function uploadFileAttachment(fileName, base64Data) {
         const responseData = await result.json();
         return responseData.path;
     } catch (error) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.error(String(error), t`Could not upload file`);
         console.error('Could not upload file', error);
     }
@@ -335,7 +332,6 @@ export async function getFileAttachment(url) {
         const text = await result.text();
         return text;
     } catch (error) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.error(error, t`Could not download file`);
         console.error('Could not download file', error);
     }
@@ -353,14 +349,12 @@ async function validateFile(file) {
     const isBinary = /^[\x00-\x08\x0E-\x1F\x7F-\xFF]*$/.test(fileText);
 
     if (!isMedia && file.size > fileSizeLimit) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.error(t`File is too big. Maximum size is ${humanFileSize(fileSizeLimit)}.`);
         return false;
     }
 
     // If file is binary
     if (isBinary && !isMedia && !isConvertible(file.type)) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.error(t`Binary files are not supported. Select a text file or image.`);
         return false;
     }
@@ -392,7 +386,6 @@ async function onFileAttach(fileList) {
 
         // If file is binary
         if (!isValid) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.warning(t`File ${file.name} is not supported.`);
             // @ts-expect-error TS(2339) FIXME: Property 'reset' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
             document.getElementById('file_form')?.reset();
@@ -548,7 +541,6 @@ function embedMessageFile(messageId, messageBlock) {
             const isValid = await validateFile(file);
 
             if (!isValid) {
-                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                 toastr.warning(t`File ${file.name} is not supported.`);
                 // @ts-expect-error TS(2339) FIXME: Property 'reset' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
                 document.getElementById('file_form')?.reset();
@@ -951,7 +943,6 @@ async function openExternalMediaOverridesDialog() {
     const entityId = getCurrentEntityId();
 
     if (!entityId) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.info(t`No character or group selected`);
         return;
     }
@@ -1300,7 +1291,6 @@ export async function deleteMediaFromServer(url, silent = false) {
         await eventSource.emit(event_types.MEDIA_ATTACHMENT_DELETED, url);
         return true;
     } catch (error) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.error(String(error), t`Could not delete image`);
         console.error('Could not delete image', error);
         return false;
@@ -1333,7 +1323,6 @@ export async function deleteFileFromServer(url, silent = false) {
         await eventSource.emit(event_types.FILE_ATTACHMENT_DELETED, url);
         return true;
     } catch (error) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.error(String(error), t`Could not delete file`);
         console.error('Could not delete file', error);
         return false;
@@ -1847,7 +1836,6 @@ async function openAttachmentManager() {
             const selectedAttachments = document.querySelectorAll('.attachmentListItemCheckboxContainer .attachmentListItemCheckbox:checked');
 
             if (selectedAttachments.length === 0) {
-                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                 toastr.info(t`No attachments selected.`, t`Data Bank`);
                 return;
             }
@@ -1966,7 +1954,6 @@ async function runScraper(scraperId, target, callback) {
 
         if (files.length === 0) {
             console.warn('Scraping returned no files');
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.info(t`No files were scraped.`, t`Data Bank`);
             return;
         }
@@ -1975,12 +1962,10 @@ async function runScraper(scraperId, target, callback) {
             await uploadFileAttachmentToServer(file, target);
         }
 
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.success(t`Scraped ${files.length} files from ${scraperId} to ${target}.`, t`Data Bank`);
         callback();
     } catch (error) {
         console.error('Scraping failed', error);
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         toastr.error(t`Check browser console for details.`, t`Scraping failed`);
     }
 }
@@ -2009,7 +1994,6 @@ export async function uploadFileAttachmentToServer(file, target) {
             const fileText = await converter(file);
             base64Data = convertTextToBase64(fileText);
         } catch (error) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.error(String(error), t`Could not convert file`);
             console.error('Could not convert file', error);
         }
@@ -2374,14 +2358,12 @@ export function addDOMPurifyHooks() {
             const warningShownKey = `mediaWarningShown:${entityId}`;
 
             if (accountStorage.getItem(warningShownKey) === null) {
-                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                 const warningToast = toastr.warning(
                     t`Use the 'Ext. Media' button to allow it. Click on this message to dismiss.`,
                     t`External media has been blocked`,
                     {
                         timeOut: 0,
                         preventDuplicates: true,
-                        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                         onclick: () => toastr.clear(warningToast),
                     },
                 );
@@ -2538,7 +2520,6 @@ export function initChatUtilities() {
                     await printMessages();
                 } catch (error) {
                     console.error('Error importing assistant chat:', error);
-                    // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                     toastr.error(t`It's either corrupted or not a valid JSONL file.`, t`Failed to import chat`);
                 }
             };
