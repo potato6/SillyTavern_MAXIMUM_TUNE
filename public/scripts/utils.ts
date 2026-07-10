@@ -33,7 +33,7 @@ export const PAGINATION_TEMPLATE = '<%= rangeStart %>-<%= rangeEnd %> .. <%= tot
 
 // @ts-expect-error TS(7006) FIXME: Parameter 'container' implicitly has an 'any' type... Remove this comment to see the full error message
 export const localizePagination = function (container) {
-    const el = container[0];
+    const el = container instanceof HTMLElement ? container : container[0];
     if (el) {
         // @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
         el.querySelectorAll('[title="Next page"]').forEach(e => e.setAttribute('title', t`Next page`));
