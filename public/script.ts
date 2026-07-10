@@ -1579,7 +1579,7 @@ export async function replaceCurrentChat() {
  * @param messagesToLoad
  */
 export async function showMoreMessages(messagesToLoad = null) {
-    const firstDisplayedMesId = chatElement.children('.mes').first().attr('mesid');
+    const firstDisplayedMesId = chatElement?.querySelector('.mes')?.getAttribute('mesid');
     let messageId = Number(firstDisplayedMesId);
     const count = messagesToLoad || power_user.chat_truncation || Number.MAX_SAFE_INTEGER;
 
@@ -1591,10 +1591,9 @@ export async function showMoreMessages(messagesToLoad = null) {
     }
 
     console.debug('Inserting messages before', messageId, 'count', count, 'chat length', chat.length);
-    const prevHeight = chatElement.prop('scrollHeight');
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const showMoreButton = $('#show_more_messages');
-    const isButtonInView = isElementInViewport(showMoreButton[0]);
+    const prevHeight = chatElement?.scrollHeight ?? 0;
+    const showMoreButton = document.querySelector('#show_more_messages');
+    const isButtonInView = showMoreButton && isElementInViewport(showMoreButton);
 
     const firstId = clamp(messageId - count, 0, Infinity);
     // @ts-expect-error TS(7034) FIXME: Variable 'messageElements' implicitly has type 'an... Remove this comment to see the full error message
@@ -1604,23 +1603,23 @@ export async function showMoreMessages(messagesToLoad = null) {
     });
     // This could be faster: https://developer.mozilla.org/en-US/docs/Web/API/Element/insertAdjacentElement
     // Fallback to chatElement if the button isn't where it's expected to be.
-    if (showMoreButton[0]) {
+    if (showMoreButton) {
         // @ts-expect-error TS(7005) FIXME: Variable 'messageElements' implicitly has an 'any[... Remove this comment to see the full error message
-        showMoreButton[0].after(...messageElements.map(el => el[0]));
+        showMoreButton.after(...messageElements.map(el => el[0]));
     } else {
         // @ts-expect-error TS(7005) FIXME: Variable 'messageElements' implicitly has an 'any[... Remove this comment to see the full error message
-        chatElement[0].prepend(...messageElements.map(el => el[0]));
+        chatElement?.prepend(...messageElements.map(el => el[0]));
     }
 
     refreshSwipeButtons();
 
     if (firstId === 0) {
-        showMoreButton[0].remove();
+        showMoreButton?.remove();
     }
 
     if (isButtonInView) {
-        const newHeight = chatElement.prop('scrollHeight');
-        chatElement.scrollTop(newHeight - prevHeight);
+        const newHeight = chatElement?.scrollHeight ?? 0;
+        if (chatElement) chatElement.scrollTop = newHeight - prevHeight;
     }
 
     applyStylePins();
@@ -1636,7 +1635,7 @@ export async function printMessages() {
 
     if (chat.length > count) {
         startIndex = chat.length - count;
-        chatElement[0].insertAdjacentHTML('beforeend', '<div id="show_more_messages">Show more messages</div>');
+        chatElement?.insertAdjacentHTML('beforeend', '<div id="show_more_messages">Show more messages</div>');
     }
 
     await redisplayChat({ startIndex, fade: false });
@@ -1653,11 +1652,21 @@ export async function printMessages() {
  * @param {boolean} [options.fade] When false, the swipe chevrons will not fade in.
  */
 export async function redisplayChat({ targetChat = chat, startIndex = 0, fade = true } = {}) {
-    const messageElements = chatElement.find('.mes');
-    messageElements.removeClass('last_mes');
+    const messageElements = chatElement?.querySelectorAll('.mes') ?? [];
+    messageElements.forEach(el => el.classList.remove('last_mes'));
 
     //Remove messages after index.
-    [...messageElements.filter(`.mes[mesid="${startIndex}"]`).nextAll('.mes').addBack()].forEach(el => el.remove());
+    const mesFiltered = [...messageElements].filter(el => {
+        const id = Number(el.getAttribute('mesid'));
+        return id >= startIndex;
+    });
+    let nextSibling = mesFiltered[0];
+    while (nextSibling) {
+        const next = nextSibling.nextElementSibling;
+        if (nextSibling.matches('.mes')) nextSibling.remove();
+        nextSibling = next;
+    }
+    mesFiltered[0]?.remove();
 
     const t1 = performance.now();
 
@@ -1675,7 +1684,7 @@ export async function redisplayChat({ targetChat = chat, startIndex = 0, fade = 
         newMessageElements.at(-1).classList.add('last_mes');
 
         //Append to chat in one DOM update.
-        chatElement[0].append(...newMessageElements);
+        chatElement?.append(...newMessageElements);
 
         applyCharacterTagsToMessageDivs({ mesIds: range(startIndex, targetChat.length) as number[] });
 
@@ -1693,7 +1702,7 @@ export async function redisplayChat({ targetChat = chat, startIndex = 0, fade = 
  */
 export function scrollOnMediaLoad() {
     const started = Date.now();
-    const media = chatElement.find('.mes_block img, .mes_block video, .mes_block audio').toArray();
+    const media = chatElement?.querySelectorAll('.mes_block img, .mes_block video, .mes_block audio') ?? [];
     let mediaLoaded = 0;
 
     for (const currentElement of media) {
@@ -1753,11 +1762,10 @@ export async function clearChat({ clearData = false } = {}) {
     closeMessageEditor();
     extension_prompts = {};
     if (is_delete_mode) {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#dialogue_del_mes_cancel').trigger('click');
+        document.querySelector('#dialogue_del_mes_cancel')?.click();
     }
     //This will also remove non '.mes' elements, e.g. '<div id="show_more_messages">Show more messages</div>'.
-    chatElement[0].innerHTML = '';
+    if (chatElement) chatElement.innerHTML = '';
     const zoomedAvatars = document.querySelectorAll('.zoomed_avatar[forChar]');
     if (zoomedAvatars.length) {
         console.debug('saw avatars to remove');
@@ -1776,7 +1784,7 @@ export async function clearChat({ clearData = false } = {}) {
 export async function deleteLastMessage() {
     deleteItemizedPromptForMessage(chat.length - 1);
     chat.length = chat.length - 1;
-    const mesChildren = [...chatElement[0].children].filter(el => el.matches('.mes'));
+    const mesChildren = [...(chatElement?.children ?? [])].filter(el => el.matches('.mes'));
     mesChildren[mesChildren.length - 1]?.remove();
     await eventSource.emit(event_types.MESSAGE_DELETED, chat.length);
 }
@@ -1805,8 +1813,8 @@ export async function deleteMessage(id, swipeDeletionIndex = undefined, askConfi
     }
 
     const minId = getFirstDisplayedMessageId();
-    const messageElement = chatElement.find(`.mes[mesid="${id}"]`);
-    if (messageElement.length === 0) {
+    const messageElement = chatElement?.querySelector(`.mes[mesid="${id}"]`);
+    if (!messageElement) {
         return;
     }
 
@@ -2172,10 +2180,11 @@ function insertSVGIcon(mes, extra) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'messageId' implicitly has an 'any' type... Remove this comment to see the full error message
 export function updateMessageBlock(messageId, message, { rerenderMessage = true } = {}) {
-    const messageElement = chatElement.find(`[mesid="${messageId}"]`);
-    if (rerenderMessage) {
+    const messageElement = chatElement?.querySelector(`[mesid="${messageId}"]`);
+    if (rerenderMessage && messageElement) {
         const text = message?.extra?.display_text ?? message.mes;
-        messageElement.find('.mes_text').html(messageFormatting(text, message.name, message.is_system, message.is_user, messageId, {}, false));
+        const textEl = messageElement.querySelector('.mes_text');
+        if (textEl) textEl.innerHTML = messageFormatting(text, message.name, message.is_system, message.is_user, messageId, {}, false);
     }
 
     updateReasoningUI(messageElement);
@@ -2382,8 +2391,8 @@ export function appendMediaToMessage(mes, messageElement, scrollBehavior = SCROL
     // @ts-expect-error TS(7034) FIXME: Variable 'mediaPromises' implicitly has type 'any[... Remove this comment to see the full error message
     const mediaPromises = [];
 
-    const chatHeight = (hasMedia || hasFiles) ? chatElement.prop('scrollHeight') : 0;
-    const scrollPosition = (hasMedia || hasFiles) ? chatElement.scrollTop() : 0;
+    const chatHeight = (hasMedia || hasFiles) ? (chatElement?.scrollHeight ?? 0) : 0;
+    const scrollPosition = (hasMedia || hasFiles) ? (chatElement?.scrollTop ?? 0) : 0;
     const doAdjustScroll = () => {
         if (!hasMedia && !hasFiles) {
             return;
@@ -2392,12 +2401,12 @@ export function appendMediaToMessage(mes, messageElement, scrollBehavior = SCROL
             return;
         }
         if (scrollBehavior === SCROLL_BEHAVIOR.KEEP) {
-            chatElement.scrollTop(scrollPosition);
+            if (chatElement) chatElement.scrollTop = scrollPosition;
             return;
         }
-        const newChatHeight = chatElement.prop('scrollHeight');
+        const newChatHeight = chatElement?.scrollHeight ?? 0;
         const diff = newChatHeight - chatHeight;
-        chatElement.scrollTop(scrollPosition + diff);
+        if (chatElement) chatElement.scrollTop = scrollPosition + diff;
     };
 
     // Set media display attribute
@@ -2705,13 +2714,14 @@ export function addCopyToCodeBlocks(messageElement) {
  * @returns {void}
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'message' implicitly has an 'any' type.
-function updateMessageItemizedPromptButton(message, { messageId = chat.indexOf(message), messageElement = chatElement.find(`.mes[mesid="${messageId}"]`) }) {
+function updateMessageItemizedPromptButton(message, { messageId = chat.indexOf(message), messageElement = chatElement?.querySelector(`.mes[mesid="${messageId}"]`) }) {
     //if we have itemized messages, and the array isn't null..
     if (!message.is_user && Array.isArray(itemizedPrompts) && itemizedPrompts.length > 0) {
         // @ts-expect-error TS(2339) FIXME: Property 'mesId' does not exist on type 'never'.
         const itemizedPrompt = itemizedPrompts.find(x => Number(x.mesId) === Number(messageId));
-        if (itemizedPrompt) {
-            messageElement.find('.mes_prompt').show();
+        if (itemizedPrompt && messageElement) {
+            const promptEl = messageElement.querySelector('.mes_prompt');
+            if (promptEl) promptEl.style.display = '';
         }
     }
 }
@@ -2781,25 +2791,26 @@ export function addOneMessage(mes, { type = undefined, insertAfter = null, scrol
         mes.swipe_id ??= 0;
         mes.swipes ??= [mes.mes];
         //This keeps listeners intact.
-        messageElement = chatElement.find(`[mesid="${messageId}"]`);
-        updateMessageElement(mes, { messageId, messageElement, adjustMediaScroll: scroll ? SCROLL_BEHAVIOR.ADJUST : SCROLL_BEHAVIOR.NONE });
+        messageElement = chatElement?.querySelector(`[mesid="${messageId}"]`);
+        if (messageElement) updateMessageElement(mes, { messageId, messageElement, adjustMediaScroll: scroll ? SCROLL_BEHAVIOR.ADJUST : SCROLL_BEHAVIOR.NONE });
     } else {
         messageElement = updateMessageElement(mes, { messageId, adjustMediaScroll: scroll ? SCROLL_BEHAVIOR.ADJUST : SCROLL_BEHAVIOR.NONE });
         if (typeof insertAfter === 'number' && insertAfter >= 0) {
-            const target = chatElement.find(`.mes[mesid="${insertAfter}"]`);
-            target[0].insertAdjacentElement('afterend', messageElement[0]);
+            const target = chatElement?.querySelector(`.mes[mesid="${insertAfter}"]`);
+            target?.insertAdjacentElement('afterend', messageElement[0]);
         } else if (typeof insertBefore === 'number' && insertBefore >= 0) {
-            const target = chatElement.find(`.mes[mesid="${insertBefore}"]`);
-            target[0].insertAdjacentElement('beforebegin', messageElement[0]);
+            const target = chatElement?.querySelector(`.mes[mesid="${insertBefore}"]`);
+            target?.insertAdjacentElement('beforebegin', messageElement[0]);
         } else {
-            chatElement[0].append(messageElement[0]);
+            chatElement?.append(messageElement[0]);
         }
     }
 
 
     //last_mes should always be updated.
-    chatElement.find('.mes').removeClass('last_mes');
-    chatElement.find('.mes').last().addClass('last_mes');
+    chatElement?.querySelectorAll('.mes').forEach(el => el.classList.remove('last_mes'));
+    const lastMes = chatElement?.querySelector('.mes:last-child');
+    if (lastMes) lastMes.classList.add('last_mes');
 
     if (showSwipes) refreshSwipeButtons();
     // Don't scroll if not inserting last
@@ -2997,17 +3008,17 @@ export function scrollChatToBottom({
     }
 
     const doScroll = () => {
-        let position = chatElement[0].scrollHeight;
+        let position = chatElement?.scrollHeight ?? 0;
 
-        if (power_user.waifuMode) {
-            const lastMessage = chatElement.find('.mes').last();
-            if (lastMessage.length) {
-                const lastMessagePosition = lastMessage.position().top;
-                position = chatElement.scrollTop() + lastMessagePosition;
+        if (power_user.waifuMode && chatElement) {
+            const lastMessage = chatElement.querySelector('.mes:last-child');
+            if (lastMessage) {
+                const lastMessagePosition = lastMessage.getBoundingClientRect().top - chatElement.getBoundingClientRect().top + chatElement.scrollTop;
+                position = chatElement.scrollTop + lastMessagePosition;
             }
         }
 
-        chatElement.scrollTop(position);
+        if (chatElement) chatElement.scrollTop = position;
         requestId = null;
     };
 
@@ -4137,9 +4148,9 @@ class StreamingProcessor {
     // @ts-expect-error TS(7006) FIXME: Parameter 'messageId' implicitly has an 'any' type... Remove this comment to see the full error message
     async finalizeIntermediaryMessage(messageId, text, { unlockUI = true }) {
         await this.onProgressStreaming(messageId, text, true);
-        const messageElement = chatElement.find(`.mes[mesid="${messageId}"]`);
+        const messageElement = chatElement?.querySelector(`.mes[mesid="${messageId}"]`);
         const message = chat[messageId];
-        addCopyToCodeBlocks(messageElement);
+        if (messageElement) addCopyToCodeBlocks(messageElement);
 
         await this.reasoningHandler.finish(messageId);
 
@@ -4669,17 +4680,16 @@ class TempResponseLength {
  */
 function removeLastMessage() {
     return new Promise((resolve) => {
-        const lastMes = chatElement.children('.mes').last();
-        if (lastMes.length === 0) {
-            // @ts-expect-error TS(2794) FIXME: Expected 1 arguments, but got 0. Did you forget to... Remove this comment to see the full error message
+        const lastMes = chatElement?.querySelector('.mes:last-child');
+        if (!lastMes) {
             return resolve();
         }
-        lastMes.hide(animation_duration, function () {
-            // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-            this.remove();
-            // @ts-expect-error TS(2794) FIXME: Expected 1 arguments, but got 0. Did you forget to... Remove this comment to see the full error message
+        lastMes.style.transition = `opacity ${animation_duration}ms ease`;
+        lastMes.style.opacity = '0';
+        setTimeout(() => {
+            lastMes.remove();
             resolve();
-        });
+        }, animation_duration);
     });
 }
 
@@ -6677,18 +6687,19 @@ export async function duplicateCharacter({ avatar = null, silent = false } = {})
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'msgInContextCount' implicitly has an 'a... Remove this comment to see the full error message
 function setInContextMessages(msgInContextCount, type) {
-    chatElement.find('.mes').removeClass('lastInContext');
+    chatElement?.querySelectorAll('.mes').forEach(el => el.classList.remove('lastInContext'));
 
     if (type === 'swipe' || type === 'regenerate' || type === 'continue') {
         msgInContextCount++;
     }
 
-    const lastMessageBlock = chatElement.find('.mes:not([is_system="true"]), .mes.toolCall').eq(-msgInContextCount);
-    lastMessageBlock.addClass('lastInContext');
+    const allMes = chatElement?.querySelectorAll('.mes:not([is_system="true"]), .mes.toolCall') ?? [];
+    const lastBlock = allMes[allMes.length - msgInContextCount];
+    if (lastBlock) lastBlock.classList.add('lastInContext');
 
-    if (lastMessageBlock.length === 0) {
+    if (!lastBlock) {
         const firstMessageId = getFirstDisplayedMessageId();
-        chatElement.find(`.mes[mesid="${firstMessageId}"]`).addClass('lastInContext');
+        chatElement?.querySelector(`.mes[mesid="${firstMessageId}"]`)?.classList.add('lastInContext');
     }
 
     // Update last id to chat. No metadata save on purpose, gets hopefully saved via another call
@@ -8577,7 +8588,8 @@ export async function getChat() {
                 return;
             }
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#send_textarea').trigger('click').trigger('focus');
+            document.querySelector('#send_textarea')?.click();
+            document.querySelector('#send_textarea')?.focus();
         });
     } catch (error) {
         await getChatResult();
@@ -9944,7 +9956,7 @@ export function select_selected_character(chid, { switchMenu = true } = {}) {
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#character_popup-button-h3').text(characters[chid].name);
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#character_name_pole').val(characters[chid].name);
+    document.querySelector('#character_name_pole')?.value = characters[chid].name;
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#description_textarea').val(characters[chid].description);
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
@@ -10078,7 +10090,7 @@ function select_rm_create({ switchMenu = true } = {}) {
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#character_popup-button-h3').text('Create character');
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#character_name_pole').val(create_save.name);
+    document.querySelector('#character_name_pole')?.value = create_save.name;
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#description_textarea').val(create_save.description);
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
@@ -11178,7 +11190,7 @@ export async function createOrEditCharacter(e) {
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     if ($('#form_create').attr('actiontype') == 'createcharacter') {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        if (String($('#character_name_pole').val()).length === 0) {
+        if (String(document.querySelector('#character_name_pole')?.value).length === 0) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.error(t`Name is required`);
             return;
@@ -12123,7 +12135,8 @@ async function importCharacter(file, { preserveFileName = '', importTags = false
             }
 
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#character_search_bar').val('').trigger('input');
+            document.querySelector('#character_search_bar')?.value = '';
+            document.querySelector('#character_search_bar')?.dispatchEvent(new Event('input', { bubbles: true }));
 
             if (exists) {
                 // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
@@ -12733,14 +12746,17 @@ jQuery(async function () {
     //////////INPUT BAR FOCUS-KEEPING LOGIC/////////////
     let S_TAPreviouslyFocused = false;
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#send_textarea').on('focusin focus click', () => {
+    function focusSendTextarea() {
         S_TAPreviouslyFocused = true;
-    });
+    }
+    document.querySelector('#send_textarea')?.addEventListener('focusin', focusSendTextarea);
+    document.querySelector('#send_textarea')?.addEventListener('focus', focusSendTextarea);
+    document.querySelector('#send_textarea')?.addEventListener('click', focusSendTextarea);
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#send_but, #option_regenerate, #option_continue, #mes_continue, #mes_impersonate').on('click', () => {
         if (S_TAPreviouslyFocused) {
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#send_textarea').trigger('focus');
+            document.querySelector('#send_textarea')?.focus();
         }
     });
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
@@ -12831,7 +12847,7 @@ jQuery(async function () {
             select_selected_character(this_chid);
         }
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#character_search_bar').val('').trigger('input');
+        document.querySelector('#character_search_bar')?.value = ''.trigger('input');
     });
 
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
@@ -13128,7 +13144,7 @@ jQuery(async function () {
     $('#character_name_pole').on('input', function () {
         if (menu_type == 'create') {
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            create_save.name = String($('#character_name_pole').val());
+            create_save.name = String(document.querySelector('#character_name_pole')?.value);
         }
     });
 
@@ -14283,7 +14299,7 @@ jQuery(async function () {
             if (isEditVisible && power_user.auto_save_msg_edits === false) {
                 closeMessageEditor('all');
                 // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                $('#send_textarea').trigger('focus');
+                document.querySelector('#send_textarea')?.focus();
                 return;
             }
             if (isEditVisible && power_user.auto_save_msg_edits === true) {
@@ -14291,7 +14307,7 @@ jQuery(async function () {
                 chatElement.find(`.mes[mesid="${this_edit_mes_id}"] .mes_edit_done`).trigger('click');
                 closeMessageEditor('reasoning');
                 // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                $('#send_textarea').trigger('focus');
+                document.querySelector('#send_textarea')?.focus();
                 return;
             }
             // @ts-expect-error TS(7005) FIXME: Variable 'this_edit_mes_id' implicitly has an 'any... Remove this comment to see the full error message
