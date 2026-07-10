@@ -8784,14 +8784,16 @@ export function changeMainAPI(api = null) {
     // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     const activeItem = apiElements[selectedVal];
 
-    activeItem.apiStreaming.css('display', 'block');
-    activeItem.apiSettings.css('display', 'block');
-    activeItem.apiConnector.css('display', 'block');
-    activeItem.apiRanges.css('display', 'block');
-    activeItem.apiPresets.css('display', 'block');
+    if (activeItem) {
+        activeItem.apiStreaming.css('display', 'block');
+        activeItem.apiSettings.css('display', 'block');
+        activeItem.apiConnector.css('display', 'block');
+        activeItem.apiRanges.css('display', 'block');
+        activeItem.apiPresets.css('display', 'block');
 
-    if (selectedVal === 'openai') {
-        activeItem.apiPresets.css('display', 'flex');
+        if (selectedVal === 'openai') {
+            activeItem.apiPresets.css('display', 'flex');
+        }
     }
 
     if (selectedVal === 'textgenerationwebui' || selectedVal === 'novel') {
