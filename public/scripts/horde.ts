@@ -516,33 +516,26 @@ export function initHorde() {
     });
 
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#horde_auto_adjust_response_length').on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        horde_settings.auto_adjust_response_length = !!$(this).prop('checked');
+    document.getElementById('horde_auto_adjust_response_length')?.addEventListener('input', function (this: HTMLInputElement) {
+        horde_settings.auto_adjust_response_length = !!this.checked;
         setContextSizePreview();
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#horde_auto_adjust_context_length').on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        horde_settings.auto_adjust_context_length = !!$(this).prop('checked');
+    document.getElementById('horde_auto_adjust_context_length')?.addEventListener('input', function (this: HTMLInputElement) {
+        horde_settings.auto_adjust_context_length = !!this.checked;
         setContextSizePreview();
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#horde_trusted_workers_only').on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        horde_settings.trusted_workers_only = !!$(this).prop('checked');
+    document.getElementById('horde_trusted_workers_only')?.addEventListener('input', function (this: HTMLInputElement) {
+        horde_settings.trusted_workers_only = !!this.checked;
         setContextSizePreview();
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#horde_api_key_button').on('click', async function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const key = String($('#horde_api_key').val()).trim();
+    document.getElementById('horde_api_key_button')?.addEventListener('click', async function () {
+        const key = String((document.getElementById('horde_api_key') as HTMLInputElement | null)?.value ?? '').trim();
         if (!key) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             toastr.warning(t`Please enter your Horde API key`);
@@ -552,10 +545,8 @@ export function initHorde() {
         await writeSecret(SECRET_KEYS.HORDE, key);
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#horde_refresh').on('click', () => getHordeModels(true));
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#horde_kudos').on('click', showKudos);
+    document.getElementById('horde_refresh')?.addEventListener('click', () => getHordeModels(true));
+    document.getElementById('horde_kudos')?.addEventListener('click', showKudos);
 
     // Not needed on mobile
     if (!isMobile()) {
