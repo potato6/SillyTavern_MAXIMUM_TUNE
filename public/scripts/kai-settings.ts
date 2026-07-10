@@ -558,12 +558,10 @@ export function initKoboldSettings() {
         });
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#api_button').on('click', function (e) {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        if ($('#api_url_text').val() != '') {
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const value = formatKoboldUrl(String($('#api_url_text').val()).trim());
+    document.getElementById('api_button')?.addEventListener('click', function (e) {
+        const apiUrlText = document.getElementById('api_url_text') as HTMLInputElement;
+        if (apiUrlText && apiUrlText.value != '') {
+            const value = formatKoboldUrl(String(apiUrlText.value).trim());
 
             if (!value) {
                 // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
@@ -571,8 +569,7 @@ export function initKoboldSettings() {
                 return;
             }
 
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#api_url_text').val(value);
+            apiUrlText.value = value;
             kai_settings.api_server = value;
             startStatusLoading();
             saveSettingsDebounced();
@@ -614,15 +611,13 @@ export function initKoboldSettings() {
         },
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#samplers_order_recommended').on('click', function () {
+    document.getElementById('samplers_order_recommended')?.addEventListener('click', function () {
         kai_settings.sampler_order = KOBOLDCPP_ORDER;
         sortItemsByOrder(kai_settings.sampler_order);
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#settings_preset').on('change', async function () {
+    document.getElementById('settings_preset')?.addEventListener('change', async function () {
         const settingsPresetEl = document.getElementById('settings_preset');
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         if (settingsPresetEl.options[settingsPresetEl.selectedIndex].value != 'gui') {
@@ -631,10 +626,9 @@ export function initKoboldSettings() {
             const preset = koboldai_settings[koboldai_setting_names[kai_settings.preset_settings]];
             loadKoboldSettingsFromPreset(preset);
             setGenerationParamsFromPreset(preset);
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(document.getElementById('kobold_api-settings').querySelectorAll('input')).prop('disabled', false);
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#kobold_api-settings').css('opacity', 1.0);
+            document.querySelectorAll('#kobold_api-settings input').forEach(el => (el as HTMLInputElement).disabled = false);
+            document.getElementById('kobold_api-settings')?.style.removeProperty('opacity');
+            document.getElementById('kobold_api-settings')?.style.setProperty('opacity', '1');
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#kobold_order')
                 .css('opacity', 1)
@@ -642,10 +636,8 @@ export function initKoboldSettings() {
         } else {
             kai_settings.preset_settings = 'gui';
 
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(document.getElementById('kobold_api-settings').querySelectorAll('input')).prop('disabled', true);
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#kobold_api-settings').css('opacity', 0.5);
+            document.querySelectorAll('#kobold_api-settings input').forEach(el => (el as HTMLInputElement).disabled = true);
+            document.getElementById('kobold_api-settings')?.style.setProperty('opacity', '0.5');
 
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             $('#kobold_order')
