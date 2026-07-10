@@ -9,6 +9,9 @@ import { t } from './i18n.js';
 import { accountStorage } from './util/AccountStorage.js';
 import { createPaginator, textValueMatcher } from './utils.js';
 
+declare const $: any;
+declare const TomSelect: any;
+
 // @ts-expect-error TS(7034) FIXME: Variable 'mancerModels' implicitly has type 'any[]... Remove this comment to see the full error message
 let mancerModels = [];
 // @ts-expect-error TS(7034) FIXME: Variable 'togetherModels' implicitly has type 'any... Remove this comment to see the full error message
@@ -383,7 +386,6 @@ export async function syncOpenRouterProvidersForModel(modelId, providersSelector
     if (!modelId || !modelId.includes('/')) {
         // @ts-expect-error TS(7006) FIXME: Parameter 'el' implicitly has an 'any' type.
         providersEl?.querySelectorAll('option').forEach(el => el.disabled = false);
-        $providers.trigger('change.select2');
         refreshWarningState();
         return;
     }
@@ -405,7 +407,6 @@ export async function syncOpenRouterProvidersForModel(modelId, providersSelector
         if (!Array.isArray(providerNames) || providerNames.length === 0) {
             // @ts-expect-error TS(7006) FIXME: Parameter 'el' implicitly has an 'any' type.
             providersEl?.querySelectorAll('option').forEach(el => el.disabled = false);
-            $providers.trigger('change.select2');
             refreshWarningState();
             return;
         }
@@ -416,7 +417,6 @@ export async function syncOpenRouterProvidersForModel(modelId, providersSelector
             el.disabled = !isAvailable;
         });
 
-        $providers.trigger('change.select2');
         refreshWarningState();
     } catch (error) {
         console.error('Failed to fetch OpenRouter providers for model', error);
@@ -443,7 +443,6 @@ export async function syncNanoGptProvidersForModel(modelId, providersSelector) {
     if (!modelId) {
         // @ts-expect-error TS(7006) FIXME: Parameter 'el' implicitly has an 'any' type.
         providersEl?.querySelectorAll('option').forEach(el => el.disabled = false);
-        $providers.trigger('change.select2');
         refreshWarningState();
         return;
     }
@@ -469,7 +468,6 @@ export async function syncNanoGptProvidersForModel(modelId, providersSelector) {
                 el.disabled = Boolean(el.value);
             });
             $providers[0]?.dispatchEvent(new Event('change'));
-            $providers.trigger('change.select2');
             refreshWarningState();
             return;
         }
@@ -481,7 +479,6 @@ export async function syncNanoGptProvidersForModel(modelId, providersSelector) {
             el.disabled = !isAvailable;
         });
 
-        $providers.trigger('change.select2');
         refreshWarningState();
     } catch (error) {
         console.error('Failed to fetch NanoGPT providers for model', error);
@@ -1675,121 +1672,87 @@ export function initTextGenModels() {
     }
 
     if (!isMobile()) {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#mancer_model').select2({
+        new TomSelect(document.getElementById('mancer_model'), {
+            maxItems: 1,
             placeholder: t`Select a model`,
-            searchInputPlaceholder: t`Search models...`,
-            searchInputCssClass: 'text_pole',
-            width: '100%',
-            templateResult: getMancerModelTemplate,
+            render: {
+                option: function (data, escape) { return getMancerModelTemplate(data); },
+            },
         });
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#model_togetherai_select').select2({
+        new TomSelect(document.getElementById('model_togetherai_select'), {
+            maxItems: 1,
             placeholder: t`Select a model`,
-            searchInputPlaceholder: t`Search models...`,
-            searchInputCssClass: 'text_pole',
-            width: '100%',
-            templateResult: getTogetherModelTemplate,
+            render: {
+                option: function (data, escape) { return getTogetherModelTemplate(data); },
+            },
         });
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#ollama_model').select2({
+        new TomSelect(document.getElementById('ollama_model'), {
+            maxItems: 1,
             placeholder: t`Select a model`,
-            searchInputPlaceholder: t`Search models...`,
-            searchInputCssClass: 'text_pole',
-            width: '100%',
         });
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#tabby_model').select2({
+        new TomSelect(document.getElementById('tabby_model'), {
+            maxItems: 1,
             placeholder: t`[Currently loaded]`,
-            searchInputPlaceholder: t`Search models...`,
-            searchInputCssClass: 'text_pole',
-            width: '100%',
-            allowClear: true,
         });
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#llamacpp_model').select2({
+        new TomSelect(document.getElementById('llamacpp_model'), {
+            maxItems: 1,
             placeholder: t`[Currently loaded]`,
-            searchInputPlaceholder: t`Search models...`,
-            searchInputCssClass: 'text_pole',
-            width: '100%',
-            allowClear: true,
         });
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#model_infermaticai_select').select2({
+        new TomSelect(document.getElementById('model_infermaticai_select'), {
+            maxItems: 1,
             placeholder: t`Select a model`,
-            searchInputPlaceholder: t`Search models...`,
-            searchInputCssClass: 'text_pole',
-            width: '100%',
-            templateResult: getInfermaticAIModelTemplate,
+            render: {
+                option: function (data, escape) { return getInfermaticAIModelTemplate(data); },
+            },
         });
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#model_dreamgen_select').select2({
+        new TomSelect(document.getElementById('model_dreamgen_select'), {
+            maxItems: 1,
             placeholder: t`Select a model`,
-            searchInputPlaceholder: t`Search models...`,
-            searchInputCssClass: 'text_pole',
-            width: '100%',
-            templateResult: getDreamGenModelTemplate,
+            render: {
+                option: function (data, escape) { return getDreamGenModelTemplate(data); },
+            },
         });
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#openrouter_model').select2({
+        new TomSelect(document.getElementById('openrouter_model'), {
+            maxItems: 1,
             placeholder: t`Select a model`,
-            searchInputPlaceholder: t`Search models...`,
-            searchInputCssClass: 'text_pole',
-            width: '100%',
-            templateResult: getOpenRouterModelTemplate,
-            matcher: textValueMatcher,
+            render: {
+                option: function (data, escape) { return getOpenRouterModelTemplate(data); },
+            },
         });
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#vllm_model').select2({
+        new TomSelect(document.getElementById('vllm_model'), {
+            maxItems: 1,
             placeholder: t`Select a model`,
-            searchInputPlaceholder: t`Search models...`,
-            searchInputCssClass: 'text_pole',
-            width: '100%',
-            templateResult: getVllmModelTemplate,
+            render: {
+                option: function (data, escape) { return getVllmModelTemplate(data); },
+            },
         });
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#aphrodite_model').select2({
+        new TomSelect(document.getElementById('aphrodite_model'), {
+            maxItems: 1,
             placeholder: t`Select a model`,
-            searchInputPlaceholder: t`Search models...`,
-            searchInputCssClass: 'text_pole',
-            width: '100%',
-            templateResult: getAphroditeModelTemplate,
+            render: {
+                option: function (data, escape) { return getAphroditeModelTemplate(data); },
+            },
         });
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('.openrouter_quantizations').select2({
-            closeOnSelect: false,
+        new TomSelect(document.querySelector('.openrouter_quantizations'), {
+            maxItems: null,
+            plugins: ['remove_button'],
             placeholder: t`Select quantizations. No selection = all quantizations.`,
-            searchInputCssClass: 'text_pole',
-            searchInputPlaceholder: t`Search quantizations...`,
-            width: '100%',
         });
-        providersSelect.select2({
-            // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
-            sorter: data => data.sort((a, b) => a.text.localeCompare(b.text)),
+        new TomSelect(providersSelect[0], {
+            maxItems: null,
+            plugins: ['remove_button'],
             placeholder: t`Select providers. No selection = all providers.`,
-            searchInputPlaceholder: t`Search providers...`,
-            searchInputCssClass: 'text_pole',
-            width: '100%',
-            closeOnSelect: false,
         });
-        providersSelect.on('select2:select', function (this: any, evt: any) {
-            const element = evt.params.data.element;
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const $element = $(element);
-
-            $element.detach();
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(this).append($element);
-            (this as HTMLSelectElement).dispatchEvent(new Event('change'));
+        providersSelect[0].addEventListener('change', function (this: HTMLSelectElement) {
+            const selectedOptions = Array.from(this.selectedOptions);
+            for (const option of selectedOptions) {
+                this.appendChild(option);
+            }
         });
-        nanoGptProvidersSelect.select2({
-            // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
-            sorter: data => data.sort((a, b) => a.text.localeCompare(b.text)),
+        new TomSelect(nanoGptProvidersSelect[0], {
+            maxItems: null,
+            plugins: ['remove_button'],
             placeholder: t`Select providers. No selection = all providers.`,
-            searchInputPlaceholder: t`Search providers...`,
-            searchInputCssClass: 'text_pole',
-            width: '100%',
-            allowClear: true,
         });
     }
 }
