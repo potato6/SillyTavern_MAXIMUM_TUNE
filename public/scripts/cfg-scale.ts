@@ -322,55 +322,55 @@ export function initCfg() {
         setTimeout(function () { $('#cfgConfig').hide(); }, animation_duration);
     });
 
-    $('#chat_cfg_guidance_scale').on('input', function (this: HTMLElement) {
-        const numberValue = Number($(this).val());
+    document.getElementById('chat_cfg_guidance_scale')?.addEventListener('input', function (this: HTMLInputElement) {
+        const numberValue = Number(this.value);
         const success = setChatCfg(String(numberValue), settingType.guidance_scale);
         if (success) {
-            $('#chat_cfg_guidance_scale_counter').val(numberValue.toFixed(2));
+            (document.getElementById('chat_cfg_guidance_scale_counter') as HTMLInputElement).value = numberValue.toFixed(2);
         }
     });
 
-    $('#chat_cfg_negative_prompt').on('input', function (this: HTMLElement) {
-        setChatCfg($(this).val(), settingType.negative_prompt);
+    document.getElementById('chat_cfg_negative_prompt')?.addEventListener('input', function (this: HTMLInputElement) {
+        setChatCfg(this.value, settingType.negative_prompt);
     });
 
-    $('#chat_cfg_positive_prompt').on('input', function (this: HTMLElement) {
-        setChatCfg($(this).val(), settingType.positive_prompt);
+    document.getElementById('chat_cfg_positive_prompt')?.addEventListener('input', function (this: HTMLInputElement) {
+        setChatCfg(this.value, settingType.positive_prompt);
     });
 
-    $('#chara_cfg_guidance_scale').on('input', function (this: HTMLElement) {
-        const value = $(this).val();
+    document.getElementById('chara_cfg_guidance_scale')?.addEventListener('input', function (this: HTMLInputElement) {
+        const value = this.value;
         const success = setCharCfg(value, settingType.guidance_scale);
         if (success) {
-            $('#chara_cfg_guidance_scale_counter').val(Number(value).toFixed(2));
+            (document.getElementById('chara_cfg_guidance_scale_counter') as HTMLInputElement).value = Number(value).toFixed(2);
         }
     });
 
-    $('#chara_cfg_negative_prompt').on('input', function (this: HTMLElement) {
-        setCharCfg($(this).val(), settingType.negative_prompt);
+    document.getElementById('chara_cfg_negative_prompt')?.addEventListener('input', function (this: HTMLInputElement) {
+        setCharCfg(this.value, settingType.negative_prompt);
     });
 
-    $('#chara_cfg_positive_prompt').on('input', function (this: HTMLElement) {
-        setCharCfg($(this).val(), settingType.positive_prompt);
+    document.getElementById('chara_cfg_positive_prompt')?.addEventListener('input', function (this: HTMLInputElement) {
+        setCharCfg(this.value, settingType.positive_prompt);
     });
 
-    $('#global_cfg_guidance_scale').on('input', function (this: HTMLElement) {
-        _ext.cfg.global.guidance_scale = Number($(this).val());
-        $('#global_cfg_guidance_scale_counter').val(_ext.cfg.global.guidance_scale.toFixed(2));
+    document.getElementById('global_cfg_guidance_scale')?.addEventListener('input', function (this: HTMLInputElement) {
+        _ext.cfg.global.guidance_scale = Number(this.value);
+        (document.getElementById('global_cfg_guidance_scale_counter') as HTMLInputElement).value = _ext.cfg.global.guidance_scale.toFixed(2);
         saveSettingsDebounced();
     });
 
-    $('#global_cfg_negative_prompt').on('input', function (this: HTMLElement) {
-        _ext.cfg.global.negative_prompt = $(this).val();
+    document.getElementById('global_cfg_negative_prompt')?.addEventListener('input', function (this: HTMLInputElement) {
+        _ext.cfg.global.negative_prompt = this.value;
         saveSettingsDebounced();
     });
 
-    $('#global_cfg_positive_prompt').on('input', function (this: HTMLElement) {
-        _ext.cfg.global.positive_prompt = $(this).val();
+    document.getElementById('global_cfg_positive_prompt')?.addEventListener('input', function (this: HTMLInputElement) {
+        _ext.cfg.global.positive_prompt = this.value;
         saveSettingsDebounced();
     });
 
-    $('input[name="cfg_prompt_combine"]').on('input', function (this: HTMLElement) {
+    document.querySelector('input[name="cfg_prompt_combine"]')?.addEventListener('input', function () {
         const values = Array.from(document.querySelectorAll<HTMLInputElement>('#cfgConfig input[name="cfg_prompt_combine"]:checked'))
             .map(function (el) { return Number(el.value); })
             .filter((e) => !Number.isNaN(e)) || [];
@@ -379,18 +379,18 @@ export function initCfg() {
         saveMetadataDebounced();
     });
 
-    $('#cfg_prompt_insertion_depth').on('input', function (this: HTMLElement) {
-        chat_metadata[metadataKeys.prompt_insertion_depth] = Number($(this).val());
+    document.getElementById('cfg_prompt_insertion_depth')?.addEventListener('input', function (this: HTMLInputElement) {
+        chat_metadata[metadataKeys.prompt_insertion_depth] = Number(this.value);
         saveMetadataDebounced();
     });
 
-    $('#cfg_prompt_separator').on('input', function (this: HTMLElement) {
-        chat_metadata[metadataKeys.prompt_separator] = $(this).val();
+    document.getElementById('cfg_prompt_separator')?.addEventListener('input', function (this: HTMLInputElement) {
+        chat_metadata[metadataKeys.prompt_separator] = this.value;
         saveMetadataDebounced();
     });
 
-    $('#groupchat_cfg_use_chara').on('input', function (this: HTMLElement) {
-        const checked = !!$(this).prop('checked');
+    document.getElementById('groupchat_cfg_use_chara')?.addEventListener('input', function (this: HTMLInputElement) {
+        const checked = !!(this).checked;
         chat_metadata[metadataKeys.groupchat_individual_chars] = checked;
 
         if (checked) {
