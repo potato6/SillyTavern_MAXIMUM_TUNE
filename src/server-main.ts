@@ -172,14 +172,15 @@ app.use(setUserDataMiddleware);
 
 // CSRF Protection //
 if (!cliArgs.disableCsrf) {
-    const CSRF_SECRET = process.env['CSRF_SECRET'] || crypto.randomBytes(64).toString('hex');
+    const nodeCrypto = require('node:crypto');
+    const CSRF_SECRET = process.env['CSRF_SECRET'] || nodeCrypto.randomBytes(64).toString('hex');
 
     app.get('/csrf-token', (req, res) => {
-        const sessionId = req.sessionID || req.ip || 'anonymous';
+        const sessionId = req.ip || 'anonymous';
         const token = Bun.CSRF.generate(CSRF_SECRET, {
             sessionId: sessionId,
             expiresIn: 24 * 60 * 60 * 1000,
-        });
+        } as any);
         res.json({ token });
     });
 
@@ -192,9 +193,9 @@ if (!cliArgs.disableCsrf) {
         }
 
         const token = req.headers['x-csrf-token']?.toString();
-        const sessionId = req.sessionID || req.ip || 'anonymous';
+        const sessionId = req.ip || 'anonymous';
 
-        if (!token || !Bun.CSRF.verify(token, { secret: CSRF_SECRET, sessionId: sessionId })) {
+        if (!token || !Bun.CSRF.verify(token, { secret: CSRF_SECRET, sessionId: sessionId } as any)) {
             console.error(color.red('Invalid CSRF token. Please refresh the page and try again.'));
             res.status(403).json({ error: 'Invalid CSRF token. Please refresh the page and try again.' });
             return;
