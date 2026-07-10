@@ -487,7 +487,8 @@ export function fixMarkdown(text, forDisplay) {
  */
 function switchHotswap() {
     document.body.classList.toggle('no-hotswap', !power_user.hotswap_enabled);
-    $('#hotswapEnabled').prop('checked', power_user.hotswap_enabled);
+    const el = document.getElementById('hotswapEnabled') as HTMLInputElement | null;
+    if (el) el.checked = power_user.hotswap_enabled;
 }
 
 /**
@@ -495,7 +496,8 @@ function switchHotswap() {
  */
 function switchTimer() {
     document.body.classList.toggle('no-timer', !power_user.timer_enabled);
-    $('#messageTimerEnabled').prop('checked', power_user.timer_enabled);
+    const el = document.getElementById('messageTimerEnabled') as HTMLInputElement | null;
+    if (el) el.checked = power_user.timer_enabled;
 }
 
 /**
@@ -503,7 +505,8 @@ function switchTimer() {
  */
 function switchTimestamps() {
     document.body.classList.toggle('no-timestamps', !power_user.timestamps_enabled);
-    $('#messageTimestampsEnabled').prop('checked', power_user.timestamps_enabled);
+    const el = document.getElementById('messageTimestampsEnabled') as HTMLInputElement | null;
+    if (el) el.checked = power_user.timestamps_enabled;
 }
 
 /**
@@ -511,7 +514,8 @@ function switchTimestamps() {
  */
 function switchIcons() {
     document.body.classList.toggle('no-modelIcons', !power_user.timestamp_model_icon);
-    $('#messageModelIconEnabled').prop('checked', power_user.timestamp_model_icon);
+    const el = document.getElementById('messageModelIconEnabled') as HTMLInputElement | null;
+    if (el) el.checked = power_user.timestamp_model_icon;
 }
 
 /**
@@ -519,7 +523,8 @@ function switchIcons() {
  */
 function switchTokenCount() {
     document.body.classList.toggle('no-tokenCount', !power_user.message_token_count_enabled);
-    $('#messageTokensEnabled').prop('checked', power_user.message_token_count_enabled);
+    const el = document.getElementById('messageTokensEnabled') as HTMLInputElement | null;
+    if (el) el.checked = power_user.message_token_count_enabled;
 }
 
 /**
@@ -527,7 +532,8 @@ function switchTokenCount() {
  */
 function switchMesIDDisplay() {
     document.body.classList.toggle('no-mesIDDisplay', !power_user.mesIDDisplay_enabled);
-    $('#mesIDDisplayEnabled').prop('checked', power_user.mesIDDisplay_enabled);
+    const el = document.getElementById('mesIDDisplayEnabled') as HTMLInputElement | null;
+    if (el) el.checked = power_user.mesIDDisplay_enabled;
 }
 
 /**
@@ -535,7 +541,8 @@ function switchMesIDDisplay() {
  */
 function switchHideChatAvatars() {
     document.body.classList.toggle('hideChatAvatars', power_user.hideChatAvatars_enabled);
-    $('#hideChatAvatarsEnabled').prop('checked', power_user.hideChatAvatars_enabled);
+    const el = document.getElementById('hideChatAvatarsEnabled') as HTMLInputElement | null;
+    if (el) el.checked = power_user.hideChatAvatars_enabled;
 }
 
 /**
@@ -543,8 +550,9 @@ function switchHideChatAvatars() {
  */
 function switchMessageActions() {
     document.body.classList.toggle('expandMessageActions', power_user.expand_message_actions);
-    $('#expandMessageActions').prop('checked', power_user.expand_message_actions);
-    $('.extraMesButtons, .extraMesButtonsHint').removeAttr('style');
+    const el = document.getElementById('expandMessageActions') as HTMLInputElement | null;
+    if (el) el.checked = power_user.expand_message_actions;
+    document.querySelectorAll('.extraMesButtons, .extraMesButtonsHint').forEach(el => el.removeAttribute('style'));
 }
 
 /**
@@ -558,8 +566,9 @@ function switchReducedMotion() {
     document.documentElement.classList.toggle('reduce-motion', power_user.reduced_motion);
     const overrideDuration = power_user.reduced_motion ? 0 : ANIMATION_DURATION_DEFAULT;
     setAnimationDuration(overrideDuration);
-    $('#reduced_motion').prop('checked', power_user.reduced_motion);
-    $('#reduced_motion').prop('disabled', osReduced);
+    const rmEl = document.getElementById('reduced_motion') as HTMLInputElement | null;
+    if (rmEl) rmEl.checked = power_user.reduced_motion;
+    if (rmEl) rmEl.disabled = osReduced;
         document.getElementById('reduced_motion')?.closest('label')?.setAttribute('title',
             osReduced
                 ? t`Controlled by your operating system's reduced motion setting`
@@ -573,14 +582,16 @@ function switchReducedMotion() {
  */
 function switchCompactInputArea() {
     document.getElementById('send_form').classList.toggle('compact', power_user.compact_input_area);
-    $('#compact_input_area').prop('checked', power_user.compact_input_area);
+    const el = document.getElementById('compact_input_area') as HTMLInputElement | null;
+    if (el) el.checked = power_user.compact_input_area;
 }
 
 /**
  *
  */
 function switchSwipeNumAllMessages() {
-    $('#show_swipe_num_all_messages').prop('checked', power_user.show_swipe_num_all_messages);
+    const el = document.getElementById('show_swipe_num_all_messages') as HTMLInputElement | null;
+    if (el) el.checked = power_user.show_swipe_num_all_messages;
     document.body.classList.toggle('swipeAllMessages', !!power_user.show_swipe_num_all_messages);
 }
 
@@ -600,7 +611,8 @@ async function switchLabMode({ noReset = false } = {}) {
      */
     await delay(100);
     document.body.classList.toggle('enableLabMode', power_user.enableLabMode);
-    $('#enableLabMode').prop('checked', power_user.enableLabMode);
+    const labModeEl = document.getElementById('enableLabMode') as HTMLInputElement | null;
+    if (labModeEl) labModeEl.checked = power_user.enableLabMode;
 
     if (power_user.enableLabMode) {
         //save all original slider values into an array
@@ -613,27 +625,28 @@ async function switchLabMode({ noReset = false } = {}) {
         });
         //console.log(originalSliderValues)
         //remove limits on all inputs and hide sliders
-        $('#advanced-ai-config-block input')
-            .attr('min', '-99999')
-            .attr('max', '99999')
-            .attr('step', '0.001');
+        document.querySelectorAll('#advanced-ai-config-block input').forEach(el => {
+            el.setAttribute('min', '-99999');
+            el.setAttribute('max', '99999');
+            el.setAttribute('step', '0.001');
+        });
         document.getElementById('labModeWarning').classList.remove('displayNone');
         //$("#advanced-ai-config-block input[type='range']").hide()
 
-        $('#amount_gen_counter').attr('min', '1')
-            .attr('max', '99999')
-            .attr('step', '1');
-        $('#amount_gen').attr('min', '1')
-            .attr('max', '99999')
-            .attr('step', '1');
+        const agcEl = document.getElementById('amount_gen_counter');
+        if (agcEl) { agcEl.setAttribute('min', '1'); agcEl.setAttribute('max', '99999'); agcEl.setAttribute('step', '1'); }
+        const agEl = document.getElementById('amount_gen');
+        if (agEl) { agEl.setAttribute('min', '1'); agEl.setAttribute('max', '99999'); agEl.setAttribute('step', '1'); }
     } else if (!noReset) {
         //re apply the original sliders values to each input
         originalSliderValues.forEach(function (slider) {
-            $('#' + slider.id)
-                .attr('min', slider.min)
-                .attr('max', slider.max)
-                .attr('step', slider.step)
-                .trigger('input');
+            const el = document.getElementById(slider.id);
+            if (el) {
+                el.setAttribute('min', slider.min);
+                el.setAttribute('max', slider.max);
+                el.setAttribute('step', slider.step);
+                el.dispatchEvent(new Event('input', { bubbles: true }));
+            }
         });
         document.querySelectorAll("#advanced-ai-config-block input[type='range']").forEach(el => el.style.display = '');
         document.getElementById('labModeWarning').classList.add('displayNone');
@@ -649,7 +662,8 @@ async function switchLabMode({ noReset = false } = {}) {
 async function switchZenSliders() {
     await delay(100);
     document.body.classList.toggle('enableZenSliders', power_user.enableZenSliders);
-    $('#enableZenSliders').prop('checked', power_user.enableZenSliders);
+    const zenEl = document.getElementById('enableZenSliders') as HTMLInputElement | null;
+    if (zenEl) zenEl.checked = power_user.enableZenSliders;
 
     if (power_user.enableZenSliders) {
         const clickSlidersTips = document.getElementById('clickSlidersTips');
@@ -974,13 +988,18 @@ async function CreateZenSliders(elmnt) {
  */
 function switchUiMode() {
     document.body.classList.toggle('no-blur', power_user.fast_ui_mode);
-    $('#fast_ui_mode').prop('checked', power_user.fast_ui_mode);
+    const uiModeEl = document.getElementById('fast_ui_mode') as HTMLInputElement | null;
+    if (uiModeEl) uiModeEl.checked = power_user.fast_ui_mode;
     if (power_user.fast_ui_mode) {
-        $('#blur-strength-block').css('opacity', '0.2');
-        $('#blur_strength').prop('disabled', true);
+        const block = document.getElementById('blur-strength-block');
+        if (block) block.style.opacity = '0.2';
+        const bsEl = document.getElementById('blur_strength') as HTMLInputElement | null;
+        if (bsEl) bsEl.disabled = true;
     } else {
-        $('#blur-strength-block').css('opacity', '1');
-        $('#blur_strength').prop('disabled', false);
+        const block = document.getElementById('blur-strength-block');
+        if (block) block.style.opacity = '1';
+        const bsEl = document.getElementById('blur_strength') as HTMLInputElement | null;
+        if (bsEl) bsEl.disabled = false;
     }
 }
 
@@ -988,7 +1007,8 @@ function switchUiMode() {
  *
  */
 function toggleWaifu() {
-    $('#waifuMode').trigger('click');
+    const waifuEl = document.getElementById('waifuMode');
+    if (waifuEl) waifuEl.dispatchEvent(new Event('click', { bubbles: true }));
     return '';
 }
 
@@ -997,7 +1017,8 @@ function toggleWaifu() {
  */
 function switchWaifuMode() {
     document.body.classList.toggle('waifuMode', power_user.waifuMode);
-    $('#waifuMode').prop('checked', power_user.waifuMode);
+    const waifuEl = document.getElementById('waifuMode') as HTMLInputElement | null;
+    if (waifuEl) waifuEl.checked = power_user.waifuMode;
     scrollChatToBottom();
 }
 
@@ -1056,13 +1077,18 @@ function switchMovingUI() {
  */
 function applyNoShadows() {
     document.body.classList.toggle('noShadows', power_user.noShadows);
-    $('#noShadowsmode').prop('checked', power_user.noShadows);
+    const nsEl = document.getElementById('noShadowsmode') as HTMLInputElement | null;
+    if (nsEl) nsEl.checked = power_user.noShadows;
     if (power_user.noShadows) {
-        $('#shadow-width-block').css('opacity', '0.2');
-        $('#shadow_width').prop('disabled', true);
+        const block = document.getElementById('shadow-width-block');
+        if (block) block.style.opacity = '0.2';
+        const swEl = document.getElementById('shadow_width') as HTMLInputElement | null;
+        if (swEl) swEl.disabled = true;
     } else {
-        $('#shadow-width-block').css('opacity', '1');
-        $('#shadow_width').prop('disabled', false);
+        const block = document.getElementById('shadow-width-block');
+        if (block) block.style.opacity = '1';
+        const swEl = document.getElementById('shadow_width') as HTMLInputElement | null;
+        if (swEl) swEl.disabled = false;
     }
     scrollChatToBottom();
 }
@@ -1074,9 +1100,9 @@ function applyAvatarStyle() {
     document.body.classList.toggle('big-avatars', power_user.avatar_style === avatar_styles.RECTANGULAR);
     document.body.classList.toggle('square-avatars', power_user.avatar_style === avatar_styles.SQUARE);
     document.body.classList.toggle('rounded-avatars', power_user.avatar_style === avatar_styles.ROUNDED);
-    $('#avatar_style').val(power_user.avatar_style).prop('selected', true);
+    const avEl = document.getElementById('avatar_style') as HTMLSelectElement | null;
+    if (avEl) { avEl.value = String(power_user.avatar_style); }
 }
-
 /**
  *
  */
@@ -1086,7 +1112,8 @@ function applyChatDisplay() {
         power_user.chat_display = chat_styles.DEFAULT;
     }
     console.debug(`poweruser.chat_display ${power_user.chat_display}`);
-    $('#chat_display').val(power_user.chat_display).prop('selected', true);
+    const cdEl = document.getElementById('chat_display') as HTMLSelectElement | null;
+    if (cdEl) { cdEl.value = String(power_user.chat_display); }
 
     switch (power_user.chat_display) {
         case 0: {
@@ -1121,8 +1148,10 @@ function applyToastrPosition() {
 
     toastr.options.positionClass = power_user.toastr_position;
     fixToastrForDialogs();
-    $('#toastr_position').val(power_user.toastr_position);
-    $(`#toastr_position option[value="${power_user.toastr_position}"]`).prop('selected', true);
+    const tpEl = document.getElementById('toastr_position') as HTMLSelectElement | null;
+    if (tpEl) tpEl.value = power_user.toastr_position;
+    const tpOpt = document.querySelector(`#toastr_position option[value="${power_user.toastr_position}"]`) as HTMLOptionElement | null;
+    if (tpOpt) tpOpt.selected = true;
 }
 
 /**
@@ -1133,7 +1162,8 @@ function applyChatWidth(type) {
     if (type === 'forced') {
         const r = document.documentElement;
         r.style.setProperty('--sheldWidth', `${power_user.chat_width}vw`);
-        $('#chat_width_slider').val(power_user.chat_width);
+        const cwsEl = document.getElementById('chat_width_slider') as HTMLInputElement | null;
+        if (cwsEl) cwsEl.value = String(power_user.chat_width);
         //document.documentElement.style.setProperty('--sheldWidth', power_user.chat_width);
     } else {
         //this is to prevent the slider from updating page in real time
@@ -1154,7 +1184,8 @@ function applyChatWidth(type) {
         }
     }
 
-    $('#chat_width_slider_counter').val(power_user.chat_width);
+    const cwscEl = document.getElementById('chat_width_slider_counter') as HTMLInputElement | null;
+    if (cwscEl) cwscEl.value = String(power_user.chat_width);
 }
 
 /**
@@ -1208,7 +1239,8 @@ function applyThemeColor(type) {
  *
  */
 function applyCustomCSS() {
-    $('#customCSS').val(power_user.custom_css);
+    const customCssEl = document.getElementById('customCSS') as HTMLTextAreaElement | null;
+    if (customCssEl) customCssEl.value = power_user.custom_css;
     const styleId = 'custom-style';
     let style = document.getElementById(styleId);
     if (!style) {
@@ -1225,8 +1257,10 @@ function applyCustomCSS() {
  */
 function applyBlurStrength() {
     document.documentElement.style.setProperty('--blurStrength', String(power_user.blur_strength));
-    $('#blur_strength_counter').val(power_user.blur_strength);
-    $('#blur_strength').val(power_user.blur_strength);
+    const bscEl = document.getElementById('blur_strength_counter') as HTMLInputElement | null;
+    if (bscEl) bscEl.value = String(power_user.blur_strength);
+    const bsEl = document.getElementById('blur_strength') as HTMLInputElement | null;
+    if (bsEl) bsEl.value = String(power_user.blur_strength);
 }
 
 /**
@@ -1234,8 +1268,10 @@ function applyBlurStrength() {
  */
 function applyShadowWidth() {
     document.documentElement.style.setProperty('--shadowWidth', String(power_user.shadow_width));
-    $('#shadow_width_counter').val(power_user.shadow_width);
-    $('#shadow_width').val(power_user.shadow_width);
+    const swcEl = document.getElementById('shadow_width_counter') as HTMLInputElement | null;
+    if (swcEl) swcEl.value = String(power_user.shadow_width);
+    const swEl = document.getElementById('shadow_width') as HTMLInputElement | null;
+    if (swEl) swEl.value = String(power_user.shadow_width);
 }
 
 /**
@@ -1259,8 +1295,10 @@ function applyFontScale(type) {
         }
     }
 
-    $('#font_scale_counter').val(power_user.font_scale);
-    $('#font_scale').val(power_user.font_scale);
+    const fscEl = document.getElementById('font_scale_counter') as HTMLInputElement | null;
+    if (fscEl) fscEl.value = String(power_user.font_scale);
+    const fsEl = document.getElementById('font_scale') as HTMLInputElement | null;
+    if (fsEl) fsEl.value = String(power_user.font_scale);
 }
 
 /**
@@ -1458,48 +1496,55 @@ function applyTheme(name) {
         {
             key: 'bogus_folders',
             action: () => {
-                $('#bogus_folders').prop('checked', power_user.bogus_folders);
+                const el = document.getElementById('bogus_folders') as HTMLInputElement | null;
+                if (el) el.checked = power_user.bogus_folders;
                 printCharactersDebounced();
             },
-        },
-        {
+            },
+            {
             key: 'zoomed_avatar_magnification',
             action: () => {
-                $('#zoomed_avatar_magnification').prop('checked', power_user.zoomed_avatar_magnification);
+                const el = document.getElementById('zoomed_avatar_magnification') as HTMLInputElement | null;
+                if (el) el.checked = power_user.zoomed_avatar_magnification;
                 printCharactersDebounced();
             },
-        },
-        {
+            },
+            {
             key: 'reduced_motion',
             action: () => {
-                $('#reduced_motion').prop('checked', power_user.reduced_motion);
+                const el = document.getElementById('reduced_motion') as HTMLInputElement | null;
+                if (el) el.checked = power_user.reduced_motion;
                 switchReducedMotion();
             },
-        },
-        {
+            },
+            {
             key: 'compact_input_area',
             action: () => {
-                $('#compact_input_area').prop('checked', power_user.compact_input_area);
+                const el = document.getElementById('compact_input_area') as HTMLInputElement | null;
+                if (el) el.checked = power_user.compact_input_area;
                 switchCompactInputArea();
             },
-        },
-        {
+            },
+            {
             key: 'show_swipe_num_all_messages',
             action: () => {
-                $('#show_swipe_num_all_messages').prop('checked', power_user.show_swipe_num_all_messages);
+                const el = document.getElementById('show_swipe_num_all_messages') as HTMLInputElement | null;
+                if (el) el.checked = power_user.show_swipe_num_all_messages;
                 switchSwipeNumAllMessages();
             },
-        },
-        {
+            },
+            {
             key: 'click_to_edit',
             action: () => {
-                $('#click_to_edit').prop('checked', power_user.click_to_edit);
+                const el = document.getElementById('click_to_edit') as HTMLInputElement | null;
+                if (el) el.checked = power_user.click_to_edit;
             },
-        },
-        {
+            },
+            {
             key: 'media_display',
             action: (oldValue, newValue) => {
-                $('#media_display').val(power_user.media_display);
+                const el = document.getElementById('media_display') as HTMLSelectElement | null;
+                if (el) el.value = power_user.media_display;
                 if (oldValue !== newValue) {
                     showMediaDisplayReloadPrompt();
                 }
@@ -1512,7 +1557,10 @@ function applyTheme(name) {
             const oldValue = power_user[key];
             const newValue = theme[key];
             power_user[key] = newValue;
-            if (selector) $(selector).attr('color', newValue);
+            if (selector) {
+                const colorEl = document.querySelector(selector);
+                if (colorEl) colorEl.setAttribute('color', newValue);
+            }
             if (type) applyThemeColor(type);
             if (action) action(oldValue, newValue);
         } else {
@@ -1748,152 +1796,156 @@ export async function loadPowerUserSettings(settings, data) {
     // Reset the saved chat template hash
     power_user.chat_template_hash = '';
 
-    $('#single_line').prop('checked', power_user.single_line);
-    $('#relaxed_api_urls').prop('checked', power_user.relaxed_api_urls);
-    $('#world_import_dialog').prop('checked', power_user.world_import_dialog);
-    $('#enable_auto_select_input').prop('checked', power_user.enable_auto_select_input);
-    $('#enable_md_hotkeys').prop('checked', power_user.enable_md_hotkeys);
-    $('#trim_spaces').prop('checked', power_user.trim_spaces);
-    $('#continue_on_send').prop('checked', power_user.continue_on_send);
-    $('#quick_continue').prop('checked', power_user.quick_continue);
-    $('#quick_impersonate').prop('checked', power_user.quick_continue);
-    $('#mes_continue').css('display', power_user.quick_continue ? '' : 'none');
-    $('#mes_impersonate').css('display', power_user.quick_impersonate ? '' : 'none');
-    $('#gestures-checkbox').prop('checked', power_user.gestures);
-    $('#auto_swipe').prop('checked', power_user.auto_swipe);
-    $('#auto_swipe_minimum_length').val(power_user.auto_swipe_minimum_length);
-    $('#auto_swipe_blacklist').val(power_user.auto_swipe_blacklist.join(', '));
-    $('#auto_swipe_blacklist_threshold').val(power_user.auto_swipe_blacklist_threshold);
-    $('#custom_stopping_strings').text(power_user.custom_stopping_strings);
-    $('#custom_stopping_strings_macro').prop('checked', power_user.custom_stopping_strings_macro);
-    $('#fuzzy_search_checkbox').prop('checked', power_user.fuzzy_search);
-    $('#persona_show_notifications').prop('checked', power_user.persona_show_notifications);
-    $('#persona_allow_multi_connections').prop('checked', power_user.persona_allow_multi_connections);
-    $('#persona_auto_lock').prop('checked', power_user.persona_auto_lock);
-    $('#encode_tags').prop('checked', power_user.encode_tags);
-    $('#experimental_macro_engine').prop('checked', power_user.experimental_macro_engine);
-    $('#example_messages_behavior').val(getExampleMessagesBehavior());
-    $(`#example_messages_behavior option[value="${getExampleMessagesBehavior()}"]`).prop('selected', true);
+    (document.getElementById('single_line') as HTMLInputElement | null)?.checked = power_user.single_line;
+    (document.getElementById('relaxed_api_urls') as HTMLInputElement | null)?.checked = power_user.relaxed_api_urls;
+    (document.getElementById('world_import_dialog') as HTMLInputElement | null)?.checked = power_user.world_import_dialog;
+    (document.getElementById('enable_auto_select_input') as HTMLInputElement | null)?.checked = power_user.enable_auto_select_input;
+    (document.getElementById('enable_md_hotkeys') as HTMLInputElement | null)?.checked = power_user.enable_md_hotkeys;
+    (document.getElementById('trim_spaces') as HTMLInputElement | null)?.checked = power_user.trim_spaces;
+    (document.getElementById('continue_on_send') as HTMLInputElement | null)?.checked = power_user.continue_on_send;
+    (document.getElementById('quick_continue') as HTMLInputElement | null)?.checked = power_user.quick_continue;
+    (document.getElementById('quick_impersonate') as HTMLInputElement | null)?.checked = power_user.quick_continue;
+    const mcEl = document.getElementById('mes_continue');
+    if (mcEl) mcEl.style.display = power_user.quick_continue ? '' : 'none';
+    const miEl = document.getElementById('mes_impersonate');
+    if (miEl) miEl.style.display = power_user.quick_impersonate ? '' : 'none';
+    (document.getElementById('gestures-checkbox') as HTMLInputElement | null)?.checked = power_user.gestures;
+    (document.getElementById('auto_swipe') as HTMLInputElement | null)?.checked = power_user.auto_swipe;
+    (document.getElementById('auto_swipe_minimum_length') as HTMLInputElement | null)?.value = String(power_user.auto_swipe_minimum_length);
+    (document.getElementById('auto_swipe_blacklist') as HTMLInputElement | null)?.value = power_user.auto_swipe_blacklist.join(', ');
+    (document.getElementById('auto_swipe_blacklist_threshold') as HTMLInputElement | null)?.value = String(power_user.auto_swipe_blacklist_threshold);
+    (document.getElementById('custom_stopping_strings') as HTMLTextAreaElement | null)?.textContent = power_user.custom_stopping_strings;
+    (document.getElementById('custom_stopping_strings_macro') as HTMLInputElement | null)?.checked = power_user.custom_stopping_strings_macro;
+    (document.getElementById('fuzzy_search_checkbox') as HTMLInputElement | null)?.checked = power_user.fuzzy_search;
+    (document.getElementById('persona_show_notifications') as HTMLInputElement | null)?.checked = power_user.persona_show_notifications;
+    (document.getElementById('persona_allow_multi_connections') as HTMLInputElement | null)?.checked = power_user.persona_allow_multi_connections;
+    (document.getElementById('persona_auto_lock') as HTMLInputElement | null)?.checked = power_user.persona_auto_lock;
+    (document.getElementById('encode_tags') as HTMLInputElement | null)?.checked = power_user.encode_tags;
+    (document.getElementById('experimental_macro_engine') as HTMLInputElement | null)?.checked = power_user.experimental_macro_engine;
+    (document.getElementById('example_messages_behavior') as HTMLSelectElement | null)?.value = getExampleMessagesBehavior();
+    const embOpt = document.querySelector(`#example_messages_behavior option[value="${getExampleMessagesBehavior()}"]`) as HTMLOptionElement | null;
+    if (embOpt) embOpt.selected = true;
     document.getElementById('instruct_derived')?.parentElement?.querySelector('i')?.classList.toggle('toggleEnabled', !!power_user.instruct_derived);
     document.getElementById('context_derived')?.parentElement?.querySelector('i')?.classList.toggle('toggleEnabled', !!power_user.context_derived);
-    $('#context_size_derived').prop('checked', !!power_user.context_size_derived);
-
-    $('#console_log_prompts').prop('checked', power_user.console_log_prompts);
-    $('#request_token_probabilities').prop('checked', power_user.request_token_probabilities);
-    $('#show_group_chat_queue').prop('checked', power_user.show_group_chat_queue);
-    $('#auto_fix_generated_markdown').prop('checked', power_user.auto_fix_generated_markdown);
-    $('#auto_scroll_chat_to_bottom').prop('checked', power_user.auto_scroll_chat_to_bottom);
-    $('#bogus_folders').prop('checked', power_user.bogus_folders);
-    $('#zoomed_avatar_magnification').prop('checked', power_user.zoomed_avatar_magnification);
-    $(`#tokenizer option[value="${power_user.tokenizer}"]`).prop('selected', true);
-    $(`#send_on_enter option[value=${power_user.send_on_enter}]`).prop('selected', true);
-    $('#confirm_message_delete').prop('checked', power_user.confirm_message_delete !== undefined ? !!power_user.confirm_message_delete : true);
-    $('#spoiler_free_mode').prop('checked', power_user.spoiler_free_mode);
-    $('#collapse-newlines-checkbox').prop('checked', power_user.collapse_newlines);
-    $('#always-force-name2-checkbox').prop('checked', power_user.always_force_name2);
-    $('#trim_sentences_checkbox').prop('checked', power_user.trim_sentences);
-    $('#disable_group_trimming').prop('checked', power_user.disable_group_trimming);
-    $('#markdown_escape_strings').val(power_user.markdown_escape_strings);
-    $('#fast_ui_mode').prop('checked', power_user.fast_ui_mode);
-    $('#waifuMode').prop('checked', power_user.waifuMode);
-    $('#movingUImode').prop('checked', power_user.movingUI);
-    $('#noShadowsmode').prop('checked', power_user.noShadows);
-    $('#start_reply_with').text(power_user.user_prompt_bias);
-    $('#chat-show-reply-prefix-checkbox').prop('checked', power_user.show_user_prompt_bias);
-    $('#auto_continue_enabled').prop('checked', power_user.auto_continue.enabled);
-    $('#auto_continue_allow_chat_completions').prop('checked', power_user.auto_continue.allow_chat_completions);
-    $('#auto_continue_target_length').val(power_user.auto_continue.target_length);
-    $('#play_message_sound').prop('checked', power_user.play_message_sound);
-    $('#play_sound_unfocused').prop('checked', power_user.play_sound_unfocused);
-    $('#never_resize_avatars').prop('checked', power_user.never_resize_avatars);
-    $('#show_card_avatar_urls').prop('checked', power_user.show_card_avatar_urls);
-    $('#auto_save_msg_edits').prop('checked', power_user.auto_save_msg_edits);
-    $('#allow_name1_display').prop('checked', power_user.allow_name1_display);
-    $('#allow_name2_display').prop('checked', power_user.allow_name2_display);
-    //$("#removeXML").prop("checked", power_user.removeXML);
-    $('#hotswapEnabled').prop('checked', power_user.hotswap_enabled);
-    $('#messageTimerEnabled').prop('checked', power_user.timer_enabled);
-    $('#messageTimestampsEnabled').prop('checked', power_user.timestamps_enabled);
-    $('#messageModelIconEnabled').prop('checked', power_user.timestamp_model_icon);
-    $('#mesIDDisplayEnabled').prop('checked', power_user.mesIDDisplay_enabled);
-    $('#hideChatAvatarsEnabled').prop('checked', power_user.hideChatAvatars_enabled);
-    $('#prefer_character_prompt').prop('checked', power_user.prefer_character_prompt);
-    $('#prefer_character_jailbreak').prop('checked', power_user.prefer_character_jailbreak);
-    $('#enableZenSliders').prop('checked', power_user.enableZenSliders).trigger('input');
-    $('#enableLabMode').prop('checked', power_user.enableLabMode).trigger('input', { fromInit: true });
-    $(`input[name="avatar_style"][value="${power_user.avatar_style}"]`).prop('checked', true);
-    $(`#chat_display option[value=${power_user.chat_display}]`).prop('selected', true).trigger('change');
-    $(`#toastr_position option[value=${power_user.toastr_position}]`).prop('selected', true).trigger('change');
-    $('#chat_width_slider').val(power_user.chat_width);
-    $('#token_padding').val(power_user.token_padding);
-    $('#aux_field').val(power_user.aux_field);
-    $('#tag_import_setting').val(power_user.tag_import_setting);
-
-    $('#stscript_autocomplete_state').val(power_user.stscript.autocomplete.state).trigger('input');
-    $('#stscript_autocomplete_autoHide').prop('checked', power_user.stscript.autocomplete.autoHide ?? false).trigger('input');
-    $('#stscript_autocomplete_showInAllMacroFields').prop('checked', power_user.stscript.autocomplete.showInAllMacroFields ?? false).trigger('input');
-    $('#stscript_matching').val(power_user.stscript.matching ?? 'fuzzy');
-    $('#stscript_autocomplete_style').val(power_user.stscript.autocomplete.style ?? 'theme');
+    (document.getElementById('context_size_derived') as HTMLInputElement | null)?.checked = !!power_user.context_size_derived;
+    (document.getElementById('console_log_prompts') as HTMLInputElement | null)?.checked = power_user.console_log_prompts;
+    (document.getElementById('request_token_probabilities') as HTMLInputElement | null)?.checked = power_user.request_token_probabilities;
+    (document.getElementById('show_group_chat_queue') as HTMLInputElement | null)?.checked = power_user.show_group_chat_queue;
+    (document.getElementById('auto_fix_generated_markdown') as HTMLInputElement | null)?.checked = power_user.auto_fix_generated_markdown;
+    (document.getElementById('auto_scroll_chat_to_bottom') as HTMLInputElement | null)?.checked = power_user.auto_scroll_chat_to_bottom;
+    (document.getElementById('bogus_folders') as HTMLInputElement | null)?.checked = power_user.bogus_folders;
+    (document.getElementById('zoomed_avatar_magnification') as HTMLInputElement | null)?.checked = power_user.zoomed_avatar_magnification;
+    const tokOpt = document.querySelector(`#tokenizer option[value="${power_user.tokenizer}"]`) as HTMLOptionElement | null;
+    if (tokOpt) tokOpt.selected = true;
+    const sendOpt = document.querySelector(`#send_on_enter option[value=${power_user.send_on_enter}]`) as HTMLOptionElement | null;
+    if (sendOpt) sendOpt.selected = true;
+    (document.getElementById('confirm_message_delete') as HTMLInputElement | null)?.checked = power_user.confirm_message_delete !== undefined ? !!power_user.confirm_message_delete : true;
+    (document.getElementById('spoiler_free_mode') as HTMLInputElement | null)?.checked = power_user.spoiler_free_mode;
+    (document.getElementById('collapse-newlines-checkbox') as HTMLInputElement | null)?.checked = power_user.collapse_newlines;
+    (document.getElementById('always-force-name2-checkbox') as HTMLInputElement | null)?.checked = power_user.always_force_name2;
+    (document.getElementById('trim_sentences_checkbox') as HTMLInputElement | null)?.checked = power_user.trim_sentences;
+    (document.getElementById('disable_group_trimming') as HTMLInputElement | null)?.checked = power_user.disable_group_trimming;
+    (document.getElementById('markdown_escape_strings') as HTMLInputElement | null)?.value = power_user.markdown_escape_strings;
+    (document.getElementById('fast_ui_mode') as HTMLInputElement | null)?.checked = power_user.fast_ui_mode;
+    (document.getElementById('waifuMode') as HTMLInputElement | null)?.checked = power_user.waifuMode;
+    (document.getElementById('movingUImode') as HTMLInputElement | null)?.checked = power_user.movingUI;
+    (document.getElementById('noShadowsmode') as HTMLInputElement | null)?.checked = power_user.noShadows;
+    (document.getElementById('start_reply_with') as HTMLTextAreaElement | null)?.textContent = power_user.user_prompt_bias;
+    (document.getElementById('chat-show-reply-prefix-checkbox') as HTMLInputElement | null)?.checked = power_user.show_user_prompt_bias;
+    (document.getElementById('auto_continue_enabled') as HTMLInputElement | null)?.checked = power_user.auto_continue.enabled;
+    (document.getElementById('auto_continue_allow_chat_completions') as HTMLInputElement | null)?.checked = power_user.auto_continue.allow_chat_completions;
+    (document.getElementById('auto_continue_target_length') as HTMLInputElement | null)?.value = String(power_user.auto_continue.target_length);
+    (document.getElementById('play_message_sound') as HTMLInputElement | null)?.checked = power_user.play_message_sound;
+    (document.getElementById('play_sound_unfocused') as HTMLInputElement | null)?.checked = power_user.play_sound_unfocused;
+    (document.getElementById('never_resize_avatars') as HTMLInputElement | null)?.checked = power_user.never_resize_avatars;
+    (document.getElementById('show_card_avatar_urls') as HTMLInputElement | null)?.checked = power_user.show_card_avatar_urls;
+    (document.getElementById('auto_save_msg_edits') as HTMLInputElement | null)?.checked = power_user.auto_save_msg_edits;
+    (document.getElementById('allow_name1_display') as HTMLInputElement | null)?.checked = power_user.allow_name1_display;
+    (document.getElementById('allow_name2_display') as HTMLInputElement | null)?.checked = power_user.allow_name2_display;
+    //document.getElementById('removeXML')?.checked = power_user.removeXML;
+    (document.getElementById('hotswapEnabled') as HTMLInputElement | null)?.checked = power_user.hotswap_enabled;
+    (document.getElementById('messageTimerEnabled') as HTMLInputElement | null)?.checked = power_user.timer_enabled;
+    (document.getElementById('messageTimestampsEnabled') as HTMLInputElement | null)?.checked = power_user.timestamps_enabled;
+    (document.getElementById('messageModelIconEnabled') as HTMLInputElement | null)?.checked = power_user.timestamp_model_icon;
+    (document.getElementById('mesIDDisplayEnabled') as HTMLInputElement | null)?.checked = power_user.mesIDDisplay_enabled;
+    (document.getElementById('hideChatAvatarsEnabled') as HTMLInputElement | null)?.checked = power_user.hideChatAvatars_enabled;
+    (document.getElementById('prefer_character_prompt') as HTMLInputElement | null)?.checked = power_user.prefer_character_prompt;
+    (document.getElementById('prefer_character_jailbreak') as HTMLInputElement | null)?.checked = power_user.prefer_character_jailbreak;
+    (document.getElementById('enableZenSliders') as HTMLInputElement | null)?.checked = power_user.enableZenSliders;
+    (document.getElementById('enableZenSliders') as HTMLInputElement | null)?.dispatchEvent(new Event('input', { bubbles: true }));
+    (document.getElementById('enableLabMode') as HTMLInputElement | null)?.checked = power_user.enableLabMode;
+    (document.getElementById('enableLabMode') as HTMLInputElement | null)?.dispatchEvent(new Event('input', { bubbles: true, ...{ fromInit: true } }));
+    const avStyle = document.querySelector(`input[name="avatar_style"][value="${power_user.avatar_style}"]`) as HTMLInputElement | null;
+    if (avStyle) avStyle.checked = true;
+    const cdOpt = document.querySelector(`#chat_display option[value=${power_user.chat_display}]`) as HTMLOptionElement | null;
+    if (cdOpt) { cdOpt.selected = true; cdOpt.dispatchEvent(new Event('change', { bubbles: true })); }
+    const tpOpt2 = document.querySelector(`#toastr_position option[value=${power_user.toastr_position}]`) as HTMLOptionElement | null;
+    if (tpOpt2) { tpOpt2.selected = true; tpOpt2.dispatchEvent(new Event('change', { bubbles: true })); }
+    (document.getElementById('chat_width_slider') as HTMLInputElement | null)?.value = String(power_user.chat_width);
+    (document.getElementById('token_padding') as HTMLInputElement | null)?.value = String(power_user.token_padding);
+    (document.getElementById('aux_field') as HTMLInputElement | null)?.value = power_user.aux_field;
+    (document.getElementById('tag_import_setting') as HTMLSelectElement | null)?.value = String(power_user.tag_import_setting);
+    (document.getElementById('stscript_autocomplete_state') as HTMLInputElement | null)?.value = String(power_user.stscript.autocomplete.state);
+    (document.getElementById('stscript_autocomplete_state') as HTMLInputElement | null)?.dispatchEvent(new Event('input', { bubbles: true }));
+    (document.getElementById('stscript_autocomplete_autoHide') as HTMLInputElement | null)?.checked = power_user.stscript.autocomplete.autoHide ?? false;
+    (document.getElementById('stscript_autocomplete_autoHide') as HTMLInputElement | null)?.dispatchEvent(new Event('input', { bubbles: true }));
+    (document.getElementById('stscript_autocomplete_showInAllMacroFields') as HTMLInputElement | null)?.checked = power_user.stscript.autocomplete.showInAllMacroFields ?? false;
+    (document.getElementById('stscript_autocomplete_showInAllMacroFields') as HTMLInputElement | null)?.dispatchEvent(new Event('input', { bubbles: true }));
+    (document.getElementById('stscript_matching') as HTMLSelectElement | null)?.value = String(power_user.stscript.matching ?? 'fuzzy');
+    (document.getElementById('stscript_autocomplete_style') as HTMLSelectElement | null)?.value = String(power_user.stscript.autocomplete.style ?? 'theme');
     document.body.setAttribute('data-stscript-style', power_user.stscript.autocomplete.style);
-    $('#stscript_autocomplete_select').val(power_user.stscript.autocomplete.select ?? (AUTOCOMPLETE_SELECT_KEY.TAB + AUTOCOMPLETE_SELECT_KEY.ENTER));
-    $('#stscript_parser_flag_strict_escaping').prop('checked', power_user.stscript.parser.flags[PARSER_FLAG.STRICT_ESCAPING] ?? false);
-    $('#stscript_parser_flag_replace_getvar').prop('checked', power_user.stscript.parser.flags[PARSER_FLAG.REPLACE_GETVAR] ?? false);
-    $('#stscript_autocomplete_font_scale').val(power_user.stscript.autocomplete.font.scale ?? defaultStscript.autocomplete.font.scale);
-    $('#stscript_autocomplete_font_scale_counter').val(power_user.stscript.autocomplete.font.scale ?? defaultStscript.autocomplete.font.scale);
+    (document.getElementById('stscript_autocomplete_select') as HTMLSelectElement | null)?.value = String(power_user.stscript.autocomplete.select ?? (AUTOCOMPLETE_SELECT_KEY.TAB + AUTOCOMPLETE_SELECT_KEY.ENTER));
+    (document.getElementById('stscript_parser_flag_strict_escaping') as HTMLInputElement | null)?.checked = power_user.stscript.parser.flags[PARSER_FLAG.STRICT_ESCAPING] ?? false;
+    (document.getElementById('stscript_parser_flag_replace_getvar') as HTMLInputElement | null)?.checked = power_user.stscript.parser.flags[PARSER_FLAG.REPLACE_GETVAR] ?? false;
+    (document.getElementById('stscript_autocomplete_font_scale') as HTMLInputElement | null)?.value = String(power_user.stscript.autocomplete.font.scale ?? defaultStscript.autocomplete.font.scale);
+    (document.getElementById('stscript_autocomplete_font_scale_counter') as HTMLInputElement | null)?.value = String(power_user.stscript.autocomplete.font.scale ?? defaultStscript.autocomplete.font.scale);
     document.body.style.setProperty('--ac-font-scale', power_user.stscript.autocomplete.font.scale ?? defaultStscript.autocomplete.font.scale.toString());
-    $('#stscript_autocomplete_width_left').val(power_user.stscript.autocomplete.width.left ?? AUTOCOMPLETE_WIDTH.CHAT);
+    (document.getElementById('stscript_autocomplete_width_left') as HTMLInputElement | null)?.value = String(power_user.stscript.autocomplete.width.left ?? AUTOCOMPLETE_WIDTH.CHAT);
     document.querySelector('#stscript_autocomplete_width_left')?.dispatchEvent(new Event('input', { bubbles: true }));
-    $('#stscript_autocomplete_width_right').val(power_user.stscript.autocomplete.width.right ?? AUTOCOMPLETE_WIDTH.CHAT);
+    (document.getElementById('stscript_autocomplete_width_right') as HTMLInputElement | null)?.value = String(power_user.stscript.autocomplete.width.right ?? AUTOCOMPLETE_WIDTH.CHAT);
     document.querySelector('#stscript_autocomplete_width_right')?.dispatchEvent(new Event('input', { bubbles: true }));
 
-    $('#restore_user_input').prop('checked', power_user.restore_user_input);
-
-    $('#chat_truncation').val(power_user.chat_truncation);
-    $('#chat_truncation_counter').val(power_user.chat_truncation);
-
-    $('#streaming_fps').val(power_user.streaming_fps);
-    $('#streaming_fps_counter').val(power_user.streaming_fps);
-
-    $('#smooth_streaming').prop('checked', power_user.smooth_streaming);
-    $('#smooth_streaming_no_think').prop('checked', power_user.smooth_streaming_no_think);
-    $('#smooth_streaming_speed').val(power_user.smooth_streaming_speed);
-
-    $('#stream_fade_in').prop('checked', power_user.stream_fade_in);
-
-    $('#font_scale').val(power_user.font_scale);
-    $('#font_scale_counter').val(power_user.font_scale);
-
-    $('#blur_strength').val(power_user.blur_strength);
-    $('#blur_strength_counter').val(power_user.blur_strength);
-
-    $('#shadow_width').val(power_user.shadow_width);
-    $('#shadow_width_counter').val(power_user.shadow_width);
-
-    $('#main-text-color-picker').attr('color', power_user.main_text_color);
-    $('#italics-color-picker').attr('color', power_user.italics_text_color);
-    $('#underline-color-picker').attr('color', power_user.underline_text_color);
-    $('#quote-color-picker').attr('color', power_user.quote_text_color);
-    $('#blur-tint-color-picker').attr('color', power_user.blur_tint_color);
-    $('#chat-tint-color-picker').attr('color', power_user.chat_tint_color);
-    $('#user-mes-blur-tint-color-picker').attr('color', power_user.user_mes_blur_tint_color);
-    $('#bot-mes-blur-tint-color-picker').attr('color', power_user.bot_mes_blur_tint_color);
-    $('#shadow-color-picker').attr('color', power_user.shadow_color);
-    $('#border-color-picker').attr('color', power_user.border_color);
-    $('#reduced_motion').prop('checked', power_user.reduced_motion);
-    $('#auto-connect-checkbox').prop('checked', power_user.auto_connect);
-    $('#auto-load-chat-checkbox').prop('checked', power_user.auto_load_chat);
-    $('#forbid_external_media').prop('checked', power_user.forbid_external_media);
-    $('#pin_styles').prop('checked', power_user.pin_styles);
-    $('#click_to_edit').prop('checked', power_user.click_to_edit);
-    $('#media_display').val(power_user.media_display);
-    $('#image_overswipe').val(power_user.image_overswipe);
+    (document.getElementById('restore_user_input') as HTMLInputElement | null)?.checked = power_user.restore_user_input;
+    (document.getElementById('chat_truncation') as HTMLInputElement | null)?.value = String(power_user.chat_truncation);
+    (document.getElementById('chat_truncation_counter') as HTMLInputElement | null)?.value = String(power_user.chat_truncation);
+    (document.getElementById('streaming_fps') as HTMLInputElement | null)?.value = String(power_user.streaming_fps);
+    (document.getElementById('streaming_fps_counter') as HTMLInputElement | null)?.value = String(power_user.streaming_fps);
+    (document.getElementById('smooth_streaming') as HTMLInputElement | null)?.checked = power_user.smooth_streaming;
+    (document.getElementById('smooth_streaming_no_think') as HTMLInputElement | null)?.checked = power_user.smooth_streaming_no_think;
+    (document.getElementById('smooth_streaming_speed') as HTMLInputElement | null)?.value = String(power_user.smooth_streaming_speed);
+    (document.getElementById('stream_fade_in') as HTMLInputElement | null)?.checked = power_user.stream_fade_in;
+    (document.getElementById('font_scale') as HTMLInputElement | null)?.value = String(power_user.font_scale);
+    (document.getElementById('font_scale_counter') as HTMLInputElement | null)?.value = String(power_user.font_scale);
+    (document.getElementById('blur_strength') as HTMLInputElement | null)?.value = String(power_user.blur_strength);
+    (document.getElementById('blur_strength_counter') as HTMLInputElement | null)?.value = String(power_user.blur_strength);
+    (document.getElementById('shadow_width') as HTMLInputElement | null)?.value = String(power_user.shadow_width);
+    (document.getElementById('shadow_width_counter') as HTMLInputElement | null)?.value = String(power_user.shadow_width);
+    const pickerIds = ['main-text-color-picker', 'italics-color-picker', 'underline-color-picker', 'quote-color-picker',
+        'blur-tint-color-picker', 'chat-tint-color-picker', 'user-mes-blur-tint-color-picker',
+        'bot-mes-blur-tint-color-picker', 'shadow-color-picker', 'border-color-picker'];
+    const pickerValues = [power_user.main_text_color, power_user.italics_text_color, power_user.underline_text_color,
+        power_user.quote_text_color, power_user.blur_tint_color, power_user.chat_tint_color,
+        power_user.user_mes_blur_tint_color, power_user.bot_mes_blur_tint_color, power_user.shadow_color,
+        power_user.border_color];
+    pickerIds.forEach((id, i) => {
+        const el = document.getElementById(id);
+        if (el) el.setAttribute('color', pickerValues[i]);
+    });
+    (document.getElementById('reduced_motion') as HTMLInputElement | null)?.checked = power_user.reduced_motion;
+    (document.getElementById('auto-connect-checkbox') as HTMLInputElement | null)?.checked = power_user.auto_connect;
+    (document.getElementById('auto-load-chat-checkbox') as HTMLInputElement | null)?.checked = power_user.auto_load_chat;
+    (document.getElementById('forbid_external_media') as HTMLInputElement | null)?.checked = power_user.forbid_external_media;
+    (document.getElementById('pin_styles') as HTMLInputElement | null)?.checked = power_user.pin_styles;
+    (document.getElementById('click_to_edit') as HTMLInputElement | null)?.checked = power_user.click_to_edit;
+    (document.getElementById('media_display') as HTMLSelectElement | null)?.value = power_user.media_display;
+    (document.getElementById('image_overswipe') as HTMLSelectElement | null)?.value = power_user.image_overswipe;
 
     for (const theme of themes) {
         const option = document.createElement('option');
         option.value = theme.name;
         option.innerText = theme.name;
         option.selected = theme.name == power_user.theme;
-        $('#themes').append(option);
+        document.getElementById('themes')?.appendChild(option);
     }
 
     for (const movingUIPreset of movingUIPresets) {
@@ -1901,11 +1953,12 @@ export async function loadPowerUserSettings(settings, data) {
         option.value = movingUIPreset.name;
         option.innerText = movingUIPreset.name;
         option.selected = movingUIPreset.name == power_user.movingUIPreset;
-        $('#movingUIPresets').append(option);
+        document.getElementById('movingUIPresets')?.appendChild(option);
     }
 
 
-    $(`#character_sort_order option[data-order="${power_user.sort_order}"][data-field="${power_user.sort_field}"]`).prop('selected', true);
+    const sortOpt = document.querySelector(`#character_sort_order option[data-order="${power_user.sort_order}"][data-field="${power_user.sort_field}"]`) as HTMLOptionElement | null;
+    if (sortOpt) sortOpt.selected = true;
     switchReducedMotion();
     switchCompactInputArea();
     reloadMarkdownProcessor();
@@ -1931,7 +1984,7 @@ function toggleMDHotkeyIconDisplay() {
             el.parentElement.insertAdjacentHTML('beforeend', '<i class="fa-brands fa-markdown mdhotkey_icon"></i>');
         });
     } else {
-        $('.mdhotkey_icon').remove();
+        document.querySelectorAll('.mdhotkey_icon').forEach(el => el.remove());
     }
 }
 
@@ -1953,11 +2006,11 @@ export function loadMovingUIState() {
         for (const elmntName of Object.keys(power_user.movingUIState)) {
             const elmntState = power_user.movingUIState[elmntName];
             try {
-                const elmnt = $('#' + $.escapeSelector(elmntName));
-                if (elmnt.length) {
+                const elmnt = document.getElementById(elmntName);
+                if (elmnt) {
                     console.debug(`loading state for ${elmntName}`);
                     for (const [prop, value] of Object.entries(elmntState)) {
-                        elmnt[0].style.setProperty(prop, value, 'important');
+                        elmnt.style.setProperty(prop, value, 'important');
                     }
                 } else {
                     console.debug(`skipping ${elmntName} because it doesn't exist in the DOM`);
@@ -2122,7 +2175,7 @@ async function loadContextSettings() {
     autoFixStoryString(power_user.context);
 
     contextControls.forEach(control => {
-        const $element = $(`#${control.id}`);
+        const element = document.getElementById(control.id) as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement | null;
 
         if (control.isGlobalSetting) {
             return;
@@ -2133,33 +2186,33 @@ async function loadContextSettings() {
         }
 
         if (control.isCheckbox) {
-            $element.prop('checked', power_user.context[control.property]);
-        } else {
-            $element.val(power_user.context[control.property]);
+            if (element) (element as HTMLInputElement).checked = power_user.context[control.property];
+        } else if (element) {
+            (element as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement).value = power_user.context[control.property];
         }
-        console.debug(`Setting ${$element.prop('id')} to ${power_user.context[control.property]}`);
+        console.debug(`Setting ${element?.id} to ${power_user.context[control.property]}`);
 
-        // If the setting already exists, no need to duplicate it
-        // TODO: Maybe check the power_user object for the setting instead of a flag?
-        $element[0]?.addEventListener('input', async function (this: HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement) {
-            let value: string | boolean | number = control.isCheckbox ? !!(this as HTMLInputElement).checked : (this as HTMLInputElement).value;
-            if (typeof control.defaultValue === 'number') {
-                value = Number(value);
-            }
-            if (control.isGlobalSetting) {
-                power_user[control.property] = value;
-            } else {
-                power_user.context[control.property] = value;
-            }
-            console.debug(`Setting ${$element.prop('id')} to ${value}`);
-            if (!CSS.supports('field-sizing', 'content') && this.matches('textarea')) {
-                await resetScrollHeight(this);
-            }
-            saveSettingsDebounced();
-        });
+        if (element) {
+            element.addEventListener('input', async function (this: HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement) {
+                let value: string | boolean | number = control.isCheckbox ? !!(this as HTMLInputElement).checked : (this as HTMLInputElement).value;
+                if (typeof control.defaultValue === 'number') {
+                    value = Number(value);
+                }
+                if (control.isGlobalSetting) {
+                    power_user[control.property] = value;
+                } else {
+                    power_user.context[control.property] = value;
+                }
+                console.debug(`Setting ${this.id} to ${value}`);
+                if (!CSS.supports('field-sizing', 'content') && this.matches('textarea')) {
+                    await resetScrollHeight(this);
+                }
+                saveSettingsDebounced();
+            });
 
-        if (control.trigger) {
-            $element.trigger('input');
+            if (control.trigger) {
+                element.dispatchEvent(new Event('input', { bubbles: true }));
+            }
         }
     });
 
@@ -2169,7 +2222,7 @@ async function loadContextSettings() {
         option.value = name;
         option.innerText = name;
         option.selected = name === power_user.context.preset;
-        $('#context_presets').append(option);
+        document.getElementById('context_presets')?.appendChild(option);
     });
 
     document.getElementById('context_presets')?.addEventListener('change', function (this: HTMLSelectElement) {
@@ -2195,15 +2248,14 @@ async function loadContextSettings() {
                     power_user.context[control.property] = presetValue;
                 }
 
-                const $element = $(`#${control.id}`);
+                const element = document.getElementById(control.id) as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement | null;
 
                 if (control.isCheckbox) {
-                    $element
-                        .prop('checked', control.isGlobalSetting ? power_user[control.property] : power_user.context[control.property])
-                        .trigger('input');
+                    if (element) (element as HTMLInputElement).checked = control.isGlobalSetting ? power_user[control.property] : power_user.context[control.property];
+                    element?.dispatchEvent(new Event('input', { bubbles: true }));
                 } else {
-                    $element.val(control.isGlobalSetting ? power_user[control.property] : power_user.context[control.property]);
-                    $element.trigger('input');
+                    if (element) (element as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement).value = control.isGlobalSetting ? power_user[control.property] : power_user.context[control.property];
+                    element?.dispatchEvent(new Event('input', { bubbles: true }));
                 }
             }
         });
@@ -2495,7 +2547,7 @@ export function sortEntitiesList(entities, forceSearch, filterHelper = null) {
         return;
     }
 
-    const isSearch = forceSearch || $('#character_sort_order option[data-field="search"]').is(':selected');
+    const isSearch = forceSearch || document.querySelector('#character_sort_order option[data-field="search"]') ? (document.querySelector('#character_sort_order option[data-field="search"]') as HTMLOptionElement)?.selected : false;
 
     if (!isSearch && power_user.sort_order === 'random') {
         shuffle(entities);
@@ -2539,7 +2591,8 @@ async function deleteTheme() {
         return;
     }
 
-    const template = $(await renderTemplateAsync('themeDelete', { themeName }));
+    const template = document.createElement('div');
+    template.innerHTML = await renderTemplateAsync('themeDelete', { themeName });
     const confirm = await callGenericPopup(template, POPUP_TYPE.CONFIRM);
 
     if (!confirm) {
@@ -2561,7 +2614,7 @@ async function deleteTheme() {
 
     if (themeIndex !== -1) {
         themes.splice(themeIndex, 1);
-        $(`#themes option[value="${themeName}"]`).remove();
+        document.querySelector(`#themes option[value="${themeName}"]`)?.remove();
         power_user.theme = themes[0]?.name;
         saveSettingsDebounced();
         if (power_user.theme) {
@@ -2602,7 +2655,8 @@ async function importTheme(file) {
     }
 
     if (typeof parsed.custom_css === 'string' && parsed.custom_css.includes('@import')) {
-        const template = $(await renderTemplateAsync('themeImportWarning'));
+        const template = document.createElement('div');
+        template.innerHTML = await renderTemplateAsync('themeImportWarning');
         const confirm = await callGenericPopup(template, POPUP_TYPE.CONFIRM);
         if (!confirm) {
             throw new Error('Theme contains @import lines');
@@ -2615,7 +2669,7 @@ async function importTheme(file) {
     option.selected = false;
     option.value = parsed.name;
     option.innerText = parsed.name;
-    $('#themes').append(option);
+    document.getElementById('themes')?.appendChild(option);
     saveSettingsDebounced();
     toastr.success(parsed.name, 'Theme imported');
 }
@@ -2661,10 +2715,11 @@ async function saveTheme(name = undefined, theme = undefined) {
         option.selected = true;
         option.value = name;
         option.innerText = name;
-        $('#themes').append(option);
+        document.getElementById('themes')?.appendChild(option);
     } else {
         themes[themeIndex] = theme;
-        $(`#themes option[value="${name}"]`).prop('selected', true);
+        const themeOpt = document.querySelector(`#themes option[value="${name}"]`) as HTMLOptionElement | null;
+        if (themeOpt) themeOpt.selected = true;
     }
 
     power_user.theme = name;
@@ -2770,10 +2825,11 @@ async function saveMovingUI() {
             option.selected = true;
             option.value = name;
             option.innerText = name;
-            $('#movingUIPresets').append(option);
+            document.getElementById('movingUIPresets')?.appendChild(option);
         } else {
             movingUIPresets[movingUIPresetIndex] = movingUIPreset;
-            $(`#movingUIPresets option[value="${name}"]`).prop('selected', true);
+            const muiOpt = document.querySelector(`#movingUIPresets option[value="${name}"]`) as HTMLOptionElement | null;
+            if (muiOpt) muiOpt.selected = true;
         }
 
         power_user.movingUIPreset = name;
@@ -2848,7 +2904,7 @@ async function resetMovablePanels(type) {
         });
     }
 
-    $('[data-dragged="true"]').removeAttr('data-dragged');
+    document.querySelectorAll('[data-dragged="true"]').forEach(el => el.removeAttribute('data-dragged'));
     await delay(50);
 
     power_user.movingUIState = {};
@@ -2856,7 +2912,8 @@ async function resetMovablePanels(type) {
     //if user manually resets panels, deselect the current preset
     if (type !== 'quiet' && type !== 'resize') {
         power_user.movingUIPreset = 'Default';
-        $('#movingUIPresets option[value="Default"]').prop('selected', true);
+        const defOpt = document.querySelector('#movingUIPresets option[value="Default"]') as HTMLOptionElement | null;
+        if (defOpt) defOpt.selected = true;
     }
 
     saveSettingsDebounced();
@@ -3029,7 +3086,8 @@ async function doDelMode(_, text) {
 
     // Just enter the delete mode.
     if (!text) {
-        $('#option_delete_mes').trigger('click', { fromSlashCommand: true });
+        const el = document.getElementById('option_delete_mes');
+        if (el) el.dispatchEvent(new Event('click', { bubbles: true, ...{ fromSlashCommand: true } }));
         return '';
     }
 
@@ -3053,7 +3111,8 @@ async function doDelMode(_, text) {
  *
  */
 function doResetPanels() {
-    $('#movingUIreset').trigger('click');
+    const el = document.getElementById('movingUIreset');
+    if (el) el.dispatchEvent(new Event('click', { bubbles: true }));
     return '';
 }
 
@@ -3074,10 +3133,12 @@ async function setAvgBG(args) {
         bgUrl = isCustom ? bgOverride : getBackgroundPath(bgOverride);
     } else {
         // Use the currently active background
-        bgUrl = $('#bg1')
-            .css('background-image')
-            .replace(/^url\(['"]?/, '')
-            .replace(/['"]?\)$/, '');
+        bgUrl = (() => {
+            const bg1 = document.getElementById('bg1');
+            if (!bg1) return '';
+            const style = getComputedStyle(bg1);
+            return style.backgroundImage.replace(/^url\(['"]?/, '').replace(/['"]?\)$/, '');
+        })();
     }
 
     if (!bgUrl || bgUrl === 'none') {
@@ -3151,7 +3212,8 @@ async function setThemeCallback(_, themeName) {
 
     power_user.theme = theme.name;
     applyTheme(theme.name);
-    $('#themes').val(theme.name);
+    const themesEl = document.getElementById('themes') as HTMLSelectElement | null;
+    if (themesEl) themesEl.value = theme.name;
     saveSettingsDebounced();
     return '';
 }
@@ -3179,7 +3241,8 @@ async function setmovingUIPreset(_, text) {
 
     power_user.movingUIPreset = preset.name;
     applyMovingUIPreset(preset.name);
-    $('#movingUIPresets').val(preset.name);
+    const muiEl = document.getElementById('movingUIPresets') as HTMLSelectElement | null;
+    if (muiEl) muiEl.value = preset.name;
     saveSettingsDebounced();
     return '';
 }
@@ -3309,11 +3372,11 @@ export function forceCharacterEditorTokenize() {
         const targetEl = document.getElementById(el.dataset.tokenCounter);
         if (targetEl) targetEl.dataset.lastValueHash = '';
     });
-    $('#rm_ch_create_block').trigger('input');
-    $('#character_popup').trigger('input');
+    document.getElementById('rm_ch_create_block')?.dispatchEvent(new Event('input', { bubbles: true }));
+    document.getElementById('character_popup')?.dispatchEvent(new Event('input', { bubbles: true }));
 }
 
-jQuery(() => {
+document.addEventListener('DOMContentLoaded', () => {
     const adjustAutocompleteDebounced = debounce(() => {
         document.querySelectorAll('.ui-autocomplete-input').forEach(function (el) {
             // @ts-expect-error TS(2339) FIXME: Property 'tomSelect' does not exist on type 'Element'.
@@ -3324,9 +3387,11 @@ jQuery(() => {
                     el.tomSelect.open();
                 }
             } else {
-                const widget = $(el).autocomplete('widget');
-                if (widget[0] && widget[0].style.display !== 'none') {
-                    $(el).autocomplete('search');
+                if (el && typeof (el as any).autocomplete === 'function') {
+                    const widget = (el as any).autocomplete('widget');
+                    if (widget[0] && widget[0].style.display !== 'none') {
+                        (el as any).autocomplete('search');
+                    }
                 }
             }
         });
@@ -3377,12 +3442,12 @@ jQuery(() => {
                 const newBottom = Number(oldBottom * scaleY).toFixed(0);
                 const newRight = Number(oldRight * scaleX).toFixed(0);
                 try {
-                    const elmnt = $('#' + $.escapeSelector(elmntName));
-                    if (elmnt.length) {
+                    const elmnt = document.getElementById(elmntName);
+                    if (elmnt) {
                         console.log(`scaling ${elmntName} by ${scaleX}x${scaleY} to ${newWidth}x${newHeight}`);
-                        elmnt.css('height', newHeight);
-                        elmnt.css('width', newWidth);
-                        elmnt.css('inset', `${newTop}px ${newRight}px ${newBottom}px ${newLeft}px`);
+                        elmnt.style.height = newHeight;
+                        elmnt.style.width = newWidth;
+                        elmnt.style.inset = `${newTop}px ${newRight}px ${newBottom}px ${newLeft}px`;
                         power_user.movingUIState[elmntName].height = newHeight;
                         power_user.movingUIState[elmntName].width = newWidth;
                         power_user.movingUIState[elmntName].top = newTop;
@@ -4614,7 +4679,8 @@ jQuery(() => {
                 parsedValue[index] = String(item);
             });
             power_user.custom_stopping_strings = JSON.stringify(parsedValue);
-            $('#custom_stopping_strings').val(power_user.custom_stopping_strings);
+            const cssEl = document.getElementById('custom_stopping_strings') as HTMLTextAreaElement | null;
+            if (cssEl) cssEl.value = power_user.custom_stopping_strings;
             saveSettingsDebounced();
 
             return power_user.custom_stopping_strings;
@@ -4661,7 +4727,8 @@ jQuery(() => {
             }
 
             power_user.user_prompt_bias = String(value ?? '');
-            $('#start_reply_with').val(power_user.user_prompt_bias);
+            const srwEl = document.getElementById('start_reply_with') as HTMLTextAreaElement | null;
+            if (srwEl) srwEl.value = power_user.user_prompt_bias;
             saveSettingsDebounced();
 
             return power_user.user_prompt_bias;
