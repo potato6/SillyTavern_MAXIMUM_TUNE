@@ -4242,6 +4242,7 @@ async function trimTokensCallback(arg, value) {
         }
 
         const sliceTokens = direction === 'start' ? textTokens.slice(0, limit) : textTokens.slice(-limit);
+        // @ts-expect-error TS(2339) FIXME: decodeTextTokens now returns a Promise after Phase 7 conversion
         const { text } = decodeTextTokens(tokenizerId, sliceTokens);
         return text;
     } catch (error) {
