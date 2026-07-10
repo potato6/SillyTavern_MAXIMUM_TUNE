@@ -34,28 +34,19 @@ export const reasoning_templates = [];
 export const DEFAULT_REASONING_TEMPLATE = 'Think XML';
 
 /**
- * @type {Record<string, JQuery<HTMLElement>>} List of UI elements for reasoning settings
+ * @type {Record<string, HTMLElement | null>} List of UI elements for reasoning settings
  * @readonly
  */
 const UI = {
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $select: $('#reasoning_select'),
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $suffix: $('#reasoning_suffix'),
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $prefix: $('#reasoning_prefix'),
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $separator: $('#reasoning_separator'),
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $autoParse: $('#reasoning_auto_parse'),
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $autoExpand: $('#reasoning_auto_expand'),
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $showHidden: $('#reasoning_show_hidden'),
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $addToPrompts: $('#reasoning_add_to_prompts'),
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $maxAdditions: $('#reasoning_max_additions'),
+    $select: document.getElementById('reasoning_select'),
+    $suffix: document.getElementById('reasoning_suffix'),
+    $prefix: document.getElementById('reasoning_prefix'),
+    $separator: document.getElementById('reasoning_separator'),
+    $autoParse: document.getElementById('reasoning_auto_parse'),
+    $autoExpand: document.getElementById('reasoning_auto_expand'),
+    $showHidden: document.getElementById('reasoning_show_hidden'),
+    $addToPrompts: document.getElementById('reasoning_add_to_prompts'),
+    $maxAdditions: document.getElementById('reasoning_max_additions'),
 };
 
 /**
@@ -364,8 +355,7 @@ export class ReasoningHandler {
             ? document.querySelector(`#chat [mesid="${messageIdOrElement}"]`)
             : messageIdOrElement instanceof HTMLElement
                 ? messageIdOrElement
-                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                : $(messageIdOrElement)[0];
+                : messageIdOrElement;
         const messageId = Number(messageElement.getAttribute('mesid'));
 
         if (isNaN(messageId) || !chat[messageId]) return;
@@ -909,12 +899,10 @@ function loadReasoningSettings() {
     UI.$showHidden.prop('checked', power_user.reasoning.show_hidden);
     UI.$showHidden[0].addEventListener('change', function (this: HTMLInputElement) {
         power_user.reasoning.show_hidden = this.checked;
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#chat').attr('data-show-hidden-reasoning', power_user.reasoning.show_hidden ? 'true' : null);
+        document.getElementById('chat')?.setAttribute('data-show-hidden-reasoning', power_user.reasoning.show_hidden ? 'true' : null);
         saveSettingsDebounced();
     });
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $('#chat').attr('data-show-hidden-reasoning', power_user.reasoning.show_hidden ? 'true' : null);
+    document.getElementById('chat')?.setAttribute('data-show-hidden-reasoning', power_user.reasoning.show_hidden ? 'true' : null);
 
     UI.$select[0].addEventListener('change', async function (this: HTMLSelectElement) {
         const name = String(this.value);
@@ -1055,10 +1043,8 @@ function registerReasoningSlashCommands() {
             closeMessageEditor('reasoning');
             updateMessageBlock(messageId, message);
 
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            if (isTrueBoolean(String(args.collapse))) $(`#chat [mesid="${messageId}"] .mes_reasoning_details`).removeAttr('open');
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            if (isFalseBoolean(String(args.collapse))) $(`#chat [mesid="${messageId}"] .mes_reasoning_details`).attr('open', '');
+            if (isTrueBoolean(String(args.collapse))) document.querySelector(`#chat [mesid="${messageId}"] .mes_reasoning_details`)?.removeAttribute('open');
+            if (isFalseBoolean(String(args.collapse))) document.querySelector(`#chat [mesid="${messageId}"] .mes_reasoning_details`)?.setAttribute('open', '');
             // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type 'never'.
             return message.extra.reasoning;
         },
@@ -1393,8 +1379,7 @@ function setReasoningEventHandlers() {
         const reasoningBlock = messageBlock.querySelector('.mes_reasoning');
         textarea.classList.add('reasoning_edit_textarea');
         textarea.value = reasoning;
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(textarea).insertBefore(reasoningBlock);
+        reasoningBlock.parentNode.insertBefore(textarea, reasoningBlock);
 
         if (!CSS.supports('field-sizing', 'content')) {
             const resetHeight = function () {
@@ -1847,8 +1832,10 @@ export async function loadReasoningTemplates(data) {
     }
 
     for (const template of reasoning_templates) {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('<option>').val(template.name).text(template.name).appendTo(UI.$select);
+        const opt = document.createElement('option');
+        opt.value = template.name;
+        opt.textContent = template.name;
+        UI.$select?.appendChild(opt);
     }
 
     // No template name, need to migrate
