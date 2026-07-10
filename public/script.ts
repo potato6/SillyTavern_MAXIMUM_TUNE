@@ -2994,17 +2994,17 @@ export function scrollChatToBottom({
     }
 
     const doScroll = () => {
-        let position = chatElement[0].scrollHeight;
+        let position = chatElement.scrollHeight;
 
         if (power_user.waifuMode) {
-            const lastMessage = chatElement.find('.mes').last();
-            if (lastMessage.length) {
-                const lastMessagePosition = lastMessage.position().top;
-                position = chatElement.scrollTop() + lastMessagePosition;
+            const lastMessage = chatElement.querySelector('.mes:last-child');
+            if (lastMessage) {
+                const lastMessagePosition = lastMessage.getBoundingClientRect().top + chatElement.scrollTop - chatElement.getBoundingClientRect().top;
+                position = chatElement.scrollTop + lastMessagePosition;
             }
         }
 
-        chatElement.scrollTop(position);
+        chatElement.scrollTop = position;
         requestId = null;
     };
 
