@@ -453,7 +453,7 @@ export let CLIENT_VERSION = 'SillyTavern:UNKNOWN:Cohee#1207'; // For Horde heade
 
 // Saved here for performance reasons
 const messageTemplate = /** @type {HTMLElement} */ (document.querySelector('#message_template .mes'));
-export const chatElement = document.querySelector('#chat');
+export const chatElement = $(document.querySelector('#chat'));
 
 // @ts-expect-error TS(7034) FIXME: Variable 'dialogueResolve' implicitly has type 'an... Remove this comment to see the full error message
 let dialogueResolve = null;
@@ -1606,7 +1606,7 @@ export async function showMoreMessages(messagesToLoad = null) {
         showMoreButton[0].after(...messageElements.map(el => el[0]));
     } else {
         // @ts-expect-error TS(7005) FIXME: Variable 'messageElements' implicitly has an 'any[... Remove this comment to see the full error message
-        chatElement[0].prepend(...messageElements.map(el => el[0]));
+        chatElement?.prepend(...messageElements.map(el => el[0]));
     }
 
     refreshSwipeButtons();
@@ -1633,7 +1633,7 @@ export async function printMessages() {
 
     if (chat.length > count) {
         startIndex = chat.length - count;
-        chatElement[0].insertAdjacentHTML('beforeend', '<div id="show_more_messages">Show more messages</div>');
+        chatElement?.insertAdjacentHTML('beforeend', '<div id="show_more_messages">Show more messages</div>');
     }
 
     await redisplayChat({ startIndex, fade: false });
@@ -1650,11 +1650,11 @@ export async function printMessages() {
  * @param {boolean} [options.fade] When false, the swipe chevrons will not fade in.
  */
 export async function redisplayChat({ targetChat = chat, startIndex = 0, fade = true } = {}) {
-    const messageElements = chatElement.querySelectorAll('.mes');
+        const messageElements = chatElement[0]?.querySelectorAll('.mes');
     messageElements.forEach(el => el.classList.remove('last_mes'));
 
     //Remove messages after index.
-    const startMsg = chatElement.querySelector(`.mes[mesid="${CSS.escape(String(startIndex))}"]`);
+    const startMsg = chatElement[0]?.querySelector(`.mes[mesid="${CSS.escape(String(startIndex))}"]`);
     if (startMsg) {
         let current = startMsg;
         while (current) {
@@ -1680,7 +1680,7 @@ export async function redisplayChat({ targetChat = chat, startIndex = 0, fade = 
         newMessageElements.at(-1).classList.add('last_mes');
 
         //Append to chat in one DOM update.
-        chatElement[0].append(...newMessageElements);
+                chatElement?.append(...newMessageElements);
 
         applyCharacterTagsToMessageDivs({ mesIds: range(startIndex, targetChat.length) as number[] });
 
@@ -1782,7 +1782,7 @@ export async function clearChat({ clearData = false } = {}) {
 export async function deleteLastMessage() {
     deleteItemizedPromptForMessage(chat.length - 1);
     chat.length = chat.length - 1;
-    const mesChildren = [...chatElement[0].children].filter(el => el.matches('.mes'));
+        const mesChildren = [...chatElement?.children].filter(el => el.matches('.mes'));
     mesChildren[mesChildren.length - 1]?.remove();
     await eventSource.emit(event_types.MESSAGE_DELETED, chat.length);
 }
@@ -2792,13 +2792,13 @@ export function addOneMessage(mes, { type = undefined, insertAfter = null, scrol
     } else {
         messageElement = updateMessageElement(mes, { messageId, adjustMediaScroll: scroll ? SCROLL_BEHAVIOR.ADJUST : SCROLL_BEHAVIOR.NONE });
         if (typeof insertAfter === 'number' && insertAfter >= 0) {
-            const target = chatElement.find(`.mes[mesid="${insertAfter}"]`);
-            target[0].insertAdjacentElement('afterend', messageElement[0]);
+                    const target = chatElement?.querySelector(`.mes[mesid="${insertAfter}"]`);
+            target?.insertAdjacentElement('afterend', messageElement[0]);
         } else if (typeof insertBefore === 'number' && insertBefore >= 0) {
-            const target = chatElement.find(`.mes[mesid="${insertBefore}"]`);
-            target[0].insertAdjacentElement('beforebegin', messageElement[0]);
+            const target = chatElement?.querySelector(`.mes[mesid="${insertBefore}"]`);
+            target?.insertAdjacentElement('beforebegin', messageElement[0]);
         } else {
-            chatElement[0].append(messageElement[0]);
+            chatElement?.append(messageElement[0]);
         }
     }
 
@@ -2829,7 +2829,7 @@ export function addOneMessage(mes, { type = undefined, insertAfter = null, scrol
  * @returns {JQuery<HTMLElement>} Rendered HTMLElement.
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'mes' implicitly has an 'any' type.
-export function updateMessageElement(mes, { messageId = chat.length - 1, messageElement = $(messageTemplate[0].cloneNode(true)), adjustMediaScroll = SCROLL_BEHAVIOR.NONE } = {}) {
+export function updateMessageElement(mes, { messageId = chat.length - 1, messageElement = $(messageTemplate.cloneNode(true)), adjustMediaScroll = SCROLL_BEHAVIOR.NONE } = {}) {
     let avatarImg = getThumbnailUrl('persona', user_avatar);
 
     //for non-user messages
@@ -2882,10 +2882,10 @@ export function updateMessageElement(mes, { messageId = chat.length - 1, message
 
     if (mes.extra?.bias !== '') {
         const bias = messageFormatting(mes.extra?.bias, '', false, false, -1, {}, false);
-        messageElement.find('.mes_bias').html(bias);
+                messageElement.find('.mes_bias').html(bias);
     }
 
-    updateReasoningUI(messageElement);
+    updateReasoningUI(messageElement[0]);
 
     if (power_user.timestamp_model_icon && mes.extra?.api) {
         insertSVGIcon(messageElement, mes.extra);
@@ -3002,18 +3002,20 @@ export function scrollChatToBottom({
         return;
     }
 
-    const doScroll = () => {
-        let position = chatElement.scrollHeight;
+        const doScroll = () => {
+        const chat = chatElement[0];
+        if (!chat) return;
+        let position = chat.scrollHeight;
 
         if (power_user.waifuMode) {
-            const lastMessage = chatElement.querySelector('.mes:last-child');
+            const lastMessage = chat.querySelector('.mes:last-child');
             if (lastMessage) {
-                const lastMessagePosition = lastMessage.getBoundingClientRect().top + chatElement.scrollTop - chatElement.getBoundingClientRect().top;
-                position = chatElement.scrollTop + lastMessagePosition;
+                const lastMessagePosition = lastMessage.getBoundingClientRect().top + chat.scrollTop - chat.getBoundingClientRect().top;
+                position = chat.scrollTop + lastMessagePosition;
             }
         }
 
-        chatElement.scrollTop = position;
+        chat.scrollTop = position;
         requestId = null;
     };
 
@@ -13511,7 +13513,7 @@ function initCharacterSearch() {
             for (let i = (chat.length - 1); i >= this_del_mes; i--) {
                 deleteItemizedPromptForMessage(i);
             }
-            const mesEl = chatElement[0].querySelector(`.mes[mesid="${this_del_mes}"]`);
+            const mesEl = chatElement?.querySelector(`.mes[mesid="${this_del_mes}"]`);
             if (mesEl) {
                 let sibling = mesEl.nextElementSibling;
                 while (sibling) {
@@ -13524,7 +13526,7 @@ function initCharacterSearch() {
             chat.length = this_del_mes;
             chat_metadata.tainted = true;
             await saveChatConditional();
-            chatElement.scrollTop(chatElement[0].scrollHeight);
+            chatElement.scrollTop = chatElement?.scrollHeight ?? 0;
             await eventSource.emit(event_types.MESSAGE_DELETED, chat.length);
             chatElement.find('.mes').removeClass('last_mes');
             chatElement.find('.mes').last().addClass('last_mes');
@@ -13804,7 +13806,7 @@ function initCharacterSearch() {
         }
 
         hideSwipeButtons();
-        const oldScroll = chatElement[0].scrollTop;
+        const oldScroll = chatElement?.scrollTop ?? 0;
         // @ts-expect-error TS(7005) FIXME: Variable 'this_edit_mes_id' implicitly has an 'any... Remove this comment to see the full error message
         const clone = structuredClone(chat[this_edit_mes_id]);
         // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
@@ -13826,7 +13828,7 @@ function initCharacterSearch() {
 
         updateViewMessageIds();
         await saveChatConditional();
-        chatElement[0].scrollTop = oldScroll;
+        if (chatElement) chatElement.scrollTop = oldScroll;
         showSwipeButtons();
     });
 
@@ -14184,7 +14186,8 @@ function initCharacterSearch() {
             }
 
             const zoomedAvatarImgElement = newElement.querySelector('img');
-            if (messageElement.getAttribute('is_user') == 'true' || (messageElement.getAttribute('is_system') == 'true' && !isValidCharacter)) {
+                        const el = messageElement[0];
+            if (el?.getAttribute('is_user') == 'true' || (el?.getAttribute('is_system') == 'true' && !isValidCharacter)) {
                 const isValidPersona = decodeURIComponent(targetAvatarImg) in power_user.personas;
                 if (isValidPersona) {
                     const personaSrc = getUserAvatar(targetAvatarImg);
@@ -14198,7 +14201,7 @@ function initCharacterSearch() {
                     // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
                     zoomedAvatarImgElement.setAttribute('data-izoomify-url', thumbURL);
                 }
-            } else if (messageElement.getAttribute('is_user') == 'false') {
+                        } else if (el?.getAttribute('is_user') == 'false') {
                 // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
                 zoomedAvatarImgElement.src = avatarSrc;
                 // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.

@@ -1382,13 +1382,13 @@ function setReasoningEventHandlers() {
         reasoningBlock.parentNode.insertBefore(textarea, reasoningBlock);
 
         if (!CSS.supports('field-sizing', 'content')) {
-            const resetHeight = function () {
-                // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-                const scrollTop = chatElement.scrollTop;
+                        const resetHeight = function () {
+                const chatEl = chatElement[0];
+                if (!chatEl) return;
+                const scrollTop = chatEl.scrollTop;
                 textarea.style.height = '0px';
                 textarea.style.height = `${textarea.scrollHeight}px`;
-                // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-                chatElement.scrollTop = scrollTop;
+                chatEl.scrollTop = scrollTop;
             };
 
             textarea.addEventListener('input', resetHeight);
@@ -1405,8 +1405,8 @@ function setReasoningEventHandlers() {
         // Scroll if textarea bottom is below visible area
         if (textareaRect.bottom > chatRect.bottom) {
             const scrollOffset = textareaRect.bottom - chatRect.bottom;
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-            chatElement.scrollTop += scrollOffset;
+                        const chatEl = chatElement[0];
+            if (chatEl) chatEl.scrollTop += scrollOffset;
         }
     });
 

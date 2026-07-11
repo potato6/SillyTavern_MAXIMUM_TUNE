@@ -8232,9 +8232,10 @@
                 <script src="lib/cash.min.js"></script>
         <script>
         window.jQuery=$;
-        $.fn.sortable = $.fn.sortable || function() { return this; };
+                $.fn.sortable = $.fn.sortable || function() { return this; };
         $.fn.fadeIn = $.fn.fadeIn || function() { return this; };
         $.fn.bind = $.fn.bind || function() { return this; };
+        $.fn.hover = $.fn.hover || function(fnIn, fnOut) { return this.on('mouseenter', fnIn).on('mouseleave', fnOut || fnIn); };
         $.fn.scrollTop = function(v) { return v === void 0 ? this[0]?.scrollTop : (this.each(function() { this.scrollTop = v; }), this); };
         $.fn.pagination = function() { return this; };
         $.fn.tabs = function() { return this; };
@@ -8244,7 +8245,8 @@
             var args = [];
             for (var i = 0; i < arguments.length; i++) {
                 var a = arguments[i];
-                if (typeof a === 'string' && !/^\s*<[^>]*>/.test(a) && !/^[.#\w]/.test(a)) {
+                // Plain text sentence -> text node (CSS selectors never start with uppercase)
+                if (typeof a === 'string' && /^[A-Z]/.test(a)) {
                     args.push(document.createTextNode(a));
                 } else {
                     args.push(a);

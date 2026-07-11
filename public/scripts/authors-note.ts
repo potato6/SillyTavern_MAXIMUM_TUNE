@@ -445,33 +445,28 @@ function loadSettings() {
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     document.getElementById('extension_floating_prompt').value = chat_metadata[metadata_keys.prompt];
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ...
-    document.getElementById('extension_floating_interval').value = chat_metadata[metadata_keys.interval];
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ...
-    document.getElementById('extension_floating_allow_wi_scan').checked = extension_settings.note.allowWIScan ?? false;
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ...
-    document.getElementById('extension_floating_depth').value = chat_metadata[metadata_keys.depth];
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ...
-    document.getElementById('extension_floating_role').value = chat_metadata[metadata_keys.role];
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ...
-    const fpPosEl = document.querySelector(`input[name="extension_floating_position"][value="${chat_metadata[metadata_keys.position]}"]`);
+        document.getElementById('extension_floating_interval')?.setAttribute('value', chat_metadata[metadata_keys.interval]);
+        const wiScanEl = document.getElementById('extension_floating_allow_wi_scan');
+        if (wiScanEl) wiScanEl.checked = extension_settings.note.allowWIScan ?? false;
+        document.getElementById('extension_floating_depth')?.setAttribute('value', chat_metadata[metadata_keys.depth]);
+        document.getElementById('extension_floating_role')?.setAttribute('value', chat_metadata[metadata_keys.role]);
+        const fpPosEl = document.querySelector(`input[name="extension_floating_position"][value="${chat_metadata[metadata_keys.position]}"]`);
     if (fpPosEl) fpPosEl.checked = true;
 
     if (extension_settings.note.chara && getContext().characterId !== undefined) {
         // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
         const charaNote = extension_settings.note.chara.find((e) => e.name === getCharaFilename());
 
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ...
-        document.getElementById('extension_floating_chara').value = charaNote ? charaNote.prompt : '';
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ...
-        document.getElementById('extension_use_floating_chara').checked = charaNote ? charaNote.useChara : false;
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ...
+        document.getElementById('extension_floating_chara')?.setAttribute('value', charaNote ? charaNote.prompt : '');
+        const charaEl = document.getElementById('extension_use_floating_chara');
+        if (charaEl) charaEl.checked = charaNote ? charaNote.useChara : false;
+        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const fcpEl = document.querySelector(`input[name="extension_floating_char_position"][value="${charaNote?.position ?? chara_note_position.replace}"]`);
         if (fcpEl) fcpEl.checked = true;
     } else {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ...
-        document.getElementById('extension_floating_chara').value = '';
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ...
-        document.getElementById('extension_use_floating_chara').checked = false;
+        document.getElementById('extension_floating_chara')?.setAttribute('value', '');
+        const charaEl2 = document.getElementById('extension_use_floating_chara');
+        if (charaEl2) charaEl2.checked = false;
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ...
         const fcpEl2 = document.querySelector(`input[name="extension_floating_char_position"][value="${chara_note_position.replace}"]`);
         if (fcpEl2) fcpEl2.checked = true;

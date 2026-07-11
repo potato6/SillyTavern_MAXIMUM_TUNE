@@ -490,7 +490,7 @@ async function sendWelcomePanel(chats, expand = false) {
         // @ts-expect-error TS(2345) FIXME: Argument of type 'ChildNode | null' is not assigna... Remove this comment to see the full error message
         chatElement.append(fragment.firstChild);
         if (expand) {
-            chatElement.querySelectorAll('button.showMoreChats').forEach((button) => {
+            chatElement[0]?.querySelectorAll('button.showMoreChats').forEach((button) => {
                 if (button instanceof HTMLButtonElement) {
                     button.click();
                 }
@@ -705,15 +705,17 @@ async function refreshWelcomeScreen({ flashChat = null } = {}) {
         return;
     }
 
-    const scrollTop = chatElement.scrollTop;
-    const scrollHeight = chatElement.scrollHeight;
-    const expand = chatElement.querySelectorAll('button.showMoreChats.rotated').length > 0;
+        const chatEl = chatElement[0];
+    if (!chatEl) return;
+    const scrollTop = chatEl.scrollTop;
+    const scrollHeight = chatEl.scrollHeight;
+    const expand = chatEl.querySelectorAll('button.showMoreChats.rotated').length > 0;
 
     await openWelcomeScreen({ force: true, expand });
 
     // Restore scroll position or flash specific chat
     if (flashChat) {
-        const recentChats = Array.from(chatElement.querySelectorAll('.recentChat'));
+                const recentChats = Array.from(chatEl.querySelectorAll('.recentChat'));
         const chatToFlash = recentChats.find(el => {
             const file = el.getAttribute('data-file');
             const group = el.getAttribute('data-group');
@@ -725,13 +727,13 @@ async function refreshWelcomeScreen({ flashChat = null } = {}) {
         });
         if (chatToFlash instanceof HTMLElement) {
             if (!isElementInViewport(chatToFlash)) {
-                chatElement.scrollTop = chatToFlash.offsetTop - chatElement.offsetTop - (chatToFlash.clientHeight / 2);
+                                chatEl.scrollTop = chatToFlash.offsetTop - chatEl.offsetTop - (chatToFlash.clientHeight / 2);
             }
             flashHighlight(chatToFlash, 1000);
         }
     } else {
         // Restore scroll position
-        chatElement.scrollTop = scrollTop + (chatElement.scrollHeight - scrollHeight);
+                chatEl.scrollTop = scrollTop + (chatEl.scrollHeight - scrollHeight);
     }
 }
 

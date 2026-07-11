@@ -2197,12 +2197,15 @@ function select_group_chats(groupId, skipAnimation) {
     printGroupMembers();
 
     const groupHasMembers = !!document.querySelector('#rm_group_members')?.children.length;
-    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    document.getElementById('rm_group_submit').disabled = !groupHasMembers;
-    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    document.getElementById('rm_group_allow_self_responses').checked = !!(group && group.allow_self_responses);
-    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    document.getElementById('rm_group_hidemutedsprites').checked = !!(group && group.hideMutedSprites);
+            const submitBtn = document.getElementById('rm_group_submit');
+    if (submitBtn) {
+        if (!groupHasMembers) submitBtn.setAttribute('disabled', '');
+        else submitBtn.removeAttribute('disabled');
+    }
+    const selfResp = document.getElementById('rm_group_allow_self_responses');
+    if (selfResp) selfResp.checked = !!(group && group.allow_self_responses);
+    const hideMuted = document.getElementById('rm_group_hidemutedsprites');
+    if (hideMuted) hideMuted.checked = !!(group && group.hideMutedSprites);
     // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     document.getElementById('rm_group_automode_delay').value = String(group?.auto_mode_delay ?? DEFAULT_AUTO_MODE_DELAY);
 
