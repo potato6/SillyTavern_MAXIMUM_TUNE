@@ -14090,9 +14090,9 @@ function initCharacterSearch() {
             icon.classList.toggle('fa-circle-chevron-down');
             icon.classList.toggle('fa-circle-chevron-up');
         }
-                drawer.trigger('inline-drawer-toggle');
+                                drawer.trigger('inline-drawer-toggle');
                 if (drawerContent) {
-                    const isCurrentlyVisible = drawerContent.style.display !== 'none';
+                    const isCurrentlyVisible = window.getComputedStyle(drawerContent).display !== 'none';
                     if (!isCurrentlyVisible) {
                         const anim = drawerContent.animate([
                             { height: '0px' },
