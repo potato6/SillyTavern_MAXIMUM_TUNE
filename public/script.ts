@@ -14089,13 +14089,13 @@ function initCharacterSearch() {
             icon.classList.toggle('fa-circle-chevron-down');
             icon.classList.toggle('fa-circle-chevron-up');
         }
-                                                drawerEl.dispatchEvent(new CustomEvent('inline-drawer-toggle', { bubbles: true }));
+                                                        drawerEl.dispatchEvent(new CustomEvent('inline-drawer-toggle', { bubbles: true }));
         if (drawerContent) {
             const isCurrentlyVisible = window.getComputedStyle(drawerContent).display !== 'none';
             if (isCurrentlyVisible) {
                 drawerContent.style.display = 'none';
             } else {
-                drawerContent.style.display = '';
+                drawerContent.style.display = 'block';
                 drawerContent.style.height = '';
                 // Force reflow then animate height
                 var h = drawerContent.scrollHeight;
