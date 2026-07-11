@@ -12547,52 +12547,51 @@ function doDrawerOpenClick() {
  * @returns {Promise<void>}
  */
 export async function doNavbarIconClick() {
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const icon = $(this).find('.drawer-icon');
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const drawer = $(this).parent().find('.drawer-content');
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const drawerWasOpenAlready = $(this).parent().find('.drawer-content').hasClass('openDrawer');
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const targetDrawerID = $(this).parent().find('.drawer-content').attr('id');
+    const icon = this.querySelector('.drawer-icon');
+    const drawerContent = this.parentElement?.querySelector('.drawer-content');
+    if (!icon || !drawerContent) return;
+    const drawerWasOpenAlready = drawerContent.classList.contains('openDrawer');
+    const targetDrawerID = drawerContent.id;
 
     if (!drawerWasOpenAlready) {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const $openDrawers = $('.openDrawer:not(.pinnedOpen)');
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const $openIcons = $('.openIcon:not(.drawerPinnedOpen)');
-        for (const iconEl of $openIcons) {
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(iconEl).toggleClass('closedIcon openIcon');
+        const openDrawers = document.querySelectorAll('.openDrawer:not(.pinnedOpen)');
+        const openIcons = document.querySelectorAll('.openIcon:not(.drawerPinnedOpen)');
+        for (const iconEl of openIcons) {
+            iconEl.classList.toggle('closedIcon');
+            iconEl.classList.toggle('openIcon');
         }
-        for (const el of $openDrawers) {
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(el).toggleClass('closedDrawer openDrawer');
+        for (const el of openDrawers) {
+            el.classList.toggle('closedDrawer');
+            el.classList.toggle('openDrawer');
         }
-        if ($openDrawers.length && animation_duration) {
+        if (openDrawers.length && animation_duration) {
             await delay(animation_duration);
         }
-        icon.toggleClass('openIcon closedIcon');
-        drawer.toggleClass('openDrawer closedDrawer');
+        icon.classList.toggle('openIcon');
+        icon.classList.toggle('closedIcon');
+        drawerContent.classList.toggle('openDrawer');
+        drawerContent.classList.toggle('closedDrawer');
 
         if (targetDrawerID === 'right-nav-panel') {
             favsToHotswap();
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $('#rm_print_characters_block').trigger('scroll');
+            document.getElementById('rm_print_characters_block')?.dispatchEvent(new Event('scroll'));
         }
 
         // Set the height of "autoSetHeight" textareas within the drawer to their scroll height
         if (!CSS.supports('field-sizing', 'content')) {
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const textareas = $(this).closest('.drawer').find('.drawer-content textarea.autoSetHeight');
-            for (const textarea of textareas) {
-                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                await resetScrollHeight($(textarea));
+            const drawerEl = this.closest('.drawer');
+            const textareas = drawerEl?.querySelectorAll('.drawer-content textarea.autoSetHeight');
+            if (textareas) {
+                for (const textarea of textareas) {
+                    await resetScrollHeight($(textarea));
+                }
             }
         }
     } else if (drawerWasOpenAlready) {
-        icon.toggleClass('closedIcon openIcon');
-        drawer.toggleClass('closedDrawer openDrawer');
+        icon.classList.toggle('closedIcon');
+        icon.classList.toggle('openIcon');
+        drawerContent.classList.toggle('closedDrawer');
+        drawerContent.classList.toggle('openDrawer');
     }
 }
 
