@@ -6786,7 +6786,7 @@ async function onNewPresetClick() {
 /**
  *
  */
-function onReverseProxyInput() {
+function onReverseProxyInput(this: HTMLInputElement) {
     oai_settings.reverse_proxy = String(this.value);
     const _rpEl2 = document.querySelector('.reverse_proxy_warning') as HTMLElement; if (_rpEl2) _rpEl2.style.display = oai_settings.reverse_proxy != '' ? '' : 'none';
     saveSettingsDebounced();
@@ -8222,13 +8222,13 @@ export function initOpenAI() {
     });
 
     document.getElementById('cc_group_models')?.addEventListener('input', async () => {
-        oai_settings.group_models = document.getElementById('cc_group_models').checked;
+        oai_settings.group_models = (document.getElementById('cc_group_models') as HTMLInputElement | null)?.checked ?? false;
         reconnectOpenAi();
         saveSettingsDebounced();
     });
 
     document.getElementById('cc_sort_models')?.addEventListener('input', async () => {
-        oai_settings.sort_models = document.getElementById('cc_sort_models').value.toString();
+        oai_settings.sort_models = (document.getElementById('cc_sort_models') as HTMLInputElement | null)?.value?.toString() ?? '';
         reconnectOpenAi();
         saveSettingsDebounced();
     });

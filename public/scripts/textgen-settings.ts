@@ -996,7 +996,7 @@ export function initTextGenSettings() {
         },
     });
 
-    document.getElementById('tabby_json_schema')?.addEventListener('input', function () {
+    document.getElementById('tabby_json_schema')?.addEventListener('input', function (this: HTMLTextAreaElement) {
         const json_schema_string = String(this.value);
 
         if (json_schema_string) {

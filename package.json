@@ -58,6 +58,7 @@
         "multer": "^2.2.0",
         "node-fetch": "^3.3.2",
         "node-persist": "^4.0.4",
+        "notyf": "^3.10.0",
         "nouislider": "^15.8.1",
         "open": "^11.0.0",
         "png-chunk-text": "^1.0.0",
@@ -110,7 +111,7 @@
         "build:lib": "bun scripts/build-lib.js",
         "lint": "bun node_modules/eslint/bin/eslint.js \"src/**/*.ts\" \"public/**/*.ts\" ./*.ts",
         "lint:fix": "bun node_modules/eslint/bin/eslint.js \"src/**/*.ts\" \"public/**/*.ts\" ./*.ts --fix",
-        "typecheck": "bun node_modules/typescript/lib/tsc.js --noEmit",
+        "typecheck": "bun node_modules/typescript/lib/tsc.js --noEmit --quiet",
         "plugins:update": "bun plugins update",
         "plugins:install": "bun plugins install"
     },

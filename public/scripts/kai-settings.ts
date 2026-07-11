@@ -580,13 +580,13 @@ export function initKoboldSettings() {
         }
     });
 
-    document.getElementById('streaming_kobold')?.addEventListener('input', function () {
+    document.getElementById('streaming_kobold')?.addEventListener('input', function (this: HTMLInputElement) {
         const value = !!this.checked;
         kai_settings.streaming_kobold = value;
         saveSettingsDebounced();
     });
 
-    document.getElementById('use_default_badwordsids')?.addEventListener('input', function () {
+    document.getElementById('use_default_badwordsids')?.addEventListener('input', function (this: HTMLInputElement) {
         const value = !!this.checked;
         kai_settings.use_default_badwordsids = value;
         saveSettingsDebounced();
