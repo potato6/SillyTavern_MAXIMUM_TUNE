@@ -8232,8 +8232,10 @@
                 <script src="lib/cash.min.js"></script>
         <script>
         window.jQuery=$;
-                $.fn.sortable = $.fn.sortable || function() { return this; };
-        $.fn.fadeIn = $.fn.fadeIn || function() { return this; };
+                        $.fn.sortable = $.fn.sortable || function() { return this; };
+        $.fn.fadeIn = $.fn.fadeIn || function(opts) { if (opts && opts.complete) opts.complete(); return this; };
+        $.fn.fadeOut = $.fn.fadeOut || function(opts) { if (opts && opts.complete) opts.complete(); return this; };
+        $.fn.stop = $.fn.stop || function() { return this; };
         $.fn.bind = $.fn.bind || function() { return this; };
         $.fn.hover = $.fn.hover || function(fnIn, fnOut) { return this.on('mouseenter', fnIn).on('mouseleave', fnOut || fnIn); };
         $.fn.scrollTop = function(v) { return v === void 0 ? this[0]?.scrollTop : (this.each(function() { this.scrollTop = v; }), this); };
