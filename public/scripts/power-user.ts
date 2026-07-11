@@ -3824,6 +3824,758 @@ function registerSettingsPanelHandlers() {
         switchReducedMotion();
         saveSettingsDebounced();
     });
+
+    // Auto-connect to last server
+    const autoConnectEl = guardEl('auto-connect-checkbox');
+    if (autoConnectEl) autoConnectEl.addEventListener('input', function () {
+        power_user.auto_connect = !!(this instanceof HTMLInputElement && this.checked);
+        saveSettingsDebounced();
+    });
+
+    // Theme selector
+    const themesEl = guardEl('themes');
+    if (themesEl) themesEl.addEventListener('change', function () {
+        const themeSelected = String((this instanceof HTMLInputElement && this.value) || '');
+        power_user.theme = themeSelected;
+        applyTheme(themeSelected);
+        saveSettingsDebounced();
+    });
+
+    // Moving UI presets
+    const muiPresetsEl = guardEl('movingUIPresets');
+    if (muiPresetsEl) muiPresetsEl.addEventListener('change', async function () {
+        console.log('saw MUI preset change');
+        const movingUIPresetSelected = String((this instanceof HTMLInputElement && this.value) || '');
+        power_user.movingUIPreset = movingUIPresetSelected;
+        applyMovingUIPreset(movingUIPresetSelected);
+        saveSettingsDebounced();
+    });
+
+    // UI preset buttons
+    const uiSaveEl = guardEl('ui-preset-save-button');
+    if (uiSaveEl) uiSaveEl.addEventListener('click', () => saveTheme());
+    const uiUpdateEl = guardEl('ui-preset-update-button');
+    if (uiUpdateEl) uiUpdateEl.addEventListener('click', () => updateTheme());
+    const uiDeleteEl = guardEl('ui-preset-delete-button');
+    if (uiDeleteEl) uiDeleteEl.addEventListener('click', () => deleteTheme());
+
+    // Moving UI preset save
+    const muiSaveEl = guardEl('movingui-preset-save-button');
+    if (muiSaveEl) muiSaveEl.addEventListener('click', saveMovingUI);
+
+    // Never resize avatars
+    const neverResizeEl = guardEl('never_resize_avatars');
+    if (neverResizeEl) neverResizeEl.addEventListener('input', function () {
+        power_user.never_resize_avatars = !!(this instanceof HTMLInputElement && this.checked);
+        saveSettingsDebounced();
+    });
+
+    // Show card avatar URLs
+    const showAvatarUrlsEl = guardEl('show_card_avatar_urls');
+    if (showAvatarUrlsEl) showAvatarUrlsEl.addEventListener('input', function () {
+        power_user.show_card_avatar_urls = !!(this instanceof HTMLInputElement && this.checked);
+        printCharactersDebounced();
+        saveSettingsDebounced();
+    });
+
+    // Play message sound
+    const playSoundEl = guardEl('play_message_sound');
+    if (playSoundEl) playSoundEl.addEventListener('input', function () {
+        power_user.play_message_sound = !!(this instanceof HTMLInputElement && this.checked);
+        saveSettingsDebounced();
+    });
+
+    // Play sound unfocused
+    const playSoundUnfocusedEl = guardEl('play_sound_unfocused');
+    if (playSoundUnfocusedEl) playSoundUnfocusedEl.addEventListener('input', function () {
+        power_user.play_sound_unfocused = !!(this instanceof HTMLInputElement && this.checked);
+        saveSettingsDebounced();
+    });
+
+    // Auto-save message edits
+    const autoSaveEditsEl = guardEl('auto_save_msg_edits');
+    if (autoSaveEditsEl) autoSaveEditsEl.addEventListener('input', function () {
+        power_user.auto_save_msg_edits = !!(this instanceof HTMLInputElement && this.checked);
+        saveSettingsDebounced();
+    });
+
+    // Character sort order
+    const sortOrderEl = guardEl('character_sort_order');
+    if (sortOrderEl) sortOrderEl.addEventListener('change', function () {
+        if (this instanceof HTMLSelectElement) {
+            const selectedOption = this.options[this.selectedIndex];
+            const field = String(selectedOption?.dataset.field ?? '');
+            if (field !== 'search') {
+                power_user.sort_field = field;
+                power_user.sort_order = selectedOption?.dataset.order ?? '';
+                (power_user as any).sort_rule = selectedOption?.dataset.rule ?? '';
+            }
+        }
+        printCharactersDebounced();
+        saveSettingsDebounced();
+    });
+
+    // Gestures checkbox
+    const gesturesEl = guardEl('gestures-checkbox');
+    if (gesturesEl) gesturesEl.addEventListener('change', function () {
+        power_user.gestures = !!(h('gestures-checkbox') instanceof HTMLInputElement && h('gestures-checkbox').checked);
+        saveSettingsDebounced();
+    });
+
+    // Auto swipe
+    const autoSwipeEl = guardEl('auto_swipe');
+    if (autoSwipeEl) autoSwipeEl.addEventListener('input', function () {
+        power_user.auto_swipe = !!(this instanceof HTMLInputElement && this.checked);
+        saveSettingsDebounced();
+    });
+
+    // Auto swipe blacklist
+    const autoSwipeBlacklistEl = guardEl('auto_swipe_blacklist');
+    if (autoSwipeBlacklistEl) autoSwipeBlacklistEl.addEventListener('input', function () {
+        (power_user as any).auto_swipe_blacklist = String((this instanceof HTMLInputElement && this.value) || '')
+            .split(',')
+            .map(str => str.trim())
+            .filter(str => str);
+        saveSettingsDebounced();
+    });
+
+    // Auto swipe minimum length
+    const autoSwipeMinLenEl = guardEl('auto_swipe_minimum_length');
+    if (autoSwipeMinLenEl) autoSwipeMinLenEl.addEventListener('input', function () {
+        const number = Number((this instanceof HTMLInputElement && this.value) || 0);
+        if (!isNaN(number)) {
+            power_user.auto_swipe_minimum_length = number;
+            saveSettingsDebounced();
+        }
+    });
+
+    // Auto swipe blacklist threshold
+    const autoSwipeBlacklistThreshEl = guardEl('auto_swipe_blacklist_threshold');
+    if (autoSwipeBlacklistThreshEl) autoSwipeBlacklistThreshEl.addEventListener('input', function () {
+        const number = Number((this instanceof HTMLInputElement && this.value) || 0);
+        if (!isNaN(number)) {
+            power_user.auto_swipe_blacklist_threshold = number;
+            saveSettingsDebounced();
+        }
+    });
+
+    // Auto-fix generated markdown
+    const autoFixMdEl = guardEl('auto_fix_generated_markdown');
+    if (autoFixMdEl) autoFixMdEl.addEventListener('input', function () {
+        power_user.auto_fix_generated_markdown = !!(this instanceof HTMLInputElement && this.checked);
+        reloadCurrentChat();
+        saveSettingsDebounced();
+    });
+
+    // Console log prompts
+    const consoleLogEl = guardEl('console_log_prompts');
+    if (consoleLogEl) consoleLogEl.addEventListener('input', function () {
+        power_user.console_log_prompts = !!(this instanceof HTMLInputElement && this.checked);
+        saveSettingsDebounced();
+    });
+
+    // Request token probabilities
+    const reqTokenProbsEl = guardEl('request_token_probabilities');
+    if (reqTokenProbsEl) reqTokenProbsEl.addEventListener('input', function () {
+        power_user.request_token_probabilities = !!(this instanceof HTMLInputElement && this.checked);
+        saveSettingsDebounced();
+    });
+
+    // Show group chat queue
+    const showGroupQueueEl = guardEl('show_group_chat_queue');
+    if (showGroupQueueEl) showGroupQueueEl.addEventListener('input', function () {
+        power_user.show_group_chat_queue = !!(this instanceof HTMLInputElement && this.checked);
+        saveSettingsDebounced();
+    });
+
+    // Auto-scroll chat to bottom
+    const autoScrollEl = guardEl('auto_scroll_chat_to_bottom');
+    if (autoScrollEl) autoScrollEl.addEventListener('input', function () {
+        power_user.auto_scroll_chat_to_bottom = !!(this instanceof HTMLInputElement && this.checked);
+        saveSettingsDebounced();
+    });
+
+    // Tokenizer
+    const tokenizerEl = guardEl('tokenizer');
+    if (tokenizerEl) tokenizerEl.addEventListener('change', function () {
+        const value = Number((this instanceof HTMLInputElement && this.value) || 0);
+        power_user.tokenizer = value;
+        BIAS_CACHE.clear();
+        saveSettingsDebounced();
+        forceCharacterEditorTokenize();
+    });
+
+    // Send on enter
+    const sendOnEnterEl = guardEl('send_on_enter');
+    if (sendOnEnterEl) sendOnEnterEl.addEventListener('change', function () {
+        const value = Number((this instanceof HTMLInputElement && this.value) || 0);
+        power_user.send_on_enter = value;
+        saveSettingsDebounced();
+    });
+
+    // Confirm message delete
+    const confirmDelEl = guardEl('confirm_message_delete');
+    if (confirmDelEl) confirmDelEl.addEventListener('input', function () {
+        power_user.confirm_message_delete = !!(this instanceof HTMLInputElement && this.checked);
+        saveSettingsDebounced();
+    });
+
+    // Reload chat button
+    const reloadChatEl = guardEl('reload_chat');
+    if (reloadChatEl) reloadChatEl.addEventListener('click', async function () {
+        const currentChatId = getCurrentChatId();
+        if (currentChatId !== undefined && currentChatId !== null) {
+            await saveSettings();
+            await saveChatConditional();
+            await reloadCurrentChat();
+        }
+    });
+
+    // Allow name1 display
+    const allowName1El = guardEl('allow_name1_display');
+    if (allowName1El) allowName1El.addEventListener('input', function () {
+        power_user.allow_name1_display = !!(this instanceof HTMLInputElement && this.checked);
+        reloadCurrentChat();
+        saveSettingsDebounced();
+    });
+
+    // Allow name2 display
+    const allowName2El = guardEl('allow_name2_display');
+    if (allowName2El) allowName2El.addEventListener('input', function () {
+        power_user.allow_name2_display = !!(this instanceof HTMLInputElement && this.checked);
+        reloadCurrentChat();
+        saveSettingsDebounced();
+    });
+
+    // Token padding
+    const tokenPaddingEl = guardEl('token_padding');
+    if (tokenPaddingEl) tokenPaddingEl.addEventListener('input', function () {
+        power_user.token_padding = Number((this instanceof HTMLInputElement && this.value) || 0);
+        saveSettingsDebounced();
+    });
+
+    // Message timer
+    const msgTimerEl = guardEl('messageTimerEnabled');
+    if (msgTimerEl) msgTimerEl.addEventListener('input', function () {
+        const value = !!(this instanceof HTMLInputElement && this.checked);
+        power_user.timer_enabled = value;
+        switchTimer();
+        saveSettingsDebounced();
+    });
+
+    // Message timestamps
+    const msgTimestampsEl = guardEl('messageTimestampsEnabled');
+    if (msgTimestampsEl) msgTimestampsEl.addEventListener('input', function () {
+        const value = !!(this instanceof HTMLInputElement && this.checked);
+        power_user.timestamps_enabled = value;
+        switchTimestamps();
+        saveSettingsDebounced();
+    });
+
+    // Message model icon
+    const msgModelIconEl = guardEl('messageModelIconEnabled');
+    if (msgModelIconEl) msgModelIconEl.addEventListener('input', function () {
+        const value = !!(this instanceof HTMLInputElement && this.checked);
+        power_user.timestamp_model_icon = value;
+        switchIcons();
+        saveSettingsDebounced();
+    });
+
+    // Message tokens
+    const msgTokensEl = guardEl('messageTokensEnabled');
+    if (msgTokensEl) msgTokensEl.addEventListener('input', function () {
+        const value = !!(this instanceof HTMLInputElement && this.checked);
+        power_user.message_token_count_enabled = value;
+        switchTokenCount();
+        saveSettingsDebounced();
+    });
+
+    // Expand message actions
+    const expandMsgActionsEl = guardEl('expandMessageActions');
+    if (expandMsgActionsEl) expandMsgActionsEl.addEventListener('input', function () {
+        const value = !!(this instanceof HTMLInputElement && this.checked);
+        power_user.expand_message_actions = value;
+        switchMessageActions();
+        saveSettingsDebounced();
+    });
+
+    // Enable Zen Sliders
+    const zenSlidersEl = guardEl('enableZenSliders');
+    if (zenSlidersEl) zenSlidersEl.addEventListener('input', function () {
+        const value = !!(this instanceof HTMLInputElement && this.checked);
+        if (power_user.enableLabMode === true && value === true) {
+            notyf.warning('Disable Mad Lab Mode before enabling Zen Sliders');
+            if (this instanceof HTMLInputElement) this.checked = false;
+            this.dispatchEvent(new Event('input'));
+            return;
+        }
+        power_user.enableZenSliders = value;
+        switchZenSliders();
+        saveSettingsDebounced();
+    });
+
+    // Enable Lab Mode
+    const labModeEl = guardEl('enableLabMode');
+    if (labModeEl) labModeEl.addEventListener('input', function (event) {
+        const value = !!(this instanceof HTMLInputElement && this.checked);
+        if (power_user.enableZenSliders === true && value === true) {
+            notyf.warning('Disable Zen Sliders before enabling Mad Lab Mode');
+            if (this instanceof HTMLInputElement) this.checked = false;
+            this.dispatchEvent(new Event('input'));
+            return;
+        }
+        power_user.enableLabMode = value;
+        switchLabMode({ noReset: false });
+        saveSettingsDebounced();
+    });
+
+    // Message ID display
+    const mesIDDisplayEl = guardEl('mesIDDisplayEnabled');
+    if (mesIDDisplayEl) mesIDDisplayEl.addEventListener('input', function () {
+        const value = !!(this instanceof HTMLInputElement && this.checked);
+        power_user.mesIDDisplay_enabled = value;
+        switchMesIDDisplay();
+        saveSettingsDebounced();
+    });
+
+    // Hide chat avatars
+    const hideChatAvatarsEl = guardEl('hideChatAvatarsEnabled');
+    if (hideChatAvatarsEl) hideChatAvatarsEl.addEventListener('input', function () {
+        const value = !!(this instanceof HTMLInputElement && this.checked);
+        power_user.hideChatAvatars_enabled = value;
+        switchHideChatAvatars();
+        saveSettingsDebounced();
+    });
+
+    // Hotswap enabled
+    const hotswapEl = guardEl('hotswapEnabled');
+    if (hotswapEl) hotswapEl.addEventListener('input', function () {
+        const value = !!(this instanceof HTMLInputElement && this.checked);
+        power_user.hotswap_enabled = value;
+        switchHotswap();
+        saveSettingsDebounced();
+    });
+
+    // Prefer character prompt
+    const prefCharPromptEl = guardEl('prefer_character_prompt');
+    if (prefCharPromptEl) prefCharPromptEl.addEventListener('input', function () {
+        const value = !!(this instanceof HTMLInputElement && this.checked);
+        power_user.prefer_character_prompt = value;
+        saveSettingsDebounced();
+    });
+
+    // Prefer character jailbreak
+    const prefCharJailbreakEl = guardEl('prefer_character_jailbreak');
+    if (prefCharJailbreakEl) prefCharJailbreakEl.addEventListener('input', function () {
+        const value = !!(this instanceof HTMLInputElement && this.checked);
+        power_user.prefer_character_jailbreak = value;
+        saveSettingsDebounced();
+    });
+
+    // Continue on send
+    const continueOnSendEl = guardEl('continue_on_send');
+    if (continueOnSendEl) continueOnSendEl.addEventListener('input', function () {
+        const value = !!(this instanceof HTMLInputElement && this.checked);
+        power_user.continue_on_send = value;
+        saveSettingsDebounced();
+    });
+
+    // Quick continue
+    const quickContinueEl = guardEl('quick_continue');
+    if (quickContinueEl) quickContinueEl.addEventListener('input', function () {
+        const value = !!(this instanceof HTMLInputElement && this.checked);
+        power_user.quick_continue = value;
+        const mesContinue = h('mes_continue');
+        if (mesContinue) mesContinue.style.display = value ? '' : 'none';
+        saveSettingsDebounced();
+    });
+
+    // Quick impersonate
+    const quickImpersonateEl = guardEl('quick_impersonate');
+    if (quickImpersonateEl) quickImpersonateEl.addEventListener('input', function () {
+        const value = !!(this instanceof HTMLInputElement && this.checked);
+        power_user.quick_impersonate = value;
+        const mesImpersonate = h('mes_impersonate');
+        if (mesImpersonate) mesImpersonate.style.display = value ? '' : 'none';
+        saveSettingsDebounced();
+    });
+
+    // Trim spaces
+    const trimSpacesEl = guardEl('trim_spaces');
+    if (trimSpacesEl) trimSpacesEl.addEventListener('input', function () {
+        const value = !!(this instanceof HTMLInputElement && this.checked);
+        power_user.trim_spaces = value;
+        saveSettingsDebounced();
+    });
+
+    // Relaxed API URLs
+    const relaxedApiEl = guardEl('relaxed_api_urls');
+    if (relaxedApiEl) relaxedApiEl.addEventListener('input', function () {
+        const value = !!(this instanceof HTMLInputElement && this.checked);
+        power_user.relaxed_api_urls = value;
+        saveSettingsDebounced();
+    });
+
+    // World import dialog
+    const worldImportEl = guardEl('world_import_dialog');
+    if (worldImportEl) worldImportEl.addEventListener('input', function () {
+        const value = !!(this instanceof HTMLInputElement && this.checked);
+        power_user.world_import_dialog = value;
+        saveSettingsDebounced();
+    });
+
+    // Enable auto-select input
+    const autoSelectInputEl = guardEl('enable_auto_select_input');
+    if (autoSelectInputEl) autoSelectInputEl.addEventListener('input', function () {
+        const value = !!(this instanceof HTMLInputElement && this.checked);
+        power_user.enable_auto_select_input = value;
+        saveSettingsDebounced();
+    });
+
+    // Enable MD hotkeys
+    const mdHotkeysEl = guardEl('enable_md_hotkeys');
+    if (mdHotkeysEl) mdHotkeysEl.addEventListener('input', function () {
+        const value = !!(this instanceof HTMLInputElement && this.checked);
+        power_user.enable_md_hotkeys = value;
+        toggleMDHotkeyIconDisplay();
+        saveSettingsDebounced();
+    });
+
+    // Spoiler-free mode
+    const spoilerFreeEl = guardEl('spoiler_free_mode');
+    if (spoilerFreeEl) spoilerFreeEl.addEventListener('input', function () {
+        power_user.spoiler_free_mode = !!(this instanceof HTMLInputElement && this.checked);
+        switchSpoilerMode();
+        saveSettingsDebounced();
+    });
+
+    // Spoiler-free description button
+    const spoilerDescBtnEl = guardEl('spoiler_free_desc_button');
+    if (spoilerDescBtnEl) spoilerDescBtnEl.addEventListener('click', function (e) {
+        e.stopPropagation();
+        peekSpoilerMode();
+        this.classList.toggle('fa-eye');
+        this.classList.toggle('fa-eye-slash');
+    });
+
+    // Custom stopping strings
+    const customStopStringsEl = guardEl('custom_stopping_strings');
+    if (customStopStringsEl) customStopStringsEl.addEventListener('input', function () {
+        power_user.custom_stopping_strings = String((this instanceof HTMLInputElement && this.value) || '').trim();
+        saveSettingsDebounced();
+    });
+
+    // Custom stopping strings macro
+    const customStopMacroEl = guardEl('custom_stopping_strings_macro');
+    if (customStopMacroEl) customStopMacroEl.addEventListener('change', function () {
+        power_user.custom_stopping_strings_macro = !!(this instanceof HTMLInputElement && this.checked);
+        saveSettingsDebounced();
+    });
+
+    // Fuzzy search
+    const fuzzySearchEl = guardEl('fuzzy_search_checkbox');
+    if (fuzzySearchEl) fuzzySearchEl.addEventListener('input', function () {
+        power_user.fuzzy_search = !!(this instanceof HTMLInputElement && this.checked);
+        saveSettingsDebounced();
+    });
+
+    // Persona show notifications
+    const personaNotifEl = guardEl('persona_show_notifications');
+    if (personaNotifEl) personaNotifEl.addEventListener('input', function () {
+        power_user.persona_show_notifications = !!(this instanceof HTMLInputElement && this.checked);
+        saveSettingsDebounced();
+    });
+
+    // Persona allow multi connections
+    const personaMultiConnEl = guardEl('persona_allow_multi_connections');
+    if (personaMultiConnEl) personaMultiConnEl.addEventListener('input', function () {
+        power_user.persona_allow_multi_connections = !!(this instanceof HTMLInputElement && this.checked);
+        saveSettingsDebounced();
+    });
+
+    // Persona auto lock
+    const personaAutoLockEl = guardEl('persona_auto_lock');
+    if (personaAutoLockEl) personaAutoLockEl.addEventListener('input', function () {
+        power_user.persona_auto_lock = !!(this instanceof HTMLInputElement && this.checked);
+        saveSettingsDebounced();
+    });
+
+    // Encode tags
+    const encodeTagsEl = guardEl('encode_tags');
+    if (encodeTagsEl) encodeTagsEl.addEventListener('input', async function () {
+        power_user.encode_tags = !!(this instanceof HTMLInputElement && this.checked);
+        await reloadCurrentChat();
+        saveSettingsDebounced();
+    });
+
+    // Experimental macro engine
+    const expMacroEl = guardEl('experimental_macro_engine');
+    if (expMacroEl) expMacroEl.addEventListener('input', function () {
+        power_user.experimental_macro_engine = !!(this instanceof HTMLInputElement && this.checked);
+        saveSettingsDebounced();
+        if (!settingsReady) return;
+        eventSource.once(event_types.SETTINGS_UPDATED, function () {
+            notyf.warning(
+                'Click here to reload.',
+                'Toggling the Experimental Macro Engine requires a reload.',
+                {
+                    onclick: () => window.location.reload(),
+                    timeOut: 10000,
+                    preventDuplicates: true,
+                },
+            );
+        });
+    });
+
+    // Disable group trimming
+    const disableGroupTrimEl = guardEl('disable_group_trimming');
+    if (disableGroupTrimEl) disableGroupTrimEl.addEventListener('input', function () {
+        power_user.disable_group_trimming = !!(this instanceof HTMLInputElement && this.checked);
+        saveSettingsDebounced();
+    });
+
+    // Debug menu
+    const debugMenuEl = guardEl('debug_menu');
+    if (debugMenuEl) debugMenuEl.addEventListener('click', function () {
+        showDebugMenu();
+    });
+
+    // Bogus folders
+    const bogusFoldersEl = guardEl('bogus_folders');
+    if (bogusFoldersEl) bogusFoldersEl.addEventListener('input', function () {
+        power_user.bogus_folders = !!(this instanceof HTMLInputElement && this.checked);
+        printCharactersDebounced();
+        saveSettingsDebounced();
+    });
+
+    // Zoomed avatar magnification
+    const zoomedAvatarEl = guardEl('zoomed_avatar_magnification');
+    if (zoomedAvatarEl) zoomedAvatarEl.addEventListener('input', function () {
+        power_user.zoomed_avatar_magnification = !!(this instanceof HTMLInputElement && this.checked);
+        printCharactersDebounced();
+        saveSettingsDebounced();
+    });
+
+    // Aux field
+    const auxFieldEl = guardEl('aux_field');
+    if (auxFieldEl) auxFieldEl.addEventListener('change', function () {
+        const value = String((this instanceof HTMLInputElement && this.value) || '');
+        power_user.aux_field = value;
+        printCharactersDebounced();
+        saveSettingsDebounced();
+    });
+
+    // Tag import setting
+    const tagImportEl = guardEl('tag_import_setting');
+    if (tagImportEl) tagImportEl.addEventListener('change', function () {
+        const value = Number((this instanceof HTMLInputElement && this.value) || 0);
+        power_user.tag_import_setting = value;
+        saveSettingsDebounced();
+    });
+
+    // STscript autocomplete state
+    const stsAutoStateEl = guardEl('stscript_autocomplete_state');
+    if (stsAutoStateEl) stsAutoStateEl.addEventListener('input', function () {
+        power_user.stscript.autocomplete.state = Number((this instanceof HTMLInputElement && this.value) || 0);
+        saveSettingsDebounced();
+    });
+
+    // STscript autocomplete auto-hide
+    const stsAutoHideEl = guardEl('stscript_autocomplete_autoHide');
+    if (stsAutoHideEl) stsAutoHideEl.addEventListener('input', function () {
+        power_user.stscript.autocomplete.autoHide = !!(this instanceof HTMLInputElement && this.checked);
+        saveSettingsDebounced();
+    });
+
+    // STscript autocomplete show in all macro fields
+    const stsAutoShowAllEl = guardEl('stscript_autocomplete_showInAllMacroFields');
+    if (stsAutoShowAllEl) stsAutoShowAllEl.addEventListener('input', function () {
+        power_user.stscript.autocomplete.showInAllMacroFields = !!(this instanceof HTMLInputElement && this.checked);
+        saveSettingsDebounced();
+    });
+
+    // STscript matching
+    const stsMatchingEl = guardEl('stscript_matching');
+    if (stsMatchingEl) stsMatchingEl.addEventListener('change', function () {
+        const value = String((this instanceof HTMLInputElement && this.value) || '');
+        power_user.stscript.matching = value;
+        saveSettingsDebounced();
+    });
+
+    // STscript autocomplete style
+    const stsAutoStyleEl = guardEl('stscript_autocomplete_style');
+    if (stsAutoStyleEl) stsAutoStyleEl.addEventListener('change', function () {
+        const value = String((this instanceof HTMLInputElement && this.value) || '');
+        power_user.stscript.autocomplete.style = value;
+        document.body.setAttribute('data-stscript-style', power_user.stscript.autocomplete.style);
+        saveSettingsDebounced();
+    });
+
+    // STscript autocomplete select
+    const stsAutoSelectEl = guardEl('stscript_autocomplete_select');
+    if (stsAutoSelectEl) stsAutoSelectEl.addEventListener('change', function () {
+        const value = String((this instanceof HTMLInputElement && this.value) || '');
+        power_user.stscript.autocomplete.select = parseInt(value);
+        saveSettingsDebounced();
+    });
+
+    // STscript autocomplete font scale
+    const stsAutoFontScaleEl = guardEl('stscript_autocomplete_font_scale');
+    if (stsAutoFontScaleEl) stsAutoFontScaleEl.addEventListener('input', function () {
+        const value = String((this instanceof HTMLInputElement && this.value) || '');
+        const counter = h('stscript_autocomplete_font_scale_counter');
+        if (counter instanceof HTMLInputElement) counter.value = value;
+        power_user.stscript.autocomplete.font.scale = Number(value);
+        document.body.style.setProperty('--ac-font-scale', value.toString());
+        window.dispatchEvent(new Event('resize', { bubbles: true }));
+        saveSettingsDebounced();
+    });
+
+    // STscript autocomplete font scale counter
+    const stsAutoFontScaleCounterEl = guardEl('stscript_autocomplete_font_scale_counter');
+    if (stsAutoFontScaleCounterEl) stsAutoFontScaleCounterEl.addEventListener('input', function () {
+        const value = String((this instanceof HTMLInputElement && this.value) || '');
+        const slider = h('stscript_autocomplete_font_scale');
+        if (slider instanceof HTMLInputElement) slider.value = value;
+        power_user.stscript.autocomplete.font.scale = Number(value);
+        document.body.style.setProperty('--ac-font-scale', value.toString());
+        window.dispatchEvent(new Event('resize', { bubbles: true }));
+        saveSettingsDebounced();
+    });
+
+    // STscript autocomplete width left
+    const stsAutoWidthLeftEl = guardEl('stscript_autocomplete_width_left');
+    if (stsAutoWidthLeftEl) stsAutoWidthLeftEl.addEventListener('input', function () {
+        const value = Number((this instanceof HTMLInputElement && this.value) || 0);
+        power_user.stscript.autocomplete.width.left = value;
+        const container = this.closest('.doubleRangeInputContainer');
+        if (container instanceof HTMLElement) container.style.setProperty('--value', value.toString());
+        window.dispatchEvent(new Event('resize', { bubbles: true }));
+        saveSettingsDebounced();
+    });
+
+    // STscript autocomplete width right
+    const stsAutoWidthRightEl = guardEl('stscript_autocomplete_width_right');
+    if (stsAutoWidthRightEl) stsAutoWidthRightEl.addEventListener('input', function () {
+        const value = Number((this instanceof HTMLInputElement && this.value) || 0);
+        power_user.stscript.autocomplete.width.right = value;
+        const container = this.closest('.doubleRangeInputContainer');
+        if (container instanceof HTMLElement) container.style.setProperty('--value', value.toString());
+        window.dispatchEvent(new Event('resize', { bubbles: true }));
+        saveSettingsDebounced();
+    });
+
+    // STscript parser flag strict escaping
+    const stsStrictEscEl = guardEl('stscript_parser_flag_strict_escaping');
+    if (stsStrictEscEl) stsStrictEscEl.addEventListener('click', function () {
+        const value = this instanceof HTMLInputElement && this.checked;
+        (power_user.stscript.parser.flags as any)[PARSER_FLAG.STRICT_ESCAPING] = value;
+        saveSettingsDebounced();
+    });
+
+    // STscript parser flag replace getvar
+    const stsReplaceGetvarEl = guardEl('stscript_parser_flag_replace_getvar');
+    if (stsReplaceGetvarEl) stsReplaceGetvarEl.addEventListener('click', function () {
+        const value = this instanceof HTMLInputElement && this.checked;
+        (power_user.stscript.parser.flags as any)[PARSER_FLAG.REPLACE_GETVAR] = value;
+        saveSettingsDebounced();
+    });
+
+    // Restore user input
+    const restoreUserInputEl = guardEl('restore_user_input');
+    if (restoreUserInputEl) restoreUserInputEl.addEventListener('input', function () {
+        power_user.restore_user_input = !!(this instanceof HTMLInputElement && this.checked);
+        saveSettingsDebounced();
+    });
+
+    // Compact input area
+    const compactInputAreaEl = guardEl('compact_input_area');
+    if (compactInputAreaEl) compactInputAreaEl.addEventListener('input', function () {
+        power_user.compact_input_area = !!(this instanceof HTMLInputElement && this.checked);
+        switchCompactInputArea();
+        saveSettingsDebounced();
+    });
+
+    // Show swipe number for all messages
+    const showSwipeNumEl = guardEl('show_swipe_num_all_messages');
+    if (showSwipeNumEl) showSwipeNumEl.addEventListener('input', function () {
+        power_user.show_swipe_num_all_messages = !!(this instanceof HTMLInputElement && this.checked);
+        switchSwipeNumAllMessages();
+        saveSettingsDebounced();
+    });
+
+    // Auto-load last chat
+    const autoLoadChatEl = guardEl('auto-load-chat-checkbox');
+    if (autoLoadChatEl) autoLoadChatEl.addEventListener('input', function () {
+        power_user.auto_load_chat = !!(this instanceof HTMLInputElement && this.checked);
+        saveSettingsDebounced();
+    });
+
+    // Forbid external media
+    const forbidExtMediaEl = guardEl('forbid_external_media');
+    if (forbidExtMediaEl) forbidExtMediaEl.addEventListener('input', function () {
+        power_user.forbid_external_media = !!(this instanceof HTMLInputElement && this.checked);
+        saveSettingsDebounced();
+        reloadCurrentChat();
+    });
+
+    // Pin styles
+    const pinStylesEl = guardEl('pin_styles');
+    if (pinStylesEl) pinStylesEl.addEventListener('input', function () {
+        power_user.pin_styles = !!(this instanceof HTMLInputElement && this.checked);
+        saveSettingsDebounced();
+        applyStylePins();
+    });
+
+    // Click to edit
+    const clickToEditEl = guardEl('click_to_edit');
+    if (clickToEditEl) clickToEditEl.addEventListener('input', function () {
+        power_user.click_to_edit = !!(this instanceof HTMLInputElement && this.checked);
+        saveSettingsDebounced();
+    });
+
+    // UI preset import button
+    const uiImportBtnEl = guardEl('ui_preset_import_button');
+    if (uiImportBtnEl) uiImportBtnEl.addEventListener('click', function () {
+        h('ui_preset_import_file')?.click();
+    });
+
+    // UI preset import file
+    const uiImportFileEl = guardEl('ui_preset_import_file');
+    if (uiImportFileEl) uiImportFileEl.addEventListener('change', async function () {
+        try {
+            const file = (this instanceof HTMLInputElement && this.files?.[0]) || undefined;
+            await importTheme(file);
+        } catch (error) {
+            console.error('Error importing UI theme', error);
+            notyf.error(String(error), 'Failed to import UI theme');
+        } finally {
+            if (this instanceof HTMLInputElement) this.value = '';
+        }
+    });
+
+    // UI preset export button
+    const uiExportBtnEl = guardEl('ui_preset_export_button');
+    if (uiExportBtnEl) uiExportBtnEl.addEventListener('click', async function () {
+        await exportTheme();
+    });
+
+    // Media display
+    const mediaDisplayEl = guardEl('media_display');
+    if (mediaDisplayEl) mediaDisplayEl.addEventListener('input', async function () {
+        power_user.media_display = String((this instanceof HTMLInputElement && this.value) || '');
+        saveSettingsDebounced();
+        if (isMediaDisplayReloadNeeded()) {
+            await reloadCurrentChat();
+        }
+    });
+
+    // Image overswipe
+    const imageOverswipeEl = guardEl('image_overswipe');
+    if (imageOverswipeEl) imageOverswipeEl.addEventListener('input', function () {
+        power_user.image_overswipe = String((this instanceof HTMLInputElement && this.value) || '');
+        saveSettingsDebounced();
+    });
 }
 
 document.addEventListener('DOMContentLoaded', () => {
