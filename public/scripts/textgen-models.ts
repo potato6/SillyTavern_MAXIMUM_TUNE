@@ -523,15 +523,12 @@ export function updateNanoGptProvidersWarning(providersSelector) {
          ollamaSelect.appendChild(option);
      }
 
-     // Re-initialize TomSelect to reflect updated options
+     console.debug('[Ollama] Populated', ollamaSelect.options.length, 'options, tomSelect:', !!ollamaSelect.tomSelect);
      // @ts-expect-error TS(2339) FIXME: Property 'tomSelect' does not exist on type 'HTMLElement'.
-     if (ollamaSelect.tomSelect) {
-         ollamaSelect.tomSelect.destroy();
+     if ((ollamaSelect as any).tomSelect) {
+         (ollamaSelect as any).tomSelect.sync();
+         console.debug('[Ollama] sync() called');
      }
-     new TomSelect(ollamaSelect, {
-         maxItems: 1,
-         placeholder: t`Select a model`,
-     });
  }
 
  /**
