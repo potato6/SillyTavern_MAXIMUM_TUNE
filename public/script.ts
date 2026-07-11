@@ -9765,23 +9765,20 @@ export function selectRightMenuWithAnimation(selectedMenuId) {
     };
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#result_info').toggle(selectedMenuId === 'rm_ch_create_block');
-    document.querySelectorAll('#right-nav-panel .right_menu').forEach((menu) => {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(menu).css('display', 'none');
+        document.querySelectorAll('#right-nav-panel .right_menu').forEach((menu) => {
+        menu.style.display = 'none';
 
         if (selectedMenuId && selectedMenuId.replace('#', '') === menu.id) {
-            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             const mode = displayModes[menu.id] ?? 'block';
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(menu).css('display', mode);
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(menu).css('opacity', 0.0);
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(menu).transition({
-                opacity: 1.0,
+            menu.style.display = mode;
+            menu.style.opacity = '0';
+            menu.animate([
+                { opacity: '0' },
+                { opacity: '1' },
+            ], {
                 duration: animation_duration,
                 easing: animation_easing,
-                complete: function () { },
+                fill: 'forwards',
             });
         }
     });

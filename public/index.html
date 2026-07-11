@@ -8238,6 +8238,20 @@
         $.fn.scrollTop = function(v) { return v === void 0 ? this[0]?.scrollTop : (this.each(function() { this.scrollTop = v; }), this); };
         $.fn.pagination = function() { return this; };
         $.fn.tabs = function() { return this; };
+        // Override append to handle plain text strings (toastr passes error messages)
+        var _append = $.fn.append;
+        $.fn.append = function() {
+            var args = [];
+            for (var i = 0; i < arguments.length; i++) {
+                var a = arguments[i];
+                if (typeof a === 'string' && !/^\s*<[^>]*>/.test(a) && !/^[.#\w]/.test(a)) {
+                    args.push(document.createTextNode(a));
+                } else {
+                    args.push(a);
+                }
+            }
+            return _append.apply(this, args);
+        };
         (function() {
             var c = $;
             window.$ = function(s) {
