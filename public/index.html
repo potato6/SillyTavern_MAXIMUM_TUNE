@@ -8245,7 +8245,26 @@
             }
             return _is.apply(this, arguments);
         };
-        $.fn.bind = $.fn.bind || function() { return this; };
+                $.fn.bind = $.fn.bind || function() { return this; };
+        // Fix .on() to support delegated events (cash-dom 8.x doesn't handle selector argument)
+        var _on = $.fn.on;
+        $.fn.on = function(event, selector, data, handler, opts) {
+            if (typeof selector === 'string' && typeof data === 'function') {
+                handler = data;
+                data = undefined;
+                var boundEl = this[0];
+                var _handler = handler;
+                handler = function(e) {
+                    for (var el = e.target; el && el !== boundEl; el = el.parentElement) {
+                        if (el.matches && el.matches(selector)) {
+                            return _handler.call(el, e);
+                        }
+                    }
+                };
+                return _on.call(this, event, handler, data, undefined, opts);
+            }
+            return _on.apply(this, arguments);
+        };
         $.fn.hover = $.fn.hover || function(fnIn, fnOut) { return this.on('mouseenter', fnIn).on('mouseleave', fnOut || fnIn); };
         $.fn.scrollTop = function(v) { return v === void 0 ? this[0]?.scrollTop : (this.each(function() { this.scrollTop = v; }), this); };
                 $.fn.pagination = function(options) {
