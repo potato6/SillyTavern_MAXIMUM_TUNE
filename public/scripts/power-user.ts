@@ -1587,6 +1587,27 @@ function applyTheme(name) {
 }
 
 /**
+ * Registers (or re-registers) the change handler on the themes dropdown.
+ * Called after the DOM is ready and again after settings are loaded,
+ * because the settings panel DOM may be replaced during initialization
+ * which would orphan event listeners registered on earlier elements.
+ */
+function registerThemeChangeHandler() {
+    const el = document.getElementById('themes');
+    if (!el) return;
+    // Avoid duplicate listeners when called multiple times
+    if (el.dataset.themeHandlerRegistered) return;
+    el.dataset.themeHandlerRegistered = '1';
+    el.addEventListener('change', function () {
+        const themeSelected = String((this as HTMLInputElement).value);
+        power_user.theme = themeSelected;
+        applyTheme(themeSelected);
+        saveSettingsDebounced();
+    });
+}
+
+/**
+ *
  *
  * @param name
  */
@@ -1632,6 +1653,10 @@ export function applyPowerUserSettings() {
     switchUiMode();
     applyFontScale('forced');
     applyThemeColor();
+    // Apply the saved theme CSS on initial load — applyThemeColor() with no args does nothing
+    if (power_user.theme && themes.length > 0) {
+        applyTheme(power_user.theme);
+    }
     applyChatWidth('forced');
     applyAvatarStyle();
     applyBlurStrength();
@@ -2058,6 +2083,10 @@ export async function loadPowerUserSettings(settings, data) {
     loadCharListState();
     toggleMDHotkeyIconDisplay();
     applyToastrPosition();
+    // Re-attach settings panel handlers — DOM may have been replaced during init
+    registerSettingsPanelHandlers();
+    // Re-attach theme change handler — settings panel DOM may have been replaced during init
+    registerThemeChangeHandler();
 }
 
 /**
@@ -3457,11 +3486,365 @@ export function forceCharacterEditorTokenize() {
         const targetEl = document.getElementById(el.dataset.tokenCounter);
         if (targetEl) targetEl.dataset.lastValueHash = '';
     });
-    document.getElementById('rm_ch_create_block')?.dispatchEvent(new Event('input', { bubbles: true }));
-    document.getElementById('character_popup')?.dispatchEvent(new Event('input', { bubbles: true }));
+}
+
+/**
+ * Registers all settings panel event handlers on the live DOM elements.
+ * Must be called after DOM is ready AND again after settings panel DOM
+ * may have been replaced (e.g. from loadPowerUserSettings).
+ */
+function registerSettingsPanelHandlers() {
+    const guard = (el) => {
+        if (!el || el.dataset.stRegistered) return false;
+        el.dataset.stRegistered = '1';
+        return true;
+    };
+
+    const h = (id) => document.getElementById(id);
+    const guardEl = (id) => { const el = h(id); return el && guard(el) ? el : null; };
+
+    // Collapse newlines
+    const collapseEl = guardEl('collapse-newlines-checkbox');
+    if (collapseEl) collapseEl.addEventListener('change', function () {
+        power_user.collapse_newlines = !!(this instanceof HTMLInputElement && this.checked);
+        saveSettingsDebounced();
+    });
+
+    // Trim sentences
+    const trimEl = guardEl('trim_sentences_checkbox');
+    if (trimEl) trimEl.addEventListener('change', function () {
+        power_user.trim_sentences = !!(this instanceof HTMLInputElement && this.checked);
+        saveSettingsDebounced();
+    });
+
+    // Single line
+    const singleEl = guardEl('single_line');
+    if (singleEl) singleEl.addEventListener('input', function () {
+        power_user.single_line = !!(this instanceof HTMLInputElement && this.checked);
+        saveSettingsDebounced();
+    });
+
+    // Context derived
+    const ctxDerivedEl = guardEl('context_derived');
+    if (ctxDerivedEl) {
+        ctxDerivedEl.addEventListener('input', function () {
+            power_user.context_derived = !!(this instanceof HTMLInputElement && this.checked);
+            saveSettingsDebounced();
+        });
+        ctxDerivedEl.addEventListener('change', function () {
+            this.parentElement?.querySelector('i')?.classList.toggle('toggleEnabled', !!power_user.context_derived);
+        });
+    }
+
+    // Instruct derived
+    const instDerivedEl = guardEl('instruct_derived');
+    if (instDerivedEl) {
+        instDerivedEl.addEventListener('input', function () {
+            power_user.instruct_derived = !!(this instanceof HTMLInputElement && this.checked);
+            saveSettingsDebounced();
+        });
+        instDerivedEl.addEventListener('change', function () {
+            this.parentElement?.querySelector('i')?.classList.toggle('toggleEnabled', !!power_user.instruct_derived);
+        });
+    }
+
+    // Context size derived
+    const ctxSizeDerivedEl = guardEl('context_size_derived');
+    if (ctxSizeDerivedEl) {
+        ctxSizeDerivedEl.addEventListener('input', function () {
+            power_user.context_size_derived = !!(this instanceof HTMLInputElement && this.checked);
+            saveSettingsDebounced();
+        });
+        ctxSizeDerivedEl.addEventListener('change', function () {
+            const el = document.getElementById('context_size_derived') instanceof HTMLInputElement ? document.getElementById('context_size_derived') : null;
+            if (el) el.checked = !!power_user.context_size_derived;
+        });
+    }
+
+    // Context story string position
+    const ctxStoryPosEl = guardEl('context_story_string_position');
+    if (ctxStoryPosEl) ctxStoryPosEl.addEventListener('input', function () {
+        const value = Number((this instanceof HTMLInputElement && this.value) || 0);
+        document.getElementById('context_story_string_inject_settings')?.toggleAttribute('hidden', value !== extension_prompt_types.IN_CHAT);
+    });
+
+    // Bind model templates
+    const bindEl = guardEl('bind_model_templates');
+    if (bindEl) {
+        bindEl.addEventListener('input', function () {
+            if (bindModelTemplates(power_user, online_status)) saveSettingsDebounced();
+        });
+        bindEl.addEventListener('change', updateBindModelTemplatesState);
+    }
+
+    // Always force name2
+    const forceName2El = guardEl('always-force-name2-checkbox');
+    if (forceName2El) forceName2El.addEventListener('change', function () {
+        power_user.always_force_name2 = !!(this instanceof HTMLInputElement && this.checked);
+        saveSettingsDebounced();
+    });
+
+    // Markdown escape strings
+    const mdEscapeEl = guardEl('markdown_escape_strings');
+    if (mdEscapeEl) mdEscapeEl.addEventListener('input', function () {
+        power_user.markdown_escape_strings = String((this instanceof HTMLInputElement && this.value) || '');
+        saveSettingsDebounced();
+        reloadMarkdownProcessor();
+    });
+
+    // Start reply with
+    const startReplyEl = guardEl('start_reply_with');
+    if (startReplyEl) startReplyEl.addEventListener('input', function () {
+        power_user.user_prompt_bias = String((this instanceof HTMLInputElement && this.value) || '');
+        saveSettingsDebounced();
+    });
+
+    // Chat show reply prefix
+    const showPrefixEl = guardEl('chat-show-reply-prefix-checkbox');
+    if (showPrefixEl) showPrefixEl.addEventListener('change', function () {
+        power_user.show_user_prompt_bias = !!(this instanceof HTMLInputElement && this.checked);
+        reloadCurrentChat();
+        saveSettingsDebounced();
+    });
+
+    // Auto continue
+    const autoContEl = guardEl('auto_continue_enabled');
+    if (autoContEl) autoContEl.addEventListener('change', function () {
+        power_user.auto_continue.enabled = this instanceof HTMLInputElement && this.checked;
+        saveSettingsDebounced();
+    });
+    const autoContAllowEl = guardEl('auto_continue_allow_chat_completions');
+    if (autoContAllowEl) autoContAllowEl.addEventListener('change', function () {
+        power_user.auto_continue.allow_chat_completions = !!(this instanceof HTMLInputElement && this.checked);
+        saveSettingsDebounced();
+    });
+    const autoContTargetEl = guardEl('auto_continue_target_length');
+    if (autoContTargetEl) autoContTargetEl.addEventListener('input', function () {
+        power_user.auto_continue.target_length = Number((this instanceof HTMLInputElement && this.value) || 0);
+        saveSettingsDebounced();
+    });
+
+    // Example messages behavior
+    const exampleBehaviorEl = guardEl('example_messages_behavior');
+    if (exampleBehaviorEl) exampleBehaviorEl.addEventListener('change', function () {
+        const selectedOption = String((this instanceof HTMLInputElement && this.value) || '');
+        switch (selectedOption) {
+            case 'normal': power_user.pin_examples = false; power_user.strip_examples = false; break;
+            case 'keep':   power_user.pin_examples = true;  power_user.strip_examples = false; break;
+            case 'strip':  power_user.pin_examples = false; power_user.strip_examples = true;  break;
+        }
+        saveSettingsDebounced();
+    });
+
+    // Fast UI mode
+    const fastUiEl = guardEl('fast_ui_mode');
+    if (fastUiEl) fastUiEl.addEventListener('change', function () {
+        power_user.fast_ui_mode = this instanceof HTMLInputElement && this.checked;
+        switchUiMode();
+        saveSettingsDebounced();
+    });
+
+    // Waifu mode
+    const waifuEl = guardEl('waifuMode');
+    if (waifuEl) waifuEl.addEventListener('change', () => {
+        power_user.waifuMode = !!(h('waifuMode') instanceof HTMLInputElement && h('waifuMode').checked);
+        switchWaifuMode();
+        saveSettingsDebounced();
+    });
+
+    // Custom CSS
+    const cssEl = guardEl('customCSS');
+    if (cssEl) cssEl.addEventListener('input', () => {
+        power_user.custom_css = String((h('customCSS') instanceof HTMLInputElement && h('customCSS').value) || '');
+        saveSettingsDebounced();
+        applyCustomCSS();
+    });
+
+    // Moving UI mode
+    const muiEl = guardEl('movingUImode');
+    if (muiEl) muiEl.addEventListener('change', function () {
+        power_user.movingUI = this instanceof HTMLInputElement && this.checked;
+        switchMovingUI();
+        saveSettingsDebounced();
+    });
+
+    // No shadows (no blur)
+    const nsEl = guardEl('noShadowsmode');
+    if (nsEl) nsEl.addEventListener('change', function () {
+        power_user.noShadows = this instanceof HTMLInputElement && this.checked;
+        applyNoShadows();
+        saveSettingsDebounced();
+    });
+
+    // Moving UI reset
+    const muiResetEl = guardEl('movingUIreset');
+    if (muiResetEl) muiResetEl.addEventListener('click', resetMovablePanels);
+
+    // Avatar style
+    const avatarStyleEl = guardEl('avatar_style');
+    if (avatarStyleEl) avatarStyleEl.addEventListener('change', function () {
+        power_user.avatar_style = Number((this instanceof HTMLInputElement && this.value) || 0);
+        applyAvatarStyle();
+        saveSettingsDebounced();
+    });
+
+    // Chat display
+    const chatDisplayEl = guardEl('chat_display');
+    if (chatDisplayEl) chatDisplayEl.addEventListener('change', function () {
+        power_user.chat_display = Number((this instanceof HTMLInputElement && this.value) || 0);
+        applyChatDisplay();
+        saveSettingsDebounced();
+    });
+
+    // Toastr position
+    const toastrEl = guardEl('toastr_position');
+    if (toastrEl) toastrEl.addEventListener('change', function () {
+        power_user.toastr_position = String((this instanceof HTMLInputElement && this.value) || '');
+        applyToastrPosition();
+        saveSettingsDebounced();
+    });
+
+    // Chat width slider
+    const chatWidthEl = guardEl('chat_width_slider');
+    if (chatWidthEl) chatWidthEl.addEventListener('input', function (e) {
+        const applyMode = (e && e.forced) ? 'forced' : 'normal';
+        power_user.chat_width = Number((this instanceof HTMLInputElement && this.value) || 0);
+        applyChatWidth(applyMode);
+        saveSettingsDebounced();
+        setHotswapsDebounced();
+    });
+
+    // Chat truncation
+    const chatTruncEl = guardEl('chat_truncation');
+    if (chatTruncEl) chatTruncEl.addEventListener('input', function () {
+        power_user.chat_truncation = Number((h('chat_truncation') instanceof HTMLInputElement && h('chat_truncation').value) || 0);
+        const counter = h('chat_truncation_counter');
+        if (counter instanceof HTMLInputElement) counter.value = String(power_user.chat_truncation);
+        saveSettingsDebounced();
+    });
+
+    // Streaming FPS
+    const fpsEl = guardEl('streaming_fps');
+    if (fpsEl) fpsEl.addEventListener('input', function () {
+        power_user.streaming_fps = Number((h('streaming_fps') instanceof HTMLInputElement && h('streaming_fps').value) || 0);
+        const counter = h('streaming_fps_counter');
+        if (counter instanceof HTMLInputElement) counter.value = String(power_user.streaming_fps);
+        saveSettingsDebounced();
+    });
+
+    // Smooth streaming
+    const smoothEl = guardEl('smooth_streaming');
+    if (smoothEl) smoothEl.addEventListener('input', function () {
+        power_user.smooth_streaming = !!(this instanceof HTMLInputElement && this.checked);
+        saveSettingsDebounced();
+    });
+
+    // Smooth streaming no think
+    const smoothNoThinkEl = guardEl('smooth_streaming_no_think');
+    if (smoothNoThinkEl) smoothNoThinkEl.addEventListener('input', function () {
+        power_user.smooth_streaming_no_think = !!(this instanceof HTMLInputElement && this.checked);
+        saveSettingsDebounced();
+    });
+
+    // Smooth streaming speed
+    const smoothSpeedEl = guardEl('smooth_streaming_speed');
+    if (smoothSpeedEl) smoothSpeedEl.addEventListener('input', function () {
+        power_user.smooth_streaming_speed = Number((h('smooth_streaming_speed') instanceof HTMLInputElement && h('smooth_streaming_speed').value) || 0);
+        saveSettingsDebounced();
+    });
+
+    // Stream fade in
+    const fadeInEl = guardEl('stream_fade_in');
+    if (fadeInEl) fadeInEl.addEventListener('input', function () {
+        power_user.stream_fade_in = !!(this instanceof HTMLInputElement && this.checked);
+        saveSettingsDebounced();
+    });
+
+    // Font scale
+    const fontScaleEl = document.querySelector('input[name="font_scale"]');
+    if (fontScaleEl && guard(fontScaleEl)) {
+        fontScaleEl.addEventListener('input', async function (e) {
+            const applyMode = (e && e.forced) ? 'forced' : 'normal';
+            power_user.font_scale = Number((this instanceof HTMLInputElement && this.value) || 0);
+            const counter = h('font_scale_counter');
+            if (counter instanceof HTMLInputElement) counter.value = String(power_user.font_scale);
+            applyFontScale(applyMode);
+            saveSettingsDebounced();
+        });
+    }
+
+    // Blur strength
+    const blurEl = document.querySelector('input[name="blur_strength"]');
+    if (blurEl && guard(blurEl)) {
+        blurEl.addEventListener('input', async function () {
+            power_user.blur_strength = Number((this instanceof HTMLInputElement && this.value) || 0);
+            const counter = h('blur_strength_counter');
+            if (counter instanceof HTMLInputElement) counter.value = String(power_user.blur_strength);
+            applyBlurStrength();
+            saveSettingsDebounced();
+        });
+    }
+
+    // Shadow width
+    const shadowEl = document.querySelector('input[name="shadow_width"]');
+    if (shadowEl && guard(shadowEl)) {
+        shadowEl.addEventListener('input', async function () {
+            power_user.shadow_width = Number((this instanceof HTMLInputElement && this.value) || 0);
+            const counter = h('shadow_width_counter');
+            if (counter instanceof HTMLInputElement) counter.value = String(power_user.shadow_width);
+            applyShadowWidth();
+            saveSettingsDebounced();
+        });
+    }
+
+    // Color pickers
+    const cp = (id, key, themeType) => {
+        const el = guardEl(id);
+        if (el) el.addEventListener('change', (evt) => {
+            power_user[key] = evt.detail.rgba;
+            applyThemeColor(themeType);
+            saveSettingsDebounced();
+        });
+    };
+    cp('main-text-color-picker', 'main_text_color', 'main');
+    cp('italics-color-picker', 'italics_text_color', 'italics');
+    cp('underline-color-picker', 'underline_text_color', 'underline');
+    cp('quote-color-picker', 'quote_text_color', 'quote');
+    cp('blur-tint-color-picker', 'blur_tint_color', 'blurTint');
+    cp('chat-tint-color-picker', 'chat_tint_color', 'chatTint');
+    cp('user-mes-blur-tint-color-picker', 'user_mes_blur_tint_color', 'userMesBlurTint');
+    cp('bot-mes-blur-tint-color-picker', 'bot_mes_blur_tint_color', 'botMesBlurTint');
+    cp('shadow-color-picker', 'shadow_color', 'shadow');
+    cp('border-color-picker', 'border_color', 'border');
+
+    // Reduced motion
+    const rmEl = guardEl('reduced_motion');
+    if (rmEl) rmEl.addEventListener('input', function () {
+        power_user.reduced_motion = !!(this instanceof HTMLInputElement && this.checked);
+        switchReducedMotion();
+        saveSettingsDebounced();
+    });
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+    registerSettingsPanelHandlers();
+    document.getElementById('rm_ch_create_block')?.dispatchEvent(new Event('input', { bubbles: true }));
+    document.getElementById('character_popup')?.dispatchEvent(new Event('input', { bubbles: true }));
+});
+
+/**
+ * Executes a function when DOM is ready.
+ * Works whether this runs before or after DOMContentLoaded has fired.
+ */
+function onDomReady(fn) {
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', fn);
+    } else {
+        fn();
+    }
+}
+
+onDomReady(() => {
     const adjustAutocompleteDebounced = debounce(() => {
         document.querySelectorAll('.ui-autocomplete-input').forEach(function (el) {
             // @ts-expect-error TS(2339) FIXME: Property 'tomSelect' does not exist on type 'Element'.
@@ -3554,1270 +3937,5 @@ document.addEventListener('DOMContentLoaded', () => {
         coreTruthWinHeight = window.innerHeight;
     });
 
-    // Settings that go to settings.json
-    document.getElementById('collapse-newlines-checkbox')?.addEventListener('change', function () {
-        power_user.collapse_newlines = !!(this as HTMLInputElement).checked;
-        saveSettingsDebounced();
-    });
 
-    // include newline is the child of trim sentences
-    // if include newline is checked, trim sentences must be checked
-    // if trim sentences is unchecked, include newline must be unchecked
-    document.getElementById('trim_sentences_checkbox')?.addEventListener('change', function () {
-        power_user.trim_sentences = !!(this as HTMLInputElement).checked;
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('single_line')?.addEventListener('input', function () {
-        const value = !!(this as HTMLInputElement).checked;
-        power_user.single_line = value;
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('context_derived')?.addEventListener('input', function () {
-        const value = !!(this as HTMLInputElement).checked;
-        power_user.context_derived = value;
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('context_derived')?.addEventListener('change', function () {
-        this.parentElement?.querySelector('i')?.classList.toggle('toggleEnabled', !!power_user.context_derived);
-    });
-
-    document.getElementById('instruct_derived')?.addEventListener('input', function () {
-        const value = !!(this as HTMLInputElement).checked;
-        power_user.instruct_derived = value;
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('instruct_derived')?.addEventListener('change', function () {
-        this.parentElement?.querySelector('i')?.classList.toggle('toggleEnabled', !!power_user.instruct_derived);
-    });
-
-    document.getElementById('context_size_derived')?.addEventListener('input', function () {
-        const value = !!(this as HTMLInputElement).checked;
-        power_user.context_size_derived = value;
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('context_size_derived')?.addEventListener('change', function () {
-        const contextSizeDerivedEl = document.getElementById('context_size_derived') as HTMLInputElement | null;
-        if (contextSizeDerivedEl) contextSizeDerivedEl.checked = !!power_user.context_size_derived;
-    });
-
-    document.getElementById('context_story_string_position')?.addEventListener('input', function () {
-        const value = Number((this as HTMLInputElement).value);
-        document.getElementById('context_story_string_inject_settings')?.toggleAttribute('hidden', value !== extension_prompt_types.IN_CHAT);
-    });
-
-    document.getElementById('bind_model_templates')?.addEventListener('input', function () {
-        if (bindModelTemplates(power_user, online_status)) {
-            saveSettingsDebounced();
-        }
-    });
-
-    document.getElementById('bind_model_templates')?.addEventListener('change', updateBindModelTemplatesState);
-
-    document.getElementById('always-force-name2-checkbox')?.addEventListener('change', function () {
-        power_user.always_force_name2 = !!(this as HTMLInputElement).checked;
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('markdown_escape_strings')?.addEventListener('input', function () {
-        power_user.markdown_escape_strings = String((this as HTMLInputElement).value);
-        saveSettingsDebounced();
-        reloadMarkdownProcessor();
-    });
-
-    document.getElementById('start_reply_with')?.addEventListener('input', function () {
-        power_user.user_prompt_bias = String((this as HTMLInputElement).value);
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('chat-show-reply-prefix-checkbox')?.addEventListener('change', function () {
-        power_user.show_user_prompt_bias = !!(this as HTMLInputElement).checked;
-        reloadCurrentChat();
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('auto_continue_enabled')?.addEventListener('change', function () {
-        power_user.auto_continue.enabled = (this as HTMLInputElement).checked;
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('auto_continue_allow_chat_completions')?.addEventListener('change', function () {
-        power_user.auto_continue.allow_chat_completions = !!(this as HTMLInputElement).checked;
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('auto_continue_target_length')?.addEventListener('input', function () {
-        power_user.auto_continue.target_length = Number((this as HTMLInputElement).value);
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('example_messages_behavior')?.addEventListener('change', function () {
-        const selectedOption = String((this as HTMLInputElement).value);
-        console.log('Setting example messages behavior to', selectedOption);
-
-        switch (selectedOption) {
-            case 'normal':
-                power_user.pin_examples = false;
-                power_user.strip_examples = false;
-                break;
-            case 'keep':
-                power_user.pin_examples = true;
-                power_user.strip_examples = false;
-                break;
-            case 'strip':
-                power_user.pin_examples = false;
-                power_user.strip_examples = true;
-                break;
-        }
-
-        console.debug('power_user.pin_examples', power_user.pin_examples);
-        console.debug('power_user.strip_examples', power_user.strip_examples);
-
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('fast_ui_mode')?.addEventListener('change', function () {
-        power_user.fast_ui_mode = (this as HTMLInputElement).checked;
-        switchUiMode();
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('waifuMode')?.addEventListener('change', () => {
-        power_user.waifuMode = !!(document.getElementById('waifuMode') as HTMLInputElement).checked;
-        switchWaifuMode();
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('customCSS')?.addEventListener('input', () => {
-        power_user.custom_css = String((document.getElementById('customCSS') as HTMLInputElement).value);
-        saveSettingsDebounced();
-        applyCustomCSS();
-    });
-
-    document.getElementById('movingUImode')?.addEventListener('change', function () {
-        power_user.movingUI = (this as HTMLInputElement).checked;
-        switchMovingUI();
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('noShadowsmode')?.addEventListener('change', function () {
-        power_user.noShadows = (this as HTMLInputElement).checked;
-        applyNoShadows();
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('movingUIreset')?.addEventListener('click', resetMovablePanels);
-
-    document.getElementById('avatar_style')?.addEventListener('change', function () {
-        const value = (this as HTMLInputElement).value;
-        power_user.avatar_style = Number(value);
-        applyAvatarStyle();
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('chat_display')?.addEventListener('change', function () {
-        const value = (this as HTMLInputElement).value;
-        power_user.chat_display = Number(value);
-        applyChatDisplay();
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('toastr_position')?.addEventListener('change', function () {
-        const value = (this as HTMLInputElement).value;
-        power_user.toastr_position = String(value);
-        applyToastrPosition();
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('chat_width_slider')?.addEventListener('input', function (e) {
-        const applyMode = (e as any)?.forced ? 'forced' : 'normal';
-        power_user.chat_width = Number((this as HTMLInputElement).value);
-        applyChatWidth(applyMode);
-        saveSettingsDebounced();
-        setHotswapsDebounced();
-    });
-
-    document.getElementById('chat_truncation')?.addEventListener('input', function () {
-        power_user.chat_truncation = Number((document.getElementById('chat_truncation') as HTMLInputElement).value);
-        (document.getElementById('chat_truncation_counter') as HTMLInputElement).value = String(power_user.chat_truncation);
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('streaming_fps')?.addEventListener('input', function () {
-        power_user.streaming_fps = Number((document.getElementById('streaming_fps') as HTMLInputElement).value);
-        (document.getElementById('streaming_fps_counter') as HTMLInputElement).value = String(power_user.streaming_fps);
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('smooth_streaming')?.addEventListener('input', function () {
-        power_user.smooth_streaming = !!(this as HTMLInputElement).checked;
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('smooth_streaming_no_think')?.addEventListener('input', function () {
-        power_user.smooth_streaming_no_think = !!(this as HTMLInputElement).checked;
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('smooth_streaming_speed')?.addEventListener('input', function () {
-        power_user.smooth_streaming_speed = Number((document.getElementById('smooth_streaming_speed') as HTMLInputElement).value);
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('stream_fade_in')?.addEventListener('input', function () {
-        power_user.stream_fade_in = !!(this as HTMLInputElement).checked;
-        saveSettingsDebounced();
-    });
-
-    document.querySelector('input[name="font_scale"]')?.addEventListener('input', async function (this: HTMLInputElement, e) {
-        const applyMode = (e as any)?.forced ? 'forced' : 'normal';
-        power_user.font_scale = Number((this as HTMLInputElement).value);
-        (document.getElementById('font_scale_counter') as HTMLInputElement).value = String(power_user.font_scale);
-        applyFontScale(applyMode);
-        saveSettingsDebounced();
-    });
-
-    document.querySelector('input[name="blur_strength"]')?.addEventListener('input', async function (this: HTMLInputElement) {
-        power_user.blur_strength = Number(this.value);
-        (document.getElementById('blur_strength_counter') as HTMLInputElement).value = String(power_user.blur_strength);
-        applyBlurStrength();
-        saveSettingsDebounced();
-    });
-
-    document.querySelector('input[name="shadow_width"]')?.addEventListener('input', async function (this: HTMLInputElement) {
-        power_user.shadow_width = Number(this.value);
-        (document.getElementById('shadow_width_counter') as HTMLInputElement).value = String(power_user.shadow_width);
-        applyShadowWidth();
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('main-text-color-picker')?.addEventListener('change', (/** @type {ColorPickerEvent} */ evt) => {
-        power_user.main_text_color = (evt as any).detail.rgba;
-        applyThemeColor('main');
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('italics-color-picker')?.addEventListener('change', (/** @type {ColorPickerEvent} */ evt) => {
-        power_user.italics_text_color = (evt as any).detail.rgba;
-        applyThemeColor('italics');
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('underline-color-picker')?.addEventListener('change', (/** @type {ColorPickerEvent} */ evt) => {
-        power_user.underline_text_color = (evt as any).detail.rgba;
-        applyThemeColor('underline');
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('quote-color-picker')?.addEventListener('change', (/** @type {ColorPickerEvent} */ evt) => {
-        power_user.quote_text_color = (evt as any).detail.rgba;
-        applyThemeColor('quote');
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('blur-tint-color-picker')?.addEventListener('change', (/** @type {ColorPickerEvent} */ evt) => {
-        power_user.blur_tint_color = (evt as any).detail.rgba;
-        applyThemeColor('blurTint');
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('chat-tint-color-picker')?.addEventListener('change', (/** @type {ColorPickerEvent} */ evt) => {
-        power_user.chat_tint_color = (evt as any).detail.rgba;
-        applyThemeColor('chatTint');
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('user-mes-blur-tint-color-picker')?.addEventListener('change', (/** @type {ColorPickerEvent} */ evt) => {
-        power_user.user_mes_blur_tint_color = (evt as any).detail.rgba;
-        applyThemeColor('userMesBlurTint');
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('bot-mes-blur-tint-color-picker')?.addEventListener('change', (/** @type {ColorPickerEvent} */ evt) => {
-        power_user.bot_mes_blur_tint_color = (evt as any).detail.rgba;
-        applyThemeColor('botMesBlurTint');
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('shadow-color-picker')?.addEventListener('change', (/** @type {ColorPickerEvent} */ evt) => {
-        power_user.shadow_color = (evt as any).detail.rgba;
-        applyThemeColor('shadow');
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('border-color-picker')?.addEventListener('change', (/** @type {ColorPickerEvent} */ evt) => {
-        power_user.border_color = (evt as any).detail.rgba;
-        applyThemeColor('border');
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('themes')?.addEventListener('change', function () {
-        const themeSelected = String((this as HTMLInputElement).value);
-        power_user.theme = themeSelected;
-        applyTheme(themeSelected);
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('movingUIPresets')?.addEventListener('change', async function () {
-        console.log('saw MUI preset change');
-        const movingUIPresetSelected = String((this as HTMLInputElement).value);
-        power_user.movingUIPreset = movingUIPresetSelected;
-        applyMovingUIPreset(movingUIPresetSelected);
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('ui-preset-save-button')?.addEventListener('click', () => saveTheme());
-    document.getElementById('ui-preset-update-button')?.addEventListener('click', () => updateTheme());
-    document.getElementById('ui-preset-delete-button')?.addEventListener('click', () => deleteTheme());
-    document.getElementById('movingui-preset-save-button')?.addEventListener('click', saveMovingUI);
-
-    document.getElementById('never_resize_avatars')?.addEventListener('input', function () {
-        power_user.never_resize_avatars = !!(this as HTMLInputElement).checked;
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('show_card_avatar_urls')?.addEventListener('input', function () {
-        power_user.show_card_avatar_urls = !!(this as HTMLInputElement).checked;
-        printCharactersDebounced();
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('play_message_sound')?.addEventListener('input', function () {
-        power_user.play_message_sound = !!(this as HTMLInputElement).checked;
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('play_sound_unfocused')?.addEventListener('input', function () {
-        power_user.play_sound_unfocused = !!(this as HTMLInputElement).checked;
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('auto_save_msg_edits')?.addEventListener('input', function () {
-        power_user.auto_save_msg_edits = !!(this as HTMLInputElement).checked;
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('character_sort_order')?.addEventListener('change', function () {
-        const selectedOption = (this as HTMLSelectElement).options[(this as HTMLSelectElement).selectedIndex];
-        const field = String(selectedOption?.dataset.field ?? '');
-        // Save sort order, but do not save search sorting, as this is a temporary sorting option
-        if (field !== 'search') {
-            power_user.sort_field = field;
-            power_user.sort_order = selectedOption?.dataset.order ?? '';
-            (power_user as any).sort_rule = selectedOption?.dataset.rule ?? '';
-        }
-        printCharactersDebounced();
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('gestures-checkbox')?.addEventListener('change', function () {
-        power_user.gestures = !!(document.getElementById('gestures-checkbox') as HTMLInputElement).checked;
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('auto_swipe')?.addEventListener('input', function () {
-        power_user.auto_swipe = !!(this as HTMLInputElement).checked;
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('auto_swipe_blacklist')?.addEventListener('input', function () {
-        (power_user as any).auto_swipe_blacklist = String((this as HTMLInputElement).value)
-            .split(',')
-            .map(str => str.trim())
-            .filter(str => str);
-        console.log('power_user.auto_swipe_blacklist', power_user.auto_swipe_blacklist);
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('auto_swipe_minimum_length')?.addEventListener('input', function () {
-        const number = Number((this as HTMLInputElement).value);
-        if (!isNaN(number)) {
-            power_user.auto_swipe_minimum_length = number;
-            saveSettingsDebounced();
-        }
-    });
-
-    document.getElementById('auto_swipe_blacklist_threshold')?.addEventListener('input', function () {
-        const number = Number((this as HTMLInputElement).value);
-        if (!isNaN(number)) {
-            power_user.auto_swipe_blacklist_threshold = number;
-            saveSettingsDebounced();
-        }
-    });
-
-    document.getElementById('auto_fix_generated_markdown')?.addEventListener('input', function () {
-        power_user.auto_fix_generated_markdown = !!(this as HTMLInputElement).checked;
-        reloadCurrentChat();
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('console_log_prompts')?.addEventListener('input', function () {
-        power_user.console_log_prompts = !!(this as HTMLInputElement).checked;
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('request_token_probabilities')?.addEventListener('input', function () {
-        power_user.request_token_probabilities = !!(this as HTMLInputElement).checked;
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('show_group_chat_queue')?.addEventListener('input', function () {
-        power_user.show_group_chat_queue = !!(this as HTMLInputElement).checked;
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('auto_scroll_chat_to_bottom')?.addEventListener('input', function () {
-        power_user.auto_scroll_chat_to_bottom = !!(this as HTMLInputElement).checked;
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('tokenizer')?.addEventListener('change', function () {
-        const value = (this as HTMLInputElement).value;
-        power_user.tokenizer = Number(value);
-        BIAS_CACHE.clear();
-        saveSettingsDebounced();
-
-        // Trigger character editor re-tokenize
-        forceCharacterEditorTokenize();
-    });
-
-    document.getElementById('send_on_enter')?.addEventListener('change', function () {
-        const value = (this as HTMLInputElement).value;
-        power_user.send_on_enter = Number(value);
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('confirm_message_delete')?.addEventListener('input', function () {
-        power_user.confirm_message_delete = !!(this as HTMLInputElement).checked;
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('reload_chat')?.addEventListener('click', async function () {
-        const currentChatId = getCurrentChatId();
-        if (currentChatId !== undefined && currentChatId !== null) {
-            await saveSettings();
-            await saveChatConditional();
-            await reloadCurrentChat();
-        }
-    });
-
-    document.getElementById('allow_name1_display')?.addEventListener('input', function () {
-        power_user.allow_name1_display = !!(this as HTMLInputElement).checked;
-        reloadCurrentChat();
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('allow_name2_display')?.addEventListener('input', function () {
-        power_user.allow_name2_display = !!(this as HTMLInputElement).checked;
-        reloadCurrentChat();
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('token_padding')?.addEventListener('input', function () {
-        power_user.token_padding = Number((this as HTMLInputElement).value);
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('messageTimerEnabled')?.addEventListener('input', function () {
-        const value = !!(this as HTMLInputElement).checked;
-        power_user.timer_enabled = value;
-        switchTimer();
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('messageTimestampsEnabled')?.addEventListener('input', function () {
-        const value = !!(this as HTMLInputElement).checked;
-        power_user.timestamps_enabled = value;
-        switchTimestamps();
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('messageModelIconEnabled')?.addEventListener('input', function () {
-        const value = !!(this as HTMLInputElement).checked;
-        power_user.timestamp_model_icon = value;
-        switchIcons();
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('messageTokensEnabled')?.addEventListener('input', function () {
-        const value = !!(this as HTMLInputElement).checked;
-        power_user.message_token_count_enabled = value;
-        switchTokenCount();
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('expandMessageActions')?.addEventListener('input', function () {
-        const value = !!(this as HTMLInputElement).checked;
-        power_user.expand_message_actions = value;
-        switchMessageActions();
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('enableZenSliders')?.addEventListener('input', function () {
-        const value = !!(this as HTMLInputElement).checked;
-        if (power_user.enableLabMode === true && value === true) {
-            //disallow zenSliders while Lab Mode is active
-            notyf.warning('Disable Mad Lab Mode before enabling Zen Sliders');
-            (this as HTMLInputElement).checked = false;
-            this.dispatchEvent(new Event('input'));
-            return;
-        }
-        power_user.enableZenSliders = value;
-        switchZenSliders();
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('enableLabMode')?.addEventListener('input', function (event) {
-        const value = !!(this as HTMLInputElement).checked;
-        if (power_user.enableZenSliders === true && value === true) {
-            //disallow Lab Mode if ZenSliders are active
-            notyf.warning('Disable Zen Sliders before enabling Mad Lab Mode');
-            (this as HTMLInputElement).checked = false;
-            this.dispatchEvent(new Event('input'));
-            return;
-        }
-
-        power_user.enableLabMode = value;
-        switchLabMode({ noReset: false });
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('mesIDDisplayEnabled')?.addEventListener('input', function () {
-        const value = !!(this as HTMLInputElement).checked;
-        power_user.mesIDDisplay_enabled = value;
-        switchMesIDDisplay();
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('hideChatAvatarsEnabled')?.addEventListener('input', function () {
-        const value = !!(this as HTMLInputElement).checked;
-        power_user.hideChatAvatars_enabled = value;
-        switchHideChatAvatars();
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('hotswapEnabled')?.addEventListener('input', function () {
-        const value = !!(this as HTMLInputElement).checked;
-        power_user.hotswap_enabled = value;
-        switchHotswap();
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('prefer_character_prompt')?.addEventListener('input', function () {
-        const value = !!(this as HTMLInputElement).checked;
-        power_user.prefer_character_prompt = value;
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('prefer_character_jailbreak')?.addEventListener('input', function () {
-        const value = !!(this as HTMLInputElement).checked;
-        power_user.prefer_character_jailbreak = value;
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('continue_on_send')?.addEventListener('input', function () {
-        const value = !!(this as HTMLInputElement).checked;
-        power_user.continue_on_send = value;
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('quick_continue')?.addEventListener('input', function () {
-        const value = !!(this as HTMLInputElement).checked;
-        power_user.quick_continue = value;
-        (document.getElementById('mes_continue')!).style.display = value ? '' : 'none';
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('quick_impersonate')?.addEventListener('input', function () {
-        const value = !!(this as HTMLInputElement).checked;
-        power_user.quick_impersonate = value;
-        (document.getElementById('mes_impersonate')!).style.display = value ? '' : 'none';
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('trim_spaces')?.addEventListener('input', function () {
-        const value = !!(this as HTMLInputElement).checked;
-        power_user.trim_spaces = value;
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('relaxed_api_urls')?.addEventListener('input', function () {
-        const value = !!(this as HTMLInputElement).checked;
-        power_user.relaxed_api_urls = value;
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('world_import_dialog')?.addEventListener('input', function () {
-        const value = !!(this as HTMLInputElement).checked;
-        power_user.world_import_dialog = value;
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('enable_auto_select_input')?.addEventListener('input', function () {
-        const value = !!(this as HTMLInputElement).checked;
-        power_user.enable_auto_select_input = value;
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('enable_md_hotkeys')?.addEventListener('input', function () {
-        const value = !!(this as HTMLInputElement).checked;
-        power_user.enable_md_hotkeys = value;
-        toggleMDHotkeyIconDisplay();
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('spoiler_free_mode')?.addEventListener('input', function () {
-        power_user.spoiler_free_mode = !!(this as HTMLInputElement).checked;
-        switchSpoilerMode();
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('spoiler_free_desc_button')?.addEventListener('click', function (e) {
-        e.stopPropagation();
-        peekSpoilerMode();
-        this.classList.toggle('fa-eye');
-        this.classList.toggle('fa-eye-slash');
-    });
-
-    document.getElementById('custom_stopping_strings')?.addEventListener('input', function () {
-        power_user.custom_stopping_strings = String((this as HTMLInputElement).value).trim();
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('custom_stopping_strings_macro')?.addEventListener('change', function () {
-        power_user.custom_stopping_strings_macro = !!(this as HTMLInputElement).checked;
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('fuzzy_search_checkbox')?.addEventListener('input', function () {
-        power_user.fuzzy_search = !!(this as HTMLInputElement).checked;
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('persona_show_notifications')?.addEventListener('input', function () {
-        power_user.persona_show_notifications = !!(this as HTMLInputElement).checked;
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('persona_allow_multi_connections')?.addEventListener('input', function () {
-        power_user.persona_allow_multi_connections = !!(this as HTMLInputElement).checked;
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('persona_auto_lock')?.addEventListener('input', function () {
-        power_user.persona_auto_lock = !!(this as HTMLInputElement).checked;
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('encode_tags')?.addEventListener('input', async function () {
-        power_user.encode_tags = !!(this as HTMLInputElement).checked;
-        await reloadCurrentChat();
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('experimental_macro_engine')?.addEventListener('input', function () {
-        power_user.experimental_macro_engine = !!(this as HTMLInputElement).checked;
-        saveSettingsDebounced();
-
-        // Check if the app is ready before showing the toast
-        if (!settingsReady) {
-            return;
-        }
-
-        eventSource.once(event_types.SETTINGS_UPDATED, function () {
-            notyf.warning(
-                t`Click here to reload.`,
-                t`Toggling the Experimental Macro Engine requires a reload.`,
-                {
-                    onclick: () => window.location.reload(),
-                    timeOut: 10000,
-                    preventDuplicates: true,
-                },
-            );
-        });
-    });
-
-    document.getElementById('disable_group_trimming')?.addEventListener('input', function () {
-        power_user.disable_group_trimming = !!(this as HTMLInputElement).checked;
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('debug_menu')?.addEventListener('click', function () {
-        showDebugMenu();
-    });
-
-    document.getElementById('bogus_folders')?.addEventListener('input', function () {
-        power_user.bogus_folders = !!(this as HTMLInputElement).checked;
-        printCharactersDebounced();
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('zoomed_avatar_magnification')?.addEventListener('input', function () {
-        power_user.zoomed_avatar_magnification = !!(this as HTMLInputElement).checked;
-        printCharactersDebounced();
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('aux_field')?.addEventListener('change', function () {
-        const value = (this as HTMLInputElement).value;
-        power_user.aux_field = String(value);
-        printCharactersDebounced();
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('tag_import_setting')?.addEventListener('change', function () {
-        const value = (this as HTMLInputElement).value;
-        power_user.tag_import_setting = Number(value);
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('stscript_autocomplete_state')?.addEventListener('input', function () {
-        power_user.stscript.autocomplete.state = Number((this as HTMLInputElement).value);
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('stscript_autocomplete_autoHide')?.addEventListener('input', function () {
-        power_user.stscript.autocomplete.autoHide = !!(this as HTMLInputElement).checked;
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('stscript_autocomplete_showInAllMacroFields')?.addEventListener('input', function () {
-        power_user.stscript.autocomplete.showInAllMacroFields = !!(this as HTMLInputElement).checked;
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('stscript_matching')?.addEventListener('change', function () {
-        const value = (this as HTMLInputElement).value;
-        power_user.stscript.matching = String(value);
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('stscript_autocomplete_style')?.addEventListener('change', function () {
-        const value = (this as HTMLInputElement).value;
-        power_user.stscript.autocomplete.style = String(value);
-        document.body.setAttribute('data-stscript-style', power_user.stscript.autocomplete.style);
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('stscript_autocomplete_select')?.addEventListener('change', function () {
-        const value = (this as HTMLInputElement).value;
-        power_user.stscript.autocomplete.select = parseInt(String(value));
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('stscript_autocomplete_font_scale')?.addEventListener('input', function () {
-        const value = (this as HTMLInputElement).value;
-        (document.getElementById('stscript_autocomplete_font_scale_counter') as HTMLInputElement).value = String(value);
-        power_user.stscript.autocomplete.font.scale = Number(value);
-        document.body.style.setProperty('--ac-font-scale', value.toString());
-        window.dispatchEvent(new Event('resize', { bubbles: true }));
-        saveSettingsDebounced();
-    });
-    document.getElementById('stscript_autocomplete_font_scale_counter')?.addEventListener('input', function () {
-        const value = (this as HTMLInputElement).value;
-        (document.getElementById('stscript_autocomplete_font_scale') as HTMLInputElement).value = String(value);
-        power_user.stscript.autocomplete.font.scale = Number(value);
-        document.body.style.setProperty('--ac-font-scale', value.toString());
-        window.dispatchEvent(new Event('resize', { bubbles: true }));
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('stscript_autocomplete_width_left')?.addEventListener('input', function () {
-        const value = (this as HTMLInputElement).value;
-        power_user.stscript.autocomplete.width.left = Number(value);
-        (this.closest('.doubleRangeInputContainer') as HTMLElement | null)?.style.setProperty('--value', value.toString());
-        window.dispatchEvent(new Event('resize', { bubbles: true }));
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('stscript_autocomplete_width_right')?.addEventListener('input', function () {
-        const value = (this as HTMLInputElement).value;
-        power_user.stscript.autocomplete.width.right = Number(value);
-        (this.closest('.doubleRangeInputContainer') as HTMLElement | null)?.style.setProperty('--value', value.toString());
-        window.dispatchEvent(new Event('resize', { bubbles: true }));
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('stscript_parser_flag_strict_escaping')?.addEventListener('click', function () {
-        const value = (this as HTMLInputElement).checked;
-        (power_user.stscript.parser.flags as any)[PARSER_FLAG.STRICT_ESCAPING] = value;
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('stscript_parser_flag_replace_getvar')?.addEventListener('click', function () {
-        const value = (this as HTMLInputElement).checked;
-        (power_user.stscript.parser.flags as any)[PARSER_FLAG.REPLACE_GETVAR] = value;
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('restore_user_input')?.addEventListener('input', function () {
-        power_user.restore_user_input = !!(this as HTMLInputElement).checked;
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('reduced_motion')?.addEventListener('input', function () {
-        power_user.reduced_motion = !!(this as HTMLInputElement).checked;
-        switchReducedMotion();
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('compact_input_area')?.addEventListener('input', function () {
-        power_user.compact_input_area = !!(this as HTMLInputElement).checked;
-        switchCompactInputArea();
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('show_swipe_num_all_messages')?.addEventListener('input', function () {
-        power_user.show_swipe_num_all_messages = !!(this as HTMLInputElement).checked;
-        switchSwipeNumAllMessages();
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('auto-connect-checkbox')?.addEventListener('input', function () {
-        power_user.auto_connect = !!(this as HTMLInputElement).checked;
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('auto-load-chat-checkbox')?.addEventListener('input', function () {
-        power_user.auto_load_chat = !!(this as HTMLInputElement).checked;
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('forbid_external_media')?.addEventListener('input', function () {
-        power_user.forbid_external_media = !!(this as HTMLInputElement).checked;
-        saveSettingsDebounced();
-        reloadCurrentChat();
-    });
-
-    document.getElementById('pin_styles')?.addEventListener('input', function () {
-        power_user.pin_styles = !!(this as HTMLInputElement).checked;
-        saveSettingsDebounced();
-        applyStylePins();
-    });
-
-    document.getElementById('click_to_edit')?.addEventListener('input', function () {
-        power_user.click_to_edit = !!(this as HTMLInputElement).checked;
-        saveSettingsDebounced();
-    });
-
-    document.getElementById('ui_preset_import_button')?.addEventListener('click', function () {
-        document.getElementById('ui_preset_import_file')?.click();
-    });
-
-    document.getElementById('ui_preset_import_file')?.addEventListener('change', async function (this: HTMLInputElement) {
-        // eslint-disable-next-line @typescript-eslint/no-this-alias
-        const inputElement: HTMLInputElement = this;
-
-        try {
-            const file = inputElement.files?.[0];
-            await importTheme(file);
-        } catch (error) {
-            console.error('Error importing UI theme', error);
-            notyf.error(String(error), 'Failed to import UI theme');
-        } finally {
-            if (inputElement) {
-                inputElement.value = '';
-            }
-        }
-    });
-
-    document.getElementById('ui_preset_export_button')?.addEventListener('click', async function () {
-        await exportTheme();
-    });
-
-    document.getElementById('media_display')?.addEventListener('input', async function () {
-        power_user.media_display = (this as HTMLInputElement).value.toString();
-        saveSettingsDebounced();
-        if (isMediaDisplayReloadNeeded()) {
-            await reloadCurrentChat();
-        }
-    });
-
-    document.getElementById('image_overswipe')?.addEventListener('input', function () {
-        power_user.image_overswipe = (this as HTMLInputElement).value.toString();
-        saveSettingsDebounced();
-    });
-
-    document.addEventListener('click', function (e) {
-        const target = (e.target instanceof Element) ? (e.target as HTMLElement).closest('#debug_table [data-debug-function]') : null;
-        if (!target) return;
-        const functionId = (target as HTMLElement).dataset.debugFunction;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const functionRecord = (debug_functions as any[]).find(f => f.functionId === functionId);
-
-        if (functionRecord) {
-            functionRecord.func();
-        } else {
-            console.warn(`Debug function ${functionId} not found`);
-        }
-    });
-
-    window.addEventListener('focus', function () {
-        browser_has_focus = true;
-    });
-
-    window.addEventListener('blur', function () {
-        browser_has_focus = false;
-    });
-
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'vn',
-        callback: toggleWaifu,
-        helpString: 'Swaps Visual Novel Mode On/Off',
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'newchat',
-        /** @type {(args: { delete: string?}, string) => Promise<''>} */
-        callback: async (args, _) => {
-            await doNewChat({ deleteCurrentChat: isTrueBoolean(args.delete) });
-            return '';
-        },
-        namedArgumentList: [
-            SlashCommandNamedArgument.fromProps({
-                name: 'delete',
-                description: 'delete the current chat',
-                typeList: [ARGUMENT_TYPE.BOOLEAN],
-                defaultValue: 'false',
-                enumList: commonEnumProviders.boolean('trueFalse')(),
-            }),
-        ],
-        helpString: 'Start a new chat with the current character',
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'random',
-        callback: doRandomChat,
-        unnamedArgumentList: [
-            SlashCommandArgument.fromProps({
-                description: 'optional tag name',
-                typeList: [ARGUMENT_TYPE.STRING],
-                enumProvider: () => tags.filter(tag => Object.values(tag_map).some(x => x.includes(tag.id))).map(tag => new SlashCommandEnumValue(tag.name, null, enumTypes.enum, enumIcons.tag)),
-            }),
-        ],
-        helpString: 'Start a new chat with a random character. If an argument is provided, only considers characters that have the specified tag.',
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'del',
-        callback: doDelMode,
-        aliases: ['delete', 'delmode'],
-        unnamedArgumentList: [
-            new SlashCommandArgument(
-                'optional number', [ARGUMENT_TYPE.NUMBER], false,
-            ),
-        ],
-        helpString: 'Enter message deletion mode, and auto-deletes last N messages if numeric argument is provided.',
-        returns: 'The text of the deleted messages.',
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'cut',
-        callback: doMesCut,
-        returns: 'the text of cut messages separated by a newline',
-        unnamedArgumentList: [
-            SlashCommandArgument.fromProps({
-                description: 'number or range',
-                typeList: [ARGUMENT_TYPE.NUMBER, ARGUMENT_TYPE.RANGE],
-                isRequired: true,
-                acceptsMultiple: true,
-                enumProvider: commonEnumProviders.messages(),
-            }),
-        ],
-        helpString: `
-            <div>
-                Cuts the specified message or continuous chunk from the chat.
-            </div>
-            <div>
-                Ranges are inclusive!
-            </div>
-            <div>
-                <strong>Example:</strong>
-                <ul>
-                    <li>
-                        <pre><code>/cut 0-10</code></pre>
-                    </li>
-                </ul>
-            </div>
-        `,
-        aliases: [],
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'resetpanels',
-        callback: doResetPanels,
-        helpString: 'resets UI panels to original state',
-        aliases: ['resetui'],
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'bgcol',
-        callback: setAvgBG,
-        namedArgumentList: [
-            SlashCommandNamedArgument.fromProps({
-                name: 'force',
-                description: 'force generation even if a theme with the same name already exists',
-                typeList: [ARGUMENT_TYPE.BOOLEAN],
-                defaultValue: 'false',
-                enumList: commonEnumProviders.boolean('trueFalse')(),
-            }),
-            SlashCommandNamedArgument.fromProps({
-                name: 'name',
-                description: 'override the generated theme name',
-                typeList: [ARGUMENT_TYPE.STRING],
-            }),
-            SlashCommandNamedArgument.fromProps({
-                name: 'bg',
-                description: 'background image filename to use instead of the current one',
-                typeList: [ARGUMENT_TYPE.STRING],
-                enumProvider: commonEnumProviders.backgrounds,
-            }),
-        ],
-        helpString: 'Generates a new theme based on a dominant color of the specified background image. Saves as "bgcol - background name".',
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'theme',
-        callback: setThemeCallback,
-        unnamedArgumentList: [
-            SlashCommandArgument.fromProps({
-                description: 'theme name',
-                typeList: [ARGUMENT_TYPE.STRING],
-                enumProvider: () => themes.map(theme => new SlashCommandEnumValue(theme.name)),
-            }),
-        ],
-        helpString: `
-        <div>
-            Sets a UI theme by name.
-        </div>
-        <div>
-            If no theme name is is provided, this will return the currently active theme.
-        </div>
-        <div>
-            <strong>Example:</strong>
-            <ul>
-                <li>
-                    <pre><code>/theme Cappuccino</code></pre>
-                </li>
-                <li>
-                    <pre><code>/theme</code></pre>
-                </li>
-            </ul>
-        </div>
-    `,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'css-var',
-        /**
-         * @param {{to: string, varname: string }} args @param {string} value @returns {string}
-         * @param value
-         */
-        callback: (args, value) => {
-            // Map enum to target selector
-            const targetSelector = {
-                chat: '#chat',
-                background: '#bg1',
-                gallery: '#gallery',
-                zoomedAvatar: 'div.zoomed_avatar',
-            }[args.to || 'chat'];
-
-            if (!targetSelector) {
-                notyf.error(`Invalid target: ${args.to}`);
-                return;
-            }
-
-            if (!args.varname) {
-                notyf.error('CSS variable name is required');
-                return;
-            }
-            if (!args.varname.startsWith('--')) {
-                notyf.error('CSS variable names must start with "--"');
-                return;
-            }
-
-            const elements = document.querySelectorAll(targetSelector);
-            if (elements.length === 0) {
-                notyf.error(`No elements found for ${args.to ?? 'chat'} with selector "${targetSelector}"`);
-                return;
-            }
-
-            elements.forEach(element => {
-                element.style.setProperty(args.varname, value);
-            });
-
-            console.info(`Set CSS variable "${args.varname}" to "${value}" on "${targetSelector}"`);
-        },
-        namedArgumentList: [
-            SlashCommandNamedArgument.fromProps({
-                name: 'varname',
-                description: 'CSS variable name (starting with double dashes)',
-                typeList: [ARGUMENT_TYPE.STRING],
-                isRequired: true,
-            }),
-            SlashCommandNamedArgument.fromProps({
-                name: 'to',
-                description: 'The target element to which the CSS variable will be applied',
-                typeList: [ARGUMENT_TYPE.STRING],
-                enumList: [
-                    new SlashCommandEnumValue('chat', null, enumTypes.enum, enumIcons.message),
-                    new SlashCommandEnumValue('background', null, enumTypes.enum, enumIcons.image),
-                    new SlashCommandEnumValue('zoomedAvatar', null, enumTypes.enum, enumIcons.character),
-                    new SlashCommandEnumValue('gallery', null, enumTypes.enum, enumIcons.image),
-                ],
-                defaultValue: 'chat',
-            }),
-        ],
-        unnamedArgumentList: [
-            SlashCommandArgument.fromProps({
-                description: 'CSS variable value',
-                typeList: [ARGUMENT_TYPE.STRING],
-                isRequired: true,
-            }),
-        ],
-        helpString: `
-            <div>
-                Sets a CSS variable to a specified value on a target element.
-                <br />
-                Only setting of variable names is supported. They have to be prefixed with double dashes ("--exampleVar").
-                Setting actual CSS properties is not supported. Custom CSS in the theme settings can be used for that.
-                <br /><br />
-                <b>This value will be gone after a page reload!</b>
-            </div>
-            <div>
-                <strong>Example:</strong>
-                <ul>
-                    <li>
-                        <pre><code>/css-var varname="--SmartThemeBodyColor" #ff0000</code></pre>
-                        Sets the text color of the chat to red
-                    </li>
-                    <li>
-                        <pre><code>/css-var to=zoomedAvatar varname="--SmartThemeBlurStrength" 0</code></pre>
-                        Remove the blur from the zoomed avatar
-                    </li>
-                </ul>
-            </div>
-        `,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'movingui',
-        callback: setmovingUIPreset,
-        unnamedArgumentList: [
-            SlashCommandArgument.fromProps({
-                description: 'name',
-                typeList: [ARGUMENT_TYPE.STRING],
-                isRequired: true,
-                enumProvider: () => movingUIPresets.map(preset => new SlashCommandEnumValue(preset.name)),
-            }),
-        ],
-        helpString: 'activates a movingUI preset by name',
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'stop-strings',
-        aliases: ['stopping-strings', 'custom-stopping-strings', 'custom-stop-strings'],
-        helpString: `
-            <div>
-                Sets a list of custom stopping strings. Gets the list if no value is provided.
-                Use a "force" argument to force set an empty value.
-            </div>
-            <div>
-                <strong>Examples:</strong>
-            </div>
-            <ul>
-                <li>Force set an empty value: <pre><code class="language-stscript">/stop-strings force="true" {{noop}}</code></pre></li>
-                <li>Value must be a JSON-serialized array: <pre><code class="language-stscript">/stop-strings ["goodbye", "farewell"]</code></pre></li>
-                <li>Pipe characters must be escaped with a backslash: <pre><code class="language-stscript">/stop-strings ["left\\|right"]</code></pre></li>
-            </ul>
-        `,
-        returns: ARGUMENT_TYPE.LIST,
-        namedArgumentList: [
-            SlashCommandNamedArgument.fromProps({
-                name: 'force',
-                description: 'force set a value if empty',
-                typeList: [ARGUMENT_TYPE.BOOLEAN],
-                defaultValue: 'false',
-                enumList: commonEnumProviders.boolean('trueFalse')(),
-            }),
-        ],
-        unnamedArgumentList: [
-            SlashCommandArgument.fromProps({
-                description: 'list of strings',
-                typeList: [ARGUMENT_TYPE.LIST],
-                acceptsMultiple: false,
-                isRequired: false,
-            }),
-        ],
-        callback: (args, value) => {
-            const force = isTrueBoolean(String(args?.force ?? false));
-            value = String(value ?? '').trim();
-
-            // Skip processing if no value and not forced
-            if (!force && !value) {
-                return power_user.custom_stopping_strings;
-            }
-
-            // Use empty array for forced empty value
-            if (force && !value) {
-                value = JSON.stringify([]);
-            }
-
-            const parsedValue = ((x) => { try { return JSON.parse(x.toString()); } catch { return null; } })(value);
-            if (!parsedValue || !Array.isArray(parsedValue)) {
-                throw new Error('Invalid list format. The value must be a JSON-serialized array of strings.');
-            }
-            parsedValue.forEach((item, index) => {
-                parsedValue[index] = String(item);
-            });
-            power_user.custom_stopping_strings = JSON.stringify(parsedValue);
-            const cssEl = document.getElementById('custom_stopping_strings') as HTMLTextAreaElement | null;
-            if (cssEl) cssEl.value = power_user.custom_stopping_strings;
-            saveSettingsDebounced();
-
-            return power_user.custom_stopping_strings;
-        },
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'start-reply-with',
-        helpString: `
-            <div>
-                Sets a "Start Reply With". Gets the current value if no value is provided.
-                Use a "force" argument to force set an empty value.
-            </div>
-            <div>
-                <strong>Examples:</strong>
-            </div>
-            <ul>
-                <li>Set the field value: <pre><code class="language-stscript">/start-reply-with Sure!</code></pre></li>
-                <li>Force set an empty value: <pre><code class="language-stscript">/start-reply-with force="true" {{noop}}</code></pre></li>
-            </ul>
-        `,
-        namedArgumentList: [
-            SlashCommandNamedArgument.fromProps({
-                name: 'force',
-                description: 'force set a value if empty',
-                typeList: [ARGUMENT_TYPE.BOOLEAN],
-                defaultValue: 'false',
-                enumList: commonEnumProviders.boolean('trueFalse')(),
-            }),
-        ],
-        unnamedArgumentList: [
-            SlashCommandArgument.fromProps({
-                description: 'value',
-                typeList: [ARGUMENT_TYPE.STRING],
-                acceptsMultiple: false,
-                isRequired: false,
-            }),
-        ],
-        callback: (args, value) => {
-            const force = isTrueBoolean(String(args?.force ?? false));
-
-            // Skip processing if no value and not forced
-            if (!force && !value) {
-                return power_user.user_prompt_bias;
-            }
-
-            power_user.user_prompt_bias = String(value ?? '');
-            const srwEl = document.getElementById('start_reply_with') as HTMLTextAreaElement | null;
-            if (srwEl) srwEl.value = power_user.user_prompt_bias;
-            saveSettingsDebounced();
-
-            return power_user.user_prompt_bias;
-        },
-    }));
 });
