@@ -8233,8 +8233,16 @@
         <script>
         window.jQuery=$;
                         $.fn.sortable = $.fn.sortable || function() { return this; };
-        $.fn.fadeIn = $.fn.fadeIn || function(opts) { if (opts && opts.complete) opts.complete(); return this; };
-        $.fn.fadeOut = $.fn.fadeOut || function(opts) { if (opts && opts.complete) opts.complete(); return this; };
+                        $.fn.fadeIn = $.fn.fadeIn || function(opts) {
+            this.show();
+            if (opts && typeof opts.complete === 'function') opts.complete();
+            return this;
+        };
+        $.fn.fadeOut = $.fn.fadeOut || function(opts) {
+            this.hide();
+            if (opts && typeof opts.complete === 'function') opts.complete();
+            return this;
+        };
                 $.fn.stop = $.fn.stop || function() { return this; };
         // Fix .is() to handle jQuery pseudo-selectors cash-dom doesn't support
         var _is = $.fn.is;
