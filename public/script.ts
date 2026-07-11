@@ -1698,7 +1698,8 @@ export async function redisplayChat({ targetChat = chat, startIndex = 0, fade = 
  */
 export function scrollOnMediaLoad() {
     const started = Date.now();
-    const media = chatElement.find('.mes_block img, .mes_block video, .mes_block audio').toArray();
+    const chatEl = chatElement[0];
+    const media = chatEl ? Array.from(chatEl.querySelectorAll('.mes_block img, .mes_block video, .mes_block audio')) : [];
     let mediaLoaded = 0;
 
     for (const currentElement of media) {

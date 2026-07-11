@@ -432,8 +432,9 @@ class PresetManager {
      */
     // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
     findPreset(name) {
-        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-        return Array.from(this.select[0].options).find(el => el.text === name)?.value;
+        const el = this.select?.[0] ?? this.select;
+        const options = el?.options ? Array.from(el.options) : [];
+        return options.find(el => el.text === name)?.value;
     }
 
     /**

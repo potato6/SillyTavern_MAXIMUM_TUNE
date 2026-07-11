@@ -67,9 +67,9 @@ export class SettingsUi {
 
     prepareGeneralSettings() {
         // general settings
-        this.isEnabled = this.dom.querySelector('#qr--isEnabled');
-        this.isEnabled.checked = this.settings.isEnabled;
-        this.isEnabled.addEventListener('click', () => this.onIsEnabled());
+                this.isEnabled = this.dom.querySelector('#qr--isEnabled');
+        if (this.isEnabled) this.isEnabled.checked = this.settings.isEnabled;
+        this.isEnabled?.addEventListener('click', () => this.onIsEnabled());
 
         this.isCombined = this.dom.querySelector('#qr--isCombined');
         this.isCombined.checked = this.settings.isCombined;

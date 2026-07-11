@@ -8238,10 +8238,24 @@
                 $.fn.stop = $.fn.stop || function() { return this; };
         // Fix .is() to handle jQuery pseudo-selectors cash-dom doesn't support
         var _is = $.fn.is;
-        $.fn.is = function(selector) {
+                $.fn.is = function(selector) {
             if (typeof selector === 'string') {
                 if (selector === ':visible') return this[0]?.offsetParent !== null;
                 if (selector === ':hidden') return this[0]?.offsetParent === null;
+                // Handle compound :visible/:hidden selectors (e.g. 'input:visible, textarea:visible')
+                if (selector.includes(':visible') || selector.includes(':hidden')) {
+                    var parts = selector.split(/\s*,\s*/);
+                    for (var p = 0; p < parts.length; p++) {
+                        var part = parts[p].trim();
+                        if (part.endsWith(':visible') || part.endsWith(':hidden')) {
+                            var checkVisible = part.endsWith(':visible');
+                            if ((checkVisible ? this[0]?.offsetParent !== null : this[0]?.offsetParent === null)) {
+                                return true;
+                            }
+                        }
+                    }
+                    return false;
+                }
             }
             return _is.apply(this, arguments);
         };
