@@ -8259,7 +8259,18 @@
             }
             return this;
         };
-                $.fn.tabs = function() { return this; };
+                        $.fn.tabs = function() { return this; };
+        // Event shorthand methods toastr needs (cash-dom 8.x doesn't have all jQuery event shorthands)
+        var _events = ['click', 'change', 'submit', 'focus', 'blur', 'keydown', 'keyup', 'keypress', 'mouseenter', 'mouseleave', 'dblclick', 'focusin', 'focusout'];
+        for (var _i = 0; _i < _events.length; _i++) {
+            (function(ev) {
+                if (!$.fn[ev]) {
+                    $.fn[ev] = function(handler) {
+                        return handler ? this.on(ev, handler) : this.trigger(ev);
+                    };
+                }
+            })(_events[_i]);
+        }
         // Fix toggleClass for space-separated class names (cash-dom doesn't support it like jQuery)
         var _toggleClass = $.fn.toggleClass;
         $.fn.toggleClass = function(cls) {
