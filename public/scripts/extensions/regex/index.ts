@@ -1288,9 +1288,10 @@ async function onRegexDebuggerOpenClick() {
                 totalCharsAdded += result.charsAdded;
                 totalCharsRemoved += result.charsRemoved;
 
-                const stepElement = $(stepTemplate.prop('content')).clone();
+                                const stepElement = $(stepTemplate.prop('content')).clone();
                 // Set the ID on the TOP-LEVEL element that is being appended.
-                stepElement.find('>:first-child').attr('id', `step-result-${script.id}`);
+                const stepRoot = stepElement[0]?.firstElementChild;
+                if (stepRoot) stepRoot.setAttribute('id', `step-result-${script.id}`);
                 const stepHeader = stepElement.find('.step-header');
                 stepHeader.find('strong').text(t`After:` + ` ${script.scriptName}`);
 

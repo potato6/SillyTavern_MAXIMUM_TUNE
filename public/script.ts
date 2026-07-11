@@ -1066,8 +1066,8 @@ function getCharacterBlock(item, id) {
     }
 
     // Display inline tags
-    const tagsElement = $templateClone.find('.tags');
-    printTagList(tagsElement, { forEntityOrKey: id, tagOptions: { isCharacterList: true } });
+        const tagsElement = $templateClone.find('.tags');
+    printTagList(tagsElement[0], { forEntityOrKey: id, tagOptions: { isCharacterList: true } });
 
     // Add to the list
     return $templateClone[0];
@@ -14079,23 +14079,37 @@ function initCharacterSearch() {
         if ($(e.target).hasClass('text_pole')) {
             return;
         }
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const drawer = $(this).closest('.inline-drawer');
-        const icon = drawer.find('>.inline-drawer-header .inline-drawer-icon');
-        const drawerContent = drawer.find('>.inline-drawer-content');
-        icon.toggleClass('down up');
-        icon.toggleClass('fa-circle-chevron-down fa-circle-chevron-up');
-        drawer.trigger('inline-drawer-toggle');
-        drawerContent.stop().slideToggle({
-            complete: () => {
                 // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                $(this).css('height', '');
-            },
-        });
+        const drawer = $(this).closest('.inline-drawer');
+        const drawerEl = drawer[0];
+        if (!drawerEl) return;
+        const icon = drawerEl.querySelector('.inline-drawer-header .inline-drawer-icon');
+        const drawerContent = drawerEl.querySelector('.inline-drawer-content');
+        if (icon) {
+            icon.classList.toggle('down');
+            icon.classList.toggle('up');
+            icon.classList.toggle('fa-circle-chevron-down');
+            icon.classList.toggle('fa-circle-chevron-up');
+        }
+        drawer.trigger('inline-drawer-toggle');
+        if (drawerContent) {
+            const isOpen = drawerContent.style.display !== 'none';
+            drawerContent.animate([
+                { height: isOpen ? drawerContent.scrollHeight + 'px' : '0px' },
+                { height: isOpen ? '0px' : drawerContent.scrollHeight + 'px' },
+            ], {
+                duration: 200,
+                easing: 'ease-in-out',
+            }).onfinish = function() {
+                drawerContent.style.display = isOpen ? 'none' : '';
+                drawerContent.style.height = '';
+            };
+                        if (!isOpen) drawerContent.style.display = '';
+        }
 
         // Set the height of "autoSetHeight" textareas within the inline-drawer to their scroll height
         if (!CSS.supports('field-sizing', 'content')) {
-            const textareas = drawerContent.find('textarea.autoSetHeight');
+            const textareas = drawerContent?.querySelectorAll('textarea.autoSetHeight');
             for (const textarea of textareas) {
                 // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 await resetScrollHeight($(textarea));
