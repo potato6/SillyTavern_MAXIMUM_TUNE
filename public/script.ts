@@ -11440,7 +11440,10 @@ export async function swipe(event, direction, {
         }
     }
 
-    const mesId = Number(forceMesId ?? event?.currentTarget?.closest('.mes')?.getAttribute('mesid') ?? messageIndex ?? chat.length - 1);
+    const ct = event?.currentTarget;
+    const isNativeEl = ct && typeof ct.closest === 'function';
+    const mesId = Number(forceMesId ?? (isNativeEl ? ct.closest('.mes')?.getAttribute('mesid') : ct?.[0]?.closest('.mes')?.getAttribute('mesid'))
+        ?? messageIndex ?? chat.length - 1);
 
     // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
     if ([SWIPE_SOURCE.DELETE, SWIPE_SOURCE.BACK, SWIPE_SOURCE.AUTO_SWIPE, SWIPE_SOURCE.SLASH_COMMAND, SWIPE_SOURCE.SWIPE_PICKER].includes(source)) {
