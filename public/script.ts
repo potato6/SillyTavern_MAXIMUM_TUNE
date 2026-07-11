@@ -11758,19 +11758,14 @@ export async function swipe(event, direction, {
         //Keep the swipe buttons at the same height when scrolling is finished.
 
         //Expand new message.
-        thisMesDiv.animate({ height: new_height + 'px' }, {
-            duration: 0, //used to be 100 //Disabled on Cohee's request. https://github.com/SillyTavern/SillyTavern/pull/4610/files#r2408731744
-            queue: false,
-            // @ts-expect-error TS(7006) FIXME: Parameter 'animation' implicitly has an 'any' type... Remove this comment to see the full error message
-            progress: function (animation, progress, remainingMs) {
-                if (is_animation_scroll) chatElement.scrollTop(getMessageBottomHeight(thisMesDiv));
-            },
-            complete: function () {
-                thisMesDiv.css('height', 'auto');
-                //Correct height auto offset.
-                if (is_animation_scroll) chatElement.scrollTop(getMessageBottomHeight(thisMesDiv));
-            },
-        });
+        const mesEl = thisMesDiv[0];
+        if (mesEl) {
+            mesEl.style.height = new_height + 'px';
+            if (is_animation_scroll) chatElement.scrollTop(getMessageBottomHeight(thisMesDiv));
+            thisMesDiv.css('height', 'auto');
+            //Correct height auto offset.
+            if (is_animation_scroll) chatElement.scrollTop(getMessageBottomHeight(thisMesDiv));
+        }
     }
 
     /**
