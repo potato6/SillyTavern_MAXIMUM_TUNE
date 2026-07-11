@@ -449,7 +449,8 @@ class PresetManager {
      * @returns {string} Selected preset name
      */
     getSelectedPresetName() {
-        return this.select[0].options[this.select[0].selectedIndex]?.text;
+        const el = this.select?.[0] ?? this.select;
+        return el?.options?.[el.selectedIndex]?.text;
     }
 
     /**
