@@ -380,10 +380,22 @@ const _notyfInstance = new Notyf({
     ],
 });
 
+const notyf = _notyfInstance;
+
+// Shim toastr-compatible methods that notyf doesn't have natively
+// notyf's error/success take 1 arg, but callers pass (msg, title, opts)
+// @ts-expect-error TS(2304) extending notyf with shim methods
+notyf.error = (message: string, _title?: string, _opts?: Record<string, unknown>) => notyf.open({ type: 'error', message });
+// @ts-expect-error TS(2304) extending notyf with shim methods
+notyf.success = (message: string, _title?: string, _opts?: Record<string, unknown>) => notyf.open({ type: 'success', message });
+// @ts-expect-error TS(2304) extending notyf with shim methods
+notyf.warning = (message: string, _title?: string, _opts?: Record<string, unknown>) => notyf.open({ type: 'warning', message });
+// @ts-expect-error TS(2304) extending notyf with shim methods
+notyf.info = (message: string, _title?: string, _opts?: Record<string, unknown>) => notyf.open({ type: 'info', message });
+
 // Expose notyf globally for all modules (was window.toastr)
 // @ts-expect-error TS(2304) FIXME: Cannot find name 'window'.
-window.notyf = _notyfInstance;
-const notyf = _notyfInstance;
+window.notyf = notyf;
 
 // notyf options accessors for slash commands / tags that read defaults
 const notyfDefaults = { timeOut: 4000, extendedTimeOut: 10000 };
