@@ -1146,10 +1146,18 @@ function applyToastrPosition() {
     }
 
     // Update notyf position dynamically
+    const _posMap: Record<string, {x: string; y: string}> = {
+        'toast-top-center': { x: 'center', y: 'top' },
+        'toast-top-left': { x: 'left', y: 'top' },
+        'toast-top-right': { x: 'right', y: 'top' },
+        'toast-bottom-center': { x: 'center', y: 'bottom' },
+        'toast-bottom-left': { x: 'left', y: 'bottom' },
+        'toast-bottom-right': { x: 'right', y: 'bottom' },
+    };
     // @ts-expect-error TS(2304) FIXME: Cannot find name 'notyf'.
-    if (notyf && notyfPositionMap[power_user.toastr_position]) {
+    if (notyf && _posMap[power_user.toastr_position]) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'notyf'.
-        notyf.options.position = notyfPositionMap[power_user.toastr_position];
+        notyf.options.position = _posMap[power_user.toastr_position];
     }
     const tpEl = document.getElementById('toastr_position') as HTMLSelectElement | null;
     if (tpEl) tpEl.value = power_user.toastr_position;
