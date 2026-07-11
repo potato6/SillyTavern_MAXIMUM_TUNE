@@ -8237,7 +8237,28 @@
         $.fn.bind = $.fn.bind || function() { return this; };
         $.fn.hover = $.fn.hover || function(fnIn, fnOut) { return this.on('mouseenter', fnIn).on('mouseleave', fnOut || fnIn); };
         $.fn.scrollTop = function(v) { return v === void 0 ? this[0]?.scrollTop : (this.each(function() { this.scrollTop = v; }), this); };
-        $.fn.pagination = function() { return this; };
+                $.fn.pagination = function(options) {
+            if (typeof options === 'object' && options.dataSource) {
+                var dataSource = options.dataSource;
+                var pageSize = options.pageSize || 50;
+                var pageNum = options.pageNumber || 1;
+                var start = (pageNum - 1) * pageSize;
+                var end = Math.min(start + pageSize, dataSource.length);
+                var pageData = dataSource.slice(start, end);
+                var totalPages = Math.ceil(dataSource.length / pageSize) || 1;
+                if (typeof options.callback === 'function') {
+                    options.callback(pageData, {
+                        pageNumber: pageNum,
+                        totalPages: totalPages,
+                        totalNumber: dataSource.length,
+                        startIndex: start,
+                        endIndex: end - 1,
+                        showPageNumbers: false,
+                    });
+                }
+            }
+            return this;
+        };
         $.fn.tabs = function() { return this; };
         // Override append to handle plain text strings (toastr passes error messages)
         var _append = $.fn.append;
