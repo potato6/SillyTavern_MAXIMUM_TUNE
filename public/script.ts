@@ -11547,7 +11547,16 @@ export async function swipe(event, direction, {
                 shakeElement(thisMesDiv, -swipeRange / 140, animation_duration, 'ease-in');
                 //Flash red.
                 const flashTime = Math.max(animation_duration * 2, 100);
-                await Promise.race([thisMesDiv.find('.swipes-counter').animate({ color: 'red' }, flashTime).animate({ color: '' }).promise(), createTimeout(flashTime * 4, `The shake animation did not end within ${flashTime * 4}ms`)].filter(Boolean));
+                const counterEl = thisMesDiv[0]?.querySelector('.swipes-counter');
+                if (counterEl) {
+                    const origColor = counterEl.style.color || getComputedStyle(counterEl).color;
+                    counterEl.style.color = 'red';
+                    const flashPromise = new Promise(resolve => setTimeout(() => {
+                        counterEl.style.color = origColor;
+                        resolve(undefined);
+                    }, flashTime));
+                    await Promise.race([flashPromise, createTimeout(flashTime * 4, `The shake animation did not end within ${flashTime * 4}ms`)]);
+                }
             } catch (error) {
                 console.warn(error);
             }
