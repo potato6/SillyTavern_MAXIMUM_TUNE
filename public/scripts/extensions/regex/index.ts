@@ -878,7 +878,8 @@ async function onRegexEditorOpenClick(existingId: any, scriptType: any) {
     function updateTestResult() {
         updateInfoBlock(editorHtml);
 
-        if (!editorHtml.find('#regex_test_mode').is(':visible')) {
+                const testModeEl = editorHtml[0]?.querySelector('#regex_test_mode');
+        if (!testModeEl || testModeEl.offsetParent === null) {
             return;
         }
 

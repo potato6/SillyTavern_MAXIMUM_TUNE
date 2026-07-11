@@ -508,23 +508,26 @@ async function moduleWorker({ newChat = false } = {}) {
         return;
     }
 
-    const vnMode = isVisualNovelMode();
-    const vnWrapperVisible = $('#visual-novel-wrapper').is(':visible');
+        const vnMode = isVisualNovelMode();
+    const vnWrapper = document.querySelector('#visual-novel-wrapper');
+    const vnWrapperVisible = vnWrapper && vnWrapper.offsetParent !== null;
 
     if (vnMode) {
-        $('#expression-wrapper').hide();
-        $('#visual-novel-wrapper').show();
+        document.querySelector('#expression-wrapper')?.style.removeProperty('display');
+        document.querySelector('#visual-novel-wrapper')?.style.removeProperty('display');
     } else {
-        $('#expression-wrapper').show();
-        $('#visual-novel-wrapper').hide();
+        document.querySelector('#expression-wrapper')?.style.setProperty('display', 'none');
+        document.querySelector('#visual-novel-wrapper')?.style.setProperty('display', 'none');
     }
 
     const vnStateChanged = vnMode !== vnWrapperVisible;
 
     if (vnStateChanged) {
         lastMessage = null;
-        $('#visual-novel-wrapper').empty();
-        $('#expression-holder').css({ top: '', left: '', right: '', bottom: '', height: '', width: '', margin: '' });
+        const vnWrapperEl = document.querySelector('#visual-novel-wrapper');
+        if (vnWrapperEl) vnWrapperEl.innerHTML = '';
+        const eh = document.querySelector('#expression-holder');
+        if (eh) { eh.style.top = ''; eh.style.left = ''; eh.style.right = ''; eh.style.bottom = ''; eh.style.height = ''; eh.style.width = ''; eh.style.margin = ''; }
     }
 
     const currentLastMessage = getLastCharacterMessage();
@@ -537,12 +540,12 @@ async function moduleWorker({ newChat = false } = {}) {
         lastCharacter = context.groupId || context.characterId;
     }
 
-    const offlineMode = $('.expression_settings .offline_mode');
+    const offlineMode = document.querySelector('.expression_settings .offline_mode');
     // @ts-expect-error TS(2345): Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
     if (!modules.includes('classify') && extension_settings.expressions.api == EXPRESSION_API.extras) {
-        $('#open_chat_expressions').show();
-        $('#no_chat_expressions').hide();
-        offlineMode.css('display', 'block');
+        document.querySelector('#open_chat_expressions')?.style.removeProperty('display');
+        document.querySelector('#no_chat_expressions')?.style.setProperty('display', 'none');
+        if (offlineMode) offlineMode.style.display = 'block';
         lastCharacter = context.groupId || context.characterId;
 
         if (context.groupId) {
@@ -553,7 +556,7 @@ async function moduleWorker({ newChat = false } = {}) {
         return;
     } else {
         // force reload expressions list on connect to API
-        if (offlineMode.is(':visible')) {
+        if (offlineMode && offlineMode.offsetParent !== null) {
             expressionsList = null;
             spriteCache = {};
             expressionsList = await getExpressionsList();
@@ -567,7 +570,7 @@ async function moduleWorker({ newChat = false } = {}) {
             await forceUpdateVisualNovelMode();
         }
 
-        offlineMode.css('display', 'none');
+        if (offlineMode) offlineMode.style.display = 'none';
     }
 
     if (context.groupId && vnMode && newChat) {

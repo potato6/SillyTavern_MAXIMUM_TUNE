@@ -1650,11 +1650,19 @@ export async function printMessages() {
  * @param {boolean} [options.fade] When false, the swipe chevrons will not fade in.
  */
 export async function redisplayChat({ targetChat = chat, startIndex = 0, fade = true } = {}) {
-    const messageElements = chatElement.find('.mes');
-    messageElements.removeClass('last_mes');
+    const messageElements = chatElement.querySelectorAll('.mes');
+    messageElements.forEach(el => el.classList.remove('last_mes'));
 
     //Remove messages after index.
-    [...messageElements.filter(`.mes[mesid="${startIndex}"]`).nextAll('.mes').addBack()].forEach(el => el.remove());
+    const startMsg = chatElement.querySelector(`.mes[mesid="${CSS.escape(String(startIndex))}"]`);
+    if (startMsg) {
+        let current = startMsg;
+        while (current) {
+            const next = current.nextElementSibling;
+            current.remove();
+            current = next && next.matches('.mes') ? next : null;
+        }
+    }
 
     const t1 = performance.now();
 
