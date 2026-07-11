@@ -82,13 +82,15 @@ export class SettingsUi {
 
     prepareGlobalSetList() {
         const dom = this.template.querySelector('#qr--global');
+        if (!dom) return;
         const clone = dom.cloneNode(true);
         // @ts-ignore
         this.settings.config.renderSettingsInto(clone);
-        this.dom.querySelector('#qr--global').replaceWith(clone);
+        this.dom.querySelector('#qr--global')?.replaceWith(clone);
     }
     prepareChatSetList() {
         const dom = this.template.querySelector('#qr--chat');
+        if (!dom) return;
         const clone = dom.cloneNode(true);
         if (this.settings.chatConfig) {
             // @ts-ignore
