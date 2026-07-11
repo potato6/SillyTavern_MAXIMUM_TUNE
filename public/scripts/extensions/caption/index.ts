@@ -781,16 +781,16 @@ export async function init() {
         extension_settings.caption.alt_endpoint_url = String(document.getElementById('caption_altEndpoint_url').value);
         saveSettingsDebounced();
     });
-    // @ts-expect-error TS(2531): Object is possibly 'null'.
-    document.getElementById('caption_altEndpoint_enabled').checked = !!(extension_settings.caption.alt_endpoint_enabled);
+    const captionAltEndpointEnabledEl = document.getElementById('caption_altEndpoint_enabled') as HTMLInputElement | null;
+    if (captionAltEndpointEnabledEl) captionAltEndpointEnabledEl.checked = !!(extension_settings.caption.alt_endpoint_enabled);
     // @ts-expect-error TS(2531): Object is possibly 'null'.
     document.getElementById('caption_altEndpoint_enabled').addEventListener('input', () => {
         // @ts-expect-error TS(2339): Property 'alt_endpoint_enabled' does not exist on ... Remove this comment to see the full error message
         extension_settings.caption.alt_endpoint_enabled = !!document.getElementById('caption_altEndpoint_enabled').checked;
         saveSettingsDebounced();
     });
-    // @ts-expect-error TS(2531): Object is possibly 'null'.
-    document.getElementById('caption_show_in_chat').checked = !!(extension_settings.caption.show_in_chat);
+    const captionShowInChatEl = document.getElementById('caption_show_in_chat') as HTMLInputElement | null;
+    if (captionShowInChatEl) captionShowInChatEl.checked = !!(extension_settings.caption.show_in_chat);
     // @ts-expect-error TS(2531): Object is possibly 'null'.
     document.getElementById('caption_show_in_chat').addEventListener('input', () => {
         // @ts-expect-error TS(2339): Property 'show_in_chat' does not exist on type '{ ... Remove this comment to see the full error message

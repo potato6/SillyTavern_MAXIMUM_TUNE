@@ -365,11 +365,11 @@ export function loadHordeSettings(settings) {
     }
 
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('horde_auto_adjust_response_length').checked = horde_settings.auto_adjust_response_length;
+    const el1 = document.getElementById('horde_auto_adjust_response_length'); if (el1) el1.checked = horde_settings.auto_adjust_response_length;
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('horde_auto_adjust_context_length').checked = horde_settings.auto_adjust_context_length;
+    const el2 = document.getElementById('horde_auto_adjust_context_length'); if (el2) el2.checked = horde_settings.auto_adjust_context_length;
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('horde_trusted_workers_only').checked = horde_settings.trusted_workers_only;
+    const el3 = document.getElementById('horde_trusted_workers_only'); if (el3) el3.checked = horde_settings.trusted_workers_only;
 }
 
 /**

@@ -2285,8 +2285,8 @@ function select_group_chats(groupId, skipAnimation) {
     }
 
     hideMutedSprites = group?.hideMutedSprites ?? false;
-    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    document.getElementById('rm_group_hidemutedsprites').checked = hideMutedSprites;
+    const rmGroupHideMutedSpritesEl = document.getElementById('rm_group_hidemutedsprites') as HTMLInputElement | null;
+    if (rmGroupHideMutedSpritesEl) rmGroupHideMutedSpritesEl.checked = hideMutedSprites;
 
     eventSource.emit('groupSelected', { detail: { id: openGroupId, group: group } });
 }
@@ -2897,8 +2897,8 @@ function onSendTextareaInput() {
     if (is_group_automode_enabled) {
         // Wait for current automode generation to finish
         is_group_automode_enabled = false;
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-            document.getElementById('rm_group_automode').checked = false;
+            const rmGroupAutomodeEl = document.getElementById('rm_group_automode') as HTMLInputElement | null;
+            if (rmGroupAutomodeEl) rmGroupAutomodeEl.checked = false;
     }
 }
 
@@ -2913,8 +2913,8 @@ function stopAutoModeGeneration() {
     }
 
     is_group_automode_enabled = false;
-    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    document.getElementById('rm_group_automode').checked = false;
+    const rmGroupAutomodeEl = document.getElementById('rm_group_automode') as HTMLInputElement | null;
+    if (rmGroupAutomodeEl) rmGroupAutomodeEl.checked = false;
 }
 
 /**

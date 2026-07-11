@@ -835,8 +835,7 @@ async function openGlobalStylesPreferenceDialog() {
     });
 
     const currentPreferenceRadio = currentValue ? allowedRadio : forbiddenRadio;
-    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    currentPreferenceRadio.checked = true;
+        if (currentPreferenceRadio) currentPreferenceRadio.checked = true;
 
     await callGenericPopup(template, POPUP_TYPE.TEXT, '', { wide: false, large: false });
 

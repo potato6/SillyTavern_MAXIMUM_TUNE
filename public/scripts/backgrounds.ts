@@ -264,7 +264,7 @@ export function loadBackgroundSettings(settings) {
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     document.getElementById('background_fitting').value = backgroundSettings.fitting;
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('background_thumbnails_animation').checked = background_settings.animation;
+    const el = document.getElementById('background_thumbnails_animation'); if (el) el.checked = background_settings.animation;
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     document.getElementById('bg-sort').value = background_settings.sortOrder;
     highlightSelectedBackground();

@@ -431,7 +431,8 @@ function loadNovelSettingsUi(ui_settings) {
     if (selectedPresetOption instanceof HTMLOptionElement) selectedPresetOption.selected = true;
 
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('streaming_novel').checked = ui_settings.streaming_novel;
+    const streamingNovelEl = document.getElementById('streaming_novel');
+    if (streamingNovelEl) (streamingNovelEl as HTMLInputElement).checked = ui_settings.streaming_novel;
     sortItemsByOrder(ui_settings.order);
     displayLogitBias(ui_settings.logit_bias, BIAS_KEY);
 }

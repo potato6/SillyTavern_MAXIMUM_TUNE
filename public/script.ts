@@ -8613,7 +8613,9 @@ async function getChatResult() {
     await printMessages();
     select_selected_character(this_chid);
 
-    await eventSource.emit(event_types.CHAT_CHANGED, (getCurrentChatId()));
+        await eventSource.emit(event_types.CHAT_CHANGED, (getCurrentChatId())).catch(e => {
+        console.warn('CHAT_CHANGED handler threw:', e?.message);
+    });
     if (freshChat) await eventSource.emit(event_types.CHAT_CREATED);
 
     if (chat.length === 1) {

@@ -539,7 +539,8 @@ function getCustomTokenBans(settings = null) {
 // @ts-expect-error TS(7006) FIXME: Parameter 'isEnabled' implicitly has an 'any' type... Remove this comment to see the full error message
 function toggleBannedStringsKillSwitch(isEnabled, title) {
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('send_banned_tokens_textgenerationwebui').checked = isEnabled;
+    const bannedTokensEl = document.getElementById('send_banned_tokens_textgenerationwebui');
+    if (bannedTokensEl) (bannedTokensEl as HTMLInputElement).checked = isEnabled;
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const menuButton = document.querySelector('#send_banned_tokens_label .menu_button');
     if (menuButton instanceof HTMLElement) {
@@ -1033,8 +1034,10 @@ export function initTextGenSettings() {
 
         if ([VLLM, APHRODITE, INFERMATICAI].includes(textgenerationwebui_settings.type)) {
             document.getElementById('mirostat_mode_textgenerationwebui')?.setAttribute('step', '2');
-            (document.getElementById('do_sample_textgenerationwebui') as HTMLInputElement).checked = true;
-            (document.getElementById('ban_eos_token_textgenerationwebui') as HTMLInputElement).checked = false;
+            const doSampleEl = document.getElementById('do_sample_textgenerationwebui');
+            if (doSampleEl) (doSampleEl as HTMLInputElement).checked = true;
+            const banEosEl = document.getElementById('ban_eos_token_textgenerationwebui');
+            if (banEosEl) (banEosEl as HTMLInputElement).checked = false;
             document.getElementById('top_k_textgenerationwebui')?.setAttribute('min', '-1');
             const topK = document.getElementById('top_k_textgenerationwebui') as HTMLInputElement;
             if (topK?.value === '0' || textgenerationwebui_settings.top_k === 0) {

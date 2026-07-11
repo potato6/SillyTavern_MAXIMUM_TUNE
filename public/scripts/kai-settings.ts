@@ -190,12 +190,12 @@ function loadKoboldSettingsFromPreset(preset) {
     if (Object.hasOwn(preset, 'streaming_kobold')) {
         kai_settings.streaming_kobold = preset.streaming_kobold;
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        document.getElementById('streaming_kobold').checked = kai_settings.streaming_kobold;
+        const el = document.getElementById('streaming_kobold'); if (el) el.checked = kai_settings.streaming_kobold;
     }
     if (Object.hasOwn(preset, 'use_default_badwordsids')) {
         kai_settings.use_default_badwordsids = preset.use_default_badwordsids;
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        document.getElementById('use_default_badwordsids').checked = kai_settings.use_default_badwordsids;
+        const el = document.getElementById('use_default_badwordsids'); if (el) el.checked = kai_settings.use_default_badwordsids;
     }
 }
 

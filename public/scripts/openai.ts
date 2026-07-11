@@ -4841,7 +4841,8 @@ function loadOpenAISettings(data, settings) {
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     document.querySelector('#settings_preset_openai option[value="${openai_setting_names[oai_settings.preset_settings_openai]}"]')?.selected(true);
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('bind_preset_to_connection').checked = oai_settings.bind_preset_to_connection;
+    const bindPresetEl = document.getElementById('bind_preset_to_connection');
+    if (bindPresetEl) (bindPresetEl as HTMLInputElement).checked = oai_settings.bind_preset_to_connection;
     ((() => { const el = document.getElementById('openai_external_category'); if (el) { el.style.display = oai_settings.show_external_models ? '' : 'none'; } })());
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $(document.querySelector('.reverse_proxy_warning')).toggle(oai_settings.reverse_proxy !== '');
@@ -4887,24 +4888,19 @@ function loadOpenAISettings(data, settings) {
  *
  */
 function setNamesBehaviorControls() {
-    switch (oai_settings.names_behavior) {
-        case character_names_behavior.NONE:
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            document.getElementById('character_names_none').checked = true;
-            break;
-        case character_names_behavior.DEFAULT:
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            document.getElementById('character_names_default').checked = true;
-            break;
-        case character_names_behavior.COMPLETION:
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            document.getElementById('character_names_completion').checked = true;
-            break;
-        case character_names_behavior.CONTENT:
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            document.getElementById('character_names_content').checked = true;
-            break;
-    }
+    const el = (() => {
+        switch (oai_settings.names_behavior) {
+            case character_names_behavior.NONE:
+                return document.getElementById('character_names_none');
+            case character_names_behavior.DEFAULT:
+                return document.getElementById('character_names_default');
+            case character_names_behavior.COMPLETION:
+                return document.getElementById('character_names_completion');
+            case character_names_behavior.CONTENT:
+                return document.getElementById('character_names_content');
+        }
+    })();
+    if (el) (el as HTMLInputElement).checked = true;
 
     const checkedItemSpan = document.querySelector('input[name="character_names"]:checked ~ span');
     const checkedItemText = checkedItemSpan?.textContent?.trim() ?? '';
@@ -4916,30 +4912,23 @@ function setNamesBehaviorControls() {
  *
  */
 function setContinuePostfixControls() {
-    switch (oai_settings.continue_postfix) {
-        case continue_postfix_types.NONE:
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            document.getElementById('continue_postfix_none').checked = true;
-            break;
-        case continue_postfix_types.SPACE:
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            document.getElementById('continue_postfix_space').checked = true;
-            break;
-        case continue_postfix_types.NEWLINE:
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            document.getElementById('continue_postfix_newline').checked = true;
-            break;
-        case continue_postfix_types.DOUBLE_NEWLINE:
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            document.getElementById('continue_postfix_double_newline').checked = true;
-            break;
-        default:
-            // Prevent preset value abuse
-            oai_settings.continue_postfix = continue_postfix_types.SPACE;
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            document.getElementById('continue_postfix_space').checked = true;
-            break;
-    }
+    const el = (() => {
+        switch (oai_settings.continue_postfix) {
+            case continue_postfix_types.NONE:
+                return document.getElementById('continue_postfix_none');
+            case continue_postfix_types.SPACE:
+                return document.getElementById('continue_postfix_space');
+            case continue_postfix_types.NEWLINE:
+                return document.getElementById('continue_postfix_newline');
+            case continue_postfix_types.DOUBLE_NEWLINE:
+                return document.getElementById('continue_postfix_double_newline');
+            default:
+                // Prevent preset value abuse
+                oai_settings.continue_postfix = continue_postfix_types.SPACE;
+                return document.getElementById('continue_postfix_space');
+        }
+    })();
+    if (el) (el as HTMLInputElement).checked = true;
 
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     document.getElementById('continue_postfix').value = oai_settings.continue_postfix;

@@ -216,7 +216,7 @@ class PresetManager {
                 power_user.user_prompt_bias = data.value ?? '';
                 power_user.show_user_prompt_bias = data.show ?? false;
                 document.getElementById('start_reply_with').value = power_user.user_prompt_bias;
-                document.getElementById('chat-show-reply-prefix-checkbox').checked = power_user.show_user_prompt_bias;
+                const el = document.getElementById('chat-show-reply-prefix-checkbox'); if (el) el.checked = power_user.show_user_prompt_bias;
                 return saveSettingsDebounced();
             },
             // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
