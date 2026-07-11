@@ -14072,15 +14072,13 @@ function initCharacterSearch() {
         }
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document).on('click', '.inline-drawer-toggle', async function (e) {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        if ($(e.target).hasClass('text_pole')) {
+        document.addEventListener('click', async function (e) {
+        const toggleEl = e.target.closest('.inline-drawer-toggle');
+        if (!toggleEl) return;
+        if (toggleEl.querySelector('.text_pole') || toggleEl.closest('.text_pole')) {
             return;
         }
-                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const drawer = $(this).closest('.inline-drawer');
-        const drawerEl = drawer[0];
+        const drawerEl = toggleEl.closest('.inline-drawer');
         if (!drawerEl) return;
         const icon = drawerEl.querySelector('.inline-drawer-header .inline-drawer-icon');
         const drawerContent = drawerEl.querySelector('.inline-drawer-content');
