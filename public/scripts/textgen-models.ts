@@ -496,34 +496,48 @@ export function updateNanoGptProvidersWarning(providersSelector) {
 }
 
 /**
- *
- * @param data
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
-export async function loadOllamaModels(data) {
-    if (!Array.isArray(data)) {
-        console.error('Invalid Ollama models data', data);
-        return;
-    }
+ /**
+  * @param data
+  */
+ // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
+ export async function loadOllamaModels(data) {
+     if (!Array.isArray(data)) {
+         console.error('Invalid Ollama models data', data);
+         return;
+     }
 
-    if (!data.find(x => x.id === textgen_settings.ollama_model)) {
-        textgen_settings.ollama_model = data[0]?.id || '';
-    }
+     if (!data.find(x => x.id === textgen_settings.ollama_model)) {
+         textgen_settings.ollama_model = data[0]?.id || '';
+     }
 
-    document.getElementById('ollama_model').innerHTML = '';
-    for (const model of data) {
-        const option = document.createElement('option');
-        option.value = model.id;
-        option.text = model.name;
-        option.selected = model.id === textgen_settings.ollama_model;
-        document.getElementById('ollama_model').appendChild(option);
-    }
-}
+     const ollamaSelect = document.getElementById('ollama_model');
+     if (!ollamaSelect) return;
 
-/**
- *
- * @param data
- */
+     // Populate native select options
+     ollamaSelect.innerHTML = '';
+     for (const model of data) {
+         const option = document.createElement('option');
+         option.value = model.id;
+         option.text = model.name;
+         option.selected = model.id === textgen_settings.ollama_model;
+         ollamaSelect.appendChild(option);
+     }
+
+     // Re-initialize TomSelect to reflect updated options
+     // @ts-expect-error TS(2339) FIXME: Property 'tomSelect' does not exist on type 'HTMLElement'.
+     if (ollamaSelect.tomSelect) {
+         ollamaSelect.tomSelect.destroy();
+     }
+     new TomSelect(ollamaSelect, {
+         maxItems: 1,
+         placeholder: t`Select a model`,
+     });
+ }
+
+ /**
+  * @param data
+  */
+ // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
 // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
 export async function loadTabbyModels(data) {
     if (!Array.isArray(data)) {

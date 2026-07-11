@@ -335,9 +335,11 @@ export function validateTextGenUrl() {
         return;
     }
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const control = selector;
-    const url = String(control.value).trim();
+    const control = document.querySelector(selector) as HTMLInputElement | null;
+    if (!control) return;
+
+    // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
+    const url = control.value.trim();
     const formattedUrl = formatTextGenURL(url);
 
     if (!formattedUrl) {
