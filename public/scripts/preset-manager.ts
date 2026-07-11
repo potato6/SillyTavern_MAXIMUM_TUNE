@@ -273,7 +273,7 @@ class PresetManager {
     static async performMasterImport(data, fileName) {
         if (!data || typeof data !== 'object') {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.error(t`Invalid data provided for master import`);
+            notyf.error(t`Invalid data provided for master import`);
             return;
         }
 
@@ -281,35 +281,35 @@ class PresetManager {
         // 1. Instruct Template
         if (this.isPossiblyInstructData(data)) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.info(t`Importing instruct template...`, t`Instruct template detected`);
+            notyf.info(t`Importing instruct template...`, t`Instruct template detected`);
             return await getPresetManager('instruct').savePreset(data.name, data);
         }
 
         // 2. Context Template
         if (this.isPossiblyContextData(data)) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.info(t`Importing as context template...`, t`Context template detected`);
+            notyf.info(t`Importing as context template...`, t`Context template detected`);
             return await getPresetManager('context').savePreset(data.name, data);
         }
 
         // 3. System Prompt
         if (this.isPossiblySystemPromptData(data)) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.info(t`Importing as system prompt...`, t`System prompt detected`);
+            notyf.info(t`Importing as system prompt...`, t`System prompt detected`);
             return await getPresetManager('sysprompt').savePreset(data.name, data);
         }
 
         // 4. Text Completion settings
         if (this.isPossiblyTextCompletionData(data)) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.info(t`Importing as settings preset...`, t`Text Completion settings detected`);
+            notyf.info(t`Importing as settings preset...`, t`Text Completion settings detected`);
             return await getPresetManager('textgenerationwebui').savePreset(fileName, data);
         }
 
         // 5. Reasoning Template
         if (this.isPossiblyReasoningData(data)) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.info(t`Importing as reasoning template...`, t`Reasoning template detected`);
+            notyf.info(t`Importing as reasoning template...`, t`Reasoning template detected`);
             return await getPresetManager('reasoning').savePreset(data.name, data);
         }
 
@@ -322,7 +322,7 @@ class PresetManager {
 
         if (validSections.length === 0) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.error(t`No valid sections found in imported data`);
+            notyf.error(t`No valid sections found in imported data`);
             return;
         }
 
@@ -351,7 +351,7 @@ class PresetManager {
 
         if (confirmedSections.length === 0) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.info(t`No sections selected for import`);
+            notyf.info(t`No sections selected for import`);
             return;
         }
 
@@ -367,7 +367,7 @@ class PresetManager {
         }
 
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.success(t`Imported ${importedSections.length} settings: ${importedSections.join(', ')}`);
+        notyf.success(t`Imported ${importedSections.length} settings: ${importedSections.join(', ')}`);
     }
 
     /**
@@ -400,7 +400,7 @@ class PresetManager {
 
         if (confirmedSections.length === 0) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.info(t`No sections selected for export`);
+            notyf.info(t`No sections selected for export`);
             return;
         }
 
@@ -479,7 +479,7 @@ class PresetManager {
 
         if (selected.value == 'gui') {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.info(t`Cannot update GUI preset`);
+            notyf.info(t`Cannot update GUI preset`);
             return;
         }
 
@@ -488,7 +488,7 @@ class PresetManager {
 
         const successToast = !this.isAdvancedFormatting() ? t`Preset updated` : t`Template updated`;
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.success(successToast);
+        notyf.success(successToast);
     }
 
     /**
@@ -509,7 +509,7 @@ class PresetManager {
 
         const successToast = !this.isAdvancedFormatting() ? t`Preset saved` : t`Template saved`;
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.success(successToast);
+        notyf.success(successToast);
     }
 
     /**
@@ -539,7 +539,7 @@ class PresetManager {
 
         if (!response.ok) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.error(t`Check the server connection and reload the page to prevent data loss.`, t`Preset could not be saved`);
+            notyf.error(t`Check the server connection and reload the page to prevent data loss.`, t`Preset could not be saved`);
             console.error('Preset could not be saved', response);
             throw new Error('Preset could not be saved');
         }
@@ -571,7 +571,7 @@ class PresetManager {
             await this.deletePreset(oldName);
         } catch (error) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.error(t`Check the server connection and reload the page to prevent data loss.`, t`Preset could not be renamed`);
+            notyf.error(t`Check the server connection and reload the page to prevent data loss.`, t`Preset could not be renamed`);
             console.error('Preset could not be renamed', error);
             throw new Error('Preset could not be renamed');
         }
@@ -886,7 +886,7 @@ class PresetManager {
 
         if (value == 'gui') {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.info(t`Cannot delete GUI preset`);
+            notyf.info(t`Cannot delete GUI preset`);
             return;
         }
 
@@ -941,7 +941,7 @@ class PresetManager {
         if (!response.ok) {
             const errorToast = !this.isAdvancedFormatting() ? t`Failed to restore default preset` : t`Failed to restore default template`;
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.error(errorToast);
+            notyf.error(errorToast);
             return;
         }
 
@@ -1202,7 +1202,7 @@ export async function initPresetManager() {
             return;
         }
         if (equalsIgnoreCaseAndAccents(oldName, newName)) {
-            toastr.warning(t`Name not accepted, as it is the same as before (ignoring case and accents).`, t`Rename Preset`);
+            notyf.warning(t`Name not accepted, as it is the same as before (ignoring case and accents).`, t`Rename Preset`);
             return;
         }
 
@@ -1219,7 +1219,7 @@ export async function initPresetManager() {
         }
 
         const successToast = !presetManager.isAdvancedFormatting() ? t`Preset renamed` : t`Template renamed`;
-        toastr.success(successToast);
+        notyf.success(successToast);
     });
 
     document.addEventListener('click', async function (e) {
@@ -1275,7 +1275,7 @@ export async function initPresetManager() {
 
         await presetManager.savePreset(name, data);
         const successToast = !presetManager.isAdvancedFormatting() ? t`Preset imported` : t`Template imported`;
-        toastr.success(successToast);
+        notyf.success(successToast);
         e.target.value = null;
     });
 
@@ -1302,11 +1302,11 @@ export async function initPresetManager() {
 
         if (result) {
             const successToast = !presetManager.isAdvancedFormatting() ? t`Preset deleted` : t`Template deleted`;
-            toastr.success(successToast);
+            notyf.success(successToast);
             await eventSource.emit(event_types.PRESET_DELETED, { apiId, name });
         } else {
             const warningToast = !presetManager.isAdvancedFormatting() ? t`Preset was not deleted from server` : t`Template was not deleted from server`;
-            toastr.warning(warningToast);
+            notyf.warning(warningToast);
         }
 
         saveSettingsDebounced();
@@ -1329,7 +1329,7 @@ export async function initPresetManager() {
 
         if (name == 'gui') {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.info(t`Cannot restore GUI preset`);
+            notyf.info(t`Cannot restore GUI preset`);
             return;
         }
 
@@ -1341,7 +1341,7 @@ export async function initPresetManager() {
             if (Object.keys(data.preset).length === 0) {
                 const errorToast = !presetManager.isAdvancedFormatting() ? t`Default preset cannot be restored` : t`Default template cannot be restored`;
                 // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                toastr.error(errorToast);
+                notyf.error(errorToast);
                 return;
             }
 
@@ -1359,7 +1359,7 @@ export async function initPresetManager() {
             presetManager.selectPreset(option);
             const successToast = !presetManager.isAdvancedFormatting() ? t`Default preset restored` : t`Default template restored`;
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.success(successToast);
+            notyf.success(successToast);
         } else {
             const confirmText = !presetManager.isAdvancedFormatting()
                 ? t`Resetting a <b>custom preset</b> will restore to the last saved state.`
@@ -1373,7 +1373,7 @@ export async function initPresetManager() {
             presetManager.selectPreset(option);
             const successToast = !presetManager.isAdvancedFormatting() ? t`Preset restored` : t`Template restored`;
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.success(successToast);
+            notyf.success(successToast);
         }
     });
 

@@ -340,7 +340,7 @@ function onPrefixClicked(offset = undefined) {
 function checkGenerateReady() {
     if (is_send_press) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.warning('Please wait for the current generation to complete.');
+        notyf.warning('Please wait for the current generation to complete.');
         return false;
     }
     return true;

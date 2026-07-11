@@ -198,7 +198,7 @@ export class ActionLoaderHandle {
 
         // Show toast with no timeout (sticky)
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        this.#toast = toastr.info(toastContent, title, {
+        this.#toast = notyf.info(toastContent, title, {
             timeOut: 0,
             extendedTimeOut: 0,
             tapToDismiss: false,
@@ -211,7 +211,7 @@ export class ActionLoaderHandle {
      */
     #clearToast() {
         if (this.#toast) {
-            toastr.clear(this.#toast, { force: true }); // Need to force as the toast might have focus/hover
+            notyf.dismiss(this.#toast); // Notyf handles focus/hover internally
             this.#toast = null;
         }
     }

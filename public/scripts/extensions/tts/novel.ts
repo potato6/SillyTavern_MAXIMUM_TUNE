@@ -212,7 +212,7 @@ class NovelTtsProvider {
                 },
             );
             if (!response.ok) {
-                toastr.error(response.statusText, 'TTS Generation Failed');
+                notyf.error(response.statusText, 'TTS Generation Failed');
                 throw new Error(`HTTP ${response.status}: ${await response.text()}`);
             }
             yield response;

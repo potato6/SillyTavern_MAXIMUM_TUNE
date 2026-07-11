@@ -349,57 +349,44 @@ await new Promise((resolve) => {
     }
 });
 
-// Configure toast library:
-// @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-toastr.options = {
-    positionClass: 'toast-top-center',
-    closeButton: false,
-    progressBar: false,
-    showDuration: 250,
-    hideDuration: 250,
-    timeOut: 4000,
-    extendedTimeOut: 10000,
-    showEasing: 'linear',
-    hideEasing: 'linear',
-    showMethod: 'fadeIn',
-    hideMethod: 'fadeOut',
-    escapeHtml: true,
-    onHidden: function () {
-        // If we have any dialog still open, the last "hidden" toastr will remove the toastr-container. We need to keep it alive inside the dialog though
-        // so the toasts still show up inside there.
-        fixToastrForDialogs();
-    },
+// Configure toast library (notyf):
+const defaultToastPosition = 'toast-top-center';
+const notyfPositionMap = {
+    'toast-top-center': { x: 'center', y: 'top' },
+    'toast-top-left': { x: 'left', y: 'top' },
+    'toast-top-right': { x: 'right', y: 'top' },
+    'toast-bottom-center': { x: 'center', y: 'bottom' },
+    'toast-bottom-left': { x: 'left', y: 'bottom' },
+    'toast-bottom-right': { x: 'right', y: 'bottom' },
 };
 
-// Run once during startup
-// @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-toastr.subscribe(function (args) {
-    if (args.state !== 'visible') {
-        return;
-    }
-
-    // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-    const $container = toastr.getContainer(args.options, false);
-    if (!$container || !$container.length) {
-        return;
-    }
-
-    // toastr has already inserted the element at this point
-    const $toast = args.options.newestOnTop
-        ? $container.children().first()
-        : $container.children().last();
-
-    // Meaning of "clickable":
-    // Interactable unless tapToDismiss was explicitly false
-    const isInteractable = args.options.tapToDismiss !== false;
-    $toast.toggleClass('interactable', isInteractable);
-    if (isInteractable) {
-        $toast.attr('title', t`Tap to close`);
-    } else {
-        $toast.removeAttr('title');
-        $toast.addClass('toast-non-interactable');
-    }
+// @ts-expect-error TS(2304) FIXME: Cannot find name 'Notyf'.
+const _notyfInstance = new Notyf({
+    duration: 4000,
+    position: notyfPositionMap[defaultToastPosition] || { x: 'center', y: 'top' },
+    dismissible: true,
+    types: [
+        {
+            type: 'info',
+            className: 'notyf-info',
+            duration: 4000,
+        },
+        {
+            type: 'warning',
+            className: 'notyf-warning',
+            icon: false,
+            duration: 4000,
+        },
+    ],
 });
+
+// Expose notyf globally for all modules (was window.toastr)
+// @ts-expect-error TS(2304) FIXME: Cannot find name 'window'.
+window.notyf = _notyfInstance;
+const notyf = _notyfInstance;
+
+// notyf options accessors for slash commands / tags that read defaults
+const notyfDefaults = { timeOut: 4000, extendedTimeOut: 10000 };
 
 export const characterGroupOverlay = new BulkEditOverlay();
 

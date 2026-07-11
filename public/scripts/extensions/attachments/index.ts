@@ -79,7 +79,7 @@ function listDataBankAttachments(args: any) {
  */
 async function getDataBankText(args: any, value: any) {
     if (!value) {
-        toastr.warning('No attachment name or URL provided.');
+        notyf.warning('No attachment name or URL provided.');
         return;
     }
 
@@ -87,7 +87,7 @@ async function getDataBankText(args: any, value: any) {
     const attachment = getAttachmentByField(attachments, value);
 
     if (!attachment) {
-        toastr.warning('Attachment not found.');
+        notyf.warning('Attachment not found.');
         return;
     }
 
@@ -121,7 +121,7 @@ async function updateDataBankAttachment(args: any, value: any) {
     const attachment = getAttachmentByFields(attachments, [args?.url, args?.name]);
 
     if (!attachment) {
-        toastr.warning('Attachment not found.');
+        notyf.warning('Attachment not found.');
         return '';
     }
 
@@ -143,7 +143,7 @@ async function deleteDataBankAttachment(args: any, value: any) {
     const attachment = getAttachmentByField(attachments, value);
 
     if (!attachment) {
-        toastr.warning('Attachment not found.');
+        notyf.warning('Attachment not found.');
         return '';
     }
 
@@ -162,7 +162,7 @@ async function disableDataBankAttachment(args: any, value: any) {
     const attachment = getAttachmentByField(attachments, value);
 
     if (!attachment) {
-        toastr.warning('Attachment not found.');
+        notyf.warning('Attachment not found.');
         return '';
     }
 
@@ -187,7 +187,7 @@ async function enableDataBankAttachment(args: any, value: any) {
     const attachment = getAttachmentByField(attachments, value);
 
     if (!attachment) {
-        toastr.warning('Attachment not found.');
+        notyf.warning('Attachment not found.');
         return '';
     }
 

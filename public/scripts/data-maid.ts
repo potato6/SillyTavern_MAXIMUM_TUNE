@@ -120,7 +120,7 @@ class DataMaidDialog {
      */
     async handleScanClick() {
         if (this.isScanning) {
-            toastr.warning(t`The scan is already running. Please wait for it to finish.`);
+            notyf.warning(t`The scan is already running. Please wait for it to finish.`);
             return;
         }
 
@@ -140,7 +140,7 @@ class DataMaidDialog {
         } catch (error) {
             this.hideSpinner();
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.error(t`An error has occurred. Check the console for details.`);
+            notyf.error(t`An error has occurred. Check the console for details.`);
             console.error('Error generating Data Maid report:', error);
         } finally {
             this.isScanning = false;

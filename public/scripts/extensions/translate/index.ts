@@ -512,7 +512,7 @@ async function translate(text: any, lang: any, provider = null) {
         return result;
     } catch (error) {
         console.log(error);
-        toastr.error(String(error), 'Failed to translate message');
+        notyf.error(String(error), 'Failed to translate message');
     }
 }
 
@@ -596,17 +596,17 @@ async function onTranslateInputMessageClick() {
     }
 
     if (!textarea.value) {
-        toastr.warning('Enter a message first');
+        notyf.warning('Enter a message first');
         return;
     }
 
-    const toast = toastr.info('Input Message is translating', 'Please wait...');
+    const toast = notyf.info('Input Message is translating', 'Please wait...');
     // @ts-expect-error TS(2339): Property 'internal_language' does not exist on typ... Remove this comment to see the full error message
     const translatedText = await translate(textarea.value, extension_settings.translate.internal_language);
     // @ts-expect-error TS(2322): Type 'string | undefined' is not assignable to typ... Remove this comment to see the full error message
     textarea.value = translatedText;
     textarea.dispatchEvent(new Event('input', { bubbles: true }));
-    toastr.clear(toast);
+    notyf.dismiss(toast);
 }
 
 // Prevents the chat from being translated in parallel
@@ -622,7 +622,7 @@ async function onTranslateChatClick() {
         const context = getContext();
         const chat = context.chat;
 
-        toastr.info(`${chat.length} message(s) queued for translation.`, 'Please wait...');
+        notyf.info(`${chat.length} message(s) queued for translation.`, 'Please wait...');
 
         for (let i = 0; i < chat.length; i++) {
             await translateIncomingMessageReasoning(i);
@@ -632,7 +632,7 @@ async function onTranslateChatClick() {
         await context.saveChat();
     } catch (error) {
         console.log(error);
-        toastr.error('Failed to translate chat');
+        notyf.error('Failed to translate chat');
     } finally {
         translateChatExecuting = false;
     }

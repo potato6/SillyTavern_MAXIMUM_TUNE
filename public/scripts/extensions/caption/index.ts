@@ -408,7 +408,7 @@ async function getCaptionForFile(file: any, prompt: any, quiet: any) {
     } catch (error) {
         // @ts-expect-error TS(2571): Object is of type 'unknown'.
         const errorMessage = error.message || 'Unknown error';
-        toastr.error(errorMessage, 'Failed to caption');
+        notyf.error(errorMessage, 'Failed to caption');
         console.error(error);
         return '';
     } finally {
@@ -441,15 +441,15 @@ async function captionCommandCallback(args: any, prompt: any) {
                 // @ts-expect-error TS(2532): Object is possibly 'undefined'.
                 const mediaAttachment = message.extra.media[index] || message.extra.media[0];
                 if (!mediaAttachment || !mediaAttachment.url) {
-                    toastr.error('The specified message does not contain an image.');
+                    notyf.error('The specified message does not contain an image.');
                     return '';
                 }
                 if (mediaAttachment.type === MEDIA_TYPE.AUDIO) {
-                    toastr.error('The specified media is an audio file. Captioning audio files is not supported.');
+                    notyf.error('The specified media is an audio file. Captioning audio files is not supported.');
                     return '';
                 }
                 if (mediaAttachment.type === MEDIA_TYPE.VIDEO && !isVideoCaptioningAvailable()) {
-                    toastr.error('The specified media is a video. Captioning videos is not supported for the current source.');
+                    notyf.error('The specified media is a video. Captioning videos is not supported for the current source.');
                     return '';
                 }
                 const fetchResult = await fetch(mediaAttachment.url);
@@ -458,7 +458,7 @@ async function captionCommandCallback(args: any, prompt: any) {
                 const file = new File([blob], fileName, { type: blob.type });
                 return await getCaptionForFile(file, prompt, quiet);
             } catch (error) {
-                toastr.error('Failed to get image from the message. Make sure the image is accessible.');
+                notyf.error('Failed to get image from the message. Make sure the image is accessible.');
                 return '';
             }
         }
@@ -586,7 +586,7 @@ export async function init() {
             })();
 
             if (!hasCaptionModule) {
-                toastr.error('Choose other captioning source in the extension settings.', 'Captioning is not available');
+                notyf.error('Choose other captioning source in the extension settings.', 'Captioning is not available');
                 return;
             }
 
@@ -877,7 +877,7 @@ export async function init() {
         } catch (e) {
             console.error('Message image recaption failed', e);
             // @ts-expect-error TS(2571): Object is of type 'unknown'.
-            toastr.error(e.message || 'Unknown error', 'Failed to caption');
+            notyf.error(e.message || 'Unknown error', 'Failed to caption');
         } finally {
             messageMedia.removeClass(animationClass);
         }

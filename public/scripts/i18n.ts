@@ -72,7 +72,7 @@ const observer = new MutationObserver(mutations => {
  * Uses the template literal with all values replaced by index placeholder for translation key.
  * @example
  * ```js
- * toastr.warning(t`Tag ${tagName} not found.`);
+ * notyf.warning(t`Tag ${tagName} not found.`);
  * ```
  * Should be translated in the translation files as:
  * ```
@@ -264,7 +264,7 @@ async function getMissingTranslations() {
     }
 
     // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-    toastr.success(`Found ${uniqueMissingData.length} missing translations. See browser console for details.`);
+    notyf.success(`Found ${uniqueMissingData.length} missing translations. See browser console for details.`);
 }
 
 /**
@@ -364,15 +364,15 @@ export async function initLocales() {
             if (isTracking && isSupportedNonEnglish()) {
                 trackMissingDynamicTranslate = new Set();
                 // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                toastr.success('Dynamic translation tracking enabled.');
+                notyf.success('Dynamic translation tracking enabled.');
             } else if (isTracking) {
                 trackMissingDynamicTranslate = null;
                 // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                toastr.warning('Dynamic translation tracking enabled, but will not be tracked with locale English.');
+                notyf.warning('Dynamic translation tracking enabled, but will not be tracked with locale English.');
             } else {
                 trackMissingDynamicTranslate = null;
                 // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                toastr.info('Dynamic translation tracking disabled.');
+                notyf.info('Dynamic translation tracking disabled.');
             }
         });
     registerDebugFunction('applyLocale', 'Apply locale', 'Reapplies the currently selected locale to the page.', applyLocale);

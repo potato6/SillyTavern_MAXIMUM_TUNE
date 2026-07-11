@@ -127,7 +127,7 @@ function setChatCfg(tempValue: string, setting: number) {
  */
 function onCfgMenuItemClick() {
     if (!selected_group && this_chid === undefined) {
-        toastr.warning('Select a character before trying to configure CFG', '', { timeOut: 2000 });
+        notyf.warning('Select a character before trying to configure CFG', '', { timeOut: 2000 });
         return;
     }
 
@@ -406,7 +406,7 @@ export function initCfg() {
         chat_metadata[metadataKeys.groupchat_individual_chars] = checked;
 
         if (checked) {
-            toastr.info('You can edit character CFG values in their respective character chats.');
+            notyf.info('You can edit character CFG values in their respective character chats.');
         }
 
         saveMetadataDebounced();

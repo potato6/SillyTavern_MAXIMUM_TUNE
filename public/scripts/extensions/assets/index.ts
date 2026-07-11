@@ -107,7 +107,7 @@ function createAssetButton(asset: any, assetType: any, index: any) {
 
     const assetDelete = async function () {
         if (assetType === 'character') {
-            toastr.error('Go to the characters menu to delete a character.', 'Character deletion not supported');
+            notyf.error('Go to the characters menu to delete a character.', 'Character deletion not supported');
             await SlashCommandParser.commands.go.callback(null, asset.id);
             return;
         }
@@ -312,11 +312,11 @@ async function downloadAssetsList(url: any) {
         // Info hint if the user maybe... likely accidentally was trying to install an extension and we wanna help guide them? uwu :3
         const installButton = $('#third_party_extension_button');
         flashHighlight(installButton, 10_000);
-        toastr.info('Click the flashing button at the top right corner of the menu.', 'Trying to install a custom extension?', { timeOut: 10_000 });
+        notyf.info('Click the flashing button at the top right corner of the menu.', 'Trying to install a custom extension?', { timeOut: 10_000 });
 
         // Error logged after, to appear on top
         console.error(error);
-        toastr.error('Problem with assets URL', 'Cannot get assets list');
+        notyf.error('Problem with assets URL', 'Cannot get assets list');
         $('#assets-connect-button').addClass('fa-plug-circle-exclamation');
         $('#assets-connect-button').addClass('redOverlayGlow');
     }
@@ -467,22 +467,22 @@ async function deleteAsset(assetType: any, filename: any) {
 async function openCharacterBrowser(forceDefault: any) {
     const url = forceDefault ? ASSETS_JSON_URL : String($('#assets-json-url-field').val());
     if (!isValidUrl(url)) {
-        toastr.error('Please enter a valid URL');
+        notyf.error('Please enter a valid URL');
         return;
     }
     const fetchResult = await fetch(url, { cache: 'no-cache' });
     if (!fetchResult.ok) {
-        toastr.error('Cannot download the assets list.');
+        notyf.error('Cannot download the assets list.');
         return;
     }
     const json = await fetchResult.json();
     if (!Array.isArray(json)) {
-        toastr.error('Assets list is not an array');
+        notyf.error('Assets list is not an array');
         return;
     }
     const characters = json.filter(x => x && x.type === 'character');
     if (!characters.length) {
-        toastr.error('No characters found in the assets list', 'Character browser');
+        notyf.error('No characters found in the assets list', 'Character browser');
         return;
     }
 
@@ -507,7 +507,7 @@ async function openCharacterBrowser(forceDefault: any) {
         });
 
         checkMark.toggle(isInstalled).on('click', async () => {
-            toastr.error('Go to the characters menu to delete a character.', 'Character deletion not supported');
+            notyf.error('Go to the characters menu to delete a character.', 'Character deletion not supported');
             await SlashCommandParser.commands.go.callback(null, character.id);
         });
 
@@ -558,14 +558,14 @@ export async function init() {
     installHintButton.on('click', async function () {
         const installButton = $('#third_party_extension_button');
         flashHighlight(installButton, 5000);
-        toastr.info(t`Click the flashing button to install extensions.`, t`How to install extensions?`);
+        notyf.info(t`Click the flashing button to install extensions.`, t`How to install extensions?`);
     });
 
     const connectButton = windowHtml.find('#assets-connect-button');
     connectButton.on('click', async function () {
         const urlString = String(assetsJsonUrl.val()).trim();
         if (!isValidUrl(urlString)) {
-            toastr.error('Please enter a valid URL');
+            notyf.error('Please enter a valid URL');
             return;
         }
         const url = new URL(urlString);
@@ -591,7 +591,7 @@ export async function init() {
                 connectButton.addClass('fa-plug-circle-check');
             } catch (error) {
                 console.error('Error:', error);
-                toastr.error(`Cannot get assets list from ${url.href}`);
+                notyf.error(`Cannot get assets list from ${url.href}`);
                 connectButton.removeClass('fa-plug-circle-check');
                 connectButton.addClass('fa-plug-circle-exclamation');
                 connectButton.removeClass('redOverlayGlow');

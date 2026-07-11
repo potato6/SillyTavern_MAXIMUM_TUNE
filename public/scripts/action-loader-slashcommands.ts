@@ -366,7 +366,7 @@ export function registerActionLoaderSlashCommands() {
             const handleId = args.handle ? String(args.handle) : null;
 
             if (!handleId) {
-                toastr.warning(t`No handle provided. You must specify which loader to stop.`);
+                notyf.warning(t`No handle provided. You must specify which loader to stop.`);
                 return 'false';
             }
 

@@ -864,7 +864,7 @@ export function searchCharByName(charName, { suppressLogging = false } = {}) {
     const key = getTagKeyForEntity(entity);
     if (!key) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        if (!suppressLogging) toastr.warning(`Character ${charName} not found.`);
+        if (!suppressLogging) notyf.warning(`Character ${charName} not found.`);
         return null;
     }
     return key;
@@ -1111,10 +1111,10 @@ async function importTags(character, { importSetting = null } = {}) {
 
     if (added) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.success(t`Imported tags:` + `<br />${tagNames}`, t`Importing Tags`, { escapeHtml: false });
+        notyf.success(t`Imported tags:` + `<br />${tagNames}`, t`Importing Tags`, { escapeHtml: false });
     } else {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.error(t`Couldn't import tags:` + `<br />${tagNames}`, t`Importing Tags`, { escapeHtml: false });
+        notyf.error(t`Couldn't import tags:` + `<br />${tagNames}`, t`Importing Tags`, { escapeHtml: false });
     }
 
     return added;
@@ -1279,7 +1279,7 @@ function createNewTag(tagName) {
     const existing = getTag(tagName);
     if (existing) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.warning(`Cannot create new tag. A tag with the name already exists:<br />${escapeHtml(existing.name)}`, 'Creating Tag', { escapeHtml: false });
+        notyf.warning(`Cannot create new tag. A tag with the name already exists:<br />${escapeHtml(existing.name)}`, 'Creating Tag', { escapeHtml: false });
         return existing;
     }
 
@@ -2046,7 +2046,7 @@ function makeTagListDraggable(tagContainer) {
                 sortModeSelect.value = tag_sort_mode.MANUAL;
             }
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.info('Switched to Manual sorting mode.');
+            notyf.info('Switched to Manual sorting mode.');
         }
 
         // If the order of tags in display has changed, we need to redraw some UI elements. Do it debounced so it doesn't block and you can drag multiple tags.
@@ -2129,7 +2129,7 @@ async function onTagRestoreFileSelect(e) {
 
     if (!data) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.warning('Empty file data', 'Tag Restore');
+        notyf.warning('Empty file data', 'Tag Restore');
         console.log('Tag restore: File data empty.');
         return;
     }
@@ -2137,7 +2137,7 @@ async function onTagRestoreFileSelect(e) {
     // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
     if (!data.tags || !data.tag_map || !Array.isArray(data.tags) || typeof data.tag_map !== 'object') {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.warning('Invalid file format', 'Tag Restore');
+        notyf.warning('Invalid file format', 'Tag Restore');
         console.log('Tag restore: Invalid file format.');
         return;
     }
@@ -2230,16 +2230,14 @@ async function onTagRestoreFileSelect(e) {
 
     if (warnings.length) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.warning('Tags restored with warnings. Check console or click on this message for details.', 'Tag Restore', {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            timeOut: toastr.options.timeOut * 2, // Display double the time
+        notyf.warning('Tags restored with warnings. Check console or click on this message for details.', 'Tag Restore', {
             // @ts-expect-error TS(7005) FIXME: Variable 'warnings' implicitly has an 'any[]' type... Remove this comment to see the full error message
             onclick: () => Popup.show.text('Tag Restore Warnings', `<samp class="justifyLeft">${DOMPurify.sanitize(warnings.join('\n'))}<samp>`, { allowVerticalScrolling: true }),
         });
         console.warn(`TAG RESTORE REPORT\n====================\n${warnings.join('\n')}`);
     } else {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.success('Tags restored successfully.', 'Tag Restore');
+        notyf.success('Tags restored successfully.', 'Tag Restore');
     }
 
     document.getElementById('tag_view_restore_input').value = '';
@@ -2292,7 +2290,7 @@ async function onTagsPruneClick() {
 
     if (!tagsToPrune.length && !tagMapsToPrune.length) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.info(t`No unused tags or references found.`);
+        notyf.info(t`No unused tags or references found.`);
         return;
     }
 
@@ -2320,7 +2318,7 @@ async function onTagsPruneClick() {
     printViewTagList(tagContainer);
 
     // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-    toastr.success(t`Unused tags pruned successfully.`);
+    notyf.success(t`Unused tags pruned successfully.`);
 }
 
 /**
@@ -2341,7 +2339,7 @@ function onTagCreateClick() {
     saveSettingsDebounced();
 
     // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-    toastr.success('Tag created', 'Create Tag');
+    notyf.success('Tag created', 'Create Tag');
 }
 
 /**
@@ -2557,7 +2555,7 @@ async function onTagDeleteClick() {
     document.querySelectorAll(`.tag_view_item[id="${id}"]`).forEach(el => el.remove());
 
     // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-    toastr.success(`'${tag.name}' deleted${mergeTagId ? ` and merged into '${tags.find(x => x.id === mergeTagId).name}'` : ''}`, 'Delete Tag');
+    notyf.success(`'${tag.name}' deleted${mergeTagId ? ` and merged into '${tags.find(x => x.id === mergeTagId).name}'` : ''}`, 'Delete Tag');
 
     printCharactersDebounced();
     saveSettingsDebounced();
@@ -2775,7 +2773,7 @@ function registerTagsSlashCommands() {
     function paraGetTag(tagName, { allowCreate = false } = {}) {
         if (!tagName) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.warning('Tag name must be provided.');
+            notyf.warning('Tag name must be provided.');
             return null;
         }
         let tag = getTag(tagName);
@@ -2784,7 +2782,7 @@ function registerTagsSlashCommands() {
         }
         if (!tag) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.warning(`Tag ${tagName} not found.`);
+            notyf.warning(`Tag ${tagName} not found.`);
             return null;
         }
         return tag;
@@ -2987,7 +2985,7 @@ function registerTagsSlashCommands() {
 
             if (selected_group !== null) {
                 // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                toastr.warning(t`Tag import does not support group chats.`);
+                notyf.warning(t`Tag import does not support group chats.`);
                 return 'false';
             }
             const key = searchCharByName(name);
@@ -3003,7 +3001,7 @@ function registerTagsSlashCommands() {
             // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             if (mode && !modeMap[mode]) {
                 // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                toastr.warning(`Invalid tag import mode: ${mode}. Valid modes are: ${Object.keys(modeMap).join(', ')}`);
+                notyf.warning(`Invalid tag import mode: ${mode}. Valid modes are: ${Object.keys(modeMap).join(', ')}`);
                 return 'false';
             }
 

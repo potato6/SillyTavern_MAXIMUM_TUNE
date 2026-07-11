@@ -158,7 +158,7 @@ export class GoogleNativeTtsProvider {
         } catch (error) {
             console.error('TTS Preview Error:', error);
             // @ts-expect-error TS(2571): Object is of type 'unknown'.
-            toastr.error(`Could not generate preview: ${error.message}`);
+            notyf.error(`Could not generate preview: ${error.message}`);
         }
     }
 

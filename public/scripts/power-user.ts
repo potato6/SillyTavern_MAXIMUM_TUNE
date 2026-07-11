@@ -603,7 +603,7 @@ const originalSliderValues = [];
  */
 async function switchLabMode({ noReset = false } = {}) {
     /*     if (power_user.enableZenSliders && power_user.enableLabMode) {
-            toastr.warning("Can't start Lab Mode while Zen Sliders are active")
+            notyf.warning("Can't start Lab Mode while Zen Sliders are active")
             return
             //$("#enableZenSliders").dispatchEvent(new Event('click', { bubbles: true }))
         }
@@ -949,7 +949,7 @@ async function CreateZenSliders(elmnt) {
                         newSlider.noUiSlider.set(manualInput);
                         valueBeforeManualInput = manualInput;
                     } else {
-                        toastr.warning(`Invalid value. Must be between ${sliderMin} and ${sliderMax}`);
+                        notyf.warning(`Invalid value. Must be between ${sliderMin} and ${sliderMax}`);
                         newSlider.noUiSlider.set(valueBeforeManualInput);
                     }
                 }
@@ -1145,8 +1145,12 @@ function applyToastrPosition() {
         console.warn(`applyToastrPosition: invalid toastr position, defaulting to ${defaultToastPosition}`);
     }
 
-    toastr.options.positionClass = power_user.toastr_position;
-    fixToastrForDialogs();
+    // Update notyf position dynamically
+    // @ts-expect-error TS(2304) FIXME: Cannot find name 'notyf'.
+    if (notyf && notyfPositionMap[power_user.toastr_position]) {
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'notyf'.
+        notyf.options.position = notyfPositionMap[power_user.toastr_position];
+    }
     const tpEl = document.getElementById('toastr_position') as HTMLSelectElement | null;
     if (tpEl) tpEl.value = power_user.toastr_position;
     const tpOpt = document.querySelector(`#toastr_position option[value="${power_user.toastr_position}"]`) as HTMLOptionElement | null;
@@ -1333,7 +1337,7 @@ function showMediaDisplayReloadPrompt() {
     if (!isMediaDisplayReloadNeeded()) {
         return;
     }
-    toastr.info(
+    notyf.info(
         t`Reload the chat to apply the changes. Click here to reload.`,
         t`Media Style changed`,
         { onclick: () => void reloadCurrentChat() },
@@ -2521,7 +2525,7 @@ export function renderStoryString(params, { customStoryString = null, customInst
 
         return output;
     } catch (e) {
-        toastr.error('Check the story string template for validity', 'Error rendering story string');
+        notyf.error('Check the story string template for validity', 'Error rendering story string');
         console.error('Error rendering story string', e);
         throw e; // rethrow the error
     }
@@ -2573,7 +2577,7 @@ function validateStoryString(storyString, params) {
 
     if (fieldsToWarn.length > 0) {
         const fieldsList = fieldsToWarn.map(field => `{{${field}}}`).join(', ');
-        toastr.warning(`The story string does not contain the following fields, but they would contain content: ${fieldsList}`, 'Story String Validation');
+        notyf.warning(`The story string does not contain the following fields, but they would contain content: ${fieldsList}`, 'Story String Validation');
     }
 
     accountStorage.setItem(storage_keys.storyStringValidationCache, JSON.stringify(cache));
@@ -2646,7 +2650,7 @@ export function sortEntitiesList(entities, forceSearch, filterHelper = null) {
  */
 async function updateTheme() {
     await saveTheme(power_user.theme);
-    toastr.success('Theme saved.');
+    notyf.success('Theme saved.');
 }
 
 /**
@@ -2656,7 +2660,7 @@ async function deleteTheme() {
     const themeName = power_user.theme;
 
     if (!themeName) {
-        toastr.info('No theme selected.');
+        notyf.info('No theme selected.');
         return;
     }
 
@@ -2675,7 +2679,7 @@ async function deleteTheme() {
     });
 
     if (!response.ok) {
-        toastr.error('Failed to delete theme. Check the console for more information.');
+        notyf.error('Failed to delete theme. Check the console for more information.');
         return;
     }
 
@@ -2689,7 +2693,7 @@ async function deleteTheme() {
         if (power_user.theme) {
             applyTheme(power_user.theme);
         }
-        toastr.success('Theme deleted.');
+        notyf.success('Theme deleted.');
     }
 }
 
@@ -2740,7 +2744,7 @@ async function importTheme(file) {
     option.innerText = parsed.name;
     document.getElementById('themes')?.appendChild(option);
     saveSettingsDebounced();
-    toastr.success(parsed.name, 'Theme imported');
+    notyf.success(parsed.name, 'Theme imported');
 }
 
 /**
@@ -2771,7 +2775,7 @@ async function saveTheme(name = undefined, theme = undefined) {
     });
 
     if (!response.ok) {
-        toastr.error('Check the server connection and reload the page to prevent data loss.', 'Theme could not be saved');
+        notyf.error('Check the server connection and reload the page to prevent data loss.', 'Theme could not be saved');
         console.error('Theme could not be saved', response);
         throw new Error('Theme could not be saved');
     }
@@ -2904,7 +2908,7 @@ async function saveMovingUI() {
         power_user.movingUIPreset = name;
         saveSettingsDebounced();
     } else {
-        toastr.error('Failed to save MovingUI state.');
+        notyf.error('Failed to save MovingUI state.');
         console.error('MovingUI could not be saved', response);
     }
 }
@@ -2995,10 +2999,10 @@ async function resetMovablePanels(type) {
             return;
             //if happening due to resize, tell user.
         } else if (type === 'resize') {
-            toastr.warning('Panel positions reset due to zoom/resize');
+            notyf.warning('Panel positions reset due to zoom/resize');
             //if happening due to manual button press
         } else {
-            toastr.success('Panel positions reset');
+            notyf.success('Panel positions reset');
         }
     });
 }
@@ -3064,7 +3068,7 @@ async function doRandomChat(_, tagName) {
     resetSelectedGroup();
     const characterId = getRandomCharacterId();
     if (!characterId) {
-        toastr.error('No characters found');
+        notyf.error('No characters found');
         return;
     }
     setCharacterId(characterId);
@@ -3094,7 +3098,7 @@ async function loadUntilMesId(mesId) {
     }
 
     if (!target) {
-        toastr.error(`Could not find message with ID: ${mesId}`);
+        notyf.error(`Could not find message with ID: ${mesId}`);
         return target;
     }
 
@@ -3112,7 +3116,7 @@ async function doMesCut(_, text) {
 
     //reject invalid args or no args
     if (!range) {
-        toastr.warning('Must provide a Message ID or a range to cut.');
+        notyf.warning('Must provide a Message ID or a range to cut.');
         return;
     }
 
@@ -3149,7 +3153,7 @@ async function doMesCut(_, text) {
 async function doDelMode(_, text) {
     //reject invalid args
     if (text && isNaN(text)) {
-        toastr.warning('Must enter a number or nothing.');
+        notyf.warning('Must enter a number or nothing.');
         return '';
     }
 
@@ -3168,7 +3172,7 @@ async function doDelMode(_, text) {
     }
 
     if (count > chat.length) {
-        toastr.warning(`Cannot delete more than ${chat.length} messages.`);
+        notyf.warning(`Cannot delete more than ${chat.length} messages.`);
         return '';
     }
 
@@ -3211,7 +3215,7 @@ async function setAvgBG(args) {
     }
 
     if (!bgUrl || bgUrl === 'none') {
-        toastr.warning('No background image set.');
+        notyf.warning('No background image set.');
         return '';
     }
 
@@ -3221,7 +3225,7 @@ async function setAvgBG(args) {
 
     // Check if a theme with the same name already exists
     if (themes.some(t => t.name === themeName) && !force) {
-        toastr.warning('Pass "force=true" to overwrite.', `A theme named "${themeName}" already exists.`);
+        notyf.warning('Pass "force=true" to overwrite.', `A theme named "${themeName}" already exists.`);
         return '';
     }
 
@@ -3248,7 +3252,7 @@ async function setAvgBG(args) {
     await saveTheme(themeName, theme);
     applyTheme(themeName);
 
-    toastr.success(`Theme "${themeName}" generated and applied.`);
+    notyf.success(`Theme "${themeName}" generated and applied.`);
     return '';
 }
 
@@ -3275,7 +3279,7 @@ async function setThemeCallback(_, themeName) {
     const theme = results[0]?.item;
 
     if (!theme) {
-        toastr.warning(`Could not find theme with name: ${themeName}`);
+        notyf.warning(`Could not find theme with name: ${themeName}`);
         return;
     }
 
@@ -3304,7 +3308,7 @@ async function setmovingUIPreset(_, text) {
     const preset = results[0]?.item;
 
     if (!preset) {
-        toastr.warning(`Could not find preset with name: ${text}`);
+        notyf.warning(`Could not find preset with name: ${text}`);
         return;
     }
 
@@ -4045,7 +4049,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const value = !!(this as HTMLInputElement).checked;
         if (power_user.enableLabMode === true && value === true) {
             //disallow zenSliders while Lab Mode is active
-            toastr.warning('Disable Mad Lab Mode before enabling Zen Sliders');
+            notyf.warning('Disable Mad Lab Mode before enabling Zen Sliders');
             (this as HTMLInputElement).checked = false;
             this.dispatchEvent(new Event('input'));
             return;
@@ -4059,7 +4063,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const value = !!(this as HTMLInputElement).checked;
         if (power_user.enableZenSliders === true && value === true) {
             //disallow Lab Mode if ZenSliders are active
-            toastr.warning('Disable Zen Sliders before enabling Mad Lab Mode');
+            notyf.warning('Disable Zen Sliders before enabling Mad Lab Mode');
             (this as HTMLInputElement).checked = false;
             this.dispatchEvent(new Event('input'));
             return;
@@ -4213,7 +4217,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         eventSource.once(event_types.SETTINGS_UPDATED, function () {
-            toastr.warning(
+            notyf.warning(
                 t`Click here to reload.`,
                 t`Toggling the Experimental Macro Engine requires a reload.`,
                 {
@@ -4401,7 +4405,7 @@ document.addEventListener('DOMContentLoaded', () => {
             await importTheme(file);
         } catch (error) {
             console.error('Error importing UI theme', error);
-            toastr.error(String(error), 'Failed to import UI theme');
+            notyf.error(String(error), 'Failed to import UI theme');
         } finally {
             if (inputElement) {
                 inputElement.value = '';
@@ -4603,22 +4607,22 @@ document.addEventListener('DOMContentLoaded', () => {
             }[args.to || 'chat'];
 
             if (!targetSelector) {
-                toastr.error(`Invalid target: ${args.to}`);
+                notyf.error(`Invalid target: ${args.to}`);
                 return;
             }
 
             if (!args.varname) {
-                toastr.error('CSS variable name is required');
+                notyf.error('CSS variable name is required');
                 return;
             }
             if (!args.varname.startsWith('--')) {
-                toastr.error('CSS variable names must start with "--"');
+                notyf.error('CSS variable names must start with "--"');
                 return;
             }
 
             const elements = document.querySelectorAll(targetSelector);
             if (elements.length === 0) {
-                toastr.error(`No elements found for ${args.to ?? 'chat'} with selector "${targetSelector}"`);
+                notyf.error(`No elements found for ${args.to ?? 'chat'} with selector "${targetSelector}"`);
                 return;
             }
 

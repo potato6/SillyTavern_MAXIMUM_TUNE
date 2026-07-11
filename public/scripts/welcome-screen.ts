@@ -527,7 +527,7 @@ async function openRecentCharacterChat(avatarId, fileName) {
     } catch (error) {
         console.error('Error opening recent chat:', error);
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.error(t`Failed to open recent chat. See console for details.`);
+        notyf.error(t`Failed to open recent chat. See console for details.`);
     }
 }
 
@@ -557,7 +557,7 @@ async function openRecentGroupChat(groupId, fileName) {
     } catch (error) {
         console.error('Error opening recent group chat:', error);
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.error(t`Failed to open recent group chat. See console for details.`);
+        notyf.error(t`Failed to open recent group chat. See console for details.`);
     }
 }
 
@@ -590,11 +590,11 @@ async function renameRecentCharacterChat(avatarId, fileName) {
         await updateRemoteChatName(characterId, newName);
         await refreshWelcomeScreen();
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.success(t`Chat renamed.`);
+        notyf.success(t`Chat renamed.`);
     } catch (error) {
         console.error('Error renaming recent character chat:', error);
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.error(t`Failed to rename recent chat. See console for details.`);
+        notyf.error(t`Failed to rename recent chat. See console for details.`);
     }
 }
 
@@ -626,11 +626,11 @@ async function renameRecentGroupChat(groupId, fileName) {
         });
         await refreshWelcomeScreen();
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.success(t`Group chat renamed.`);
+        notyf.success(t`Group chat renamed.`);
     } catch (error) {
         console.error('Error renaming recent group chat:', error);
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.error(t`Failed to rename recent group chat. See console for details.`);
+        notyf.error(t`Failed to rename recent group chat. See console for details.`);
     }
 }
 
@@ -655,11 +655,11 @@ async function deleteRecentCharacterChat(avatarId, fileName) {
         await deleteCharacterChatByName(String(characterId), fileName);
         await refreshWelcomeScreen();
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.success(t`Chat deleted.`);
+        notyf.success(t`Chat deleted.`);
     } catch (error) {
         console.error('Error deleting recent character chat:', error);
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.error(t`Failed to delete recent chat. See console for details.`);
+        notyf.error(t`Failed to delete recent chat. See console for details.`);
     }
 }
 
@@ -684,11 +684,11 @@ async function deleteRecentGroupChat(groupId, fileName) {
         await deleteGroupChatByName(groupId, fileName);
         await refreshWelcomeScreen();
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.success(t`Group chat deleted.`);
+        notyf.success(t`Group chat deleted.`);
     } catch (error) {
         console.error('Error deleting recent group chat:', error);
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.error(t`Failed to delete recent group chat. See console for details.`);
+        notyf.error(t`Failed to delete recent group chat. See console for details.`);
     }
 }
 
@@ -893,7 +893,7 @@ export async function openPermanentAssistantChat({ tryCreate = true, created = f
         } catch (error) {
             console.error('Error creating permanent assistant:', error);
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.error(t`Failed to create ${neutralCharacterName}. See console for details.`);
+            notyf.error(t`Failed to create ${neutralCharacterName}. See console for details.`);
             return;
         }
     }
@@ -907,7 +907,7 @@ export async function openPermanentAssistantChat({ tryCreate = true, created = f
     } catch (error) {
         console.error('Error opening permanent assistant chat:', error);
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.error(t`Failed to open permanent assistant chat. See console for details.`);
+        notyf.error(t`Failed to open permanent assistant chat. See console for details.`);
     }
 }
 
@@ -954,7 +954,7 @@ export async function openPermanentAssistantCard() {
     const characterId = characters.findIndex(x => x.avatar === avatar);
     if (characterId === -1) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.info(t`Assistant not found. Try sending a chat message.`);
+        notyf.info(t`Assistant not found. Try sending a chat message.`);
         return;
     }
 
@@ -980,12 +980,12 @@ export function assignCharacterAsAssistant(characterId) {
     if (currentAssistantAvatar === character.avatar) {
         if (character.avatar === defaultAssistantAvatar) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.info(t`${character.name} is a system assistant. Choose another character.`);
+            notyf.info(t`${character.name} is a system assistant. Choose another character.`);
             return;
         }
 
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.info(t`${character.name} is no longer your assistant.`);
+        notyf.info(t`${character.name} is no longer your assistant.`);
         accountStorage.removeItem(assistantAvatarKey);
         return;
     }
@@ -993,7 +993,7 @@ export function assignCharacterAsAssistant(characterId) {
     accountStorage.setItem(assistantAvatarKey, character.avatar);
     printCharactersDebounced();
     // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-    toastr.success(t`Set ${character.name} as your assistant.`);
+    notyf.success(t`Set ${character.name} as your assistant.`);
 }
 
 /**

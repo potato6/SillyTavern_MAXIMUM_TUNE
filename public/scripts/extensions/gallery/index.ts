@@ -187,7 +187,7 @@ async function getGalleryFolders() {
 async function deleteGalleryItem(url: any) {
     const isDeleted = await deleteMediaFromServer(url, false);
     if (isDeleted) {
-        toastr.success(t`Image deleted successfully.`);
+        notyf.success(t`Image deleted successfully.`);
     }
 }
 
@@ -325,7 +325,7 @@ async function showCharGallery(deleteModeState = false) {
             'js',
         );
         firstTime = false;
-        toastr.info('Images can also be found in the folder `user/images`', 'Drag and drop images onto the gallery to upload them', { timeOut: 6000 });
+        notyf.info('Images can also be found in the folder `user/images`', 'Drag and drop images onto the gallery to upload them', { timeOut: 6000 });
     }
 
     try {
@@ -364,12 +364,12 @@ async function uploadFile(file: any, url: any) {
         const extension = getFileExtension(file);
         const path = await saveBase64AsFile(base64Data, url, '', extension);
 
-        toastr.success(t`File uploaded successfully. Saved at: ${path}`);
+        notyf.success(t`File uploaded successfully. Saved at: ${path}`);
     } catch (error) {
         console.error('There was an issue uploading the file:', error);
 
         // Replacing alert with toastr error notification
-        toastr.error(t`Failed to upload the file.`);
+        notyf.error(t`Failed to upload the file.`);
     }
 }
 
@@ -479,12 +479,12 @@ async function makeMovable(url: any) {
             updateGalleryFolder(newUrl);
             closeButton.trigger('click');
             await showCharGallery();
-            toastr.info(t`Gallery folder changed to ${newUrl}`);
+            notyf.info(t`Gallery folder changed to ${newUrl}`);
             galleryFolderInput.value = newUrl;
         } catch (error) {
             console.error('Failed to change gallery folder:', error);
             // @ts-expect-error TS(2571): Object is of type 'unknown'.
-            toastr.error(error?.message || t`Unknown error`, t`Failed to change gallery folder`);
+            notyf.error(error?.message || t`Unknown error`, t`Failed to change gallery folder`);
         }
     };
 
@@ -496,7 +496,7 @@ async function makeMovable(url: any) {
         } catch (error) {
             console.error('Failed to restore gallery folder:', error);
             // @ts-expect-error TS(2571): Object is of type 'unknown'.
-            toastr.error(error?.message || t`Unknown error`, t`Failed to restore gallery folder`);
+            notyf.error(error?.message || t`Unknown error`, t`Failed to restore gallery folder`);
         }
     };
 
@@ -521,7 +521,7 @@ async function makeMovable(url: any) {
         deleteModeActive = !deleteModeActive;
         galleryDeleteMode.classList.toggle('warning', deleteModeActive);
         if (deleteModeActive) {
-            toastr.info(t`Delete mode is ON. Click on images you want to delete.`);
+            notyf.info(t`Delete mode is ON. Click on images you want to delete.`);
         }
     });
 

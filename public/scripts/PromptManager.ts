@@ -821,7 +821,7 @@ class PromptManager {
                                 const data = JSON.parse(fileContent.toString());
                                 this.import(data);
                             } catch (err) {
-                                toastr.error(t`An error occurred while importing prompts. More info available in console.`);
+                                notyf.error(t`An error occurred while importing prompts. More info available in console.`);
                                 console.log('An error occurred while importing prompts');
                                 // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                                 console.log(err.toString());
@@ -2156,7 +2156,7 @@ class PromptManager {
 
         if (false === this.validateObject(controlObj, importData)) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.warning(t`Could not import prompts. Export failed validation.`);
+            notyf.warning(t`Could not import prompts. Export failed validation.`);
             return;
         }
 
@@ -2185,7 +2185,7 @@ class PromptManager {
         }
 
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.success(t`Prompt import complete.`);
+        notyf.success(t`Prompt import complete.`);
         this.saveServiceSettings().then(() => this.render());
     }
 

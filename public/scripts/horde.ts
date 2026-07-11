@@ -152,7 +152,7 @@ function validateHordeModel() {
 
     if (selectedModels.length === 0) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.warning('No Horde model selected or the selected models are no longer available. Please choose another model');
+        notyf.warning('No Horde model selected or the selected models are no longer available. Please choose another model');
         throw new Error('No Horde model available');
     }
 
@@ -254,7 +254,7 @@ export async function generateHorde(prompt, params, signal, reportProgress) {
 
     if (!response.ok) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.error(response.statusText, 'Horde generation failed');
+        notyf.error(response.statusText, 'Horde generation failed');
         throw new Error(`Horde generation failed: ${response.statusText}`);
     }
 
@@ -263,7 +263,7 @@ export async function generateHorde(prompt, params, signal, reportProgress) {
     if (responseJson.error) {
         const reason = responseJson.error?.message || 'Unknown error';
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.error(reason, 'Horde generation failed');
+        notyf.error(reason, 'Horde generation failed');
         throw new Error(`Horde generation failed: ${reason}`);
     }
 
@@ -282,13 +282,13 @@ export async function generateHorde(prompt, params, signal, reportProgress) {
 
         if (statusCheckJson.faulted === true) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.error('Horde request faulted. Please try again.');
+            notyf.error('Horde request faulted. Please try again.');
             throw new Error('Horde generation failed: Faulted');
         }
 
         if (statusCheckJson.is_possible === false) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.error('There are no Horde workers that are able to generate text with your request. Please change the parameters or try again later.');
+            notyf.error('There are no Horde workers that are able to generate text with your request. Please change the parameters or try again later.');
             throw new Error('Horde generation failed: Unsatisfiable request');
         }
 
@@ -383,7 +383,7 @@ async function showKudos() {
 
     if (!response.ok) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.warning('Could not load user info from Horde. Please try again later.');
+        notyf.warning('Could not load user info from Horde. Please try again later.');
         return;
     }
 
@@ -391,14 +391,14 @@ async function showKudos() {
 
     if (data.anonymous) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.info('You are in anonymous mode. Set your personal Horde API key to see kudos.');
+        notyf.info('You are in anonymous mode. Set your personal Horde API key to see kudos.');
         return;
     }
 
     console.log('Horde user data', data.user, 'shared key data', data.sharedKey);
     const kudos = data.sharedKey?.kudos ?? data.user?.kudos ?? 0;
     // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-    toastr.info(`Kudos: ${kudos}`, data.user.username);
+    notyf.info(`Kudos: ${kudos}`, data.user.username);
 }
 
 /**
@@ -426,7 +426,7 @@ function hordeModelQueueStateString(model) {
 export function isHordeGenerationNotAllowed() {
     if (main_api == 'koboldhorde' && kai_settings.preset_settings == 'gui') {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.error(t`GUI Settings preset is not supported for Horde. Please select another preset.`);
+        notyf.error(t`GUI Settings preset is not supported for Horde. Please select another preset.`);
         return true;
     }
 
@@ -544,7 +544,7 @@ export function initHorde() {
         const key = String((document.getElementById('horde_api_key') as HTMLInputElement | null)?.value ?? '').trim();
         if (!key) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.warning(t`Please enter your Horde API key`);
+            notyf.warning(t`Please enter your Horde API key`);
             return;
         }
         // @ts-expect-error TS(2554) FIXME: Expected 3-4 arguments, but got 2.

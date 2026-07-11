@@ -841,10 +841,10 @@ export class ToolManager {
             const isStealth = ToolManager.isStealthTool(name);
             const message = await ToolManager.formatToolCallMessage(name, parameters);
             // @ts-expect-error TS(2552) FIXME: Cannot find name 'toastr'. Did you mean 'toast'?
-            const toast = message && toastr.info(message, 'Tool Calling', { timeOut: 0 });
+            const toast = message && notyf.info(message, 'Tool Calling', { timeOut: 0 });
             const toolResult = await ToolManager.invokeFunctionTool(name, parameters);
             // @ts-expect-error TS(2552) FIXME: Cannot find name 'toastr'. Did you mean 'toast'?
-            toastr.clear(toast);
+            notyf.dismiss(toast);
             console.log('[ToolManager] Function tool result:', result);
 
             // Handle tool errors — still create an invocation so the LLM sees the failure
@@ -976,7 +976,7 @@ export class ToolManager {
     // @ts-expect-error TS(7006) FIXME: Parameter 'errors' implicitly has an 'any' type.
     static showToolCallError(errors) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.error('An error occurred while invoking function tools. Click here for more details.', 'Tool Calling', {
+        notyf.error('An error occurred while invoking function tools. Click here for more details.', 'Tool Calling', {
             // @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
             onclick: () => Popup.show.text('Tool Calling Errors', DOMPurify.sanitize(errors.map(e => `${e.cause}: ${e.message}`).join('<br>'))),
             timeOut: 5000,

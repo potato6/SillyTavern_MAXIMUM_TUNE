@@ -242,7 +242,7 @@ async function validateGroup(group) {
         const character = characters.find(x => x.avatar === member || x.name === member);
         if (!character) {
             const msg = t`Warning: Listed member ${member} does not exist as a character. It will be removed from the group.`;
-            toastr.warning(msg, t`Group Validation`);
+            notyf.warning(msg, t`Group Validation`);
             console.warn(msg);
             dirty = true;
         }
@@ -727,7 +727,7 @@ async function saveGroupChat(groupId, shouldSaveGroup, force = false) {
         const isIntegrityError = errorData?.error === 'integrity' && !force;
         if (!isIntegrityError) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.error(t`Check the server connection and reload the page to prevent data loss.`, t`Group Chat could not be saved`);
+            notyf.error(t`Check the server connection and reload the page to prevent data loss.`, t`Group Chat could not be saved`);
             console.error('Group chat could not be saved', response);
             return;
         }
@@ -1155,7 +1155,7 @@ async function generateGroupWrapper(byAutoMode, type = null, params = {}) {
             activatedMembers = activateSwipe(group.members, { allowSystem: false });
 
             if (activatedMembers.length === 0) {
-                toastr.warning(t`Deleted group member swiped. To get a reply, add them back to the group.`);
+                notyf.warning(t`Deleted group member swiped. To get a reply, add them back to the group.`);
                 throw new Error('Deleted group member swiped');
             }
         } else if (type === 'impersonate') {
@@ -1172,7 +1172,7 @@ async function generateGroupWrapper(byAutoMode, type = null, params = {}) {
         }
 
         if (activatedMembers.length === 0) {
-            //toastr.warning('All group members are disabled. Enable at least one to get a reply.');
+            //notyf.warning('All group members are disabled. Enable at least one to get a reply.');
 
             // Send user message as is
             const bias = getBiasStrings(userInput, type);
@@ -2057,12 +2057,12 @@ async function onDeleteGroupClick() {
     // @ts-expect-error TS(7005) FIXME: Variable 'openGroupId' implicitly has an 'any' typ... Remove this comment to see the full error message
     if (!openGroupId) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.warning(t`Currently no group selected.`);
+        notyf.warning(t`Currently no group selected.`);
         return;
     }
     if (is_group_generating) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.warning(t`Not so fast! Wait for the characters to stop typing before deleting the group.`);
+        notyf.warning(t`Not so fast! Wait for the characters to stop typing before deleting the group.`);
         return;
     }
 
@@ -2473,7 +2473,7 @@ function updateFavButtonState(state) {
 export async function openGroupById(groupId) {
     if (isChatSaving) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.info(t`Please wait until the chat is saved before switching characters.`, t`Your chat is still saving...`);
+        notyf.info(t`Please wait until the chat is saved before switching characters.`, t`Your chat is still saving...`);
         return false;
     }
 
@@ -2513,7 +2513,7 @@ export async function openGroupById(groupId) {
 async function openCharacterDefinition(characterSelect) {
     if (is_group_generating) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.warning(t`Can't peek a character while group reply is being generated`);
+        notyf.warning(t`Can't peek a character while group reply is being generated`);
         console.warn('Can\'t peek a character def while group reply is being generated');
         return;
     }
@@ -2742,7 +2742,7 @@ export async function deleteGroupChatByName(groupId, chatName) {
 
     if (!response.ok) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.error(t`Check the server connection and reload the page to prevent data loss.`, t`Group chat could not be deleted`);
+        notyf.error(t`Check the server connection and reload the page to prevent data loss.`, t`Group chat could not be deleted`);
         console.error('Group chat could not be deleted');
         return;
     }
@@ -2885,7 +2885,7 @@ export async function saveGroupBookmarkChat(groupId, name, metadata, mesId, chat
 
     if (!response.ok) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.error(t`Check the server connection and reload the page to prevent data loss.`, t`Group chat could not be saved`);
+        notyf.error(t`Check the server connection and reload the page to prevent data loss.`, t`Group chat could not be saved`);
         console.error('Group chat could not be saved', response);
     }
 }

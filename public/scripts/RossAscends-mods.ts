@@ -1236,7 +1236,7 @@ export function initRossMods() {
                     behavior: 'smooth',
                 });
             } else {
-                toastr.warning('Context line not found, send a message first!');
+                notyf.warning('Context line not found, send a message first!');
             }
             return;
         }

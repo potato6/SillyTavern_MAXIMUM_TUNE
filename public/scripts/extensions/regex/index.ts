@@ -313,7 +313,7 @@ class RegexPresetManager {
                         return foundId;
                     }
 
-                    !quiet && toastr.warning(`Regex preset "${name}" not found`);
+                    !quiet && notyf.warning(`Regex preset "${name}" not found`);
                     return '';
                 }
 
@@ -413,7 +413,7 @@ class RegexPresetManager {
         // @ts-expect-error TS(2339): Property 'id' does not exist on type 'never'.
         const preset = extension_settings.regex_presets.find(p => p.id === presetId);
         if (!preset) {
-            toastr.error(t`Could not find the selected preset.`);
+            notyf.error(t`Could not find the selected preset.`);
             return;
         }
 
@@ -463,7 +463,7 @@ class RegexPresetManager {
         const existingPreset = isUpdate ? extension_settings.regex_presets.find(p => p.id === presetId) : null;
 
         if (isUpdate && !existingPreset) {
-            toastr.error(t`Could not find the preset to update.`);
+            notyf.error(t`Could not find the preset to update.`);
             return;
         }
 
@@ -497,7 +497,7 @@ class RegexPresetManager {
         extension_settings.regex_presets.forEach(p => { p.isSelected = p.id === id; });
         saveSettingsDebounced();
 
-        toastr.success(isUpdate ? t`Regex preset updated` : t`Regex preset saved`);
+        notyf.success(isUpdate ? t`Regex preset updated` : t`Regex preset saved`);
     }
 
     /**
@@ -509,7 +509,7 @@ class RegexPresetManager {
         // @ts-expect-error TS(2339): Property 'id' does not exist on type 'never'.
         const presetIndex = extension_settings.regex_presets.findIndex(p => p.id === presetId);
         if (presetIndex === -1) {
-            toastr.error(t`Could not find the preset to delete.`);
+            notyf.error(t`Could not find the preset to delete.`);
             return;
         }
 
@@ -527,7 +527,7 @@ class RegexPresetManager {
         extension_settings.regex_presets.forEach((p, i) => { p.isSelected = i === 0; });
         saveSettingsDebounced();
 
-        toastr.success(t`Regex preset deleted`);
+        notyf.success(t`Regex preset deleted`);
     }
 }
 
@@ -576,18 +576,18 @@ async function saveRegexScript(regexScript: any, existingScriptIndex: any, scrip
 
     // Is the script name undefined or empty?
     if (!regexScript.scriptName) {
-        toastr.error(t`Could not save regex script: The script name was undefined or empty!`);
+        notyf.error(t`Could not save regex script: The script name was undefined or empty!`);
         return;
     }
 
     // Is a find regex present?
     if (regexScript.findRegex.length === 0) {
-        toastr.warning(t`This regex script will not work, but was saved anyway: A find regex isn't present.`);
+        notyf.warning(t`This regex script will not work, but was saved anyway: A find regex isn't present.`);
     }
 
     // Is there someplace to place results?
     if (regexScript.placement.length === 0) {
-        toastr.warning(t`This regex script will not work, but was saved anyway: One "Affects" checkbox must be selected!`);
+        notyf.warning(t`This regex script will not work, but was saved anyway: One "Affects" checkbox must be selected!`);
     }
 
     if (existingScriptIndex !== -1) {
@@ -736,11 +736,11 @@ async function loadRegexScripts() {
         });
         scriptHtml.find('.move_to_scoped')[0].addEventListener('click', async function () {
             if (this_chid === undefined) {
-                toastr.error(t`No character selected.`);
+                notyf.error(t`No character selected.`);
                 return;
             }
             if (selected_group) {
-                toastr.error(t`Cannot edit scoped scripts in group chats.`);
+                notyf.error(t`Cannot edit scoped scripts in group chats.`);
                 return;
             }
             const confirm = await callGenericPopup(t`Are you sure you want to move this regex script to scoped?`, POPUP_TYPE.CONFIRM);
@@ -835,7 +835,7 @@ async function onRegexEditorOpenClick(existingId: any, scriptType: any) {
             if (existingScript.scriptName) {
                 editorHtml.find('.regex_script_name').val(existingScript.scriptName);
             } else {
-                toastr.error('This script doesn\'t have a name! Please delete it.');
+                notyf.error('This script doesn\'t have a name! Please delete it.');
                 return;
             }
 
@@ -1345,7 +1345,7 @@ async function onRegexDebuggerOpenClick() {
 
         saveSettingsDebounced();
         await loadRegexScripts();
-        toastr.success(t`Regex script order saved!`);
+        notyf.success(t`Regex script order saved!`);
 
         const currentPopupContent = $('div:has(> #regex_debugger_rules)');
         populateDebuggerRuleList(currentPopupContent);
@@ -1506,7 +1506,7 @@ function migrateSettings() {
  */
 function runRegexCallback(args: any, value: any) {
     if (!args.name) {
-        toastr.warning('No regex script name provided.');
+        notyf.warning('No regex script name provided.');
         return value;
     }
 
@@ -1516,7 +1516,7 @@ function runRegexCallback(args: any, value: any) {
     for (const script of scripts) {
         if (script.scriptName.toLowerCase() === scriptName.toLowerCase()) {
             if (script.disabled) {
-                toastr.warning(t`Regex script "${scriptName}" is disabled.`);
+                notyf.warning(t`Regex script "${scriptName}" is disabled.`);
                 return value;
             }
 
@@ -1525,7 +1525,7 @@ function runRegexCallback(args: any, value: any) {
         }
     }
 
-    toastr.warning(`Regex script "${scriptName}" not found.`);
+    notyf.warning(`Regex script "${scriptName}" not found.`);
     return value;
 }
 
@@ -1547,7 +1547,7 @@ async function toggleRegexCallback(args: any, scriptName: any) {
     const script = scripts.find(s => equalsIgnoreCaseAndAccents(s.scriptName, scriptName));
 
     if (!script) {
-        toastr.warning(t`Regex script '${scriptName}' not found.`);
+        notyf.warning(t`Regex script '${scriptName}' not found.`);
         return '';
     }
 
@@ -1568,9 +1568,9 @@ async function toggleRegexCallback(args: any, scriptName: any) {
 
     await saveRegexScript(script, index, scriptType);
     if (script.disabled) {
-        !quiet && toastr.success(t`Regex script '${scriptName}' has been disabled.`);
+        !quiet && notyf.success(t`Regex script '${scriptName}' has been disabled.`);
     } else {
-        !quiet && toastr.success(t`Regex script '${scriptName}' has been enabled.`);
+        !quiet && notyf.success(t`Regex script '${scriptName}' has been enabled.`);
     }
 
     return script.scriptName || '';
@@ -1609,10 +1609,10 @@ async function onRegexImportObjectChange(regexScript: any, scriptType: any) {
 
         saveSettingsDebounced();
         await loadRegexScripts();
-        toastr.success(t`Regex script "${regexScript.scriptName}" imported.`);
+        notyf.success(t`Regex script "${regexScript.scriptName}" imported.`);
     } catch (error) {
         console.log(error);
-        toastr.error(t`Invalid regex object.`);
+        notyf.error(t`Invalid regex object.`);
         return;
     }
 }
@@ -1624,7 +1624,7 @@ async function onRegexImportObjectChange(regexScript: any, scriptType: any) {
  */
 async function onRegexImportFileChange(file: any, scriptType: any) {
     if (!file) {
-        toastr.error('No file provided.');
+        notyf.error('No file provided.');
         return;
     }
 
@@ -1640,7 +1640,7 @@ async function onRegexImportFileChange(file: any, scriptType: any) {
         }
     } catch (error) {
         console.log(error);
-        toastr.error('Invalid JSON file.');
+        notyf.error('Invalid JSON file.');
         return;
     }
 }
@@ -1728,7 +1728,7 @@ async function checkCharEmbeddedRegexScripts() {
  * @param {string} presetName The name of the preset
  */
 function notifyReloadCurrentChat(presetName: any) {
-    toastr.info(
+    notyf.info(
         t`Reload the chat for regex to take effect` + '<br><u>' + t`Click here to reload immediately` + '</u>',
         t`Preset '${escapeHtml(presetName)}' contains enabled regex scripts`,
         {
@@ -1834,12 +1834,12 @@ export async function init() {
     // @ts-expect-error TS(2531): Object is possibly 'null'.
     document.getElementById('open_scoped_editor').addEventListener('click', function () {
         if (this_chid === undefined) {
-            toastr.error(t`No character selected.`);
+            notyf.error(t`No character selected.`);
             return;
         }
 
         if (selected_group) {
-            toastr.error(t`Cannot edit scoped scripts in group chats.`);
+            notyf.error(t`Cannot edit scoped scripts in group chats.`);
             return;
         }
 
@@ -1906,7 +1906,7 @@ export async function init() {
     async function bulkToggleRegexScripts(newState: any) {
         const scripts = getSelectedScripts().filter(script => script.disabled === newState);
         if (scripts.length === 0) {
-            toastr.warning(newState
+            notyf.warning(newState
                 ? t`No regex scripts selected for enabling.`
                 : t`No regex scripts selected for disabling.`,
             );
@@ -1940,7 +1940,7 @@ export async function init() {
     async function bulkMoveRegexScript(toType: any) {
         const scripts = getSelectedScripts();
         if (scripts.length === 0) {
-            toastr.warning(t`No regex scripts selected for moving.`);
+            notyf.warning(t`No regex scripts selected for moving.`);
             return;
         }
         for (const script of scripts) {
@@ -1970,11 +1970,11 @@ export async function init() {
     // @ts-expect-error TS(2531): Object is possibly 'null'.
     document.getElementById('bulk_regex_move_to_scoped').addEventListener('click', async () => {
         if (this_chid === undefined) {
-            toastr.error(t`No character selected.`);
+            notyf.error(t`No character selected.`);
             return;
         }
         if (selected_group) {
-            toastr.error(t`Cannot edit scoped scripts in group chats.`);
+            notyf.error(t`Cannot edit scoped scripts in group chats.`);
             return;
         }
         const confirm = await callGenericPopup(t`Are you sure you want to move the selected regex scripts to scoped?`, POPUP_TYPE.CONFIRM);
@@ -1997,7 +1997,7 @@ export async function init() {
     document.getElementById('bulk_delete_regex').addEventListener('click', async function () {
         const scripts = getSelectedScripts();
         if (scripts.length === 0) {
-            toastr.warning(t`No regex scripts selected for deletion.`);
+            notyf.warning(t`No regex scripts selected for deletion.`);
             return;
         }
         const confirm = await callGenericPopup(t`Are you sure you want to delete the selected regex scripts?`, POPUP_TYPE.CONFIRM);
@@ -2016,7 +2016,7 @@ export async function init() {
     document.getElementById('bulk_export_regex').addEventListener('click', async function () {
         const scripts = getSelectedScripts();
         if (scripts.length === 0) {
-            toastr.warning(t`No regex scripts selected for export.`);
+            notyf.warning(t`No regex scripts selected for export.`);
             return;
         }
         const fileName = `regex-${new Date().toISOString()}.json`;
@@ -2071,12 +2071,12 @@ export async function init() {
     // @ts-expect-error TS(2531): Object is possibly 'null'.
     document.getElementById('regex_scoped_toggle').addEventListener('input', function () {
         if (this_chid === undefined) {
-            toastr.error(t`No character selected.`);
+            notyf.error(t`No character selected.`);
             return;
         }
 
         if (selected_group) {
-            toastr.error(t`Cannot edit scoped scripts in group chats.`);
+            notyf.error(t`Cannot edit scoped scripts in group chats.`);
             return;
         }
 
@@ -2194,7 +2194,7 @@ export async function init() {
         /** @param {object} _ @param {string} name */
         callback: (_: any, name: any) => {
             if (!name) {
-                toastr.warning('No regex script name provided.');
+                notyf.warning('No regex script name provided.');
                 return '';
             }
 
@@ -2202,7 +2202,7 @@ export async function init() {
             const script = scripts.find(s => equalsIgnoreCaseAndAccents(s.scriptName, name));
 
             if (!script) {
-                toastr.warning(`Regex script "${name}" not found.`);
+                notyf.warning(`Regex script "${name}" not found.`);
                 return '';
             }
 

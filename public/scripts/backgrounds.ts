@@ -365,7 +365,7 @@ function highlightLockedBackground() {
 function onLockBackgroundClick(event = null) {
     if (!getCurrentChatId()) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.warning(t`Select a chat to lock the background for it`);
+        notyf.warning(t`Select a chat to lock the background for it`);
         return;
     }
 
@@ -475,7 +475,7 @@ async function onCopyToSystemBackgroundClick(e) {
 
     if (!bgFile.ok) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.warning('Failed to copy background');
+        notyf.warning('Failed to copy background');
         return;
     }
 
@@ -605,7 +605,7 @@ async function onRenameBackgroundClick(e) {
         highlightNewBackground(bgNames.newBg);
     } else {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.warning('Failed to rename background');
+        notyf.warning('Failed to rename background');
     }
 }
 
@@ -732,7 +732,7 @@ async function autoBackgroundCommand() {
     const options = bgTitles.map(x => ({ element: x, text: x.innerText.trim() })).filter(x => x.text.length > 0);
     if (options.length == 0) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.warning('No backgrounds to choose from. Please upload some images to the "backgrounds" folder.');
+        notyf.warning('No backgrounds to choose from. Please upload some images to the "backgrounds" folder.');
         return '';
     }
 
@@ -753,7 +753,7 @@ async function autoBackgroundCommand() {
         }
 
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.warning('No match found. Please try again.');
+        notyf.warning('No match found. Please try again.');
         return '';
     }
 
@@ -1151,7 +1151,7 @@ function updateGroupFolderControlsVisibility() {
 async function selectFoldersForGroupAction(headingText) {
     if (folderList.length === 0) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.info(t`Create a folder first`);
+        notyf.info(t`Create a folder first`);
         return null;
     }
 
@@ -1245,14 +1245,14 @@ async function updateFolderAssignments(bgFiles, folderId, isRemove) {
 async function onAddSelectedToFolder() {
     if (getActiveBackgroundTab() !== BG_SOURCES.GLOBAL) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.warning(t`Folder actions are only available in the Global tab`);
+        notyf.warning(t`Folder actions are only available in the Global tab`);
         return;
     }
 
     const bgFiles = Array.from(selectedSystemBackgroundFiles);
     if (bgFiles.length === 0) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.info(t`Select one or more backgrounds first`);
+        notyf.info(t`Select one or more backgrounds first`);
         return;
     }
 
@@ -1284,15 +1284,15 @@ async function onAddSelectedToFolder() {
         setBackgroundSelectionMode(false);
         if (totalAdded > 0) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.success(t`Added backgrounds to ${folderIds.length} folder(s)`);
+            notyf.success(t`Added backgrounds to ${folderIds.length} folder(s)`);
         } else {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.info(t`Selected backgrounds are already in the chosen folders`);
+            notyf.info(t`Selected backgrounds are already in the chosen folders`);
         }
     } catch (error) {
         console.error('Error adding selected backgrounds to folder:', error);
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.error(t`Failed to update folder assignment`);
+        notyf.error(t`Failed to update folder assignment`);
     }
 }
 
@@ -1302,21 +1302,21 @@ async function onAddSelectedToFolder() {
 async function onRemoveSelectedFromCurrentFolder() {
     if (getActiveBackgroundTab() !== BG_SOURCES.GLOBAL) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.warning(t`Folder actions are only available in the Global tab`);
+        notyf.warning(t`Folder actions are only available in the Global tab`);
         return;
     }
 
     // @ts-expect-error TS(7005) FIXME: Variable 'activeFolderId' implicitly has an 'any' ... Remove this comment to see the full error message
     if (!activeFolderId) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.info(t`Open a folder first`);
+        notyf.info(t`Open a folder first`);
         return;
     }
 
     const bgFiles = Array.from(selectedSystemBackgroundFiles);
     if (bgFiles.length === 0) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.info(t`Select one or more backgrounds first`);
+        notyf.info(t`Select one or more backgrounds first`);
         return;
     }
 
@@ -1327,11 +1327,11 @@ async function onRemoveSelectedFromCurrentFolder() {
         highlightSelectedBackground();
         setBackgroundSelectionMode(false);
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.success(t`Removed ${bgFiles.length} background(s) from folder`);
+        notyf.success(t`Removed ${bgFiles.length} background(s) from folder`);
     } catch (error) {
         console.error('Error removing selected backgrounds from current folder:', error);
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.error(t`Failed to update folder assignment`);
+        notyf.error(t`Failed to update folder assignment`);
     }
 }
 
@@ -1342,7 +1342,7 @@ async function onCreateFolder() {
     const currentTab = getActiveBackgroundTab();
     if (currentTab !== BG_SOURCES.GLOBAL) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.warning(t`Folders can only be created in the Global tab`);
+        notyf.warning(t`Folders can only be created in the Global tab`);
         return;
     }
 
@@ -1361,12 +1361,12 @@ async function onCreateFolder() {
             folderList.push(folder);
             renderFolderGrid();
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.success(t`Folder created: ${folder.name}`);
+            notyf.success(t`Folder created: ${folder.name}`);
         }
     } catch (error) {
         console.error('Error creating folder:', error);
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.error(t`Failed to create folder`);
+        notyf.error(t`Failed to create folder`);
     }
 }
 
@@ -1393,12 +1393,12 @@ async function onRenameFolder(folderId) {
             folder.name = newName.trim();
             renderFolderGrid();
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.success(t`Folder renamed`);
+            notyf.success(t`Folder renamed`);
         }
     } catch (error) {
         console.error('Error renaming folder:', error);
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.error(t`Failed to rename folder`);
+        notyf.error(t`Failed to rename folder`);
     }
 }
 
@@ -1438,12 +1438,12 @@ async function onDeleteFolder(folderId) {
             }
             renderFolderGrid();
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.success(t`Folder deleted`);
+            notyf.success(t`Folder deleted`);
         }
     } catch (error) {
         console.error('Error deleting folder:', error);
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.error(t`Failed to delete folder`);
+        notyf.error(t`Failed to delete folder`);
     }
 }
 
@@ -1455,7 +1455,7 @@ async function onDeleteFolder(folderId) {
 async function onAssignToFolder(bgFile) {
     if (folderList.length === 0) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.info(t`Create a folder first`);
+        notyf.info(t`Create a folder first`);
         return;
     }
 
@@ -1527,11 +1527,11 @@ async function onAssignToFolder(bgFile) {
         }
 
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.success(t`Folder assignment updated`);
+        notyf.success(t`Folder assignment updated`);
     } catch (error) {
         console.error('Error assigning to folder:', error);
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.error(t`Failed to update folder assignment`);
+        notyf.error(t`Failed to update folder assignment`);
     }
 }
 
@@ -1564,12 +1564,12 @@ async function onSetFolderCover(bgFile) {
                 }
             }
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.success(t`Folder cover updated`);
+            notyf.success(t`Folder cover updated`);
         }
     } catch (error) {
         console.error('Error setting folder cover:', error);
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.error(t`Failed to set folder cover`);
+        notyf.error(t`Failed to set folder cover`);
     }
 }
 
@@ -1769,7 +1769,7 @@ async function convertFileIfVideo(formData) {
     }
     if (typeof globalThis.convertVideoToAnimatedWebp !== 'function') {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.warning(t`Click here to install the Video Background Loader extension`, t`Video background uploads require a downloadable add-on`, {
+        notyf.warning(t`Click here to install the Video Background Loader extension`, t`Video background uploads require a downloadable add-on`, {
             timeOut: 0,
             extendedTimeOut: 0,
             onclick: () => openThirdPartyExtensionMenu('https://github.com/SillyTavern/Extension-VideoBackgroundLoader'),
@@ -1781,7 +1781,7 @@ async function convertFileIfVideo(formData) {
     let toastMessage = jQuery();
     try {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastMessage = toastr.info(t`Preparing video for upload. This may take several minutes.`, t`Please wait`, { timeOut: 0, extendedTimeOut: 0 });
+        toastMessage = notyf.info(t`Preparing video for upload. This may take several minutes.`, t`Please wait`, { timeOut: 0, extendedTimeOut: 0 });
         const sourceBuffer = await file.arrayBuffer();
         const convertedBuffer = await globalThis.convertVideoToAnimatedWebp({ buffer: new Uint8Array(sourceBuffer), name: file.name });
         const convertedFileName = file.name.replace(/\.[^/.]+$/, '.webp');
@@ -1793,7 +1793,7 @@ async function convertFileIfVideo(formData) {
         toastMessage.remove();
         console.error('Error converting video to animated webp:', error);
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.error(t`Error converting video to animated webp`);
+        notyf.error(t`Error converting video to animated webp`);
     }
 }
 
@@ -1839,7 +1839,7 @@ async function uploadChatBackground(formData) {
     try {
         if (!getCurrentChatId()) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.warning(t`Select a chat to upload a background for it`);
+            notyf.warning(t`Select a chat to upload a background for it`);
             return;
         }
         if (!formData.has('avatar')) {

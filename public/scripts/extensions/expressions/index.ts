@@ -720,7 +720,7 @@ async function setSpriteFolderCommand({
     if (folder.startsWith('/') || folder.startsWith('\\')) {
         const currentLastMessage = getLastCharacterMessage();
         if (currentLastMessage.name === null && !name) {
-            toastr.error('At least one character message is required to set a sprites subfolder.', 'Provide the name with "name=" argument.');
+            notyf.error('At least one character message is required to set a sprites subfolder.', 'Provide the name with "name=" argument.');
             return '';
         }
         folder = folder.slice(1);
@@ -736,11 +736,11 @@ async function setSpriteFolderCommand({
 
 async function classifyCallback(/** @type {{api: string?, filter: string?, prompt: string?}} */ { api = null, filter = null, prompt = null }, text: any) {
     if (!text) {
-        toastr.error('No text provided');
+        notyf.error('No text provided');
         return '';
     }
     if (api && !Object.keys(EXPRESSION_API).includes(api)) {
-        toastr.error('Invalid API provided');
+        notyf.error('Invalid API provided');
         return '';
     }
 
@@ -749,13 +749,13 @@ async function classifyCallback(/** @type {{api: string?, filter: string?, promp
     const filterAvailable = !isFalseBoolean(filter);
 
     if (expressionApi === EXPRESSION_API.none) {
-        toastr.warning('No classifier API selected');
+        notyf.warning('No classifier API selected');
         return '';
     }
 
     // @ts-expect-error TS(2345): Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
     if (!modules.includes('classify') && expressionApi == EXPRESSION_API.extras) {
-        toastr.warning('Text classification is disabled or not available');
+        notyf.warning('Text classification is disabled or not available');
         return '';
     }
 
@@ -772,7 +772,7 @@ async function setSpriteSlashCommand({
     type ??= 'expression';
     searchTerm = searchTerm.trim().toLowerCase();
     if (!searchTerm) {
-        toastr.error(t`No expression or sprite name provided`, t`Set Sprite`);
+        notyf.error(t`No expression or sprite name provided`, t`Set Sprite`);
         return '';
     }
 
@@ -803,7 +803,7 @@ async function setSpriteSlashCommand({
             ], searchTerm);
             const matchedExpression = results[0]?.item;
             if (!matchedExpression) {
-                toastr.warning(t`No expression found for search term ${searchTerm}`, t`Set Sprite`);
+                notyf.warning(t`No expression found for search term ${searchTerm}`, t`Set Sprite`);
                 return '';
             }
 
@@ -820,7 +820,7 @@ async function setSpriteSlashCommand({
             ], searchTerm);
             const matchedSprite = results[0]?.item;
             if (!matchedSprite) {
-                toastr.warning(t`No sprite file found for search term ${searchTerm}`, t`Set Sprite`);
+                notyf.warning(t`No sprite file found for search term ${searchTerm}`, t`Set Sprite`);
                 return '';
             }
 
@@ -855,7 +855,7 @@ function setFallBackExpressionSlashCommand(args: any, expressionName: any) {
     const expressionMatch = fallbackExpressions.find(expression => includesIgnoreCaseAndAccents(expression, expressionName));
 
     if (!expressionMatch) {
-        toastr.warning(t`No expression found for search term ${expressionName}`, t`Set Fallback Expression`);
+        notyf.warning(t`No expression found for search term ${expressionName}`, t`Set Fallback Expression`);
         return '';
     }
 
@@ -920,19 +920,19 @@ async function uploadSpriteCommand({
 }: any, imageUrl: any) {
     if (!imageUrl) throw new Error('Image URL is required');
     if (!label || typeof label !== 'string') {
-        toastr.error(t`Expression label is required`, t`Error Uploading Sprite`);
+        notyf.error(t`Expression label is required`, t`Error Uploading Sprite`);
         return '';
     }
 
     label = label.replace(/[^a-z]/gi, '').toLowerCase().trim();
     if (!label) {
-        toastr.error(t`Expression label must contain at least one letter`, t`Error Uploading Sprite`);
+        notyf.error(t`Expression label must contain at least one letter`, t`Error Uploading Sprite`);
         return '';
     }
 
     spriteName = spriteName || label;
     if (!validateExpressionSpriteName(label, spriteName)) {
-        toastr.error(t`Invalid sprite name. Must follow the naming pattern for expression sprites.`, t`Error Uploading Sprite`);
+        notyf.error(t`Invalid sprite name. Must follow the naming pattern for expression sprites.`, t`Error Uploading Sprite`);
         return '';
     }
 
@@ -1211,12 +1211,12 @@ export async function getExpressionLabel(text: any, expressionsApi = extension_s
                 return '';
             }
             default: {
-                toastr.error('Invalid API selected');
+                notyf.error('Invalid API selected');
                 return '';
             }
         }
     } catch (error) {
-        toastr.error('Could not classify expression. Check the console or your backend for more information.');
+        notyf.error('Could not classify expression. Check the console or your backend for more information.');
         console.error(error);
         return extension_settings.expressions.fallback_expression;
     }
@@ -1584,7 +1584,7 @@ function chooseSpriteForExpression(spriteFolderName: any, expression: any, { pre
     if (overrideSpriteFile) {
         const searched = sprite.files.find((x: any) => x.fileName === overrideSpriteFile);
         if (searched) spriteFile = searched;
-        else toastr.warning(t`Couldn't find sprite file ${overrideSpriteFile} for expression ${expression}.`, t`Sprite Not Found`);
+        else notyf.warning(t`Couldn't find sprite file ${overrideSpriteFile} for expression ${expression}.`, t`Sprite Not Found`);
     } else if (extension_settings.expressions.allowMultiple && sprite.files.length > 1) {
         // Else calculate next expression, if multiple are allowed
         let possibleFiles = sprite.files;
@@ -1776,17 +1776,17 @@ async function onClickExpressionAddCustom() {
 
     // a-z, 0-9, dashes and underscores only
     if (!/^[a-z0-9-_]+$/.test(expressionName)) {
-        toastr.warning('Invalid custom expression name provided', 'Add Custom Expression');
+        notyf.warning('Invalid custom expression name provided', 'Add Custom Expression');
         return;
     }
 
     if (DEFAULT_EXPRESSIONS.includes(expressionName) || DEFAULT_EXPRESSIONS.some(x => expressionName.startsWith(x))) {
-        toastr.warning('Expression name already exists', 'Add Custom Expression');
+        notyf.warning('Expression name already exists', 'Add Custom Expression');
         return;
     }
     // @ts-expect-error TS(2345): Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
     if (extension_settings.expressions.custom.includes(expressionName)) {
-        toastr.warning('Custom expression already exists', 'Add Custom Expression');
+        notyf.warning('Custom expression already exists', 'Add Custom Expression');
         return;
     }
 
@@ -1824,7 +1824,7 @@ async function onClickExpressionRemoveCustom() {
     const index = extension_settings.expressions.custom.indexOf(selectedExpression);
     extension_settings.expressions.custom.splice(index, 1);
     if (selectedExpression == extension_settings.expressions.fallback_expression) {
-        toastr.warning(`Deleted custom expression '${selectedExpression}' that was also selected as the fallback expression.\nFallback expression has been reset to '${DEFAULT_FALLBACK_EXPRESSION}'.`, 'Remove Custom Expression');
+        notyf.warning(`Deleted custom expression '${selectedExpression}' that was also selected as the fallback expression.\nFallback expression has been reset to '${DEFAULT_FALLBACK_EXPRESSION}'.`, 'Remove Custom Expression');
         // @ts-expect-error TS(2322): Type '"joy"' is not assignable to type 'undefined'... Remove this comment to see the full error message
         extension_settings.expressions.fallback_expression = DEFAULT_FALLBACK_EXPRESSION;
     }
@@ -1916,7 +1916,7 @@ async function handleFileUpload(url: any, formData: any) {
         return data ?? {};
     } catch (error) {
         console.error('Error uploading image:', error);
-        toastr.error('Failed to upload image');
+        notyf.error('Failed to upload image');
         return {};
     }
 }
@@ -1997,7 +1997,7 @@ async function onClickExpressionUpload(this: any, event: any) {
 
                 if (input) {
                     if (!validateExpressionSpriteName(expression, input)) {
-                        toastr.warning(t`The name you entered does not follow the naming schema for the selected expression '${expression}'.`, t`Invalid Expression Sprite Name`);
+                        notyf.warning(t`The name you entered does not follow the naming schema for the selected expression '${expression}'.`, t`Invalid Expression Sprite Name`);
                         return;
                     }
                     spriteName = input;
@@ -2008,7 +2008,7 @@ async function onClickExpressionUpload(this: any, event: any) {
         }
 
         if (!spriteName) {
-            toastr.warning(t`Cancelled uploading sprite.`, t`Upload Cancelled`);
+            notyf.warning(t`Cancelled uploading sprite.`, t`Upload Cancelled`);
             // Reset the input
             e.target.form.reset();
             return;
@@ -2135,13 +2135,13 @@ async function onClickExpressionUploadPackButton() {
         formData.append('name', name);
         formData.append('avatar', file);
 
-        const uploadToast = toastr.info('Please wait...', 'Upload is processing', { timeOut: 0, extendedTimeOut: 0 });
+        const uploadToast = notyf.info('Please wait...', 'Upload is processing', { timeOut: 0, extendedTimeOut: 0 });
         const { count } = await handleFileUpload('/api/sprites/upload-zip', formData);
-        toastr.clear(uploadToast);
+        notyf.dismiss(uploadToast);
 
         // Only show success message if at least one image was uploaded
         if (count) {
-            toastr.success(`Uploaded ${count} image(s) for ${name}`);
+            notyf.success(`Uploaded ${count} image(s) for ${name}`);
         }
 
         // Reset the input
@@ -2182,7 +2182,7 @@ async function onClickExpressionDelete(this: any, event: any) {
             body: JSON.stringify({ name, label: expression, spriteName: fileName }),
         });
     } catch (error) {
-        toastr.error('Failed to delete image. Try again later.');
+        notyf.error('Failed to delete image. Try again later.');
     }
 
     // Refresh sprites list
@@ -2546,14 +2546,14 @@ export async function init() {
             if (typeof name !== 'string') throw new Error('name must be a string');
             if (!name) {
                 if (selected_group) {
-                    toastr.error(t`In group chats, you must specify a character name.`, t`No character name specified`);
+                    notyf.error(t`In group chats, you must specify a character name.`, t`No character name specified`);
                     return '';
                 }
                 name = characters[this_chid]?.avatar;
             }
 
             const char = findChar({ name: name });
-            if (!char) toastr.warning(t`Couldn't find character ${name}.`, t`Character not found`);
+            if (!char) notyf.warning(t`Couldn't find character ${name}.`, t`Character not found`);
 
             // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             const sprite = lastExpression[char?.name ?? name] ?? '';

@@ -58,7 +58,7 @@ async function openSwipePicker(messageId) {
 
     if (!canOpenSwipePickerForMessage(messageId)) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.info(t`This message has no alternate swipes yet.`, t`Jump to Swipe`);
+        notyf.info(t`This message has no alternate swipes yet.`, t`Jump to Swipe`);
         return;
     }
 
@@ -290,7 +290,7 @@ async function openSwipePicker(messageId) {
                 event.stopPropagation();
                 await copyText(swipeText);
                 // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                toastr.info(t`Copied!`, '', { timeOut: 2000 });
+                notyf.info(t`Copied!`, '', { timeOut: 2000 });
             });
 
             // Insert new buttons before the branch button
@@ -367,7 +367,7 @@ async function openSwipePicker(messageId) {
 
             if (!Number.isInteger(targetSwipeNumber) || targetSwipeNumber < 1 || targetSwipeNumber > message.swipes.length) {
                 // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                toastr.warning(t`Enter a swipe ID between 1 and ${message.swipes.length}.`, t`Jump to Swipe`);
+                notyf.warning(t`Enter a swipe ID between 1 and ${message.swipes.length}.`, t`Jump to Swipe`);
                 if (swipeIdInput instanceof HTMLInputElement) {
                     swipeIdInput.focus();
                     swipeIdInput.select();
@@ -448,7 +448,7 @@ async function openSwipePicker(messageId) {
 
     if (targetSwipeId === currentSwipeId) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.info(t`Already showing swipe #${targetSwipeId + 1}.`, t`Jump to Swipe`);
+        notyf.info(t`Already showing swipe #${targetSwipeId + 1}.`, t`Jump to Swipe`);
         return;
     }
 

@@ -213,7 +213,7 @@ async function onVectorizeAllClick() {
         const chatId = getCurrentChatId();
 
         if (!chatId) {
-            toastr.info('No chat selected', 'Vectorization aborted');
+            notyf.info('No chat selected', 'Vectorization aborted');
             return;
         }
 
@@ -232,7 +232,7 @@ async function onVectorizeAllClick() {
 
         while (!finished) {
             if (is_send_press) {
-                toastr.info('Message generation is in progress.', 'Vectorization aborted');
+                notyf.info('Message generation is in progress.', 'Vectorization aborted');
                 throw new Error('Message generation is in progress.');
             }
 
@@ -269,7 +269,7 @@ async function onVectorizeAllClick() {
             }
         }
         if (skippedHashes.size > 0) {
-            toastr.warning(`${skippedHashes.size} message(s) skipped due to errors. Click Vectorize All again to retry.`, 'Vectorization partial');
+            notyf.warning(`${skippedHashes.size} message(s) skipped due to errors. Click Vectorize All again to retry.`, 'Vectorization partial');
         }
     } catch (error) {
         console.error('Vectors: Failed to vectorize all', error);
@@ -548,7 +548,7 @@ async function synchronizeChat(batchSize = 5) {
 
         // @ts-expect-error TS(2571): Object is of type 'unknown'.
         const message = getErrorMessage(error.cause);
-        toastr.error(message, 'Vectorization failed', { preventDuplicates: true });
+        notyf.error(message, 'Vectorization failed', { preventDuplicates: true });
         return null;
     } finally {
         syncBlocked = false;
@@ -752,7 +752,7 @@ async function vectorizeFile(fileText: any, fileName: any, collectionId: any, ch
 
         const batchSize = getBatchSize();
         const toastBody = $('<span>').text('This may take a while. Please wait...');
-        toast = toastr.info(toastBody, `Ingesting file ${escapeHtml(fileName)}`, { closeButton: false, escapeHtml: false, timeOut: 0, extendedTimeOut: 0 });
+        toast = notyf.info(toastBody, `Ingesting file ${escapeHtml(fileName)}`, { closeButton: false, escapeHtml: false, timeOut: 0, extendedTimeOut: 0 });
         const overlapSize = Math.round(chunkSize * overlapPercent / 100);
         const delimiters = getChunkDelimiters();
         // Overlap should not be included in chunk size. It will be later compensated by overlapChunks
@@ -776,12 +776,12 @@ async function vectorizeFile(fileText: any, fileName: any, collectionId: any, ch
             await insertVectorItems(collectionId, chunkedBatch);
         }
 
-        toastr.clear(toast);
+        notyf.dismiss(toast);
         console.log(`Vectors: Inserted ${chunks.length} vector items for file ${fileName} into ${collectionId}`);
         return true;
     } catch (error) {
-        toastr.clear(toast);
-        toastr.error(String(error), 'Failed to vectorize file', { preventDuplicates: true });
+        notyf.dismiss(toast);
+        notyf.error(String(error), 'Failed to vectorize file', { preventDuplicates: true });
         console.error('Vectors: Failed to vectorize file', error);
         return false;
     }
@@ -874,7 +874,7 @@ async function rearrangeChat(chat: any, _contextSize: any, _abort: any, type: an
         const insertedText = getPromptText(queriedMessages);
         setExtensionPrompt(EXTENSION_PROMPT_TAG, insertedText, settings.position, settings.depth, settings.include_wi);
     } catch (error) {
-        toastr.error('Generation interceptor aborted. Check browser console for more details.', 'Vector Storage');
+        notyf.error('Generation interceptor aborted. Check browser console for more details.', 'Vector Storage');
         console.error('Vectors: Failed to rearrange chat', error);
     }
 }
@@ -1363,10 +1363,10 @@ async function purgeAllVectorIndexes() {
         }
 
         console.log('Vectors: Purged all vector indexes');
-        toastr.success('All vector indexes purged', 'Purge successful');
+        notyf.success('All vector indexes purged', 'Purge successful');
     } catch (error) {
         console.error('Vectors: Failed to purge all', error);
-        toastr.error('Failed to purge all vector indexes', 'Purge failed');
+        notyf.error('Failed to purge all vector indexes', 'Purge failed');
     }
 }
 
@@ -1483,11 +1483,11 @@ async function executeWithWebLlmErrorHandling(func: any) {
         switch (error.cause) {
 
             case 'webllm-not-available':
-                toastr.warning('WebLLM is not available. Please install the extension.', 'WebLLM not installed');
+                notyf.warning('WebLLM is not available. Please install the extension.', 'WebLLM not installed');
                 break;
 
             case 'webllm-not-updated':
-                toastr.warning('The installed extension version does not support embeddings.', 'WebLLM update required');
+                notyf.warning('The installed extension version does not support embeddings.', 'WebLLM update required');
                 break;
         }
     }
@@ -1578,20 +1578,20 @@ async function createKoboldCppEmbeddings(items: any) {
 async function onPurgeClick() {
     const chatId = getCurrentChatId();
     if (!chatId) {
-        toastr.info('No chat selected', 'Purge aborted');
+        notyf.info('No chat selected', 'Purge aborted');
         return;
     }
     if (await purgeVectorIndex(chatId)) {
-        toastr.success('Vector index purged', 'Purge successful');
+        notyf.success('Vector index purged', 'Purge successful');
     } else {
-        toastr.error('Failed to purge vector index', 'Purge failed');
+        notyf.error('Failed to purge vector index', 'Purge failed');
     }
 }
 
 async function onViewStatsClick() {
     const chatId = getCurrentChatId();
     if (!chatId) {
-        toastr.info('No chat selected');
+        notyf.info('No chat selected');
         return;
     }
 
@@ -1599,7 +1599,7 @@ async function onViewStatsClick() {
     const totalHashes = hashesInCollection.length;
     const uniqueHashes = hashesInCollection.filter(onlyUnique).length;
 
-    toastr.info(`Total hashes: <b>${totalHashes}</b><br>
+    notyf.info(`Total hashes: <b>${totalHashes}</b><br>
     Unique hashes: <b>${uniqueHashes}</b><br><br>
     I'll mark collected messages with a green circle.`,
     `Stats for chat ${escapeHtml(chatId)}`,
@@ -1685,13 +1685,13 @@ async function onVectorizeAllFilesClick() {
         }
 
         if (allSuccess) {
-            toastr.success('All files vectorized', 'Vectorization successful');
+            notyf.success('All files vectorized', 'Vectorization successful');
         } else {
-            toastr.warning('Some files failed to vectorize. Check browser console for more details.', 'Vector Storage');
+            notyf.warning('Some files failed to vectorize. Check browser console for more details.', 'Vector Storage');
         }
     } catch (error) {
         console.error('Vectors: Failed to vectorize all files', error);
-        toastr.error('Failed to vectorize all files', 'Vectorization failed');
+        notyf.error('Failed to vectorize all files', 'Vectorization failed');
     }
 }
 
@@ -1706,10 +1706,10 @@ async function onPurgeFilesClick() {
             await purgeFileVectorIndex(file.url);
         }
 
-        toastr.success('All files purged', 'Purge successful');
+        notyf.success('All files purged', 'Purge successful');
     } catch (error) {
         console.error('Vectors: Failed to purge all files', error);
-        toastr.error('Failed to purge all files', 'Purge failed');
+        notyf.error('Failed to purge all files', 'Purge failed');
     }
 }
 
@@ -2429,7 +2429,7 @@ export async function init() {
         e.stopPropagation();
 
         if (Object.hasOwn(SillyTavern, 'llm')) {
-            toastr.info('WebLLM is already installed');
+            notyf.info('WebLLM is already installed');
             return;
         }
         openThirdPartyExtensionMenu('https://github.com/SillyTavern/Extension-WebLLM');
@@ -2448,7 +2448,7 @@ export async function init() {
     document.getElementById('vectors_webllm_load')?.addEventListener('click', async () => {
         if (!settings.webllm_model) return;
         await webllmProvider.loadModel(settings.webllm_model);
-        toastr.success('WebLLM model loaded');
+        notyf.success('WebLLM model loaded');
     });
     const elGoogleModel = document.getElementById('vectors_google_model');
     if (elGoogleModel) {
@@ -2594,7 +2594,7 @@ export async function init() {
 
             const parsed = Number(raw);
             if (!Number.isFinite(parsed) || parsed < 0 || parsed > 1) {
-                toastr.warning('Score threshold must be a number between 0 and 1.');
+                notyf.warning('Score threshold must be a number between 0 and 1.');
                 return '';
             }
 
@@ -2624,7 +2624,7 @@ export async function init() {
 
             const parsed = Number(raw);
             if (!Number.isFinite(parsed) || parsed <= 0) {
-                toastr.warning('Query messages must be a number greater than 0.');
+                notyf.warning('Query messages must be a number greater than 0.');
                 return '';
             }
 
@@ -2654,7 +2654,7 @@ export async function init() {
 
             const parsed = Number(raw);
             if (!Number.isFinite(parsed) || parsed <= 0) {
-                toastr.warning('Max entries must be a number greater than 0.');
+                notyf.warning('Max entries must be a number greater than 0.');
                 return '';
             }
 

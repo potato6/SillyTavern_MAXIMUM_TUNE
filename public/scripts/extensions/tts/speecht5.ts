@@ -96,7 +96,7 @@ class SpeechT5TtsProvider {
         $('#speecht5_tts_speaker_upload').on('change', async (event: any) => {
             const file = event.target.files[0];
             if (file.size != 2048) {
-                toastr.error('Invalid speaker file size, expected 2048 bytes');
+                notyf.error('Invalid speaker file size, expected 2048 bytes');
                 return;
             }
 
@@ -125,7 +125,7 @@ class SpeechT5TtsProvider {
 
             const speaker = this.settings.speakers.find((s: any) => s.voice_id === this.settings.speaker);
             if (!speaker) {
-                toastr.error('Speaker not found');
+                notyf.error('Speaker not found');
                 return;
             }
 
@@ -169,7 +169,7 @@ class SpeechT5TtsProvider {
         const speaker = await this.getVoice(voiceId);
 
         if (!speaker) {
-            toastr.error(`Speaker not found: ${voiceId}`, 'TTS Generation Failed');
+            notyf.error(`Speaker not found: ${voiceId}`, 'TTS Generation Failed');
             throw new Error(`Speaker not found: ${voiceId}`);
         }
 
@@ -187,7 +187,7 @@ class SpeechT5TtsProvider {
         );
 
         if (!response.ok) {
-            toastr.error(response.statusText, 'TTS Generation Failed');
+            notyf.error(response.statusText, 'TTS Generation Failed');
             throw new Error(`HTTP ${response.status}: ${await response.text()}`);
         }
 

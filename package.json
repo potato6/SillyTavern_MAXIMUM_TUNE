@@ -109,9 +109,9 @@
         "start:electron": "cd ./src/electron && npm run start",
         "start:no-csrf": "bun server.js --disableCsrf",
         "build:lib": "bun scripts/build-lib.js",
-        "lint": "bun node_modules/eslint/bin/eslint.js \"src/**/*.ts\" \"public/**/*.ts\" ./*.ts",
+        "lint": "bun node_modules/eslint/bin/eslint.js \"src/**/*.ts\" \"public/**/*.ts\" ./*.ts --quiet",
         "lint:fix": "bun node_modules/eslint/bin/eslint.js \"src/**/*.ts\" \"public/**/*.ts\" ./*.ts --fix",
-        "typecheck": "bun node_modules/typescript/lib/tsc.js --noEmit --quiet",
+        "typecheck": "bun node_modules/typescript/lib/tsc.js --noEmit",
         "plugins:update": "bun plugins update",
         "plugins:install": "bun plugins install"
     },

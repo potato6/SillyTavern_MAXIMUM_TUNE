@@ -416,7 +416,7 @@ export async function resetApiSelectedSamplers(tcApiType = '', silent = false) {
         delete selectedSamplers[tcApiType];
         await saveApiSelectedSamplers();
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        if (!silent) toastr.success('Selected samplers cleared.');
+        if (!silent) notyf.success('Selected samplers cleared.');
     } catch (error) {
         console.log('Text Completions: unable to reset selected preset samplers', error);
     }

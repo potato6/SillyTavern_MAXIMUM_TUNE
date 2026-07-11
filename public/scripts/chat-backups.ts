@@ -40,7 +40,7 @@ class BackupsBrowser {
 
         if (!response.ok) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.error(t`Failed to download backup, try again later.`);
+            notyf.error(t`Failed to download backup, try again later.`);
             console.error('Failed to download chat backup:', response.statusText);
             return;
         }
@@ -70,7 +70,7 @@ class BackupsBrowser {
         } catch (error) {
             console.error('Failed to parse chat backup content:', error);
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.error(t`Failed to parse backup content.`);
+            notyf.error(t`Failed to parse backup content.`);
             return;
         }
     }
@@ -90,7 +90,7 @@ class BackupsBrowser {
 
         if (!response.ok) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.error(t`Failed to download backup, try again later.`);
+            notyf.error(t`Failed to download backup, try again later.`);
             console.error('Failed to download chat backup:', response.statusText);
             return;
         }
@@ -102,7 +102,7 @@ class BackupsBrowser {
 
         if (extension !== 'jsonl') {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.warning(t`Only .jsonl files are supported for chat imports.`);
+            notyf.warning(t`Only .jsonl files are supported for chat imports.`);
             return;
         }
 
@@ -124,12 +124,12 @@ class BackupsBrowser {
 
         if (result.length === 0) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.error(t`Failed to import chat backup, try again later.`);
+            notyf.error(t`Failed to import chat backup, try again later.`);
             return;
         }
 
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.success(`Chat imported: ${result.join(', ')}`);
+        notyf.success(`Chat imported: ${result.join(', ')}`);
         await displayPastChats(result);
     }
 
@@ -154,13 +154,13 @@ class BackupsBrowser {
 
         if (!response.ok) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.error(t`Failed to delete backup, try again later.`);
+            notyf.error(t`Failed to delete backup, try again later.`);
             console.error('Failed to delete chat backup:', response.statusText);
             return false;
         }
 
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.success(t`Backup deleted successfully.`);
+        notyf.success(t`Backup deleted successfully.`);
         return true;
     }
 

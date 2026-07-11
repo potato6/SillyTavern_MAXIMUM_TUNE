@@ -308,7 +308,7 @@ export function initDefaultSlashCommands() {
             const apiConfig = CONNECT_API_MAP[text?.toString()?.toLowerCase() ?? ''];
             if (!apiConfig) {
                 // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                toastr.error(t`Error: ${text} is not a valid API`);
+                notyf.error(t`Error: ${text} is not a valid API`);
                 return '';
             }
 
@@ -351,7 +351,7 @@ export function initDefaultSlashCommands() {
 
             const quiet = isTrueBoolean(args?.quiet?.toString());
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'jQuery'.
-            const toast = quiet ? jQuery() : toastr.info(t`API set to ${text}, trying to connect..`);
+            const toast = quiet ? jQuery() : notyf.info(t`API set to ${text}, trying to connect..`);
 
             try {
                 if (connectionRequired) {
@@ -363,7 +363,7 @@ export function initDefaultSlashCommands() {
             }
 
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.clear(toast);
+            notyf.dismiss(toast);
             return text?.toString()?.trim() ?? '';
         },
         returns: t`the current API`,
@@ -408,7 +408,7 @@ export function initDefaultSlashCommands() {
                 } catch {
                     console.warn('Timeout waiting for generation unlock');
                     // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                    toastr.warning(t`Cannot run /impersonate command while the reply is being generated.`);
+                    notyf.warning(t`Cannot run /impersonate command while the reply is being generated.`);
                     return '';
                 }
 
@@ -467,7 +467,7 @@ export function initDefaultSlashCommands() {
                 let resolved = false;
                 const timeOutId = setTimeout(() => {
                     // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                    toastr.error(t`Chat deletion timed out. Please try again.`);
+                    notyf.error(t`Chat deletion timed out. Please try again.`);
                     setResolved();
                 }, 5000);
 
@@ -501,21 +501,21 @@ export function initDefaultSlashCommands() {
         callback: async function doRenameChat(_, chatName) {
             if (!chatName) {
                 // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                toastr.warning(t`Name must be provided as an argument to rename this chat.`);
+                notyf.warning(t`Name must be provided as an argument to rename this chat.`);
                 return '';
             }
 
             const currentChatName = getCurrentChatId();
             if (!currentChatName) {
                 // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                toastr.warning(t`No chat selected that can be renamed.`);
+                notyf.warning(t`No chat selected that can be renamed.`);
                 return '';
             }
 
             await renameChat(currentChatName, chatName.toString());
 
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.success(t`Successfully renamed chat to: ${chatName}`);
+            notyf.success(t`Successfully renamed chat to: ${chatName}`);
             return '';
         },
         unnamedArgumentList: [
@@ -581,7 +581,7 @@ export function initDefaultSlashCommands() {
             await saveSettings();
             await saveChatConditional();
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.success(t`Chat and settings saved.`);
+            notyf.success(t`Chat and settings saved.`);
             return '';
         },
         helpString: t`Forces a save of the current chat and settings`,
@@ -602,7 +602,7 @@ export function initDefaultSlashCommands() {
 
             if (result.length === 0) {
                 // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                if (!quiet) toastr.warning(t`Instruct template '${name}' not found`);
+                if (!quiet) notyf.warning(t`Instruct template '${name}' not found`);
                 return '';
             }
 
@@ -702,7 +702,7 @@ export function initDefaultSlashCommands() {
 
             if (result.length === 0) {
                 // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                if (!quiet) toastr.warning(t`Context template '${name}' not found`);
+                if (!quiet) notyf.warning(t`Context template '${name}' not found`);
                 return '';
             }
 
@@ -2015,26 +2015,26 @@ export function initDefaultSlashCommands() {
         callback: (async ({ field = 'name' }, arg) => {
             if (!selected_group) {
                 // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                toastr.warning(t`Cannot run /member-get command outside of a group chat.`);
+                notyf.warning(t`Cannot run /member-get command outside of a group chat.`);
                 return '';
             }
             if (field === '') {
                 // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                toastr.warning(t`'/member-get field=' argument required!`);
+                notyf.warning(t`'/member-get field=' argument required!`);
                 return '';
             }
             field = field.toString();
             arg = arg.toString();
             if (!['name', 'index', 'id', 'avatar'].includes(field)) {
                 // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                toastr.warning(t`'/member-get field=' argument required!`);
+                notyf.warning(t`'/member-get field=' argument required!`);
                 return '';
             }
             const isId = !isNaN(parseInt(arg));
             const groupMember = findGroupMemberId(arg, true);
             if (!groupMember) {
                 // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                toastr.warning(t`No group member found using ${isId ? 'id' : 'string'} ${arg}`);
+                notyf.warning(t`No group member found using ${isId ? 'id' : 'string'} ${arg}`);
                 return '';
             }
             // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic group member field access
@@ -2272,15 +2272,13 @@ export function initDefaultSlashCommands() {
                 name: 'timeout',
                 description: t`time in milliseconds to display the toast message. Set this and 'extendedTimeout' to 0 to show indefinitely until dismissed.`,
                 typeList: [ARGUMENT_TYPE.NUMBER],
-                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                defaultValue: `${toastr.options.timeOut}`,
+                defaultValue: '4000',
             }),
             SlashCommandNamedArgument.fromProps({
                 name: 'extendedTimeout',
                 description: t`time in milliseconds to display the toast message. Set this and 'timeout' to 0 to show indefinitely until dismissed.`,
                 typeList: [ARGUMENT_TYPE.NUMBER],
-                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                defaultValue: `${toastr.options.extendedTimeOut}`,
+                defaultValue: '10000',
             }),
             SlashCommandNamedArgument.fromProps({
                 name: 'preventDuplicates',
@@ -3640,7 +3638,7 @@ export function initDefaultSlashCommands() {
 
             if (isNaN(messageIndex) || messageIndex < 0 || messageIndex >= chat.length) {
                 // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                toastr.warning(t`Invalid message index: ${index}. Please enter a number between 0 and ${chat.length}.`);
+                notyf.warning(t`Invalid message index: ${index}. Please enter a number between 0 and ${chat.length}.`);
                 console.warn(`WARN: Invalid message index provided for /chat-jump: ${index}. Max index: ${chat.length}`);
                 return '';
             }
@@ -3670,7 +3668,7 @@ export function initDefaultSlashCommands() {
                 flashHighlight(messageElement, 2000);
             } else {
                 // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                toastr.warning(t`Could not find element for message ${messageIndex}. It might not be rendered yet or the index is invalid.`);
+                notyf.warning(t`Could not find element for message ${messageIndex}. It might not be rendered yet or the index is invalid.`);
                 console.warn(`WARN: Element not found for message index ${messageIndex} in /chat-jump.`);
             }
 
@@ -3700,7 +3698,7 @@ export function initDefaultSlashCommands() {
         callback: async () => {
             if (!navigator.clipboard) {
                 // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                toastr.warning(t`Clipboard API not available in this context.`);
+                notyf.warning(t`Clipboard API not available in this context.`);
                 return '';
             }
 
@@ -3710,7 +3708,7 @@ export function initDefaultSlashCommands() {
             } catch (error) {
                 console.error('Error reading clipboard:', error);
                 // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                toastr.warning(t`Failed to read clipboard text. Have you granted the permission?`);
+                notyf.warning(t`Failed to read clipboard text. Have you granted the permission?`);
                 return '';
             }
         },
@@ -4785,7 +4783,7 @@ async function generateRawCallback(args, value) {
     } catch (err) {
         console.error('Error on /genraw generation', err);
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.error(err.message, t`API Error`, { preventDuplicates: true });
+        notyf.error(err.message, t`API Error`, { preventDuplicates: true });
     } finally {
         if (lock) {
             activateSendButtons();
@@ -4834,7 +4832,7 @@ async function generateCallback(args, value) {
     } catch (err) {
         console.error('Error on /gen generation', err);
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.error(err.message, t`API Error`, { preventDuplicates: true });
+        notyf.error(err.message, t`API Error`, { preventDuplicates: true });
     } finally {
         if (lock) {
             activateSendButtons();
@@ -4860,7 +4858,7 @@ async function echoCallback(args, value) {
 
     if (args.severity && !['error', 'warning', 'success', 'info'].includes(args.severity)) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.warning(t`Invalid severity provided for /echo command: ${args.severity}`);
+        notyf.warning(t`Invalid severity provided for /echo command: ${args.severity}`);
         args.severity = null;
     }
 
@@ -4902,7 +4900,7 @@ async function echoCallback(args, value) {
             };
         } else {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.warning(t`Invalid onClick provided for /echo command. This is not a closure`);
+            notyf.warning(t`Invalid onClick provided for /echo command. This is not a closure`);
         }
     }
 
@@ -4917,20 +4915,20 @@ async function echoCallback(args, value) {
     switch (severity) {
         case 'error':
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toast = toastr.error(value, title, options);
+            toast = notyf.error(value, title, options);
             break;
         case 'warning':
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toast = toastr.warning(value, title, options);
+            toast = notyf.warning(value, title, options);
             break;
         case 'success':
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toast = toastr.success(value, title, options);
+            toast = notyf.success(value, title, options);
             break;
         case 'info':
         default:
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toast = toastr.info(value, title, options);
+            toast = notyf.info(value, title, options);
             break;
     }
 
@@ -4957,7 +4955,7 @@ async function addSwipeCallback(args, value) {
 
     if (!lastMessage) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.warning(t`No messages to add swipes to.`);
+        notyf.warning(t`No messages to add swipes to.`);
         return '';
     }
 
@@ -4969,14 +4967,14 @@ async function addSwipeCallback(args, value) {
     // @ts-expect-error TS(2339) FIXME: Property 'is_user' does not exist on type 'never'.
     if (lastMessage.is_user) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.warning(t`Can't add swipes to user messages.`);
+        notyf.warning(t`Can't add swipes to user messages.`);
         return '';
     }
 
     // @ts-expect-error TS(2339) FIXME: Property 'is_system' does not exist on type 'never... Remove this comment to see the full error message
     if (lastMessage.is_system) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.warning(t`Can't add swipes to system messages.`);
+        notyf.warning(t`Can't add swipes to system messages.`);
         return '';
     }
 
@@ -5060,13 +5058,13 @@ async function askCharacter(args, text) {
     // TODO: Maybe support group chats?
     if (selected_group) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.warning(t`Cannot run /ask command in a group chat!`);
+        notyf.warning(t`Cannot run /ask command in a group chat!`);
         return '';
     }
 
     if (!args.name) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.warning(t`You must specify a name of the character to ask.`);
+        notyf.warning(t`You must specify a name of the character to ask.`);
         return '';
     }
 
@@ -5076,7 +5074,7 @@ async function askCharacter(args, text) {
     const character = findChar({ name: args?.name });
     if (!character) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.error(t`Character not found.`);
+        notyf.error(t`Character not found.`);
         return '';
     }
 
@@ -5127,7 +5125,7 @@ async function askCharacter(args, text) {
     try {
         eventSource.once(event_types.MESSAGE_RECEIVED, restoreCharacter);
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.info(t`Asking ${name} something...`);
+        notyf.info(t`Asking ${name} something...`);
         askResult = await Generate('normal');
     } catch (error) {
         restoreCharacter();
@@ -5137,7 +5135,7 @@ async function askCharacter(args, text) {
             await saveChatConditional();
         } else {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.error(t`It is strongly recommended to reload the page.`, t`Something went wrong`);
+            notyf.error(t`It is strongly recommended to reload the page.`, t`Something went wrong`);
         }
     }
 
@@ -5245,7 +5243,7 @@ function performGroupMemberAction(chid, action) {
 async function disableGroupMemberCallback(_, arg) {
     if (!selected_group) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.warning(t`Cannot run /member-disable command outside of a group chat.`);
+        notyf.warning(t`Cannot run /member-disable command outside of a group chat.`);
         return '';
     }
 
@@ -5269,7 +5267,7 @@ async function disableGroupMemberCallback(_, arg) {
 async function enableGroupMemberCallback(_, arg) {
     if (!selected_group) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.warning(t`Cannot run /member-enable command outside of a group chat.`);
+        notyf.warning(t`Cannot run /member-enable command outside of a group chat.`);
         return '';
     }
 
@@ -5293,7 +5291,7 @@ async function enableGroupMemberCallback(_, arg) {
 async function moveGroupMemberUpCallback(_, arg) {
     if (!selected_group) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.warning(t`Cannot run /member-up command outside of a group chat.`);
+        notyf.warning(t`Cannot run /member-up command outside of a group chat.`);
         return '';
     }
 
@@ -5317,7 +5315,7 @@ async function moveGroupMemberUpCallback(_, arg) {
 async function moveGroupMemberDownCallback(_, arg) {
     if (!selected_group) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.warning(t`Cannot run /member-down command outside of a group chat.`);
+        notyf.warning(t`Cannot run /member-down command outside of a group chat.`);
         return '';
     }
 
@@ -5341,13 +5339,13 @@ async function moveGroupMemberDownCallback(_, arg) {
 async function peekCallback(_, arg) {
     if (!selected_group) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.warning(t`Cannot run /member-peek command outside of a group chat.`);
+        notyf.warning(t`Cannot run /member-peek command outside of a group chat.`);
         return '';
     }
 
     if (is_group_generating) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.warning(t`Cannot run /member-peek command while the group reply is generating.`);
+        notyf.warning(t`Cannot run /member-peek command while the group reply is generating.`);
         return '';
     }
 
@@ -5368,7 +5366,7 @@ async function peekCallback(_, arg) {
 async function countGroupMemberCallback() {
     if (!selected_group) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.warning(t`Cannot run /member-count command outside of a group chat.`);
+        notyf.warning(t`Cannot run /member-count command outside of a group chat.`);
         return '';
     }
 
@@ -5384,7 +5382,7 @@ async function countGroupMemberCallback() {
 async function removeGroupMemberCallback(_, arg) {
     if (!selected_group) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.warning(t`Cannot run /member-remove command outside of a group chat.`);
+        notyf.warning(t`Cannot run /member-remove command outside of a group chat.`);
         return '';
     }
 
@@ -5408,7 +5406,7 @@ async function removeGroupMemberCallback(_, arg) {
 async function addGroupMemberCallback(_, name) {
     if (!selected_group) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.warning(t`Cannot run /memberadd command outside of a group chat.`);
+        notyf.warning(t`Cannot run /memberadd command outside of a group chat.`);
         return '';
     }
 
@@ -5434,7 +5432,7 @@ async function addGroupMemberCallback(_, name) {
 
     if (group.members.includes(avatar)) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.warning(t`${character.name} is already a member of this group.`);
+        notyf.warning(t`${character.name} is already a member of this group.`);
         return '';
     }
 
@@ -5461,7 +5459,7 @@ async function triggerGenerationCallback(args, value) {
         } catch {
             console.warn('Timeout waiting for generation unlock');
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.warning(t`Cannot run /trigger command while the reply is being generated.`);
+            notyf.warning(t`Cannot run /trigger command while the reply is being generated.`);
             outerResolve(Promise.resolve(''));
             return '';
         }
@@ -5567,7 +5565,7 @@ async function deleteMessagesByNameCallback(_, name) {
     await reloadCurrentChat();
 
     // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-    toastr.info(t`Deleted ${messagesToDelete.length} messages from ${name}`);
+    notyf.info(t`Deleted ${messagesToDelete.length} messages from ${name}`);
     return '';
 }
 
@@ -5634,7 +5632,7 @@ async function uploadCharacterAvatar(avatarKey, base64Data, { resizePrompt = fal
     if (resizePrompt) {
         if (power_user.never_resize_avatars) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.warning(t`Avatar resizing is disabled in settings. The image will be uploaded as-is.`);
+            notyf.warning(t`Avatar resizing is disabled in settings. The image will be uploaded as-is.`);
         } else {
             const dlg = new Popup(t`Set the crop position of the avatar image`, POPUP_TYPE.CROP, '', { cropImage: base64Data });
             const croppedImage = await dlg.show();
@@ -5689,7 +5687,7 @@ async function uploadCharacterAvatar(avatarKey, base64Data, { resizePrompt = fal
     } catch (error) {
         console.error('Error uploading character avatar:', error);
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.warning(t`Failed to upload avatar: ${error.message}`);
+        notyf.warning(t`Failed to upload avatar: ${error.message}`);
         return false;
     }
 }
@@ -5707,7 +5705,7 @@ async function createCharacterCallback(args) {
 
     if (!name || typeof name !== 'string' || !name.trim()) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.warning(t`Character name is required`);
+        notyf.warning(t`Character name is required`);
         return '';
     }
 
@@ -5760,7 +5758,7 @@ async function createCharacterCallback(args) {
             if (!uploaded && resizePrompt) {
                 // User cancelled the resize dialog, but character was still created
                 // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                toastr.info(t`Character created without avatar (resize cancelled)`);
+                notyf.info(t`Character created without avatar (resize cancelled)`);
             }
         }
 
@@ -5778,12 +5776,12 @@ async function createCharacterCallback(args) {
         }
 
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.success(t`Character "${name}" created successfully`);
+        notyf.success(t`Character "${name}" created successfully`);
         return avatarKey;
     } catch (error) {
         console.error('Error creating character:', error);
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.error(t`Failed to create character: ${error.message}`);
+        notyf.error(t`Failed to create character: ${error.message}`);
         return '';
     }
 }
@@ -5802,7 +5800,7 @@ async function updateCharacterCallback(args) {
         character = findChar({ name: args.char });
         if (!character) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.warning(t`Character "${args.char}" not found`);
+            notyf.warning(t`Character "${args.char}" not found`);
             return '';
         }
         characterIndex = String(characters.indexOf(character));
@@ -5810,7 +5808,7 @@ async function updateCharacterCallback(args) {
         // Use currently selected character
         if (this_chid === undefined || !characters[this_chid]) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.warning(t`No character selected and no char argument provided`);
+            notyf.warning(t`No character selected and no char argument provided`);
             return '';
         }
         character = characters[this_chid];
@@ -5940,7 +5938,7 @@ async function updateCharacterCallback(args) {
 
     if (!hasUpdates) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.warning(t`No fields provided to update`);
+        notyf.warning(t`No fields provided to update`);
         return character.avatar;
     }
 
@@ -5963,7 +5961,7 @@ async function updateCharacterCallback(args) {
             if (!uploaded && resizePrompt) {
                 // User cancelled the resize dialog
                 // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                toastr.warning(t`Avatar update cancelled`);
+                notyf.warning(t`Avatar update cancelled`);
             }
         }
 
@@ -5978,12 +5976,12 @@ async function updateCharacterCallback(args) {
         }
 
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.success(t`Character "${character.name}" updated successfully`);
+        notyf.success(t`Character "${character.name}" updated successfully`);
         return character.avatar;
     } catch (error) {
         console.error('Error updating character:', error);
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.error(t`Failed to update character: ${error.message}`);
+        notyf.error(t`Failed to update character: ${error.message}`);
         return '';
     }
 }
@@ -6001,7 +5999,7 @@ async function duplicateCharacterCallback(args) {
         const character = findChar({ name: args.char });
         if (!character) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.warning(t`Character "${args.char}" not found`);
+            notyf.warning(t`Character "${args.char}" not found`);
             return '';
         }
         targetAvatar = character.avatar;
@@ -6011,7 +6009,7 @@ async function duplicateCharacterCallback(args) {
     const newAvatarKey = await duplicateCharacter({ avatar: targetAvatar, silent: true });
     if (!newAvatarKey) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.error(t`Failed to duplicate character`);
+        notyf.error(t`Failed to duplicate character`);
         return '';
     }
 
@@ -6040,14 +6038,14 @@ async function getCharacterDataCallback(args) {
         character = findChar({ name: args.char });
         if (!character) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.warning(t`Character "${args.char}" not found`);
+            notyf.warning(t`Character "${args.char}" not found`);
             return '';
         }
     } else {
         // Use currently selected character
         if (this_chid === undefined || !characters[this_chid]) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.warning(t`No character selected and no char argument provided`);
+            notyf.warning(t`No character selected and no char argument provided`);
             return '';
         }
         character = characters[this_chid];
@@ -6115,14 +6113,14 @@ async function deleteCharacterCallback(args) {
         character = findChar({ name: args.char });
         if (!character) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.warning(t`Character "${args.char}" not found`);
+            notyf.warning(t`Character "${args.char}" not found`);
             return 'false';
         }
     } else {
         // Use currently selected character
         if (this_chid === undefined || !characters[this_chid]) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.warning(t`No character selected and no char argument provided`);
+            notyf.warning(t`No character selected and no char argument provided`);
             return 'false';
         }
         character = characters[this_chid];
@@ -6150,7 +6148,7 @@ async function deleteCharacterCallback(args) {
     } catch (error) {
         console.error('Error deleting character:', error);
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.error(t`Failed to delete character: ${error.message}`);
+        notyf.error(t`Failed to delete character: ${error.message}`);
         return 'false';
     }
 }
@@ -6170,7 +6168,7 @@ async function continueChatCallback(args, prompt) {
         } catch {
             console.warn('Timeout waiting for generation unlock');
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.warning(t`Cannot run /continue command while the reply is being generated.`);
+            notyf.warning(t`Cannot run /continue command while the reply is being generated.`);
             return reject();
         }
 
@@ -6210,7 +6208,7 @@ async function regenerateChatCallback(args) {
         } catch {
             console.warn('Timeout waiting for generation unlock');
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.warning(t`Cannot run /regenerate command while the reply is being generated.`);
+            notyf.warning(t`Cannot run /regenerate command while the reply is being generated.`);
             outerResolve(Promise.resolve(''));
             return '';
         }
@@ -6249,7 +6247,7 @@ async function swipeChatCallback(args) {
         } catch {
             console.warn('Timeout waiting for generation unlock');
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.warning(t`Cannot run /swipe command while the reply is being generated.`);
+            notyf.warning(t`Cannot run /swipe command while the reply is being generated.`);
             outerResolve(Promise.resolve(''));
             return '';
         }
@@ -6278,7 +6276,7 @@ export async function generateSystemMessage(args, prompt) {
     if (!prompt) {
         console.warn('WARN: No prompt provided for /sysgen command');
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.warning(t`You must provide a prompt for the system message`);
+        notyf.warning(t`You must provide a prompt for the system message`);
         return '';
     }
 
@@ -6286,10 +6284,10 @@ export async function generateSystemMessage(args, prompt) {
 
     // Generate and regex the output if applicable
     // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-    const toast = toastr.info(t`Please wait`, t`Generating...`);
+    const toast = notyf.info(t`Please wait`, t`Generating...`);
     const message = await generateQuietPrompt({ quietPrompt: prompt, trimToSentence: trim });
     // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-    toastr.clear(toast);
+    notyf.dismiss(toast);
 
     return await sendNarratorMessage(args, getRegexedString(message, regex_placement.SLASH_COMMAND));
 }
@@ -6341,7 +6339,7 @@ async function setNarratorName(_, text) {
     const name = text || NARRATOR_NAME_DEFAULT;
     chat_metadata[NARRATOR_NAME_KEY] = name;
     // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-    toastr.info(t`System narrator name set to ${name}`);
+    notyf.info(t`System narrator name set to ${name}`);
     await saveChatConditional();
     return '';
 }
@@ -6437,7 +6435,7 @@ async function messageRoleCallback(args, role) {
     const message = chat[modifyAt];
     if (!message) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.warning(t`No message found at the specified index.`);
+        notyf.warning(t`No message found at the specified index.`);
         return '';
     }
 
@@ -6493,7 +6491,7 @@ async function messageNameCallback(args, name) {
     const message = chat[modifyAt];
     if (!message) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.warning(t`No message found at the specified index.`);
+        notyf.warning(t`No message found at the specified index.`);
         return '';
     }
 
@@ -6569,7 +6567,7 @@ export async function sendMessageAs(args, text) {
         const namelessWarningKey = 'sendAsNamelessWarningShown';
         if (accountStorage.getItem(namelessWarningKey) !== 'true') {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.warning(t`To avoid confusion, please use /sendas name="Character Name"`, t`Name defaulted to {{char}}`, { timeOut: 10000 });
+            notyf.warning(t`To avoid confusion, please use /sendas name="Character Name"`, t`Name defaulted to {{char}}`, { timeOut: 10000 });
             accountStorage.setItem(namelessWarningKey, 'true');
         }
         name = name2;
@@ -6590,7 +6588,7 @@ export async function sendMessageAs(args, text) {
     const avatarCharacter = args.avatar ? findChar({ name: args.avatar }) : character;
     if (args.avatar && !avatarCharacter) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.warning(t`Character for avatar ${args.avatar} not found`);
+        notyf.warning(t`Character for avatar ${args.avatar} not found`);
         return '';
     }
 
@@ -6896,7 +6894,7 @@ function setBackgroundCallback(_, bg) {
 
     if (!result.length) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.error(t`No background found with name "${bg}"`);
+        notyf.error(t`No background found with name "${bg}"`);
         return '';
     }
 
@@ -6979,7 +6977,7 @@ function getModelOptions(quiet) {
 
     if (!modelSelectItem) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        if (!quiet) toastr.info(t`Setting a model for your API is not supported or not implemented yet.`);
+        if (!quiet) notyf.info(t`Setting a model for your API is not supported or not implemented yet.`);
         return nullResult;
     }
 
@@ -6987,7 +6985,7 @@ function getModelOptions(quiet) {
 
     if (!(modelSelectControl instanceof HTMLSelectElement) && !(modelSelectControl instanceof HTMLInputElement)) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        if (!quiet) toastr.error(t`Model select control not found: ${main_api}[${apiSubType}]`);
+        if (!quiet) notyf.error(t`Model select control not found: ${main_api}[${apiSubType}]`);
         return nullResult;
     }
 
@@ -7045,13 +7043,13 @@ function modelCallback(args, model) {
             modelSelectControl.dispatchEvent(new Event('input'));
         }
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        if (!quiet) toastr.success(t`Model set to "${model}"`);
+        if (!quiet) notyf.success(t`Model set to "${model}"`);
         return model;
     }
 
     if (!options.length) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        if (!quiet) toastr.warning(t`No model options found. Check your API settings.`);
+        if (!quiet) notyf.warning(t`No model options found. Check your API settings.`);
         return '';
     }
 
@@ -7077,11 +7075,11 @@ function modelCallback(args, model) {
             modelSelectControl.dispatchEvent(new Event('change'));
         }
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        if (!quiet) toastr.success(t`Model set to "${newSelectedOption.text}"`);
+        if (!quiet) notyf.success(t`Model set to "${newSelectedOption.text}"`);
         return newSelectedOption.value;
     } else {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        if (!quiet) toastr.warning(t`No model found with name "${model}"`);
+        if (!quiet) notyf.warning(t`No model found with name "${model}"`);
         return '';
     }
 }
@@ -7290,7 +7288,7 @@ async function setApiUrlCallback({ api = null, connect = 'true', quiet = 'false'
 
         if (!isCurrentlyCustomOpenai && autoConnect) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.warning(t`Custom OpenAI API is not the currently selected API, so we cannot do an auto-connect. Consider switching to it via /api beforehand.`);
+            notyf.warning(t`Custom OpenAI API is not the currently selected API, so we cannot do an auto-connect. Consider switching to it via /api beforehand.`);
             return '';
         }
 
@@ -7316,13 +7314,13 @@ async function setApiUrlCallback({ api = null, connect = 'true', quiet = 'false'
         const permittedValues = Object.values(ZAI_ENDPOINT);
         if (!permittedValues.includes(url)) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            if (!isQuiet) toastr.warning(t`Valid options are: ${permittedValues.join(', ')}`, t`ZAI endpoint '${url}' is not a valid option.`);
+            if (!isQuiet) notyf.warning(t`Valid options are: ${permittedValues.join(', ')}`, t`ZAI endpoint '${url}' is not a valid option.`);
             return '';
         }
 
         if (!isCurrentlyZAI && autoConnect) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.warning(t`Z.AI is not the currently selected API, so we cannot do an auto-connect. Consider switching to it via /api beforehand.`);
+            notyf.warning(t`Z.AI is not the currently selected API, so we cannot do an auto-connect. Consider switching to it via /api beforehand.`);
             return '';
         }
 
@@ -7348,13 +7346,13 @@ async function setApiUrlCallback({ api = null, connect = 'true', quiet = 'false'
         const permittedValues = Object.values(SILICONFLOW_ENDPOINT);
         if (!permittedValues.includes(url)) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            if (!isQuiet) toastr.warning(t`Valid options are: ${permittedValues.join(', ')}`, t`SiliconFlow endpoint '${url}' is not a valid option.`);
+            if (!isQuiet) notyf.warning(t`Valid options are: ${permittedValues.join(', ')}`, t`SiliconFlow endpoint '${url}' is not a valid option.`);
             return '';
         }
 
         if (!isCurrentlySiliconFlow && autoConnect) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.warning(t`SiliconFlow is not the currently selected API, so we cannot do an auto-connect. Consider switching to it via /api beforehand.`);
+            notyf.warning(t`SiliconFlow is not the currently selected API, so we cannot do an auto-connect. Consider switching to it via /api beforehand.`);
             return '';
         }
 
@@ -7380,13 +7378,13 @@ async function setApiUrlCallback({ api = null, connect = 'true', quiet = 'false'
         const permittedValues = Object.values(MINIMAX_ENDPOINT);
         if (!permittedValues.includes(url)) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            if (!isQuiet) toastr.warning(t`Valid options are: ${permittedValues.join(', ')}`, t`MiniMax endpoint '${url}' is not a valid option.`);
+            if (!isQuiet) notyf.warning(t`Valid options are: ${permittedValues.join(', ')}`, t`MiniMax endpoint '${url}' is not a valid option.`);
             return '';
         }
 
         if (!isCurrentlyMinimax && autoConnect) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.warning(t`MiniMax is not the currently selected API, so we cannot do an auto-connect. Consider switching to it via /api beforehand.`);
+            notyf.warning(t`MiniMax is not the currently selected API, so we cannot do an auto-connect. Consider switching to it via /api beforehand.`);
             return '';
         }
 
@@ -7417,12 +7415,12 @@ async function setApiUrlCallback({ api = null, connect = 'true', quiet = 'false'
 
         if (!permittedValues.includes(url)) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            if (!isQuiet) toastr.info(t`Generation requests may fail.`, t`Unknown VertexAI region '${url}'`);
+            if (!isQuiet) notyf.info(t`Generation requests may fail.`, t`Unknown VertexAI region '${url}'`);
         }
 
         if (!isCurrentlyVertexAI && autoConnect) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.warning(t`VertexAI is not the currently selected API, so we cannot do an auto-connect. Consider switching to it via /api beforehand.`);
+            notyf.warning(t`VertexAI is not the currently selected API, so we cannot do an auto-connect. Consider switching to it via /api beforehand.`);
             return '';
         }
 
@@ -7448,7 +7446,7 @@ async function setApiUrlCallback({ api = null, connect = 'true', quiet = 'false'
 
         if (!isCurrentlyKoboldClassic && autoConnect) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.warning(t`Kobold Classic API is not the currently selected API, so we cannot do an auto-connect. Consider switching to it via /api beforehand.`);
+            notyf.warning(t`Kobold Classic API is not the currently selected API, so we cannot do an auto-connect. Consider switching to it via /api beforehand.`);
             return '';
         }
 
@@ -7470,22 +7468,22 @@ async function setApiUrlCallback({ api = null, connect = 'true', quiet = 'false'
     // Do some checks and get the api type we are targeting with this command
     if (api && !Object.values(textgen_types).includes(api)) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        if (!isQuiet) toastr.warning(t`API '${api}' is not a valid text_gen API.`);
+        if (!isQuiet) notyf.warning(t`API '${api}' is not a valid text_gen API.`);
         return '';
     }
     if (!api && !Object.values(textgen_types).includes(textgenerationwebui_settings.type)) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        if (!isQuiet) toastr.warning(t`API '${textgenerationwebui_settings.type}' is not a valid text_gen API.`);
+        if (!isQuiet) notyf.warning(t`API '${textgenerationwebui_settings.type}' is not a valid text_gen API.`);
         return '';
     }
     if (!api && main_api !== 'textgenerationwebui') {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        if (!isQuiet) toastr.warning(t`API type '${main_api}' does not support setting the server URL.`);
+        if (!isQuiet) notyf.warning(t`API type '${main_api}' does not support setting the server URL.`);
         return '';
     }
     if (api && url && autoConnect && api !== textgenerationwebui_settings.type) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        if (!isQuiet) toastr.warning(t`API '${api}' is not the currently selected API, so we cannot do an auto-connect. Consider switching to it via /api beforehand.`);
+        if (!isQuiet) notyf.warning(t`API '${api}' is not the currently selected API, so we cannot do an auto-connect. Consider switching to it via /api beforehand.`);
         return '';
     }
     const type = api || textgenerationwebui_settings.type;
@@ -7493,7 +7491,7 @@ async function setApiUrlCallback({ api = null, connect = 'true', quiet = 'false'
     const inputSelector = SERVER_INPUTS[type];
     if (!inputSelector) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        if (!isQuiet) toastr.warning(t`API '${type}' does not have a server url input.`);
+        if (!isQuiet) notyf.warning(t`API '${type}' does not have a server url input.`);
         return '';
     }
 
@@ -7539,7 +7537,7 @@ async function selectTokenizerCallback(_, name) {
 
     if (result.length === 0) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.warning(t`Tokenizer "${name}" not found`);
+        notyf.warning(t`Tokenizer "${name}" not found`);
         return '';
     }
 
@@ -7735,14 +7733,14 @@ export async function executeSlashCommandsOnChatInput(text, options = {}) {
                     `;
                 const clickHint = `<p>${t`Click to see details`}</p>`;
                 // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                toastr.error(
+                notyf.error(
                     `${toast}${clickHint}`,
                     'Slash Command Execution Error',
                     { escapeHtml: false, timeOut: 10000, onclick: () => callGenericPopup(toast, POPUP_TYPE.TEXT, '', { allowHorizontalScrolling: true, allowVerticalScrolling: true }) },
                 );
             } else {
                 // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                toastr.error(result.errorMessage);
+                notyf.error(result.errorMessage);
             }
         }
     } finally {
@@ -7801,7 +7799,7 @@ async function executeSlashCommandsWithOptions(text, options = {}) {
                 `;
             const clickHint = `<p>${t`Click to see details`}</p>`;
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.error(
+            notyf.error(
                 `${toast}${clickHint}`,
                 'SlashCommandParserError',
                 { escapeHtml: false, timeOut: 10000, onclick: () => callGenericPopup(toast, POPUP_TYPE.TEXT, '', { allowHorizontalScrolling: true, allowVerticalScrolling: true }) },
@@ -7817,7 +7815,7 @@ async function executeSlashCommandsWithOptions(text, options = {}) {
         const result = await closure.execute();
         if (result.isAborted && !result.isQuietlyAborted) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.warning(result.abortReason, t`Command execution aborted`);
+            notyf.warning(result.abortReason, t`Command execution aborted`);
             closure.abortController.signal.isQuiet = true;
         }
         return result;
@@ -7834,14 +7832,14 @@ async function executeSlashCommandsWithOptions(text, options = {}) {
                     `;
                 const clickHint = '<p>Click to see details</p>';
                 // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                toastr.error(
+                notyf.error(
                     `${toast}${clickHint}`,
                     'SlashCommandExecutionError',
                     { escapeHtml: false, timeOut: 10000, onclick: () => callGenericPopup(toast, POPUP_TYPE.TEXT, '', { allowHorizontalScrolling: true, allowVerticalScrolling: true }) },
                 );
             } else {
                 // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                toastr.error(e.message);
+                notyf.error(e.message);
             }
             const result = new SlashCommandClosureResult();
             result.isError = true;

@@ -349,7 +349,7 @@ export class SettingsUi {
         if (newName && newName.length > 0) {
             const existingSet = QuickReplySet.get(newName);
             if (existingSet) {
-                toastr.error(`A Quick Reply Set named "${newName}" already exists.`);
+                notyf.error(`A Quick Reply Set named "${newName}" already exists.`);
                 return;
             }
             const oldName = this.currentQrSet.name;
@@ -454,7 +454,7 @@ export class SettingsUi {
             const text = await file.text();
             const props = JSON.parse(text);
             if (!Number.isInteger(props.version) || typeof props.name != 'string') {
-                toastr.error(`The file "${file.name}" does not appear to be a valid quick reply set.`);
+                notyf.error(`The file "${file.name}" does not appear to be a valid quick reply set.`);
                 warn(`The file "${file.name}" does not appear to be a valid quick reply set.`);
             } else {
                 /**@type {QuickReplySet}*/
@@ -508,7 +508,7 @@ export class SettingsUi {
         } catch (ex) {
             warn(ex);
             // @ts-expect-error TS(2571): Object is of type 'unknown'.
-            toastr.error(`Failed to import "${file.name}":\n\n${ex.message}`);
+            notyf.error(`Failed to import "${file.name}":\n\n${ex.message}`);
         }
     }
 
@@ -528,7 +528,7 @@ export class SettingsUi {
         if (newName && newName.length > 0) {
             const existingSet = QuickReplySet.get(newName);
             if (existingSet) {
-                toastr.error(`A Quick Reply Set named "${newName}" already exists.`);
+                notyf.error(`A Quick Reply Set named "${newName}" already exists.`);
                 return;
             }
             const newQrSet = QuickReplySet.from(this.currentQrSet.toJSON());

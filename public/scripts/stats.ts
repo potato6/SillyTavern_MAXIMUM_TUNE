@@ -197,7 +197,7 @@ async function getStats() {
 
     if (!response.ok) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.error('Stats could not be loaded. Try reloading the page.');
+        notyf.error('Stats could not be loaded. Try reloading the page.');
         throw new Error('Error getting stats');
     }
     charStats = await response.json();
@@ -220,11 +220,11 @@ async function recreateStats() {
 
     if (!response.ok) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.error('Stats could not be loaded. Try reloading the page.');
+        notyf.error('Stats could not be loaded. Try reloading the page.');
         throw new Error('Error getting stats');
     } else {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.success('Stats file recreated successfully!');
+        notyf.success('Stats file recreated successfully!');
     }
 }
 

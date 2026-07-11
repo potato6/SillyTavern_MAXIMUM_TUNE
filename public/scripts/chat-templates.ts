@@ -172,19 +172,19 @@ export async function bindModelTemplates(power_user, online_status) {
         delete power_user.model_templates_mappings[chatTemplateHash];
         delete power_user.model_templates_mappings[online_status];
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.info(t`Context preset for ${online_status} will use defaults when loaded the next time.`);
+        notyf.info(t`Context preset for ${online_status} will use defaults when loaded the next time.`);
     } else {
         if (power_user.context_derived) {
             if (power_user.context.preset !== bindModelTemplates.context) {
                 bound.push(`${power_user.context.preset} context preset`);
-                // toastr.info(`Bound ${power_user.context.preset} preset to currently loaded model and all models that share its chat template.`);
+                // notyf.info(`Bound ${power_user.context.preset} preset to currently loaded model and all models that share its chat template.`);
 
                 // map current preset to current chat template hash
                 bindModelTemplates.context = power_user.context.preset;
             }
         } else {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.warning(t`Note: Context derivation is disabled. Not including context preset.`);
+            notyf.warning(t`Note: Context derivation is disabled. Not including context preset.`);
         }
         if (power_user.instruct.enabled) {
             if (power_user.instruct_derived) {
@@ -194,17 +194,17 @@ export async function bindModelTemplates(power_user, online_status) {
                 }
             } else {
                 // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                toastr.warning(t`Note: Instruct derivation is disabled. Not including instruct preset.`);
+                notyf.warning(t`Note: Instruct derivation is disabled. Not including instruct preset.`);
             }
         }
         if (bound.length == 0) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.warning(t`No applicable presets available.`);
+            notyf.warning(t`No applicable presets available.`);
             return false;
         }
 
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.info(t`Bound ${online_status} to ${bound.join(', ')}.`);
+        notyf.info(t`Bound ${online_status} to ${bound.join(', ')}.`);
         if (!online_status.startsWith('koboldcpp/ggml-model-')) {
             power_user.model_templates_mappings[online_status] = bindModelTemplates;
         }

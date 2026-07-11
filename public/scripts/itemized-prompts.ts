@@ -393,7 +393,7 @@ export async function promptItemize(itemizedPrompts, requestedMesId) {
 
         await copyText(rawPromptValues);
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.info(t`Copied!`);
+        notyf.info(t`Copied!`);
     });
 
     popup.dlg.querySelector('#showRawPrompt').addEventListener('click', async function () {
@@ -439,7 +439,7 @@ export function initItemizedPrompts() {
     registerDebugFunction('clearPrompts', 'Delete itemized prompts', 'Deletes all itemized prompts from the local storage.', async () => {
         await clearItemizedPrompts();
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.info('Itemized prompts deleted.');
+        notyf.info('Itemized prompts deleted.');
         if (getCurrentChatId()) {
             await reloadCurrentChat();
         }

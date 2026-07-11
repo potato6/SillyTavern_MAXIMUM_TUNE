@@ -198,13 +198,13 @@ async function onNarrateText(args: any, text: any) {
         : voiceMap[name];
 
     if (voiceMapEntry === DISABLED_VOICE_MARKER) {
-        toastr.info(`TTS voice for ${name} is disabled.`);
+        notyf.info(`TTS voice for ${name} is disabled.`);
         await initVoiceMap(false);
         return;
     }
 
     if (!voiceMapEntry) {
-        toastr.info(`Specified voice for ${name} was not found. Check the TTS extension settings.`);
+        notyf.info(`Specified voice for ${name} was not found. Check the TTS extension settings.`);
         await initVoiceMap(false);
         return;
     }
@@ -504,7 +504,7 @@ async function processAudioJobQueue() {
         playAudioData(currentAudioJob);
     } catch (error) {
         // @ts-expect-error TS(2571): Object is of type 'unknown'.
-        toastr.error(error.toString());
+        notyf.error(error.toString());
         console.error(error);
         audioQueueProcessorReady = true;
     }
@@ -668,7 +668,7 @@ async function processTtsQueue() {
                 const storageKey = `tts_disabled_warned_${char}`;
                 if (!accountStorage.getItem(storageKey) || currentTtsJob.manual) {
                     accountStorage.setItem(storageKey, 'true');
-                    toastr.info(`TTS voice for ${char} is disabled.`);
+                    notyf.info(`TTS voice for ${char} is disabled.`);
                 }
                 currentTtsJob = null;
                 setTimeout(() => wrapper.update(), 0);
@@ -682,7 +682,7 @@ async function processTtsQueue() {
             const voice = await ttsProvider.getVoice(voiceMapEntry);
             const voiceId = voice.voice_id;
             if (voiceId == null) {
-                toastr.error(`Specified voice for ${char} was not found. Check the TTS extension settings.`);
+                notyf.error(`Specified voice for ${char} was not found. Check the TTS extension settings.`);
                 throw `Unable to attain voiceId for ${char}`;
             }
 
@@ -690,7 +690,7 @@ async function processTtsQueue() {
             await tts(segmentText, voiceId, char, voiceMapKey);
         } catch (error) {
             // @ts-expect-error TS(2571): Object is of type 'unknown'.
-            toastr.error(error.toString());
+            notyf.error(error.toString());
             console.error(error);
             currentTtsJob = null;
         }
@@ -798,7 +798,7 @@ async function processTtsQueue() {
         currentTtsJob = null;
     } catch (error) {
         // @ts-expect-error TS(2571): Object is of type 'unknown'.
-        toastr.error(error.toString());
+        notyf.error(error.toString());
         console.error(error);
         currentTtsJob = null;
     }
@@ -892,7 +892,7 @@ async function playFullConversation() {
 
     // @ts-expect-error TS(2339): Property 'enabled' does not exist on type '{}'.
     if (!extension_settings.tts.enabled) {
-        return toastr.warning('TTS is disabled. Please enable it in the extension settings.');
+        return notyf.warning('TTS is disabled. Please enable it in the extension settings.');
     }
 
     const context = getContext();
@@ -906,7 +906,7 @@ async function playFullConversation() {
     });
 
     if (ttsJobQueue.length === 0) {
-        return toastr.info('No messages to narrate.');
+        return notyf.info('No messages to narrate.');
     }
 }
 
@@ -1008,7 +1008,7 @@ function onRefreshClick() {
         initVoiceMap();
         updateVoiceMap();
     }).catch(error => {
-        toastr.error(error.toString());
+        notyf.error(error.toString());
         console.error(error);
         setTtsStatus(error, false);
     });
@@ -1642,7 +1642,7 @@ async function initVoiceMapInternal(unrestricted: any) {
     try {
         voiceIdsFromProvider = await ttsProvider.fetchTtsVoiceObjects();
     } catch {
-        toastr.error('TTS Provider failed to return voice ids.');
+        notyf.error('TTS Provider failed to return voice ids.');
     }
 
     // Build UI using VoiceMapEntry objects

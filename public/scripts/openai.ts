@@ -544,7 +544,7 @@ async function validateReverseProxy() {
         new URL(oai_settings.reverse_proxy);
     } catch (err) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.error(t`Entered reverse proxy address is not a valid URL`);
+        notyf.error(t`Entered reverse proxy address is not a valid URL`);
         setOnlineStatus('no_connection');
         resultCheckStatus();
         throw err;
@@ -556,7 +556,7 @@ async function validateReverseProxy() {
 
     if (!confirmation) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.error(t`Update or remove your reverse proxy settings.`);
+        notyf.error(t`Update or remove your reverse proxy settings.`);
         setOnlineStatus('no_connection');
         resultCheckStatus();
         throw new Error('Proxy connection denied.');
@@ -1687,19 +1687,19 @@ export async function prepareOpenAIMessages({
     } catch (error) {
         if (error instanceof TokenBudgetExceededError) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.error(t`Mandatory prompts exceed the context size.`);
+            notyf.error(t`Mandatory prompts exceed the context size.`);
             chatCompletion.log('Mandatory prompts exceed the context size.');
             // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             promptManager.error = t`Not enough free tokens for mandatory prompts. Raise your token limit or disable custom prompts.`;
         } else if (error instanceof InvalidCharacterNameError) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.warning(t`An error occurred while counting tokens: Invalid character name`);
+            notyf.warning(t`An error occurred while counting tokens: Invalid character name`);
             chatCompletion.log('Invalid character name');
             // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             promptManager.error = t`The name of at least one character contained whitespaces or special characters. Please check your user and character name.`;
         } else {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.error(t`An unknown error occurred while counting tokens. Further information may be available in console.`);
+            notyf.error(t`An unknown error occurred while counting tokens. Further information may be available in console.`);
             chatCompletion.log('----- Unexpected error while preparing prompts -----');
             chatCompletion.log(error);
             // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
@@ -1755,19 +1755,19 @@ export function tryParseStreamingError(response, decoded, { quiet = false } = {}
 
         if (data.error) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            if (!quiet) toastr.error(data.error.message || response.statusText, 'Chat Completion API');
+            if (!quiet) notyf.error(data.error.message || response.statusText, 'Chat Completion API');
             throw new Error(data);
         }
 
         if (data.message) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            if (!quiet) toastr.error(data.message, 'Chat Completion API');
+            if (!quiet) notyf.error(data.message, 'Chat Completion API');
             throw new Error(data);
         }
 
         if (data.detail) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            if (!quiet) toastr.error(data.detail?.error?.message || response.statusText, 'Chat Completion API');
+            if (!quiet) notyf.error(data.detail?.error?.message || response.statusText, 'Chat Completion API');
             throw new Error(data);
         }
     } catch {
@@ -1812,7 +1812,7 @@ function checkModerationError(data, { quiet = false } = {}) {
         const moderationReason = `Reasons: ${data?.error?.metadata?.reasons?.join(', ') ?? '(N/A)'}`;
         const flaggedText = data?.error?.metadata?.flagged_input ?? '(N/A)';
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.info(flaggedText, moderationReason, { timeOut: 10000 });
+        notyf.info(flaggedText, moderationReason, { timeOut: 10000 });
     }
 }
 
@@ -3596,7 +3596,7 @@ async function sendOpenAIRequest(type, messages, signal, { jsonSchema = null } =
         if (data.error) {
             const message = data.error.message || response.statusText || t`Unknown error`;
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.error(message, t`API returned an error`);
+            notyf.error(message, t`API returned an error`);
             throw new Error(message);
         }
 
@@ -5131,7 +5131,7 @@ async function saveOpenAIPreset(name, settings, triggerUi = true) {
         }
     } else {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.error(t`Failed to save preset`);
+        notyf.error(t`Failed to save preset`);
         throw new Error('Failed to save preset');
     }
 }
@@ -5272,7 +5272,7 @@ async function createNewLogitBiasPreset() {
 
     if (name in oai_settings.bias_presets) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.error(t`Preset name should be unique.`);
+        notyf.error(t`Preset name should be unique.`);
         return;
     }
 
@@ -5336,7 +5336,7 @@ async function onPresetImportFileChange(e) {
         presetBody = JSON.parse(importedFile);
     } catch {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.error(t`Invalid file`);
+        notyf.error(t`Invalid file`);
         return;
     }
 
@@ -5382,7 +5382,7 @@ async function onPresetImportFileChange(e) {
 
     if (!savePresetSettings.ok) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.error(t`Failed to save preset`);
+        notyf.error(t`Failed to save preset`);
         return;
     }
 
@@ -5414,7 +5414,7 @@ async function onPresetImportFileChange(e) {
 async function onExportPresetClick() {
     if (!oai_settings.preset_settings_openai) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.error(t`No preset selected`);
+        notyf.error(t`No preset selected`);
         return;
     }
 
@@ -5478,13 +5478,13 @@ async function onLogitBiasPresetImportFileChange(e) {
 
     if (name in oai_settings.bias_presets) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.error(t`Preset name should be unique.`);
+        notyf.error(t`Preset name should be unique.`);
         return;
     }
 
     if (!Array.isArray(importedFile)) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.error(t`Invalid logit bias preset file.`);
+        notyf.error(t`Invalid logit bias preset file.`);
         return;
     }
 
@@ -5558,10 +5558,10 @@ async function onDeletePresetClick() {
 
     if (!response.ok) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.warning(t`Preset was not deleted from server`);
+        notyf.warning(t`Preset was not deleted from server`);
     } else {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.success(t`Preset deleted`);
+        notyf.success(t`Preset deleted`);
         await eventSource.emit(event_types.PRESET_DELETED, { apiId: 'openai', name: nameToDelete });
     }
 
@@ -6839,7 +6839,7 @@ async function onConnectButtonClick(e) {
         // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         if (!secret_state[SECRET_KEYS.VERTEXAI_SERVICE_ACCOUNT]) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.error(t`Service Account JSON is required for Vertex AI full version. Please validate and save your Service Account JSON.`);
+            notyf.error(t`Service Account JSON is required for Vertex AI full version. Please validate and save your Service Account JSON.`);
             return;
         }
     }
@@ -6949,7 +6949,7 @@ async function testApiConnection() {
     // Check if the previous request is still in progress
     if (is_send_press) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.info(t`Please wait for the previous request to complete.`);
+        notyf.info(t`Please wait for the previous request to complete.`);
         return;
     }
 
@@ -6957,10 +6957,10 @@ async function testApiConnection() {
         const reply = await sendOpenAIRequest('quiet', [{ 'role': 'user', 'content': 'Hi' }], new AbortController().signal);
         console.log(reply);
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.success(t`API connection successful!`);
+        notyf.success(t`API connection successful!`);
     } catch {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.error(t`Could not get a reply from API. Check your connection settings / API key and try again.`);
+        notyf.error(t`Could not get a reply from API. Check your connection settings / API key and try again.`);
     }
 }
 
@@ -7358,7 +7358,7 @@ document.getElementById('save_proxy')?.addEventListener('click', async function 
     setProxyPreset(presetName, reverseProxy, proxyPassword);
     saveSettingsDebounced();
     // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-    toastr.success(t`Proxy Saved`);
+    notyf.success(t`Proxy Saved`);
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     if (document.getElementById('openai_proxy_preset').value !== presetName) {
         const option = document.createElement('option');
@@ -7403,10 +7403,10 @@ document.getElementById('delete_proxy')?.addEventListener('click', async functio
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         document.getElementById('openai_proxy_preset').value = selected_proxy.name;
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.success(t`Proxy Deleted`);
+        notyf.success(t`Proxy Deleted`);
     } else {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.error(t`Could not find proxy with name '${presetName}'`);
+        notyf.error(t`Could not find proxy with name '${presetName}'`);
     }
 });
 
@@ -7427,7 +7427,7 @@ function runProxyCallback(_, value) {
 
     if (result.length === 0) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.warning(t`Proxy preset '${value}' not found`);
+        notyf.warning(t`Proxy preset '${value}' not found`);
         return '';
     }
 
@@ -7467,7 +7467,7 @@ async function onVertexAIValidateServiceAccount() {
 
     if (!jsonContent) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.error(t`Please enter Service Account JSON content`);
+        notyf.error(t`Please enter Service Account JSON content`);
         return;
     }
 
@@ -7478,14 +7478,14 @@ async function onVertexAIValidateServiceAccount() {
 
         if (missingFields.length > 0) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.error(t`Missing required fields: ${missingFields.join(', ')}`);
+            notyf.error(t`Missing required fields: ${missingFields.join(', ')}`);
             updateVertexAIServiceAccountStatus(false, t`Missing fields: ${missingFields.join(', ')}`);
             return;
         }
 
         if (serviceAccount.type !== 'service_account') {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.error(t`Invalid service account type. Expected "service_account"`);
+            notyf.error(t`Invalid service account type. Expected "service_account"`);
             updateVertexAIServiceAccountStatus(false, t`Invalid service account type`);
             return;
         }
@@ -7498,12 +7498,12 @@ async function onVertexAIValidateServiceAccount() {
         updateVertexAIServiceAccountStatus(true, `Project: ${serviceAccount.project_id}, Email: ${serviceAccount.client_email}`);
 
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.success(t`Service Account JSON is valid and saved securely`);
+        notyf.success(t`Service Account JSON is valid and saved securely`);
         saveSettingsDebounced();
     } catch (error) {
         console.error('JSON validation error:', error);
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.error(t`Invalid JSON format`);
+        notyf.error(t`Invalid JSON format`);
         updateVertexAIServiceAccountStatus(false, t`Invalid JSON format`);
     }
 }
@@ -7521,7 +7521,7 @@ async function onVertexAIClearServiceAccount() {
 
     updateVertexAIServiceAccountStatus(false);
     // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-    toastr.info(t`Service Account JSON cleared`);
+    notyf.info(t`Service Account JSON cleared`);
     saveSettingsDebounced();
 }
 
@@ -7789,7 +7789,7 @@ export function initOpenAI() {
         const name = oai_settings.preset_settings_openai;
         await saveOpenAIPreset(name, oai_settings, false);
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.success(t`Preset updated`);
+        notyf.success(t`Preset updated`);
     });
 
     document.getElementById('impersonation_prompt_restore')?.addEventListener('click', function () {

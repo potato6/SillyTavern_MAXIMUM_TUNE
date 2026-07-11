@@ -20,7 +20,7 @@ function getExtensionActionCallback(action) {
         if (typeof extensionName !== 'string') throw new Error('Extension name must be a string. Closures or arrays are not allowed.');
         if (!extensionName) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.warning(`Extension name must be provided as an argument to ${action} this extension.`);
+            notyf.warning(`Extension name must be provided as an argument to ${action} this extension.`);
             return '';
         }
 
@@ -28,19 +28,19 @@ function getExtensionActionCallback(action) {
         const extension = findExtension(extensionName);
         if (!extension) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.warning(`Extension ${extensionName} does not exist.`);
+            notyf.warning(`Extension ${extensionName} does not exist.`);
             return '';
         }
 
         if (action === 'enable' && extension.enabled) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.info(`Extension ${extension.name} is already enabled.`);
+            notyf.info(`Extension ${extension.name} is already enabled.`);
             return extension.name;
         }
 
         if (action === 'disable' && !extension.enabled) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.info(`Extension ${extension.name} is already disabled.`);
+            notyf.info(`Extension ${extension.name} is already disabled.`);
             return extension.name;
         }
 
@@ -50,7 +50,7 @@ function getExtensionActionCallback(action) {
 
         if (reload) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.info(`${action.charAt(0).toUpperCase() + action.slice(1)}ing extension ${extension.name} and reloading...`);
+            notyf.info(`${action.charAt(0).toUpperCase() + action.slice(1)}ing extension ${extension.name} and reloading...`);
 
             // Clear input, so it doesn't stay because the command didn't "finish",
             // and wait for a bit to both show the toast and let the clear bubble through.
@@ -69,7 +69,7 @@ function getExtensionActionCallback(action) {
         }
 
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.success(`Extension ${extension.name} ${action}d.`);
+        notyf.success(`Extension ${extension.name} ${action}d.`);
 
 
         console.info(`Extension ${action}ed: ${extension.name}`);
@@ -252,7 +252,7 @@ export function registerExtensionSlashCommands() {
             const extension = findExtension(extensionName);
             if (!extension) {
                 // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                toastr.warning(`Extension ${extensionName} does not exist.`);
+                notyf.warning(`Extension ${extensionName} does not exist.`);
                 return '';
             }
 
@@ -319,7 +319,7 @@ export function registerExtensionSlashCommands() {
         name: 'reload-page',
         callback: async () => {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.info('Reloading the page...');
+            notyf.info('Reloading the page...');
             location.reload();
             return '';
         },

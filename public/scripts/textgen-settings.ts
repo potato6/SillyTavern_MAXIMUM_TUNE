@@ -342,7 +342,7 @@ export function validateTextGenUrl() {
 
     if (!formattedUrl) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.error(t`Enter a valid API URL`, 'Text Completion API');
+        notyf.error(t`Enter a valid API URL`, 'Text Completion API');
         return;
     }
 
@@ -882,7 +882,7 @@ async function getStatusTextgen() {
                             if (old_value !== max_context) {
                                 console.log(`Auto-switched max context from ${old_value} to ${max_context}`);
                                 // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                                toastr.info(`${old_value} ⇒ ${max_context}`, 'Context Size Changed');
+                                notyf.info(`${old_value} ⇒ ${max_context}`, 'Context Size Changed');
                             }
                         }
                     }
@@ -905,7 +905,7 @@ async function getStatusTextgen() {
         // We didn't get a 200 status code, but the endpoint has an explanation. Which means it DID connect, but I digress.
         if (online_status === 'no_connection' && data.response) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.error(data.response, t`API Error`, { timeOut: 5000, preventDuplicates: true });
+            notyf.error(data.response, t`API Error`, { timeOut: 5000, preventDuplicates: true });
         }
     } catch (err) {
         if (err instanceof AbortReason) {
@@ -1633,7 +1633,7 @@ function tryParseStreamingError(response, decoded) {
 
     if (message) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.error(message, 'Text Completion API');
+        notyf.error(message, 'Text Completion API');
         throw new Error(message);
     }
 }
@@ -1702,7 +1702,7 @@ export function getTextGenModel(settings = null) {
             // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             if (!settings.ollama_model) {
                 // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                toastr.error(t`No Ollama model selected.`, 'Text Completion API');
+                notyf.error(t`No Ollama model selected.`, 'Text Completion API');
                 throw new Error('No Ollama model selected');
             }
             // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.

@@ -448,7 +448,7 @@ export class Popup {
                     if (clamped !== value) {
                         inputElement.value = String(clamped);
                         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                        toastr.warning(t`Value must be between ${min} and ${max}. Clamped to ${clamped}.`);
+                        notyf.warning(t`Value must be between ${min} and ${max}. Clamped to ${clamped}.`);
                     }
                 });
 
@@ -733,7 +733,7 @@ export class Popup {
                 } catch (error) {
                     console.error('Error in Popup.onOpen handler:', error);
                     // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                    toastr.error(t`An error occurred during popup initialization. Check console for details.`, t`Popup Init Error`);
+                    notyf.error(t`An error occurred during popup initialization. Check console for details.`, t`Popup Init Error`);
                 }
             }
         });
@@ -969,7 +969,7 @@ export function callGenericPopup(content, type, inputValue = '', popupOptions = 
     } catch (error) {
         console.error('Error showing generic popup:', error);
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.error(t`An error occurred while opening the popup. Check console for details.`, t`Popup Error`);
+        notyf.error(t`An error occurred while opening the popup. Check console for details.`, t`Popup Error`);
         return Promise.resolve(POPUP_RESULT.CANCELLED);
     }
 }
@@ -997,8 +997,7 @@ export function fixToastrForDialogs() {
     if (!toastContainer) {
         toastContainer = document.createElement('div');
         toastContainer.setAttribute('id', 'toast-container');
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        if (toastr.options.positionClass) toastContainer.classList.add(toastr.options.positionClass);
+        // Notyf manages its own container — no dialog portability needed
     }
 
     // Check if toastr is already a child. If not, we need to move it inside this dialog.
@@ -1018,8 +1017,7 @@ export function fixToastrForDialogs() {
         } else {
             document.body.appendChild(toastContainer);
             toastContainer.classList.remove(...toastPositionClasses);
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastContainer.classList.add(toastr.options.positionClass);
+            // Notyf manages its own container — position handled by notyf config
         }
     }
 }

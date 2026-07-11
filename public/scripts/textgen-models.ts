@@ -1386,7 +1386,7 @@ async function downloadOllamaModel() {
 
         if (!serverUrl) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.info('Please connect to an Ollama server first.');
+            notyf.info('Please connect to an Ollama server first.');
             return;
         }
 
@@ -1399,7 +1399,7 @@ async function downloadOllamaModel() {
         }
 
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.info('Download may take a while, please wait...', 'Working on it');
+        notyf.info('Download may take a while, please wait...', 'Working on it');
 
         const response = await fetch('/api/backends/text-completions/ollama/download', {
             method: 'POST',
@@ -1416,12 +1416,12 @@ async function downloadOllamaModel() {
 
         // Force refresh the model list
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.success('Download complete. Please select the model from the dropdown.');
+        notyf.success('Download complete. Please select the model from the dropdown.');
         document.getElementById('api_button_textgenerationwebui')?.click();
     } catch (err) {
         console.error(err);
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.error('Failed to download Ollama model. Please try again.');
+        notyf.error('Failed to download Ollama model. Please try again.');
     }
 }
 
@@ -1435,7 +1435,7 @@ async function downloadTabbyModel() {
 
         if (online_status === 'no_connection' || !serverUrl) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.info('Please connect to a TabbyAPI server first.');
+            notyf.info('Please connect to a TabbyAPI server first.');
             return;
         }
 
@@ -1453,13 +1453,13 @@ async function downloadTabbyModel() {
         const repoId = String(downloadHtml.querySelector('input[name="hf_repo_id"]')?.value ?? '');
         if (!repoId) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.error('A HuggingFace repo ID must be provided. Skipping Download.');
+            notyf.error('A HuggingFace repo ID must be provided. Skipping Download.');
             return;
         }
 
         if (repoId.split('/').length !== 2) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.error('A HuggingFace repo ID must be formatted as Author/Name. Please try again.');
+            notyf.error('A HuggingFace repo ID must be formatted as Author/Name. Please try again.');
             return;
         }
 
@@ -1485,7 +1485,7 @@ async function downloadTabbyModel() {
         params.api_type = textgen_settings.type;
 
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.info('Downloading. Check the Tabby console for progress reports.');
+        notyf.info('Downloading. Check the Tabby console for progress reports.');
 
         const response = await fetch('/api/backends/text-completions/tabby/download', {
             method: 'POST',
@@ -1495,18 +1495,18 @@ async function downloadTabbyModel() {
 
         if (response.status === 403) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.error('The provided key has invalid permissions. Please use an admin key for downloading.');
+            notyf.error('The provided key has invalid permissions. Please use an admin key for downloading.');
             return;
         } else if (!response.ok) {
             throw new Error(response.statusText);
         }
 
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.success('Download complete.');
+        notyf.success('Download complete.');
     } catch (err) {
         console.error(err);
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.error('Failed to download HuggingFace model in TabbyAPI. Please try again.');
+        notyf.error('Failed to download HuggingFace model in TabbyAPI. Please try again.');
     }
 }
 

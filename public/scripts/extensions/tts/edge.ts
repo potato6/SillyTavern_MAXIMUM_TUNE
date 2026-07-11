@@ -190,7 +190,7 @@ class EdgeTtsProvider {
             },
         );
         if (!response.ok) {
-            toastr.error(response.statusText, 'TTS Generation Failed');
+            notyf.error(response.statusText, 'TTS Generation Failed');
             throw new Error(`HTTP ${response.status}: ${await response.text()}`);
         }
         return response;
@@ -254,13 +254,13 @@ class EdgeTtsProvider {
         // @ts-expect-error TS(2345): Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
         if (this.settings.provider === EDGE_TTS_PROVIDER.extras && !modules.includes('edge-tts')) {
             const message = 'Edge TTS module not loaded. Add edge-tts to enable-modules and restart the Extras API.';
-            // toastr.error(message)
+            // notyf.error(message)
             throw new Error(message);
         }
 
         if (this.settings.provider === EDGE_TTS_PROVIDER.plugin && !this.isPluginAvailable()) {
             const message = 'Edge TTS Server plugin not loaded. Install it from https://github.com/SillyTavern/SillyTavern-EdgeTTS-Plugin and restart the SillyTavern server.';
-            // toastr.error(message)
+            // notyf.error(message)
             throw new Error(message);
         }
     }

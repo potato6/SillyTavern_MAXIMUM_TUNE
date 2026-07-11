@@ -1394,17 +1394,17 @@ async function showExtensionsDetails() {
                     } catch (error) {
                         console.error(`Could not toggle extension ${name}:`, error);
                         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                        toastr.error(t`Could not toggle extension ${name}. See console for details.`);
+                        notyf.error(t`Could not toggle extension ${name}. See console for details.`);
                     }
                 }
 
                 if (stateChanged) {
                     waitingForSave = true;
                     // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                    const toast = toastr.info(t`The page will be reloaded shortly...`, t`Extensions state changed`);
+                    const toast = notyf.info(t`The page will be reloaded shortly...`, t`Extensions state changed`);
                     await saveSettings();
                     // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                    toastr.clear(toast);
+                    notyf.dismiss(toast);
                     waitingForSave = false;
                     requiresReload = true;
                 }
@@ -1417,7 +1417,7 @@ async function showExtensionsDetails() {
         checkForUpdatesManual(sortFn, abortController.signal).finally(() => loadingEl.remove());
     } catch (error) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.error(t`Error loading extensions. See browser console for details.`);
+        notyf.error(t`Error loading extensions. See browser console for details.`);
         console.error(error);
     }
     if (popupPromise) {
@@ -1441,7 +1441,7 @@ async function onUpdateClick() {
     const isGlobal = getExtensionType(extensionName) === 'global';
     if (isGlobal && !isCurrentUserAdmin) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.error(t`You don't have permission to update global extensions.`);
+        notyf.error(t`You don't have permission to update global extensions.`);
         return;
     }
 
@@ -1475,7 +1475,7 @@ async function updateExtension(extensionName, quiet, timeout = null) {
         if (!response.ok) {
             const text = await response.text();
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.error(text || response.statusText, t`Extension update failed`, { timeOut: 5000 });
+            notyf.error(text || response.statusText, t`Extension update failed`, { timeOut: 5000 });
             console.error('Extension update failed', response.status, response.statusText, text);
             return;
         }
@@ -1489,13 +1489,13 @@ async function updateExtension(extensionName, quiet, timeout = null) {
         if (data.isUpToDate) {
             if (!quiet) {
                 // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                toastr.success('Extension is already up to date');
+                notyf.success('Extension is already up to date');
             }
         } else {
             const fullExtensionName = extensionName.startsWith('third-party') ? extensionName : `third-party${extensionName}`;
             await callExtensionHook(fullExtensionName, 'update');
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.success(t`Extension ${extensionName} updated to ${data.shortCommitHash}`, t`Reload the page to apply updates`);
+            notyf.success(t`Extension ${extensionName} updated to ${data.shortCommitHash}`, t`Reload the page to apply updates`);
         }
     } catch (error) {
         console.error('Extension update error:', error);
@@ -1515,7 +1515,7 @@ async function onDeleteClick() {
     const isGlobal = getExtensionType(extensionName) === 'global';
     if (isGlobal && !isCurrentUserAdmin) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.error(t`You don't have permission to delete global extensions.`);
+        notyf.error(t`You don't have permission to delete global extensions.`);
         return;
     }
 
@@ -1562,7 +1562,7 @@ async function cleanExtension(extensionName) {
     await saveSettings();
 
     // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-    toastr.success(t`Extension ${extensionName} data cleaned`);
+    notyf.success(t`Extension ${extensionName} data cleaned`);
     delay(1000).then(() => location.reload());
 }
 
@@ -1575,7 +1575,7 @@ async function onBranchClick() {
     const isGlobal = getExtensionType(extensionName) === 'global';
     if (isGlobal && !isCurrentUserAdmin) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.error(t`You don't have permission to switch branch.`);
+        notyf.error(t`You don't have permission to switch branch.`);
         return;
     }
 
@@ -1617,7 +1617,7 @@ async function onMoveClick() {
     const isGlobal = getExtensionType(extensionName) === 'global';
     if (isGlobal && !isCurrentUserAdmin) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.error(t`You don't have permission to move extensions.`);
+        notyf.error(t`You don't have permission to move extensions.`);
         return;
     }
 
@@ -1662,13 +1662,13 @@ async function moveExtension(extensionName, source, destination) {
         if (!result.ok) {
             const text = await result.text();
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.error(text || result.statusText, t`Extension move failed`, { timeOut: 5000 });
+            notyf.error(text || result.statusText, t`Extension move failed`, { timeOut: 5000 });
             console.error('Extension move failed', result.status, result.statusText, text);
             return;
         }
 
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.success(t`Extension ${extensionName} moved.`);
+        notyf.success(t`Extension ${extensionName} moved.`);
         await loadExtensionSettings({}, false, false);
         void showExtensionsDetails();
     } catch (error) {
@@ -1708,7 +1708,7 @@ export async function deleteExtension(extensionName, shouldClean = false) {
     await saveSettings();
 
     // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-    toastr.success(t`Extension ${extensionName} deleted`);
+    notyf.success(t`Extension ${extensionName} deleted`);
     delay(1000).then(() => location.reload());
 }
 
@@ -1769,7 +1769,7 @@ async function getExtensionBranches(extensionName, isGlobal) {
         if (!response.ok) {
             const text = await response.text();
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.error(text || response.statusText, t`Extension branches fetch failed`);
+            notyf.error(text || response.statusText, t`Extension branches fetch failed`);
             console.error('Extension branches fetch failed', response.status, response.statusText, text);
             return [];
         }
@@ -1804,13 +1804,13 @@ async function switchExtensionBranch(extensionName, isGlobal, branch) {
         if (!response.ok) {
             const text = await response.text();
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.error(text || response.statusText, t`Extension branch switch failed`);
+            notyf.error(text || response.statusText, t`Extension branch switch failed`);
             console.error('Extension branch switch failed', response.status, response.statusText, text);
             return;
         }
 
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.success(t`Extension ${extensionName} switched to ${branch}`, t`Reload the page to apply updates`);
+        notyf.success(t`Extension ${extensionName} switched to ${branch}`, t`Reload the page to apply updates`);
         await loadExtensionSettings({}, false, false);
         void showExtensionsDetails();
     } catch (error) {
@@ -1838,7 +1838,7 @@ export async function installExtension(url, global, branch = '') {
     } catch (error) {
         console.error('Invalid URL:', error);
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.error(t`Only valid HTTP and HTTPS URLs are allowed.`, t`Invalid URL`);
+        notyf.error(t`Only valid HTTP and HTTPS URLs are allowed.`, t`Invalid URL`);
         return false;
     }
 
@@ -1875,7 +1875,7 @@ export async function installExtension(url, global, branch = '') {
     console.debug('Extension installation started', url);
 
     // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-    toastr.info(t`Please wait...`, t`Installing extension`);
+    notyf.info(t`Please wait...`, t`Installing extension`);
 
     const request = await fetch('/api/extensions/install', {
         method: 'POST',
@@ -1890,14 +1890,14 @@ export async function installExtension(url, global, branch = '') {
     if (!request.ok) {
         const text = await request.text();
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.warning(text || request.statusText, t`Extension installation failed`, { timeOut: 5000 });
+        notyf.warning(text || request.statusText, t`Extension installation failed`, { timeOut: 5000 });
         console.error('Extension installation failed', request.status, request.statusText, text);
         return false;
     }
 
     const response = await request.json();
     // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-    toastr.success(t`Extension '${response.display_name}' has been installed successfully!`, t`Extension installation successful`);
+    notyf.success(t`Extension '${response.display_name}' has been installed successfully!`, t`Extension installation successful`);
     console.debug(`Extension "${response.display_name}" has been installed successfully at ${response.extensionPath}`);
     await loadExtensionSettings({}, false, false);
     await eventSource.emit(event_types.EXTENSION_SETTINGS_LOADED, response);
@@ -2134,7 +2134,7 @@ async function checkForExtensionUpdates(force) {
 
     if (updatesAvailable.length > 0) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.info(`${updatesAvailable.map(x => `• ${x}`).join('\n')}`, t`Extension updates available`);
+        notyf.info(`${updatesAvailable.map(x => `• ${x}`).join('\n')}`, t`Extension updates available`);
     }
 }
 
@@ -2151,7 +2151,7 @@ async function autoUpdateExtensions(forceAll) {
     }
 
     // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-    const banner = toastr.info(t`Auto-updating extensions. This may take several minutes.`, t`Please wait...`, { timeOut: 10000, extendedTimeOut: 10000 });
+    const banner = notyf.info(t`Auto-updating extensions. This may take several minutes.`, t`Please wait...`, { timeOut: 10000, extendedTimeOut: 10000 });
     const isCurrentUserAdmin = isAdmin();
     const promises = [];
     const autoUpdateTimeout = 60 * 1000;
@@ -2179,7 +2179,7 @@ async function autoUpdateExtensions(forceAll) {
     }
     await Promise.allSettled(promises);
     // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-    toastr.clear(banner);
+    notyf.dismiss(banner);
 }
 
 /**

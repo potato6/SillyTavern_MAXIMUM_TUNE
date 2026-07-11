@@ -55,7 +55,7 @@ function setNoteTextCommand(_, text) {
         fp.value = text;
         fp.dispatchEvent(new Event('input', { bubbles: true }));
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.success(t`Author's Note text updated`);
+        notyf.success(t`Author's Note text updated`);
     }
     return chat_metadata[metadata_keys.prompt];
 }
@@ -72,7 +72,7 @@ function setNoteDepthCommand(_, text) {
 
         if (Number.isNaN(value)) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.error(t`Not a valid number`);
+            notyf.error(t`Not a valid number`);
             return;
         }
 
@@ -81,7 +81,7 @@ function setNoteDepthCommand(_, text) {
         fd.value = Math.abs(value);
         fd.dispatchEvent(new Event('input', { bubbles: true }));
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.success(t`Author's Note depth updated`);
+        notyf.success(t`Author's Note depth updated`);
     }
     return chat_metadata[metadata_keys.depth];
 }
@@ -98,7 +98,7 @@ function setNoteIntervalCommand(_, text) {
 
         if (Number.isNaN(value)) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.error(t`Not a valid number`);
+            notyf.error(t`Not a valid number`);
             return;
         }
 
@@ -107,7 +107,7 @@ function setNoteIntervalCommand(_, text) {
         fi.value = Math.abs(value);
         fi.dispatchEvent(new Event('input', { bubbles: true }));
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.success(t`Author's Note frequency updated`);
+        notyf.success(t`Author's Note frequency updated`);
     }
     return chat_metadata[metadata_keys.interval];
 }
@@ -133,7 +133,7 @@ function setNotePositionCommand(_, text) {
 
         if (typeof position === 'undefined') {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.error(t`Not a valid position`);
+            notyf.error(t`Not a valid position`);
             return;
         }
 
@@ -143,7 +143,7 @@ function setNotePositionCommand(_, text) {
             posEl.dispatchEvent(new Event('input', { bubbles: true }));
         }
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.info(t`Author's Note position updated`);
+        notyf.info(t`Author's Note position updated`);
     }
     // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     return Object.keys(validPositions).find(key => validPositions[key] == chat_metadata[metadata_keys.position]);
@@ -168,7 +168,7 @@ function setNoteRoleCommand(_, text) {
 
         if (typeof role === 'undefined') {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.error(t`Not a valid role`);
+            notyf.error(t`Not a valid role`);
             return;
         }
 
@@ -177,7 +177,7 @@ function setNoteRoleCommand(_, text) {
         fr.value = Math.abs(role);
         fr.dispatchEvent(new Event('input', { bubbles: true }));
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.info(t`Author's Note role updated`);
+        notyf.info(t`Author's Note role updated`);
     }
     // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     return Object.keys(validRoles).find(key => validRoles[key] == chat_metadata[metadata_keys.role]);
@@ -364,7 +364,7 @@ function onExtensionFloatingCharaPromptInput() {
     } else {
         console.log('Character author\'s note error: No avatar name key could be found.');
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.error(t`Something went wrong. Could not save character's author's note.`);
+        notyf.error(t`Something went wrong. Could not save character's author's note.`);
 
         // Don't save settings if something went wrong
         return;
@@ -595,7 +595,7 @@ export function setFloatingPrompt() {
 function onANMenuItemClick() {
     if (!selected_group && this_chid === undefined) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.warning(t`Select a character before trying to use Author's Note`, '', { timeOut: 2000 });
+        notyf.warning(t`Select a character before trying to use Author's Note`, '', { timeOut: 2000 });
         return;
     }
 

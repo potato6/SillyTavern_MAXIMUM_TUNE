@@ -223,7 +223,7 @@ async function resetTokenCache() {
         // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         Object.keys(tokenCache).forEach(key => delete tokenCache[key]);
         await objectStore.removeItem('tokenCache');
-        toastr.success('Token cache cleared. Please reload the chat to re-tokenize it.');
+        notyf.success('Token cache cleared. Please reload the chat to re-tokenize it.');
     } catch (e) {
         console.log('Chat Completions: unable to reset token cache', e);
     }
@@ -269,7 +269,7 @@ export function selectTokenizer(tokenizerId) {
             tokenizerEl.value = String(tokenizer.tokenizerId);
             tokenizerEl.dispatchEvent(new Event('change'));
         }
-        toastr.info(`Tokenizer: "${tokenizer.tokenizerName}" selected`);
+        notyf.info(`Tokenizer: "${tokenizer.tokenizerName}" selected`);
     }
 }
 

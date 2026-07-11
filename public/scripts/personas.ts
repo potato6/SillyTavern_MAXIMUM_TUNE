@@ -519,7 +519,7 @@ export async function createPersona(avatarId) {
     await initPersona(avatarId, personaName, personaDescription, '');
     if (power_user.persona_show_notifications) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.success(t`You can now pick ${personaName} as a persona in the Persona Management menu.`, t`Persona Created`);
+        notyf.success(t`You can now pick ${personaName} as a persona in the Persona Management menu.`, t`Persona Created`);
     }
 }
 
@@ -660,7 +660,7 @@ export async function convertCharacterToPersona(characterId = null) {
 
     console.log('Persona for character created');
     // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-    toastr.success(t`You can now pick ${name} as a persona in the Persona Management menu.`, t`Persona Created`);
+    notyf.success(t`You can now pick ${name} as a persona in the Persona Management menu.`, t`Persona Created`);
 
     // Refresh the persona selector
     await getUserAvatars(true, overwriteName);
@@ -870,7 +870,7 @@ export async function askForPersonaSelection(title, text, personas, { okButton =
                     // @ts-expect-error TS(2339) FIXME: Property 'type' does not exist on type 'never'.
                     const name = targetedChar.type == 'character' ? characters[targetedChar.id]?.name : groups[targetedChar.id]?.name;
                     // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                    toastr.info(t`All connections to ${name} have been removed.`, t`Personas Unlocked`);
+                    notyf.info(t`All connections to ${name} have been removed.`, t`Personas Unlocked`);
                 }
             },
         });
@@ -1037,7 +1037,7 @@ async function selectCurrentPersona({ toastPersonaNameChange = true } = {}) {
             console.log(`Auto locked persona to ${user_avatar}`);
             if (toastPersonaNameChange && power_user.persona_show_notifications) {
                 // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                toastr.success(t`Persona ${personaName} selected and auto-locked to current chat`, t`Persona Selected`);
+                notyf.success(t`Persona ${personaName} selected and auto-locked to current chat`, t`Persona Selected`);
             }
             saveMetadataDebounced();
             updatePersonaUIStates();
@@ -1048,11 +1048,11 @@ async function selectCurrentPersona({ toastPersonaNameChange = true } = {}) {
             const temporary = getPersonaTemporaryLockInfo();
             if (temporary.isTemporary) {
                 // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                toastr.info(t`This persona is only temporarily chosen. Click for more info.`, t`Temporary Persona`, {
+                notyf.info(t`This persona is only temporarily chosen. Click for more info.`, t`Temporary Persona`, {
                     preventDuplicates: true,
                     onclick: () => {
                         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                        toastr.info(escapeHtml(temporary.info).replaceAll('\n', '<br />'), t`Temporary Persona`, { escapeHtml: false });
+                        notyf.info(escapeHtml(temporary.info).replaceAll('\n', '<br />'), t`Temporary Persona`, { escapeHtml: false });
                     },
                 });
             }
@@ -1135,7 +1135,7 @@ async function unlockPersona(type = 'chat') {
                 await saveMetadata();
                 if (power_user.persona_show_notifications && !isPersonaPanelOpen()) {
                     // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                    toastr.info(t`Persona ${name1} is now unlocked from this chat.`, t`Persona Unlocked`);
+                    notyf.info(t`Persona ${name1} is now unlocked from this chat.`, t`Persona Unlocked`);
                 }
             }
             break;
@@ -1152,7 +1152,7 @@ async function unlockPersona(type = 'chat') {
                 updatePersonaConnectionsAvatarList();
                 if (power_user.persona_show_notifications && !isPersonaPanelOpen()) {
                     // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                    toastr.info(t`Persona ${name1} is now unlocked from character ${name2}.`, t`Persona Unlocked`);
+                    notyf.info(t`Persona ${name1} is now unlocked from character ${name2}.`, t`Persona Unlocked`);
                 }
             }
             break;
@@ -1174,7 +1174,7 @@ async function lockPersona(type = 'chat') {
         console.log(`Creating a new persona ${user_avatar}`);
         if (power_user.persona_show_notifications) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.info(t`Creating a new persona for currently selected user name and avatar...`, t`Persona Not Found`);
+            notyf.info(t`Creating a new persona for currently selected user name and avatar...`, t`Persona Not Found`);
         }
         // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         power_user.personas[user_avatar] = name1;
@@ -1202,7 +1202,7 @@ async function lockPersona(type = 'chat') {
             saveMetadataDebounced();
             if (power_user.persona_show_notifications && !isPersonaPanelOpen()) {
                 // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                toastr.success(t`User persona ${name1} is locked to ${name2} in this chat`, t`Persona Locked`);
+                notyf.success(t`User persona ${name1} is locked to ${name2} in this chat`, t`Persona Locked`);
             }
             break;
         }
@@ -1242,7 +1242,7 @@ async function lockPersona(type = 'chat') {
                         additional += `<br /><br />${t`Unlinked existing persona${unlinkedCharacters.length > 1 ? 's' : ''}: ${unlinkedCharacters.map(escapeHtml).join(', ')}`}`;
                     if (additional || !isPersonaPanelOpen()) {
                         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                        toastr.success(t`User persona ${escapeHtml(name1)} is locked to character ${escapeHtml(name2)}${additional}`, t`Persona Locked`, { escapeHtml: false });
+                        notyf.success(t`User persona ${escapeHtml(name1)} is locked to character ${escapeHtml(name2)}${additional}`, t`Persona Locked`, { escapeHtml: false });
                     }
                 }
             }
@@ -1308,13 +1308,13 @@ async function deletePersona(avatarId, { silent = false } = {}) {
 
         if (avatarId === power_user.default_persona) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            if (!silent) toastr.warning(t`The default persona was deleted. You will need to set a new default persona.`, t`Default Persona Deleted`);
+            if (!silent) notyf.warning(t`The default persona was deleted. You will need to set a new default persona.`, t`Default Persona Deleted`);
             power_user.default_persona = null;
         }
 
         if (avatarId === chat_metadata.persona) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            if (!silent) toastr.warning(t`The locked persona was deleted. You will need to set a new persona for this chat.`, t`Persona Deleted`);
+            if (!silent) notyf.warning(t`The locked persona was deleted. You will need to set a new persona for this chat.`, t`Persona Deleted`);
             delete chat_metadata.persona;
             await saveMetadata();
         }
@@ -1422,7 +1422,7 @@ async function onPersonaLoreButtonClick({ shiftKey, altKey }) {
 
     if (!personaName) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.warning(t`You must bind a name to this persona before you can set a lorebook.`, t`Persona Name Not Set`);
+        notyf.warning(t`You must bind a name to this persona before you can set a lorebook.`, t`Persona Name Not Set`);
         return;
     }
 
@@ -1536,7 +1536,7 @@ async function toggleDefaultPersona(avatarId, { quiet = false } = {}) {
     if (power_user.personas[avatarId] === undefined) {
         console.warn(`No persona name found for avatar ${avatarId}`);
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.warning(t`You must bind a name to this persona before you can set it as the default.`, t`Persona Name Not Set`);
+        notyf.warning(t`You must bind a name to this persona before you can set it as the default.`, t`Persona Name Not Set`);
         return;
     }
 
@@ -1554,7 +1554,7 @@ async function toggleDefaultPersona(avatarId, { quiet = false } = {}) {
         console.log(`Removing default persona ${avatarId}`);
         if (power_user.persona_show_notifications && !isPersonaPanelOpen()) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.info(t`This persona will no longer be used by default when you open a new chat.`, t`Default Persona Removed`);
+            notyf.info(t`This persona will no longer be used by default when you open a new chat.`, t`Default Persona Removed`);
         }
         // @ts-expect-error TS(2790) FIXME: The operand of a 'delete' operator must be optiona... Remove this comment to see the full error message
         delete power_user.default_persona;
@@ -1574,7 +1574,7 @@ async function toggleDefaultPersona(avatarId, { quiet = false } = {}) {
         power_user.default_persona = avatarId;
         if (power_user.persona_show_notifications && !isPersonaPanelOpen()) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.success(t`Set to ${power_user.personas[avatarId]}.This persona will be used by default when you open a new chat.`, t`Default Persona`);
+            notyf.success(t`Set to ${power_user.personas[avatarId]}.This persona will be used by default when you open a new chat.`, t`Default Persona`);
         }
     }
 
@@ -1858,7 +1858,7 @@ async function loadPersonaForCurrentChat({ doRender = false } = {}) {
                 message += '<br /><br />' + t`Auto-locked this persona to current chat.`;
             }
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.success(message, t`Persona Auto Selected`, { escapeHtml: false });
+            notyf.success(message, t`Persona Auto Selected`, { escapeHtml: false });
         }
     // @ts-expect-error TS(2339) FIXME: Property 'persona_auto_lock' does not exist on typ... Remove this comment to see the full error message
     } else if (chatPersona && power_user.persona_auto_lock && !chat_metadata.persona) {
@@ -1922,7 +1922,7 @@ export async function showCharConnections() {
                 updatePersonaConnectionsAvatarList();
                 if (power_user.persona_show_notifications) {
                     // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                    toastr.info(t`User persona ${power_user.personas[personaId]} is now unlocked from the current character ${name2}.`, t`Persona unlocked`);
+                    notyf.info(t`User persona ${power_user.personas[personaId]} is now unlocked from the current character ${name2}.`, t`Persona unlocked`);
                 }
 
                 isRemoving = true;
@@ -1936,7 +1936,7 @@ export async function showCharConnections() {
         await setUserAvatar(selectedPersona, { toastPersonaNameChange: false });
         if (power_user.persona_show_notifications) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.success(t`Selected persona ${power_user.personas[selectedPersona]} for current chat.`, t`Connected Persona Selected`);
+            notyf.success(t`Selected persona ${power_user.personas[selectedPersona]} for current chat.`, t`Connected Persona Selected`);
         }
     }
 }
@@ -1987,7 +1987,7 @@ async function onPersonasRestoreInput(e) {
 
     if (!data) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.warning(t`Invalid file selected`, t`Persona Management`);
+        notyf.warning(t`Invalid file selected`, t`Persona Management`);
         console.debug('Invalid file selected');
         return;
     }
@@ -1995,7 +1995,7 @@ async function onPersonasRestoreInput(e) {
     // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
     if (!data.personas || !data.persona_descriptions || typeof data.personas !== 'object' || typeof data.persona_descriptions !== 'object') {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.warning(t`Invalid file format`, t`Persona Management`);
+        notyf.warning(t`Invalid file format`, t`Persona Management`);
         console.debug('Invalid file selected');
         return;
     }
@@ -2055,11 +2055,11 @@ async function onPersonasRestoreInput(e) {
 
     if (warnings.length) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.success(t`Personas restored with warnings. Check console for details.`, t`Persona Management`);
+        notyf.success(t`Personas restored with warnings. Check console for details.`, t`Persona Management`);
         console.warn(`PERSONA RESTORE REPORT\n====================\n${warnings.join('\n')}`);
     } else {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.success(t`Personas restored successfully.`, t`Persona Management`);
+        notyf.success(t`Personas restored successfully.`, t`Persona Management`);
     }
 
     await getUserAvatars();
@@ -2142,7 +2142,7 @@ async function duplicatePersona(avatarId, { silent = false, select = false } = {
 
     if (!personaName) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.warning(t`Chosen avatar is not a persona`, t`Persona Management`);
+        notyf.warning(t`Chosen avatar is not a persona`, t`Persona Management`);
         return '';
     }
 
@@ -2310,7 +2310,7 @@ async function uploadPersonaAvatar(avatarId, base64Data, { resizePrompt = false 
     } catch (error) {
         console.error('Error uploading persona avatar:', error);
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.warning(t`Failed to upload avatar: ${error.message}`);
+        notyf.warning(t`Failed to upload avatar: ${error.message}`);
         return false;
     }
 }
@@ -2326,7 +2326,7 @@ function getTargetPersona(personaArg) {
         const persona = findPersona({ name: personaArg });
         if (!persona) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.warning(t`Persona "${personaArg}" not found`);
+            notyf.warning(t`Persona "${personaArg}" not found`);
             return null;
         }
         return persona;
@@ -2336,7 +2336,7 @@ function getTargetPersona(personaArg) {
     const persona = findPersona({ preferCurrentPersona: true });
     if (!persona) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.warning(t`No persona selected and no persona argument provided`);
+        notyf.warning(t`No persona selected and no persona argument provided`);
         return null;
     }
     return persona;
@@ -2356,7 +2356,7 @@ async function createPersonaCallback(args) {
     const name = args.name;
     if (!name || typeof name !== 'string' || !name.trim()) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.warning(t`Persona name is required`);
+        notyf.warning(t`Persona name is required`);
         return '';
     }
 
@@ -2372,7 +2372,7 @@ async function createPersonaCallback(args) {
     let depth = args.descriptionDepth !== undefined ? Number(args.descriptionDepth) : DEFAULT_DEPTH;
     if (isNaN(depth)) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.warning(t`Invalid description depth "${args.descriptionDepth}", defaulting to ${DEFAULT_DEPTH}`);
+        notyf.warning(t`Invalid description depth "${args.descriptionDepth}", defaulting to ${DEFAULT_DEPTH}`);
         depth = DEFAULT_DEPTH;
     }
 
@@ -2403,7 +2403,7 @@ async function createPersonaCallback(args) {
     }
 
     // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-    toastr.success(t`Persona "${trimmedName}" created successfully`);
+    notyf.success(t`Persona "${trimmedName}" created successfully`);
     return avatarId;
 }
 
@@ -2423,7 +2423,7 @@ async function updatePersonaCallback(args) {
 
     if (!descriptor) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.warning(t`Persona data not found for "${persona.name}"`);
+        notyf.warning(t`Persona data not found for "${persona.name}"`);
         return '';
     }
 
@@ -2517,7 +2517,7 @@ async function updatePersonaCallback(args) {
 
     if (!hasUpdates) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.info(t`No fields provided to update`);
+        notyf.info(t`No fields provided to update`);
         return avatarId;
     }
 
@@ -2532,7 +2532,7 @@ async function updatePersonaCallback(args) {
     updatePersonaUIStates();
 
     // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-    toastr.success(t`Persona "${power_user.personas[avatarId]}" updated successfully`);
+    notyf.success(t`Persona "${power_user.personas[avatarId]}" updated successfully`);
     return avatarId;
 }
 
@@ -2570,7 +2570,7 @@ async function getPersonaDataCallback(args) {
         const value = fieldMap[args.field];
         if (value === undefined) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.warning(t`Unknown persona field "${args.field}"`);
+            notyf.warning(t`Unknown persona field "${args.field}"`);
             return '';
         }
 
@@ -2631,12 +2631,12 @@ async function duplicatePersonaCallback(args) {
 
     if (!newAvatarId) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.error(t`Failed to duplicate persona`);
+        notyf.error(t`Failed to duplicate persona`);
         return '';
     }
 
     // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-    toastr.success(t`Persona "${power_user.personas[newAvatarId]}" duplicated successfully`);
+    notyf.success(t`Persona "${power_user.personas[newAvatarId]}" duplicated successfully`);
     return newAvatarId;
 }
 
@@ -2654,7 +2654,7 @@ async function lockPersonaCallback(_args, value) {
 
     if (!['chat', 'character', 'default'].includes(type)) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.warning(t`Unknown lock type "${type}"`, t`Persona Management`);
+        notyf.warning(t`Unknown lock type "${type}"`, t`Persona Management`);
         return '';
     }
 
@@ -2690,13 +2690,13 @@ async function lockPersonaCallback(_args, value) {
 async function setNameCallback({ mode = 'all' }, name) {
     if (!name) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.warning('You must specify a name to change to');
+        notyf.warning('You must specify a name to change to');
         return '';
     }
 
     if (!['lookup', 'temp', 'all'].includes(mode)) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.warning('Mode must be one of "lookup", "temp" or "all"');
+        notyf.warning('Mode must be one of "lookup", "temp" or "all"');
         return '';
     }
 
@@ -2711,7 +2711,7 @@ async function setNameCallback({ mode = 'all' }, name) {
             return '';
         } else if (mode === 'lookup') {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.warning(`Persona ${name} not found`);
+            notyf.warning(`Persona ${name} not found`);
             return '';
         }
     }

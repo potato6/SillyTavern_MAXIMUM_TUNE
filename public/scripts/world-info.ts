@@ -1188,7 +1188,7 @@ function registerWorldInfoSlashCommands() {
     async function getEntriesFromFile(file, { args = {}, unnamed = null, callbackName = 'getEntriesFromFile' } = {}) {
         if (!file || !world_names.includes(file)) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.warning(t`Valid World Info file name is required`);
+            notyf.warning(t`Valid World Info file name is required`);
             logSlashCommandWarn(`${callbackName}: Valid World Info file name is required`, args, unnamed);
             return '';
         }
@@ -1197,7 +1197,7 @@ function registerWorldInfoSlashCommands() {
 
         if (!data || !('entries' in data)) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.warning(t`World Info file has an invalid format`);
+            notyf.warning(t`World Info file has an invalid format`);
             logSlashCommandWarn(`${callbackName}: World Info file has an invalid format`, args, unnamed);
             return '';
         }
@@ -1206,7 +1206,7 @@ function registerWorldInfoSlashCommands() {
 
         if (!entries || entries.length === 0) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.warning(t`World Info file has no entries`);
+            notyf.warning(t`World Info file has no entries`);
             logSlashCommandWarn(`${callbackName}: World Info file has no entries`, args, unnamed);
             return '';
         }
@@ -1254,7 +1254,7 @@ function registerWorldInfoSlashCommands() {
         const character = findChar({ name: characterIdentifier });
         if (!character) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.error(t`Character not found.`);
+            notyf.error(t`Character not found.`);
             // @ts-expect-error TS(2345) FIXME: Argument of type '{ characterIdentifier: any; }' i... Remove this comment to see the full error message
             logSlashCommandWarn('getCharBookCallback: Character not found', { type, name, create }, { characterIdentifier });
             return '';
@@ -1301,7 +1301,7 @@ function registerWorldInfoSlashCommands() {
 
         if (!chatId) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.warning(t`Open a chat to get a name of the chat-bound lorebook`);
+            notyf.warning(t`Open a chat to get a name of the chat-bound lorebook`);
             logSlashCommandWarn('getChatBookCallback: Open a chat to get a name of the chat-bound lorebook', args);
             return '';
         }
@@ -1426,7 +1426,7 @@ function registerWorldInfoSlashCommands() {
 
         if (!entry) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.warning('Valid UID is required');
+            notyf.warning('Valid UID is required');
             // @ts-expect-error TS(2345) FIXME: Argument of type '{ uid: any; }' is not assignable... Remove this comment to see the full error message
             logSlashCommandWarn('getEntryFieldCallback: Valid UID is required', args, { uid });
             console.warn();
@@ -1435,7 +1435,7 @@ function registerWorldInfoSlashCommands() {
 
         if (!Object.hasOwn(newWorldInfoEntryDefinition, field)) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.warning('Valid field name is required');
+            notyf.warning('Valid field name is required');
             // @ts-expect-error TS(2345) FIXME: Argument of type '{ uid: any; }' is not assignable... Remove this comment to see the full error message
             logSlashCommandWarn('getEntryFieldCallback: Valid field name is required', args, { uid });
             return '';
@@ -1500,7 +1500,7 @@ function registerWorldInfoSlashCommands() {
 
         if (!data || !('entries' in data)) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.warning('Valid World Info file name is required');
+            notyf.warning('Valid World Info file name is required');
             logSlashCommandWarn('createEntryCallback: Valid World Info file name is required', args);
             return '';
         }
@@ -1559,7 +1559,7 @@ function registerWorldInfoSlashCommands() {
 
         if (value === undefined) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.warning('Value is required');
+            notyf.warning('Value is required');
             // @ts-expect-error TS(2345) FIXME: Argument of type '{ value: any; }' is not assignab... Remove this comment to see the full error message
             logSlashCommandWarn('setEntryFieldCallback: Value is required', args, { value });
             return '';
@@ -1571,7 +1571,7 @@ function registerWorldInfoSlashCommands() {
 
         if (!data || !('entries' in data)) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.warning('Valid World Info file name is required');
+            notyf.warning('Valid World Info file name is required');
             // @ts-expect-error TS(2345) FIXME: Argument of type '{ value: any; }' is not assignab... Remove this comment to see the full error message
             logSlashCommandWarn('setEntryFieldCallback: Valid World Info file name is required', args, { value });
             return '';
@@ -1581,7 +1581,7 @@ function registerWorldInfoSlashCommands() {
 
         if (!entry) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.warning('Valid UID is required');
+            notyf.warning('Valid UID is required');
             // @ts-expect-error TS(2345) FIXME: Argument of type '{ value: any; }' is not assignab... Remove this comment to see the full error message
             logSlashCommandWarn('setEntryFieldCallback: Valid UID is required', args, { value });
             return '';
@@ -1589,7 +1589,7 @@ function registerWorldInfoSlashCommands() {
 
         if (!Object.hasOwn(newWorldInfoEntryDefinition, field)) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.warning('Valid field name is required');
+            notyf.warning('Valid field name is required');
             // @ts-expect-error TS(2345) FIXME: Argument of type '{ value: any; }' is not assignab... Remove this comment to see the full error message
             logSlashCommandWarn('setEntryFieldCallback: Valid field name is required', args, { value });
             return '';
@@ -1684,7 +1684,7 @@ function registerWorldInfoSlashCommands() {
 
         if (!entry) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.warning('Valid UID is required');
+            notyf.warning('Valid UID is required');
             // @ts-expect-error TS(2345) FIXME: Argument of type '{ uid: any; }' is not assignable... Remove this comment to see the full error message
             logSlashCommandWarn('getTimedEffectCallback: Valid UID is required', args, { uid });
             return '';
@@ -1697,7 +1697,7 @@ function registerWorldInfoSlashCommands() {
 
         if (!timedEffects.isValidEffectType(effect)) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.warning('Valid effect type is required');
+            notyf.warning('Valid effect type is required');
             // @ts-expect-error TS(2345) FIXME: Argument of type '{ uid: any; }' is not assignable... Remove this comment to see the full error message
             logSlashCommandWarn('getTimedEffectCallback: Valid effect type is required', args, { uid });
             return '';
@@ -1729,7 +1729,7 @@ function registerWorldInfoSlashCommands() {
 
         if (value === undefined) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.warning('New state is required');
+            notyf.warning('New state is required');
             // @ts-expect-error TS(2345) FIXME: Argument of type '{ value: any; }' is not assignab... Remove this comment to see the full error message
             logSlashCommandWarn('setTimedEffectCallback: New state is required', args, { value });
             return '';
@@ -1748,7 +1748,7 @@ function registerWorldInfoSlashCommands() {
 
         if (!entry) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.warning('Valid UID is required');
+            notyf.warning('Valid UID is required');
             // @ts-expect-error TS(2345) FIXME: Argument of type '{ value: any; }' is not assignab... Remove this comment to see the full error message
             logSlashCommandWarn('setTimedEffectCallback: Valid UID is required', args, { value });
             return '';
@@ -1761,7 +1761,7 @@ function registerWorldInfoSlashCommands() {
 
         if (!timedEffects.isValidEffectType(effect)) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.warning('Valid effect type is required');
+            notyf.warning('Valid effect type is required');
             // @ts-expect-error TS(2345) FIXME: Argument of type '{ value: any; }' is not assignab... Remove this comment to see the full error message
             logSlashCommandWarn('setTimedEffectCallback: Valid effect type is required', args, { value });
             return '';
@@ -1770,7 +1770,7 @@ function registerWorldInfoSlashCommands() {
         // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         if (!entry[effect]) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.warning('This entry does not have the selected effect. Configure it in the editor first.');
+            notyf.warning('This entry does not have the selected effect. Configure it in the editor first.');
             // @ts-expect-error TS(2345) FIXME: Argument of type '{ value: any; }' is not assignab... Remove this comment to see the full error message
             logSlashCommandWarn('setTimedEffectCallback: This entry does not have the selected effect', args, { value });
             return '';
@@ -1799,7 +1799,7 @@ function registerWorldInfoSlashCommands() {
 
         await saveMetadata();
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.success(`Timed effect "${effect}" for entry ${entry.uid} is now ${newEffectState ? 'active' : 'inactive'}`);
+        notyf.success(`Timed effect "${effect}" for entry ${entry.uid} is now ${newEffectState ? 'active' : 'inactive'}`);
 
         return '';
     }
@@ -2513,7 +2513,7 @@ export function sortWorldInfoEntries(data, { customSort = null } = {}) {
  */
 function nullWorldInfo() {
     // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-    toastr.info('Create or import a new World Info file first.', 'World Info is not set', { timeOut: 10000, preventDuplicates: true });
+    notyf.info('Create or import a new World Info file first.', 'World Info is not set', { timeOut: 10000, preventDuplicates: true });
 }
 
 /** @type {Select2Option[]} Cache all keys as selectable dropdown option */
@@ -2833,7 +2833,7 @@ async function displayWorldEntries(name, data, navigation = navigation_option.no
 
         if (counter > 0) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.info(`Backfilled ${counter} titles`);
+            notyf.info(`Backfilled ${counter} titles`);
             await saveWorldInfo(name, data);
             updateEditor(navigation_option.previous);
         }
@@ -2854,12 +2854,12 @@ async function displayWorldEntries(name, data, navigation = navigation_option.no
         const start = Number(result);
         if (isNaN(start) || start < 0) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.error(t`Invalid number: ${result}`, t`Apply Current Sorting`);
+            notyf.error(t`Invalid number: ${result}`, t`Apply Current Sorting`);
             return;
         }
         if (start < entryCount) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.warning(t`A number lower than the entry count has been chosen. All entries below that will default to 0.`, t`Apply Current Sorting`);
+            notyf.warning(t`A number lower than the entry count has been chosen. All entries below that will default to 0.`, t`Apply Current Sorting`);
         }
 
         // We need to sort the entries here, as the data source isn't sorted
@@ -2881,12 +2881,12 @@ async function displayWorldEntries(name, data, navigation = navigation_option.no
 
         if (updated > 0) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.info(`Updated ${updated} Order values`, 'Apply Custom Sorting');
+            notyf.info(`Updated ${updated} Order values`, 'Apply Custom Sorting');
             await saveWorldInfo(name, data, true);
             updateEditor(navigation_option.previous);
         } else {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.info('All values up to date', 'Apply Custom Sorting');
+            notyf.info('All values up to date', 'Apply Custom Sorting');
         }
     });
 
@@ -3941,7 +3941,7 @@ export async function getWorldEntry(name, data, entry) {
         });
         if (selectableWorldCount === 0) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.warning(t`There are no other lorebooks to move to.`);
+            notyf.warning(t`There are no other lorebooks to move to.`);
             return;
         }
         const wrapper = document.createElement('div');
@@ -3968,7 +3968,7 @@ export async function getWorldEntry(name, data, entry) {
         const selectedValue = world_names[selectedWorldIndex];
         if (!selectedValue) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.warning(t`Please select a target lorebook.`);
+            notyf.warning(t`Please select a target lorebook.`);
             return;
         }
         const deleteOriginal = popupConfirm === POPUP_RESULT.CUSTOM1;
@@ -4198,14 +4198,14 @@ export async function getWorldEntry(name, data, entry) {
                 this.value = '0';
                 this.dispatchEvent(new Event('input', { bubbles: true }));
                 // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                toastr.warning('Scan depth cannot be negative');
+                notyf.warning('Scan depth cannot be negative');
                 return;
             }
             if (value > MAX_SCAN_DEPTH) {
                 this.value = String(MAX_SCAN_DEPTH);
                 this.dispatchEvent(new Event('input', { bubbles: true }));
                 // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                toastr.warning(`Scan depth cannot exceed ${MAX_SCAN_DEPTH}`);
+                notyf.warning(`Scan depth cannot exceed ${MAX_SCAN_DEPTH}`);
                 return;
             }
             data.entries[uid].scanDepth = !isEmpty && !isNaN(value) && value >= 0 && value <= MAX_SCAN_DEPTH ? Math.floor(value) : null;
@@ -4776,7 +4776,7 @@ async function renameWorldInfo(name, data) {
     }
     if (equalsIgnoreCaseAndAccents(oldName, newName)) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.warning(t`Name not accepted, as it is the same as before (ignoring case and accents).`, t`Rename World Info`);
+        notyf.warning(t`Name not accepted, as it is the same as before (ignoring case and accents).`, t`Rename World Info`);
         return;
     }
 
@@ -4877,10 +4877,10 @@ async function updateWorldInfoLinks(oldName, newName) {
                 }
 
                 // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                toastr.success(`Successfully updated link for ${character.name}.`);
+                notyf.success(`Successfully updated link for ${character.name}.`);
             } catch (e) {
                 // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                toastr.error(`Failed to update link for ${character.name}.`);
+                notyf.error(`Failed to update link for ${character.name}.`);
                 console.error(`Backend update for character ${character.name} failed:`, e);
             }
         }
@@ -5679,7 +5679,7 @@ export async function checkWorldInfo(chat, maxContext, isDryRun, globalScanData 
                     if (world_info_overflow_alert) {
                         console.warn(`[WI] budget of ${budget} reached, stopping after ${allActivatedEntries.size} entries`);
                         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                        toastr.warning(`World info budget reached after ${allActivatedEntries.size} entries.`, 'World Info');
+                        notyf.warning(`World info budget reached after ${allActivatedEntries.size} entries.`, 'World Info');
                     } else {
                         console.debug(`[WI] budget of ${budget} reached, stopping after ${allActivatedEntries.size} entries`);
                     }
@@ -6431,7 +6431,7 @@ export function checkEmbeddedWorld(chid) {
                 callGenericPopup(html, POPUP_TYPE.CONFIRM, '', { okButton: 'Yes' }).then(checkResult);
             } else {
                 // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                toastr.info(
+                notyf.info(
                     'To import and use it, select "Import Card Lore" in the "More..." dropdown menu on the character panel.',
                     `${characters[chid].name} has an embedded World/Lorebook`,
                     { timeOut: 5000, extendedTimeOut: 10000 },
@@ -6480,7 +6480,7 @@ export async function importEmbeddedWorldInfo(skipPopup = false) {
     document.getElementById('character_world')?.dispatchEvent(new Event('change', { bubbles: true }));
 
     // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-    toastr.success(t`The world '${bookName}' has been imported and linked to the character successfully.`, t`World/Lorebook imported`);
+    notyf.success(t`The world '${bookName}' has been imported and linked to the character successfully.`, t`World/Lorebook imported`);
 
     const newIndex = world_names.indexOf(bookName);
     if (newIndex >= 0) {
@@ -6522,10 +6522,10 @@ export function onWorldInfoChange(args, text) {
                                 selected_world_info.splice(selected_world_info.indexOf(name), 1);
                                 wiElement.prop('selected', false);
                                 // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                                if (!silent) toastr.success(t`Deactivated world: ${name}`);
+                                if (!silent) notyf.success(t`Deactivated world: ${name}`);
                             } else {
                                 // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                                if (!silent) toastr.error(t`World was not active: ${name}`);
+                                if (!silent) notyf.error(t`World was not active: ${name}`);
                             }
                             break;
                         }
@@ -6536,13 +6536,13 @@ export function onWorldInfoChange(args, text) {
                                 selected_world_info.splice(selected_world_info.indexOf(name), 1);
                                 wiElement.prop('selected', false);
                                 // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                                if (!silent) toastr.success(t`Deactivated world: ${name}`);
+                                if (!silent) notyf.success(t`Deactivated world: ${name}`);
                             } else {
                                 // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
                                 selected_world_info.push(name);
                                 wiElement.prop('selected', true);
                                 // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                                if (!silent) toastr.success(t`Activated world: ${name}`);
+                                if (!silent) notyf.success(t`Activated world: ${name}`);
                             }
                             break;
                         }
@@ -6552,19 +6552,19 @@ export function onWorldInfoChange(args, text) {
                             selected_world_info.push(name);
                             wiElement.prop('selected', true);
                             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                            if (!silent) toastr.success(t`Activated world: ${name}`);
+                            if (!silent) notyf.success(t`Activated world: ${name}`);
                         }
                     }
                 } else {
                     // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                    if (!silent) toastr.error(t`No world found named: ${worldName}`);
+                    if (!silent) notyf.error(t`No world found named: ${worldName}`);
                 }
             });
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             document.getElementById('world_info')?.dispatchEvent(new Event('change', {bubbles: true}));
         } else { // if no args, unset all worlds
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            if (!silent) toastr.success(t`Deactivated all worlds`);
+            if (!silent) notyf.success(t`Deactivated all worlds`);
             selected_world_info = [];
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             document.getElementById('world_info').value = null.dispatchEvent(new Event('change', { bubbles: true }));
@@ -6584,7 +6584,7 @@ export function onWorldInfoChange(args, text) {
                     const wiElement = getWIElement(existingWorldName);
                     wiElement.prop('selected', false);
                     // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                    toastr.error(t`The world with ${existingWorldName} is invalid or corrupted.`);
+                    notyf.error(t`The world with ${existingWorldName} is invalid or corrupted.`);
                 }
             });
         }
@@ -6625,7 +6625,7 @@ export async function importWorldInfo(file) {
 
         if (jsonData === undefined || jsonData === null) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.error(t`File is not valid: ${file.name}`);
+            notyf.error(t`File is not valid: ${file.name}`);
             return;
         }
 
@@ -6648,7 +6648,7 @@ export async function importWorldInfo(file) {
         }
     } catch (error) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.error(`Error parsing file: ${error}`);
+        notyf.error(`Error parsing file: ${error}`);
         return;
     }
 
@@ -6685,12 +6685,12 @@ export async function importWorldInfo(file) {
             }
 
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.success(t`World Info "${data.name}" imported successfully!`);
+            notyf.success(t`World Info "${data.name}" imported successfully!`);
         }
     } catch (error) {
         console.error('Error importing world info:', error);
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.error(t`Failed to import World Info`);
+        notyf.error(t`Failed to import World Info`);
     }
 }
 
@@ -6778,14 +6778,14 @@ export async function moveWorldInfoEntry(sourceName, targetName, uid, { deleteOr
 
     if (!world_names.includes(sourceName)) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.error(t`Source lorebook '${sourceName}' not found.`);
+        notyf.error(t`Source lorebook '${sourceName}' not found.`);
         console.error(`[WI Move] Source lorebook '${sourceName}' does not exist.`);
         return false;
     }
 
     if (!world_names.includes(targetName)) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.error(t`Target lorebook '${targetName}' not found.`);
+        notyf.error(t`Target lorebook '${targetName}' not found.`);
         console.error(`[WI Move] Target lorebook '${targetName}' does not exist.`);
         return false;
     }
@@ -6798,20 +6798,20 @@ export async function moveWorldInfoEntry(sourceName, targetName, uid, { deleteOr
 
         if (!sourceData || !sourceData.entries) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.error(t`Failed to load data for source lorebook '${sourceName}'.`);
+            notyf.error(t`Failed to load data for source lorebook '${sourceName}'.`);
             console.error(`[WI Move] Could not load source data for '${sourceName}'.`);
             return false;
         }
         if (!targetData || !targetData.entries) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.error(t`Failed to load data for target lorebook '${targetName}'.`);
+            notyf.error(t`Failed to load data for target lorebook '${targetName}'.`);
             console.error(`[WI Move] Could not load target data for '${targetName}'.`);
             return false;
         }
 
         if (!sourceData.entries[entryUidString]) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.error(t`Entry not found in source lorebook '${sourceName}'.`);
+            notyf.error(t`Entry not found in source lorebook '${sourceName}'.`);
             console.error(`[WI Move] Entry UID ${entryUidString} not found in '${sourceName}'.`);
             return false;
         }
@@ -6859,14 +6859,14 @@ export async function moveWorldInfoEntry(sourceName, targetName, uid, { deleteOr
         }
 
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.success(deleteOriginal
+        notyf.success(deleteOriginal
             ? t`Entry moved successfully from '${sourceName}' to '${targetName}'.`
             : t`Entry copied successfully to '${targetName}'.`);
 
         return true;
     } catch (error) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.error(t`An unexpected error occurred while moving the entry: ${error.message}`);
+        notyf.error(t`An unexpected error occurred while moving the entry: ${error.message}`);
         console.error('[WI Move] Unexpected error:', error);
         return false;
     }
@@ -6905,7 +6905,7 @@ export async function charUpdatePrimaryWorld(name) {
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             document.getElementById('character_json_data').value = JSON.stringify(data);
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.info(t`Embedded lorebook will be removed from this character.`);
+            notyf.info(t`Embedded lorebook will be removed from this character.`);
         } catch {
             console.error('Failed to parse character JSON data.');
         }

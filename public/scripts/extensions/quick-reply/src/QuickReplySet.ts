@@ -257,7 +257,7 @@ export class QuickReplySet {
                 // JSON data
                 if (data.label === undefined || data.message === undefined) {
                     // not a QR
-                    toastr.error('Not a QR.');
+                    notyf.error('Not a QR.');
                     return;
                 }
             } else {

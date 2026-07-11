@@ -952,7 +952,7 @@ function selectReasoningTemplateCallback(args, name) {
 
         if (result.length === 0) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            if (!quiet) toastr.warning(`Reasoning template "${name}" not found`);
+            if (!quiet) notyf.warning(`Reasoning template "${name}" not found`);
             return '';
         }
 
@@ -965,7 +965,7 @@ function selectReasoningTemplateCallback(args, name) {
         reasoningSelect.dispatchEvent(new Event('change'));
     }
     // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-    if (!quiet) toastr.success(`Reasoning template "${foundName}" selected`);
+    if (!quiet) notyf.success(`Reasoning template "${foundName}" selected`);
     return foundName;
 }
 
@@ -1098,12 +1098,12 @@ function registerReasoningSlashCommands() {
 
             if (!power_user.reasoning.prefix || !power_user.reasoning.suffix) {
                 // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                toastr.warning(t`Both prefix and suffix must be set in the Reasoning Formatting settings.`, t`Reasoning Parse`);
+                notyf.warning(t`Both prefix and suffix must be set in the Reasoning Formatting settings.`, t`Reasoning Parse`);
                 return value;
             }
             if (typeof args.return !== 'string' || !['reasoning', 'content'].includes(args.return)) {
                 // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                toastr.warning(t`Invalid return type '${args.return}', defaulting to 'reasoning'.`, t`Reasoning Parse`);
+                notyf.warning(t`Invalid return type '${args.return}', defaulting to 'reasoning'.`, t`Reasoning Parse`);
             }
 
             const returnMessage = args.return === 'content';
@@ -1150,13 +1150,13 @@ function registerReasoningSlashCommands() {
 
             if (!power_user.reasoning.prefix || !power_user.reasoning.suffix) {
                 // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                toastr.warning(t`Both prefix and suffix must be set in the Reasoning Formatting settings.`, t`Reasoning Format`);
+                notyf.warning(t`Both prefix and suffix must be set in the Reasoning Formatting settings.`, t`Reasoning Format`);
                 return '';
             }
 
             if (!reasoning) {
                 // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                toastr.warning(t`Reasoning argument is required.`, t`Reasoning Format`);
+                notyf.warning(t`Reasoning argument is required.`, t`Reasoning Format`);
                 return '';
             }
 
@@ -1212,7 +1212,7 @@ function registerReasoningSlashCommands() {
         const range = value ? stringToRange(String(value), 0, chat.length - 1) : { start: chat.length - 1, end: chat.length - 1 };
         if (!range) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.warning(t`Invalid message ID or range: ${value}`);
+            notyf.warning(t`Invalid message ID or range: ${value}`);
             return null;
         }
         const selector = Array.from({ length: range.end - range.start + 1 }, (_, i) =>
@@ -1221,7 +1221,7 @@ function registerReasoningSlashCommands() {
         const details = document.querySelectorAll(selector);
         if (details.length === 0) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.warning(t`No reasoning blocks found for the specified messages.`);
+            notyf.warning(t`No reasoning blocks found for the specified messages.`);
             return null;
         }
         return details;
@@ -1476,7 +1476,7 @@ function setReasoningEventHandlers() {
         // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type 'never'.
         if (message.extra.reasoning) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.info(t`Reasoning already exists.`, t`Edit Message`);
+            notyf.info(t`Reasoning already exists.`, t`Edit Message`);
             return;
         }
 
@@ -1539,7 +1539,7 @@ function setReasoningEventHandlers() {
 
         await copyText(reasoning);
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.info(t`Copied!`, '', { timeOut: 2000 });
+        notyf.info(t`Copied!`, '', { timeOut: 2000 });
     });
 
     document.addEventListener('input', function (e: Event) {

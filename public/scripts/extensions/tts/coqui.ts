@@ -46,7 +46,7 @@ function throwIfModuleMissing() {
     // @ts-expect-error TS(2345): Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
     if (!modules.includes('coqui-tts')) {
         const message = 'Coqui TTS module not loaded. Add coqui-tts to enable-modules and restart the Extras API.';
-        // toastr.error(message, { timeOut: 10000, extendedTimeOut: 20000, preventDuplicates: true });
+        // notyf.error(message, { timeOut: 10000, extendedTimeOut: 20000, preventDuplicates: true });
         // @ts-expect-error TS(2769): No overload matches this call.
         throw new Error(DEBUG_PREFIX, message);
     }
@@ -261,13 +261,13 @@ class CoquiTtsProvider {
 
 
         if (!voiceName) {
-            toastr.error('Voice name empty, please enter one.', DEBUG_PREFIX + ' voice mapping voice name', { timeOut: 10000, extendedTimeOut: 20000, preventDuplicates: true });
+            notyf.error('Voice name empty, please enter one.', DEBUG_PREFIX + ' voice mapping voice name', { timeOut: 10000, extendedTimeOut: 20000, preventDuplicates: true });
             this.updateCustomVoices(); // Overide any manual modification
             return;
         }
 
         if (model_origin == 'none') {
-            toastr.error('Origin not selected, please select one.', DEBUG_PREFIX + ' voice mapping origin', { timeOut: 10000, extendedTimeOut: 20000, preventDuplicates: true });
+            notyf.error('Origin not selected, please select one.', DEBUG_PREFIX + ' voice mapping origin', { timeOut: 10000, extendedTimeOut: 20000, preventDuplicates: true });
             this.updateCustomVoices(); // Overide any manual modification
             return;
         }
@@ -276,7 +276,7 @@ class CoquiTtsProvider {
             const model_id = $('#coqui_local_model_name').val();
 
             if (model_name == 'none') {
-                toastr.error('Model not selected, please select one.', DEBUG_PREFIX + ' voice mapping model', { timeOut: 10000, extendedTimeOut: 20000, preventDuplicates: true });
+                notyf.error('Model not selected, please select one.', DEBUG_PREFIX + ' voice mapping model', { timeOut: 10000, extendedTimeOut: 20000, preventDuplicates: true });
                 this.updateCustomVoices(); // Overide any manual modification
                 return;
             }
@@ -288,13 +288,13 @@ class CoquiTtsProvider {
         }
 
         if (model_language == 'none') {
-            toastr.error('Language not selected, please select one.', DEBUG_PREFIX + ' voice mapping language', { timeOut: 10000, extendedTimeOut: 20000, preventDuplicates: true });
+            notyf.error('Language not selected, please select one.', DEBUG_PREFIX + ' voice mapping language', { timeOut: 10000, extendedTimeOut: 20000, preventDuplicates: true });
             this.updateCustomVoices(); // Overide any manual modification
             return;
         }
 
         if (model_name == 'none') {
-            toastr.error('Model not selected, please select one.', DEBUG_PREFIX + ' voice mapping model', { timeOut: 10000, extendedTimeOut: 20000, preventDuplicates: true });
+            notyf.error('Model not selected, please select one.', DEBUG_PREFIX + ' voice mapping model', { timeOut: 10000, extendedTimeOut: 20000, preventDuplicates: true });
             this.updateCustomVoices(); // Overide any manual modification
             return;
         }
@@ -316,13 +316,13 @@ class CoquiTtsProvider {
 
         // @ts-expect-error TS(2447): The '&' operator is not allowed for boolean types.... Remove this comment to see the full error message
         if (model_setting_language == null & 'languages' in modelDict[model_language][model_dataset][model_label]) {
-            toastr.error('Model language not selected, please select one.', DEBUG_PREFIX + ' voice mapping model language', { timeOut: 10000, extendedTimeOut: 20000, preventDuplicates: true });
+            notyf.error('Model language not selected, please select one.', DEBUG_PREFIX + ' voice mapping model language', { timeOut: 10000, extendedTimeOut: 20000, preventDuplicates: true });
             return;
         }
 
         // @ts-expect-error TS(2447): The '&' operator is not allowed for boolean types.... Remove this comment to see the full error message
         if (model_setting_speaker == null & 'speakers' in modelDict[model_language][model_dataset][model_label]) {
-            toastr.error('Model speaker not selected, please select one.', DEBUG_PREFIX + ' voice mapping model speaker', { timeOut: 10000, extendedTimeOut: 20000, preventDuplicates: true });
+            notyf.error('Model speaker not selected, please select one.', DEBUG_PREFIX + ' voice mapping model speaker', { timeOut: 10000, extendedTimeOut: 20000, preventDuplicates: true });
             return;
         }
 
@@ -340,7 +340,7 @@ class CoquiTtsProvider {
             successMsg += '[' + model_setting_language + ']';
         if (model_setting_speaker != null)
             successMsg += '[' + model_setting_speaker + ']';
-        toastr.info(successMsg, DEBUG_PREFIX + ' voice map updated', { timeOut: 10000, extendedTimeOut: 20000, preventDuplicates: true });
+        notyf.info(successMsg, DEBUG_PREFIX + ' voice map updated', { timeOut: 10000, extendedTimeOut: 20000, preventDuplicates: true });
 
         return;
     }
@@ -361,7 +361,7 @@ class CoquiTtsProvider {
         const voiceName = $('#coqui_voicename_select').val();
 
         if (voiceName === 'none') {
-            toastr.error('Voice not selected, please select one.', DEBUG_PREFIX + ' voice mapping voiceId', { timeOut: 10000, extendedTimeOut: 20000, preventDuplicates: true });
+            notyf.error('Voice not selected, please select one.', DEBUG_PREFIX + ' voice mapping voiceId', { timeOut: 10000, extendedTimeOut: 20000, preventDuplicates: true });
             return;
         }
 
@@ -554,10 +554,10 @@ class CoquiTtsProvider {
             let action = 'download';
             if (model_state == 'corrupted') {
                 action = 'repare';
-                //toastr.error("Click install button to reinstall the model "+$("#coqui_api_model_name").find(":selected").text(), DEBUG_PREFIX+" corrupted model install", { timeOut: 10000, extendedTimeOut: 20000, preventDuplicates: true });
+                //notyf.error("Click install button to reinstall the model "+$("#coqui_api_model_name").find(":selected").text(), DEBUG_PREFIX+" corrupted model install", { timeOut: 10000, extendedTimeOut: 20000, preventDuplicates: true });
                 $('#coqui_api_model_install_status').text('Model found but incomplete try install again (maybe still downloading)'); // (remove and download again)
             } else {
-                toastr.info('Click download button to install the model ' + $('#coqui_api_model_name').find(':selected').text(), DEBUG_PREFIX + ' model not installed', { timeOut: 10000, extendedTimeOut: 20000, preventDuplicates: true });
+                notyf.info('Click download button to install the model ' + $('#coqui_api_model_name').find(':selected').text(), DEBUG_PREFIX + ' model not installed', { timeOut: 10000, extendedTimeOut: 20000, preventDuplicates: true });
                 $('#coqui_api_model_install_status').text('Model not found on extras server');
             }
 
@@ -567,7 +567,7 @@ class CoquiTtsProvider {
                 try {
                     $('#coqui_api_model_install_status').text('Downloading model...');
                     $('#coqui_api_model_install_button').hide();
-                    //toastr.info("For model "+model_id, DEBUG_PREFIX+" Started "+action, { timeOut: 10000, extendedTimeOut: 20000, preventDuplicates: true });
+                    //notyf.info("For model "+model_id, DEBUG_PREFIX+" Started "+action, { timeOut: 10000, extendedTimeOut: 20000, preventDuplicates: true });
                     const apiResult = await CoquiTtsProvider.installModel(model_id, action);
                     const apiResultJSON = await apiResult.json();
 
@@ -580,13 +580,13 @@ class CoquiTtsProvider {
                     }
 
                     if (apiResultJSON.status == 'downloading') {
-                        toastr.error('Check extras console for progress', DEBUG_PREFIX + ' already downloading', { timeOut: 10000, extendedTimeOut: 20000, preventDuplicates: true });
+                        notyf.error('Check extras console for progress', DEBUG_PREFIX + ' already downloading', { timeOut: 10000, extendedTimeOut: 20000, preventDuplicates: true });
                         $('#coqui_api_model_install_status').text('Already downloading a model, check extras console!');
                         $('#coqui_api_model_install_button').show();
                     }
                 } catch (error) {
                     console.error(error);
-                    toastr.error(error, DEBUG_PREFIX + ' error with model download', { timeOut: 10000, extendedTimeOut: 20000, preventDuplicates: true });
+                    notyf.error(error, DEBUG_PREFIX + ' error with model download', { timeOut: 10000, extendedTimeOut: 20000, preventDuplicates: true });
                     onModelNameChange_pointer();
                 }
                 // will refresh model status
@@ -622,7 +622,7 @@ class CoquiTtsProvider {
         });
 
         if (!apiResult.ok) {
-            toastr.error(apiResult.statusText, DEBUG_PREFIX + ' Check model state request failed');
+            notyf.error(apiResult.statusText, DEBUG_PREFIX + ' Check model state request failed');
             throw new Error(`HTTP ${apiResult.status}: ${await apiResult.text()}`);
         }
 
@@ -647,7 +647,7 @@ class CoquiTtsProvider {
         });
 
         if (!apiResult.ok) {
-            toastr.error(apiResult.statusText, DEBUG_PREFIX + ' Install model ' + model_id + ' request failed');
+            notyf.error(apiResult.statusText, DEBUG_PREFIX + ' Install model ' + model_id + ' request failed');
             throw new Error(`HTTP ${apiResult.status}: ${await apiResult.text()}`);
         }
 
@@ -675,7 +675,7 @@ class CoquiTtsProvider {
         });
 
         if (!apiResult.ok) {
-            toastr.error(apiResult.statusText, DEBUG_PREFIX + ' Get local model list request failed');
+            notyf.error(apiResult.statusText, DEBUG_PREFIX + ' Get local model list request failed');
             throw new Error(`HTTP ${apiResult.status}: ${await apiResult.text()}`);
         }
 
@@ -730,7 +730,7 @@ class CoquiTtsProvider {
         });
 
         if (!apiResult.ok) {
-            toastr.error(apiResult.statusText, 'TTS Generation Failed');
+            notyf.error(apiResult.statusText, 'TTS Generation Failed');
             throw new Error(`HTTP ${apiResult.status}: ${await apiResult.text()}`);
         }
 

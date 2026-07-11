@@ -100,7 +100,7 @@ async function doCount() {
 
     //toastr success with the token count of the chat
     const count = await getTokenCountAsync(allMessages);
-    toastr.success(`Token count: ${count}`);
+    notyf.success(`Token count: ${count}`);
     return count;
 }
 

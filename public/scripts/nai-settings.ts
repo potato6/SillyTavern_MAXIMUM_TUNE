@@ -955,7 +955,7 @@ function tryParseStreamingError(response, decoded) {
 
         if (data.message || data.error) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.error(data.message || data.error?.message || response.statusText, 'NovelAI API');
+            notyf.error(data.message || data.error?.message || response.statusText, 'NovelAI API');
             throw new Error(data);
         }
     } catch {

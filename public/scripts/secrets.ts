@@ -621,13 +621,13 @@ export async function checkOpenRouterAuth() {
             // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             if (secret_state[SECRET_KEYS.OPENROUTER]) {
                 // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                toastr.success('OpenRouter token saved');
+                notyf.success('OpenRouter token saved');
             } else {
                 throw new Error('OpenRouter token not saved');
             }
         } catch (err) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.error('Could not verify OpenRouter token. Please try again.');
+            notyf.error('Could not verify OpenRouter token. Please try again.');
             console.error('OpenRouter OAuth error:', err);
         } finally {
             // Remove the code from the URL
@@ -760,7 +760,7 @@ async function openKeyManagerDialog(key) {
             if (copyIdBtn) copyIdBtn.addEventListener('click', async function () {
                 await copyText(secret.id);
                 // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                toastr.info(t`Secret ID copied to clipboard.`);
+                notyf.info(t`Secret ID copied to clipboard.`);
             });
             const rotateSecretBtn = itemTemplate.querySelector('button[data-action="rotate-secret"]');
             if (rotateSecretBtn) rotateSecretBtn.addEventListener('click', async function () {
@@ -772,12 +772,12 @@ async function openKeyManagerDialog(key) {
                 const secretValue = await findSecret(key, secret.id);
                 if (secretValue === null) {
                     // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                    toastr.error(t`The key exposure might be disabled by the server config.`, t`Failed to copy secret value`);
+                    notyf.error(t`The key exposure might be disabled by the server config.`, t`Failed to copy secret value`);
                     return;
                 }
                 await copyText(secretValue);
                 // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                toastr.info(t`Secret value copied to clipboard.`);
+                notyf.info(t`Secret value copied to clipboard.`);
             });
             const renameSecretBtn = itemTemplate.querySelector('button[data-action="rename-secret"]');
             if (renameSecretBtn) renameSecretBtn.addEventListener('click', async function () {
@@ -882,7 +882,7 @@ function registerSecretSlashCommands() {
             if (!key) {
                 if (!quiet) {
                     // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                    toastr.error(t`No secret key provided, and the key can't be resolved for the currently selected API type.`);
+                    notyf.error(t`No secret key provided, and the key can't be resolved for the currently selected API type.`);
                 }
                 return '';
             }
@@ -892,7 +892,7 @@ function registerSecretSlashCommands() {
             if (!Array.isArray(secrets) || secrets.length === 0) {
                 if (!quiet) {
                     // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                    toastr.error(t`No saved secrets found for the key: ${key}`);
+                    notyf.error(t`No saved secrets found for the key: ${key}`);
                 }
                 return '';
             }
@@ -902,7 +902,7 @@ function registerSecretSlashCommands() {
                 if (!activeSecret) {
                     if (!quiet) {
                         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                        toastr.error(t`No active secret found for the key: ${key}`);
+                        notyf.error(t`No active secret found for the key: ${key}`);
                     }
                     return '';
                 }
@@ -913,7 +913,7 @@ function registerSecretSlashCommands() {
             if (!savedSecret) {
                 if (!quiet) {
                     // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                    toastr.error(t`No secret found with ID: ${id} for the key: ${key}`);
+                    notyf.error(t`No secret found with ID: ${id} for the key: ${key}`);
                 }
                 return '';
             }
@@ -922,7 +922,7 @@ function registerSecretSlashCommands() {
             await rotateSecret(key, savedSecret.id);
             if (!quiet) {
                 // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                toastr.success(t`Secret with ID: ${id} is now active for the key: ${key}`);
+                notyf.success(t`Secret with ID: ${id} is now active for the key: ${key}`);
             }
 
             return savedSecret.id;
@@ -965,7 +965,7 @@ function registerSecretSlashCommands() {
             if (!key) {
                 if (!quiet) {
                     // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                    toastr.error(t`No secret key provided, and the key can't be resolved for the currently selected API type.`);
+                    notyf.error(t`No secret key provided, and the key can't be resolved for the currently selected API type.`);
                 }
                 return '';
             }
@@ -975,7 +975,7 @@ function registerSecretSlashCommands() {
             if (!Array.isArray(secrets) || secrets.length === 0) {
                 if (!quiet) {
                     // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                    toastr.error(t`No saved secrets found for the key: ${key}`);
+                    notyf.error(t`No saved secrets found for the key: ${key}`);
                 }
                 return '';
             }
@@ -984,7 +984,7 @@ function registerSecretSlashCommands() {
             if (!savedSecret) {
                 if (!quiet) {
                     // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                    toastr.error(t`No secret found with ID: ${id} for the key: ${key}`);
+                    notyf.error(t`No secret found with ID: ${id} for the key: ${key}`);
                 }
                 return '';
             }
@@ -993,7 +993,7 @@ function registerSecretSlashCommands() {
             await deleteSecret(key, savedSecret.id);
             if (!quiet) {
                 // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                toastr.success(t`Secret with ID: ${id} has been deleted for the key: ${key}`);
+                notyf.success(t`Secret with ID: ${id} has been deleted for the key: ${key}`);
             }
 
             return savedSecret.id;
@@ -1049,7 +1049,7 @@ function registerSecretSlashCommands() {
             if (!key) {
                 if (!quiet) {
                     // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                    toastr.error(t`No secret key provided, and the key can't be resolved for the currently selected API type.`);
+                    notyf.error(t`No secret key provided, and the key can't be resolved for the currently selected API type.`);
                 }
                 return '';
             }
@@ -1059,7 +1059,7 @@ function registerSecretSlashCommands() {
             if (!Array.isArray(secrets) || secrets.length === 0) {
                 if (!quiet) {
                     // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                    toastr.error(t`No saved secrets found for the key: ${key}`);
+                    notyf.error(t`No saved secrets found for the key: ${key}`);
                 }
                 return '';
             }
@@ -1068,7 +1068,7 @@ function registerSecretSlashCommands() {
             if (!valueStr && !allowEmpty) {
                 if (!quiet) {
                     // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                    toastr.error(t`No value provided for the secret key: ${key}`);
+                    notyf.error(t`No value provided for the secret key: ${key}`);
                 }
                 return '';
             }
@@ -1078,7 +1078,7 @@ function registerSecretSlashCommands() {
 
             if (!quiet) {
                 // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                toastr.success(t`Secret has been written for the key: ${key}`);
+                notyf.success(t`Secret has been written for the key: ${key}`);
             }
 
             return id || '';
@@ -1126,7 +1126,7 @@ function registerSecretSlashCommands() {
             if (!key) {
                 if (!quiet) {
                     // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                    toastr.error(t`No secret key provided, and the key can't be resolved for the currently selected API type.`);
+                    notyf.error(t`No secret key provided, and the key can't be resolved for the currently selected API type.`);
                 }
                 return '';
             }
@@ -1136,7 +1136,7 @@ function registerSecretSlashCommands() {
             if (!Array.isArray(secrets) || secrets.length === 0) {
                 if (!quiet) {
                     // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                    toastr.error(t`No saved secrets found for the key: ${key}`);
+                    notyf.error(t`No saved secrets found for the key: ${key}`);
                 }
                 return '';
             }
@@ -1145,7 +1145,7 @@ function registerSecretSlashCommands() {
             if (!newLabel) {
                 if (!quiet) {
                     // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                    toastr.error(t`No new label provided for the secret key: ${key}`);
+                    notyf.error(t`No new label provided for the secret key: ${key}`);
                 }
                 return '';
             }
@@ -1154,7 +1154,7 @@ function registerSecretSlashCommands() {
             if (!savedSecret) {
                 if (!quiet) {
                     // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                    toastr.error(t`No secret found with ID: ${id} for the key: ${key}`);
+                    notyf.error(t`No secret found with ID: ${id} for the key: ${key}`);
                 }
                 return '';
             }
@@ -1163,7 +1163,7 @@ function registerSecretSlashCommands() {
             await renameSecret(key, savedSecret.id, newLabel);
             if (!quiet) {
                 // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                toastr.success(t`Secret with ID: ${id} has been renamed to "${newLabel}" for the key: ${key}`);
+                notyf.success(t`Secret with ID: ${id} has been renamed to "${newLabel}" for the key: ${key}`);
             }
 
             return savedSecret.id;
@@ -1208,7 +1208,7 @@ function registerSecretSlashCommands() {
             if (!key) {
                 if (!quiet) {
                     // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                    toastr.error(t`No secret key provided, and the key can't be resolved for the currently selected API type.`);
+                    notyf.error(t`No secret key provided, and the key can't be resolved for the currently selected API type.`);
                 }
                 return '';
             }
@@ -1218,7 +1218,7 @@ function registerSecretSlashCommands() {
             if (!Array.isArray(secrets) || secrets.length === 0) {
                 if (!quiet) {
                     // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                    toastr.error(t`No saved secrets found for the key: ${key}`);
+                    notyf.error(t`No saved secrets found for the key: ${key}`);
                 }
                 return '';
             }
@@ -1227,7 +1227,7 @@ function registerSecretSlashCommands() {
             if (!savedSecret) {
                 if (!quiet) {
                     // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                    toastr.error(t`No secret found with ID: ${id} for the key: ${key}`);
+                    notyf.error(t`No secret found with ID: ${id} for the key: ${key}`);
                 }
                 return '';
             }
@@ -1236,7 +1236,7 @@ function registerSecretSlashCommands() {
             if (secretValue === null) {
                 if (!quiet) {
                     // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                    toastr.error(t`Could not retrieve the secret value for key: ${key}. Key exposure might be disabled.`);
+                    notyf.error(t`Could not retrieve the secret value for key: ${key}. Key exposure might be disabled.`);
                 }
                 return '';
             }
@@ -1314,7 +1314,7 @@ export async function initSecrets() {
             console.error('Failed to fetch OpenRouter credits:', error);
             display.textContent = '';
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.error(t`Could not fetch OpenRouter credits. Please try again.`);
+            notyf.error(t`Could not fetch OpenRouter credits. Please try again.`);
         }
     });
 
@@ -1428,7 +1428,7 @@ export async function initSecrets() {
             console.error('Failed to fetch NanoGPT credits:', error);
             if (display) display.textContent = '';
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.error(t`Could not fetch NanoGPT credits. Please try again.`);
+            notyf.error(t`Could not fetch NanoGPT credits. Please try again.`);
         }
     });
 

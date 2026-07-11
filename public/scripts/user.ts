@@ -127,7 +127,7 @@ async function enableUser(handle, callback) {
         if (!response.ok) {
             const data = await response.json();
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.error(data.error || 'Unknown error', 'Failed to enable user');
+            notyf.error(data.error || 'Unknown error', 'Failed to enable user');
             throw new Error('Failed to enable user');
         }
 
@@ -154,7 +154,7 @@ async function disableUser(handle, callback) {
         if (!response.ok) {
             const data = await response.json();
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.error(data?.error || 'Unknown error', 'Failed to disable user');
+            notyf.error(data?.error || 'Unknown error', 'Failed to disable user');
             throw new Error('Failed to disable user');
         }
 
@@ -182,7 +182,7 @@ async function promoteUser(handle, callback) {
         if (!response.ok) {
             const data = await response.json();
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.error(data.error || 'Unknown error', 'Failed to promote user');
+            notyf.error(data.error || 'Unknown error', 'Failed to promote user');
             throw new Error('Failed to promote user');
         }
 
@@ -209,7 +209,7 @@ async function demoteUser(handle, callback) {
         if (!response.ok) {
             const data = await response.json();
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.error(data.error || 'Unknown error', 'Failed to demote user');
+            notyf.error(data.error || 'Unknown error', 'Failed to demote user');
             throw new Error('Failed to demote user');
         }
 
@@ -239,7 +239,7 @@ async function createUser(form, callback) {
 
     if (errors.length) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.error(errors.join(', '), 'Failed to create user');
+        notyf.error(errors.join(', '), 'Failed to create user');
         return;
     }
 
@@ -265,7 +265,7 @@ async function createUser(form, callback) {
         if (!response.ok) {
             const data = await response.json();
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.error(data.error || 'Unknown error', 'Failed to create user');
+            notyf.error(data.error || 'Unknown error', 'Failed to create user');
             throw new Error('Failed to create user');
         }
 
@@ -286,7 +286,7 @@ async function createUser(form, callback) {
 async function backupUserData(handle, callback) {
     try {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.info('Please wait for the download to start.', 'Backup Requested');
+        notyf.info('Please wait for the download to start.', 'Backup Requested');
         const response = await fetch('/api/users/backup', {
             method: 'POST',
             headers: getRequestHeaders(),
@@ -296,14 +296,14 @@ async function backupUserData(handle, callback) {
         if (!response.ok) {
             const data = await response.json();
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.error(data.error || 'Unknown error', 'Failed to backup user data');
+            notyf.error(data.error || 'Unknown error', 'Failed to backup user data');
             throw new Error('Failed to backup user data');
         }
 
         const includesSecrets = await canViewSecrets();
         if (includesSecrets === false) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.warning('The backup will not include secrets due to a server configuration.', 'Secrets Not Included');
+            notyf.warning('The backup will not include secrets due to a server configuration.', 'Secrets Not Included');
         }
 
         const blob = await response.blob();
@@ -358,7 +358,7 @@ async function changePassword(handle, callback) {
 
         if (newPassword !== confirmPassword) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.error('Passwords do not match', 'Failed to change password');
+            notyf.error('Passwords do not match', 'Failed to change password');
             throw new Error('Passwords do not match');
         }
 
@@ -371,12 +371,12 @@ async function changePassword(handle, callback) {
         if (!response.ok) {
             const data = await response.json();
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.error(data.error || 'Unknown error', 'Failed to change password');
+            notyf.error(data.error || 'Unknown error', 'Failed to change password');
             throw new Error('Failed to change password');
         }
 
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.success('Password changed successfully', 'Password Changed');
+        notyf.success('Password changed successfully', 'Password Changed');
         callback();
     } catch (error) {
         console.error('Error changing password:', error);
@@ -394,7 +394,7 @@ async function deleteUser(handle, callback) {
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         if (handle === currentUser.handle) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.error('Cannot delete yourself', 'Failed to delete user');
+            notyf.error('Cannot delete yourself', 'Failed to delete user');
             throw new Error('Cannot delete yourself');
         }
 
@@ -422,7 +422,7 @@ async function deleteUser(handle, callback) {
 
         if (handle !== confirmHandle) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.error('Handles do not match', 'Failed to delete user');
+            notyf.error('Handles do not match', 'Failed to delete user');
             throw new Error('Handles do not match');
         }
 
@@ -435,12 +435,12 @@ async function deleteUser(handle, callback) {
         if (!response.ok) {
             const data = await response.json();
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.error(data.error || 'Unknown error', 'Failed to delete user');
+            notyf.error(data.error || 'Unknown error', 'Failed to delete user');
             throw new Error('Failed to delete user');
         }
 
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.success('User deleted successfully', 'User Deleted');
+        notyf.success('User deleted successfully', 'User Deleted');
         callback();
     } catch (error) {
         console.error('Error deleting user:', error);
@@ -478,12 +478,12 @@ async function resetSettings(handle, callback) {
         if (!response.ok) {
             const data = await response.json();
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.error(data.error || 'Unknown error', 'Failed to reset settings');
+            notyf.error(data.error || 'Unknown error', 'Failed to reset settings');
             throw new Error('Failed to reset settings');
         }
 
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.success('Settings reset successfully', 'Settings Reset');
+        notyf.success('Settings reset successfully', 'Settings Reset');
         callback();
     } catch (error) {
         console.error('Error resetting settings:', error);
@@ -520,12 +520,12 @@ async function changeName(handle, name, callback) {
         if (!response.ok) {
             const data = await response.json();
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.error(data.error || 'Unknown error', 'Failed to change name');
+            notyf.error(data.error || 'Unknown error', 'Failed to change name');
             throw new Error('Failed to change name');
         }
 
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.success('Name changed successfully', 'Name Changed');
+        notyf.success('Name changed successfully', 'Name Changed');
         callback();
     } catch (error) {
         console.error('Error changing name:', error);
@@ -560,7 +560,7 @@ async function restoreSnapshot(name, callback) {
         if (!response.ok) {
             const data = await response.json();
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.error(data.error || 'Unknown error', 'Failed to restore snapshot');
+            notyf.error(data.error || 'Unknown error', 'Failed to restore snapshot');
             throw new Error('Failed to restore snapshot');
         }
 
@@ -587,7 +587,7 @@ async function loadSnapshotContent(name) {
         if (!response.ok) {
             const data = await response.json();
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.error(data.error || 'Unknown error', 'Failed to load snapshot content');
+            notyf.error(data.error || 'Unknown error', 'Failed to load snapshot content');
             throw new Error('Failed to load snapshot content');
         }
 
@@ -615,7 +615,7 @@ async function getSnapshots() {
         if (!response.ok) {
             const data = await response.json();
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.error(data.error || 'Unknown error', 'Failed to get settings snapshots');
+            notyf.error(data.error || 'Unknown error', 'Failed to get settings snapshots');
             throw new Error('Failed to get settings snapshots');
         }
 
@@ -643,12 +643,12 @@ async function makeSnapshot(callback) {
         if (!response.ok) {
             const data = await response.json();
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.error(data.error || 'Unknown error', 'Failed to make snapshot');
+            notyf.error(data.error || 'Unknown error', 'Failed to make snapshot');
             throw new Error('Failed to make snapshot');
         }
 
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.success('Snapshot created successfully', 'Snapshot Created');
+        notyf.success('Snapshot created successfully', 'Snapshot Created');
         callback();
     } catch (error) {
         console.error('Error making snapshot:', error);
@@ -717,7 +717,7 @@ async function resetEverything(callback) {
         if (!step1Response.ok) {
             const data = await step1Response.json();
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.error(data.error || 'Unknown error', 'Failed to reset');
+            notyf.error(data.error || 'Unknown error', 'Failed to reset');
             throw new Error('Failed to reset everything');
         }
 
@@ -754,12 +754,12 @@ async function resetEverything(callback) {
         if (!step2Response.ok) {
             const data = await step2Response.json();
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.error(data.error || 'Unknown error', 'Failed to reset');
+            notyf.error(data.error || 'Unknown error', 'Failed to reset');
             throw new Error('Failed to reset everything');
         }
 
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.success('Everything reset successfully', 'Reset Everything');
+        notyf.success('Everything reset successfully', 'Reset Everything');
         callback();
     } catch (error) {
         console.error('Error resetting everything:', error);
@@ -887,7 +887,7 @@ async function changeAvatar(handle, avatar) {
         if (!response.ok) {
             const data = await response.json();
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.error(data.error || 'Unknown error', 'Failed to change avatar');
+            notyf.error(data.error || 'Unknown error', 'Failed to change avatar');
             return;
         }
     } catch (error) {

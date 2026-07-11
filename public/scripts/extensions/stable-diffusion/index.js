@@ -799,7 +799,7 @@ async function onRenameStyleClick() {
     const existingStyle = extension_settings.sd.styles.find(x => x.name === name);
 
     if (existingStyle) {
-        toastr.error(t`A style with that name already exists`);
+        notyf.error(t`A style with that name already exists`);
         return;
     }
 
@@ -1192,14 +1192,14 @@ async function onViewAnlasClick() {
     const result = await loadNovelSubscriptionData();
 
     if (!result) {
-        toastr.warning('Are you subscribed?', 'Could not load NovelAI subscription data');
+        notyf.warning('Are you subscribed?', 'Could not load NovelAI subscription data');
         return;
     }
 
     const anlas = getNovelAnlas();
     const unlimitedGeneration = getNovelUnlimitedImageGeneration();
 
-    toastr.info(`Free image generation: ${unlimitedGeneration ? 'Yes' : 'No'}`, `Anlas: ${anlas}`);
+    notyf.info(`Free image generation: ${unlimitedGeneration ? 'Yes' : 'No'}`, `Anlas: ${anlas}`);
 }
 
 function onNovelAnlasGuardInput() {
@@ -1359,7 +1359,7 @@ async function changeComfyWorkflow(_, name) {
         $('#sd_comfy_workflow').val(extension_settings.sd.comfy_workflow);
         saveSettingsDebounced();
     } else {
-        toastr.error(`ComfyUI Workflow "${name}" does not exist.`);
+        notyf.error(`ComfyUI Workflow "${name}" does not exist.`);
     }
     return '';
 }
@@ -1381,9 +1381,9 @@ async function validateAutoUrl() {
         }
 
         await loadSettingOptions();
-        toastr.success('SD WebUI API connected.');
+        notyf.success('SD WebUI API connected.');
     } catch (error) {
-        toastr.error(`Could not validate SD WebUI API: ${error.message}`);
+        notyf.error(`Could not validate SD WebUI API: ${error.message}`);
     }
 }
 
@@ -1404,9 +1404,9 @@ async function validateSdcppUrl() {
         }
 
         await loadSettingOptions();
-        toastr.success('stable-diffusion.cpp server connected.');
+        notyf.success('stable-diffusion.cpp server connected.');
     } catch (error) {
-        toastr.error(`Could not validate stable-diffusion.cpp server: ${error.message}`);
+        notyf.error(`Could not validate stable-diffusion.cpp server: ${error.message}`);
     }
 }
 
@@ -1427,9 +1427,9 @@ async function validateDrawthingsUrl() {
         }
 
         await loadSettingOptions();
-        toastr.success('SD Drawthings API connected.');
+        notyf.success('SD Drawthings API connected.');
     } catch (error) {
-        toastr.error(`Could not validate SD Drawthings API: ${error.message}`);
+        notyf.error(`Could not validate SD Drawthings API: ${error.message}`);
     }
 }
 
@@ -1450,9 +1450,9 @@ async function validateVladUrl() {
         }
 
         await loadSettingOptions();
-        toastr.success('SD.Next API connected.');
+        notyf.success('SD.Next API connected.');
     } catch (error) {
-        toastr.error(`Could not validate SD.Next API: ${error.message}`);
+        notyf.error(`Could not validate SD.Next API: ${error.message}`);
     }
 }
 
@@ -1474,9 +1474,9 @@ async function validateComfyUrl() {
         }
 
         await loadSettingOptions();
-        toastr.success('ComfyUI API connected.');
+        notyf.success('ComfyUI API connected.');
     } catch (error) {
-        toastr.error(`Could not validate ComfyUI API: ${error.message}`);
+        notyf.error(`Could not validate ComfyUI API: ${error.message}`);
     }
 }
 
@@ -1498,9 +1498,9 @@ async function validateComfyRunPodUrl() {
         }
 
         await loadSettingOptions();
-        toastr.success('ComfyUI RunPod API connected.');
+        notyf.success('ComfyUI RunPod API connected.');
     } catch (error) {
-        toastr.error(`Could not validate ComfyUI RunPod API: ${error.message}`);
+        notyf.error(`Could not validate ComfyUI RunPod API: ${error.message}`);
     }
 }
 
@@ -1527,14 +1527,14 @@ async function onModelChange() {
         return;
     }
 
-    toastr.info('Updating remote model...', 'Please wait');
+    notyf.info('Updating remote model...', 'Please wait');
     if (extension_settings.sd.source === sources.extras) {
         await updateExtrasRemoteModel();
     }
     if (extension_settings.sd.source === sources.auto || extension_settings.sd.source === sources.vlad) {
         await updateAutoRemoteModel();
     }
-    toastr.success('Model successfully loaded!', 'Image Generation');
+    notyf.success('Model successfully loaded!', 'Image Generation');
 }
 
 async function getAutoRemoteModel() {
@@ -1672,7 +1672,7 @@ async function updateAutoRemoteModel() {
         console.log('Model successfully updated on SD WebUI remote.');
     } catch (error) {
         console.error(error);
-        toastr.error(`Could not update SD WebUI model: ${error.message}`);
+        notyf.error(`Could not update SD WebUI model: ${error.message}`);
     }
 }
 
@@ -2156,7 +2156,7 @@ async function loadWorkersAIImageModels() {
     }
 
     if (!oai_settings.workers_ai_account_id) {
-        toastr.warning('Workers AI account ID is required. Save it in the "API Connections" panel.', 'Image Generation');
+        notyf.warning('Workers AI account ID is required. Save it in the "API Connections" panel.', 'Image Generation');
         return [];
     }
 
@@ -2964,7 +2964,7 @@ function getRawLastMessage() {
             };
         }
 
-        toastr.warning('No usable messages found.', 'Image Generation');
+        notyf.warning('No usable messages found.', 'Image Generation');
         throw new Error('No usable messages found.');
     };
 
@@ -3018,7 +3018,7 @@ async function generatePicture(initiator, args, trigger, message, callback) {
     }
 
     if (!isValidState()) {
-        toastr.warning('Image generation is not available. Check your settings and try again.');
+        notyf.warning('Image generation is not available. Check your settings and try again.');
         return;
     }
 
@@ -3099,7 +3099,7 @@ async function generatePicture(initiator, args, trigger, message, callback) {
         // Check if this was an intentional abort by user
         if (abortController.signal.aborted) {
             console.log('SD: Image generation aborted by user');
-            toastr.info('Image generation stopped.', 'Image Generation');
+            notyf.info('Image generation stopped.', 'Image Generation');
             return;
         }
 
@@ -3108,7 +3108,7 @@ async function generatePicture(initiator, args, trigger, message, callback) {
         // sendGenerationRequest mostly deals with its own errors
         const reason = err.error?.message || err.message || 'Unknown error';
         const errorText = 'SD prompt text generation failed. ' + reason;
-        toastr.error(errorText, 'Image Generation');
+        notyf.error(errorText, 'Image Generation');
         throw new Error(errorText);
     } finally {
         restoreOriginalDimensions(dimensions);
@@ -3265,7 +3265,7 @@ async function generateMultimodalPrompt(generationType, quietPrompt) {
     }
 
     try {
-        const toast = toastr.info('Generating multimodal caption...', 'Image Generation');
+        const toast = notyf.info('Generating multimodal caption...', 'Image Generation');
         const response = await fetch(avatarUrl);
 
         if (!response.ok) {
@@ -3276,7 +3276,7 @@ async function generateMultimodalPrompt(generationType, quietPrompt) {
         const avatarBase64 = await getBase64Async(avatarBlob);
 
         const caption = await getMultimodalCaption(avatarBase64, quietPrompt);
-        toastr.clear(toast);
+        notyf.dismiss(toast);
 
         if (!caption) {
             throw new Error('No caption returned from the API.');
@@ -3285,7 +3285,7 @@ async function generateMultimodalPrompt(generationType, quietPrompt) {
         return caption;
     } catch (error) {
         console.error(error);
-        toastr.error('Multimodal captioning failed. Please try again.', 'Image Generation');
+        notyf.error('Multimodal captioning failed. Please try again.', 'Image Generation');
         throw new Error('Multimodal captioning failed.');
     }
 }
@@ -3314,13 +3314,13 @@ function getUserAvatarUrl() {
  * @returns {Promise<string>} - A promise that resolves when the prompt generation completes.
  */
 async function generatePrompt(quietPrompt) {
-    const toast = toastr.info('Generating image prompt with an LLM...', 'Image Generation');
+    const toast = notyf.info('Generating image prompt with an LLM...', 'Image Generation');
     const reply = await generateQuietPrompt({ quietPrompt });
     const processedReply = processReply(reply);
-    toastr.clear(toast);
+    notyf.dismiss(toast);
 
     if (!processedReply) {
-        toastr.error('Prompt generation produced no text. Make sure you\'re using a valid instruct template and try again', 'Image Generation');
+        notyf.error('Prompt generation produced no text. Make sure you\'re using a valid instruct template and try again', 'Image Generation');
         throw new Error('Prompt generation failed.');
     }
 
@@ -3451,18 +3451,18 @@ async function sendGenerationRequest(generationType, prompt, additionalNegativeP
         // Check if this was an intentional abort by user
         if (signal?.aborted) {
             console.log('SD: Image generation aborted by user');
-            toastr.info('Image generation stopped.', 'Image Generation');
+            notyf.info('Image generation stopped.', 'Image Generation');
             return;
         }
 
         console.error('Image generation request error: ', err);
-        toastr.error('Image generation failed. Please try again.' + '\n\n' + String(err), 'Image Generation');
+        notyf.error('Image generation failed. Please try again.' + '\n\n' + String(err), 'Image Generation');
         return;
     }
 
     if (currentChatId !== getCurrentChatId()) {
         console.warn('Chat changed, aborting SD result saving');
-        toastr.warning('Chat changed, generated image discarded.', 'Image Generation');
+        notyf.warning('Chat changed, generated image discarded.', 'Image Generation');
         return;
     }
 
@@ -4252,7 +4252,7 @@ async function generateComfyImageCommon(prompt, negativePrompt, signal, basePath
     });
     if (!workflowResponse.ok) {
         const text = await workflowResponse.text();
-        toastr.error(`Failed to load workflow.\n\n${text}`);
+        notyf.error(`Failed to load workflow.\n\n${text}`);
     }
     let workflow = (await workflowResponse.json()).replaceAll('"%prompt%"', JSON.stringify(prompt));
     workflow = workflow.replaceAll('"%negative_prompt%"', JSON.stringify(negativePrompt));
@@ -4873,7 +4873,7 @@ async function onComfyOpenWorkflowEditorClick() {
         });
         if (!response.ok) {
             const text = await response.text();
-            toastr.error(`Failed to save workflow.\n\n${text}`);
+            notyf.error(`Failed to save workflow.\n\n${text}`);
         }
     }
 }
@@ -4897,7 +4897,7 @@ async function onComfyNewWorkflowClick() {
     });
     if (!response.ok) {
         const text = await response.text();
-        toastr.error(`Failed to save workflow.\n\n${text}`);
+        notyf.error(`Failed to save workflow.\n\n${text}`);
     }
     saveSettingsDebounced();
     await loadComfyWorkflows();
@@ -4919,7 +4919,7 @@ async function onComfyDeleteWorkflowClick() {
     });
     if (!response.ok) {
         const text = await response.text();
-        toastr.error(`Failed to save workflow.\n\n${text}`);
+        notyf.error(`Failed to save workflow.\n\n${text}`);
     }
     await loadComfyWorkflows();
     onComfyWorkflowChange();
@@ -4953,7 +4953,7 @@ async function onComfyRenameWorkflowClick() {
         .find(opt => opt instanceof HTMLOptionElement && opt.value === newName);
 
     if (existingWorkflow) {
-        toastr.warning(t`A workflow with that name already exists`);
+        notyf.warning(t`A workflow with that name already exists`);
         return;
     }
 
@@ -4968,7 +4968,7 @@ async function onComfyRenameWorkflowClick() {
 
     if (!response.ok) {
         const text = await response.text();
-        toastr.error(t`Failed to rename workflow.\n\n${text}`);
+        notyf.error(t`Failed to rename workflow.\n\n${text}`);
         return;
     }
 

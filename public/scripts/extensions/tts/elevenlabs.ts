@@ -246,13 +246,13 @@ class ElevenLabsTtsProvider {
             const voiceLabels = voiceCloningLabelsInput.value.trim();
 
             if (!voiceName) {
-                toastr.error('Please provide a name for the cloned voice.');
+                notyf.error('Please provide a name for the cloned voice.');
                 return;
             }
 
             try {
                 await this.addVoice(voiceName, voiceDescription, voiceLabels);
-                toastr.success('Voice cloned successfully. Hit reload to see the new voice in the voice listing.');
+                notyf.success('Voice cloned successfully. Hit reload to see the new voice in the voice listing.');
                 clearSelectedFiles();
                 // @ts-expect-error TS(2531): Object is possibly 'null'.
                 voiceCloningNameInput.value = '';
@@ -262,7 +262,7 @@ class ElevenLabsTtsProvider {
                 voiceCloningLabelsInput.value = '';
             } catch (error) {
                 // @ts-expect-error TS(2571): Object is of type 'unknown'.
-                toastr.error(`Failed to clone voice: ${error.message}`);
+                notyf.error(`Failed to clone voice: ${error.message}`);
             }
         });
 
@@ -381,7 +381,7 @@ class ElevenLabsTtsProvider {
             }),
         });
         if (!response.ok) {
-            toastr.error(response.statusText, 'TTS Generation Failed');
+            notyf.error(response.statusText, 'TTS Generation Failed');
             throw new Error(`HTTP ${response.status}. See server console for details.`);
         }
         return response;

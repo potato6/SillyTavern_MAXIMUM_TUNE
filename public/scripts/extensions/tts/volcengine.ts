@@ -259,7 +259,7 @@ class VolcengineTtsProvider {
             return;
         }
         if (this.settings.customVoices.includes(name)) {
-            toastr.error('Voice name should be unique.');
+            notyf.error('Voice name should be unique.');
             return;
         }
         this.settings.customVoices.push(name);
@@ -272,7 +272,7 @@ class VolcengineTtsProvider {
         const selectedVoiceName = $('#volcengine-tts-voice-select').val();
 
         if (!selectedVoiceName) {
-            toastr.error('Please select a voice first.');
+            notyf.error('Please select a voice first.');
             return;
         }
 
@@ -317,7 +317,7 @@ class VolcengineTtsProvider {
         if (!response.ok) {
             const errorText = await response.text();
             console.error(`HTTP ${response.status}: ${errorText}`);
-            toastr.error(errorText);
+            notyf.error(errorText);
             throw new Error(`HTTP ${response.status}: ${errorText}`);
         }
         return response;

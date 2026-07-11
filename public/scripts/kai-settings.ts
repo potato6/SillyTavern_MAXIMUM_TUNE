@@ -264,7 +264,7 @@ function tryParseStreamingError(response, decoded) {
 
         if (data.error) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.error(data.error.message || response.statusText, 'KoboldAI API');
+            notyf.error(data.error.message || response.statusText, 'KoboldAI API');
             throw new Error(data);
         }
     } catch {
@@ -533,7 +533,7 @@ export async function getStatusKobold() {
         // We didn't get a 200 status code, but the endpoint has an explanation. Which means it DID connect, but I digress.
         if (online_status === 'no_connection' && data.response) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.error(data.response, t`API Error`, { timeOut: 5000, preventDuplicates: true });
+            notyf.error(data.response, t`API Error`, { timeOut: 5000, preventDuplicates: true });
         }
     } catch (err) {
         console.error('Error getting status', err);
@@ -568,7 +568,7 @@ export function initKoboldSettings() {
 
             if (!value) {
                 // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                toastr.error('Please enter a valid URL.');
+                notyf.error('Please enter a valid URL.');
                 return;
             }
 

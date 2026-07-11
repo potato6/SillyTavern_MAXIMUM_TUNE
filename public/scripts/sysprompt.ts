@@ -43,7 +43,7 @@ async function migrateSystemPromptFromInstructMode() {
         }
 
         saveSettingsDebounced();
-        toastr.info('System prompt settings have been moved from the Instruct Mode.', 'Migration notice', { timeOut: 5000 });
+        notyf.info('System prompt settings have been moved from the Instruct Mode.', 'Migration notice', { timeOut: 5000 });
     }
 }
 
@@ -99,10 +99,10 @@ export async function checkForSystemPromptInInstructTemplate(name, template) {
             const presetManager = getPresetManager('sysprompt');
             await presetManager.savePreset(migratedName, prompt);
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.success(`System prompt "${migratedName}" has been saved.`);
+            notyf.success(`System prompt "${migratedName}" has been saved.`);
         } else {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.info('System prompt has been discarded.');
+            notyf.info('System prompt has been discarded.');
         }
 
         delete template.system_prompt;
@@ -174,7 +174,7 @@ function selectSystemPromptCallback(args, name) {
 
         if (result.length === 0) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            if (!quiet) toastr.warning(`System prompt "${name}" not found`);
+            if (!quiet) notyf.warning(`System prompt "${name}" not found`);
             return '';
         }
 
@@ -184,7 +184,7 @@ function selectSystemPromptCallback(args, name) {
     $select.value = foundName;
     $select.dispatchEvent(new Event('change', {bubbles: true}));
     // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-    if (!quiet) toastr.success(`System prompt "${foundName}" selected`);
+    if (!quiet) notyf.success(`System prompt "${foundName}" selected`);
     return foundName;
 }
 

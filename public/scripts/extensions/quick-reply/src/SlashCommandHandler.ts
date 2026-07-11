@@ -108,7 +108,7 @@ export class SlashCommandHandler {
         }));
         SlashCommandParser.addCommandObject(SlashCommand.fromProps({ name: 'qrset',
             callback: () => {
-                toastr.warning('The command /qrset has been deprecated. Use /qr-set, /qr-set-on, and /qr-set-off instead.');
+                notyf.warning('The command /qrset has been deprecated. Use /qr-set, /qr-set-on, and /qr-set-off instead.');
                 return '';
             },
             helpString: '<strong>DEPRECATED</strong> – The command /qrset has been deprecated. Use /qr-set, /qr-set-on, and /qr-set-off instead.',
@@ -826,7 +826,7 @@ export class SlashCommandHandler {
     getSetByName(name: any) {
         const set = this.api.getSetByName(name);
         if (!set) {
-            toastr.error(`No Quick Reply Set with the name "${name}" could be found.`);
+            notyf.error(`No Quick Reply Set with the name "${name}" could be found.`);
         }
         return set;
     }
@@ -834,7 +834,7 @@ export class SlashCommandHandler {
     getQrByLabel(setName: any, label: any) {
         const qr = this.api.getQrByLabel(setName, label);
         if (!qr) {
-            toastr.error(`No Quick Reply with the label "${label}" could be found in the set "${setName}"`);
+            notyf.error(`No Quick Reply with the label "${label}" could be found in the set "${setName}"`);
         }
         return qr;
     }
@@ -845,7 +845,7 @@ export class SlashCommandHandler {
             return await this.api.executeQuickReplyByIndex(idx);
         } catch (ex) {
             // @ts-expect-error TS(2571): Object is of type 'unknown'.
-            toastr.error(ex.message);
+            notyf.error(ex.message);
         }
     }
 
@@ -856,7 +856,7 @@ export class SlashCommandHandler {
             this.api.toggleGlobalSet(name, isTrueBoolean(args.visible ?? 'true'));
         } catch (ex) {
             // @ts-expect-error TS(2571): Object is of type 'unknown'.
-            toastr.error(ex.message);
+            notyf.error(ex.message);
         }
     }
     addGlobalSet(name: any, args = {}) {
@@ -865,7 +865,7 @@ export class SlashCommandHandler {
             this.api.addGlobalSet(name, isTrueBoolean(args.visible ?? 'true'));
         } catch (ex) {
             // @ts-expect-error TS(2571): Object is of type 'unknown'.
-            toastr.error(ex.message);
+            notyf.error(ex.message);
         }
     }
     removeGlobalSet(name: any) {
@@ -873,7 +873,7 @@ export class SlashCommandHandler {
             this.api.removeGlobalSet(name);
         } catch (ex) {
             // @ts-expect-error TS(2571): Object is of type 'unknown'.
-            toastr.error(ex.message);
+            notyf.error(ex.message);
         }
     }
 
@@ -884,7 +884,7 @@ export class SlashCommandHandler {
             this.api.toggleChatSet(name, isTrueBoolean(args.visible ?? 'true'));
         } catch (ex) {
             // @ts-expect-error TS(2571): Object is of type 'unknown'.
-            toastr.error(ex.message);
+            notyf.error(ex.message);
         }
     }
     addChatSet(name: any, args = {}) {
@@ -893,7 +893,7 @@ export class SlashCommandHandler {
             this.api.addChatSet(name, isTrueBoolean(args.visible ?? 'true'));
         } catch (ex) {
             // @ts-expect-error TS(2571): Object is of type 'unknown'.
-            toastr.error(ex.message);
+            notyf.error(ex.message);
         }
     }
     removeChatSet(name: any) {
@@ -901,7 +901,7 @@ export class SlashCommandHandler {
             this.api.removeChatSet(name);
         } catch (ex) {
             // @ts-expect-error TS(2571): Object is of type 'unknown'.
-            toastr.error(ex.message);
+            notyf.error(ex.message);
         }
     }
 
@@ -929,19 +929,19 @@ export class SlashCommandHandler {
             );
         } catch (ex) {
             // @ts-expect-error TS(2571): Object is of type 'unknown'.
-            toastr.error(ex.message);
+            notyf.error(ex.message);
         }
     }
     getQuickReply(args: any) {
         if (!args.id && !args.label) {
-            toastr.error('Please provide a valid id or label.');
+            notyf.error('Please provide a valid id or label.');
             return '';
         }
         try {
             return JSON.stringify(this.api.getQrByLabel(args.set, args.id !== undefined ? Number(args.id) : args.label));
         } catch (ex) {
             // @ts-expect-error TS(2571): Object is of type 'unknown'.
-            toastr.error(ex.message);
+            notyf.error(ex.message);
         }
     }
     updateQuickReply(args: any, message: any) {
@@ -968,7 +968,7 @@ export class SlashCommandHandler {
             );
         } catch (ex) {
             // @ts-expect-error TS(2571): Object is of type 'unknown'.
-            toastr.error(ex.message);
+            notyf.error(ex.message);
         }
     }
     deleteQuickReply(args: any, label: any) {
@@ -976,7 +976,7 @@ export class SlashCommandHandler {
             this.api.deleteQuickReply(args.set, args.id !== undefined ? Number(args.id) : (args.label ?? label));
         } catch (ex) {
             // @ts-expect-error TS(2571): Object is of type 'unknown'.
-            toastr.error(ex.message);
+            notyf.error(ex.message);
         }
     }
 
@@ -990,7 +990,7 @@ export class SlashCommandHandler {
             );
         }  catch (ex) {
             // @ts-expect-error TS(2571): Object is of type 'unknown'.
-            toastr.error(ex.message);
+            notyf.error(ex.message);
         }
     }
     deleteContextItem(args: any, name: any) {
@@ -998,7 +998,7 @@ export class SlashCommandHandler {
             this.api.deleteContextItem(args.set, args.id !== undefined ? Number(args.id) : args.label, name);
         }  catch (ex) {
             // @ts-expect-error TS(2571): Object is of type 'unknown'.
-            toastr.error(ex.message);
+            notyf.error(ex.message);
         }
     }
     clearContextMenu(args: any, label: any) {
@@ -1006,7 +1006,7 @@ export class SlashCommandHandler {
             this.api.clearContextMenu(args.set, args.id !== undefined ? Number(args.id) : args.label ?? label);
         } catch (ex) {
             // @ts-expect-error TS(2571): Object is of type 'unknown'.
-            toastr.error(ex.message);
+            notyf.error(ex.message);
         }
     }
 
@@ -1023,7 +1023,7 @@ export class SlashCommandHandler {
             );
         } catch (ex) {
             // @ts-expect-error TS(2571): Object is of type 'unknown'.
-            toastr.error(ex.message);
+            notyf.error(ex.message);
         }
     }
     async updateSet(name: any, args: any) {
@@ -1038,7 +1038,7 @@ export class SlashCommandHandler {
             );
         } catch (ex) {
             // @ts-expect-error TS(2571): Object is of type 'unknown'.
-            toastr.error(ex.message);
+            notyf.error(ex.message);
         }
     }
     async deleteSet(name: any) {
@@ -1046,7 +1046,7 @@ export class SlashCommandHandler {
             await this.api.deleteSet(name ?? '');
         } catch (ex) {
             // @ts-expect-error TS(2571): Object is of type 'unknown'.
-            toastr.error(ex.message);
+            notyf.error(ex.message);
         }
     }
 
@@ -1062,7 +1062,7 @@ export class SlashCommandHandler {
             }
         } catch (ex) {
             // @ts-expect-error TS(2571): Object is of type 'unknown'.
-            toastr.error(ex.message);
+            notyf.error(ex.message);
         }
     }
     listQuickReplies(name: any) {
@@ -1070,7 +1070,7 @@ export class SlashCommandHandler {
             return this.api.listQuickReplies(name);
         } catch (ex) {
             // @ts-expect-error TS(2571): Object is of type 'unknown'.
-            toastr.error(ex.message);
+            notyf.error(ex.message);
         }
     }
 }

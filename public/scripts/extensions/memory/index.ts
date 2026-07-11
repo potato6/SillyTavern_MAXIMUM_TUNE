@@ -570,7 +570,7 @@ async function onChatEvent() {
 async function forceSummarizeChat(quiet: any) {
     // @ts-expect-error TS(2339): Property 'source' does not exist on type '{}'.
     if (extension_settings.memory.source === summary_sources.extras) {
-        toastr.warning('Force summarization is not supported for Extras API');
+        notyf.warning('Force summarization is not supported for Extras API');
         return;
     }
 
@@ -579,16 +579,16 @@ async function forceSummarizeChat(quiet: any) {
     const skipWIAN = extension_settings.memory.SkipWIAN;
 
     // @ts-expect-error TS(2304): Cannot find name 'jQuery'.
-    const toast = quiet ? jQuery() : toastr.info('Summarizing chat...', 'Please wait', { timeOut: 0, extendedTimeOut: 0 });
+    const toast = quiet ? jQuery() : notyf.info('Summarizing chat...', 'Please wait', { timeOut: 0, extendedTimeOut: 0 });
     // @ts-expect-error TS(2339): Property 'source' does not exist on type '{}'.
     const value = extension_settings.memory.source === summary_sources.main
         ? await summarizeChatMain(context, true, skipWIAN)
         : await summarizeChatWebLLM(context, true);
 
-    toastr.clear(toast);
+    notyf.dismiss(toast);
 
     if (!value) {
-        toastr.warning('Failed to summarize chat');
+        notyf.warning('Failed to summarize chat');
         return '';
     }
 
@@ -628,11 +628,11 @@ async function summarizeCallback(args: any, text: any) {
                 return await generateWebLlmChatPrompt(messages, params);
             }
             default:
-                toastr.warning('Invalid summarization source specified');
+                notyf.warning('Invalid summarization source specified');
                 return '';
         }
     } catch (error) {
-        toastr.error(String(error), 'Failed to summarize text');
+        notyf.error(String(error), 'Failed to summarize text');
         console.log(error);
         return '';
     }
@@ -749,7 +749,7 @@ async function summarizeChatWebLLM(context: any, force: any) {
 
     if (lastUsedIndex === null || lastUsedIndex === -1) {
         if (force) {
-            toastr.info('To try again, remove the latest summary.', 'No messages found to summarize');
+            notyf.info('To try again, remove the latest summary.', 'No messages found to summarize');
         }
 
         return null;
@@ -831,7 +831,7 @@ async function summarizeChatMain(context: any, force: any, skipWIAN: any) {
 
             if (lastUsedIndex === null || lastUsedIndex === -1) {
                 if (force) {
-                    toastr.info('To try again, remove the latest summary.', 'No messages found to summarize');
+                    notyf.info('To try again, remove the latest summary.', 'No messages found to summarize');
                 }
 
                 return null;

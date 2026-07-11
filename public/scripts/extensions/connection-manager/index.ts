@@ -314,12 +314,12 @@ async function createConnectionProfile(forceName = null) {
     }
     name = DOMPurify.sanitize(String(name));
     if (!name) {
-        toastr.error('Name cannot be empty.');
+        notyf.error('Name cannot be empty.');
         return null;
     }
 
     if (isNameTaken(name) || name === NONE) {
-        toastr.error('A profile with the same name already exists.');
+        notyf.error('A profile with the same name already exists.');
         return null;
     }
 
@@ -529,7 +529,7 @@ async function generateStreamCallback(args: any, value: any) {
     const context = getContext();
     // @ts-expect-error TS(2345): Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
     if (context.extensionSettings.disabledExtensions.includes('connection-manager')) {
-        toastr.error(t`Connection Manager is required for /profile-genstream. Use /gen or /genraw instead.`);
+        notyf.error(t`Connection Manager is required for /profile-genstream. Use /gen or /genraw instead.`);
         return '';
     }
 
@@ -604,14 +604,14 @@ async function generateStreamCallback(args: any, value: any) {
                 if (fuseResults.length > 0) {
                     effectiveProfileId = fuseResults[0].item.id;
                 } else {
-                    toastr.warning(t`Connection profile not found: ${profileIdOrName}`);
+                    notyf.warning(t`Connection profile not found: ${profileIdOrName}`);
                     return '';
                 }
             }
         }
 
         if (!effectiveProfileId) {
-            toastr.error(t`No connection profile specified or selected. Use profile= argument or select a profile in Connection Manager.`);
+            notyf.error(t`No connection profile specified or selected. Use profile= argument or select a profile in Connection Manager.`);
             return '';
         }
 
@@ -717,7 +717,7 @@ async function generateStreamCallback(args: any, value: any) {
         }
 
         if (!finalText) {
-            toastr.warning(t`Generation returned empty result`);
+            notyf.warning(t`Generation returned empty result`);
             return '';
         }
 
@@ -725,7 +725,7 @@ async function generateStreamCallback(args: any, value: any) {
     } catch (err) {
         console.error('Error on /genstream generation', err);
         // @ts-expect-error TS(2571): Object is of type 'unknown'.
-        toastr.error(err.message, t`API Error`, { preventDuplicates: true });
+        notyf.error(err.message, t`API Error`, { preventDuplicates: true });
         return '';
     } finally {
         if (lock) {
@@ -813,7 +813,7 @@ export async function init() {
         await renderDetailsContent(detailsContent);
         // @ts-expect-error TS(2339): Property 'name' does not exist on type 'never'.
         await eventSource.emit(event_types.CONNECTION_PROFILE_LOADED, profile.name);
-        toastr.success('Connection profile reloaded', '', { timeOut: 1500 });
+        notyf.success('Connection profile reloaded', '', { timeOut: 1500 });
     });
 
     const createButton = document.getElementById('create_connection_profile');
@@ -851,7 +851,7 @@ export async function init() {
         await eventSource.emit(event_types.CONNECTION_PROFILE_UPDATED, oldProfile, profile);
         // @ts-expect-error TS(2339): Property 'name' does not exist on type 'never'.
         await eventSource.emit(event_types.CONNECTION_PROFILE_LOADED, profile.name);
-        toastr.success('Connection profile updated', '', { timeOut: 1500 });
+        notyf.success('Connection profile updated', '', { timeOut: 1500 });
     });
 
     const deleteButton = document.getElementById('delete_connection_profile');
@@ -910,13 +910,13 @@ export async function init() {
         }
         newName = DOMPurify.sanitize(String(newName));
         if (!newName) {
-            toastr.error('Name cannot be empty.');
+            notyf.error('Name cannot be empty.');
             return;
         }
 
         // @ts-expect-error TS(2339): Property 'name' does not exist on type 'never'.
         if (profile.name !== newName && extension_settings.connectionManager.profiles.some(p => p.name === newName)) {
-            toastr.error('A profile with the same name already exists.');
+            notyf.error('A profile with the same name already exists.');
             return;
         }
 
@@ -935,13 +935,13 @@ export async function init() {
             if (saveChanges) {
                 await updateConnectionProfile(profile);
             } else {
-                toastr.info('Press "Update" to record them into the profile.', 'Included settings list updated');
+                notyf.info('Press "Update" to record them into the profile.', 'Included settings list updated');
             }
         }
 
         // @ts-expect-error TS(2339): Property 'name' does not exist on type 'never'.
         if (profile.name !== newName) {
-            toastr.success('Connection profile renamed.');
+            notyf.success('Connection profile renamed.');
             // @ts-expect-error TS(2339): Property 'name' does not exist on type 'never'.
             profile.name = newName;
         }
@@ -1062,7 +1062,7 @@ export async function init() {
         ],
         callback: async (_args: any, name: any) => {
             if (!name || typeof name !== 'string') {
-                toastr.warning('Please provide a name for the new connection profile.');
+                notyf.warning('Please provide a name for the new connection profile.');
                 return '';
             }
             // @ts-expect-error TS(2345): Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
@@ -1090,7 +1090,7 @@ export async function init() {
             // @ts-expect-error TS(2339): Property 'id' does not exist on type 'never'.
             const profile = extension_settings.connectionManager.profiles.find(p => p.id === selectedProfile);
             if (!profile) {
-                toastr.warning('No profile selected.');
+                notyf.warning('No profile selected.');
                 return '';
             }
             const oldProfile = structuredClone(profile);

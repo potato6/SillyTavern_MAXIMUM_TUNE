@@ -1924,7 +1924,7 @@ export async function getSanitizedFilename(fileName) {
         return responseData.fileName;
     } catch (error) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.error(String(error), 'Could not sanitize fileName');
+        notyf.error(String(error), 'Could not sanitize fileName');
         console.error('Could not sanitize fileName', error);
         throw error;
     }
@@ -2060,7 +2060,7 @@ export async function promptForAvatarFile() {
             } catch (error) {
                 console.error('Error processing selected image:', error);
                 // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                toastr.error(t`Failed to process selected image: ${error.message}`);
+                notyf.error(t`Failed to process selected image: ${error.message}`);
                 resolve(null);
             }
         };
@@ -2095,7 +2095,7 @@ export async function resolveAvatarData(input) {
     // External URLs are not supported
     if (isExternalUrl(trimmed)) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.warning(t`External URLs are not supported for avatars. Use a local file path or "prompt" to select a file.`);
+        notyf.warning(t`External URLs are not supported for avatars. Use a local file path or "prompt" to select a file.`);
         return null;
     }
     // Local path or URL (e.g., characters/name.png) - fetch from ST server or same origin
@@ -2127,7 +2127,7 @@ export async function resolveAvatarData(input) {
         } catch (error) {
             console.error('Error fetching local avatar:', error);
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.warning(t`Failed to load avatar from path: ${error.message}`);
+            notyf.warning(t`Failed to load avatar from path: ${error.message}`);
             return null;
         }
     }
@@ -2135,7 +2135,7 @@ export async function resolveAvatarData(input) {
     // Unknown format
     console.warn('Unknown avatar format:', trimmed.substring(0, 50));
     // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-    toastr.warning(t`Unknown avatar format. Use "prompt" to select a file, or provide a local file path.`);
+    notyf.warning(t`Unknown avatar format. Use "prompt" to select a file, or provide a local file path.`);
     return null;
 }
 
@@ -2866,12 +2866,12 @@ export async function checkOverwriteExistingData(type, existingNames, name, { in
     const overwrite = interactive && (await Popup.show.confirm(`${type} ${actionName}`, `<p>A ${type.toLowerCase()} with the same name already exists:<br />${escapeHtml(existing)}</p>Do you want to overwrite it?`));
     if (!overwrite) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.warning(`${type} ${actionName.toLowerCase()} cancelled. A ${type.toLowerCase()} with the same name already exists:<br />${escapeHtml(existing)}`, `${type} ${actionName}`, { escapeHtml: false });
+        notyf.warning(`${type} ${actionName.toLowerCase()} cancelled. A ${type.toLowerCase()} with the same name already exists:<br />${escapeHtml(existing)}`, `${type} ${actionName}`, { escapeHtml: false });
         return false;
     }
 
     // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-    toastr.info(`Overwriting Existing ${type}:<br />${escapeHtml(existing)}`, `${type} ${actionName}`, { escapeHtml: false });
+    notyf.info(`Overwriting Existing ${type}:<br />${escapeHtml(existing)}`, `${type} ${actionName}`, { escapeHtml: false });
 
     // If there is an action to delete the existing data, do it, as the name might be slightly different so file name would not be the same
     if (deleteAction) {
@@ -3084,7 +3084,7 @@ export function findPersona({ name = null, allowAvatar = true, insensitive = tru
     const matchingPersonas = personas.filter(a => matches(a));
     if (matchingPersonas.length > 1) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        if (!quiet) toastr.warning(t`Multiple personas found for given conditions.`);
+        if (!quiet) notyf.warning(t`Multiple personas found for given conditions.`);
         else console.warn(t`Multiple personas found for given conditions. Returning the first match.`);
     }
 
@@ -3126,7 +3126,7 @@ export function findChar({ name = null, allowAvatar = true, insensitive = true, 
         const preferredCharSearch = (currentChars ?? []).filter(matches);
         if (preferredCharSearch.length > 1) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            if (!quiet) toastr.warning(t`Multiple characters found for given conditions.`);
+            if (!quiet) notyf.warning(t`Multiple characters found for given conditions.`);
             else console.warn(t`Multiple characters found for given conditions. Returning the first match.`);
         }
         if (preferredCharSearch.length) {
@@ -3147,7 +3147,7 @@ export function findChar({ name = null, allowAvatar = true, insensitive = true, 
     const matchingCharacters = name ? filteredCharacters.filter(matches) : filteredCharacters;
     if (matchingCharacters.length > 1) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        if (!quiet) toastr.warning('Multiple characters found for given conditions.');
+        if (!quiet) notyf.warning('Multiple characters found for given conditions.');
         else console.warn('Multiple characters found for given conditions. Returning the first match.');
     }
 
@@ -3418,7 +3418,7 @@ export async function importFromExternalUrl(url, { preserveFileName = null } = {
 
     if (!request.ok) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.info(request.statusText, 'Custom content import failed');
+        notyf.info(request.statusText, 'Custom content import failed');
         console.error('Custom content import failed', request.status, request.statusText);
         return;
     }
@@ -3444,7 +3444,7 @@ export async function importFromExternalUrl(url, { preserveFileName = null } = {
             break;
         default:
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.warning('Unknown content type');
+            notyf.warning('Unknown content type');
             console.error('Unknown content type', customContentType);
             break;
     }
