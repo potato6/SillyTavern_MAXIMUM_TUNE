@@ -442,7 +442,9 @@ class PresetManager {
      * @returns {any} Selected preset value
      */
     getSelectedPreset() {
-        return this.select[0].options[this.select[0].selectedIndex]?.value;
+        const el = this.select?.[0] ?? this.select;
+        const options = el?.options ? Array.from(el.options) : [];
+        return options[el?.selectedIndex ?? -1]?.value;
     }
 
     /**

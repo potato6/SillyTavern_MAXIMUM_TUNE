@@ -71,13 +71,13 @@ export class SettingsUi {
         if (this.isEnabled) this.isEnabled.checked = this.settings.isEnabled;
         this.isEnabled?.addEventListener('click', () => this.onIsEnabled());
 
-        this.isCombined = this.dom.querySelector('#qr--isCombined');
-        this.isCombined.checked = this.settings.isCombined;
-        this.isCombined.addEventListener('click', () => this.onIsCombined());
+                this.isCombined = this.dom.querySelector('#qr--isCombined') as HTMLInputElement | null;
+        if (this.isCombined) this.isCombined.checked = this.settings.isCombined;
+        this.isCombined?.addEventListener('click', () => this.onIsCombined());
 
-        this.showPopoutButton = this.dom.querySelector('#qr--showPopoutButton');
-        this.showPopoutButton.checked = this.settings.showPopoutButton;
-        this.showPopoutButton.addEventListener('click', () => this.onShowPopoutButton());
+        this.showPopoutButton = this.dom.querySelector('#qr--showPopoutButton') as HTMLInputElement | null;
+        if (this.showPopoutButton) this.showPopoutButton.checked = this.settings.showPopoutButton;
+        this.showPopoutButton?.addEventListener('click', () => this.onShowPopoutButton());
     }
 
     prepareGlobalSetList() {
