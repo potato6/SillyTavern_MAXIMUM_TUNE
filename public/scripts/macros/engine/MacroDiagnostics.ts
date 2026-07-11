@@ -66,8 +66,7 @@ async function onboardingExperimentalMacroEngineUnsafe(feature = null) {
         <p>${t`Would you like to enable it now?`}</p>`);
     if (result == POPUP_RESULT.AFFIRMATIVE) {
         power_user.experimental_macro_engine = true;
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $('#experimental_macro_engine').prop('checked', power_user.experimental_macro_engine).trigger('input');
+        const _emEl = document.getElementById('experimental_macro_engine') as HTMLInputElement | null; if (_emEl) { _emEl.checked = power_user.experimental_macro_engine; _emEl.dispatchEvent(new Event('input')); }
     }
 
     // Only show this once

@@ -4844,8 +4844,7 @@ function loadOpenAISettings(data, settings) {
     const bindPresetEl = document.getElementById('bind_preset_to_connection');
     if (bindPresetEl) (bindPresetEl as HTMLInputElement).checked = oai_settings.bind_preset_to_connection;
     ((() => { const el = document.getElementById('openai_external_category'); if (el) { el.style.display = oai_settings.show_external_models ? '' : 'none'; } })());
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document.querySelector('.reverse_proxy_warning')).toggle(oai_settings.reverse_proxy !== '');
+    const _rpEl1 = document.querySelector('.reverse_proxy_warning') as HTMLElement; if (_rpEl1) _rpEl1.style.display = oai_settings.reverse_proxy !== '' ? '' : 'none';
 
     // Don't display Service Account JSON in textarea - it's stored in backend secrets
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
@@ -6788,10 +6787,8 @@ async function onNewPresetClick() {
  *
  */
 function onReverseProxyInput() {
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     oai_settings.reverse_proxy = String(this.value);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document.querySelector('.reverse_proxy_warning')).toggle(oai_settings.reverse_proxy != '');
+    const _rpEl2 = document.querySelector('.reverse_proxy_warning') as HTMLElement; if (_rpEl2) _rpEl2.style.display = oai_settings.reverse_proxy != '' ? '' : 'none';
     saveSettingsDebounced();
 }
 
@@ -8224,17 +8221,13 @@ export function initOpenAI() {
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document.getElementById('cc_group_models')).on('input', async () => {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    document.getElementById('cc_group_models')?.addEventListener('input', async () => {
         oai_settings.group_models = document.getElementById('cc_group_models').checked;
         reconnectOpenAi();
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document.getElementById('cc_sort_models')).on('input', async () => {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    document.getElementById('cc_sort_models')?.addEventListener('input', async () => {
         oai_settings.sort_models = document.getElementById('cc_sort_models').value.toString();
         reconnectOpenAi();
         saveSettingsDebounced();

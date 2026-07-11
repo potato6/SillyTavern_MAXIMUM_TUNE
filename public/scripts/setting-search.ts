@@ -58,6 +58,5 @@ function removeHighlighting() {
  *
  */
 export function initSettingsSearch() {
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document.getElementById('settingsSearch')).on('input change', searchSettings);
+    const _ssEl = document.getElementById('settingsSearch'); if (_ssEl) { _ssEl.addEventListener('input', searchSettings); _ssEl.addEventListener('change', searchSettings); }
 }

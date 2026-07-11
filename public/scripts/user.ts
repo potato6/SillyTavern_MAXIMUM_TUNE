@@ -919,10 +919,8 @@ async function openAdminPanel() {
             userBlock.querySelector('.userRole').textContent = user.admin ? 'Admin' : 'User';
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             userBlock.querySelector('.avatar img').setAttribute('src', user.avatar);
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(userBlock.querySelector('.hasPassword')).toggle(user.password);
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            $(userBlock.querySelector('.noPassword')).toggle(!user.password);
+            const _hpEl = userBlock.querySelector('.hasPassword') as HTMLElement; if (_hpEl) _hpEl.style.display = user.password ? '' : 'none';
+            const _npEl = userBlock.querySelector('.noPassword') as HTMLElement; if (_npEl) _npEl.style.display = !user.password ? '' : 'none';
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             userBlock.querySelector('.userCreated').textContent = new Date(user.created.toLocaleString());
             const enableBtn = userBlock.querySelector('.userEnableButton');

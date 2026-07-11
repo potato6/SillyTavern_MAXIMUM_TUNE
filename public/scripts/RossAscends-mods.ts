@@ -279,8 +279,7 @@ export async function RA_CountCharTokens() {
     document.getElementById('result_info_permanent_tokens').textContent = permanent_tokens;
     // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     document.getElementById('result_info_text').classList.toggle('neutral_warning', showWarning);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document.getElementById('chartokenwarning')).toggle(showWarning);
+    const _ctEl = document.getElementById('chartokenwarning') as HTMLElement; if (_ctEl) _ctEl.style.display = showWarning ? '' : 'none';
 }
 /**
  * Auto load chat with the last active character or group.

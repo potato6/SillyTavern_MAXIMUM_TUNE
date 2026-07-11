@@ -3978,7 +3978,7 @@ export async function getWorldEntry(name, data, entry) {
     let drawerInitialized = false;
     // @ts-expect-error TS(7034) FIXME: Variable 'drawerDestroyTimeout' implicitly has typ... Remove this comment to see the full error message
     let drawerDestroyTimeout = null;
-    $(headerTemplate.querySelectorAll('.inline-drawer')).on('inline-drawer-toggle', function () {
+    headerTemplate.querySelectorAll('.inline-drawer').forEach(el => el.addEventListener('inline-drawer-toggle', function () {
         // @ts-expect-error TS(7005) FIXME: Variable 'drawerDestroyTimeout' implicitly has an ... Remove this comment to see the full error message
         if (drawerDestroyTimeout) {
             clearTimeout(drawerDestroyTimeout);
@@ -3998,7 +3998,7 @@ export async function getWorldEntry(name, data, entry) {
             drawerInitialized = true;
             addEditorDrawerContent();
         }
-    });
+    }));
 
     const editOutlet = headerTemplate.querySelectorAll('.inline-drawer-outlet');
 
@@ -4018,7 +4018,7 @@ export async function getWorldEntry(name, data, entry) {
         if (!keySecondaryInput.isFancy) initScrollHeight(keySecondaryInput.control);
 
         // Key input switch
-        $(editTemplate.querySelectorAll('.switch_input_type_icon')).on('click', function () {
+        editTemplate.querySelectorAll('.switch_input_type_icon').forEach(el => el.addEventListener('click', function () {
             // @ts-expect-error TS(2339) FIXME: Property 'wi_key_input_plaintext' does not exist o... Remove this comment to see the full error message
             power_user.wi_key_input_plaintext = !power_user.wi_key_input_plaintext;
             saveSettingsDebounced();
@@ -4026,7 +4026,8 @@ export async function getWorldEntry(name, data, entry) {
             updateEditor(uid, false);
             const inlineDrawerIcon = document.querySelector(`.world_entry[uid="${uid}"] .inline-drawer-icon`);
             if (inlineDrawerIcon) inlineDrawerIcon.click();
-        }).each((_, icon) => {
+        }));
+        editTemplate.querySelectorAll('.switch_input_type_icon').forEach((icon) => {
             const tooltipKey = power_user.wi_key_input_plaintext ? 'tooltip-on' : 'tooltip-off';
             const iconKey = power_user.wi_key_input_plaintext ? 'icon-on' : 'icon-off';
             icon.setAttribute('title', icon.dataset[tooltipKey]);

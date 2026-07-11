@@ -8233,13 +8233,13 @@
         <script>
         window.jQuery=$;
                         $.fn.sortable = $.fn.sortable || function() { return this; };
-                        $.fn.fadeIn = $.fn.fadeIn || function(opts) {
-            this.show();
+                                $.fn.fadeIn = $.fn.fadeIn || function(opts) {
+            this.each(function() { this.style.display = ''; });
             if (opts && typeof opts.complete === 'function') opts.complete();
             return this;
         };
         $.fn.fadeOut = $.fn.fadeOut || function(opts) {
-            this.hide();
+            this.each(function() { this.style.display = 'none'; });
             if (opts && typeof opts.complete === 'function') opts.complete();
             return this;
         };

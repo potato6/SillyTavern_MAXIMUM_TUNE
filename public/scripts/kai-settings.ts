@@ -580,17 +580,13 @@ export function initKoboldSettings() {
         }
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document.getElementById('streaming_kobold')).on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    document.getElementById('streaming_kobold')?.addEventListener('input', function () {
         const value = !!this.checked;
         kai_settings.streaming_kobold = value;
         saveSettingsDebounced();
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document.getElementById('use_default_badwordsids')).on('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    document.getElementById('use_default_badwordsids')?.addEventListener('input', function () {
         const value = !!this.checked;
         kai_settings.use_default_badwordsids = value;
         saveSettingsDebounced();

@@ -691,8 +691,8 @@ export function setPersonaDescription() {
         power_user.persona_description_position = persona_description_positions.IN_PROMPT;
     }
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document.getElementById('persona_depth_position_settings')).toggle(power_user.persona_description_position === persona_description_positions.AT_DEPTH);
+    const _el695 = document.getElementById('persona_depth_position_settings') as HTMLElement;
+    if (_el695) _el695.style.display = power_user.persona_description_position === persona_description_positions.AT_DEPTH ? '' : 'none';
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     document.getElementById('persona_description').value = power_user.persona_description;
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
@@ -1483,14 +1483,14 @@ async function onPersonaDescriptionPositionInput() {
         object.position = power_user.persona_description_position;
         saveSettingsDebounced();
         await eventSource.emit(event_types.PERSONA_UPDATED, user_avatar);
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        $(document.getElementById('persona_depth_position_settings')).toggle(power_user.persona_description_position === persona_description_positions.AT_DEPTH);
+        const _el1487 = document.getElementById('persona_depth_position_settings') as HTMLElement;
+        if (_el1487) _el1487.style.display = power_user.persona_description_position === persona_description_positions.AT_DEPTH ? '' : 'none';
         return;
     }
 
     saveSettingsDebounced();
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    $(document.getElementById('persona_depth_position_settings')).toggle(power_user.persona_description_position === persona_description_positions.AT_DEPTH);
+    const _el1493 = document.getElementById('persona_depth_position_settings') as HTMLElement;
+    if (_el1493) _el1493.style.display = power_user.persona_description_position === persona_description_positions.AT_DEPTH ? '' : 'none';
 }
 
 /**
