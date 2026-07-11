@@ -355,7 +355,7 @@ export class ReasoningHandler {
             ? document.querySelector(`#chat [mesid="${messageIdOrElement}"]`)
             : messageIdOrElement instanceof HTMLElement
                 ? messageIdOrElement
-                : messageIdOrElement;
+                : messageIdOrElement?.[0] ?? messageIdOrElement;
         const messageId = Number(messageElement.getAttribute('mesid'));
 
         if (isNaN(messageId) || !chat[messageId]) return;
