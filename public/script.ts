@@ -14088,43 +14088,28 @@ function initCharacterSearch() {
             icon.classList.toggle('fa-circle-chevron-down');
             icon.classList.toggle('fa-circle-chevron-up');
         }
-                                        drawerEl.dispatchEvent(new CustomEvent('inline-drawer-toggle', { bubbles: true }));
-                if (drawerContent) {
-                    const isCurrentlyVisible = window.getComputedStyle(drawerContent).display !== 'none';
-                    if (!isCurrentlyVisible) {
-                        const anim = drawerContent.animate([
-                            { height: '0px' },
-                            { height: '0px' },
-                        ], { duration: 1 });
-                        anim.onfinish = function() {
-                            drawerContent.style.display = '';
-                            drawerContent.style.height = '';
-                            var h = drawerContent.scrollHeight;
-                            drawerContent.style.height = '0px';
-                            drawerContent.animate([
-                                { height: '0px' },
-                                { height: h + 'px' },
-                            ], {
-                                duration: 200,
-                                easing: 'ease-in-out',
-                            }).onfinish = function() {
-                                drawerContent.style.height = '';
-                            };
-                        };
-                    } else {
-                        var h = drawerContent.scrollHeight;
-                        drawerContent.animate([
-                            { height: h + 'px' },
-                            { height: '0px' },
-                        ], {
-                            duration: 200,
-                            easing: 'ease-in-out',
-                        }).onfinish = function() {
-                            drawerContent.style.display = 'none';
-                            drawerContent.style.height = '';
-                        };
-                    }
-                }
+                                                drawerEl.dispatchEvent(new CustomEvent('inline-drawer-toggle', { bubbles: true }));
+        if (drawerContent) {
+            const isCurrentlyVisible = window.getComputedStyle(drawerContent).display !== 'none';
+            if (isCurrentlyVisible) {
+                drawerContent.style.display = 'none';
+            } else {
+                drawerContent.style.display = '';
+                drawerContent.style.height = '';
+                // Force reflow then animate height
+                var h = drawerContent.scrollHeight;
+                drawerContent.style.height = '0px';
+                drawerContent.animate([
+                    { height: '0px' },
+                    { height: h + 'px' },
+                ], {
+                    duration: 200,
+                    easing: 'ease-in-out',
+                }).onfinish = function() {
+                    drawerContent.style.height = '';
+                };
+            }
+        }
 
         // Set the height of "autoSetHeight" textareas within the inline-drawer to their scroll height
         if (!CSS.supports('field-sizing', 'content')) {
