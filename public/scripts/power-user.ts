@@ -1572,8 +1572,12 @@ function applyTheme(name) {
                 const colorEl = document.querySelector(selector);
                 if (colorEl) colorEl.setAttribute('color', newValue);
             }
-            if (type) applyThemeColor(type);
-            if (action) action(oldValue, newValue);
+            try {
+                if (type) applyThemeColor(type);
+                if (action) action(oldValue, newValue);
+            } catch (e) {
+                console.error(`Error applying theme property "${key}":`, e);
+            }
         } else {
             console.debug(`Empty theme key: ${key}`);
         }
