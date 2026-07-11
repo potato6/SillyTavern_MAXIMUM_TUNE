@@ -14091,21 +14091,43 @@ function initCharacterSearch() {
             icon.classList.toggle('fa-circle-chevron-down');
             icon.classList.toggle('fa-circle-chevron-up');
         }
-        drawer.trigger('inline-drawer-toggle');
-        if (drawerContent) {
-            const isOpen = drawerContent.style.display !== 'none';
-            drawerContent.animate([
-                { height: isOpen ? drawerContent.scrollHeight + 'px' : '0px' },
-                { height: isOpen ? '0px' : drawerContent.scrollHeight + 'px' },
-            ], {
-                duration: 200,
-                easing: 'ease-in-out',
-            }).onfinish = function() {
-                drawerContent.style.display = isOpen ? 'none' : '';
-                drawerContent.style.height = '';
-            };
-                        if (!isOpen) drawerContent.style.display = '';
-        }
+                drawer.trigger('inline-drawer-toggle');
+                if (drawerContent) {
+                    const isCurrentlyVisible = drawerContent.style.display !== 'none';
+                    if (!isCurrentlyVisible) {
+                        const anim = drawerContent.animate([
+                            { height: '0px' },
+                            { height: '0px' },
+                        ], { duration: 1 });
+                        anim.onfinish = function() {
+                            drawerContent.style.display = '';
+                            drawerContent.style.height = '';
+                            var h = drawerContent.scrollHeight;
+                            drawerContent.style.height = '0px';
+                            drawerContent.animate([
+                                { height: '0px' },
+                                { height: h + 'px' },
+                            ], {
+                                duration: 200,
+                                easing: 'ease-in-out',
+                            }).onfinish = function() {
+                                drawerContent.style.height = '';
+                            };
+                        };
+                    } else {
+                        var h = drawerContent.scrollHeight;
+                        drawerContent.animate([
+                            { height: h + 'px' },
+                            { height: '0px' },
+                        ], {
+                            duration: 200,
+                            easing: 'ease-in-out',
+                        }).onfinish = function() {
+                            drawerContent.style.display = 'none';
+                            drawerContent.style.height = '';
+                        };
+                    }
+                }
 
         // Set the height of "autoSetHeight" textareas within the inline-drawer to their scroll height
         if (!CSS.supports('field-sizing', 'content')) {
