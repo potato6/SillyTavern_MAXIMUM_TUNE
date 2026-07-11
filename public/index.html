@@ -8259,7 +8259,21 @@
             }
             return this;
         };
-        $.fn.tabs = function() { return this; };
+                $.fn.tabs = function() { return this; };
+        // Fix toggleClass for space-separated class names (cash-dom doesn't support it like jQuery)
+        var _toggleClass = $.fn.toggleClass;
+        $.fn.toggleClass = function(cls) {
+            if (typeof cls === 'string' && cls.includes(' ')) {
+                var classes = cls.split(' ');
+                for (var i = 0; i < this.length; i++) {
+                    for (var j = 0; j < classes.length; j++) {
+                        this[i].classList.toggle(classes[j]);
+                    }
+                }
+                return this;
+            }
+            return _toggleClass.apply(this, arguments);
+        };
         // Override append to handle plain text strings (toastr passes error messages)
         var _append = $.fn.append;
         $.fn.append = function() {
