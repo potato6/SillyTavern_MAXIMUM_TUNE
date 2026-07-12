@@ -58,7 +58,7 @@ import { router as translateRouter } from './endpoints/translate.js';
 import { router as searchRouter } from './endpoints/search.js';
 import { router as openRouterRouter } from './endpoints/openrouter.js';
 import { router as nanogptRouter } from './endpoints/nanogpt.js';
-import { router as chatCompletionsRouter } from './endpoints/backends/chat-completions.js';
+import { router as chatCompletionsRouter } from './endpoints/backends/chat-completions/index.js';
 import { router as koboldRouter } from './endpoints/backends/kobold.js';
 import { router as textCompletionsRouter } from './endpoints/backends/text-completions.js';
 import { router as speechRouter } from './endpoints/speech.js';
