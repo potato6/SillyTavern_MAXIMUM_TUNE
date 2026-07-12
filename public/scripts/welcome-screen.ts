@@ -705,8 +705,7 @@ async function refreshWelcomeScreen({ flashChat = null } = {}) {
         return;
     }
 
-        const chatEl = chatElement[0];
-    if (!chatEl) return;
+    const chatEl = chatElement;
     const scrollTop = chatEl.scrollTop;
     const scrollHeight = chatEl.scrollHeight;
     const expand = chatEl.querySelectorAll('button.showMoreChats.rotated').length > 0;
