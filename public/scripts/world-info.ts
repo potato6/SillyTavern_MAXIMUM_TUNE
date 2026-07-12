@@ -3876,7 +3876,8 @@ export async function getWorldEntry(name, data, entry) {
         if (!data_noSave) await saveWorldInfo(name, data);
     });
     const roleValue = entry.position === world_info_position.atDepth ? String(entry.role ?? extension_prompt_roles.SYSTEM) : '';
-    headerTemplate.find(`select[name="position"] option[value="${entry.position}"][data-role="${roleValue}"]`).prop('selected', true);
+    const posOption = headerTemplate?.querySelector(`select[name="position"] option[value="${entry.position}"][data-role="${roleValue}"]`);
+    if (posOption instanceof HTMLOptionElement) posOption.selected = true;
     positionInput[0].dispatchEvent(new CustomEvent('input', { detail: { noSave: true } }));
 
     // Tri-state selector
