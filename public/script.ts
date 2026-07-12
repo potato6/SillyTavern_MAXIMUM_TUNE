@@ -8590,7 +8590,8 @@ export async function getChat() {
         // Focus on the textarea if not already focused on a visible text input
         delay(debounce_timeout.short).then(() => {
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            if ($(document.activeElement).is('input:visible, textarea:visible')) {
+            const el = document.activeElement;
+            if (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') && getComputedStyle(el).display !== 'none') {
                 return;
             }
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
@@ -9345,9 +9346,10 @@ export async function messageEdit(editMessageId) {
     messageBlock.find('.mes_edit_buttons').css('display', 'inline-flex');
 
     // Also edit reasoning, if it exists
-    const reasoningEdit = messageBlock.find('.mes_reasoning_edit:visible');
-    if (reasoningEdit.length > 0) {
-        reasoningEdit.trigger('click');
+    const blockEl = messageBlock[0];
+    const reasoningEdit = blockEl?.querySelector('.mes_reasoning_edit');
+    if (reasoningEdit && reasoningEdit.offsetParent !== null) {
+        reasoningEdit.click();
     }
 
     const editTextArea = document.createElement('textarea');
@@ -9417,9 +9419,10 @@ async function messageEditCancel(messageId = this_edit_mes_id) {
     appendMediaToMessage(chat[messageId], thisMesDiv);
     addCopyToCodeBlocks(thisMesDiv);
 
-    const reasoningEditDone = thisMesBlock.find('.mes_reasoning_edit_cancel:visible');
-    if (reasoningEditDone.length > 0) {
-        reasoningEditDone.trigger('click');
+    const blockEl = thisMesBlock[0];
+    const reasoningEditDone = blockEl?.querySelector('.mes_reasoning_edit_cancel');
+    if (reasoningEditDone && reasoningEditDone.offsetParent !== null) {
+        reasoningEditDone.click();
     }
 
     await eventSource.emit(event_types.MESSAGE_UPDATED, messageId);
@@ -9529,9 +9532,10 @@ async function messageEditDone(div) {
     appendMediaToMessage(mes, div.closest('.mes'));
     addCopyToCodeBlocks(div.closest('.mes'));
 
-    const reasoningEditDone = mesBlock.find('.mes_reasoning_edit_done:visible');
-    if (reasoningEditDone.length > 0) {
-        reasoningEditDone.trigger('click');
+    const blockEl = mesBlock[0];
+    const reasoningEditDone = blockEl?.querySelector('.mes_reasoning_edit_done');
+    if (reasoningEditDone && reasoningEditDone.offsetParent !== null) {
+        reasoningEditDone.click();
     }
 
     // @ts-expect-error TS(7005) FIXME: Variable 'this_edit_mes_id' implicitly has an 'any... Remove this comment to see the full error message
@@ -12725,7 +12729,8 @@ function initCharacterSearch() {
     });
 
     searchButton.on('click', function () {
-        const newVisibility = !searchForm.is(':visible');
+        const searchFormEl = searchForm[0];
+        const newVisibility = !searchFormEl || getComputedStyle(searchFormEl).display === 'none';
         searchForm.toggle(newVisibility);
         searchButton.toggleClass('active', newVisibility);
         accountStorage.setItem(storageKey, String(newVisibility));
@@ -12925,7 +12930,11 @@ function initCharacterSearch() {
         //when a 'delete message' parent div is clicked
         // and we are in delete mode and del_checkbox is visible
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        if (!is_delete_mode || !$(this).children('.del_checkbox').is(':visible')) {
+        if (!is_delete_mode) {
+            return;
+        }
+        const checkboxEl = this?.querySelector('.del_checkbox');
+        if (!checkboxEl || getComputedStyle(checkboxEl).display === 'none') {
             return;
         }
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
@@ -14340,7 +14349,8 @@ function initCharacterSearch() {
                 return;
             }
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const isEditVisible = $('#curEditTextarea').is(':visible') || $('.reasoning_edit_textarea').length > 0;
+            const textarea = document.getElementById('curEditTextarea');
+            const isEditVisible = (textarea && getComputedStyle(textarea).display !== 'none') || document.querySelector('.reasoning_edit_textarea') !== null;
             if (isEditVisible && power_user.auto_save_msg_edits === false) {
                 closeMessageEditor('all');
                 // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
@@ -14356,7 +14366,12 @@ function initCharacterSearch() {
                 return;
             }
             // @ts-expect-error TS(7005) FIXME: Variable 'this_edit_mes_id' implicitly has an 'any... Remove this comment to see the full error message
-            if (this_edit_mes_id === undefined && $('#mes_stop').is(':visible')) {
+            if (this_edit_mes_id === undefined) {
+                const stopBtn = document.getElementById('mes_stop');
+                if (!stopBtn || getComputedStyle(stopBtn).display === 'none') {
+                    return;
+                }
+            }
                 // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $('#mes_stop').trigger('click');
                 if (chat.length === 0) return;
