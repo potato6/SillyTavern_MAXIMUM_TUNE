@@ -3762,9 +3762,16 @@ function registerSettingsPanelHandlers() {
         power_user.stream_fade_in = !!(this instanceof HTMLInputElement && this.checked);
     });
     const enableCodeExecutionEl = guardEl('enable_code_execution') as HTMLInputElement | null;
-    if (enableCodeExecutionEl) enableCodeExecutionEl.addEventListener('change', function (this: HTMLElement) {
+    if (enableCodeExecutionEl) enableCodeExecutionEl.addEventListener('change', async function (this: HTMLElement) {
         power_user.enable_code_execution = !!(this instanceof HTMLInputElement && this.checked);
         saveSettingsDebounced();
+        // Dynamically update code-runner buttons without page reload
+        const codeRunner = await import('../scripts/code-runner.js');
+        if (power_user.enable_code_execution) {
+            codeRunner.addExecuteButtonToCodeBlocks();
+        } else {
+            codeRunner.removeExecuteButtons();
+        }
     });
 
     // Font scale

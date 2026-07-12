@@ -17,13 +17,22 @@ export function addExecuteButtonToCodeBlocks() {
             continue;
         }
         const match = block.className.match(/language-(\w+)/);
-        if (!match || !supportedLanguages.has(match[1])) {
+        if (!match || !supportedLanguages.has(match[1] ?? '')) {
             continue;
         }
         const lang = match[1];
         addButton(block, lang);
         block.classList.add('code-runner');
     }
+}
+
+/**
+ * Removes all code-runner buttons and output containers.
+ */
+export function removeExecuteButtons() {
+    document.querySelectorAll('.code-runner-button').forEach(el => el.remove());
+    document.querySelectorAll('.code-output').forEach(el => el.remove());
+    document.querySelectorAll('#chat .mes_text pre code.code-runner').forEach(el => el.classList.remove('code-runner'));
 }
 
 function addButton(block, lang) {
