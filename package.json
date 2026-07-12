@@ -140,7 +140,6 @@
         "@types/png-chunks-extract": "^1.0.2",
         "@types/response-time": "^2.3.9",
         "@types/select2": "^4.0.63",
-        "@types/toastr": "^2.1.43",
         "@types/write-file-atomic": "^4.0.3",
         "@types/yargs": "^17.0.35",
         "@types/yauzl": "^3.4.0",

@@ -393,6 +393,16 @@ notyf.warning = (message: string, _title?: string, _opts?: Record<string, unknow
 // @ts-expect-error TS(2304) extending notyf with shim methods
 notyf.info = (message: string, _title?: string, _opts?: Record<string, unknown>) => notyf.open({ type: 'info', message });
 
+// Extend Notyf type to include monkey-patched toastr-compatible methods
+declare module 'notyf' {
+    interface Notyf {
+        success(message: string, title?: string, opts?: Record<string, unknown>): void;
+        error(message: string, title?: string, opts?: Record<string, unknown>): void;
+        warning(message: string, title?: string, opts?: Record<string, unknown>): void;
+        info(message: string, title?: string, opts?: Record<string, unknown>): void;
+    }
+}
+
 // Expose notyf globally for all modules (was window.toastr)
 // @ts-expect-error TS(2304) FIXME: Cannot find name 'window'.
 window.notyf = notyf;
@@ -724,8 +734,8 @@ async function firstLoadInit() {
         const tokenData = await tokenResponse.json();
         token = tokenData.token;
     } catch {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.error(t`Couldn't get CSRF token. Please refresh the page.`, t`Error`, { timeOut: 0, extendedTimeOut: 0, preventDuplicates: true });
+
+        notyf.error(t`Couldn't get CSRF token. Please refresh the page.`, t`Error`, { timeOut: 0, extendedTimeOut: 0, preventDuplicates: true });
         throw new Error('Initialization failed');
     }
 
@@ -819,8 +829,8 @@ async function firstLoadInit() {
         await eventSource.emit(event_types.APP_READY);
     } catch (error) {
         console.error('Critical error during firstLoadInit:', error);
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.error(t`An error occurred during initialization. Check console for details.`, t`Init Error`);
+
+        notyf.error(t`An error occurred during initialization. Check console for details.`, t`Init Error`);
     }
 }
 
@@ -948,8 +958,8 @@ export async function selectCharacterById(id, { switchMenu = true } = {}) {
     }
 
     if (isChatSaving) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.info(t`Please wait until the chat is saved before switching characters.`, t`Your chat is still saving...`);
+
+        notyf.info(t`Please wait until the chat is saved before switching characters.`, t`Your chat is still saving...`);
         return;
     }
 
@@ -1356,8 +1366,8 @@ export async function getOneCharacter(avatarUrl) {
         if (indexOf !== -1) {
             characters[indexOf] = getData;
         } else {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.error(t`Character ${avatarUrl} not found in the list`, t`Error`, { timeOut: 5000, preventDuplicates: true });
+    
+            notyf.error(t`Character ${avatarUrl} not found in the list`, t`Error`, { timeOut: 5000, preventDuplicates: true });
         }
     }
 }
@@ -1888,8 +1898,8 @@ export async function reloadCurrentChatUnsafe() {
 export async function sendTextareaMessage() {
     // don't proceed during swipeGenerate()
     if (swipeState == SWIPE_STATE.EDITING) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.warning(t`Confirm the edit to start a generation.`, t`You cannot send a message during a swipe-edit.`);
+
+        notyf.warning(t`Confirm the edit to start a generation.`, t`You cannot send a message during a swipe-edit.`);
         return;
     }
     if (swipeState !== SWIPE_STATE.NONE) return; // don't proceed if mid-swipe.
@@ -2696,8 +2706,8 @@ export function addCopyToCodeBlocks(messageElement) {
         copyButton.addEventListener('pointerup', async function () {
             const text = codeBlocks.get(i).textContent;
             await copyText(text);
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.info(t`Copied!`, '', { timeOut: 2000 });
+    
+            notyf.info(t`Copied!`, '', { timeOut: 2000 });
         });
     }
 }
@@ -4768,8 +4778,8 @@ export async function Generate(type, {
     await eventSource.emit(event_types.GENERATION_AFTER_COMMANDS, type, { automatic_trigger, force_name2, quiet_prompt, quietToLoud, skipWIAN, force_chid, signal, quietImage }, dryRun);
 
     if (main_api == 'kobold' && kai_settings.streaming_kobold && !kai_flags.can_use_streaming) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.error(t`Streaming is enabled, but the version of Kobold used does not support token streaming.`, undefined, { timeOut: 10000, preventDuplicates: true });
+
+        notyf.error(t`Streaming is enabled, but the version of Kobold used does not support token streaming.`, undefined, { timeOut: 10000, preventDuplicates: true });
         unblockGeneration(type);
         return Promise.resolve();
     }
@@ -4785,8 +4795,8 @@ export async function Generate(type, {
 
         if (!pingResult) {
             unblockGeneration(type);
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.error(t`Verify that the server is running and accessible.`, t`ST Server cannot be reached`);
+    
+            notyf.error(t`Verify that the server is running and accessible.`, t`ST Server cannot be reached`);
             throw new Error('Server unreachable');
         }
 
@@ -6003,8 +6013,8 @@ export async function Generate(type, {
             unblockGeneration(type);
 
             if (data?.response) {
-                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                toastr.error(data.response, t`API Error`, { preventDuplicates: true });
+        
+                notyf.error(data.response, t`API Error`, { preventDuplicates: true });
             }
             throw new Error(data?.response);
         }
@@ -6129,8 +6139,8 @@ export async function Generate(type, {
     function onError(exception) {
         // if the response JSON was thrown (novel|textgenerationwebui|kobold), show the error message
         if (typeof exception?.error?.message === 'string') {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.error(exception.error.message, t`Text generation error`, { timeOut: 10000, extendedTimeOut: 20000 });
+    
+            notyf.error(exception.error.message, t`Text generation error`, { timeOut: 10000, extendedTimeOut: 20000 });
         }
 
         unblockGeneration(type);
@@ -6630,15 +6640,15 @@ export async function duplicateCharacter({ avatar = null, silent = false } = {})
     if (avatar) {
         const character = characters.find(c => c.avatar === avatar);
         if (!character) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.warning(t`Character not found: ${avatar}`);
+    
+            notyf.warning(t`Character not found: ${avatar}`);
             return '';
         }
         targetAvatar = avatar;
     } else {
         if (this_chid === undefined || !characters[this_chid]) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.warning(t`You must first select a character to duplicate!`);
+    
+            notyf.warning(t`You must first select a character to duplicate!`);
             return '';
         }
         targetAvatar = characters[this_chid].avatar;
@@ -6664,13 +6674,12 @@ export async function duplicateCharacter({ avatar = null, silent = false } = {})
     });
 
     if (!response.ok) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.error(t`Failed to duplicate character`);
+
+        notyf.error(t`Failed to duplicate character`);
         return '';
     }
 
-    // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-    toastr.success(t`Character Duplicated`);
+        notyf.success(t`Character Duplicated`);
     const data = await response.json();
     await eventSource.emit(event_types.CHARACTER_DUPLICATED, { oldAvatar: targetAvatar, newAvatar: data.path });
     await getCharacters();
@@ -8037,13 +8046,13 @@ export function setSendButtonState(value) {
  */
 export async function renameCharacter(name = null, { silent = false, renameChats = null } = {}) {
     if (!name && silent) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.warning(t`No character name provided.`, t`Rename Character`);
+
+        notyf.warning(t`No character name provided.`, t`Rename Character`);
         return false;
     }
     if (this_chid === undefined) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.warning(t`No character selected.`, t`Rename Character`);
+
+        notyf.warning(t`No character selected.`, t`Rename Character`);
         return false;
     }
 
@@ -8051,13 +8060,13 @@ export async function renameCharacter(name = null, { silent = false, renameChats
     const newValue = name || (await callGenericPopup('<h3>' + t`New name:` + '</h3>', POPUP_TYPE.INPUT, characters[this_chid].name));
 
     if (!newValue) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.warning(t`No character name provided.`, t`Rename Character`);
+
+        notyf.warning(t`No character name provided.`, t`Rename Character`);
         return false;
     }
     if (newValue === characters[this_chid].name) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.info(t`Same character name provided, so name did not change.`, t`Rename Character`);
+
+        notyf.info(t`Same character name provided, so name did not change.`, t`Rename Character`);
         return false;
     }
 
@@ -8139,11 +8148,11 @@ export async function renameCharacter(name = null, { silent = false, renameChats
                 if (renamePastChatsConfirm) {
                     await renamePastChats(oldAvatar, newAvatar, newValue);
                     await reloadCurrentChat();
-                    // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                    toastr.success(t`Character renamed and past chats updated!`, t`Rename Character`);
+            
+                    notyf.success(t`Character renamed and past chats updated!`, t`Rename Character`);
                 } else {
-                    // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                    toastr.success(t`Character renamed!`, t`Rename Character`);
+            
+                    notyf.success(t`Character renamed!`, t`Rename Character`);
                 }
             } else {
                 throw new Error('Newly renamed character was lost?');
@@ -8154,8 +8163,8 @@ export async function renameCharacter(name = null, { silent = false, renameChats
     } catch (error) {
         // Reloading to prevent data corruption
         if (!silent) await Popup.show.text(t`Rename Character`, t`Something went wrong. The page will be reloaded.`);
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        else toastr.error(t`Something went wrong. The page will be reloaded.`, t`Rename Character`);
+
+        else notyf.error(t`Something went wrong. The page will be reloaded.`, t`Rename Character`);
 
         console.log('Renaming character error:', error);
         location.reload();
@@ -8223,8 +8232,8 @@ async function renamePastChats(oldAvatar, newAvatar, newName) {
                 }
             }
         } catch (error) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.error(t`Past chat could not be updated: ${file_name}`);
+    
+            notyf.error(t`Past chat could not be updated: ${file_name}`);
             console.error(error);
         }
     }
@@ -8275,8 +8284,8 @@ export async function saveChat({
     chatData = undefined
 }: Record<string, unknown> = {}, ...args: unknown[]) {
     if (selected_group) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.error(t`Operation was aborted to prevent data corruption.`, t`saveChat called for a group chat`);
+
+        notyf.error(t`Operation was aborted to prevent data corruption.`, t`saveChat called for a group chat`);
         throw new Error('saveChat called for a group chat');
     }
 
@@ -8358,8 +8367,8 @@ export async function saveChat({
         await saveChat({ chatName, withMetadata, mesId, force: true });
     } catch (error) {
         console.error(error);
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.error(t`Check the server connection and reload the page to prevent data loss.`, t`Chat could not be saved`);
+
+        notyf.error(t`Check the server connection and reload the page to prevent data loss.`, t`Chat could not be saved`);
     }
 }
 
@@ -8865,8 +8874,8 @@ export function setUserName(value, { toastPersonaNameChange = true } = {}) {
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#your_name').text(name1);
     if (toastPersonaNameChange && power_user.persona_show_notifications && !isPersonaPanelOpen()) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.success(t`Your messages will now be sent as ${name1}`, t`Persona Changed`);
+
+        notyf.success(t`Your messages will now be sent as ${name1}`, t`Persona Changed`);
     }
     saveSettingsDebounced();
 }
@@ -8924,8 +8933,8 @@ export async function getSettings(initLoaderHandle = null) {
 
     if (!response.ok) {
         reloadLoop();
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.error(t`Settings could not be loaded after multiple attempts. Please try again later.`);
+
+        notyf.error(t`Settings could not be loaded after multiple attempts. Please try again later.`);
         throw new Error('Error getting settings');
     }
 
@@ -9136,8 +9145,8 @@ export async function saveSettings(loopCounter = 0) {
         await eventSource.emit(event_types.SETTINGS_UPDATED);
     } catch (error) {
         console.error('Error saving settings:', error);
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.error(t`Check the server connection and reload the page to prevent data loss.`, t`Settings could not be saved`);
+
+        notyf.error(t`Check the server connection and reload the page to prevent data loss.`, t`Settings could not be saved`);
     }
 }
 
@@ -9751,8 +9760,8 @@ async function displayChats(searchQuery, currentChat, displayName, avatarImg, se
         }
     } catch (error) {
         console.error('Error loading chats:', error);
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.error('Could not load chat data. Try reloading the page.');
+
+        notyf.error('Could not load chat data. Try reloading the page.');
     }
 }
 
@@ -9797,8 +9806,8 @@ export function selectRightMenuWithAnimation(selectedMenuId) {
 // @ts-expect-error TS(7006) FIXME: Parameter 'type' implicitly has an 'any' type.
 export function select_rm_info(type, charId, previousCharId = null) {
     if (!type) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.error(t`Invalid process (no 'type')`);
+
+        notyf.error(t`Invalid process (no 'type')`);
         return;
     }
     let displayName = '';
@@ -9807,25 +9816,25 @@ export function select_rm_info(type, charId, previousCharId = null) {
     }
 
     if (type === 'char_delete') {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.warning(t`Character Deleted: ${displayName}`);
+
+        notyf.warning(t`Character Deleted: ${displayName}`);
     }
     if (type === 'char_create') {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.success(t`Character Created: ${displayName}`);
+
+        notyf.success(t`Character Created: ${displayName}`);
     }
     if (type === 'group_create') {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.success(t`Group Created`);
+
+        notyf.success(t`Group Created`);
     }
     if (type === 'group_delete') {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.warning(t`Group Deleted`);
+
+        notyf.warning(t`Group Deleted`);
     }
 
     if (type === 'char_import') {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.success(t`Character Imported: ${displayName}`);
+
+        notyf.success(t`Character Imported: ${displayName}`);
     }
 
     selectRightMenuWithAnimation('rm_characters_block');
@@ -10410,8 +10419,8 @@ export async function callPopup(text, type, inputValue = '', {
 
     } catch (error) {
         console.error('Error in callPopup:', error);
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.error(t`An error occurred while opening the popup. Check console for details.`, t`Popup Error`);
+
+        notyf.error(t`An error occurred while opening the popup. Check console for details.`, t`Popup Error`);
         return Promise.resolve(null);
     }
 }
@@ -10661,8 +10670,8 @@ export async function deleteSwipe(swipeId = null, messageId = chat.length - 1) {
         swipeId = Number(swipeId);
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         if (!Number.isInteger(swipeId) || swipeId < 0) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.warning(t`Invalid swipe ID.`);
+    
+            notyf.warning(t`Invalid swipe ID.`);
             return;
         }
     }
@@ -10670,15 +10679,15 @@ export async function deleteSwipe(swipeId = null, messageId = chat.length - 1) {
     const message = chat[messageId];
     // @ts-expect-error TS(2339) FIXME: Property 'swipes' does not exist on type 'never'.
     if (!message || !Array.isArray(message.swipes) || !message.swipes.length) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.warning(t`No messages to delete swipes from.`);
+
+        notyf.warning(t`No messages to delete swipes from.`);
         return;
     }
 
     // @ts-expect-error TS(2339) FIXME: Property 'swipes' does not exist on type 'never'.
     if (message.swipes.length <= 1) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.warning(t`Can't delete the last swipe.`);
+
+        notyf.warning(t`Can't delete the last swipe.`);
         return;
     }
 
@@ -10689,8 +10698,8 @@ export async function deleteSwipe(swipeId = null, messageId = chat.length - 1) {
 
     // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     if (swipeId < 0 || swipeId >= message.swipes.length) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.warning(t`Invalid swipe ID: ${swipeId + 1}`);
+
+        notyf.warning(t`Invalid swipe ID: ${swipeId + 1}`);
         return;
     }
 
@@ -10936,8 +10945,8 @@ async function openCharacterWorldPopup() {
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const chid = $('#set_character_world').data('chid');
     if (menu_type != 'create' && chid === undefined) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.error('Does not have an Id for this character in world select menu.');
+
+        notyf.error('Does not have an Id for this character in world select menu.');
         return;
     }
 
@@ -11029,8 +11038,8 @@ function openAlternateGreetings() {
     const chid = $('.open_alternate_greetings').data('chid');
 
     if (menu_type != 'create' && chid === undefined) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.error('Does not have an Id for this character in editor menu.');
+
+        notyf.error('Does not have an Id for this character in editor menu.');
         return;
     } else {
         // If the character does not have alternate greetings, create an empty array
@@ -11188,13 +11197,13 @@ export async function createOrEditCharacter(e) {
     if ($('#form_create').attr('actiontype') == 'createcharacter') {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         if (String($('#character_name_pole').val()).length === 0) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.error(t`Name is required`);
+    
+            notyf.error(t`Name is required`);
             return;
         }
         if (is_group_generating || is_send_press) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.error(t`Cannot create characters while generating. Stop the request and try again.`, t`Creation aborted`);
+    
+            notyf.error(t`Cannot create characters while generating. Stop the request and try again.`, t`Creation aborted`);
             return;
         }
         try {
@@ -11314,8 +11323,8 @@ export async function createOrEditCharacter(e) {
             crop_data = undefined;
         } catch (error) {
             console.error('Error creating character', error);
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.error(t`Failed to create character`);
+    
+            notyf.error(t`Failed to create character`);
         }
     } else {
         try {
@@ -11382,8 +11391,8 @@ export async function createOrEditCharacter(e) {
             }
         } catch (error) {
             console.log(error);
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.error(t`Something went wrong while saving the character, or the image file provided was in an invalid format. Double check that the image is not a webp.`);
+    
+            notyf.error(t`Something went wrong while saving the character, or the image file provided was in an invalid format. Double check that the image is not a webp.`);
         }
     }
 }
@@ -11451,8 +11460,8 @@ export async function swipe(event, direction, {
     } else {
         //Only show an error if swipes are not hidden and a message is generating.
         if (isGenerating() && (swipes && !swipesHidden && (swipeState === SWIPE_STATE.NONE))) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.warning(t`Cannot swipe while generating. Stop the request and try again.`, t`Swipe aborted`);
+    
+            notyf.warning(t`Cannot swipe while generating. Stop the request and try again.`, t`Swipe aborted`);
             return;
         }
         //Only allow one concurrent swipe.
@@ -11650,8 +11659,8 @@ export async function swipe(event, direction, {
         //Load from swipes.
         if (syncSwipeToMes(mesId, newSwipeId) == false) {
             const errorMessage = t`When swiping ${direction} on message ${mesId}, syncSwipeToMes has returned false. Attempting to swipe back!`;
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.error(errorMessage);
+    
+            notyf.error(errorMessage);
 
             // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             chat[mesId].swipe_id = originalSwipeId;
@@ -11911,8 +11920,8 @@ export async function swipe(event, direction, {
         //Limit swipe_id to swipes.
         // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         if (newSwipeId > chat[mesId].swipes.length - 1) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.warning(`The swipe_id for message #${mesId} was ${newSwipeId}. It has been reset to ${chat[mesId].swipes.length - 1}.`);
+    
+            notyf.warning(`The swipe_id for message #${mesId} was ${newSwipeId}. It has been reset to ${chat[mesId].swipes.length - 1}.`);
             // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             chat[mesId].swipe_id = chat[mesId].swipes.length - 1;
             await endSwipe();
@@ -11927,8 +11936,8 @@ export async function swipe(event, direction, {
 
         //Minimum of zero.
         if (newSwipeId < 0) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.warning(`The swipe_id for message #${mesId} was ${newSwipeId}. It has been reset to zero.`);
+    
+            notyf.warning(`The swipe_id for message #${mesId} was ${newSwipeId}. It has been reset to zero.`);
             // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             chat[mesId].swipe_id = 0;
             await endSwipe();
@@ -12041,8 +12050,8 @@ export async function processDroppedFiles(files, data = new Map()) {
                 avatarFileNames.push(avatarFileName);
             }
         } else {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.warning(t`Unsupported file type: ` + file.name);
+    
+            notyf.warning(t`Unsupported file type: ` + file.name);
         }
     }
 
@@ -12091,8 +12100,8 @@ function selectImportedChar(charId) {
 // @ts-expect-error TS(7006) FIXME: Parameter 'file' implicitly has an 'any' type.
 async function importCharacter(file, { preserveFileName = '', importTags = false } = {}) {
     if (is_group_generating || is_send_press) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.error(t`Cannot import characters while generating. Stop the request and try again.`, t`Import aborted`);
+
+        notyf.error(t`Cannot import characters while generating. Stop the request and try again.`, t`Import aborted`);
         throw new Error('Cannot import character while generating');
     }
 
@@ -12142,11 +12151,11 @@ async function importCharacter(file, { preserveFileName = '', importTags = false
             $('#character_search_bar').val('').trigger('input');
 
             if (exists) {
-                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                toastr.success(t`Character Replaced: ${String(data.file_name).replace('.png', '')}`);
+        
+                notyf.success(t`Character Replaced: ${String(data.file_name).replace('.png', '')}`);
             } else {
-                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                toastr.success(t`Character Created: ${String(data.file_name).replace('.png', '')}`);
+        
+                notyf.success(t`Character Created: ${String(data.file_name).replace('.png', '')}`);
             }
             if (importTags) {
                 await importCharactersTags([avatarFileName]);
@@ -12156,8 +12165,8 @@ async function importCharacter(file, { preserveFileName = '', importTags = false
         }
     } catch (error) {
         console.error('Error importing character', error);
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.error(t`The file is likely invalid or corrupted.`, t`Could not import character`);
+
+        notyf.error(t`The file is likely invalid or corrupted.`, t`Could not import character`);
     }
 }
 
@@ -12252,8 +12261,8 @@ export async function renameGroupOrCharacterChat({ characterId, groupId, oldFile
         return;
     }
     if (equalsIgnoreCaseAndAccents(body.original_file, body.renamed_file)) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.warning(t`Name not accepted, as it is the same as before (ignoring case and accents).`, t`Rename Chat`);
+
+        notyf.warning(t`Name not accepted, as it is the same as before (ignoring case and accents).`, t`Rename Chat`);
         return;
     }
 
@@ -12348,8 +12357,8 @@ export async function closeCurrentChat() {
         await eventSource.emit(event_types.CHAT_CHANGED, getCurrentChatId());
         return true;
     } else {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.info(t`Please stop the message generation first.`);
+
+        notyf.info(t`Please stop the message generation first.`);
         return false;
     }
 }
@@ -12444,8 +12453,8 @@ export async function deleteCharacter(characterKey, { deleteChats = true } = {})
     for (const key of characterKey) {
         const character = characters.find(x => x.avatar == key);
         if (!character) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.warning(t`Character ${key} not found. Skipping deletion.`);
+    
+            notyf.warning(t`Character ${key} not found. Skipping deletion.`);
             continue;
         }
 
@@ -12463,8 +12472,8 @@ export async function deleteCharacter(characterKey, { deleteChats = true } = {})
         });
 
         if (!response.ok) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.error(`${response.status} ${response.statusText}`, t`Failed to delete character`);
+    
+            notyf.error(`${response.status} ${response.statusText}`, t`Failed to delete character`);
             continue;
         }
 
@@ -12643,22 +12652,22 @@ function addDebugFunctions() {
 
     registerDebugFunction('generationTest', 'Send a generation request', 'Generates text using the currently selected API.', async () => {
         const text = prompt('Input text:', 'Hello');
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.info('Working on it...');
+
+        notyf.info('Working on it...');
         // @ts-expect-error TS(2322) FIXME: Type 'string | null' is not assignable to type 'st... Remove this comment to see the full error message
         const message = await generateRaw({ prompt: text });
         alert(message);
     });
     registerDebugFunction('toggleEventTracing', 'Toggle event tracing', 'Useful to see what triggered a certain event.', () => {
         localStorage.setItem('eventTracing', localStorage.getItem('eventTracing') === 'true' ? 'false' : 'true');
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.info('Event tracing is now ' + (localStorage.getItem('eventTracing') === 'true' ? 'enabled' : 'disabled'));
+
+        notyf.info('Event tracing is now ' + (localStorage.getItem('eventTracing') === 'true' ? 'enabled' : 'disabled'));
     });
 
     registerDebugFunction('toggleRegenerateWarning', 'Toggle Ctrl+Enter regeneration confirmation', 'Toggle the warning when regenerating a message with a Ctrl+Enter hotkey.', () => {
         accountStorage.setItem('RegenerateWithCtrlEnter', accountStorage.getItem('RegenerateWithCtrlEnter') === 'true' ? 'false' : 'true');
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastr.info('Regenerate warning is now ' + (accountStorage.getItem('RegenerateWithCtrlEnter') === 'true' ? 'disabled' : 'enabled'));
+
+        notyf.info('Regenerate warning is now ' + (accountStorage.getItem('RegenerateWithCtrlEnter') === 'true' ? 'disabled' : 'enabled'));
     });
 
     registerDebugFunction('copySetup', 'Copy ST setup to clipboard [WIP]', 'Useful data when reporting bugs', async () => {
@@ -12682,11 +12691,11 @@ API Settings: ${JSON.stringify(getSettingsContents[getSettingsContents.main_api 
 
         try {
             await copyText(logMessage);
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.info('Your ST API setup data has been copied to the clipboard.');
+    
+            notyf.info('Your ST API setup data has been copied to the clipboard.');
         } catch (error) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.error('Failed to copy ST Setup to clipboard:', error);
+    
+            notyf.error('Failed to copy ST Setup to clipboard:', error);
         }
     });
 }
@@ -13117,8 +13126,8 @@ function initCharacterSearch() {
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     $('#delete_button').on('click', async function () {
         if (this_chid === undefined || !characters[this_chid]) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.warning('No character selected.');
+    
+            notyf.warning('No character selected.');
             return;
         }
 
@@ -13261,16 +13270,16 @@ function initCharacterSearch() {
                 // display error message
                 console.log(data.message);
                 await delay(250);
-                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                toastr.error(`Error: ${data.message}`);
+        
+                notyf.error(`Error: ${data.message}`);
                 return;
             } else {
                 const mimeType = format == 'txt' ? 'text/plain' : 'application/octet-stream';
                 // success, handle response data
                 console.log(data);
                 await delay(250);
-                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                toastr.success(data.message);
+        
+                notyf.success(data.message);
                 download(data.result, body.exportfilename, mimeType);
             }
         } catch (error) {
@@ -13278,8 +13287,8 @@ function initCharacterSearch() {
             // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             console.log(`An error has occurred: ${error.message}`);
             await delay(250);
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.error(`Error: ${error.message}`);
+    
+            notyf.error(`Error: ${error.message}`);
         }
     });
 
@@ -13394,8 +13403,8 @@ function initCharacterSearch() {
             //Attempting to regenerate a user message will instead generate a new message.
             // @ts-expect-error TS(7005) FIXME: Variable 'this_edit_mes_id' implicitly has an 'any... Remove this comment to see the full error message
             if (chat.length && chat.length - 1 === this_edit_mes_id && chat[this_edit_mes_id]?.is_user == false) {
-                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                toastr.warning(t`Finish the edit before starting a generation.`, t`You cannot regenerate the message you are editing.`);
+        
+                notyf.warning(t`Finish the edit before starting a generation.`, t`You cannot regenerate the message you are editing.`);
                 return;
             }
             if (is_send_press == false) {
@@ -13413,14 +13422,14 @@ function initCharacterSearch() {
             }
         } else if (id == 'option_continue') {
             if (swipeState == SWIPE_STATE.EDITING) {
-                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                toastr.warning(t`Confirm the edit to start a generation.`, t`You cannot send a message during a swipe-edit.`);
+        
+                notyf.warning(t`Confirm the edit to start a generation.`, t`You cannot send a message during a swipe-edit.`);
                 return;
             }
             // @ts-expect-error TS(7005) FIXME: Variable 'this_edit_mes_id' implicitly has an 'any... Remove this comment to see the full error message
             if (chat.length && chat.length - 1 === this_edit_mes_id) {
-                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                toastr.warning(t`Finish the edit before starting a generation.`, t`You cannot continue the message you are editing.`);
+        
+                notyf.warning(t`Finish the edit before starting a generation.`, t`You cannot continue the message you are editing.`);
                 return;
             }
 
@@ -13641,8 +13650,8 @@ function initCharacterSearch() {
                 // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
                 const text = chat[messageId].mes;
                 await copyText(text);
-                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                toastr.info('Copied!', '', { timeOut: 2000 });
+        
+                notyf.info('Copied!', '', { timeOut: 2000 });
             } catch (err) {
                 console.error('Failed to copy: ', err);
             }
@@ -13967,14 +13976,14 @@ function initCharacterSearch() {
 
             // @ts-expect-error TS(2345) FIXME: Argument of type 'string | undefined' is not assig... Remove this comment to see the full error message
             if (!['json', 'jsonl'].includes(format)) {
-                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                toastr.warning(t`Only JSON and JSONL files are supported for chat imports.`);
+        
+                notyf.warning(t`Only JSON and JSONL files are supported for chat imports.`);
                 continue;
             }
 
             if (selected_group && format === 'json') {
-                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                toastr.warning(t`Only SillyTavern's own format is supported for group chat imports. Sorry!`);
+        
+                notyf.warning(t`Only SillyTavern's own format is supported for group chat imports. Sorry!`);
                 continue;
             }
 
@@ -13989,8 +13998,8 @@ function initCharacterSearch() {
         }
 
         if (importedFileNames.length > 0) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            toastr.success(t`Successfully imported ${importedFileNames.length} chat(s).`);
+    
+            notyf.success(t`Successfully imported ${importedFileNames.length} chat(s).`);
         }
 
         // @ts-expect-error TS(2345) FIXME: Argument of type 'any[]' is not assignable to para... Remove this comment to see the full error message
@@ -14389,8 +14398,8 @@ function initCharacterSearch() {
                         window.open(source, '_blank');
                     }
                 } else {
-                    // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                    toastr.info('This character doesn\'t seem to have a source.');
+            
+                    notyf.info('This character doesn\'t seem to have a source.');
                 }
             } break;
             case 'replace_update': {
@@ -14443,8 +14452,8 @@ function initCharacterSearch() {
                                 await processDroppedFiles([file], data);
                                 await postReplace();
                             } catch {
-                                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                                toastr.error('Failed to replace the character card.', 'Something went wrong');
+                        
+                                notyf.error('Failed to replace the character card.', 'Something went wrong');
                             }
                         }
                         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
@@ -14537,8 +14546,8 @@ function initCharacterSearch() {
                     $(masterElement).val($(this).val()).trigger('input', { forced: true });
                 } else {
                     //if value not ok, warn and reset to last known valid value
-                    // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                    toastr.warning(`Invalid value. Must be between ${$(this).attr('min')} and ${$(this).attr('max')}`);
+            
+                    notyf.warning(`Invalid value. Must be between ${$(this).attr('min')} and ${$(this).attr('max')}`);
                     //newSlider.val(valueBeforeManualInput)
                     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                     $(this).val(valueBeforeManualInput);
@@ -14573,8 +14582,8 @@ function initCharacterSearch() {
                 $(masterElement).val($(this).val()).trigger('input', { forced: true });
             } else {
                 //if value not ok, warn and reset to last known valid value
-                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                toastr.warning(`Invalid value. Must be between ${$(this).attr('min')} and ${$(this).attr('max')}`);
+        
+                notyf.warning(`Invalid value. Must be between ${$(this).attr('min')} and ${$(this).attr('max')}`);
                 // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $(this).val(valueBeforeManualInput);
             }
