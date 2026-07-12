@@ -490,7 +490,7 @@ async function sendWelcomePanel(chats, expand = false) {
         // @ts-expect-error TS(2345) FIXME: Argument of type 'ChildNode | null' is not assigna... Remove this comment to see the full error message
         chatElement.append(fragment.firstChild);
         if (expand) {
-            chatElement[0]?.querySelectorAll('button.showMoreChats').forEach((button) => {
+            chatElement?.querySelectorAll('button.showMoreChats').forEach((button) => {
                 if (button instanceof HTMLButtonElement) {
                     button.click();
                 }
