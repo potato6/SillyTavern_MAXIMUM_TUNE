@@ -1,93 +1,25 @@
-import { Readable } from 'node:stream';
-import fetch from 'node-fetch';
 import express from 'express';
-import { pickBy } from 'es-toolkit/compat';
 
-import {
-    TEXTGEN_TYPES,
-    TOGETHERAI_KEYS,
-    OLLAMA_KEYS,
-    INFERMATICAI_KEYS,
-    OPENROUTER_KEYS,
-    VLLM_KEYS,
-    FEATHERLESS_KEYS,
-    OPENAI_KEYS,
-} from '../../constants.js';
-import { forwardFetchResponse, trimV1, getConfigValue } from '../../util.js';
+import { TEXTGEN_TYPES } from '../../constants.js';
+import { trimV1 } from '../../util.js';
 import { setAdditionalHeaders } from '../../additional-headers.js';
-import { createHash } from 'node:crypto';
+import { getProvider } from './providers/registry.js';
+import { PROVIDER_ENDPOINTS } from './providers/types.js';
+import { proxyRequest } from './providers/proxy-request.js';
 
 export const router = express.Router();
 
-/**
- * Special boy's steaming routine. Wrap this abomination into proper SSE stream.
- * @param {import('node-fetch').Response} jsonStream JSON stream
- * @param jsonStream.body
- * @param {import('express').Request} request Express request
- * @param {import('express').Response} response Express response
- * @returns {Promise<any>} Nothing valuable
- */
-async function parseOllamaStream(jsonStream: { body: import('node:stream').Readable | null }, request: import('express').Request, response: import('express').Response) {
-    try {
-        if (!jsonStream.body) {
-            throw new Error('No body in the response');
-        }
-
-        let partialData = '';
-        jsonStream.body.on('data', (data: Buffer) => {
-            const chunk = data.toString();
-            partialData += chunk;
-            while (true) {
-                let json;
-                try {
-                    json = JSON.parse(partialData);
-                } catch {                    break;
-                }
-                const text = json.response || '';
-                const thinking = json.thinking || '';
-                const chunk = { choices: [{ text, thinking }] };
-                response.write(`data: ${JSON.stringify(chunk)}\n\n`);
-                partialData = '';
-            }
-        });
-
-        request.socket.on('close', function () {
-            if (jsonStream.body instanceof Readable) jsonStream.body.destroy();
-            response.end();
-        });
-
-        jsonStream.body.on('end', () => {
-            console.info('Streaming request finished');
-            response.write('data: [DONE]\n\n');
-            response.end();
-        });
-    } catch (error) {
-        console.error('Error forwarding streaming response:', error);
-        if (!response.headersSent) {
-            return response.status(500).send({ error: true });
-        } else {
-            return response.end();
-        }
-    }
-}
+// ── Helpers ────────────────────────────────────────────────────────────────────
 
 /**
  * Abort KoboldCpp generation request.
- * @param {import('express').Request} request the generation request
- * @param {string} url Server base URL
- * @returns {Promise<void>} Promise resolving when we are done
  */
 async function abortKoboldCppRequest(request: import('express').Request, url: string) {
     try {
         console.info('Aborting Kobold generation...');
-        const args = {
-            method: 'POST',
-            headers: {},
-        };
-
+        const args = { method: 'POST' as const, headers: {} as Record<string, string> };
         setAdditionalHeaders(request, args, url);
-        const abortResponse = await fetch(`${url}/api/extra/abort`, args);
-
+        const abortResponse = await globalThis.fetch(`${url}/api/extra/abort`, args);
         if (!abortResponse.ok) {
             console.error('Error sending abort request to Kobold:', abortResponse.status, abortResponse.statusText);
         }
@@ -96,7 +28,8 @@ async function abortKoboldCppRequest(request: import('express').Request, url: st
     }
 }
 
-//************** Ooba/OpenAI text completions API
+// ── Status ─────────────────────────────────────────────────────────────────────
+
 router.post('/status', async function (request, response) {
     if (!request.body) return response.sendStatus(400);
 
@@ -107,80 +40,39 @@ router.post('/status', async function (request, response) {
 
         console.debug('Trying to connect to API', request.body);
         const baseUrl = trimV1(request.body.api_server);
+        const apiType = request.body.api_type;
 
-        const args = {
-            headers: { 'Content-Type': 'application/json' },
-        };
-
+        const args = { headers: { 'Content-Type': 'application/json' } as Record<string, string> };
         setAdditionalHeaders(request, args, baseUrl);
 
-        const apiType = request.body.api_type;
-        let url = baseUrl;
-        let result = '';
-
-        switch (apiType) {
-            case TEXTGEN_TYPES.GENERIC:
-            case TEXTGEN_TYPES.OOBA:
-            case TEXTGEN_TYPES.VLLM:
-            case TEXTGEN_TYPES.APHRODITE:
-            case TEXTGEN_TYPES.KOBOLDCPP:
-            case TEXTGEN_TYPES.LLAMACPP:
-            case TEXTGEN_TYPES.INFERMATICAI:
-            case TEXTGEN_TYPES.OPENROUTER:
-            case TEXTGEN_TYPES.FEATHERLESS:
-                url += '/v1/models';
-                break;
-            case TEXTGEN_TYPES.DREAMGEN:
-                url += '/api/openai/v1/models';
-                break;
-            case TEXTGEN_TYPES.MANCER:
-                url += '/oai/v1/models';
-                break;
-            case TEXTGEN_TYPES.TABBY:
-                url += '/v1/model/list';
-                break;
-            case TEXTGEN_TYPES.TOGETHERAI:
-                url += '/api/models?&info';
-                break;
-            case TEXTGEN_TYPES.OLLAMA:
-                url += '/api/tags';
-                break;
-            case TEXTGEN_TYPES.HUGGINGFACE:
-                url += '/info';
-                break;
+        // URL from centralised config — no switch.
+        const endpoints = PROVIDER_ENDPOINTS[apiType];
+        if (!endpoints) {
+            return response.status(400).send({ result: 'no_connection', response: `Unknown API type: ${apiType}` });
         }
+        const url = baseUrl + endpoints.status;
 
-        const modelsReply = await fetch(url, args);
+        const modelsReply = await globalThis.fetch(url, args);
         const isPossiblyLmStudio = modelsReply.headers.get('x-powered-by') === 'Express';
 
         if (!modelsReply.ok) {
-                    console.error(`Models endpoint returned HTTP ${modelsReply.status}`);
-                    return response.status(400).json({
-                        result: 'no_connection',
-                        response: `API returned an error: HTTP ${modelsReply.status}`
-                    });
-                }
+            console.error(`Models endpoint returned HTTP ${modelsReply.status}`);
+            return response.status(400).json({
+                result: 'no_connection',
+                response: `API returned an error: HTTP ${modelsReply.status}`,
+            });
+        }
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- API response shape is dynamic and heavily manipulated
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic API shape
         let data = await modelsReply.json() as any;
 
-        // Rewrap to OAI-like response
-        if (apiType === TEXTGEN_TYPES.TOGETHERAI && Array.isArray(data)) {
-            data = { data: data.map(x => ({ id: x.name, ...x })) };
+        // Let the provider rewrap the status response (TogetherAI, Ollama, HuggingFace…).
+        const provider = await getProvider(apiType);
+        if (provider.buildStatusResponse) {
+            data = provider.buildStatusResponse(data);
         }
 
-        if (apiType === TEXTGEN_TYPES.OLLAMA && Array.isArray(data.models)) {
-            data = { data: data.models.map((x: { name: string }) => ({
-                id: x.name,
-                ...x
-            })) };
-        }
-
-        if (apiType === TEXTGEN_TYPES.HUGGINGFACE) {
-            data = { data: [] };
-        }
-
-        if (!Array.isArray(data.data)) {
+        if (!data || !Array.isArray(data.data)) {
             console.error('Models response is not an array.');
             return response.sendStatus(400);
         }
@@ -188,45 +80,25 @@ router.post('/status', async function (request, response) {
         const modelIds = data.data.map((x: { id: string }) => x.id);
         console.info('Models available:', modelIds);
 
-        // Set result to the first model ID
-        result = modelIds[0] || 'Valid';
+        let result = modelIds[0] || 'Valid';
 
-        if (apiType === TEXTGEN_TYPES.OOBA && !isPossiblyLmStudio) {
-            try {
-                const modelInfoUrl = baseUrl + '/v1/internal/model/info';
-                const modelInfoReply = await fetch(modelInfoUrl, args);
-
-                if (modelInfoReply.ok) {
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- API response shape unknown
-                    const modelInfo = await modelInfoReply.json() as any;
-                    console.debug('Ooba model info:', modelInfo);
-
-                    const modelName = modelInfo?.model_name;
-                    result = modelName || result;
-                    response.setHeader('x-supports-tokenization', 'true');
-                }
-            } catch (error) {
-                console.error(`Failed to get Ooba model info: ${error}`);
+        // Ooba: extra model info (skip LM Studio look-alike).
+        if (apiType === TEXTGEN_TYPES.OOBA && !isPossiblyLmStudio && provider.getModelId) {
+            const modelName = await provider.getModelId(baseUrl, args.headers);
+            if (modelName) {
+                result = modelName;
+                response.setHeader('x-supports-tokenization', 'true');
             }
-        } else if (apiType === TEXTGEN_TYPES.TABBY) {
-            try {
-                const modelInfoUrl = baseUrl + '/v1/model';
-                const modelInfoReply = await fetch(modelInfoUrl, args);
+        }
 
-                if (modelInfoReply.ok) {
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- API response shape unknown
-                    const modelInfo = await modelInfoReply.json() as any;
-                    console.debug('Tabby model info:', modelInfo);
-
-                    const modelName = modelInfo?.id;
-                    result = modelName || result;
-                } else {
-                    // TabbyAPI returns an error 400 if a model isn't loaded
-
-                    result = 'None';
-                }
-            } catch (error) {
-                console.error(`Failed to get TabbyAPI model info: ${error}`);
+        // Tabby: extra model info.
+        if (apiType === TEXTGEN_TYPES.TABBY && provider.getModelId) {
+            const modelName = await provider.getModelId(baseUrl, args.headers);
+            if (modelName) {
+                result = modelName;
+            } else {
+                // TabbyAPI returns a 400 when no model is loaded.
+                result = 'None';
             }
         }
 
@@ -237,35 +109,37 @@ router.post('/status', async function (request, response) {
     }
 });
 
+// ── Props ──────────────────────────────────────────────────────────────────────
+
 router.post('/props', async function (request, response) {
     if (!request.body.api_server) return response.sendStatus(400);
 
     try {
         const baseUrl = trimV1(request.body.api_server);
-        const args = {
-            headers: {},
-        };
+        const apiType = request.body.api_type;
 
+        const args = { headers: {} as Record<string, string> };
         setAdditionalHeaders(request, args, baseUrl);
 
-        const apiType = request.body.api_type;
         let propsUrl = baseUrl + '/props';
         if (apiType === TEXTGEN_TYPES.LLAMACPP && request.body.model) {
             propsUrl += `?model=${encodeURIComponent(request.body.model)}`;
             console.debug(`Querying llama-server props with model parameter: ${request.body.model}`);
         }
-        const propsReply = await fetch(propsUrl, args);
 
-        if (!propsReply.ok) {
-            return response.sendStatus(400);
-        }
+        const propsReply = await globalThis.fetch(propsUrl, args);
+        if (!propsReply.ok) return response.sendStatus(400);
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- API response shape unknown, needs dynamic property access
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const props = await propsReply.json() as any;
-        // TEMPORARY: llama.cpp's /props endpoint has a bug which replaces the last newline with a \0
+
+        // TEMPORARY: llama.cpp's /props endpoint has a bug — trailing \0.
         if (apiType === TEXTGEN_TYPES.LLAMACPP && props.chat_template && props.chat_template.endsWith('\u0000')) {
             props.chat_template = props.chat_template.slice(0, -1) + '\n';
         }
+
+        // Lazy-load crypto — only needed for this one hash.
+        const { createHash } = await import('node:crypto');
         props.chat_template_hash = createHash('sha256').update(props.chat_template).digest('hex');
         console.debug(`Model properties: ${JSON.stringify(props)}`);
         return response.send(props);
@@ -274,6 +148,8 @@ router.post('/props', async function (request, response) {
         return response.sendStatus(500);
     }
 });
+
+// ── Generate ───────────────────────────────────────────────────────────────────
 
 router.post('/generate', async function (request, response) {
     if (!request.body) return response.sendStatus(400);
@@ -287,173 +163,52 @@ router.post('/generate', async function (request, response) {
         const baseUrl = request.body.api_server;
         console.debug(request.body);
 
+        // Abort handling.
         const controller = new AbortController();
         request.socket.removeAllListeners('close');
         request.socket.on('close', async function () {
-            if (request.body.api_type === TEXTGEN_TYPES.KOBOLDCPP && !response.writableEnded) {
+            if (apiType === TEXTGEN_TYPES.KOBOLDCPP && !response.writableEnded) {
                 await abortKoboldCppRequest(request, trimV1(baseUrl));
             }
-
             controller.abort();
         });
 
-        let url = trimV1(baseUrl);
-
-        switch (request.body.api_type) {
-            case TEXTGEN_TYPES.GENERIC:
-            case TEXTGEN_TYPES.VLLM:
-            case TEXTGEN_TYPES.FEATHERLESS:
-            case TEXTGEN_TYPES.APHRODITE:
-            case TEXTGEN_TYPES.OOBA:
-            case TEXTGEN_TYPES.TABBY:
-            case TEXTGEN_TYPES.KOBOLDCPP:
-            case TEXTGEN_TYPES.TOGETHERAI:
-            case TEXTGEN_TYPES.INFERMATICAI:
-            case TEXTGEN_TYPES.HUGGINGFACE:
-                url += '/v1/completions';
-                break;
-            case TEXTGEN_TYPES.DREAMGEN:
-                url += '/api/openai/v1/completions';
-                break;
-            case TEXTGEN_TYPES.MANCER:
-                url += '/oai/v1/completions';
-                break;
-            case TEXTGEN_TYPES.LLAMACPP:
-                url += '/completion';
-                break;
-            case TEXTGEN_TYPES.OLLAMA:
-                url += '/api/generate';
-                break;
-            case TEXTGEN_TYPES.OPENROUTER:
-                url += '/v1/chat/completions';
-                break;
+        // URL from centralised config — no switch.
+        const endpoints = PROVIDER_ENDPOINTS[apiType];
+        if (!endpoints) {
+            return response.status(400).send({ error: true, status: 'UNKNOWN', response: `Unknown API type: ${apiType}` });
         }
 
-        const args = {
-            method: 'POST',
-            body: JSON.stringify(request.body),
-            headers: { 'Content-Type': 'application/json' },
+        const url = trimV1(baseUrl) + endpoints.generate;
+        const provider = await getProvider(apiType);
+        const body = provider.buildGenerateBody ? provider.buildGenerateBody(request.body) : { ...request.body };
+
+        // Single proxy call — handles fetch, streaming, error mapping, response transforms.
+        await proxyRequest({
+            request,
+            response,
+            url,
+            body: JSON.stringify(body),
             signal: controller.signal,
-            timeout: 0,
-        };
-
-        setAdditionalHeaders(request, args, baseUrl);
-
-        if (request.body.api_type === TEXTGEN_TYPES.TOGETHERAI) {
-            request.body = pickBy(request.body, (_, key) => TOGETHERAI_KEYS.includes(key));
-            args.body = JSON.stringify(request.body);
-        }
-
-        if (request.body.api_type === TEXTGEN_TYPES.INFERMATICAI) {
-            request.body = pickBy(request.body, (_, key) => INFERMATICAI_KEYS.includes(key));
-            args.body = JSON.stringify(request.body);
-        }
-
-        if (request.body.api_type === TEXTGEN_TYPES.FEATHERLESS) {
-            request.body = pickBy(request.body, (_, key) => FEATHERLESS_KEYS.includes(key));
-            args.body = JSON.stringify(request.body);
-        }
-
-        if (request.body.api_type === TEXTGEN_TYPES.DREAMGEN) {
-            args.body = JSON.stringify(request.body);
-        }
-
-        if (request.body.api_type === TEXTGEN_TYPES.GENERIC) {
-            request.body = pickBy(request.body, (_, key) => OPENAI_KEYS.includes(key));
-            if (Array.isArray(request.body.stop)) { request.body.stop = request.body.stop.slice(0, 4); }
-            args.body = JSON.stringify(request.body);
-        }
-
-        if (request.body.api_type === TEXTGEN_TYPES.OPENROUTER) {
-            if (Array.isArray(request.body.provider) && request.body.provider.length > 0) {
-                request.body.provider = {
-                    allow_fallbacks: request.body.allow_fallbacks ?? true,
-                    order: request.body.provider,
-                };
-            } else {
-                delete request.body.provider;
-            }
-
-            if (Array.isArray(request.body.quantizations) && request.body.quantizations.length > 0) {
-                request.body.provider ??= {};
-                request.body.provider.quantizations = request.body.quantizations;
-            }
-
-            request.body = pickBy(request.body, (_, key) => OPENROUTER_KEYS.includes(key));
-            args.body = JSON.stringify(request.body);
-        }
-
-        if (request.body.api_type === TEXTGEN_TYPES.VLLM) {
-            request.body = pickBy(request.body, (_, key) => VLLM_KEYS.includes(key));
-            args.body = JSON.stringify(request.body);
-        }
-
-        if (request.body.api_type === TEXTGEN_TYPES.OLLAMA) {
-            // @ts-expect-error TS(2345) FIXME: Argument of type '-1' is not assignable to paramet... Remove this comment to see the full error message
-            const keepAlive = Number(getConfigValue('ollama.keepAlive', -1, 'number'));
-            // @ts-expect-error TS(2345) FIXME: Argument of type '-1' is not assignable to paramet... Remove this comment to see the full error message
-            const numBatch = Number(getConfigValue('ollama.batchSize', -1, 'number'));
-            if (numBatch > 0) {
-                request.body.num_batch = numBatch;
-            }
-            args.body = JSON.stringify({
-                model: request.body.model,
-                prompt: request.body.prompt,
-                stream: request.body.stream ?? false,
-                keep_alive: keepAlive,
-                raw: true,
-                options: pickBy(request.body, (_, key) => OLLAMA_KEYS.includes(key)),
-            });
-        }
-
-        if (request.body.api_type === TEXTGEN_TYPES.OLLAMA && request.body.stream) {
-            const stream = await fetch(url, args);
-            // @ts-expect-error TS(2345) FIXME: Argument of type 'Response' is not assignable to p... Remove this comment to see the full error message
-            parseOllamaStream(stream, request, response);
-        } else if (request.body.stream) {
-            const completionsStream = await fetch(url, args);
-            // Pipe remote SSE stream to Express response
-            await forwardFetchResponse(completionsStream, response);
-        } else {
-            const completionsReply = await fetch(url, args);
-
-            if (completionsReply.ok) {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any -- API response shape unknown, needs dynamic property access
-                const data = await completionsReply.json() as any;
-                console.debug('Endpoint response:', data);
-
-                // Map InfermaticAI response to OAI completions format
-                if (apiType === TEXTGEN_TYPES.INFERMATICAI) {
-                    data.choices = (data?.choices || []).map((choice: { message?: { content?: string }; text?: string; logprobs?: unknown; index?: unknown }) => ({
-                        text: choice?.message?.content || choice.text,
-                        logprobs: choice?.logprobs,
-                        index: choice?.index
-                    }));
-                }
-
-                return response.send(data);
-            } else {
-                const text = await completionsReply.text();
-                const errorBody = { error: true, status: completionsReply.status, response: text };
-
-                return !response.headersSent
-                    ? response.send(errorBody)
-                    : response.end();
-            }
-        }
+            stream: request.body.stream,
+            streamHandler: provider.stream,
+            transformResponse: provider.transformGenerateResponse,
+        });
     } catch (error) {
-        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
+        // @ts-expect-error TS(2571) — unknown catch
         const status = error?.status ?? error?.code ?? 'UNKNOWN';
-        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
+        // @ts-expect-error TS(2571) — unknown catch
         const text = error?.error ?? error?.statusText ?? error?.message ?? 'Unknown error on /generate endpoint';
-        const value = { error: true, status: status, response: text };
+        const value = { error: true, status, response: text };
         console.error('Endpoint error:', error);
 
-        return !response.headersSent
-            ? response.send(value)
-            : response.end();
+        return !response.headersSent ? response.send(value) : response.end();
     }
 });
+
+// ── Provider-specific sub-routers ─────────────────────────────────────────────
+// These expose distinct endpoints (download, caption-image, slots, etc.) that are
+// not covered by the generic BackendProvider interface.
 
 const ollama = express.Router();
 
@@ -465,13 +220,10 @@ ollama.post('/download', async function (request, response) {
         const url = String(request.body.api_server).replace(/\/$/, '');
         console.debug('Pulling Ollama model:', name);
 
-        const fetchResponse = await fetch(`${url}/api/pull`, {
+        const fetchResponse = await globalThis.fetch(`${url}/api/pull`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                name: name,
-                stream: false,
-            }),
+            body: JSON.stringify({ name, stream: false }),
         });
 
         if (!fetchResponse.ok) {
@@ -479,7 +231,7 @@ ollama.post('/download', async function (request, response) {
             return response.status(500).send({ error: true });
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- API response shape unknown
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         console.debug('Ollama pull response:', await fetchResponse.json() as any);
         return response.send({ ok: true });
     } catch (error) {
@@ -497,7 +249,7 @@ ollama.post('/caption-image', async function (request, response) {
         console.debug('Ollama caption request:', request.body);
         const baseUrl = trimV1(request.body.server_url);
 
-        const fetchResponse = await fetch(`${baseUrl}/api/generate`, {
+        const fetchResponse = await globalThis.fetch(`${baseUrl}/api/generate`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -514,12 +266,11 @@ ollama.post('/caption-image', async function (request, response) {
             return response.status(500).send({ error: true });
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- API response shape unknown
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const data = await fetchResponse.json() as any;
         console.debug('Ollama caption response:', data);
 
         const caption = data?.response || '';
-
         if (!caption) {
             console.error('Ollama caption is empty.');
             return response.status(500).send({ error: true });
@@ -536,16 +287,12 @@ const llamacpp = express.Router();
 
 llamacpp.post('/props', async function (request, response) {
     try {
-        if (!request.body.server_url) {
-            return response.sendStatus(400);
-        }
+        if (!request.body.server_url) return response.sendStatus(400);
 
         console.debug('LlamaCpp props request:', request.body);
         const baseUrl = trimV1(request.body.server_url);
 
-        const fetchResponse = await fetch(`${baseUrl}/props`, {
-            method: 'GET',
-        });
+        const fetchResponse = await globalThis.fetch(`${baseUrl}/props`, { method: 'GET' });
 
         if (!fetchResponse.ok) {
             console.error('LlamaCpp props error:', fetchResponse.status, fetchResponse.statusText);
@@ -554,7 +301,6 @@ llamacpp.post('/props', async function (request, response) {
 
         const data = await fetchResponse.json() as Record<string, unknown>;
         console.debug('LlamaCpp props response:', data);
-
         return response.send(data);
     } catch (error) {
         console.error(error);
@@ -564,30 +310,20 @@ llamacpp.post('/props', async function (request, response) {
 
 llamacpp.post('/slots', async function (request, response) {
     try {
-        if (!request.body.server_url) {
-            return response.sendStatus(400);
-        }
-        if (!/^(erase|info|restore|save)$/.test(request.body.action)) {
-            return response.sendStatus(400);
-        }
+        if (!request.body.server_url) return response.sendStatus(400);
+        if (!/^(erase|info|restore|save)$/.test(request.body.action)) return response.sendStatus(400);
 
         console.debug('LlamaCpp slots request:', request.body);
         const baseUrl = trimV1(request.body.server_url);
 
         let fetchResponse;
         if (request.body.action === 'info') {
-            fetchResponse = await fetch(`${baseUrl}/slots`, {
-                method: 'GET',
-            });
+            fetchResponse = await globalThis.fetch(`${baseUrl}/slots`, { method: 'GET' });
         } else {
-            if (!/^\d+$/.test(request.body.id_slot)) {
-                return response.sendStatus(400);
-            }
-            if (request.body.action !== 'erase' && !request.body.filename) {
-                return response.sendStatus(400);
-            }
+            if (!/^\d+$/.test(request.body.id_slot)) return response.sendStatus(400);
+            if (request.body.action !== 'erase' && !request.body.filename) return response.sendStatus(400);
 
-            fetchResponse = await fetch(`${baseUrl}/slots/${request.body.id_slot}?action=${request.body.action}`, {
+            fetchResponse = await globalThis.fetch(`${baseUrl}/slots/${request.body.id_slot}?action=${request.body.action}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -603,7 +339,6 @@ llamacpp.post('/slots', async function (request, response) {
 
         const data = await fetchResponse.json() as Record<string, unknown>;
         console.debug('LlamaCpp slots response:', data);
-
         return response.send(data);
     } catch (error) {
         console.error(error);
@@ -616,25 +351,22 @@ const tabby = express.Router();
 tabby.post('/download', async function (request, response) {
     try {
         const baseUrl = String(request.body.api_server).replace(/\/$/, '');
-
-        const args = {
+        const args: Record<string, unknown> = {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(request.body),
-            timeout: 0,
         };
 
         setAdditionalHeaders(request, args, baseUrl);
 
-        // Check key permissions
-        const permissionResponse = await fetch(`${baseUrl}/v1/auth/permission`, {
-            headers: args.headers,
+        // Check key permissions.
+        const permissionResponse = await globalThis.fetch(`${baseUrl}/v1/auth/permission`, {
+            headers: args.headers as Record<string, string>,
         });
 
         if (permissionResponse.ok) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any -- API response shape unknown
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const permissionJson = await permissionResponse.json() as any;
-
             if (permissionJson.permission !== 'admin') {
                 return response.status(403).send({ error: true });
             }
@@ -643,8 +375,7 @@ tabby.post('/download', async function (request, response) {
             return response.status(500).send({ error: true });
         }
 
-        const fetchResponse = await fetch(`${baseUrl}/v1/download`, args);
-
+        const fetchResponse = await globalThis.fetch(`${baseUrl}/v1/download`, args as RequestInit);
         if (!fetchResponse.ok) {
             console.error('Download error:', fetchResponse.status, fetchResponse.statusText);
             return response.status(500).send({ error: true });
