@@ -2761,7 +2761,7 @@ async function displayWorldEntries(name, data, navigation = navigation_option.no
                     const isCustomOrder = document.getElementById('world_info_sort_order').options[document.getElementById('world_info_sort_order').selectedIndex]?.getAttribute('data-rule') === 'custom';
                     if (!isCustomOrder) {
                         blocks.forEach(block => {
-                            block.querySelectorAll('.drag-handle').remove();
+                            block.querySelectorAll('.drag-handle').forEach(el => el.remove());
                         });
                     }
 
