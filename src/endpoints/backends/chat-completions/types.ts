@@ -1,15 +1,9 @@
 import type express from 'express';
 import { CHAT_COMPLETION_SOURCES } from '../../../constants.js';
+import type { ModelEntry } from '../common/model-cache.js';
+export type { ModelEntry };
 
 // ── Types ──────────────────────────────────────────────────────────────────────
-
-/**
- * A single model entry returned by listModels().
- */
-export interface ModelEntry {
-    id: string;
-    [key: string]: unknown;
-}
 
 /**
  * Provider feature flags.

@@ -1,7 +1,7 @@
 import { CHAT_COMPLETION_SOURCES } from '../../../../constants.js';
 import { readSecret, SECRET_KEYS } from '../../../secrets.js';
 import { createOAIChatProvider } from './oai-compat.js';
-import { proxyRequest } from '../proxy.js';
+import { proxyRequest } from '../../common/proxy.js';
 import type { ChatProvider, ModelEntry } from '../types.js';
 
 const API_WORKERS_AI = 'https://api.cloudflare.com/client/v4/accounts';

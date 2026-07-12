@@ -5,7 +5,7 @@ import { trimV1 } from '../../../util.js';
 import { setAdditionalHeaders } from '../../../additional-headers.js';
 import { getProvider } from './registry.js';
 import { PROVIDER_ENDPOINTS } from './types.js';
-import { proxyRequest } from './proxy.js';
+import { proxyRequest } from '../common/proxy.js';
 
 export const router = express.Router();
 

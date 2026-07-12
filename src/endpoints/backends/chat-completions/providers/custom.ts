@@ -1,6 +1,6 @@
 import { CHAT_COMPLETION_SOURCES, OPENAI_REASONING_EFFORT_MAP, OPENAI_REASONING_EFFORT_MODELS, OPENAI_FIXED_REASONING_EFFORT, OPENAI_VERBOSITY_MODELS } from '../../../../constants.js';
 import { readSecret, SECRET_KEYS } from '../../../secrets.js';
-import { proxyRequest } from '../proxy.js';
+import { proxyRequest } from '../../common/proxy.js';
 import type { ChatProvider, ModelEntry } from '../types.js';
 
 const provider: ChatProvider = {

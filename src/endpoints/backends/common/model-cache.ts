@@ -6,7 +6,10 @@
  * provider's /v1/models endpoint — no hardcoded model names anywhere.
  */
 
-import type { ModelEntry } from './types.js';
+export interface ModelEntry {
+    id: string;
+    [key: string]: unknown;
+}
 
 interface CacheEntry {
     models: ModelEntry[];
@@ -16,9 +19,6 @@ interface CacheEntry {
 const DEFAULT_TTL_MS = 60_000; // 60 seconds
 const store = new Map<string, CacheEntry>();
 
-/**
- * Build a stable cache key from the provider source and base URL.
- */
 function cacheKey(source: string, baseUrl: string): string {
     return `${source}:${baseUrl}`;
 }

@@ -11,7 +11,7 @@ import {
 } from '../../../../util.js';
 import { readSecret, SECRET_KEYS } from '../../../secrets.js';
 import { embedOpenRouterMedia } from '../../../../prompt-converters.js';
-import { proxyRequest } from '../proxy.js';
+import { proxyRequest } from '../../common/proxy.js';
 import type { ChatProvider, ModelEntry } from '../types.js';
 
 const API_OPENAI = 'https://api.openai.com/v1';

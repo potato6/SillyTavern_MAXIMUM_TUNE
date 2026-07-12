@@ -11,7 +11,7 @@ import {
 } from '../../tokenizers.js';
 import { readSecret, SECRET_KEYS } from '../../secrets.js';
 import { getChatProvider } from './registry.js';
-import { getCachedModels, setCachedModels } from './models.js';
+import { getCachedModels, setCachedModels } from '../common/model-cache.js';
 import type { ModelEntry } from './types.js';
 
 export const router = express.Router();

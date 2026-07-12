@@ -14,7 +14,7 @@
 
 import { getConfigValue, forwardFetchResponse } from '../../../../util.js';
 import type { ChatProvider, ModelEntry } from '../types.js';
-import { proxyRequest } from '../proxy.js';
+import { proxyRequest } from '../../common/proxy.js';
 
 export interface OAIConfig {
     /** CHAT_COMPLETION_SOURCES value. */

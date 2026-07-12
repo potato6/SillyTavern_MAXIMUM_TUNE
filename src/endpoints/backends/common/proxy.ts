@@ -17,6 +17,8 @@ export interface ProxyRequestOptions {
     signal: AbortSignal;
     /** Whether the upstream expects a streaming response. */
     stream: boolean;
+    /** Extra request headers (merged with Content-Type). */
+    headers?: Record<string, string>;
     /**
      * Provider-specific stream handler (e.g. Ollama's NDJSON → SSE parser).
      * When absent the raw fetch body is piped via forwardFetchResponse.
@@ -27,22 +29,23 @@ export interface ProxyRequestOptions {
         request: import('express').Request,
         response: import('express').Response,
     ) => Promise<void>;
-    /** Optional response transform for non-streaming replies (e.g. InfermaticAI). */
+    /** Optional response transform for non-streaming replies. */
     transformResponse?: (data: Record<string, unknown>) => Record<string, unknown>;
 }
 
 /**
- * Single-entry HTTP proxy for text-generation backends.
+ * Single-entry HTTP proxy for backend providers.
  *
  * Builds request args, attaches additional headers, dispatches the fetch,
  * and handles streaming / non-streaming / error paths in one place.
  */
 export async function proxyRequest(options: ProxyRequestOptions): Promise<void> {
     const { request, response, url, body, signal, stream, streamHandler, transformResponse } = options;
+    const extraHeaders = options.headers ?? {};
 
     const args: Record<string, unknown> = {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...extraHeaders },
         signal,
         body,
     };
@@ -63,7 +66,7 @@ export async function proxyRequest(options: ProxyRequestOptions): Promise<void> 
             if (reply.ok) {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 let data = await reply.json() as any;
-                console.debug('Endpoint response:', data);
+                console.debug('Backend response:', data);
 
                 if (transformResponse) {
                     data = transformResponse(data);
