@@ -3436,7 +3436,8 @@ function updatePosOrdDisplayHelper({ template, data, uid }) {
         case 3: posText = 'AN↓'; break;
         case 4: posText = `@D${entry.depth}`; break;
     }
-    template.find('.world_entry_form_position_value').textContent = `(${posText} ${entry.order})`;
+    const posEl = template?.querySelector('.world_entry_form_position_value');
+    if (posEl) posEl.textContent = `(${posText} ${entry.order})`;
 }
 
 /**
@@ -3581,7 +3582,7 @@ function handleProbabilityInputHelper({ probabilityInput, data, entry, name }) {
     });
     probabilityInput[0].value = entry.probability;
     probabilityInput[0].dispatchEvent(new CustomEvent('input', { detail: { noSave: true } }));
-    probabilityInput.style.width = 'calc(3em + 15px)';
+    probabilityInput[0].style.width = 'calc(3em + 15px)';
 }
 
 /**
