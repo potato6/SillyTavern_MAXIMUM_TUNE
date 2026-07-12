@@ -4113,8 +4113,10 @@ export async function getWorldEntry(name, data, entry) {
         if (selectiveInput[0]?.parentElement) selectiveInput[0].parentElement.style.display = 'none';
 
         // Character filter
-        const characterFilterLabel = editTemplate.querySelectorAll('label[for="characterFilter"] > small');
-        characterFilterLabel.textContent = entry.characterFilter?.isExclude ? 'Exclude Character(s)' : 'Filter to Character(s)';
+        const characterFilterLabel = editTemplate?.querySelector('label[for="characterFilter"] > small');
+        if (characterFilterLabel) {
+            characterFilterLabel.textContent = entry.characterFilter?.isExclude ? 'Exclude Character(s)' : 'Filter to Character(s)';
+        }
         const characterExclusionInput = editTemplate.querySelectorAll('input[name="character_exclusion"]');
         characterExclusionInput[0].dataset.uid = String(entry.uid);
         characterExclusionInput[0].addEventListener('input', async function (this: any, e: Event) {
@@ -4228,35 +4230,39 @@ export async function getWorldEntry(name, data, entry) {
         }
 
         // Group
-        const groupInput = editTemplate.querySelectorAll('input[name="group"]');
-        groupInput.setAttribute('data-uid', entry.uid);
-        // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
-        groupInput.on('input', async function (_, { noSave = false } = {}) {
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const uid = this.dataset.uid;
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const value = String(this.value).trim();
-            data.entries[uid].group = value;
-            setWIOriginalDataValue(data, uid, 'extensions.group', data.entries[uid].group);
-            if (!noSave) await saveWorldInfo(name, data);
-        });
-        groupInput.value = entry.group ?? ''.trigger('input', { noSave: true });
+        const groupInput = editTemplate?.querySelector('input[name="group"]');
+        if (groupInput) {
+            groupInput.dataset.uid = String(entry.uid);
+            groupInput.addEventListener('input', async function (this: any, e: Event) {
+                const detail = (e instanceof CustomEvent) ? e.detail : {};
+                const noSave = detail.noSave ?? false;
+                const uid = this.dataset.uid;
+                const value = String(this.value).trim();
+                data.entries[uid].group = value;
+                setWIOriginalDataValue(data, uid, 'extensions.group', data.entries[uid].group);
+                if (!noSave) await saveWorldInfo(name, data);
+            });
+            groupInput.value = entry.group ?? '';
+            groupInput.dispatchEvent(new CustomEvent('input', { detail: { noSave: true } }));
+        }
         setTimeout(() => createEntryInputAutocomplete(groupInput, getInclusionGroupCallback(data), { allowMultiple: true }), 1);
 
         // Inclusion priority
-        const groupOverrideInput = editTemplate.querySelectorAll('input[name="groupOverride"]');
-        groupOverrideInput.setAttribute('data-uid', entry.uid);
-        // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
-        groupOverrideInput.on('input', async function (_, { noSave = false } = {}) {
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const uid = this.dataset.uid;
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const value = this.checked;
-            data.entries[uid].groupOverride = value;
-            setWIOriginalDataValue(data, uid, 'extensions.group_override', data.entries[uid].groupOverride);
-            if (!noSave) await saveWorldInfo(name, data);
-        });
-        groupOverrideInput.checked = entry.groupOverride.trigger('input', { noSave: true });
+        const groupOverrideInput = editTemplate?.querySelector('input[name="groupOverride"]');
+        if (groupOverrideInput) {
+            groupOverrideInput.dataset.uid = String(entry.uid);
+            groupOverrideInput.addEventListener('input', async function (this: any, e: Event) {
+                const detail = (e instanceof CustomEvent) ? e.detail : {};
+                const noSave = detail.noSave ?? false;
+                const uid = this.dataset.uid;
+                const value = this.checked;
+                data.entries[uid].groupOverride = value;
+                setWIOriginalDataValue(data, uid, 'extensions.group_override', data.entries[uid].groupOverride);
+                if (!noSave) await saveWorldInfo(name, data);
+            });
+            groupOverrideInput.checked = !!entry.groupOverride;
+            groupOverrideInput.dispatchEvent(new CustomEvent('input', { detail: { noSave: true } }));
+        }
 
         // Group weight
         handleNumberInputHelper({
@@ -4283,38 +4289,43 @@ export async function getWorldEntry(name, data, entry) {
         handleMatchCheckboxHelper({ template: editTemplate, entry, fieldName: 'preventRecursion', data, name });
 
         // Delay until recursion
-        const delayUntilRecursionInput = editTemplate.querySelectorAll('input[name="delay_until_recursion"]');
-        delayUntilRecursionInput.setAttribute('data-uid', entry.uid);
-        const delayUntilRecursionLevelInput = editTemplate.querySelectorAll('input[name="delayUntilRecursionLevel"]');
-        delayUntilRecursionLevelInput.setAttribute('data-uid', entry.uid);
-        // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
-        delayUntilRecursionInput.on('input', async function (_, { noSave = false } = {}) {
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const uid = this.dataset.uid;
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const toggled = this.checked;
-            const value = toggled ? data.entries[uid].delayUntilRecursion || true : false;
-            if (!toggled) delayUntilRecursionLevelInput.value = '';
-            data.entries[uid].delayUntilRecursion = value;
-            setWIOriginalDataValue(data, uid, 'extensions.delay_until_recursion', data.entries[uid].delayUntilRecursion);
-            if (!noSave) await saveWorldInfo(name, data);
-        });
-        delayUntilRecursionInput.checked = entry.delayUntilRecursion.trigger('input', { noSave: true });
-        // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
-        delayUntilRecursionLevelInput.on('input', async function (_, { noSave = false } = {}) {
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const uid = this.dataset.uid;
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const content = this.value;
-            const value = content === '' ? (typeof data.entries[uid].delayUntilRecursion === 'boolean' ? data.entries[uid].delayUntilRecursion : true)
-                : content === 1 ? true
-                    : !isNaN(Number(content)) ? Number(content)
-                        : false;
-            data.entries[uid].delayUntilRecursion = value;
-            setWIOriginalDataValue(data, uid, 'extensions.delay_until_recursion', data.entries[uid].delayUntilRecursion);
-            if (!noSave) await saveWorldInfo(name, data);
-        });
-        delayUntilRecursionLevelInput.value = ['number', 'string'].includes(typeof entry.delayUntilRecursion ? entry.delayUntilRecursion : '').trigger('input', { noSave: true });
+        const delayUntilRecursionInput = editTemplate?.querySelector('input[name="delay_until_recursion"]');
+        const delayUntilRecursionLevelInput = editTemplate?.querySelector('input[name="delayUntilRecursionLevel"]');
+        if (delayUntilRecursionInput) {
+            delayUntilRecursionInput.dataset.uid = String(entry.uid);
+            delayUntilRecursionInput.addEventListener('input', async function (this: any, e: Event) {
+                const detail = (e instanceof CustomEvent) ? e.detail : {};
+                const noSave = detail.noSave ?? false;
+                const uid = this.dataset.uid;
+                const toggled = this.checked;
+                const value = toggled ? data.entries[uid].delayUntilRecursion || true : false;
+                if (!toggled && delayUntilRecursionLevelInput) delayUntilRecursionLevelInput.value = '';
+                data.entries[uid].delayUntilRecursion = value;
+                setWIOriginalDataValue(data, uid, 'extensions.delay_until_recursion', data.entries[uid].delayUntilRecursion);
+                if (!noSave) await saveWorldInfo(name, data);
+            });
+            delayUntilRecursionInput.checked = !!entry.delayUntilRecursion;
+            delayUntilRecursionInput.dispatchEvent(new CustomEvent('input', { detail: { noSave: true } }));
+        }
+        if (delayUntilRecursionLevelInput) {
+            delayUntilRecursionLevelInput.dataset.uid = String(entry.uid);
+            delayUntilRecursionLevelInput.addEventListener('input', async function (this: any, e: Event) {
+                const detail = (e instanceof CustomEvent) ? e.detail : {};
+                const noSave = detail.noSave ?? false;
+                const uid = this.dataset.uid;
+                const content = this.value;
+                const value = content === '' ? (typeof data.entries[uid].delayUntilRecursion === 'boolean' ? data.entries[uid].delayUntilRecursion : true)
+                    : content === '1' ? true
+                        : !isNaN(Number(content)) ? Number(content)
+                            : false;
+                data.entries[uid].delayUntilRecursion = value;
+                setWIOriginalDataValue(data, uid, 'extensions.delay_until_recursion', data.entries[uid].delayUntilRecursion);
+                if (!noSave) await saveWorldInfo(name, data);
+            });
+            const val = ['number', 'string'].includes(typeof entry.delayUntilRecursion) ? entry.delayUntilRecursion : '';
+            delayUntilRecursionLevelInput.value = val;
+            delayUntilRecursionLevelInput.dispatchEvent(new CustomEvent('input', { detail: { noSave: true } }));
+        }
 
         // Boolean selects
         handleBooleanSelectHelper({ selectElem: editTemplate.querySelectorAll('select[name="caseSensitive"]'), entry, entryKey: 'caseSensitive', data, name });
@@ -4330,46 +4341,48 @@ export async function getWorldEntry(name, data, entry) {
         handleMatchCheckboxHelper({ template: editTemplate, entry, fieldName: 'matchCreatorNotes', data, name });
 
         // Automation ID
-        const automationIdInput = editTemplate.querySelectorAll('input[name="automationId"]');
-        automationIdInput.setAttribute('data-uid', entry.uid);
-        // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
-        automationIdInput.on('input', async function (_, { noSave = false } = {}) {
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const uid = this.dataset.uid;
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const value = this.value;
-            data.entries[uid].automationId = value;
-            setWIOriginalDataValue(data, uid, 'extensions.automation_id', data.entries[uid].automationId);
-            if (!noSave) await saveWorldInfo(name, data);
-        });
-        automationIdInput.value = entry.automationId ?? ''.trigger('input', { noSave: true });
+        const automationIdInput = editTemplate?.querySelector('input[name="automationId"]');
+        if (automationIdInput) {
+            automationIdInput.dataset.uid = String(entry.uid);
+            automationIdInput.addEventListener('input', async function (this: any, e: Event) {
+                const detail = (e instanceof CustomEvent) ? e.detail : {};
+                const noSave = detail.noSave ?? false;
+                const uid = this.dataset.uid;
+                const value = this.value;
+                data.entries[uid].automationId = value;
+                setWIOriginalDataValue(data, uid, 'extensions.automation_id', data.entries[uid].automationId);
+                if (!noSave) await saveWorldInfo(name, data);
+            });
+            automationIdInput.value = entry.automationId ?? '';
+            automationIdInput.dispatchEvent(new CustomEvent('input', { detail: { noSave: true } }));
+        }
         setTimeout(() => createEntryInputAutocomplete(automationIdInput, getAutomationIdCallback(data)), 1);
 
         // Generation Type Triggers
-        const generationTypeTriggers = editTemplate.querySelectorAll('select[name="triggers"]');
-        generationTypeTriggers.setAttribute('data-uid', entry.uid);
-        // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
-        generationTypeTriggers.on('input', async function (_, { noSave = false } = {}) {
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const uid = this.dataset.uid;
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const value = this.value;
-            data.entries[uid].triggers = Array.isArray(value) ? value : [];
-            setWIOriginalDataValue(data, uid, 'extensions.triggers', data.entries[uid].triggers);
-            if (!noSave) await saveWorldInfo(name, data);
-        });
-        if (!isMobile()) {
-            new TomSelect(generationTypeTriggers[0], {
-                maxItems: null,
-                placeholder: t`All types (default)`,
-                allowEmptyOption: true,
-                plugins: ['remove_button'],
+        const generationTypeTriggers = editTemplate?.querySelector('select[name="triggers"]');
+        if (generationTypeTriggers) {
+            generationTypeTriggers.dataset.uid = String(entry.uid);
+            generationTypeTriggers.addEventListener('input', async function (this: any, e: Event) {
+                const detail = (e instanceof CustomEvent) ? e.detail : {};
+                const noSave = detail.noSave ?? false;
+                const uid = this.dataset.uid;
+                const value = this.value;
+                data.entries[uid].triggers = Array.isArray(value) ? value : [];
+                setWIOriginalDataValue(data, uid, 'extensions.triggers', data.entries[uid].triggers);
+                if (!noSave) await saveWorldInfo(name, data);
             });
+            if (!isMobile()) {
+                new TomSelect(generationTypeTriggers, {
+                    maxItems: null,
+                    placeholder: t`All types (default)`,
+                    allowEmptyOption: true,
+                    plugins: ['remove_button'],
+                });
+            }
+            generationTypeTriggers.value = Array.isArray(entry.triggers) ? entry.triggers : [];
+            generationTypeTriggers.dispatchEvent(new CustomEvent('input', { detail: { noSave: true } }));
+            generationTypeTriggers.dispatchEvent(new Event('change', { bubbles: true }));
         }
-        generationTypeTriggers
-            .val(Array.isArray(entry.triggers) ? entry.triggers : [])
-            .trigger('input', { noSave: true })
-            .dispatchEvent(new Event('change', { bubbles: true }));
 
         // Ignore budget
         const ignoreBudgetInput = editTemplate.querySelectorAll('input[name="ignoreBudget"]');
