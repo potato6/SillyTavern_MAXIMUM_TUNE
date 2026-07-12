@@ -19,6 +19,7 @@ import helmet from 'helmet';
 import bodyParser from 'body-parser';
 
 import { addMissingConfigValues } from './config-init.js';
+import { serverDirectory } from './server-directory.js';
 import { color, urlHostnameToIPv6, getHasIP } from './util.js';
 
 // Express routers
@@ -67,12 +68,6 @@ import { router as dataMaidRouter } from './endpoints/data-maid.js';
 import { router as backupsRouter } from './endpoints/backups.js';
 import { router as imageMetadataRouter } from './endpoints/image-metadata.js';
 import { router as volcengineRouter } from './endpoints/volcengine.js';
-
-// ── Server directory ──────────────────────────────────────────────────────────
-const moduleDir = import.meta.dirname ?? path.dirname(fileURLToPath(import.meta.url));
-const dir = path.dirname(moduleDir);
-/** In compiled binary, moduleDir is /$bunfs/root (virtual FS). Fall back to real cwd. */
-export const serverDirectory = dir.startsWith('/$bunfs') ? process.cwd() : dir;
 
 // ── Server events ─────────────────────────────────────────────────────────────
 /**
