@@ -3781,7 +3781,7 @@ function setCommentPlaceholder(keys, commentInput) {
 export async function getWorldEntry(name, data, entry) {
     if (!data.entries[entry.uid]) return;
 
-    const headerTemplate = WI_ENTRY_HEADER_TEMPLATE?.cloneNode(true);
+    const headerTemplate = WI_ENTRY_HEADER_TEMPLATE?.cloneNode(true) as HTMLElement | null;
     if (headerTemplate) {
         headerTemplate.dataset.uid = String(entry.uid);
         headerTemplate.setAttribute('uid', String(entry.uid));
@@ -3809,8 +3809,10 @@ export async function getWorldEntry(name, data, entry) {
         setWIOriginalDataValue(data, uid, 'comment', data.entries[uid].comment);
         if (!data_noSave) await saveWorldInfo(name, data);
     });
-    commentInput[0].value = entry.comment;
-    commentInput[0].dispatchEvent(new CustomEvent('input', { detail: { skipReset: true, noSave: true } }));
+    if (commentInput) {
+        commentInput.value = entry.comment;
+        commentInput.dispatchEvent(new CustomEvent('input', { detail: { skipReset: true, noSave: true } }));
+    }
 
     // Order
     const orderInput = headerTemplate.querySelectorAll('input[name="order"]');
@@ -3829,7 +3831,7 @@ export async function getWorldEntry(name, data, entry) {
     });
     orderInput[0].value = entry.order;
     orderInput[0].dispatchEvent(new CustomEvent('input', { detail: { noSave: true } }));
-    orderInput.style.width = 'calc(3em + 15px)';
+    orderInput[0].style.width = 'calc(3em + 15px)';
 
     // Probability
     handleProbabilityInputHelper({ probabilityInput: headerTemplate.querySelectorAll('input[name="probability"]'), data, entry, name });
@@ -3839,7 +3841,7 @@ export async function getWorldEntry(name, data, entry) {
         inputElem: headerTemplate.querySelectorAll('input[name="depth"]'),
         entry, entryKey: 'depth', data, name, min: 0, max: MAX_SCAN_DEPTH, clamp: false,
     });
-    headerTemplate.querySelectorAll('input[name="depth"]').css('width', 'calc(3em + 15px)');
+    headerTemplate.querySelector('input[name="depth"]').style.width = 'calc(3em + 15px)';
 
     // Position
     if (entry.position === undefined) entry.position = 0;
@@ -3853,15 +3855,15 @@ export async function getWorldEntry(name, data, entry) {
         const value = Number(this.value);
         const data_noSave = e instanceof CustomEvent ? e.detail?.noSave : false;
         data.entries[uid].position = !isNaN(value) ? value : 0;
-        const depthInput = headerTemplate.querySelectorAll('input[name="depth"]');
+        const depthInput = headerTemplate?.querySelector('input[name="depth"]');
         if (value === world_info_position.atDepth) {
-            depthInput.disabled = false;
-            depthInput.style.visibility = 'visible';
+            if (depthInput) depthInput.disabled = false;
+            if (depthInput) depthInput.style.visibility = 'visible';
             const role = Number(this.options[this.selectedIndex]?.getAttribute('data-role'));
             data.entries[uid].role = role;
         } else {
-            depthInput.disabled = true;
-            depthInput.style.visibility = 'hidden';
+            if (depthInput) depthInput.disabled = true;
+            if (depthInput) depthInput.style.visibility = 'hidden';
             data.entries[uid].role = null;
         }
         updatePosOrdDisplayHelper({ template: headerTemplate, data, uid });
