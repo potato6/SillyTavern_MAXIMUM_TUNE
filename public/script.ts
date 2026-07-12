@@ -14242,7 +14242,7 @@ function initCharacterSearch() {
                 const container = document.querySelector('.zoomed_avatar_container');
                 if (container) {
                     const img = container.querySelector('img');
-                    container.addEventListener('mousemove', function (e) {
+                    container.addEventListener('mousemove', function (e: MouseEvent) {
                         const rect = container.getBoundingClientRect();
                         const x = ((e.clientX - rect.left) / rect.width) * 100;
                         const y = ((e.clientY - rect.top) / rect.height) * 100;
