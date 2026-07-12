@@ -3497,7 +3497,8 @@ function fillCharacterAndTagOptionsHelper({ characterFilter, entry }) {
  */
 // @ts-expect-error TS(7031) FIXME: Binding element 'characterFilter' implicitly has a... Remove this comment to see the full error message
 function handleCharacterFilterChangeHelper({ characterFilter, data, entry, name }) {
-    characterFilter[0].addEventListener('mousedown', async function (this: any, e: Event) {
+    if (!characterFilter) return;
+    characterFilter.addEventListener('mousedown', async function (this: any, e: Event) {
         if (world_names.length === 0) {
             e.preventDefault();
             return;
@@ -3526,7 +3527,7 @@ function handleCharacterFilterChangeHelper({ characterFilter, data, entry, name 
         setWIOriginalDataValue(data, uid, 'character_filter', data.entries[uid].characterFilter);
         await saveWorldInfo(name, data);
     });
-    characterFilter[0].addEventListener('change', async function (this: any) {
+    characterFilter.addEventListener('change', async function (this: any) {
         if (world_names.length === 0) {
             return;
         }
@@ -4146,11 +4147,13 @@ export async function getWorldEntry(name, data, entry) {
         characterExclusionInput[0].checked = entry.characterFilter?.isExclude ?? false;
         characterExclusionInput[0].dispatchEvent(new CustomEvent('input', { detail: { noSave: true } }));
 
-        const characterFilter = editTemplate.querySelectorAll('select[name="characterFilter"]');
-        characterFilter[0].setAttribute('data-uid', entry.uid);
-        initCharacterFilterSelect2Helper(characterFilter);
-        fillCharacterAndTagOptionsHelper({ characterFilter, entry });
-        handleCharacterFilterChangeHelper({ characterFilter, data, entry, name });
+        const characterFilter = editTemplate.querySelector('select[name="characterFilter"]');
+        if (characterFilter) {
+            characterFilter.dataset.uid = String(entry.uid);
+            initCharacterFilterSelect2Helper(characterFilter);
+            fillCharacterAndTagOptionsHelper({ characterFilter, entry });
+            handleCharacterFilterChangeHelper({ characterFilter, data, entry, name });
+        }
 
         // Content
         const counter = editTemplate.querySelectorAll('.world_entry_form_token_counter');
