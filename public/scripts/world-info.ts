@@ -6523,15 +6523,15 @@ export function onWorldInfoChange(args, text) {
             // @ts-expect-error TS(7006) FIXME: Parameter 'worldName' implicitly has an 'any' type... Remove this comment to see the full error message
             slashInputSplitText.forEach((worldName) => {
                 const wiElement = getWIElement(worldName);
-                if (wiElement.length > 0) {
-                    const name = wiElement.text();
+                if (wiElement instanceof HTMLOptionElement) {
+                    const name = wiElement.textContent;
                     switch (args.state) {
                         case 'off': {
                             // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
                             if (selected_world_info.includes(name)) {
                                 // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
                                 selected_world_info.splice(selected_world_info.indexOf(name), 1);
-                                wiElement.prop('selected', false);
+                                wiElement.selected = false;
                                 // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                                 if (!silent) notyf.success(t`Deactivated world: ${name}`);
                             } else {
@@ -6545,13 +6545,13 @@ export function onWorldInfoChange(args, text) {
                             if (selected_world_info.includes(name)) {
                                 // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
                                 selected_world_info.splice(selected_world_info.indexOf(name), 1);
-                                wiElement.prop('selected', false);
+                                wiElement.selected = false;
                                 // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                                 if (!silent) notyf.success(t`Deactivated world: ${name}`);
                             } else {
                                 // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
                                 selected_world_info.push(name);
-                                wiElement.prop('selected', true);
+                                wiElement.selected = true;
                                 // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                                 if (!silent) notyf.success(t`Activated world: ${name}`);
                             }
@@ -6561,7 +6561,7 @@ export function onWorldInfoChange(args, text) {
                         default: {
                             // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
                             selected_world_info.push(name);
-                            wiElement.prop('selected', true);
+                            wiElement.selected = true;
                             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                             if (!silent) notyf.success(t`Activated world: ${name}`);
                         }
@@ -6593,7 +6593,7 @@ export function onWorldInfoChange(args, text) {
                     tempWorldInfo.push(existingWorldName);
                 } else {
                     const wiElement = getWIElement(existingWorldName);
-                    wiElement.prop('selected', false);
+                    if (wiElement instanceof HTMLOptionElement) wiElement.selected = false;
                     // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                     notyf.error(t`The world with ${existingWorldName} is invalid or corrupted.`);
                 }
