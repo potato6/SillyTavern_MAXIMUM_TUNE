@@ -1054,19 +1054,14 @@ export async function resetScrollHeight(element) {
 export async function initScrollHeight(element) {
     await delay(1);
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const curHeight = Number(element.getComputedStyle?.(el).height.replace('px', ''));
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const curScrollHeight = Number(element.prop('scrollHeight'));
-    const diff = curScrollHeight - curHeight;
+    if (!element) return;
 
-    if (diff < 3) { return; } //happens when the div isn't loaded yet
+    const curScrollHeight = Number(element.scrollHeight);
 
-    const newHeight = curHeight + diff + 3; //the +3 here is to account for padding/line-height on text inputs
-    //console.log(`init height to ${newHeight}`);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    if (curScrollHeight < 3) { return; } //happens when the div isn't loaded yet
+
+    const newHeight = curScrollHeight + 3; //the +3 here is to account for padding/line-height on text inputs
     element.style.height = '';
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     element.style.height = `${newHeight}px`;
     //resetScrollHeight(element);
 }
