@@ -2765,8 +2765,10 @@ async function displayWorldEntries(name, data, navigation = navigation_option.no
                         });
                     }
 
-                    worldEntriesList.append(keywordHeaders);
-                    worldEntriesList.append(blocks);
+                    if (worldEntriesList) {
+                        worldEntriesList.insertAdjacentHTML('beforeend', keywordHeaders);
+                        worldEntriesList.append(...blocks);
+                    }
                 } catch (error) {
                     console.error('Error while rendering WI entries:', error);
                 }
