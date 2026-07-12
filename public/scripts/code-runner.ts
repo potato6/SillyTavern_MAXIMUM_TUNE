@@ -36,13 +36,34 @@ export function removeExecuteButtons() {
 }
 
 function addButton(block, lang) {
+    if (lang === 'html') {
+        // HTML blocks: auto-render at full size, button toggles preview
+        renderHTML(block, true);
+        const btn = document.createElement('i');
+        btn.title = 'Hide preview';
+        btn.className = 'code-runner-button fa-solid fa-pause';
+        btn.addEventListener('click', () => {
+            const existing = block.parentElement.querySelector('.code-output');
+            if (existing) {
+                existing.remove();
+                btn.className = 'code-runner-button fa-solid fa-play';
+                btn.title = 'Show preview';
+            } else {
+                renderHTML(block, true);
+                btn.className = 'code-runner-button fa-solid fa-pause';
+                btn.title = 'Hide preview';
+            }
+        });
+        block.appendChild(btn);
+        return;
+    }
+
     const btn = document.createElement('i');
-    btn.title = lang === 'html' ? 'Render HTML' : 'Run code';
+    btn.title = 'Run code';
     btn.className = 'code-runner-button fa-solid fa-play';
     btn.addEventListener('click', () => {
         if (lang === 'javascript') runJS(block);
         else if (lang === 'stscript') runST(block);
-        else if (lang === 'html') renderHTML(block);
     });
     block.appendChild(btn);
 }
@@ -162,7 +183,7 @@ async function runST(block) {
 
 // ── HTML rendering ────────────────────────────────────────────────────────
 
-function renderHTML(block) {
+function renderHTML(block, fullSize = false) {
     const existing = block.parentElement.querySelector('.code-output');
     if (existing) existing.remove();
 
@@ -184,7 +205,7 @@ function renderHTML(block) {
 
     const iframe = document.createElement('iframe');
     iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin');
-    iframe.style.cssText = 'width:100%;height:200px;border:1px solid var(--border_color);border-radius:4px;margin-top:4px;background:#fff';
+    iframe.style.cssText = `width:100%;height:${fullSize ? '500' : '200'}px;border:1px solid var(--border_color);border-radius:4px;margin-top:4px;background:#fff`;
     iframe.srcdoc = html;
 
     container.append(clear, expand, iframe);
