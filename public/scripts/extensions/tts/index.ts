@@ -111,12 +111,10 @@ export function registerTtsProvider(name: any, provider: any) {
     if (!provider || typeof provider !== 'function') {
         throw new Error(`TTS provider ${name} is not a valid provider class.`);
     }
-    // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-    if (ttsProviders[name]) {
+    if (getTtsProviders()[name]) {
         throw new Error(`TTS provider ${name} is already registered.`);
     }
-    // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-    ttsProviders[name] = provider;
+    getTtsProviders()[name] = provider;
     console.info(`Registered TTS provider: ${name}`);
     $('#tts_provider').append($('<option />').val(name).text(name));
 
@@ -127,7 +125,11 @@ export function registerTtsProvider(name: any, provider: any) {
     }
 }
 
-const ttsProviders = {
+let _ttsProviders: any = null;
+
+function getTtsProviders() {
+    if (!_ttsProviders) {
+        _ttsProviders = {
     AllTalk: AllTalkTtsProvider,
     Azure: AzureTtsProvider,
     Chatterbox: ChatterboxTtsProvider,
@@ -157,6 +159,9 @@ const ttsProviders = {
     XTTSv2: XTTSTtsProvider,
     Volcengine: VolcengineTtsProvider,
 };
+    }
+    return _ttsProviders;
+}
 let ttsProvider: any;
 let ttsProviderName: any;
 
@@ -1150,8 +1155,9 @@ async function loadTtsProvider(provider: any) {
     // @ts-expect-error TS(2339): Property 'currentProvider' does not exist on type ... Remove this comment to see the full error message
     extension_settings.tts.currentProvider = provider;
     ttsProviderName = provider;
-    // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-    ttsProvider = new ttsProviders[provider];
+    // Parentheses are CRITICAL: new getTtsProviders()[provider] parses as (new getTtsProviders())[provider]
+    // which returns the CLASS, not an instance. We need new (getTtsProviders()[provider])
+    ttsProvider = new (getTtsProviders()[provider]);
 
     // Init provider settings
     $('#tts_provider_settings').append(ttsProvider.settingsHtml);
@@ -1697,7 +1703,7 @@ export async function init() {
         });
 
         $('#tts_voices').on('click', onTtsVoicesClick);
-        for (const provider in ttsProviders) {
+        for (const provider in getTtsProviders()) {
             $('#tts_provider').append($('<option />').val(provider).text(provider));
         }
         $('#tts_provider').on('change', onTtsProviderChange);
