@@ -4163,42 +4163,39 @@ export async function getWorldEntry(name, data, entry) {
             counter.textContent = String(numberOfTokens);
         }, debounce_timeout.relaxed);
         const contentInputId = `world_entry_content_${entry.uid}`;
-        const contentInput = editTemplate.querySelectorAll('textarea[name="content"]');
-        contentInput.setAttribute('data-uid', entry.uid);
-        contentInput.setAttribute('id', contentInputId);
-        contentInput[0].dataset.macros = ''; // active
-        // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
-        contentInput.on('input', async function (_, {
-            skipCount,
-            noSave
-        }: { skipCount?: boolean; noSave?: boolean } = {}) {
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const uid = this.dataset.uid;
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const value = this.value;
-            data.entries[uid].content = value;
-            setWIOriginalDataValue(data, uid, 'content', data.entries[uid].content);
-            if (!noSave) await saveWorldInfo(name, data);
-            if (!skipCount) countTokensDebounced(counter, value);
-        });
-        contentInput.value = entry.content.trigger('input', { skipCount: true, noSave: true });
-        editTemplate.querySelectorAll('.editor_maximize').attr('data-for', contentInputId);
+        const contentInput = editTemplate?.querySelector('textarea[name="content"]');
+        if (contentInput) {
+            contentInput.dataset.uid = String(entry.uid);
+            contentInput.id = contentInputId;
+            contentInput.dataset.macros = ''; // active
+            contentInput.addEventListener('input', async function (this: any, { skipCount = false, noSave = false } = {}) {
+                const uid = this.dataset.uid;
+                const value = this.value;
+                data.entries[uid].content = value;
+                setWIOriginalDataValue(data, uid, 'content', data.entries[uid].content);
+                if (!noSave) await saveWorldInfo(name, data);
+                if (!skipCount) countTokensDebounced(counter, value);
+            });
+            contentInput.value = entry.content;
+            contentInput.dispatchEvent(new CustomEvent('input', { detail: { skipCount: true, noSave: true } }));
+        }
+        editTemplate?.querySelector('.editor_maximize')?.setAttribute('data-for', contentInputId);
 
         // Outlet name
-        const outletNameInput = editTemplate.querySelectorAll('input[name="outletName"]');
-        outletNameInput.setAttribute('data-uid', entry.uid);
-        // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
-        outletNameInput.on('input', async function (_, { noSave = false } = {}) {
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const uid = this.dataset.uid;
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const value = this.value;
-            data.entries[uid].outletName = value;
-            setWIOriginalDataValue(data, uid, 'extensions.outlet_name', data.entries[uid].outletName);
-            if (!noSave) await saveWorldInfo(name, data);
-        });
-        outletNameInput.value = entry.outletName ?? ''.trigger('input', { noSave: true });
-        setTimeout(() => createEntryInputAutocomplete(outletNameInput, getOutletNameCallback(data), { allowMultiple: true }), 1);
+        const outletNameInput = editTemplate?.querySelector('input[name="outletName"]');
+        if (outletNameInput) {
+            outletNameInput.dataset.uid = String(entry.uid);
+            outletNameInput.addEventListener('input', async function (this: any, { noSave = false } = {}) {
+                const uid = this.dataset.uid;
+                const value = this.value;
+                data.entries[uid].outletName = value;
+                setWIOriginalDataValue(data, uid, 'extensions.outlet_name', data.entries[uid].outletName);
+                if (!noSave) await saveWorldInfo(name, data);
+            });
+            outletNameInput.value = entry.outletName ?? '';
+            outletNameInput.dispatchEvent(new CustomEvent('input', { detail: { noSave: true } }));
+        }
+        if (outletNameInput) setTimeout(() => createEntryInputAutocomplete(outletNameInput, getOutletNameCallback(data), { allowMultiple: true }), 1);
 
         // Scan depth
         const scanDepthInput = editTemplate.querySelectorAll('input[name="scanDepth"]');
