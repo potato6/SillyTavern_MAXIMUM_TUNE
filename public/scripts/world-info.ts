@@ -3232,8 +3232,10 @@ export function parseRegexFromString(input) {
 function enableKeysInputHelper({ template, entry, entryPropName, originalDataValueName, name, data }) {
     // @ts-expect-error TS(2339) FIXME: Property 'wi_key_input_plaintext' does not exist o... Remove this comment to see the full error message
     const isFancyInput = !isMobile() && !power_user.wi_key_input_plaintext;
-    const input = isFancyInput ? template[0].querySelector(`select[name="${entryPropName}"]`) : template[0].querySelector(`textarea[name="${entryPropName}"]`);
-    input.setAttribute('data-uid', entry.uid);
+    const input = isFancyInput ?
+        template?.querySelector(`select[name="${entryPropName}"]`) :
+        template?.querySelector(`textarea[name="${entryPropName}"]`);
+    if (!input) return { isFancy: false, control: null };
     input.dataset.macros = ''; // active
     // @ts-expect-error TS(7006) FIXME: Parameter 'event' implicitly has an 'any' type.
     input.addEventListener('click', function (event) {
