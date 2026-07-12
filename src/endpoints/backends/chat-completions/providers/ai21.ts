@@ -2,6 +2,7 @@ import { CHAT_COMPLETION_SOURCES } from '../../../../constants.js';
 import { forwardFetchResponse, tryParse } from '../../../../util.js';
 import { convertAI21Messages, getPromptNames } from '../../../../prompt-converters.js';
 import { readSecret, SECRET_KEYS } from '../../../secrets.js';
+import { createSocketAbortController } from '../../common/abort-controller.js';
 import type { ChatProvider, ModelEntry } from '../types.js';
 
 const API_AI21 = 'https://api.ai21.com/studio/v1';
@@ -28,9 +29,7 @@ const provider: ChatProvider = {
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const bodyParams: Record<string, any> = {};
-        const controller = new AbortController();
-        req.socket.removeAllListeners('close');
-        req.socket.on('close', () => controller.abort());
+        const { signal } = createSocketAbortController(req.socket);
 
         if (req.body.json_schema) {
             bodyParams.response_format = { type: 'json_object' };
@@ -61,7 +60,7 @@ const provider: ChatProvider = {
                 Authorization: `Bearer ${apiKey}`,
             },
             body: JSON.stringify(body),
-            signal: controller.signal,
+            signal,
         };
 
         console.debug('AI21 request:', body);
