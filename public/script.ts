@@ -14239,8 +14239,26 @@ function initCharacterSearch() {
             dragElement(newElement);
 
             if (power_user.zoomed_avatar_magnification) {
-                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                $('.zoomed_avatar_container').izoomify();
+                const container = document.querySelector('.zoomed_avatar_container');
+                if (container) {
+                    const img = container.querySelector('img');
+                    container.addEventListener('mousemove', function (e) {
+                        const rect = container.getBoundingClientRect();
+                        const x = ((e.clientX - rect.left) / rect.width) * 100;
+                        const y = ((e.clientY - rect.top) / rect.height) * 100;
+                        if (img) {
+                            img.style.transformOrigin = `${x}% ${y}%`;
+                            img.style.transform = 'scale(1.8)';
+                            img.style.transition = 'transform 0.3s ease';
+                        }
+                    });
+                    container.addEventListener('mouseleave', function () {
+                        if (img) {
+                            img.style.transformOrigin = 'center center';
+                            img.style.transform = 'scale(1)';
+                        }
+                    });
+                }
             }
 
             // @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
