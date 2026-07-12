@@ -12,7 +12,6 @@ import util from 'node:util';
 import cors from 'cors';
 import express from 'express';
 import compression from 'compression';
-import cookieSession from 'cookie-session';
 import multer from 'multer';
 import responseTime from 'response-time';
 import helmet from 'helmet';
@@ -21,6 +20,7 @@ import bodyParser from 'body-parser';
 import { addMissingConfigValues } from './config-init.js';
 import { serverDirectory } from './server-directory.js';
 import { color, urlHostnameToIPv6, getHasIP } from './util.js';
+import bunSessionMiddleware from './middleware/bun-session.js';
 
 // Express routers
 import { router as userDataRouter } from './users.js';
@@ -475,8 +475,7 @@ app.use(hostWhitelistMiddleware);
 
 if (cliArgs.listen) app.use(accessLoggerMiddleware());
 
-// @ts-expect-error TS(2769) Bun/Express cookie-session type mismatch
-app.use(cookieSession({
+app.use(bunSessionMiddleware({
     name: getCookieSessionName(),
     sameSite: 'lax',
     httpOnly: true,
