@@ -5093,7 +5093,7 @@ async function addSDGenButtons() {
             console.log('doing /sd ' + param);
             generatePicture(initiators.wand, {}, param);
         }
-    });
+    }));
 }
 
 function isValidState() {
