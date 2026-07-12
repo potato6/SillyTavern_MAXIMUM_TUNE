@@ -60,7 +60,7 @@ import { router as openRouterRouter } from './endpoints/openrouter.js';
 import { router as nanogptRouter } from './endpoints/nanogpt.js';
 import { router as chatCompletionsRouter } from './endpoints/backends/chat-completions/index.js';
 import { router as koboldRouter } from './endpoints/backends/kobold.js';
-import { router as textCompletionsRouter } from './endpoints/backends/text-completions.js';
+import { router as textCompletionsRouter } from './endpoints/backends/text-completions/index.js';
 import { router as speechRouter } from './endpoints/speech.js';
 import { router as azureRouter } from './endpoints/azure.js';
 import { router as minimaxRouter } from './endpoints/minimax.js';

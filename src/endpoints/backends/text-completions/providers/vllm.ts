@@ -1,6 +1,6 @@
-import { TEXTGEN_TYPES, VLLM_KEYS } from '../../../constants.js';
+import { TEXTGEN_TYPES, VLLM_KEYS } from '../../../../constants.js';
 import { pickBy } from 'es-toolkit/compat';
-import type { BackendProvider } from './types.js';
+import type { BackendProvider } from '../types.js';
 
 const provider: BackendProvider = {
     type: TEXTGEN_TYPES.VLLM,

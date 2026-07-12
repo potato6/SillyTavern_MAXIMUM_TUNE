@@ -1,11 +1,11 @@
 import express from 'express';
 
-import { TEXTGEN_TYPES } from '../../constants.js';
-import { trimV1 } from '../../util.js';
-import { setAdditionalHeaders } from '../../additional-headers.js';
-import { getProvider } from './providers/registry.js';
-import { PROVIDER_ENDPOINTS } from './providers/types.js';
-import { proxyRequest } from './providers/proxy-request.js';
+import { TEXTGEN_TYPES } from '../../../constants.js';
+import { trimV1 } from '../../../util.js';
+import { setAdditionalHeaders } from '../../../additional-headers.js';
+import { getProvider } from './registry.js';
+import { PROVIDER_ENDPOINTS } from './types.js';
+import { proxyRequest } from './proxy.js';
 
 export const router = express.Router();
 

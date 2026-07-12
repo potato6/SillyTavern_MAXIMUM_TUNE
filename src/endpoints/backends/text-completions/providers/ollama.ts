@@ -1,8 +1,8 @@
 import { Readable } from 'node:stream';
-import { TEXTGEN_TYPES, OLLAMA_KEYS } from '../../../constants.js';
+import { TEXTGEN_TYPES, OLLAMA_KEYS } from '../../../../constants.js';
 import { pickBy } from 'es-toolkit/compat';
-import { getConfigValue } from '../../../util.js';
-import type { BackendProvider } from './types.js';
+import { getConfigValue } from '../../../../util.js';
+import type { BackendProvider } from '../types.js';
 
 const provider: BackendProvider = {
     type: TEXTGEN_TYPES.OLLAMA,

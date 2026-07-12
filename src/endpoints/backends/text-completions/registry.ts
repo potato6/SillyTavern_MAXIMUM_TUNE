@@ -8,21 +8,21 @@ import type { BackendProvider } from './types.js';
  * This means a user running Ollama never pays the import cost for TogetherAI, etc.
  */
 const providerLoader: Record<string, () => Promise<{ default: BackendProvider }>> = {
-    [TEXTGEN_TYPES.GENERIC]:     () => import('./generic.js'),
-    [TEXTGEN_TYPES.OOBA]:        () => import('./ooba.js'),
-    [TEXTGEN_TYPES.VLLM]:        () => import('./vllm.js'),
-    [TEXTGEN_TYPES.APHRODITE]:   () => import('./aphrodite.js'),
-    [TEXTGEN_TYPES.KOBOLDCPP]:   () => import('./koboldcpp.js'),
-    [TEXTGEN_TYPES.LLAMACPP]:    () => import('./llamacpp.js'),
-    [TEXTGEN_TYPES.INFERMATICAI]: () => import('./infermaticai.js'),
-    [TEXTGEN_TYPES.OPENROUTER]:  () => import('./openrouter.js'),
-    [TEXTGEN_TYPES.FEATHERLESS]: () => import('./featherless.js'),
-    [TEXTGEN_TYPES.TOGETHERAI]:  () => import('./togetherai.js'),
-    [TEXTGEN_TYPES.DREAMGEN]:    () => import('./dreamgen.js'),
-    [TEXTGEN_TYPES.MANCER]:      () => import('./mancer.js'),
-    [TEXTGEN_TYPES.TABBY]:       () => import('./tabby.js'),
-    [TEXTGEN_TYPES.OLLAMA]:      () => import('./ollama.js'),
-    [TEXTGEN_TYPES.HUGGINGFACE]: () => import('./huggingface.js'),
+    [TEXTGEN_TYPES.GENERIC]:      () => import('./providers/generic.js'),
+    [TEXTGEN_TYPES.OOBA]:         () => import('./providers/ooba.js'),
+    [TEXTGEN_TYPES.VLLM]:         () => import('./providers/vllm.js'),
+    [TEXTGEN_TYPES.APHRODITE]:    () => import('./providers/aphrodite.js'),
+    [TEXTGEN_TYPES.KOBOLDCPP]:    () => import('./providers/koboldcpp.js'),
+    [TEXTGEN_TYPES.LLAMACPP]:     () => import('./providers/llamacpp.js'),
+    [TEXTGEN_TYPES.INFERMATICAI]: () => import('./providers/infermaticai.js'),
+    [TEXTGEN_TYPES.OPENROUTER]:   () => import('./providers/openrouter.js'),
+    [TEXTGEN_TYPES.FEATHERLESS]:  () => import('./providers/featherless.js'),
+    [TEXTGEN_TYPES.TOGETHERAI]:   () => import('./providers/togetherai.js'),
+    [TEXTGEN_TYPES.DREAMGEN]:     () => import('./providers/dreamgen.js'),
+    [TEXTGEN_TYPES.MANCER]:       () => import('./providers/mancer.js'),
+    [TEXTGEN_TYPES.TABBY]:        () => import('./providers/tabby.js'),
+    [TEXTGEN_TYPES.OLLAMA]:       () => import('./providers/ollama.js'),
+    [TEXTGEN_TYPES.HUGGINGFACE]:  () => import('./providers/huggingface.js'),
 };
 
 const providerCache = new Map<string, BackendProvider>();
