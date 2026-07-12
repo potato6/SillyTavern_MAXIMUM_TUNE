@@ -4198,14 +4198,13 @@ export async function getWorldEntry(name, data, entry) {
         if (outletNameInput) setTimeout(() => createEntryInputAutocomplete(outletNameInput, getOutletNameCallback(data), { allowMultiple: true }), 1);
 
         // Scan depth
-        const scanDepthInput = editTemplate.querySelectorAll('input[name="scanDepth"]');
-        scanDepthInput.setAttribute('data-uid', entry.uid);
-        // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
-        scanDepthInput.on('input', async function (_, { noSave = false } = {}) {
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const uid = this.dataset.uid;
-            const isEmpty = this.value === '';
-            const value = Number(this.value);
+        const scanDepthInput = editTemplate?.querySelector('input[name="scanDepth"]');
+        if (scanDepthInput) {
+            scanDepthInput.dataset.uid = String(entry.uid);
+            scanDepthInput.addEventListener('input', async function (this: any, { noSave = false } = {}) {
+                const uid = this.dataset.uid;
+                const isEmpty = this.value === '';
+                const value = Number(this.value);
             if (value < 0) {
                 this.value = '0';
                 this.dispatchEvent(new Event('input', { bubbles: true }));
@@ -4223,8 +4222,10 @@ export async function getWorldEntry(name, data, entry) {
             data.entries[uid].scanDepth = !isEmpty && !isNaN(value) && value >= 0 && value <= MAX_SCAN_DEPTH ? Math.floor(value) : null;
             setWIOriginalDataValue(data, uid, 'extensions.scan_depth', data.entries[uid].scanDepth);
             if (!noSave) await saveWorldInfo(name, data);
-        });
-        scanDepthInput.value = entry.scanDepth ?? null.trigger('input', { noSave: true });
+            });
+            scanDepthInput.value = entry.scanDepth ?? '';
+            scanDepthInput.dispatchEvent(new CustomEvent('input', { detail: { noSave: true } }));
+        }
 
         // Group
         const groupInput = editTemplate.querySelectorAll('input[name="group"]');
