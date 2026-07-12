@@ -14371,7 +14371,6 @@ function initCharacterSearch() {
                 if (!stopBtn || getComputedStyle(stopBtn).display === 'none') {
                     return;
                 }
-            }
                 // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $('#mes_stop').trigger('click');
                 if (chat.length === 0) return;
