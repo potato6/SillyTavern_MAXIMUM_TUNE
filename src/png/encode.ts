@@ -1,10 +1,7 @@
-import { crc32 } from 'crc';
-import { Buffer } from 'node:buffer';
-
 /**
  * Encodes PNG chunks into a PNG file format buffer.
- * @param {Array<{ name: string; data: Uint8Array }>} chunks Array of PNG chunks
- * @returns {Uint8Array} Encoded PNG data
+ * @param chunks Array of PNG chunks
+ * @returns Encoded PNG data
  * @copyright Based on https://github.com/hughsk/png-chunks-encode (MIT)
  */
 export default function encode(chunks: { name: string; data: Uint8Array }[]) {
@@ -62,7 +59,7 @@ export default function encode(chunks: { name: string; data: Uint8Array }[]) {
             output[idx++] = data[j++];
         }
 
-        const crc = crc32(data, crc32(new Uint8Array(nameChars) as Buffer));
+        const crc = Bun.hash.crc32(data, Bun.hash.crc32(new Uint8Array(nameChars), 0));
 
         int32[0] = crc;
         // @ts-expect-error TS(2322) FIXME: Type 'number | undefined' is not assignable to typ... Remove this comment to see the full error message
