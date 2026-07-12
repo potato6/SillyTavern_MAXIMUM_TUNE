@@ -3238,6 +3238,16 @@ function enableKeysInputHelper({ template, entry, entryPropName, originalDataVal
     if (!input) return { isFancy: false, control: null };
     input.dataset.uid = String(entry.uid);
     input.dataset.macros = ''; // active
+    // Toggle visibility between select (fancy) and textarea (plaintext)
+    const selectEl = template?.querySelector(`select[name="${entryPropName}"]`);
+    const textareaEl = template?.querySelector(`textarea[name="${entryPropName}"]`);
+    if (isFancyInput) {
+        if (selectEl) selectEl.style.display = '';
+        if (textareaEl) textareaEl.style.display = 'none';
+    } else {
+        if (selectEl) selectEl.style.display = 'none';
+        if (textareaEl) textareaEl.style.display = '';
+    }
     // @ts-expect-error TS(7006) FIXME: Parameter 'event' implicitly has an 'any' type.
     input.addEventListener('click', function (event) {
         event.stopPropagation();
