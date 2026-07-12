@@ -37,11 +37,10 @@ export function removeExecuteButtons() {
 
 function addButton(block, lang) {
     if (lang === 'html') {
-        // HTML blocks: auto-render at full size, button toggles preview
-        renderHTML(block, true);
+        // HTML blocks: button toggles preview, no auto-render
         const btn = document.createElement('i');
-        btn.title = 'Hide preview';
-        btn.className = 'code-runner-button fa-solid fa-pause';
+        btn.title = 'Show preview';
+        btn.className = 'code-runner-button fa-solid fa-play';
         btn.addEventListener('click', () => {
             const existing = block.parentElement.querySelector('.code-output');
             if (existing) {
