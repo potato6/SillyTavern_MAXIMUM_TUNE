@@ -4798,7 +4798,7 @@ async function renameWorldInfo(name, data) {
 
     if (entryPreviouslySelected !== -1) {
         const wiElement = getWIElement(newName);
-        wiElement.prop('selected', true);
+        if (wiElement instanceof HTMLOptionElement) wiElement.selected = true;
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         document.getElementById('world_info')?.dispatchEvent(new Event('change', {bubbles: true}));
     }
