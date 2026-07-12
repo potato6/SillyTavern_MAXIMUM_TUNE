@@ -184,8 +184,8 @@ async function runST(block) {
 // ── HTML rendering ────────────────────────────────────────────────────────
 
 function renderHTML(block, fullSize = false) {
-    const existing = block.parentElement.querySelector('.code-output');
-    if (existing) existing.remove();
+    // Only one HTML preview at a time — remove all existing code-outputs
+    document.querySelectorAll('#chat .code-output').forEach(el => el.remove());
 
     const html = block.textContent.trim();
     const container = document.createElement('div');
