@@ -147,6 +147,7 @@ export const power_user = {
     smooth_streaming_no_think: false,
     smooth_streaming_speed: 50,
     stream_fade_in: false,
+    enable_code_execution: false,
 
     fast_ui_mode: true,
     avatar_style: avatar_styles.ROUND,
@@ -2018,6 +2019,8 @@ export async function loadPowerUserSettings(settings, data) {
     (document.getElementById('smooth_streaming_speed') as HTMLInputElement).value = String(power_user.smooth_streaming_speed);
     const streamFadeInEl = document.getElementById('stream_fade_in') as HTMLInputElement | null;
     if (streamFadeInEl) streamFadeInEl.checked = power_user.stream_fade_in;
+    const enableCodeExecutionEl = document.getElementById('enable_code_execution') as HTMLInputElement | null;
+    if (enableCodeExecutionEl) enableCodeExecutionEl.checked = power_user.enable_code_execution;
     (document.getElementById('font_scale') as HTMLInputElement).value = String(power_user.font_scale);
     (document.getElementById('font_scale_counter') as HTMLInputElement).value = String(power_user.font_scale);
     (document.getElementById('blur_strength') as HTMLInputElement).value = String(power_user.blur_strength);
@@ -3757,6 +3760,10 @@ function registerSettingsPanelHandlers() {
     const fadeInEl = guardEl('stream_fade_in');
     if (fadeInEl) fadeInEl.addEventListener('input', function () {
         power_user.stream_fade_in = !!(this instanceof HTMLInputElement && this.checked);
+    });
+    const enableCodeExecutionEl = guardEl('enable_code_execution') as HTMLInputElement | null;
+    if (enableCodeExecutionEl) enableCodeExecutionEl.addEventListener('change', function (this: HTMLElement) {
+        power_user.enable_code_execution = !!(this instanceof HTMLInputElement && this.checked);
         saveSettingsDebounced();
     });
 
