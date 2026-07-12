@@ -14213,7 +14213,7 @@ function initCharacterSearch() {
             }
 
             const zoomedAvatarImgElement = newElement.querySelector('img');
-                        const el = messageElement[0];
+            const el = messageElement;
             if (el?.getAttribute('is_user') == 'true' || (el?.getAttribute('is_system') == 'true' && !isValidCharacter)) {
                 const isValidPersona = decodeURIComponent(targetAvatarImg) in power_user.personas;
                 if (isValidPersona) {
@@ -14240,12 +14240,13 @@ function initCharacterSearch() {
 
             if (power_user.zoomed_avatar_magnification) {
                 const container = document.querySelector('.zoomed_avatar_container');
-                if (container) {
+                if (container instanceof HTMLElement) {
                     const img = container.querySelector('img');
-                    container.addEventListener('mousemove', function (e: MouseEvent) {
-                        const rect = container.getBoundingClientRect();
-                        const x = ((e.clientX - rect.left) / rect.width) * 100;
-                        const y = ((e.clientY - rect.top) / rect.height) * 100;
+                    container.addEventListener('mousemove', function (this: HTMLElement, e: Event) {
+                        const rect = this.getBoundingClientRect();
+                        const mouseEvent = e as MouseEvent;
+                        const x = ((mouseEvent.clientX - rect.left) / rect.width) * 100;
+                        const y = ((mouseEvent.clientY - rect.top) / rect.height) * 100;
                         if (img) {
                             img.style.transformOrigin = `${x}% ${y}%`;
                             img.style.transform = 'scale(1.8)';
