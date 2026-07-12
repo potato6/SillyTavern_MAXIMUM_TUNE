@@ -1040,10 +1040,9 @@ export function restoreCaretPosition(element, position) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'element' implicitly has an 'any' type.
 export async function resetScrollHeight(element) {
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    if (!element) return;
     element.style.height = '0px';
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    element.style.height = element.prop('scrollHeight' + 3 + 'px');
+    element.style.height = (element.scrollHeight + 3) + 'px';
 }
 
 /**
