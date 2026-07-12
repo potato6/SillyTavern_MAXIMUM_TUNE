@@ -61,7 +61,6 @@ export default function getLibServeMiddleware() {
         const result = await Bun.build({
             entrypoints: ['./public/lib.js'],
             outdir: outdir,
-            minify: true,
             format: 'esm',
         });
 

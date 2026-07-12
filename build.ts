@@ -97,7 +97,7 @@ const result = await Bun.build({
   sourcemap: "linked",
   splitting: true,
   format: "esm",
-  minify: false,
+  minify: true,
 });
 
 if (!result.success) {
@@ -122,8 +122,8 @@ const serverResult = await Bun.build({
   outdir: "dist/server",
   target: "bun",
   compile: true,
-  minify: false, // disabled while debugging
-  bytecode: false, // causing bugs
+  minify: true,
+  bytecode: false, // causing build errors rn, but i plan to enable as soon as its stable
   sourcemap: "linked",
   external: ["@huggingface/transformers"],
 });
