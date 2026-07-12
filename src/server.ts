@@ -479,7 +479,7 @@ app.use(bunSessionMiddleware({
     name: getCookieSessionName(),
     sameSite: 'lax',
     httpOnly: true,
-    maxAge: getSessionCookieAge(),
+    maxAge: getSessionCookieAge() ?? 400 * 24 * 60 * 60 * 1000,
     secret: getCookieSecret(globalThis.DATA_ROOT),
 }));
 
