@@ -3232,11 +3232,11 @@ export function parseRegexFromString(input) {
 function enableKeysInputHelper({ template, entry, entryPropName, originalDataValueName, name, data }) {
     // @ts-expect-error TS(2339) FIXME: Property 'wi_key_input_plaintext' does not exist o... Remove this comment to see the full error message
     const isFancyInput = !isMobile() && !power_user.wi_key_input_plaintext;
-    const input = isFancyInput ? template.find(`select[name="${entryPropName}"]`) : template.find(`textarea[name="${entryPropName}"]`);
+    const input = isFancyInput ? template[0].querySelector(`select[name="${entryPropName}"]`) : template[0].querySelector(`textarea[name="${entryPropName}"]`);
     input.setAttribute('data-uid', entry.uid);
-    input[0].dataset.macros = ''; // active
+    input.dataset.macros = ''; // active
     // @ts-expect-error TS(7006) FIXME: Parameter 'event' implicitly has an 'any' type.
-    input[0].addEventListener('click', function (event) {
+    input.addEventListener('click', function (event) {
         event.stopPropagation();
     });
 
@@ -3279,7 +3279,7 @@ function enableKeysInputHelper({ template, entry, entryPropName, originalDataVal
     if (isFancyInput) {
         // @ts-expect-error TS(2322) FIXME: Type '{ skipReset: true; noSave: true; }' is not a... Remove this comment to see the full error message
         select2ModifyOptions(input, entry[entryPropName], { select: true, changeEventArgs: { skipReset: true, noSave: true } });
-        new TomSelect(input[0], {
+        new TomSelect(input, {
             maxItems: null,
             plugins: ['remove_button'],
             create: true,
@@ -3310,7 +3310,7 @@ function enableKeysInputHelper({ template, entry, entryPropName, originalDataVal
          * @param {{ skipReset?: boolean, noSave?: boolean }} [arg]
          */
         // @ts-expect-error TS(7006) FIXME: Parameter '_event' implicitly has an 'any' type.
-        input.on('change', async function (_event, arg) {
+        input.addEventListener('change', async function (_event, arg) {
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const uid = this.dataset.uid;
             const tomSelect = this.tomSelect;
@@ -3333,12 +3333,12 @@ function enableKeysInputHelper({ template, entry, entryPropName, originalDataVal
             }
         });
 
-        input[0].classList.toggle('empty', !entry[entryPropName].length);
+        input.classList.toggle('empty', !entry[entryPropName].length);
 
         // @ts-expect-error TS(7006) FIXME: Parameter 'target' implicitly has an 'any' type.
         select2ChoiceClickSubscribe(input, target => {
             const key = target.closest('.regex-highlight, .item')?.textContent || '';
-            const tomSelect = input[0].tomSelect;
+            const tomSelect = input.tomSelect;
             if (!tomSelect) return;
             const values = tomSelect.getValue() ? tomSelect.getValue().split(',') : [];
             const id = getSelect2OptionId(key);
@@ -3349,7 +3349,7 @@ function enableKeysInputHelper({ template, entry, entryPropName, originalDataVal
             }
             updateWorldEntryKeyOptionsCache([key], { remove: true });
             // Set the search input value to allow re-adding
-            const tsInput = input[0].closest('.ts-wrapper')?.querySelector('.ts-control input');
+            const tsInput = input.closest('.ts-wrapper')?.querySelector('.ts-control input');
             if (tsInput) {
                 tsInput.value = key;
                 tsInput.dispatchEvent(new Event('input', { bubbles: true }));
@@ -3357,12 +3357,12 @@ function enableKeysInputHelper({ template, entry, entryPropName, originalDataVal
         }, { openDrawer: true });
     } else {
 const selEl = template[0]?.querySelector(`select[name="${entryPropName}"]`); if (selEl) selEl.style.display = 'none';
-        if (input[0]) input[0].style.display = '';
+        if (input) input.style.display = '';
         /**
          * @param {Event} _event
          * @param {{ skipReset?: boolean, noSave?: boolean }} [arg]
          */
-        input[0].addEventListener('input', async function (this: any, _event: Event) {
+        input.addEventListener('input', async function (this: any, _event: Event) {
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const uid = this.dataset.uid;
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
@@ -3383,8 +3383,8 @@ const selEl = template[0]?.querySelector(`select[name="${entryPropName}"]`); if 
                 setCommentPlaceholder(value, commentInput);
             }
         });
-        input[0].value = entry[entryPropName].join(', ');
-        input[0].dispatchEvent(new CustomEvent('input', { detail: { skipReset: true } }));
+        input.value = entry[entryPropName].join(', ');
+        input.dispatchEvent(new CustomEvent('input', { detail: { skipReset: true } }));
     }
     return { isFancy: isFancyInput, control: input };
 }
@@ -3402,9 +3402,9 @@ const selEl = template[0]?.querySelector(`select[name="${entryPropName}"]`); if 
 function handleMatchCheckboxHelper({ template, entry, fieldName, data, name }) {
     // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     const key = originalWIDataKeyMap[fieldName];
-    const checkBoxElem = template.find(`input[type="checkbox"][name="${fieldName}"]`);
+    const checkBoxElem = template.querySelector(`input[type="checkbox"][name="${fieldName}"]`);
     checkBoxElem.setAttribute('data-uid', entry.uid);
-    checkBoxElem[0].addEventListener('input', async function (this: any, e: Event) {
+    checkBoxElem.addEventListener('input', async function (this: any, e: Event) {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const uid = this.dataset.uid;
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
@@ -3414,8 +3414,8 @@ function handleMatchCheckboxHelper({ template, entry, fieldName, data, name }) {
         setWIOriginalDataValue(data, uid, key, data.entries[uid][fieldName]);
         if (!data_noSave) await saveWorldInfo(name, data);
     });
-    checkBoxElem[0].checked = !!entry[fieldName];
-    checkBoxElem[0].dispatchEvent(new CustomEvent('input', { detail: { noSave: true } }));
+    checkBoxElem.checked = !!entry[fieldName];
+    checkBoxElem.dispatchEvent(new CustomEvent('input', { detail: { noSave: true } }));
 }
 
 /**
@@ -3729,7 +3729,8 @@ function handleEntryStateSelectorHelper({ entryStateSelector, entry, data, name 
         if (!data_noSave) await saveWorldInfo(name, data);
     });
     const entryState = () => entry.constant === true ? 'constant' : entry.vectorized === true ? 'vectorized' : 'normal';
-    entryStateSelector.find(`option[value=${entryState()}]`).prop('selected', true);
+    const option = entryStateSelector[0].querySelector(`option[value="${entryState()}"]`);
+    if (option) option.selected = true;
     entryStateSelector[0].dispatchEvent(new CustomEvent('input', { detail: { noSave: true } }));
 }
 
@@ -3756,7 +3757,7 @@ function handleEntryKillSwitchHelper({ entryKillSwitch, entry, data, name, templ
         await saveWorldInfo(name, data);
     });
     const isActive = !entry.disable;
-    template[0].classList.toggle('disabledWIEntry', !isActive);
+    if (template) template.classList.toggle('disabledWIEntry', !isActive);
     entryKillSwitch[0].classList.toggle('fa-toggle-off', !isActive);
     entryKillSwitch[0].classList.toggle('fa-toggle-on', isActive);
 }
