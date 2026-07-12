@@ -3998,7 +3998,7 @@ export async function getWorldEntry(name, data, entry) {
         if (drawerInitialized) {
             drawerDestroyTimeout = setTimeout(() => {
                 // Drawer was reopened, so we don't destroy it
-                if (editOutlet.offsetParent !== null) {
+                if (editOutlet?.offsetParent !== null) {
                     return;
                 }
                 drawerInitialized = false;
@@ -4011,7 +4011,7 @@ export async function getWorldEntry(name, data, entry) {
         }
     }));
 
-    const editOutlet = headerTemplate.querySelectorAll('.inline-drawer-outlet');
+    const editOutlet = headerTemplate?.querySelector('.inline-drawer-outlet');
 
     /**
      *
@@ -4125,7 +4125,7 @@ export async function getWorldEntry(name, data, entry) {
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const value = this.checked;
             const data_noSave = e instanceof CustomEvent ? e.detail?.noSave : false;
-            characterFilterLabel.textContent = value ? 'Exclude Character(s)' : 'Filter to Character(s)';
+            if (characterFilterLabel) characterFilterLabel.textContent = value ? 'Exclude Character(s)' : 'Filter to Character(s)';
             if (data.entries[uid].characterFilter) {
                 if (!value && data.entries[uid].characterFilter.names.length === 0 && data.entries[uid].characterFilter.tags.length === 0) {
                     delete data.entries[uid].characterFilter;
@@ -4233,7 +4233,7 @@ export async function getWorldEntry(name, data, entry) {
         const groupInput = editTemplate?.querySelector('input[name="group"]');
         if (groupInput) {
             groupInput.dataset.uid = String(entry.uid);
-            groupInput.addEventListener('input', async function (this: any, e: Event) {
+            groupInput.addEventListener('input', async function (this: HTMLInputElement, e: Event) {
                 const detail = (e instanceof CustomEvent) ? e.detail : {};
                 const noSave = detail.noSave ?? false;
                 const uid = this.dataset.uid;
@@ -4251,7 +4251,7 @@ export async function getWorldEntry(name, data, entry) {
         const groupOverrideInput = editTemplate?.querySelector('input[name="groupOverride"]');
         if (groupOverrideInput) {
             groupOverrideInput.dataset.uid = String(entry.uid);
-            groupOverrideInput.addEventListener('input', async function (this: any, e: Event) {
+            groupOverrideInput.addEventListener('input', async function (this: HTMLInputElement, e: Event) {
                 const detail = (e instanceof CustomEvent) ? e.detail : {};
                 const noSave = detail.noSave ?? false;
                 const uid = this.dataset.uid;
@@ -4293,7 +4293,7 @@ export async function getWorldEntry(name, data, entry) {
         const delayUntilRecursionLevelInput = editTemplate?.querySelector('input[name="delayUntilRecursionLevel"]');
         if (delayUntilRecursionInput) {
             delayUntilRecursionInput.dataset.uid = String(entry.uid);
-            delayUntilRecursionInput.addEventListener('input', async function (this: any, e: Event) {
+            delayUntilRecursionInput.addEventListener('input', async function (this: HTMLInputElement, e: Event) {
                 const detail = (e instanceof CustomEvent) ? e.detail : {};
                 const noSave = detail.noSave ?? false;
                 const uid = this.dataset.uid;
@@ -4309,7 +4309,7 @@ export async function getWorldEntry(name, data, entry) {
         }
         if (delayUntilRecursionLevelInput) {
             delayUntilRecursionLevelInput.dataset.uid = String(entry.uid);
-            delayUntilRecursionLevelInput.addEventListener('input', async function (this: any, e: Event) {
+            delayUntilRecursionLevelInput.addEventListener('input', async function (this: HTMLInputElement, e: Event) {
                 const detail = (e instanceof CustomEvent) ? e.detail : {};
                 const noSave = detail.noSave ?? false;
                 const uid = this.dataset.uid;
@@ -4344,7 +4344,7 @@ export async function getWorldEntry(name, data, entry) {
         const automationIdInput = editTemplate?.querySelector('input[name="automationId"]');
         if (automationIdInput) {
             automationIdInput.dataset.uid = String(entry.uid);
-            automationIdInput.addEventListener('input', async function (this: any, e: Event) {
+            automationIdInput.addEventListener('input', async function (this: HTMLInputElement, e: Event) {
                 const detail = (e instanceof CustomEvent) ? e.detail : {};
                 const noSave = detail.noSave ?? false;
                 const uid = this.dataset.uid;
@@ -4362,7 +4362,7 @@ export async function getWorldEntry(name, data, entry) {
         const generationTypeTriggers = editTemplate?.querySelector('select[name="triggers"]');
         if (generationTypeTriggers) {
             generationTypeTriggers.dataset.uid = String(entry.uid);
-            generationTypeTriggers.addEventListener('input', async function (this: any, e: Event) {
+            generationTypeTriggers.addEventListener('input', async function (this: HTMLSelectElement, e: Event) {
                 const detail = (e instanceof CustomEvent) ? e.detail : {};
                 const noSave = detail.noSave ?? false;
                 const uid = this.dataset.uid;
@@ -4385,25 +4385,27 @@ export async function getWorldEntry(name, data, entry) {
         }
 
         // Ignore budget
-        const ignoreBudgetInput = editTemplate.querySelectorAll('input[name="ignoreBudget"]');
-        ignoreBudgetInput.setAttribute('data-uid', entry.uid);
-        // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
-        ignoreBudgetInput.on('input', async function (_, { noSave = false } = {}) {
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const uid = this.dataset.uid;
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const value = this.checked;
-            data.entries[uid].ignoreBudget = value;
-            setWIOriginalDataValue(data, uid, 'extensions.ignore_budget', data.entries[uid].ignoreBudget);
-            if (!noSave) await saveWorldInfo(name, data);
-        });
-        ignoreBudgetInput.checked = entry.ignoreBudget ?? false.trigger('input', { noSave: true });
+        const ignoreBudgetInput = editTemplate?.querySelector('input[name="ignoreBudget"]');
+        if (ignoreBudgetInput) {
+            ignoreBudgetInput.dataset.uid = String(entry.uid);
+            ignoreBudgetInput.addEventListener('input', async function (this: HTMLInputElement, e: Event) {
+                const detail = (e instanceof CustomEvent) ? e.detail : {};
+                const noSave = detail.noSave ?? false;
+                const uid = this.dataset.uid;
+                const value = this.checked;
+                data.entries[uid].ignoreBudget = value;
+                setWIOriginalDataValue(data, uid, 'extensions.ignore_budget', data.entries[uid].ignoreBudget);
+                if (!noSave) await saveWorldInfo(name, data);
+            });
+            ignoreBudgetInput.checked = entry.ignoreBudget ?? false;
+            ignoreBudgetInput.dispatchEvent(new CustomEvent('input', { detail: { noSave: true } }));
+        }
 
         countTokensDebounced(counter, contentInput.value);
 
         const editContent = editTemplate?.querySelector('.inline-drawer-content');
-    if (editContent instanceof HTMLElement) editContent.style.display = 'none';
-        editOutlet.append(editTemplate);
+        if (editContent instanceof HTMLElement) editContent.style.display = 'none';
+        if (editTemplate && editOutlet instanceof HTMLElement) editOutlet.append(editTemplate);
     }
 
     const headerContent = headerTemplate?.querySelector('.inline-drawer-content');
