@@ -16,6 +16,7 @@ import { isProbablyReaderable, Readability } from '@mozilla/readability';
 import SVGInject from '@iconfu/svg-inject';
 // @ts-expect-error no types
 import MarkdownIt from 'markdown-it';
+import localforage from 'localforage';
 import moment from 'moment';
 // @ts-expect-error no types
 import seedrandom from 'seedrandom';
@@ -102,6 +103,7 @@ export default {
     gzipSync,
     gzip,
     sha256,
+    localforage,
 };
 
 export {
@@ -129,4 +131,5 @@ export {
     gzipSync,
     gzip,
     sha256,
+    localforage,
 };
