@@ -1,7 +1,6 @@
 /* global SillyTavern */
-/* global toastr */
-import './style.css';
 import Sandbox from '@nyariv/sandboxjs';
+import { power_user } from '../../power-user.js';
 
 const {
     eventSource,
@@ -16,30 +15,40 @@ const events = [
     event_types.MESSAGE_SWIPED,
 ];
 
-events.push('MESSAGE_UPDATED' in event_types ? event_types.MESSAGE_UPDATED : event_types.MESSAGE_EDITED);
+if ('MESSAGE_UPDATED' in event_types) {
+    events.push(event_types.MESSAGE_UPDATED);
+} else if ('MESSAGE_EDITED' in event_types) {
+    events.push(event_types.MESSAGE_EDITED);
+}
 
 const clearedSymbol = Symbol('cancel');
 const supportedLanguages = [
     'language-javascript',
     'language-stscript',
+    'language-html',
 ];
 
-// Set event listeners for chat events.
+// Listen to chat events
 for (const event of events) {
     eventSource.on(event, addExecuteButtonToCodeBlocks);
 }
 
 /**
- * Adds a button to all JS code blocks to run the code.
+ * Adds run/render buttons to all matching code blocks in chat messages.
  */
 function addExecuteButtonToCodeBlocks() {
+    if (!power_user.enable_code_execution) {
+        return;
+    }
     const blocks = Array.from(document.querySelectorAll('#chat .mes_text pre code'));
     for (const block of blocks) {
         if (block.classList.contains('code-runner')) {
             continue;
         }
-        if (supportedLanguages.some((lang) => block.classList.contains(lang))) {
-            const language = block.className.match(/language-(\w+)/)[1];
+        const langClass = supportedLanguages.find((lang) => block.classList.contains(lang));
+        if (langClass) {
+            const language = block.className.match(/language-(\w+)/)?.[1];
+            if (!language) continue;
             addExecuteButton(block, language);
             block.classList.add('code-runner');
         }
@@ -47,13 +56,13 @@ function addExecuteButtonToCodeBlocks() {
 }
 
 /**
- * Adds a button to the code block to run the code.
+ * Adds a run/render button to the code block.
  * @param {HTMLElement} block Code block element.
  * @param {string} language Language of the code block.
  */
 function addExecuteButton(block, language) {
     const button = document.createElement('i');
-    button.title = 'Run code';
+    button.title = language === 'html' ? 'Render HTML' : 'Run code';
     button.classList.add('code-runner-button', 'fa-solid', 'fa-play');
     button.addEventListener('click', () => {
         if (language === 'javascript') {
@@ -62,14 +71,17 @@ function addExecuteButton(block, language) {
         if (language === 'stscript') {
             runSTScriptCode(block);
         }
+        if (language === 'html') {
+            renderHTMLCode(block);
+        }
     });
     block.appendChild(button);
 }
 
 /**
- * Get the output element for the code block.
- * @param {HTMLElement} block Code block element.
- * @returns {{outputElement: HTMLElement, clearClicked: Promise<Symbol>}} Output element and promise that resolves when the clear button is clicked.
+ * Gets or creates the output container for the code block.
+ * @param {HTMLElement} block
+ * @returns {{outputElement: HTMLElement, clearClicked: Promise<Symbol>}}
  */
 function getOutputElement(block) {
     let outputElement = block.parentElement.querySelector('.code-output');
@@ -96,162 +108,59 @@ function getOutputElement(block) {
     return { outputElement, clearClicked };
 }
 
-/**
- * Shows the loader icon in the output element.
- * @param {HTMLElement} outputElement Output element.
- * @returns {void}
- */
 function showLoader(outputElement) {
     const loader = outputElement.querySelector('.code-output-hourglass');
-    if (!loader) {
-        return;
-    }
-    loader.style.display = 'block';
+    if (loader) loader.style.display = 'block';
 }
 
-/**
- * Hides the loader icon in the output element.
- * @param {HTMLElement} outputElement Output element.
- * @returns {void}
- */
 function hideLoader(outputElement) {
     const loader = outputElement.querySelector('.code-output-hourglass');
-    if (!loader) {
-        return;
-    }
-    loader.style.display = 'none';
+    if (loader) loader.style.display = 'none';
 }
 
 /**
- * Proxy console methods to add code output to the output element.
+ * Captures console.* calls and displays them in the output element.
  */
 class CustomConsole {
-    /**
-     * Creates a new CustomConsole instance.
-     * @param {HTMLElement} outputElement Output element to log to.
-     */
     constructor(outputElement) {
         this.#setupShims();
         this.outputElement = outputElement;
     }
-
-    /**
-     * Setup shims for console methods that are not implemented.
-     */
     #setupShims() {
         for (const key of Object.keys(console)) {
             if (typeof console[key] === 'function' && !this[key]) {
-                this[key] = () => { };
+                this[key] = () => {};
             }
         }
     }
-
-    /**
-     * Add the output text to the output element.
-     * @param {any[]} args Arguments to log.
-     * @returns {void}
-     */
     #addToOutput(args) {
         const div = document.createElement('div');
         const text = args.reduce((acc, arg) => {
             switch (typeof arg) {
-                case 'object':
-                    return acc + JSON.stringify(arg) + ' ';
-                default:
-                    return acc + String(arg) + ' ';
+                case 'object': return acc + JSON.stringify(arg) + ' ';
+                default: return acc + String(arg) + ' ';
             }
         }, '');
         div.textContent = text;
         this.outputElement.appendChild(div);
     }
-
-    /**
-     * Proxy for console.info.
-     * @param  {...any} args Arguments to log.
-     * @returns {void}
-     */
-    info(...args) {
-        this.#addToOutput(args);
-    }
-
-    /**
-     * Proxy for console.log.
-     * @param  {...any} args Arguments to log.
-     * @returns {void}
-     */
-    log(...args) {
-        this.#addToOutput(args);
-    }
-
-    /**
-     * Proxy for console.error.
-     * @param  {...any} args Arguments to log.
-     */
-    error(...args) {
-        this.#addToOutput(args);
-    }
-
-    /**
-     * Proxy for console.warn.
-     * @param  {...any} args Arguments to log.
-     */
-    warn(...args) {
-        this.#addToOutput(args);
-    }
-
-    /**
-     * Proxy for console.debug.
-     * @param  {...any} args Arguments to log.
-     */
-    debug(...args) {
-        this.#addToOutput(args);
-    }
-
-    /**
-     * Proxy for console.table.
-     * @param  {...any} args Arguments to log.
-     */
-    table(...args) {
-        this.#addToOutput(args);
-    }
-
-    /**
-     * Proxy for console.trace.
-     * @param  {...any} args Arguments to log.
-     * @returns {void}
-     */
-    trace(...args) {
-        this.#addToOutput(args);
-    }
-
-    /**
-     * Proxy for alert.
-     * @param  {...any} args Arguments to log.
-     */
-    alert(...args) {
-        this.#addToOutput(args);
-    }
-
-    /**
-     * Adds the passed time and result of the code to the output element.
-     * @param {any} result Returned result of the code.
-     * @param {number} time Milliseconds to run the code.
-     */
+    info(...args) { this.#addToOutput(args); }
+    log(...args) { this.#addToOutput(args); }
+    error(...args) { this.#addToOutput(args); }
+    warn(...args) { this.#addToOutput(args); }
+    debug(...args) { this.#addToOutput(args); }
+    table(...args) { this.#addToOutput(args); }
+    trace(...args) { this.#addToOutput(args); }
+    alert(...args) { this.#addToOutput(args); }
     addResult(result, time) {
         const div = document.createElement('div');
         const small = document.createElement('small');
-        const seconds = (time / 1000).toFixed(2);
-        small.textContent = `Finished in ${seconds} sec. Result: ${JSON.stringify(result)}`;
+        small.textContent = `Finished in ${(time / 1000).toFixed(2)}s. Result: ${JSON.stringify(result)}`;
         div.appendChild(small);
         this.outputElement.appendChild(div);
     }
 }
 
-/**
- * Runs the code in the code block.
- * @param {HTMLElement} block Code block element.
- * @returns {Promise<void>} Promise that resolves when the code is run.
- */
 async function runJavaScriptCode(block) {
     try {
         const { outputElement, clearClicked } = getOutputElement(block);
@@ -264,33 +173,25 @@ async function runJavaScriptCode(block) {
             ...Sandbox.SAFE_GLOBALS,
             alert: customConsole.alert.bind(customConsole),
             console: customConsole,
-            setTimeout: setTimeout,
-            clearTimeout: clearTimeout,
-            setInterval: setInterval,
-            clearInterval: clearInterval,
+            setTimeout,
+            clearTimeout,
+            setInterval,
+            clearInterval,
         };
         const sandbox = new Sandbox({ globals, prototypeWhitelist });
         const scope = {};
         const execAsync = sandbox.compileAsync(code);
         const start = Date.now();
         const result = await Promise.race([execAsync(scope).run(), clearClicked]);
-        const end = Date.now();
         hideLoader(outputElement);
-        if (result === clearedSymbol) {
-            return;
-        }
-        customConsole.addResult(result, (end - start));
+        if (result === clearedSymbol) return;
+        customConsole.addResult(result, Date.now() - start);
     } catch (error) {
         console.error('Error running code', error);
-        toastr.error('Error running code', error.message);
+        notyf.error('Error running code', error.message);
     }
 }
 
-/**
- * Executes STScript code in the code block.
- * @param {HTMLElement} block Code block element.
- * @returns {Promise<void>} Promise that resolves when the code is run.
- */
 async function runSTScriptCode(block) {
     try {
         const { outputElement, clearClicked } = getOutputElement(block);
@@ -299,20 +200,59 @@ async function runSTScriptCode(block) {
         const customConsole = new CustomConsole(outputElement);
         showLoader(outputElement);
         const start = Date.now();
-        const reportProgress = (done, total) => {
-            // customConsole.info(`${done}/${total}`);
-        }
-        const executePromise = executeSlashCommands(code, true, null, false, null, abortController, reportProgress);
+        const executePromise = executeSlashCommands(code, true, null, false, null, abortController, () => {});
         const result = await Promise.race([executePromise, clearClicked]);
         hideLoader(outputElement);
         if (result === clearedSymbol) {
             abortController.abort();
             return;
         }
-        const end = Date.now();
-        customConsole.addResult(result?.pipe, (end - start));
+        customConsole.addResult(result?.pipe, Date.now() - start);
     } catch (error) {
         console.error('Error running code', error);
-        toastr.error('Error running code', error.message);
+        notyf.error('Error running code', error.message);
     }
+}
+
+/**
+ * Renders HTML code in a sandboxed iframe below the code block.
+ * @param {HTMLElement} block
+ */
+function renderHTMLCode(block) {
+    // Remove any existing output for this block
+    const existing = block.parentElement.querySelector('.code-output');
+    if (existing) existing.remove();
+
+    const html = block.textContent;
+    const container = document.createElement('div');
+    container.classList.add('code-output');
+
+    const clearButton = document.createElement('i');
+    clearButton.classList.add('code-output-clear', 'fa-solid', 'fa-xmark', 'fa-fw');
+    clearButton.title = 'Close preview';
+    clearButton.onclick = () => container.remove();
+
+    const expandButton = document.createElement('i');
+    expandButton.classList.add('code-output-expand', 'fa-solid', 'fa-expand', 'fa-fw');
+    expandButton.title = 'Toggle size';
+    expandButton.onclick = () => {
+        iframe.style.height = iframe.style.height === '500px' ? '200px' : '500px';
+    };
+
+    const iframe = document.createElement('iframe');
+    iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin');
+    iframe.style.width = '100%';
+    iframe.style.height = '200px';
+    iframe.style.border = '1px solid var(--border_color)';
+    iframe.style.borderRadius = '4px';
+    iframe.style.marginTop = '4px';
+    iframe.style.background = '#fff';
+
+    // Write HTML into iframe
+    iframe.srcdoc = html;
+
+    container.appendChild(clearButton);
+    container.appendChild(expandButton);
+    container.appendChild(iframe);
+    block.parentElement.appendChild(container);
 }

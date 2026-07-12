@@ -291,6 +291,7 @@ import { onboardingExperimentalMacroEngine } from './scripts/macros/engine/Macro
 import { compressRequest, setRequestCompressionConfig } from './scripts/request-compression.js';
 import { canJumpToSwipeForMessage, canOpenSwipePickerForMessage, initSwipePicker } from './scripts/swipe-picker.js';
 import { range } from 'es-toolkit';
+import { addExecuteButtonToCodeBlocks } from './scripts/code-runner.js';
 
 // API OBJECT FOR EXTERNAL WIRING
 globalThis.SillyTavern = {
@@ -12745,6 +12746,22 @@ function initCharacterSearch() {
         searchButton.toggleClass('active', isVisible);
     });
 }
+
+// Register code-runner buttons on message render events
+(function registerCodeRunner() {
+    const renderEvents = [
+        event_types.CHARACTER_MESSAGE_RENDERED,
+        event_types.USER_MESSAGE_RENDERED,
+        event_types.CHAT_CHANGED,
+        event_types.MESSAGE_SWIPED,
+    ];
+    if ('MESSAGE_UPDATED' in event_types) renderEvents.push(event_types.MESSAGE_UPDATED);
+    else if ('MESSAGE_EDITED' in event_types) renderEvents.push(event_types.MESSAGE_EDITED);
+
+    for (const event of renderEvents) {
+        eventSource.on(event, addExecuteButtonToCodeBlocks);
+    }
+})();
 
 // MARK: DOM Handlers Start
 (async function () {
