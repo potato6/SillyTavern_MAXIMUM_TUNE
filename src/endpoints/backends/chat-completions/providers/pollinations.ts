@@ -1,6 +1,6 @@
 import { CHAT_COMPLETION_SOURCES } from '../../../../constants.js';
 import { SECRET_KEYS } from '../../../secrets.js';
-import { createOAIChatProvider } from './oai-compat.js';
+import { createOAIChatProvider } from '../../common/oai-provider.js';
 
 export default createOAIChatProvider({
     source: CHAT_COMPLETION_SOURCES.POLLINATIONS,

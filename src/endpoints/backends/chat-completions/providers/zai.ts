@@ -1,6 +1,6 @@
 import { CHAT_COMPLETION_SOURCES, ZAI_ENDPOINT } from '../../../../constants.js';
 import { SECRET_KEYS } from '../../../secrets.js';
-import { createOAIChatProvider } from './oai-compat.js';
+import { createOAIChatProvider } from '../../common/oai-provider.js';
 import type { ModelEntry } from '../types.js';
 
 const API_ZAI_COMMON = 'https://api.z.ai/api/paas/v4';

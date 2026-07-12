@@ -1,6 +1,5 @@
 import {
     CHAT_COMPLETION_SOURCES,
-    OPENROUTER_HEADERS,
     GEMINI_SAFETY,
 } from '../../../../constants.js';
 import {
@@ -14,6 +13,7 @@ import {
 } from '../../../../prompt-converters.js';
 import { readSecret, SECRET_KEYS } from '../../../secrets.js';
 import { proxyRequest } from '../../common/proxy.js';
+import { buildProviderConfig, OPENROUTER_HEADERS } from '../../common/openrouter.js';
 import type { ChatProvider, ModelEntry } from '../types.js';
 
 const API_OPENROUTER = 'https://openrouter.ai/api/v1';
@@ -86,16 +86,9 @@ const provider: ChatProvider = {
             if (req.body[key] !== undefined) bodyParams[key] = req.body[key];
         }
 
-        if (Array.isArray(req.body.provider) && req.body.provider.length > 0) {
-            bodyParams['provider'] = {
-                allow_fallbacks: req.body.allow_fallbacks ?? true,
-                order: req.body.provider,
-            };
-        }
-        if (Array.isArray(req.body.quantizations) && req.body.quantizations.length > 0) {
-            (bodyParams['provider'] as any) ??= {};
-            (bodyParams['provider'] as any).quantizations = req.body.quantizations;
-        }
+        // Provider routing / ordering + quantization — shared impl.
+        const providerConfig = buildProviderConfig(req.body);
+        if (providerConfig) bodyParams['provider'] = providerConfig;
         if (req.body.use_fallback) bodyParams['route'] = 'fallback';
         if (req.body.reasoning_effort) (bodyParams['reasoning'] as any).effort = req.body.reasoning_effort;
         if (req.body.verbosity) bodyParams['verbosity'] = req.body.verbosity;

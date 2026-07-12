@@ -12,9 +12,9 @@
  * This factory eliminates ~200 lines of nearly identical code.
  */
 
-import { getConfigValue, forwardFetchResponse } from '../../../../util.js';
-import type { ChatProvider, ModelEntry } from '../types.js';
-import { proxyRequest } from '../../common/proxy.js';
+import { getConfigValue, forwardFetchResponse } from '../../../util.js';
+import type { ChatProvider, ModelEntry } from '../chat-completions/types.js';
+import { proxyRequest } from './proxy.js';
 
 export interface OAIConfig {
     /** CHAT_COMPLETION_SOURCES value. */
@@ -69,7 +69,7 @@ export function createOAIChatProvider(cfg: OAIConfig): ChatProvider {
 
             const apiKey = supportsReverseProxy && req.body.reverse_proxy
                 ? req.body.proxy_password
-                : (await import('../../../secrets.js')).readSecret(
+                : (await import('../../secrets.js')).readSecret(
                     req.user.directories, secretKey, req.body.secret_id);
 
             if (!apiKey && !req.body.reverse_proxy) {
@@ -135,7 +135,7 @@ export function createOAIChatProvider(cfg: OAIConfig): ChatProvider {
                 : defaultBase.replace(/\/+$/, '');
             const apiKey = supportsReverseProxy && req.body.reverse_proxy
                 ? req.body.proxy_password
-                : (await import('../../../secrets.js')).readSecret(
+                : (await import('../../secrets.js')).readSecret(
                     req.user.directories, secretKey, req.body.secret_id);
 
             if (!apiKey && !req.body.reverse_proxy) return [];
