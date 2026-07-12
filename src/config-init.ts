@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import yaml from 'yaml';
 import color from 'chalk';
-import { serverDirectory } from './server-directory.js';
+import { serverDirectory } from './server.js';
 import { keyToEnv, setConfigFilePath } from './util.js';
 
 // Import from es-toolkit

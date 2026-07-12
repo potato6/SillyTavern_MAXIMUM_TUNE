@@ -10,7 +10,7 @@ import { sync as writeFileAtomicSync } from 'write-file-atomic';
 
 import { getConfigValue, color, setPermissionsSync, isValidUrl } from '../util.js';
 import { write } from '../character-card-parser.js';
-import { serverDirectory } from '../server-directory.js';
+import { serverDirectory } from '../server.js';
 import { DEFAULT_AVATAR_PATH } from '../constants.js';
 
 const contentDirectory = path.join(serverDirectory, 'default/content');

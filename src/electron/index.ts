@@ -3,7 +3,7 @@ import { app, BrowserWindow } from 'electron';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import yargs from 'yargs';
-import { serverEvents, EVENT_NAMES } from '../server-events.js';
+import { serverEvents, EVENT_NAMES } from '../server.js';
 
 const cliArguments = yargs(process.argv)
     .usage('Usage: <your-start-script> [options]')

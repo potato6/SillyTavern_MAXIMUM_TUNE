@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { serverDirectory } from './server-directory.js';
+import { serverDirectory } from './server.js';
 
 // Default to 0 seconds (disabled) if not set
 const intervalSeconds = parseInt(process.env.SILLYTAVERN_HEARTBEATINTERVAL || '0');
