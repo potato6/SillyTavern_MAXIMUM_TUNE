@@ -3382,7 +3382,7 @@ const selEl = template[0]?.querySelector(`select[name="${entryPropName}"]`); if 
             }
             // Update the commentInput's placeholder for primary keys
             if (entryPropName === 'key') {
-                const commentInput = this.closest('.world_entry_form').querySelector('textarea[name="comment"]');
+                const commentInput = this.closest('.world_entry_form')?.querySelector('textarea[name="comment"]');
                 setCommentPlaceholder(value, commentInput);
             }
         });
@@ -4101,8 +4101,8 @@ export async function getWorldEntry(name, data, entry) {
             setWIOriginalDataValue(data, uid, 'selective', data.entries[uid].selective);
             if (!data_noSave) await saveWorldInfo(name, data);
             const keysecondary = this.closest('.world_entry')?.querySelector('.keysecondary');
-            const keysecondarytextpole = this.closest('.world_entry').querySelector('.keysecondarytextpole');
-            const keyprimaryselect = this.closest('.world_entry').querySelector('.keyprimaryselect');
+            const keysecondarytextpole = this.closest('.world_entry')?.querySelector('.keysecondarytextpole');
+            const keyprimaryselect = this.closest('.world_entry')?.querySelector('.keyprimaryselect');
             const keyprimaryHeight = keyprimaryselect?.offsetHeight ?? 0;
             if (keysecondarytextpole) keysecondarytextpole.style.height = keyprimaryHeight + 'px';
             if (keysecondary) keysecondary.style.display = value ? '' : 'none';
@@ -4147,7 +4147,7 @@ export async function getWorldEntry(name, data, entry) {
         characterExclusionInput[0].dispatchEvent(new CustomEvent('input', { detail: { noSave: true } }));
 
         const characterFilter = editTemplate.querySelectorAll('select[name="characterFilter"]');
-        characterFilter.setAttribute('data-uid', entry.uid);
+        characterFilter[0].setAttribute('data-uid', entry.uid);
         initCharacterFilterSelect2Helper(characterFilter);
         fillCharacterAndTagOptionsHelper({ characterFilter, entry });
         handleCharacterFilterChangeHelper({ characterFilter, data, entry, name });
