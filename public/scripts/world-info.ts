@@ -4016,7 +4016,8 @@ export async function getWorldEntry(name, data, entry) {
         const editTemplate = WI_ENTRY_EDIT_TEMPLATE?.cloneNode(true);
 
         // UID display
-        editTemplate.find('.world_entry_form_uid_value').textContent = `(UID: ${entry.uid})`;
+        const uidEl = editTemplate?.querySelector('.world_entry_form_uid_value');
+        if (uidEl) uidEl.textContent = `(UID: ${entry.uid})`;
 
         // Key inputs
         const keyInput = enableKeysInputHelper({ template: editTemplate, entry, entryPropName: 'key', originalDataValueName: 'keys', name, data });
@@ -4080,7 +4081,8 @@ export async function getWorldEntry(name, data, entry) {
             setWIOriginalDataValue(data, uid, 'selectiveLogic', data.entries[uid].selectiveLogic);
             if (!data_noSave) await saveWorldInfo(name, data);
         });
-        editTemplate.find(`select[name="entryLogicType"] option[value=${entry.selectiveLogic}]`).prop('selected', true);
+        const logicOption = editTemplate?.querySelector(`select[name="entryLogicType"] option[value=${entry.selectiveLogic}]`);
+        if (logicOption instanceof HTMLOptionElement) logicOption.selected = true;
         selectiveLogicDropdown[0].dispatchEvent(new CustomEvent('input', { detail: { noSave: true } }));
 
         // Selective
