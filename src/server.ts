@@ -1,47 +1,24 @@
 // ── Server directory ──────────────────────────────────────────────────────────
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-const moduleDir = import.meta.dirname ?? path.dirname(fileURLToPath(import.meta.url));
-const dir = path.dirname(moduleDir);
-/** In compiled binary, moduleDir is /$bunfs/root (virtual FS). Fall back to real cwd. */
-export const serverDirectory = dir.startsWith('/$bunfs') ? process.cwd() : dir;
-
-// ── Server events ─────────────────────────────────────────────────────────────
 import EventEmitter from 'node:events';
-import process from 'node:process';
-
-/**
- * @typedef {import('../index').ServerEventMap} ServerEventMap
- * @type {EventEmitter<ServerEventMap>} The default event source.
- */
-export const serverEvents = new EventEmitter();
-process.serverEvents = serverEvents;
-export default serverEvents;
-
-/**
- * @enum {string}
- * @readonly
- */
-export const EVENT_NAMES = Object.freeze({
-    /**
-     * Emitted when the server has started.
-     */
-    SERVER_STARTED: 'server-started',
-});
-
-// ── Config init ───────────────────────────────────────────────────────────────
-import { addMissingConfigValues } from './config-init.js';
-
-try {
-    addMissingConfigValues(path.join(process.cwd(), './config.yaml'));
-} catch (error) {
-    console.error(error);
-}
-
-// ── Server startup (endpoint registration + HTTP/HTTPS listener) ──────────────
 import https from 'node:https';
 import http from 'node:http';
 import fs from 'node:fs';
+import net from 'node:net';
+import dns from 'node:dns';
+import util from 'node:util';
+
+import cors from 'cors';
+import express from 'express';
+import compression from 'compression';
+import cookieSession from 'cookie-session';
+import multer from 'multer';
+import responseTime from 'response-time';
+import helmet from 'helmet';
+import bodyParser from 'body-parser';
+
+import { addMissingConfigValues } from './config-init.js';
 import { color, urlHostnameToIPv6, getHasIP } from './util.js';
 
 // Express routers
@@ -91,6 +68,33 @@ import { router as backupsRouter } from './endpoints/backups.js';
 import { router as imageMetadataRouter } from './endpoints/image-metadata.js';
 import { router as volcengineRouter } from './endpoints/volcengine.js';
 
+// ── Server directory ──────────────────────────────────────────────────────────
+const moduleDir = import.meta.dirname ?? path.dirname(fileURLToPath(import.meta.url));
+const dir = path.dirname(moduleDir);
+/** In compiled binary, moduleDir is /$bunfs/root (virtual FS). Fall back to real cwd. */
+export const serverDirectory = dir.startsWith('/$bunfs') ? process.cwd() : dir;
+
+// ── Server events ─────────────────────────────────────────────────────────────
+/**
+ * @typedef {import('../index').ServerEventMap} ServerEventMap
+ * @type {EventEmitter<ServerEventMap>} The default event source.
+ */
+export const serverEvents = new EventEmitter();
+process.serverEvents = serverEvents;
+export default serverEvents;
+
+export const EVENT_NAMES = Object.freeze({
+    SERVER_STARTED: 'server-started',
+});
+
+// ── Config init ───────────────────────────────────────────────────────────────
+try {
+    addMissingConfigValues(path.join(process.cwd(), './config.yaml'));
+} catch (error) {
+    console.error(error);
+}
+
+// ── Server startup ────────────────────────────────────────────────────────────
 /**
  * @typedef {object} ServerStartupResult
  * @property {boolean} v6Failed If the server failed to start on IPv6
@@ -113,56 +117,59 @@ export function redirectDeprecatedEndpoints(app: import('express').Express) {
         });
     }
 
-    redirect('/createcharacter', '/api/characters/create');
-    redirect('/renamecharacter', '/api/characters/rename');
-    redirect('/editcharacter', '/api/characters/edit');
-    redirect('/editcharacterattribute', '/api/characters/edit-attribute');
-    redirect('/v2/editcharacterattribute', '/api/characters/merge-attributes');
-    redirect('/deletecharacter', '/api/characters/delete');
-    redirect('/getcharacters', '/api/characters/all');
-    redirect('/getonecharacter', '/api/characters/get');
-    redirect('/getallchatsofcharacter', '/api/characters/chats');
-    redirect('/importcharacter', '/api/characters/import');
-    redirect('/dupecharacter', '/api/characters/duplicate');
-    redirect('/exportcharacter', '/api/characters/export');
-    redirect('/savechat', '/api/chats/save');
-    redirect('/getchat', '/api/chats/get');
-    redirect('/renamechat', '/api/chats/rename');
-    redirect('/delchat', '/api/chats/delete');
-    redirect('/exportchat', '/api/chats/export');
-    redirect('/importgroupchat', '/api/chats/group/import');
-    redirect('/importchat', '/api/chats/import');
-    redirect('/getgroupchat', '/api/chats/group/get');
-    redirect('/deletegroupchat', '/api/chats/group/delete');
-    redirect('/savegroupchat', '/api/chats/group/save');
-    redirect('/getgroups', '/api/groups/all');
-    redirect('/creategroup', '/api/groups/create');
-    redirect('/editgroup', '/api/groups/edit');
-    redirect('/deletegroup', '/api/groups/delete');
-    redirect('/getworldinfo', '/api/worldinfo/get');
-    redirect('/deleteworldinfo', '/api/worldinfo/delete');
-    redirect('/importworldinfo', '/api/worldinfo/import');
-    redirect('/editworldinfo', '/api/worldinfo/edit');
-    redirect('/getstats', '/api/stats/get');
-    redirect('/recreatestats', '/api/stats/recreate');
-    redirect('/updatestats', '/api/stats/update');
-    redirect('/getbackgrounds', '/api/backgrounds/all');
-    redirect('/delbackground', '/api/backgrounds/delete');
-    redirect('/renamebackground', '/api/backgrounds/rename');
-    redirect('/downloadbackground', '/api/backgrounds/upload');
-    redirect('/savetheme', '/api/themes/save');
-    redirect('/getuseravatars', '/api/avatars/get');
-    redirect('/deleteuseravatar', '/api/avatars/delete');
-    redirect('/uploaduseravatar', '/api/avatars/upload');
-    redirect('/deletequickreply', '/api/quick-replies/delete');
-    redirect('/savequickreply', '/api/quick-replies/save');
-    redirect('/uploadimage', '/api/images/upload');
-    redirect('/listimgfiles/:folder', '/api/images/list/:folder');
-    redirect('/api/content/import', '/api/content/importURL');
-    redirect('/savemovingui', '/api/moving-ui/save');
-    redirect('/api/serpapi/search', '/api/search/serpapi');
-    redirect('/api/serpapi/visit', '/api/search/visit');
-    redirect('/api/serpapi/transcript', '/api/search/transcript');
+    const REDIRECTS: [string, string][] = [
+        ['/createcharacter', '/api/characters/create'],
+        ['/renamecharacter', '/api/characters/rename'],
+        ['/editcharacter', '/api/characters/edit'],
+        ['/editcharacterattribute', '/api/characters/edit-attribute'],
+        ['/v2/editcharacterattribute', '/api/characters/merge-attributes'],
+        ['/deletecharacter', '/api/characters/delete'],
+        ['/getcharacters', '/api/characters/all'],
+        ['/getonecharacter', '/api/characters/get'],
+        ['/getallchatsofcharacter', '/api/characters/chats'],
+        ['/importcharacter', '/api/characters/import'],
+        ['/dupecharacter', '/api/characters/duplicate'],
+        ['/exportcharacter', '/api/characters/export'],
+        ['/savechat', '/api/chats/save'],
+        ['/getchat', '/api/chats/get'],
+        ['/renamechat', '/api/chats/rename'],
+        ['/delchat', '/api/chats/delete'],
+        ['/exportchat', '/api/chats/export'],
+        ['/importgroupchat', '/api/chats/group/import'],
+        ['/importchat', '/api/chats/import'],
+        ['/getgroupchat', '/api/chats/group/get'],
+        ['/deletegroupchat', '/api/chats/group/delete'],
+        ['/savegroupchat', '/api/chats/group/save'],
+        ['/getgroups', '/api/groups/all'],
+        ['/creategroup', '/api/groups/create'],
+        ['/editgroup', '/api/groups/edit'],
+        ['/deletegroup', '/api/groups/delete'],
+        ['/getworldinfo', '/api/worldinfo/get'],
+        ['/deleteworldinfo', '/api/worldinfo/delete'],
+        ['/importworldinfo', '/api/worldinfo/import'],
+        ['/editworldinfo', '/api/worldinfo/edit'],
+        ['/getstats', '/api/stats/get'],
+        ['/recreatestats', '/api/stats/recreate'],
+        ['/updatestats', '/api/stats/update'],
+        ['/getbackgrounds', '/api/backgrounds/all'],
+        ['/delbackground', '/api/backgrounds/delete'],
+        ['/renamebackground', '/api/backgrounds/rename'],
+        ['/downloadbackground', '/api/backgrounds/upload'],
+        ['/savetheme', '/api/themes/save'],
+        ['/getuseravatars', '/api/avatars/get'],
+        ['/deleteuseravatar', '/api/avatars/delete'],
+        ['/uploaduseravatar', '/api/avatars/upload'],
+        ['/deletequickreply', '/api/quick-replies/delete'],
+        ['/savequickreply', '/api/quick-replies/save'],
+        ['/uploadimage', '/api/images/upload'],
+        ['/listimgfiles/:folder', '/api/images/list/:folder'],
+        ['/api/content/import', '/api/content/importURL'],
+        ['/savemovingui', '/api/moving-ui/save'],
+        ['/api/serpapi/search', '/api/search/serpapi'],
+        ['/api/serpapi/visit', '/api/search/visit'],
+        ['/api/serpapi/transcript', '/api/search/transcript'],
+    ];
+    for (const [src, dest] of REDIRECTS) redirect(src, dest);
 }
 
 /**
@@ -371,17 +378,6 @@ export class ServerStartup {
 }
 
 // ── Server main (Express app, middleware, routes, lifecycle) ──────────────────
-import net from 'node:net';
-import dns from 'node:dns';
-import cors from 'cors';
-import express from 'express';
-import compression from 'compression';
-import cookieSession from 'cookie-session';
-import multer from 'multer';
-import responseTime from 'response-time';
-import helmet from 'helmet';
-import bodyParser from 'body-parser';
-
 import './fetch-patch.js';
 import { loadPlugins } from './plugin-loader.js';
 import {
@@ -436,9 +432,6 @@ if (process.versions?.node?.match(/20\.[0-2]\.0/)) {
 }
 
 // Unrestrict console logs display limit
-const { defaultMaxArrayLength, defaultMaxStringLength, defaultMaxDepth } = { defaultMaxArrayLength: null, defaultMaxStringLength: null, defaultMaxDepth: 4 };
-// Use util.inspect directly (already imported above from util.js)
-import util from 'node:util';
 util.inspect.defaultOptions.maxArrayLength = null;
 util.inspect.defaultOptions.maxStringLength = null;
 util.inspect.defaultOptions.depth = 4;
