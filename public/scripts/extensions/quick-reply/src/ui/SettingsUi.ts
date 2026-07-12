@@ -102,10 +102,11 @@ export class SettingsUi {
                 clone.append(info);
             }
         }
-        this.dom.querySelector('#qr--chat').replaceWith(clone);
+        this.dom.querySelector('#qr--chat')?.replaceWith(clone);
     }
     prepareCharacterSetList() {
         const dom = this.template.querySelector('#qr--character');
+        if (!dom) return;
         const clone = /** @type {HTMLElement} */ (dom.cloneNode(true));
 
         if (!this.settings.charConfig) {
@@ -121,7 +122,7 @@ export class SettingsUi {
         }
 
         // Replace the old DOM element with our newly prepared clone.
-        this.dom.querySelector('#qr--character').replaceWith(clone);
+        this.dom.querySelector('#qr--character')?.replaceWith(clone);
     }
 
     prepareQrEditor() {
