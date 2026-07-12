@@ -2,6 +2,7 @@ import { CHAT_COMPLETION_SOURCES, MINIMAX_ENDPOINT } from '../../../../constants
 import { forwardFetchResponse, tryParse } from '../../../../util.js';
 import { postProcessPrompt, PROMPT_PROCESSING_TYPE, getPromptNames } from '../../../../prompt-converters.js';
 import { readSecret, SECRET_KEYS } from '../../../secrets.js';
+import { createSocketAbortController } from '../../common/abort-controller.js';
 import type { ChatProvider, ModelEntry } from '../types.js';
 
 const API_MINIMAX = 'https://api.minimax.io/v1';
@@ -26,9 +27,7 @@ const provider: ChatProvider = {
             return;
         }
 
-        const controller = new AbortController();
-        req.socket.removeAllListeners('close');
-        req.socket.on('close', () => controller.abort());
+        const { signal } = createSocketAbortController(req.socket);
 
         // MiniMax does not allow consecutive messages with the same role.
         const messages = postProcessPrompt(req.body.messages, PROMPT_PROCESSING_TYPE.MERGE_TOOLS, getPromptNames(req));
@@ -59,7 +58,7 @@ const provider: ChatProvider = {
                 'Authorization': 'Bearer ' + apiKey,
             },
             body: JSON.stringify(requestBody),
-            signal: controller.signal,
+            signal,
         };
 
         console.debug('MiniMax request:', requestBody);

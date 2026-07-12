@@ -8,6 +8,7 @@ import {
     calculateClaudeBudgetTokens,
 } from '../../../../prompt-converters.js';
 import { readSecret, SECRET_KEYS } from '../../../secrets.js';
+import { createSocketAbortController } from '../../common/abort-controller.js';
 import type { ChatProvider, ModelEntry } from '../types.js';
 
 const API_CLAUDE = 'https://api.anthropic.com/v1';
@@ -45,9 +46,7 @@ const provider: ChatProvider = {
         }
 
         try {
-            const controller = new AbortController();
-            req.socket.removeAllListeners('close');
-            req.socket.on('close', () => controller.abort());
+            const { signal } = createSocketAbortController(req.socket);
 
             const additionalHeaders: Record<string, string> = {};
             const betaHeaders = ['output-128k-2025-02-19', 'context-1m-2025-08-07'];
@@ -178,7 +177,7 @@ const provider: ChatProvider = {
 
             const generateResponse = await globalThis.fetch(apiUrl + '/messages', {
                 method: 'POST',
-                signal: controller.signal,
+                signal,
                 body: JSON.stringify(requestBody),
                 headers: {
                     'Content-Type': 'application/json',
