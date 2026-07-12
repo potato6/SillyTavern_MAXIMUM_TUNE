@@ -3236,6 +3236,7 @@ function enableKeysInputHelper({ template, entry, entryPropName, originalDataVal
         template?.querySelector(`select[name="${entryPropName}"]`) :
         template?.querySelector(`textarea[name="${entryPropName}"]`);
     if (!input) return { isFancy: false, control: null };
+    input.dataset.uid = String(entry.uid);
     input.dataset.macros = ''; // active
     // @ts-expect-error TS(7006) FIXME: Parameter 'event' implicitly has an 'any' type.
     input.addEventListener('click', function (event) {
@@ -4083,7 +4084,7 @@ export async function getWorldEntry(name, data, entry) {
             setWIOriginalDataValue(data, uid, 'selectiveLogic', data.entries[uid].selectiveLogic);
             if (!data_noSave) await saveWorldInfo(name, data);
         });
-        const logicOption = editTemplate?.querySelector(`select[name="entryLogicType"] option[value=${entry.selectiveLogic}]`);
+        const logicOption = editTemplate?.querySelector(`select[name="entryLogicType"] option[value="${entry.selectiveLogic}"]`);
         if (logicOption instanceof HTMLOptionElement) logicOption.selected = true;
         selectiveLogicDropdown[0].dispatchEvent(new CustomEvent('input', { detail: { noSave: true } }));
 
