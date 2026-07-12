@@ -4382,11 +4382,13 @@ export async function getWorldEntry(name, data, entry) {
 
         countTokensDebounced(counter, contentInput.value);
 
-        editTemplate.querySelectorAll('.inline-drawer-content').css('display', 'none');
+        const editContent = editTemplate?.querySelector('.inline-drawer-content');
+    if (editContent instanceof HTMLElement) editContent.style.display = 'none';
         editOutlet.append(editTemplate);
     }
 
-    headerTemplate.querySelectorAll('.inline-drawer-content').css('display', 'none');
+    const headerContent = headerTemplate?.querySelector('.inline-drawer-content');
+    if (headerContent instanceof HTMLElement) headerContent.style.display = 'none';
 
     return headerTemplate;
 }
