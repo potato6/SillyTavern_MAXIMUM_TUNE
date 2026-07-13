@@ -3,11 +3,18 @@ import express from 'express';
 import { TEXTGEN_TYPES } from '../../../constants.js';
 import { trimV1 } from '../../../util.js';
 import { setAdditionalHeaders } from '../../../additional-headers.js';
-import { getProvider } from './registry.js';
+import { getProvider, getRegisteredTypes } from './registry.js';
 import { PROVIDER_ENDPOINTS } from './types.js';
 import { proxyRequest } from '../common/proxy.js';
 
 export const router = express.Router();
+
+// Pre-warm all providers to avoid cold-start import compilation.
+Promise.all(
+    getRegisteredTypes().map(type =>
+        getProvider(type).catch(() => { /* provider may not be available */ }),
+    ),
+);
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 

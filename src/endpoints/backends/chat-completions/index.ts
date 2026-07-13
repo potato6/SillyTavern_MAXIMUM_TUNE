@@ -10,11 +10,19 @@ import {
     getWebTokenizer,
 } from '../../tokenizers.js';
 import { readSecret, SECRET_KEYS } from '../../secrets.js';
-import { getChatProvider } from './registry.js';
+import { getChatProvider, getRegisteredSources } from './registry.js';
 import { getCachedModels, setCachedModels } from '../common/model-cache.js';
 import type { ModelEntry } from './types.js';
 
 export const router = express.Router();
+
+// Pre-warm all providers to avoid cold-start import compilation
+// in Bun's standalone binary.  First request then hits a warm cache.
+Promise.all(
+    getRegisteredSources().map(src =>
+        getChatProvider(src).catch(() => { /* provider may not be available */ }),
+    ),
+);
 
 // ── Status ─────────────────────────────────────────────────────────────────────
 
