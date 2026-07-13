@@ -15,7 +15,6 @@ import compression from 'compression';
 import multer from 'multer';
 import responseTime from 'response-time';
 import helmet from 'helmet';
-import bodyParser from 'body-parser';
 
 import { addMissingConfigValues } from './config-init.js';
 import { serverDirectory } from './server-directory.js';
@@ -448,8 +447,8 @@ app.use(helmet({ contentSecurityPolicy: false }));
 // @ts-expect-error TS(2769) Bun/Express type mismatch
 app.use(compression());
 app.use(responseTime());
-app.use(bodyParser.json({ limit: '500mb' }));
-app.use(bodyParser.urlencoded({ extended: true, limit: '500mb' }));
+app.use(express.json({ limit: '500mb' }));
+app.use(express.urlencoded({ extended: true, limit: '500mb' }));
 
 // CORS Settings
 // @ts-expect-error TS(2345) FIXME: Argument of type 'true' is not assignable to param...

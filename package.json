@@ -11,7 +11,6 @@
         "agent-base": "^9.0.0",
         "archiver": "^8.0.0",
         "bing-translate-api": "^4.2.0",
-        "body-parser": "^2.3.0",
         "bowser": "^2.14.1",
         "bytes": "^3.1.2",
         "cash-dom": "^8.1.5",
