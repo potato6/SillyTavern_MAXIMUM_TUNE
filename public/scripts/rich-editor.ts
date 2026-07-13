@@ -96,23 +96,27 @@ async function openToastPopup(
                     ['code', 'codeblock'],
                     ['scrollSync'],
                 ],
-                // Custom renderer for the preview pane — color quotation marks
                 customHTMLRenderer: {
                     text(node: any) {
                         const text = node?.literal;
                         if (typeof text !== 'string') return [{ type: 'text', content: '' }];
-                        if (text.includes('\u201C') || text.includes('\u201D')) {
-                            try {
-                                const styled = text.replace(
-                                    /(\u201C[^\u201D]*\u201D)/g,
-                                    '<span class="quote-text">$1</span>'
-                                );
-                                return [{ type: 'html', content: styled }];
-                            } catch {
-                                return [{ type: 'text', content: text }];
-                            }
+                        if (!text.includes('"') && !text.includes('\u201C') && !text.includes('\u201D')) {
+                            return [{ type: 'text', content: text }];
                         }
-                        return [{ type: 'text', content: text }];
+                        try {
+                            // Single alternation: match either "straight" or \u201Ccurly\u201D,
+                            // wrap both in the same styled span — no double-wrapping possible.
+                            const result = text.replace(
+                                /"([^"]*)"|(\u201C[^\u201D]*\u201D)/g,
+                                (_m: string, straight: string, curly: string) =>
+                                    straight
+                                        ? `<span class="quote-text">\u201C${straight}\u201D</span>`
+                                        : `<span class="quote-text">${curly}</span>`,
+                            );
+                            return [{ type: 'html', content: result }];
+                        } catch {
+                            return [{ type: 'text', content: text }];
+                        }
                     },
                 },
             });
@@ -149,7 +153,6 @@ async function openToastPopup(
             `;
             container.appendChild(themeStyle);
 
-            // 5. Custom inline-quote toolbar button
             const LQ = '\u201C', RQ = '\u201D';
             const doInlineQuote = () => {
                 editor.focus();
@@ -165,7 +168,6 @@ async function openToastPopup(
 
                 // WYSIWYG mode: insert styled HTML via contenteditable API
                 if (cm.view) {
-                    // ProseMirror view exists — we're in WYSIWYG mode
                     const html = `<span style="color:var(--SmartThemeQuoteColor,#e18a24)">${LQ}${sel}${RQ}</span>`;
                     document.execCommand('insertHTML', false, html);
                 } else {
@@ -174,9 +176,12 @@ async function openToastPopup(
                 }
             };
 
-            // Add the quote button to the toolbar — wait for it to be built
+            // Add the quote button to the toolbar (leftmost position)
             const addQuoteBtn = (toolbarEl: HTMLElement) => {
                 if (toolbarEl.querySelector('[title="Inline quote"]')) return;
+                if (!toolbarEl.querySelector('.toastui-editor-toolbar-group')) return;
+                const group = document.createElement('div');
+                group.className = 'toastui-editor-toolbar-group';
                 const btn = document.createElement('button');
                 btn.type = 'button';
                 btn.className = 'toastui-editor-toolbar-icons';
@@ -184,11 +189,15 @@ async function openToastPopup(
                 btn.innerHTML = '\u201C';
                 btn.style.cssText = 'font-size:19px; font-weight:bold; color:var(--SmartThemeQuoteColor,#e18a24); line-height:1; padding:0 6px;';
                 btn.addEventListener('click', doInlineQuote);
-                toolbarEl.appendChild(btn);
+                group.appendChild(btn);
+                toolbarEl.prepend(group);
             };
             const pollInterval = setInterval(() => {
                 const toolbar = container.querySelector('.toastui-editor-defaultUI-toolbar');
-                if (toolbar) { addQuoteBtn(toolbar); clearInterval(pollInterval); }
+                if (toolbar && toolbar.querySelector('.toastui-editor-toolbar-group')) {
+                    addQuoteBtn(toolbar);
+                    clearInterval(pollInterval);
+                }
             }, 50);
             setTimeout(() => clearInterval(pollInterval), 5000);
 
