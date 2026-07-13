@@ -52,7 +52,7 @@ const provider: BackendProvider = {
  * Ollama sends one JSON object per line (not `data: ...`-prefixed SSE).
  */
 export async function parseOllamaStream(
-    jsonStream: { body: import('node:stream').Readable | null },
+    jsonStream: { body: import('node:stream').Readable | ReadableStream | null },
     request: import('express').Request,
     response: import('express').Response,
 ): Promise<void> {
@@ -61,8 +61,13 @@ export async function parseOllamaStream(
             throw new Error('No body in the response');
         }
 
+        // Bun: Response.body is a Web ReadableStream without .on('data').
+        const body: Readable = typeof (jsonStream.body as any).on === 'function'
+            ? jsonStream.body as unknown as Readable
+            : (Readable.fromWeb as any)(jsonStream.body);
+
         let partialData = '';
-        jsonStream.body.on('data', (data: Buffer) => {
+        body.on('data', (data: Buffer) => {
             const chunk = data.toString();
             partialData += chunk;
             while (true) {
@@ -81,11 +86,11 @@ export async function parseOllamaStream(
         });
 
         request.socket.on('close', function () {
-            if (jsonStream.body instanceof Readable) jsonStream.body.destroy();
+            if (body instanceof Readable) body.destroy();
             response.end();
         });
 
-        jsonStream.body.on('end', () => {
+        body.on('end', () => {
             console.info('Streaming request finished');
             response.write('data: [DONE]\n\n');
             response.end();
