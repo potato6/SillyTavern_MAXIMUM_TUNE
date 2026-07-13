@@ -24,6 +24,16 @@ export function addExecuteButtonToCodeBlocks() {
         addButton(block, lang);
         block.classList.add('code-runner');
     }
+    // Auto-run when toggle is enabled
+    if (power_user.auto_run_code) {
+        const blocks = document.querySelectorAll('#chat .mes_text pre code.code-runner');
+        for (const block of blocks) {
+            const btn = block.parentElement?.nextElementSibling;
+            if (btn && btn.classList.contains('code-runner-button')) {
+                (btn as HTMLElement).click();
+            }
+        }
+    }
 }
 
 /**
@@ -53,7 +63,8 @@ function addButton(block, lang) {
                 btn.title = 'Hide preview';
             }
         });
-        block.appendChild(btn);
+        // Insert after the <pre> so the button stays visible if a regex hides the <pre>/<code>
+        block.parentElement.after(btn);
         return;
     }
 
@@ -64,17 +75,21 @@ function addButton(block, lang) {
         if (lang === 'javascript') runJS(block);
         else if (lang === 'stscript') runST(block);
     });
-    block.appendChild(btn);
+    // Insert after the <pre> so the button stays visible if a regex hides the <pre>/<code>
+    block.parentElement.after(btn);
 }
 
 // ── Output helpers ────────────────────────────────────────────────────────
 
 function getOutput(block) {
-    let el = block.parentElement.querySelector('.code-output');
+    const pre = block.parentElement;
+    // Walk siblings after <pre> to find existing output (button may be between them)
+    let el = pre.nextElementSibling;
+    while (el && !el.classList.contains('code-output')) el = el.nextElementSibling;
     if (!el) {
         el = document.createElement('blockquote');
         el.className = 'code-output';
-        block.parentElement.appendChild(el);
+        pre.after(el);
     }
     el.innerHTML = '';
 
@@ -208,5 +223,6 @@ function renderHTML(block, fullSize = false) {
     iframe.srcdoc = html;
 
     container.append(clear, expand, iframe);
-    block.parentElement.appendChild(container);
+    // Place after the <pre> so it stays visible even if a regex hides the code block
+    block.parentElement.after(container);
 }

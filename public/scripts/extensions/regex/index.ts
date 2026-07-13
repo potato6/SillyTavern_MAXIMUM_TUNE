@@ -8,7 +8,7 @@ import { ARGUMENT_TYPE, SlashCommandArgument, SlashCommandNamedArgument } from '
 import { commonEnumProviders, enumIcons } from '../../slash-commands/SlashCommandCommonEnumsProvider.js';
 import { SlashCommandEnumValue, enumTypes } from '../../slash-commands/SlashCommandEnumValue.js';
 import { SlashCommandParser } from '../../slash-commands/SlashCommandParser.js';
-import { download, equalsIgnoreCaseAndAccents, escapeHtml, getFileText, getSortableDelay, isFalseBoolean, isTrueBoolean, regexFromString, setInfoBlock, uuidv4 } from '../../utils.js';
+import { download, equalsIgnoreCaseAndAccents, escapeHtml, getFileText, getSortableDelay, isFalseBoolean, isTrueBoolean, regexFromString, setInfoBlock, uuidv4, debounce } from '../../utils.js';
 import { allowPresetScripts, allowScopedScripts, disallowPresetScripts, disallowScopedScripts, getCurrentPresetAPI, getCurrentPresetName, getRegexScripts, getScriptsByType, isPresetScriptsAllowed, isScopedScriptsAllowed, regex_placement, RegexProvider, runRegexScript, saveScriptsByType, SCRIPT_TYPE_UNKNOWN, SCRIPT_TYPES, substitute_find_regex } from './engine.js';
 import { t } from '../../i18n.js';
 import { accountStorage } from '../../util/AccountStorage.js';
@@ -709,16 +709,18 @@ async function loadRegexScripts() {
         scriptHtml.attr('id', script.id);
         scriptHtml.find('.regex_script_name').text(script.scriptName).attr('title', script.scriptName);
         scriptHtml.find('.disable_regex').prop('checked', script.disabled ?? false);
-        scriptHtml.find('.disable_regex')[0].addEventListener('input', async function(this: any) {
-            script.disabled = !this.checked;
+        scriptHtml.find('.disable_regex')[0].addEventListener('input', async function (this: any) {
+            script.disabled = this.checked;
                 await save();
             });
-        scriptHtml.find('.regex-toggle-on')[0].addEventListener('click', function () {
+        scriptHtml.find('.regex-toggle-on')[0].addEventListener('click', function (this: any, e: any) {
+            e.preventDefault();
             const checkbox = scriptHtml.find('.disable_regex')[0];
             checkbox.checked = true;
             checkbox.dispatchEvent(new Event('input', { bubbles: true }));
         });
-        scriptHtml.find('.regex-toggle-off')[0].addEventListener('click', function () {
+        scriptHtml.find('.regex-toggle-off')[0].addEventListener('click', function (this: any, e: any) {
+            e.preventDefault();
             const checkbox = scriptHtml.find('.disable_regex')[0];
             checkbox.checked = false;
             checkbox.dispatchEvent(new Event('input', { bubbles: true }));
@@ -2272,6 +2274,19 @@ export async function init() {
     eventSource.on(event_types.PRESET_RENAMED_BEFORE, onPresetRenamed);
     eventSource.on(event_types.PRESET_CHANGED, checkPresetEmbeddedRegexScripts);
     eventSource.on(event_types.PRESET_DELETED, purgePresetEmbeddedRegexScripts);
+
+    // Watch for scripts added by other extensions (e.g. RPG Companion) that push to
+    // extension_settings.regex outside of the standard loadRegexScripts cycle.
+    // A debounced refresh ensures the UI stays in sync without spamming re-renders.
+    const originalRegexArray = extension_settings.regex;
+    const debouncedRefresh = debounce(() => loadRegexScripts(), 100);
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    const originalPush = Array.prototype.push;
+    originalRegexArray.push = function (...items: any[]) {
+        const result = originalPush.apply(this, items);
+        debouncedRefresh();
+        return result;
+    };
 
     presetManager.setupEventListeners();
     presetManager.registerSlashCommands();

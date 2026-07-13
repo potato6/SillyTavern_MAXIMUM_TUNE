@@ -38,12 +38,12 @@ export class SettingsUi {
 
     rerender() {
         if (!this.dom) return;
-        const content = this.dom.querySelector('.inline-drawer-content');
-        content.innerHTML = '';
-        // @ts-ignore
-                Array.from(this.dom.querySelector('.inline-drawer-content')?.cloneNode(true)?.children ?? []).forEach(el => {
-            content.append(el);
-        });
+        if (!this.template) return;
+        const parent = this.dom.parentNode;
+        if (!parent) return;
+        const clone = this.template.cloneNode(true);
+        parent.replaceChild(clone, this.dom);
+        this.dom = clone;
         this.prepareDom();
     }
     unrender() {

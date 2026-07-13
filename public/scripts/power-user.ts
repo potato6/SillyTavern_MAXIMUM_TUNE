@@ -148,6 +148,7 @@ export const power_user = {
     smooth_streaming_speed: 50,
     stream_fade_in: false,
     enable_code_execution: false,
+    auto_run_code: false,
 
     fast_ui_mode: true,
     avatar_style: avatar_styles.ROUND,
@@ -2021,6 +2022,8 @@ export async function loadPowerUserSettings(settings, data) {
     if (streamFadeInEl) streamFadeInEl.checked = power_user.stream_fade_in;
     const enableCodeExecutionEl = document.getElementById('enable_code_execution') as HTMLInputElement | null;
     if (enableCodeExecutionEl) enableCodeExecutionEl.checked = power_user.enable_code_execution;
+    const autoRunCodeEl = document.getElementById('auto_run_code') as HTMLInputElement | null;
+    if (autoRunCodeEl) autoRunCodeEl.checked = power_user.auto_run_code;
     (document.getElementById('font_scale') as HTMLInputElement).value = String(power_user.font_scale);
     (document.getElementById('font_scale_counter') as HTMLInputElement).value = String(power_user.font_scale);
     (document.getElementById('blur_strength') as HTMLInputElement).value = String(power_user.blur_strength);
@@ -3772,6 +3775,11 @@ function registerSettingsPanelHandlers() {
         } else {
             codeRunner.removeExecuteButtons();
         }
+    });
+    const autoRunCodeEl = guardEl('auto_run_code') as HTMLInputElement | null;
+    if (autoRunCodeEl) autoRunCodeEl.addEventListener('change', function (this: HTMLElement) {
+        power_user.auto_run_code = !!(this instanceof HTMLInputElement && this.checked);
+        saveSettingsDebounced();
     });
 
     // Font scale
