@@ -126,23 +126,24 @@ async function openToastPopup(
             themeStyle.textContent = `
                 .ProseMirror,
                 .toastui-editor-contents {
-                    background: var(--SmartThemeBlurTintColor, #1a1a2e) !important;
-                    color: var(--SmartThemeBodyColor, #e0e0e0) !important;
+                    background: var(--SmartThemeBlurTintColor, #1a1a2e);
+                    color: var(--SmartThemeBodyColor, #e0e0e0);
+                    text-align: left;
                 }
                 .toastui-editor-contents h1,
                 .toastui-editor-contents h2,
                 .toastui-editor-contents h3,
                 .toastui-editor-contents h4 { color: var(--SmartThemeBodyColor, #e0e0e0); }
                 .toastui-editor-contents blockquote {
-                    border-left-color: var(--SmartThemeQuoteColor, #e18a24) !important;
-                    color: var(--SmartThemeEmColor, #919191) !important;
+                    border-left-color: var(--SmartThemeQuoteColor, #e18a24);
+                    color: var(--SmartThemeEmColor, #919191);
                 }
                 .toastui-editor-contents a {
-                    color: var(--SmartThemeLinkColor, #6fb3d2) !important;
+                    color: var(--SmartThemeLinkColor, #6fb3d2);
                 }
                 .toastui-editor-contents code,
                 .toastui-editor-contents pre {
-                    background: var(--black50a, rgba(0,0,0,0.5)) !important;
+                    background: var(--black50a, rgba(0,0,0,0.5));
                 }
                 .toastui-editor-contents strong { color: var(--SmartThemeBodyColor, #e0e0e0); }
                 .toastui-editor-contents em { color: var(--SmartThemeEmColor, #919191); }
