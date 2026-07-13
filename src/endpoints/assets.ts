@@ -1,11 +1,11 @@
 import path from 'node:path';
 import fs from 'node:fs';
+import { Readable } from 'node:stream';
 import { finished } from 'node:stream/promises';
 
 import mime from 'mime-types';
 import express from 'express';
 import sanitize from 'sanitize-filename';
-import fetch from 'node-fetch';
 
 import { UNSAFE_EXTENSIONS } from '../constants.js';
 import { clientRelativePath, isValidUrl } from '../util.js';
@@ -238,7 +238,7 @@ router.post('/download', async (request, response) => {
             await fs.promises.unlink(temp_path);
         }
         const fileStream = fs.createWriteStream(destination, { flags: 'wx' });
-        await finished(res.body.pipe(fileStream));
+        await finished(Readable.fromWeb(res.body as any).pipe(fileStream));
 
         if (category === 'character') {
             const fileContent = fs.readFileSync(temp_path);

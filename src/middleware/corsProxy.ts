@@ -1,5 +1,4 @@
 import type { Request, Response } from 'express';
-import fetch from 'node-fetch';
 import { forwardFetchResponse } from '../util.js';
 
 /**

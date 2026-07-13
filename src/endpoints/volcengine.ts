@@ -1,5 +1,5 @@
-import fetch from 'node-fetch';
 import { Router } from 'express';
+import { Readable } from 'node:stream';
 
 import { readSecret, SECRET_KEYS } from './secrets.js';
 
@@ -72,11 +72,8 @@ router.post('/generate-voice', async (req, res) => {
         const result = await new Promise((resolve, reject) => {
             const audioChunks_: Buffer[] = [];
             let buffer = '';
-            if (!response.body) {
-                reject(new Error('Response body is null'));
-                return;
-            }
-            response.body.on('data', (chunk) => {
+            const bodyStream = Readable.fromWeb(response.body as any);
+            bodyStream.on('data', (chunk) => {
                 buffer += decoder.decode(chunk, { stream: true });
 
                 const lines = buffer.split('\n');
@@ -101,7 +98,7 @@ router.post('/generate-voice', async (req, res) => {
                 }
             });
 
-            response.body.on('end', () => {
+            bodyStream.on('end', () => {
                 if (buffer.trim()) {
                     try {
                         const { code, data, message } = JSON.parse(buffer);
@@ -120,7 +117,7 @@ router.post('/generate-voice', async (req, res) => {
                 resolve(audioChunks_);
             });
 
-            response.body.on('error', (error) => {
+            bodyStream.on('error', (error) => {
                 reject(`Error reading Volcengine TTS stream: ${error}`);
             });
         });

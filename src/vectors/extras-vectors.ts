@@ -1,4 +1,3 @@
-import fetch from 'node-fetch';
 
 /**
  * Gets the vector for the given text from SillyTavern-extras

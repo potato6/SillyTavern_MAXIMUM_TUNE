@@ -1,6 +1,5 @@
-import { sync as commandExistsSync } from 'command-exists';
-// @ts-expect-error TS(2792) FIXME: Cannot find module 'simple-git'. Did you mean to s... Remove this comment to see the full error message
-import simpleGit, { SimpleGit } from 'simple-git';
+import simpleGit from 'simple-git';
+import type { SimpleGit } from 'simple-git';
 
 /**
  * Supported git backends.
@@ -39,7 +38,7 @@ const SUPPORTED_CLONE_OPTIONS = new Set(['depth', 'branch']);
  * @throws {Error} If the system Git binary is not found in PATH
  */
 function resolveBackend(preferredBackend?: string | null): 'system' {
-    const systemGitAvailable = commandExistsSync('git');
+    const systemGitAvailable = Bun.which('git') !== null;
 
     if (!systemGitAvailable) {
         throw new Error(

@@ -1,8 +1,5 @@
 import fs from 'node:fs';
 import { Buffer } from 'node:buffer';
-
-import fetch from 'node-fetch';
-import FormData from 'form-data';
 import express from 'express';
 
 import { getConfigValue, mergeObjectWithYaml, excludeKeysByYaml, trimV1, delay } from '../util.js';
@@ -848,8 +845,9 @@ function createTranscribeHandler({
             }
 
             console.info(`Processing audio file with ${providerName}`, request.file.path);
+            const fileBuffer = fs.readFileSync(request.file.path);
             const formData = new FormData();
-            formData.append('file', fs.createReadStream(request.file.path), { filename: 'audio.wav', contentType: 'audio/wav' });
+            formData.append('file', new Blob([fileBuffer], { type: 'audio/wav' }), 'audio.wav');
             formData.append('model', request.body.model);
 
             if (request.body.language) {
@@ -860,7 +858,6 @@ function createTranscribeHandler({
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${key}`,
-                    ...formData.getHeaders(),
                 },
                 body: formData,
             });

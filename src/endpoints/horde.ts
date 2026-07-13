@@ -1,4 +1,3 @@
-import fetch from 'node-fetch';
 import express from 'express';
 // @ts-expect-error TS(2792) FIXME: Cannot find module '@zeldafan0225/ai_horde'. Did y... Remove this comment to see the full error message
 import { AIHorde, ModelGenerationInputStableSamplers, ModelInterrogationFormTypes, HordeAsyncRequestStates } from '@zeldafan0225/ai_horde';

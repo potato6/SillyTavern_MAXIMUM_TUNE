@@ -1,8 +1,6 @@
 import { Buffer } from 'node:buffer';
 import fs from 'node:fs';
 import express from 'express';
-import fetch from 'node-fetch';
-import FormData from 'form-data';
 import mime from 'mime-types';
 import { forwardFetchResponse } from '../util.js';
 import { readSecret, SECRET_KEYS } from './secrets.js';
@@ -283,10 +281,7 @@ elevenlabs.post('/voices/add', async (req, res) => {
                 continue;
             }
             const buffer = Buffer.from(base64Data, 'base64');
-            formData.append('files', buffer, {
-                filename: `audio.${mime.extension(mimeType) || 'wav'}`,
-                contentType: mimeType,
-            });
+            formData.append('files', new Blob([buffer], { type: mimeType }), `audio.${mime.extension(mimeType) || 'wav'}`);
         }
 
         console.debug('ElevenLabs voice upload request:', { name, description, labels, files: files?.length || 0 });
@@ -327,8 +322,9 @@ elevenlabs.post('/recognize', async (req, res) => {
         }
 
         console.info('Processing audio file with ElevenLabs', req.file.path);
+        const fileBuffer = fs.readFileSync(req.file.path);
         const formData = new FormData();
-        formData.append('file', fs.createReadStream(req.file.path), { filename: 'audio.wav', contentType: 'audio/wav' });
+        formData.append('file', new Blob([fileBuffer], { type: 'audio/wav' }), 'audio.wav');
         formData.append('model_id', req.body.model);
 
         const response = await fetch('https://api.elevenlabs.io/v1/speech-to-text', {

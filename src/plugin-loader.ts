@@ -4,7 +4,6 @@ import url from 'node:url';
 
 import express from 'express';
 import { default as git, CheckRepoActions } from 'simple-git';
-import { sync as commandExistsSync } from 'command-exists';
 import { getConfigValue, color } from './util.js';
 
 // @ts-expect-error TS(2345) FIXME: Argument of type 'false' is not assignable to para... Remove this comment to see the full error message
@@ -271,7 +270,7 @@ async function updatePlugins(pluginsPath: string) {
 
     console.log(color.blue('Auto-updating server plugins... Set'), color.yellow('enableServerPluginsAutoUpdate: false'), color.blue('in config.yaml to disable this feature.'));
 
-    if (!commandExistsSync('git')) {
+    if (!Bun.which('git')) {
         console.error(color.red('Git is not installed. Please install Git to enable auto-updating of server plugins.'));
         return;
     }

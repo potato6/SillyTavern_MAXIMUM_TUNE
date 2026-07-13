@@ -11,7 +11,6 @@ import crypto from 'node:crypto';
 import readline from 'node:readline';
 
 import yaml from 'yaml';
-import { sync as commandExistsSync } from 'command-exists';
 import { get } from 'es-toolkit/compat';
 import * as fflate from 'fflate';
 import mime from 'mime-types';
@@ -151,7 +150,7 @@ export async function getVersion() {
         const require = createRequire(import.meta.url);
         const pkgJson = require(path.join(serverDirectory, './package.json'));
         pkgVersion = pkgJson.version;
-        if (commandExistsSync('git')) {
+        if (Bun.which('git')) {
             const git = simpleGit({ baseDir: serverDirectory });
             gitRevision = await git.revparse(['--short', 'HEAD']);
             gitBranch = await git.revparse(['--abbrev-ref', 'HEAD']);
@@ -611,11 +610,11 @@ export function getImages(directoryPath: string, sortBy = 'name', type = MEDIA_R
 
 /**
  * Pipe a fetch() response to an Express.js Response, including status code.
- * @param {import('node-fetch').Response} from The Fetch API response to pipe from.
+ * @param {Response} from The Fetch API response to pipe from.
  * @param {import('express').Response} to The Express response to pipe to.
  * @returns {Promise<void>}
  */
-export async function forwardFetchResponse(from: import('node-fetch').Response, to: import('express').Response) {
+export async function forwardFetchResponse(from: Response, to: import('express').Response) {
     let statusCode = from.status;
     const statusText = from.statusText;
 
@@ -649,7 +648,7 @@ export async function forwardFetchResponse(from: import('node-fetch').Response, 
     if (from.body && to.socket) {
         // Bun: Response.body is a Web ReadableStream without .pipe().
         // Convert to Node.js Readable for cross-runtime compatibility.
-        const stream: Readable = typeof from.body.pipe === 'function'
+        const stream: Readable = typeof (from.body as any).pipe === 'function'
             ? from.body as unknown as Readable
             : Readable.fromWeb(from.body as any);
 
