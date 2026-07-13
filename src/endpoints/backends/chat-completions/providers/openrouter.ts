@@ -14,6 +14,7 @@ import {
 import { readSecret, SECRET_KEYS } from '../../../secrets.js';
 import { proxyRequest } from '../../common/proxy.js';
 import { buildProviderConfig, OPENROUTER_HEADERS } from '../../common/openrouter.js';
+import { createSocketAbortController } from '../../common/abort-controller.js';
 import type { ChatProvider, ModelEntry } from '../types.js';
 
 const API_OPENROUTER = 'https://openrouter.ai/api/v1';
@@ -64,9 +65,7 @@ const provider: ChatProvider = {
             return;
         }
 
-        const controller = new AbortController();
-        req.socket.removeAllListeners('close');
-        req.socket.on('close', () => controller.abort());
+        const { signal } = createSocketAbortController(req.socket);
 
         const bodyParams: Record<string, unknown> = {
             transforms: undefined as any,
@@ -157,7 +156,7 @@ const provider: ChatProvider = {
                 'Authorization': `Bearer ${apiKey}`,
                 ...OPENROUTER_HEADERS,
             },
-            signal: controller.signal,
+            signal,
             stream: req.body.stream,
         });
     },

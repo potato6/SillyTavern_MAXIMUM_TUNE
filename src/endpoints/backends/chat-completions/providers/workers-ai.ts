@@ -2,6 +2,7 @@ import { CHAT_COMPLETION_SOURCES } from '../../../../constants.js';
 import { readSecret, SECRET_KEYS } from '../../../secrets.js';
 import { createOAIChatProvider } from '../../common/oai-provider.js';
 import { proxyRequest } from '../../common/proxy.js';
+import { createSocketAbortController } from '../../common/abort-controller.js';
 import type { ChatProvider, ModelEntry } from '../types.js';
 
 const API_WORKERS_AI = 'https://api.cloudflare.com/client/v4/accounts';
@@ -49,9 +50,7 @@ const provider: ChatProvider = {
         }
 
         const baseUrl = `${API_WORKERS_AI}/${encodeURIComponent(accountId)}/ai/v1`;
-        const controller = new AbortController();
-        req.socket.removeAllListeners('close');
-        req.socket.on('close', () => controller.abort());
+        const { signal } = createSocketAbortController(req.socket);
 
         const body: Record<string, unknown> = {
             messages: req.body.messages,
@@ -87,7 +86,7 @@ const provider: ChatProvider = {
             url,
             body: JSON.stringify(body),
             headers,
-            signal: controller.signal,
+            signal,
             stream: req.body.stream,
         });
     },

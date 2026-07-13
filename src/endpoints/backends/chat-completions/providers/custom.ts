@@ -1,6 +1,7 @@
 import { CHAT_COMPLETION_SOURCES, OPENAI_REASONING_EFFORT_MAP, OPENAI_REASONING_EFFORT_MODELS, OPENAI_FIXED_REASONING_EFFORT, OPENAI_VERBOSITY_MODELS } from '../../../../constants.js';
 import { readSecret, SECRET_KEYS } from '../../../secrets.js';
 import { proxyRequest } from '../../common/proxy.js';
+import { createSocketAbortController } from '../../common/abort-controller.js';
 import type { ChatProvider, ModelEntry } from '../types.js';
 
 const provider: ChatProvider = {
@@ -83,9 +84,7 @@ const provider: ChatProvider = {
             ? `${apiUrl}/completions`
             : `${apiUrl}/chat/completions`;
 
-        const controller = new AbortController();
-        req.socket.removeAllListeners('close');
-        req.socket.on('close', () => controller.abort());
+        const { signal } = createSocketAbortController(req.socket);
 
         const requestBody: Record<string, unknown> = {
             messages: isTextCompletion ? undefined : req.body.messages,
@@ -123,7 +122,7 @@ const provider: ChatProvider = {
             url: endpointUrl,
             body: JSON.stringify(requestBody),
             headers,
-            signal: controller.signal,
+            signal,
             stream: req.body.stream,
         });
     },

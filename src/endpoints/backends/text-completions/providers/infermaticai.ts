@@ -1,26 +1,18 @@
 import { TEXTGEN_TYPES, INFERMATICAI_KEYS } from '../../../../constants.js';
-import { pickBy } from 'es-toolkit/compat';
-import type { BackendProvider } from '../types.js';
+import { createOAITextProvider } from '../../common/oai-text-provider.js';
 
-const provider: BackendProvider = {
+export default createOAITextProvider({
     type: TEXTGEN_TYPES.INFERMATICAI,
-    endpoints: { status: '/v1/models', generate: '/v1/completions' },
-
-    buildGenerateBody(body) {
-        return pickBy(body, (_, key) => INFERMATICAI_KEYS.includes(key));
-    },
-
+    allowedKeys: INFERMATICAI_KEYS,
     transformGenerateResponse(data: Record<string, unknown>): Record<string, unknown> {
-        // InfermaticAI returns chat-completion format; map to OAI completions.
         if (Array.isArray(data.choices)) {
-            data.choices = data.choices.map((choice: Record<string, unknown>) => ({
-                text: (choice?.message as Record<string, unknown>)?.content as string ?? (choice.text as string),
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            data.choices = data.choices.map((choice: any) => ({
+                text: choice?.message?.content ?? choice.text,
                 logprobs: choice?.logprobs,
                 index: choice?.index,
             }));
         }
         return data;
     },
-};
-
-export default provider;
+});

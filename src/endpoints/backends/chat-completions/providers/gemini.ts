@@ -5,6 +5,7 @@ import { getConfigValue, forwardFetchResponse, color, tryParse } from '../../../
 import { convertGooglePrompt, getPromptNames, calculateGoogleBudgetTokens } from '../../../../prompt-converters.js';
 import { readSecret, SECRET_KEYS } from '../../../secrets.js';
 import { getVertexAIAuth, getProjectIdFromServiceAccount } from '../../../google.js';
+import { createSocketAbortController } from '../../common/abort-controller.js';
 import type { ChatProvider, ModelEntry } from '../types.js';
 
 const API_MAKERSUITE = 'https://generativelanguage.googleapis.com';
@@ -173,9 +174,7 @@ const provider: ChatProvider = {
         console.debug(`${apiName} request:`, body);
 
         try {
-            const controller = new AbortController();
-            req.socket.removeAllListeners('close');
-            req.socket.on('close', () => controller.abort());
+            const { signal } = createSocketAbortController(req.socket);
 
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const apiVersion: any = getConfigValue('gemini.apiVersion', 'v1beta' as any, 'string' as any);
@@ -226,7 +225,7 @@ const provider: ChatProvider = {
                 body: JSON.stringify(body),
                 method: 'POST',
                 headers,
-                signal: controller.signal,
+                signal,
             });
 
             if (stream) {

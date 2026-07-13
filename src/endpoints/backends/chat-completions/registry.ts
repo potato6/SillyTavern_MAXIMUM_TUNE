@@ -1,12 +1,8 @@
 import { CHAT_COMPLETION_SOURCES } from '../../../constants.js';
 import type { ChatProvider } from './types.js';
+import { createRegistry } from '../common/registry-helper.js';
 
-/**
- * Lazy-loading provider map.
- *
- * A provider module is loaded **only** when its source is first requested.
- */
-const providerLoader: Record<string, () => Promise<{ default: ChatProvider }>> = {
+const registry = createRegistry<ChatProvider>({
     [CHAT_COMPLETION_SOURCES.OPENAI]:       () => import('./providers/openai.js'),
     [CHAT_COMPLETION_SOURCES.OPENROUTER]:   () => import('./providers/openrouter.js'),
     [CHAT_COMPLETION_SOURCES.CLAUDE]:       () => import('./providers/claude.js'),
@@ -33,35 +29,7 @@ const providerLoader: Record<string, () => Promise<{ default: ChatProvider }>> =
     [CHAT_COMPLETION_SOURCES.SILICONFLOW]:  () => import('./providers/siliconflow.js'),
     [CHAT_COMPLETION_SOURCES.WORKERS_AI]:   () => import('./providers/workers-ai.js'),
     [CHAT_COMPLETION_SOURCES.CUSTOM]:       () => import('./providers/custom.js'),
-};
+});
 
-const providerCache = new Map<string, ChatProvider>();
-
-/**
- * Get (and lazily load) a chat provider by its source string.
- *
- * Both MAKERSUITE and VERTEXAI map to the same gemini provider module,
- * but the provider detects which via `req.body.chat_completion_source`.
- *
- * @throws If the source is unknown.
- */
-export async function getChatProvider(source: string): Promise<ChatProvider> {
-    const cached = providerCache.get(source);
-    if (cached) return cached;
-
-    const loader = providerLoader[source];
-    if (!loader) {
-        throw new Error(`Unknown chat completion source: "${source}"`);
-    }
-
-    const mod = await loader();
-    providerCache.set(source, mod.default);
-    return mod.default;
-}
-
-/**
- * Return all registered provider source strings.
- */
-export function getRegisteredSources(): string[] {
-    return Object.keys(providerLoader);
-}
+export const getChatProvider = registry.get;
+export const getRegisteredSources = registry.getTypes;

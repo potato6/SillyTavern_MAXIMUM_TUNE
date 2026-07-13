@@ -12,6 +12,7 @@ import {
 import { readSecret, SECRET_KEYS } from '../../../secrets.js';
 import { embedOpenRouterMedia } from '../../../../prompt-converters.js';
 import { proxyRequest } from '../../common/proxy.js';
+import { createSocketAbortController } from '../../common/abort-controller.js';
 import type { ChatProvider, ModelEntry } from '../types.js';
 
 const API_OPENAI = 'https://api.openai.com/v1';
@@ -38,9 +39,7 @@ const provider: ChatProvider = {
             return;
         }
 
-        const controller = new AbortController();
-        req.socket.removeAllListeners('close');
-        req.socket.on('close', () => controller.abort());
+        const { signal } = createSocketAbortController(req.socket);
 
         const isTextCompletion = Boolean(req.body.model && (
             (await import('../../../tokenizers.js')).TEXT_COMPLETION_MODELS as string[]
@@ -119,7 +118,7 @@ const provider: ChatProvider = {
             url: endpointUrl,
             body: JSON.stringify(requestBody),
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
-            signal: controller.signal,
+            signal,
             stream: req.body.stream,
         });
     },

@@ -2,6 +2,7 @@ import { CHAT_COMPLETION_SOURCES } from '../../../../constants.js';
 import { forwardFetchResponse, tryParse } from '../../../../util.js';
 import { convertCohereMessages, getPromptNames } from '../../../../prompt-converters.js';
 import { readSecret, SECRET_KEYS } from '../../../secrets.js';
+import { createSocketAbortController } from '../../common/abort-controller.js';
 import type { ChatProvider, ModelEntry } from '../types.js';
 
 const API_COHERE_V2 = 'https://api.cohere.ai/v2';
@@ -24,9 +25,7 @@ const provider: ChatProvider = {
             return;
         }
 
-        const controller = new AbortController();
-        req.socket.removeAllListeners('close');
-        req.socket.on('close', () => controller.abort());
+        const { signal } = createSocketAbortController(req.socket);
 
         const convertedHistory = convertCohereMessages(req.body.messages, getPromptNames(req));
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -75,7 +74,7 @@ const provider: ChatProvider = {
                 'Authorization': 'Bearer ' + apiKey,
             },
             body: JSON.stringify(requestBody),
-            signal: controller.signal,
+            signal,
         };
 
         const apiUrl = API_COHERE_V2 + '/chat';

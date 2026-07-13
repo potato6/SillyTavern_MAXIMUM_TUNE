@@ -3,6 +3,7 @@ import { forwardFetchResponse, tryParse } from '../../../../util.js';
 import { convertMistralMessages, getPromptNames } from '../../../../prompt-converters.js';
 import { readSecret, SECRET_KEYS } from '../../../secrets.js';
 import { proxyRequest } from '../../common/proxy.js';
+import { createSocketAbortController } from '../../common/abort-controller.js';
 import type { ChatProvider, ModelEntry } from '../types.js';
 
 const API_MISTRAL = 'https://api.mistral.ai/v1';
@@ -30,9 +31,7 @@ const provider: ChatProvider = {
         }
 
         const messages = convertMistralMessages(req.body.messages, getPromptNames(req));
-        const controller = new AbortController();
-        req.socket.removeAllListeners('close');
-        req.socket.on('close', () => controller.abort());
+        const { signal } = createSocketAbortController(req.socket);
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const requestBody: Record<string, any> = {
@@ -74,7 +73,7 @@ const provider: ChatProvider = {
             url: apiUrl + '/chat/completions',
             body: JSON.stringify(requestBody),
             headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + apiKey },
-            signal: controller.signal,
+            signal,
             stream: req.body.stream,
         });
     },

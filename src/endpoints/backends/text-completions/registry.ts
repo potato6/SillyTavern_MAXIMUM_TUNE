@@ -1,13 +1,8 @@
 import { TEXTGEN_TYPES } from '../../../constants.js';
 import type { BackendProvider } from './types.js';
+import { createRegistry } from '../common/registry-helper.js';
 
-/**
- * Lazy-loading provider map.
- *
- * A provider module is loaded **only** when its api_type is first requested.
- * This means a user running Ollama never pays the import cost for TogetherAI, etc.
- */
-const providerLoader: Record<string, () => Promise<{ default: BackendProvider }>> = {
+const registry = createRegistry<BackendProvider>({
     [TEXTGEN_TYPES.GENERIC]:      () => import('./providers/generic.js'),
     [TEXTGEN_TYPES.OOBA]:         () => import('./providers/ooba.js'),
     [TEXTGEN_TYPES.VLLM]:         () => import('./providers/vllm.js'),
@@ -23,32 +18,7 @@ const providerLoader: Record<string, () => Promise<{ default: BackendProvider }>
     [TEXTGEN_TYPES.TABBY]:        () => import('./providers/tabby.js'),
     [TEXTGEN_TYPES.OLLAMA]:       () => import('./providers/ollama.js'),
     [TEXTGEN_TYPES.HUGGINGFACE]:  () => import('./providers/huggingface.js'),
-};
+});
 
-const providerCache = new Map<string, BackendProvider>();
-
-/**
- * Get (and lazily load) a backend provider by its api_type string.
- *
- * @throws If the type is unknown.
- */
-export async function getProvider(type: string): Promise<BackendProvider> {
-    const cached = providerCache.get(type);
-    if (cached) return cached;
-
-    const loader = providerLoader[type];
-    if (!loader) {
-        throw new Error(`Unknown backend provider type: "${type}"`);
-    }
-
-    const mod = await loader();
-    providerCache.set(type, mod.default);
-    return mod.default;
-}
-
-/**
- * Return all registered provider type strings (synchronous, no loading).
- */
-export function getRegisteredTypes(): string[] {
-    return Object.keys(providerLoader);
-}
+export const getProvider = registry.get;
+export const getRegisteredTypes = registry.getTypes;
