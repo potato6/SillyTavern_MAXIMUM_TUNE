@@ -1,5 +1,5 @@
 import { TEXTGEN_TYPES, TOGETHERAI_KEYS } from '../../../../constants.js';
-import { createOAITextProvider } from '../../common/oai-text-provider.js';
+import { createOAITextProvider } from '../../common/openai-text-base.js';
 
 export default createOAITextProvider({
     type: TEXTGEN_TYPES.TOGETHERAI,

@@ -1,6 +1,6 @@
 import { AIMLAPI_HEADERS, CHAT_COMPLETION_SOURCES } from '../../../../constants.js';
 import { SECRET_KEYS } from '../../../secrets.js';
-import { createOAIChatProvider } from '../../common/oai-provider.js';
+import { createOAIChatProvider } from '../../common/openai-provider-base.js';
 
 /**
  * AI/ML API chat completion provider.

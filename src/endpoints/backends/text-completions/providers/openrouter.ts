@@ -1,6 +1,6 @@
 import { TEXTGEN_TYPES, OPENROUTER_KEYS } from '../../../../constants.js';
 import { pickBy } from 'es-toolkit/compat';
-import { buildProviderConfig } from '../../common/openrouter.js';
+import { buildProviderConfig } from '../../common/provider-routing.js';
 import type { BackendProvider } from '../types.js';
 
 const provider: BackendProvider = {

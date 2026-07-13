@@ -13,7 +13,7 @@ import {
 } from '../../../../prompt-converters.js';
 import { readSecret, SECRET_KEYS } from '../../../secrets.js';
 import { proxyRequest } from '../../common/proxy.js';
-import { buildProviderConfig, OPENROUTER_HEADERS } from '../../common/openrouter.js';
+import { buildProviderConfig, OPENROUTER_HEADERS } from '../../common/provider-routing.js';
 import { createSocketAbortController } from '../../common/abort-controller.js';
 import type { ChatProvider, ModelEntry } from '../types.js';
 

@@ -1,6 +1,6 @@
 import { CHAT_COMPLETION_SOURCES } from '../../../../constants.js';
 import { readSecret, SECRET_KEYS } from '../../../secrets.js';
-import { createOAIChatProvider } from '../../common/oai-provider.js';
+import { createOAIChatProvider } from '../../common/openai-provider-base.js';
 import { proxyRequest } from '../../common/proxy.js';
 import { createSocketAbortController } from '../../common/abort-controller.js';
 import type { ChatProvider, ModelEntry } from '../types.js';
