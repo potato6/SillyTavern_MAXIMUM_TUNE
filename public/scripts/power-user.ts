@@ -3661,7 +3661,7 @@ function registerSettingsPanelHandlers() {
     // Custom CSS
     const cssEl = guardEl('customCSS');
     if (cssEl) cssEl.addEventListener('input', () => {
-        power_user.custom_css = String((h('customCSS') instanceof HTMLInputElement && h('customCSS').value) || '');
+        power_user.custom_css = cssEl.value;
         saveSettingsDebounced();
         applyCustomCSS();
     });
