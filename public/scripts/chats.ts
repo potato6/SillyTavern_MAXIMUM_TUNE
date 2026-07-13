@@ -2598,6 +2598,7 @@ export function initChatUtilities() {
 
         const contentEditable = broEl.hasAttribute('contenteditable');
         const withTab = el.getAttribute('data-tab');
+        const useRichEditor = broEl.hasAttribute('data-rich-editor');
 
         const wrapper = document.createElement('div');
         wrapper.classList.add('height100p', 'wide100p', 'flex-container');
@@ -2613,48 +2614,56 @@ export function initChatUtilities() {
         textarea.classList.add('height100p', 'wide100p', 'maximized_textarea');
         if (broEl.classList.contains('monospace')) textarea.classList.add('monospace');
         if (broEl.classList.contains('mdHotkeys')) textarea.classList.add('mdHotkeys');
-        textarea.addEventListener('input', function () {
-            if (contentEditable) {
-                broEl.innerText = textarea.value;
-                broEl.dispatchEvent(new Event('input', { bubbles: true }));
-            } else {
-                (broEl as HTMLInputElement).value = textarea.value;
-                broEl.dispatchEvent(new Event('input', { bubbles: true }));
-            }
-        });
         wrapper.appendChild(textarea);
 
-        if (withTab) {
-            textarea.addEventListener('keydown', (evt) => {
-                if (evt.key == 'Tab' && !evt.shiftKey && !evt.ctrlKey && !evt.altKey) {
-                    evt.preventDefault();
-                    const start = textarea.selectionStart;
-                    const end = textarea.selectionEnd;
-                    if (end - start > 0 && textarea.value.substring(start, end).includes('\n')) {
-                        const lineStart = textarea.value.lastIndexOf('\n', start);
-                        const count = textarea.value.substring(lineStart, end).split('\n').length - 1;
-                        textarea.value = `${textarea.value.substring(0, lineStart)}${textarea.value.substring(lineStart, end).replace(/\n/g, '\n\t')}${textarea.value.substring(end)}`;
-                        textarea.selectionStart = start + 1;
-                        textarea.selectionEnd = end + count;
-                    } else {
-                        textarea.value = `${textarea.value.substring(0, start)}\t${textarea.value.substring(end)}`;
-                        textarea.selectionStart = start + 1;
-                        textarea.selectionEnd = end + 1;
-                    }
-                } else if (evt.key == 'Tab' && evt.shiftKey && !evt.ctrlKey && !evt.altKey) {
-                    evt.preventDefault();
-                    const start = textarea.selectionStart;
-                    const end = textarea.selectionEnd;
-                    const lineStart = textarea.value.lastIndexOf('\n', start);
-                    const count = textarea.value.substring(lineStart, end).split('\n\t').length - 1;
-                    textarea.value = `${textarea.value.substring(0, lineStart)}${textarea.value.substring(lineStart, end).replace(/\n\t/g, '\n')}${textarea.value.substring(end)}`;
-                    textarea.selectionStart = start - 1;
-                    textarea.selectionEnd = end - count;
+        if (useRichEditor) {
+            // --- ToastUI rich-text path (delegated to rich-editor.ts) ---
+            const { openMarkdownEditor } = await import('./rich-editor.js');
+            await openMarkdownEditor(broEl, { contentEditable });
+        } else {
+            // --- Plain textarea path (existing behaviour) ---
+            textarea.addEventListener('input', function () {
+                if (contentEditable) {
+                    broEl.innerText = textarea.value;
+                    broEl.dispatchEvent(new Event('input', { bubbles: true }));
+                } else {
+                    (broEl as HTMLInputElement).value = textarea.value;
+                    broEl.dispatchEvent(new Event('input', { bubbles: true }));
                 }
             });
-        }
 
-        await callGenericPopup(wrapper, POPUP_TYPE.TEXT, '', { wide: true, large: true });
+            if (withTab) {
+                textarea.addEventListener('keydown', (evt) => {
+                    if (evt.key == 'Tab' && !evt.shiftKey && !evt.ctrlKey && !evt.altKey) {
+                        evt.preventDefault();
+                        const start = textarea.selectionStart;
+                        const end = textarea.selectionEnd;
+                        if (end - start > 0 && textarea.value.substring(start, end).includes('\n')) {
+                            const lineStart = textarea.value.lastIndexOf('\n', start);
+                            const count = textarea.value.substring(lineStart, end).split('\n').length - 1;
+                            textarea.value = `${textarea.value.substring(0, lineStart)}${textarea.value.substring(lineStart, end).replace(/\n/g, '\n\t')}${textarea.value.substring(end)}`;
+                            textarea.selectionStart = start + 1;
+                            textarea.selectionEnd = end + count;
+                        } else {
+                            textarea.value = `${textarea.value.substring(0, start)}\t${textarea.value.substring(end)}`;
+                            textarea.selectionStart = start + 1;
+                            textarea.selectionEnd = end + 1;
+                        }
+                    } else if (evt.key == 'Tab' && evt.shiftKey && !evt.ctrlKey && !evt.altKey) {
+                        evt.preventDefault();
+                        const start = textarea.selectionStart;
+                        const end = textarea.selectionEnd;
+                        const lineStart = textarea.value.lastIndexOf('\n', start);
+                        const count = textarea.value.substring(lineStart, end).split('\n\t').length - 1;
+                        textarea.value = `${textarea.value.substring(0, lineStart)}${textarea.value.substring(lineStart, end).replace(/\n\t/g, '\n')}${textarea.value.substring(end)}`;
+                        textarea.selectionStart = start - 1;
+                        textarea.selectionEnd = end - count;
+                    }
+                });
+            }
+
+            await callGenericPopup(wrapper, POPUP_TYPE.TEXT, '', { wide: true, large: true });
+        }
     });
 
     document.addEventListener('click', function (event) {

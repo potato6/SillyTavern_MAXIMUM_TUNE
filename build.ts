@@ -67,10 +67,9 @@ mkdirSync(DIST_DIR, { recursive: true });
 console.log("Cleaning and copying static assets (including HTML templates)...");
 copyRecursiveSync(PUBLIC_DIR, DIST_DIR);
 
-const entrypoints = [
-  ...new Bun.Glob("public/**/*.ts").scanSync(),
-  ...new Bun.Glob("public/**/*.css").scanSync(),
-];
+const allTs = [...new Bun.Glob("public/**/*.ts").scanSync()].filter(f => !f.startsWith("public/lib/tinymce/"));
+const allCss = [...new Bun.Glob("public/**/*.css").scanSync()].filter(f => !f.startsWith("public/lib/tinymce/"));
+const entrypoints = [...allTs, ...allCss];
 
 console.log("Building, bundling, and minifying scripts and styles...");
 const result = await Bun.build({
@@ -115,6 +114,16 @@ if (!result.success) {
     console.log(`Stored build commit hash: ${commitHash}`);
   }
 }
+
+// Copy pre-built vendor CSS that isn't processed by Bun.build
+// (ToastUI CSS is loaded at runtime by the editor)
+const TOASTUI_CSS = "node_modules/@toast-ui/editor/dist/toastui-editor.css";
+const TOASTUI_CSS_DARK = "node_modules/@toast-ui/editor/dist/theme/toastui-editor-dark.css";
+const VENDOR_CSS_DEST = "public/dist/lib/toastui/";
+mkdirSync(path.join(VENDOR_CSS_DEST, "theme"), { recursive: true });
+copyFileSync(TOASTUI_CSS, path.join(VENDOR_CSS_DEST, "toastui-editor.css"));
+copyFileSync(TOASTUI_CSS_DARK, path.join(VENDOR_CSS_DEST, "theme/toastui-editor-dark.css"));
+console.log("Copied ToastUI CSS assets.");
 
 console.log("Compiling backend binary...");
 const serverResult = await Bun.build({

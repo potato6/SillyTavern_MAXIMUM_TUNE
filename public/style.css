@@ -3749,15 +3749,12 @@ grammarly-extension {
 .large_dialogue_popup {
     height: 90vh !important;
     height: 90dvh !important;
-    max-width: 90vw !important;
-    max-width: 90dvw !important;
+    max-width: 100vw !important;
+    max-width: 100dvw !important;
 }
 
 .wide_dialogue_popup {
-    /* FIXME: Chrome 129 broke max-height for aspect-ratio sized elements */
-    /* aspect-ratio: 1 / 1; */
-    /* width: unset !important; */
-    min-width: var(--sheldWidth);
+    min-width: 100vw;
 }
 
 .wider_dialogue_popup {
