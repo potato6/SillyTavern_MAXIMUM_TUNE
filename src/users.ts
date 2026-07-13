@@ -747,7 +747,7 @@ export async function getUserAvatar(handle: string) {
         if (!fs.existsSync(avatarPath)) {
             return PUBLIC_USER_AVATAR;
         }
-        const mimeType = mime.lookup(avatarPath);
+        const mimeType = Bun.file(avatarPath).type;
         const base64Content = fs.readFileSync(avatarPath, 'base64');
         return `data:${mimeType};base64,${base64Content}`;
     } catch {

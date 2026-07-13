@@ -33,7 +33,7 @@ globalThis.fetch = async (/** @type {string | URL | Request} */ request, /** @ty
         status: 200,
         statusText: 'OK',
         headers: {
-            'Content-Type': mime.lookup(fileName) || 'application/octet-stream',
+            'Content-Type': Bun.file(fileName).type || 'application/octet-stream',
             'Content-Length': buffer.length.toString(),
         },
     });

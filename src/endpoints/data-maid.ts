@@ -729,7 +729,7 @@ router.get('/view', async (req, res) => {
         }
 
         const fileBuffer = await fs.promises.readFile(pathToFile);
-        const mimeType = mime.lookup(pathToFile) || 'text/plain';
+        const mimeType = Bun.file(pathToFile).type;
         res.setHeader('Content-Type', mimeType);
         return res.send(fileBuffer);
     } catch (error) {

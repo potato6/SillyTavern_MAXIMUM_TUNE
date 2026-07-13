@@ -242,7 +242,7 @@ router.post('/download', async (request, response) => {
 
         if (category === 'character') {
             const fileContent = fs.readFileSync(temp_path);
-            const contentType = mime.lookup(temp_path) || 'application/octet-stream';
+            const contentType = Bun.file(temp_path).type;
             response.setHeader('Content-Type', contentType);
             response.send(fileContent);
             fs.unlinkSync(temp_path);

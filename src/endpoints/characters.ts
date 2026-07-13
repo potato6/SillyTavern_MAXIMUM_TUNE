@@ -1754,7 +1754,7 @@ router.post('/export', validateAvatarUrlMiddleware, async function (request, res
                 // @ts-expect-error TS(2345) FIXME: Argument of type '(char: Record<string, unknown>) ... Remove this comment to see the full error message
                 const mutatedData = mutateJsonString(rawData, unsetPrivateFields);
                 const mutatedBuffer = write(rawBuffer, mutatedData);
-                const contentType = mime.lookup(filename) || 'image/png';
+                const contentType = Bun.file(filename).type;
                 response.setHeader('Content-Type', contentType);
                 response.setHeader('Content-Disposition', `attachment; filename="${encodeURI(path.basename(filename))}"`);
                 return response.send(mutatedBuffer);

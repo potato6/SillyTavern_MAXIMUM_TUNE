@@ -129,7 +129,7 @@ router.get('/get', function (request, response) {
         if (spritesPath && fs.existsSync(spritesPath) && fs.statSync(spritesPath).isDirectory()) {
             sprites = fs.readdirSync(spritesPath)
                 .filter(file => {
-                    const mimeType = mime.lookup(file);
+                    const mimeType = Bun.file(file).type;
                     return mimeType && mimeType.startsWith('image/');
                 })
                 .map((file) => {

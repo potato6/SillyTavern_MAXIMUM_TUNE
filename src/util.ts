@@ -330,7 +330,7 @@ export async function getImageBuffers(zipFilePath: string) {
     const zip = fflate.unzipSync(new Uint8Array(fileBuffer));
 
     for (const [fileName, data] of Object.entries(zip)) {
-        const mimeType = mime.lookup(fileName);
+        const mimeType = Bun.file(fileName).type;
         if (mimeType && mimeType.startsWith('image/') && !fileName.startsWith('__MACOSX')) {
             imageBuffers.push([path.parse(fileName).base, Buffer.from(data)]);
         }
@@ -590,7 +590,7 @@ export function getImages(directoryPath: string, sortBy = 'name', type = MEDIA_R
         .filter(dirent => dirent.isFile())
         .map(dirent => dirent.name)
         .filter(file => {
-            const fileType = mime.lookup(file);
+            const fileType = Bun.file(file).type;
             if (!fileType) {
                 return false;
             }
@@ -1506,7 +1506,7 @@ export function readFirstLine(filePath: string) {
  * @param {import('express').Response} response Response object
  */
 export function invalidateFirefoxCache(file: string, request: import('express').Request, response: import('express').Response) {
-    const mimeType = isFirefox(request) && mime.lookup(file);
+    const mimeType = isFirefox(request) && Bun.file(file).type;
     if (mimeType && mimeType.startsWith('image/')) {
         response.setHeader('Cache-Control', 'must-understand, no-store');
     }
