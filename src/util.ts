@@ -647,15 +647,20 @@ export async function forwardFetchResponse(from: import('node-fetch').Response, 
     }
 
     if (from.body && to.socket) {
-        from.body.pipe(to);
+        // Bun: Response.body is a Web ReadableStream without .pipe().
+        // Convert to Node.js Readable for cross-runtime compatibility.
+        const stream: Readable = typeof from.body.pipe === 'function'
+            ? from.body as unknown as Readable
+            : Readable.fromWeb(from.body as any);
+
+        stream.pipe(to);
 
         to.socket.on('close', function () {
-            if (from.body instanceof Readable) from.body.destroy(); // Close the remote stream
-
-            to.end(); // End the Express response
+            if (stream instanceof Readable) stream.destroy();
+            to.end();
         });
 
-        from.body.on('end', function () {
+        stream.on('end', function () {
             console.info('Streaming request finished');
             to.end();
         });
