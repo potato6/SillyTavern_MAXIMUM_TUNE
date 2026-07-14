@@ -2726,62 +2726,33 @@ function fillCharacterAndTagOptionsHelper({ characterFilter, entry }) {
 // @ts-expect-error TS(7031) FIXME: Binding element 'characterFilter' implicitly has a... Remove this comment to see the full error message
 function handleCharacterFilterChangeHelper({ characterFilter, data, entry, name }) {
     if (!characterFilter) return;
-    characterFilter.addEventListener('mousedown', async function (this: any, e: Event) {
-        if (world_names.length === 0) {
-            e.preventDefault();
-            return;
-        }
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const uid = this.dataset.uid;
-        const selectedOptions = this.selectedOptions;
+
+    /** Shared: reads the selected options and writes them into data.entries[uid] */
+    async function saveFilterSelection(uid, selectedOptions) {
         if ((!selectedOptions || selectedOptions?.length === 0) && !data.entries[uid].characterFilter?.isExclude) {
             delete data.entries[uid].characterFilter;
         } else {
-            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             const names = Array.from(selectedOptions).filter(o => o.matches('[data-type="character"]')).map(o => o instanceof HTMLOptionElement && o.innerText);
-            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             const tags = Array.from(selectedOptions).filter(o => o.matches('[data-type="tag"]')).map(o => o instanceof HTMLOptionElement && o.value);
-            Object.assign(
-                data.entries[uid],
-                {
-                    characterFilter: {
-                        isExclude: data.entries[uid].characterFilter?.isExclude ?? false,
-                        names: names,
-                        tags: tags,
-                    },
+            Object.assign(data.entries[uid], {
+                characterFilter: {
+                    isExclude: data.entries[uid].characterFilter?.isExclude ?? false,
+                    names: names,
+                    tags: tags,
                 },
-            );
+            });
         }
         setWIOriginalDataValue(data, uid, 'character_filter', data.entries[uid].characterFilter);
         await saveWorldInfo(name, data);
+    }
+
+    characterFilter.addEventListener('mousedown', async function (this: any, e: Event) {
+        if (world_names.length === 0) { e.preventDefault(); return; }
+        await saveFilterSelection(this.dataset.uid, this.selectedOptions);
     });
     characterFilter.addEventListener('change', async function (this: any) {
-        if (world_names.length === 0) {
-            return;
-        }
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const uid = this.dataset.uid;
-        const selectedOptions = this.selectedOptions;
-        if ((!selectedOptions || selectedOptions?.length === 0) && !data.entries[uid].characterFilter?.isExclude) {
-            delete data.entries[uid].characterFilter;
-        } else {
-            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-            const names = Array.from(selectedOptions).filter(o => o.matches('[data-type="character"]')).map(o => o instanceof HTMLOptionElement && o.innerText);
-            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-            const tags = Array.from(selectedOptions).filter(o => o.matches('[data-type="tag"]')).map(o => o instanceof HTMLOptionElement && o.value);
-            Object.assign(
-                data.entries[uid],
-                {
-                    characterFilter: {
-                        isExclude: data.entries[uid].characterFilter?.isExclude ?? false,
-                        names: names,
-                        tags: tags,
-                    },
-                },
-            );
-        }
-        setWIOriginalDataValue(data, uid, 'character_filter', data.entries[uid].characterFilter);
-        await saveWorldInfo(name, data);
+        if (world_names.length === 0) return;
+        await saveFilterSelection(this.dataset.uid, this.selectedOptions);
     });
 }
 
