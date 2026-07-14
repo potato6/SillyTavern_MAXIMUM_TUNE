@@ -59,6 +59,8 @@ import {
     originalWIDataKeyMap,
 } from './world-info/constants.js';
 
+import { wiManager } from './world-info/manager.js';
+
 // ── Engine imports ──
 import {
     WorldInfoBuffer,
