@@ -14092,6 +14092,7 @@ function initCharacterSearch() {
             '.text_pole',
             '#toast-container',
             '.select2-results',
+            '.ts-dropdown',
         ];
 
         for (const id of forbiddenTargets) {

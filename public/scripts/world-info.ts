@@ -2337,13 +2337,14 @@ export async function updateWorldInfoList() {
 
     if (result.ok) {
         const data = await result.json();
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        const editorSelected = String(document.getElementById('world_editor_select').options[document.getElementById('world_editor_select').selectedIndex].text);
+        const editorSelect = document.getElementById('world_editor_select') as HTMLSelectElement | null;
+        const editorOption = editorSelect?.options[editorSelect.selectedIndex];
+        const editorSelected = editorOption ? String(editorOption.text) : '';
         world_names = data.world_names?.length ? data.world_names : [];
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        document.getElementById('world_info').querySelectorAll('option[value!=""]').forEach(el => el.remove());
+        document.getElementById('world_info').querySelectorAll('option:not([value=""])').forEach(el => el.remove());
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        document.getElementById('world_editor_select').querySelectorAll('option[value!=""]').forEach(el => el.remove());
+        document.getElementById('world_editor_select').querySelectorAll('option:not([value=""])').forEach(el => el.remove());
 
         // @ts-expect-error TS(7006) FIXME: Parameter 'item' implicitly has an 'any' type.
         world_names.forEach((item, i) => {
@@ -2357,6 +2358,28 @@ export async function updateWorldInfoList() {
             const worldEditorSelect = document.getElementById('world_editor_select');
             if (worldEditorSelect) worldEditorSelect.appendChild(editorListOption);
         });
+
+        // Sync TomSelect instances with the updated options (they don't detect DOM changes automatically)
+        const wiSelect = /** @type {HTMLSelectElement} */ (document.getElementById('world_info'));
+        // @ts-expect-error TS(2339) FIXME: Property 'tomselect' does not exist on type 'HTMLSelectElement'.
+        if (wiSelect?.tomselect) {
+            // @ts-expect-error TS(2339) FIXME: Property 'tomselect' does not exist on type 'HTMLSelectElement'.
+            wiSelect.tomselect.clearOptions();
+            // @ts-expect-error TS(2339) FIXME: Property 'tomselect' does not exist on type 'HTMLSelectElement'.
+            Array.from(wiSelect.options).forEach(o => wiSelect.tomselect.addOption({ value: o.value, text: o.text }));
+            // @ts-expect-error TS(2339) FIXME: Property 'tomselect' does not exist on type 'HTMLSelectElement'.
+            wiSelect.tomselect.setValue(Array.from(wiSelect.selectedOptions).map(o => o.value));
+        }
+        const editorTs = /** @type {HTMLSelectElement} */ (document.getElementById('world_editor_select'));
+        // @ts-expect-error TS(2339) FIXME: Property 'tomselect' does not exist on type 'HTMLSelectElement'.
+        if (editorTs?.tomselect) {
+            // @ts-expect-error TS(2339) FIXME: Property 'tomselect' does not exist on type 'HTMLSelectElement'.
+            editorTs.tomselect.clearOptions();
+            // @ts-expect-error TS(2339) FIXME: Property 'tomselect' does not exist on type 'HTMLSelectElement'.
+            Array.from(editorTs.options).forEach(o => editorTs.tomselect.addOption({ value: o.value, text: o.text }));
+            // @ts-expect-error TS(2339) FIXME: Property 'tomselect' does not exist on type 'HTMLSelectElement'.
+            editorTs.tomselect.setValue(editorTs.value || '');
+        }
     }
 }
 
@@ -2628,6 +2651,22 @@ async function displayWorldEntries(name, data, navigation = navigation_option.no
     const worldEntriesList = document.getElementById('world_popup_entries_list');
     clearEntryList(worldEntriesList);
     if (worldEntriesList) worldEntriesList.style.display = '';
+
+    // Purge stale listeners by cloning buttons — displayWorldEntries is called on
+    // every editor navigation, and each call adds new listeners without removing old ones.
+    // Without this, clicking a button fires N handlers, each with a stale `name` closure.
+    const purgeButton = (id) => {
+        const el = document.getElementById(id);
+        if (el && el.parentNode) {
+            const clone = el.cloneNode(true);
+            el.parentNode.replaceChild(clone, el);
+        }
+    };
+    purgeButton('world_popup_delete');
+    purgeButton('world_popup_new');
+    purgeButton('world_popup_name_button');
+    purgeButton('world_popup_export');
+    purgeButton('world_duplicate');
 
     if (!data || !('entries' in data)) {
         document.getElementById('world_popup_new')!.addEventListener('click', nullWorldInfo);
@@ -5077,7 +5116,10 @@ export async function createNewWorldInfo(worldName, { interactive = false } = {}
     if (selectedIndex !== -1) {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         document.getElementById('world_editor_select').value = String(selectedIndex);
-    document.getElementById('world_editor_select')?.dispatchEvent(new Event('change', { bubbles: true }));
+        // Sync the TomSelect display with the programmatic value change
+        // @ts-expect-error TS(2339) FIXME: Property 'tomselect' does not exist on type 'HTMLElement'.
+        document.getElementById('world_editor_select')?.tomselect?.setValue(String(selectedIndex));
+        document.getElementById('world_editor_select')?.dispatchEvent(new Event('change', { bubbles: true }));
     } else {
         await hideWorldEditor();
     }
@@ -6612,9 +6654,11 @@ export function onWorldInfoChange(args, text) {
     } else { //if it's a pointer selection
         // @ts-expect-error TS(7034) FIXME: Variable 'tempWorldInfo' implicitly has type 'any[... Remove this comment to see the full error message
         const tempWorldInfo = [];
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const val = document.getElementById('world_info').value;
-        const selectedWorlds = (Array.isArray(val) ? val : [val]).map((e) => Number(e)).filter((e) => !isNaN(e));
+        // @ts-expect-error TS(2339) FIXME: Property 'selectedOptions' does not exist on type 'HTMLElement'.
+        const selectEl = document.getElementById('world_info');
+        // @ts-expect-error TS(2339) FIXME: Property 'selectedOptions' does not exist on type 'HTMLElement'.
+        const selectedOptions = selectEl?.selectedOptions;
+        const selectedWorlds = Array.from(selectedOptions ?? []).map((/** @type {HTMLOptionElement} */ o) => Number(o.value)).filter((e) => !isNaN(e));
         if (selectedWorlds.length > 0) {
             selectedWorlds.forEach((worldIndex) => {
                 const existingWorldName = world_names[worldIndex];
@@ -6721,6 +6765,9 @@ export async function importWorldInfo(file) {
             if (newIndex >= 0) {
                 // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 document.getElementById('world_editor_select').value = String(newIndex);
+                // Sync the TomSelect display with the programmatic value change
+                // @ts-expect-error TS(2339) FIXME: Property 'tomselect' does not exist on type 'HTMLElement'.
+                document.getElementById('world_editor_select')?.tomselect?.setValue(String(newIndex));
     document.getElementById('world_editor_select')?.dispatchEvent(new Event('change', { bubbles: true }));
             }
 
@@ -6749,6 +6796,9 @@ export function openWorldInfoEditor(worldName) {
     const index = world_names.indexOf(worldName);
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     document.getElementById('world_editor_select').value = String(index);
+    // Sync the TomSelect display with the programmatic value change
+    // @ts-expect-error TS(2339) FIXME: Property 'tomselect' does not exist on type 'HTMLElement'.
+    document.getElementById('world_editor_select')?.tomselect?.setValue(String(index));
     document.getElementById('world_editor_select')?.dispatchEvent(new Event('change', { bubbles: true }));
 }
 
@@ -7043,7 +7093,7 @@ export function initWorldInfo() {
 
     //**************************WORLD INFO IMPORT EXPORT*************************//
     (document.getElementById('world_import_button') as HTMLElement).addEventListener('click', function () {
-        (document.getElementById('world_import_file') as HTMLInputElement).dispatchEvent(new Event('click'));
+        (document.getElementById('world_import_file') as HTMLInputElement).click();
     });
 
     (document.getElementById('world_import_file') as HTMLInputElement).addEventListener('change', async function (e) {
@@ -7072,8 +7122,13 @@ export function initWorldInfo() {
         const worldInfoSearchElement = document.getElementById('world_info_search');
         if (worldInfoSearchElement) (worldInfoSearchElement as HTMLInputElement).value = '';
         worldInfoFilter.setFilterData(FILTER_TYPES.WORLD_INFO_SEARCH, '', true);
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        const selectedIndex = String(document.getElementById('world_editor_select').options[document.getElementById('world_editor_select').selectedIndex].value);
+        const select = document.getElementById('world_editor_select') as HTMLSelectElement;
+        const option = select.options[select.selectedIndex];
+        if (!option) {
+            await hideWorldEditor();
+            return;
+        }
+        const selectedIndex = String(option.value);
 
         if (selectedIndex === '') {
             await hideWorldEditor();
@@ -7259,6 +7314,7 @@ export function initWorldInfo() {
         new TomSelect(document.getElementById('world_editor_select'), {
             maxItems: 1,
             placeholder: t`--- Pick to Edit ---`,
+            dropdownParent: 'body',
         });
 
         new TomSelect(document.getElementById('world_info'), {
@@ -7266,6 +7322,7 @@ export function initWorldInfo() {
             placeholder: t`No Worlds active. Click here to select.`,
             allowEmptyOption: true,
             plugins: ['remove_button'],
+            dropdownParent: 'body',
         });
 
         // Subscribe world loading to the TomSelect multiselect items (We need to target the specific ts-control)
