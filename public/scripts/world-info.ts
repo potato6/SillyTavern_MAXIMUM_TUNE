@@ -4260,6 +4260,24 @@ export async function createNewWorldInfo(worldName, { interactive = false } = {}
 }
 
 /**
+ * Shared helper: loads entries from one or more lorebook files and annotates
+ * each with its source world name.  This is the core mapping that all four
+ * lore-source functions (global, character, chat, persona) previously duplicated.
+ */
+async function loadLoreEntries(worldNames: string[]): Promise<object[]> {
+    const entries: object[] = [];
+    for (const worldName of worldNames) {
+        const data = await loadWorldInfo(worldName);
+        if (data?.entries) {
+            for (const [uid, entry] of Object.entries(data.entries)) {
+                entries.push({ uid: Number(uid), world: worldName, ...entry as object });
+            }
+        }
+    }
+    return entries;
+}
+
+/**
  * @returns {Promise<object[]>} Array of character lore entries
  */
 async function getCharacterLore() {
@@ -4285,10 +4303,10 @@ async function getCharacterLore() {
         return [];
     }
 
-    // @ts-expect-error TS(7034) FIXME: Variable 'entries' implicitly has type 'any[]' in ... Remove this comment to see the full error message
+    // @ts-expect-error TS(7034) FIXME: Variable 'entries' implicitly has type 'any[]' in ...
     let entries = [];
     for (const worldName of worldsToSearch) {
-        // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
+        // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown' is not assignable to pa...
         if (selected_world_info.includes(worldName)) {
             console.debug(`[WI] Character ${name}'s world ${worldName} is already activated in global world info! Skipping...`);
             continue;
@@ -4304,12 +4322,11 @@ async function getCharacterLore() {
             continue;
         }
 
-        const data = await loadWorldInfo(worldName);
-        const newEntries = data ? Object.keys(data.entries).map((x) => data.entries[x]).map(({ uid, ...rest }) => ({ uid, world: worldName, ...rest })) : [];
         // @ts-expect-error TS(7005) FIXME: Variable 'entries' implicitly has an 'any[]' type.
-        entries = entries.concat(newEntries);
+        entries = entries.concat(await loadLoreEntries([worldName]));
 
-        if (!newEntries.length) {
+        // @ts-expect-error TS(7005) FIXME: Variable 'entries' implicitly has an 'any[]' type.
+        if (!entries.length) {
             console.debug(`[WI] Character ${name}'s world ${worldName} could not be found or is empty`);
         }
     }
@@ -4326,14 +4343,7 @@ async function getGlobalLore() {
         return [];
     }
 
-    // @ts-expect-error TS(7034) FIXME: Variable 'entries' implicitly has type 'any[]' in ... Remove this comment to see the full error message
-    let entries = [];
-    for (const worldName of selected_world_info) {
-        const data = await loadWorldInfo(worldName);
-        const newEntries = data ? Object.keys(data.entries).map((x) => data.entries[x]).map(({ uid, ...rest }) => ({ uid, world: worldName, ...rest })) : [];
-        // @ts-expect-error TS(7005) FIXME: Variable 'entries' implicitly has an 'any[]' type.
-        entries = entries.concat(newEntries);
-    }
+    const entries = await loadLoreEntries(selected_world_info);
 
     console.debug(`[WI] Global world info has ${entries.length} entries`, selected_world_info);
 
@@ -4350,14 +4360,13 @@ async function getChatLore() {
         return [];
     }
 
-    // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
+    // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame...
     if (selected_world_info.includes(chatWorld)) {
         console.debug(`[WI] Chat world ${chatWorld} is already activated in global world info! Skipping...`);
         return [];
     }
 
-    const data = await loadWorldInfo(chatWorld);
-    const entries = data ? Object.keys(data.entries).map((x) => data.entries[x]).map(({ uid, ...rest }) => ({ uid, world: chatWorld, ...rest })) : [];
+    const entries = await loadLoreEntries([chatWorld]);
 
     console.debug(`[WI] Chat lore has ${entries.length} entries`, [chatWorld]);
 
@@ -4380,14 +4389,13 @@ async function getPersonaLore() {
         return [];
     }
 
-    // @ts-expect-error TS(2345) FIXME: Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
+    // @ts-expect-error TS(2345) FIXME: Argument of type 'string' is not assignable to par...
     if (selected_world_info.includes(personaWorld)) {
         console.debug(`[WI] Persona world ${personaWorld} is already activated in global world info! Skipping...`);
         return [];
     }
 
-    const data = await loadWorldInfo(personaWorld);
-    const entries = data ? Object.keys(data.entries).map((x) => data.entries[x]).map(({ uid, ...rest }) => ({ uid, world: personaWorld, ...rest })) : [];
+    const entries = await loadLoreEntries([personaWorld]);
 
     console.debug(`[WI] Persona lore has ${entries.length} entries`, [personaWorld]);
 
