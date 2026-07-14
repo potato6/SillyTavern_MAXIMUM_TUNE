@@ -75,7 +75,6 @@ import { setWIOriginalDataValue, deleteWIOriginalDataValue } from './editor.js';
 import {
     onWorldInfoChange,
     setWorldInfoButtonClass,
-    selected_world_info,
     charUpdateAddAuxWorld,
     charUpdatePrimaryWorld,
     reloadEditor,
@@ -791,7 +790,7 @@ export function registerWorldInfoSlashCommands() {
      * @returns {Promise<string>} JSON string of selected global books
      */
     async function getGlobalBooksCallback() {
-        if (!selected_world_info?.length) {
+        if (!wiManager.selectedWorlds?.length) {
             return JSON.stringify([]);
         }
 

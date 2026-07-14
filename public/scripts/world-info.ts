@@ -2890,7 +2890,7 @@ export function onWorldInfoChange(args, text) {
         const selectedWorlds = Array.from(selectedOptions ?? []).map((/** @type {HTMLOptionElement} */ o) => Number(o.value)).filter((e) => !isNaN(e));
         if (selectedWorlds.length > 0) {
             selectedWorlds.forEach((worldIndex) => {
-                const existingWorldName = world_names[worldIndex];
+                const existingWorldName = wiManager.worldNames[worldIndex];
                 if (existingWorldName) {
                     tempWorldInfo.push(existingWorldName);
                 } else {
@@ -2960,7 +2960,7 @@ export async function assignLorebookToChat({ shiftKey, altKey }) {
     const chatName = wrapper.querySelector('.chat_name');
     if (chatName) chatName.textContent = getCurrentChatId();
 
-    for (const worldName of world_names) {
+    for (const worldName of wiManager.worldNames) {
         const option = document.createElement('option');
         option.value = worldName;
         option.innerText = worldName;
@@ -3159,7 +3159,7 @@ export function initWorldInfo() {
         if (selectedIndex === '') {
             await hideWorldEditor();
         } else {
-            const worldName = world_names[selectedIndex];
+            const worldName = wiManager.worldNames[selectedIndex];
             showWorldEditor(worldName);
         }
     });
