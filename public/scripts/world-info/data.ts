@@ -56,7 +56,6 @@ import {
     hideWorldEditor,
     updateWorldInfoLinks,
     getWIElement,
-    world_names,
 } from '../world-info.js';
 
 // ═══════════════════════════════════════════════════════════════
@@ -686,7 +685,7 @@ export async function createNewWorldInfo(worldName, { interactive = false } = {}
     const sanitizedWorldName = await getSanitizedFilename(worldName);
 
     // @ts-expect-error TS(2322) FIXME: Type '(existingName: any) => Promise<boolean>' is ... Remove this comment to see the full error message
-    const allowed = await checkOverwriteExistingData('World Info', world_names, sanitizedWorldName, { interactive: interactive, actionName: 'Create', deleteAction: (existingName) => deleteWorldInfo(existingName) });
+    const allowed = await checkOverwriteExistingData('World Info', wiManager.worldNames, sanitizedWorldName, { interactive: interactive, actionName: 'Create', deleteAction: (existingName) => deleteWorldInfo(existingName) });
     if (!allowed) {
         return false;
     }
@@ -819,7 +818,7 @@ export async function importWorldInfo(file) {
     const worldName = file.name.substr(0, file.name.lastIndexOf('.'));
     const sanitizedWorldName = await getSanitizedFilename(worldName);
     // @ts-expect-error TS(2322) FIXME: Type '(existingName: any) => Promise<boolean>' is ... Remove this comment to see the full error message
-    const allowed = await checkOverwriteExistingData('World Info', world_names, sanitizedWorldName, { interactive: true, actionName: 'Import', deleteAction: (existingName) => deleteWorldInfo(existingName) });
+    const allowed = await checkOverwriteExistingData('World Info', wiManager.worldNames, sanitizedWorldName, { interactive: true, actionName: 'Import', deleteAction: (existingName) => deleteWorldInfo(existingName) });
     if (!allowed) {
         return false;
     }
@@ -952,7 +951,7 @@ export async function moveWorldInfoEntry(sourceName, targetName, uid, { deleteOr
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const currentEditorBookIndex = Number(document.getElementById('world_editor_select').value = String());
         if (!isNaN(currentEditorBookIndex)) {
-            const currentEditorBookName = world_names[currentEditorBookIndex];
+            const currentEditorBookName = wiManager.worldNames[currentEditorBookIndex];
             if (currentEditorBookName === sourceName || currentEditorBookName === targetName) {
                 reloadEditor(currentEditorBookName);
             }
