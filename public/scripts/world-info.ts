@@ -67,6 +67,18 @@ import {
     isValidRegex,
     filterByInclusionGroups,
 } from './world-info/engine.js';
+
+// ── Editor imports ──
+import {
+    WI_ENTRY_HEADER_TEMPLATE,
+    WI_ENTRY_EDIT_TEMPLATE,
+    nullWorldInfo,
+    worldEntryKeyOptionsCache,
+    updateWorldEntryKeyOptionsCache,
+    clearEntryList,
+    setWIOriginalDataValue,
+    deleteWIOriginalDataValue,
+} from './world-info/editor.js';
 export {
     world_info_insertion_strategy,
     world_info_logic,
@@ -84,8 +96,6 @@ export {
     originalWIDataKeyMap,
 } from './world-info/constants.js';
 
-// @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-const WI_ENTRY_HEADER_TEMPLATE = /** @type {HTMLElement} */ (document.querySelector('#entry_edit_template .world_entry'));
 // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
 const WI_ENTRY_EDIT_TEMPLATE = /** @type {HTMLElement} */ (document.querySelector('#entry_edit_template .world_entry_edit'));
 
@@ -1878,108 +1888,6 @@ export function sortWorldInfoEntries(data, { customSort = null } = {}) {
 /**
  *
  */
-function nullWorldInfo() {
-    // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-    notyf.info('Create or import a new World Info file first.', 'World Info is not set', { timeOut: 10000, preventDuplicates: true });
-}
-
-/** @type {Select2Option[]} Cache all keys as selectable dropdown option */
-// @ts-expect-error TS(7034) FIXME: Variable 'worldEntryKeyOptionsCache' implicitly ha... Remove this comment to see the full error message
-const worldEntryKeyOptionsCache = [];
-
-/**
- * Update the cache and all select options for the keys with new values to display
- * @param {string[]|Select2Option[]} keyOptions - An array of options to update
- * @param {object} options - Optional arguments
- * @param {boolean?} [options.remove] - Whether the option was removed, so the count should be reduced - otherwise it'll be increased
- * @param {boolean?} [options.reset] - Whether the cache should be reset. Reset will also not trigger update of the controls, as we expect them to be redrawn anyway
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'keyOptions' implicitly has an 'any' typ... Remove this comment to see the full error message
-function updateWorldEntryKeyOptionsCache(keyOptions, { remove = false, reset = false } = {}) {
-    if (!keyOptions.length) return;
-    /** @type {Select2Option[]} */
-    // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
-    const options = keyOptions.map(x => typeof x === 'string' ? { id: getSelect2OptionId(x), text: x } : x);
-    if (reset) worldEntryKeyOptionsCache.length = 0;
-    // @ts-expect-error TS(7006) FIXME: Parameter 'option' implicitly has an 'any' type.
-    options.forEach(option => {
-        // Update the cache list
-        // @ts-expect-error TS(7005) FIXME: Variable 'worldEntryKeyOptionsCache' implicitly ha... Remove this comment to see the full error message
-        let cachedEntry = worldEntryKeyOptionsCache.find(x => x.id == option.id);
-        if (cachedEntry) {
-            cachedEntry.count += !remove ? 1 : -1;
-        } else if (!remove) {
-            worldEntryKeyOptionsCache.push(option);
-            cachedEntry = option;
-            cachedEntry.count = 1;
-        }
-    });
-
-    // Sort by count DESC and then alphabetically
-    // @ts-expect-error TS(7005) FIXME: Variable 'worldEntryKeyOptionsCache' implicitly ha... Remove this comment to see the full error message
-    worldEntryKeyOptionsCache.sort((a, b) => b.count - a.count || a.text.localeCompare(b.text));
-}
-
-/**
- * @param {HTMLElement} listElement - The list element to clear
- * @returns {void}
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'listElement' implicitly has an 'any' type.
-function clearEntryList(listElement) {
-    console.time('clearEntryList');
-
-    if (!listElement.children.length) {
-        console.timeEnd('clearEntryList');
-        return;
-    }
-
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    listElement.querySelectorAll('.inline-drawer').forEach(function (el) {
-        el.removeEventListener('inline-drawer-toggle', nullWorldInfo);
-    });
-
-    // @ts-expect-error TS(7006) FIXME: Parameter 'option' implicitly has an 'any' type.
-    listElement.querySelectorAll('option').forEach(function (option) {
-        option.remove();
-    });
-
-    // @ts-expect-error TS(7006) FIXME: Parameter 'select' implicitly has an 'any' type.
-    listElement.querySelectorAll('select').forEach(function (select) {
-        const tomSelect = select.tomSelect;
-        if (tomSelect) {
-            try {
-                tomSelect.destroy();
-            } catch (e) {
-                console.debug('TomSelect destroy failed:', e);
-            }
-        }
-        const container = select.parentElement;
-        if (container) {
-            container.querySelectorAll('*').forEach(function (el) {
-                // No-op: removing the container handles cleanup
-            });
-            container.remove();
-        }
-        select.remove();
-    });
-
-    // @ts-expect-error TS(7006) FIXME: Parameter 'elem' implicitly has an 'any' type.
-    listElement.querySelectorAll('div, span, input').forEach(function (elem) {
-        elem.remove();
-    });
-
-    const totalElementsOfAnyKindLeftInList = listElement.children.length;
-
-    // Final cleanup
-    if (totalElementsOfAnyKindLeftInList) {
-        console.time('empty');
-        listElement.innerHTML = '';
-        console.timeEnd('empty');
-    }
-
-    console.timeEnd('clearEntryList');
-}
-
 //MARK: displayWorldEntries
 /**
  * @param {string|null} name - World info name
@@ -2380,40 +2288,6 @@ function verifyWorldInfoSearchSortRule() {
  * @param {string} key - The key of the value to be set.
  * @param {unknown} value - The value to be set.
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
-export function setWIOriginalDataValue(data, uid, key, value) {
-    if (data.originalData && Array.isArray(data.originalData.entries)) {
-        // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
-        const originalEntry = data.originalData.entries.find(x => x.uid === uid);
-
-        if (!originalEntry) {
-            return;
-        }
-
-        setValueByPath(originalEntry, key, value);
-    }
-}
-
-/**
- * Deletes the original data entry corresponding to the given uid from the provided data object
- * @param {object} data - The data object containing the original data entries
- * @param {string} uid - The unique identifier of the data entry to be deleted
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
-export function deleteWIOriginalDataValue(data, uid) {
-    if (data.originalData && Array.isArray(data.originalData.entries)) {
-        // Non-strict equality is used here to allow for both string and number comparisons
-        // @eslint-disable-next-line eqeqeq
-        // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
-        const originalIndex = data.originalData.entries.findIndex(x => x.uid == uid);
-
-        if (originalIndex >= 0) {
-            data.originalData.entries.splice(originalIndex, 1);
-        }
-    }
-}
-
-/** @typedef {import('./utils.js').Select2Option} Select2Option */
 
 /**
  * Splits a given input string that contains one or more keywords or regexes, separated by commas.
