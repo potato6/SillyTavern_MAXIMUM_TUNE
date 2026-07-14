@@ -2583,23 +2583,70 @@ const selEl = template[0]?.querySelector(`select[name="${entryPropName}"]`); if 
  * @param {string} params.name - The name of the world info to save changes to.
  */
 // @ts-expect-error TS(7031) FIXME: Binding element 'template' implicitly has an 'any'... Remove this comment to see the full error message
-function handleMatchCheckboxHelper({ template, entry, fieldName, data, name }) {
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-    const key = originalWIDataKeyMap[fieldName];
-    const checkBoxElem = template.querySelector(`input[type="checkbox"][name="${fieldName}"]`);
-    checkBoxElem.setAttribute('data-uid', entry.uid);
-    checkBoxElem.addEventListener('input', async function (this: any, e: Event) {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+/**
+ * Generic field binder for WI entry editors.
+ *
+ * Wires an input/select element so changes flow:
+ *   element → data.entries[uid] → originalData → saveWorldInfo
+ *
+ * @param el         - The DOM element (input, select, checkbox).
+ * @param entry      - The WI entry object.
+ * @param fieldName  - Property name on the entry (e.g. 'constant', 'depth').
+ * @param data       - The WI book data object.
+ * @param name       - The WI book name (for saveWorldInfo).
+ * @param opts       - Optional overrides.
+ * @param opts.read  - (el) => value  — how to read the current value (default: el.value).
+ * @param opts.write - (el, value) => void — how to set the initial value (default: el.value = value).
+ * @param opts.keyPath - Override the originalWIDataKeyMap lookup.
+ * @param opts.init  - Initial value override.
+ * @param opts.transform - (raw) => stored — transform before saving.
+ * @param opts.onSave - (uid, value) => void — extra side-effect before save.
+ */
+function bindEntryField(
+    el: HTMLElement,
+    entry: any,
+    fieldName: string,
+    data: any,
+    name: string,
+    opts: {
+        read?: (el: any) => any;
+        write?: (el: any, v: any) => void;
+        keyPath?: string;
+        init?: any;
+        transform?: (v: any) => any;
+        onSave?: (uid: string, value: any) => void;
+    } = {},
+) {
+    const keyPath = opts.keyPath ?? originalWIDataKeyMap[fieldName] ?? fieldName;
+    const read = opts.read ?? ((el: any) => el.value);
+    const write = opts.write ?? ((el: any, v: any) => { el.value = v; });
+    const transform = opts.transform ?? ((v: any) => v);
+
+    el.dataset.uid = String(entry.uid);
+    el.addEventListener('input', async function (this: any, e: Event) {
         const uid = this.dataset.uid;
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const value = this.checked;
-        const data_noSave = e instanceof CustomEvent ? e.detail?.noSave : false;
+        const raw = read(this);
+        const value = transform(raw);
+        const noSave = e instanceof CustomEvent ? (e as CustomEvent).detail?.noSave : false;
         data.entries[uid][fieldName] = value;
-        setWIOriginalDataValue(data, uid, key, data.entries[uid][fieldName]);
-        if (!data_noSave) await saveWorldInfo(name, data);
+        setWIOriginalDataValue(data, uid, keyPath, value);
+        if (opts.onSave) opts.onSave(uid, value);
+        if (!noSave) await saveWorldInfo(name, data);
     });
-    checkBoxElem.checked = !!entry[fieldName];
-    checkBoxElem.dispatchEvent(new CustomEvent('input', { detail: { noSave: true } }));
+    write(el, opts.init ?? (entry[fieldName] ?? ''));
+    el.dispatchEvent(new CustomEvent('input', { detail: { noSave: true } }));
+}
+
+/**
+ * Helper to handle match checkboxes for WI entries.
+ */
+function handleMatchCheckboxHelper({ template, entry, fieldName, data, name }) {
+    const el = template.querySelector(`input[type="checkbox"][name="${fieldName}"]`);
+    if (!el) return;
+    bindEntryField(el, entry, fieldName, data, name, {
+        read: (el: any) => el.checked,
+        write: (el: any, v: any) => { el.checked = !!v; },
+    });
 }
 
 /**
@@ -2748,25 +2795,16 @@ function handleCharacterFilterChangeHelper({ characterFilter, data, entry, name 
  */
 // @ts-expect-error TS(7031) FIXME: Binding element 'probabilityInput' implicitly has ... Remove this comment to see the full error message
 function handleProbabilityInputHelper({ probabilityInput, data, entry, name }) {
-    probabilityInput[0].dataset.uid = String(entry.uid);
-    probabilityInput[0].addEventListener('input', async function (this: any, e: Event) {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const uid = this.dataset.uid;
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const value = Number(this.value);
-        const data_noSave = e instanceof CustomEvent ? e.detail?.noSave : false;
-        data.entries[uid].probability = !isNaN(value) ? value : null;
-        if (data.entries[uid].probability !== null) {
-            data.entries[uid].probability = Math.min(100, Math.max(0, data.entries[uid].probability));
-            if (data.entries[uid].probability !== value) {
-                this.value = data.entries[uid].probability;
+    bindEntryField(probabilityInput[0], entry, 'probability', data, name, {
+        read: (el: any) => Number(el.value),
+        write: (el: any, v: any) => { el.value = v ?? ''; },
+        transform: (v: any) => isNaN(v) ? null : Math.min(100, Math.max(0, v)),
+        onSave: (uid, value) => {
+            if (value !== null && value !== Number(probabilityInput[0].value)) {
+                probabilityInput[0].value = value;
             }
-        }
-        setWIOriginalDataValue(data, uid, 'extensions.probability', data.entries[uid].probability);
-        if (!data_noSave) await saveWorldInfo(name, data);
+        },
     });
-    probabilityInput[0].value = entry.probability;
-    probabilityInput[0].dispatchEvent(new CustomEvent('input', { detail: { noSave: true } }));
     probabilityInput[0].style.width = 'calc(3em + 15px)';
 }
 
@@ -2817,20 +2855,13 @@ function handleProbabilityToggleHelper({ probabilityToggle, data, entry, name, p
  */
 // @ts-expect-error TS(7031) FIXME: Binding element 'selectElem' implicitly has an 'an... Remove this comment to see the full error message
 function handleBooleanSelectHelper({ selectElem, entry, entryKey, data, name }) {
-    selectElem[0].dataset.uid = String(entry.uid);
-    selectElem[0].addEventListener('input', async function (this: any, e: Event) {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const uid = this.dataset.uid;
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const value = this.value;
-        const data_noSave = e instanceof CustomEvent ? e.detail?.noSave : false;
-        data.entries[uid][entryKey] = value === 'null' ? null : value === 'true';
-        // @ts-expect-error TS(7006) FIXME: Parameter 'm' implicitly has an 'any' type.
-        setWIOriginalDataValue(data, uid, `extensions.${entryKey.replace(/[A-Z]/g, m => `_${m.toLowerCase()}`)}`, data.entries[uid][entryKey]);
-        if (!data_noSave) await saveWorldInfo(name, data);
+    bindEntryField(selectElem[0], entry, entryKey, data, name, {
+        read: (el: any) => el.value === 'null' ? null : el.value === 'true',
+        write: (el: any, v: any) => {
+            el.value = (v === null || v === undefined) ? 'null' : v ? 'true' : 'false';
+        },
+        transform: (v: any) => v,
     });
-    selectElem[0].value = (entry[entryKey] === null || entry[entryKey] === undefined) ? 'null' : entry[entryKey] ? 'true' : 'false';
-    selectElem[0].dispatchEvent(new CustomEvent('input', { detail: { noSave: true } }));
 }
 
 /**
@@ -2847,29 +2878,24 @@ function handleBooleanSelectHelper({ selectElem, entry, entryKey, data, name }) 
  */
 // @ts-expect-error TS(7031) FIXME: Binding element 'inputElem' implicitly has an 'any... Remove this comment to see the full error message
 function handleNumberInputHelper({ inputElem, entry, entryKey, data, name, min, max, clamp = false }) {
-    inputElem[0].dataset.uid = String(entry.uid);
-    inputElem[0].addEventListener('input', async function (this: any, e: Event) {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const uid = this.dataset.uid;
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        let value = Number(this.value);
-        const data_noSave = e instanceof CustomEvent ? e.detail?.noSave : false;
-        if (clamp) {
-            if (value < min) {
-                value = min;
-                this.value = min;
-            } else if (value > max) {
-                value = max;
-                this.value = max;
+    bindEntryField(inputElem[0], entry, entryKey, data, name, {
+        read: (el: any) => !isNaN(Number(el.value)) ? Number(el.value) : null,
+        write: (el: any, v: any) => { el.value = v ?? (clamp ? min : ''); },
+        transform: (v: any) => {
+            if (v === null || isNaN(v)) return null;
+            if (clamp) {
+                if (v < min) return min;
+                if (v > max) return max;
             }
-        }
-        data.entries[uid][entryKey] = !isNaN(value) ? value : null;
-        // @ts-expect-error TS(7006) FIXME: Parameter 'm' implicitly has an 'any' type.
-        setWIOriginalDataValue(data, uid, `extensions.${entryKey.replace(/[A-Z]/g, m => `_${m.toLowerCase()}`)}`, data.entries[uid][entryKey]);
-        if (!data_noSave) await saveWorldInfo(name, data);
+            return v;
+        },
+        onSave: (uid, value) => {
+            if (clamp && value !== null) {
+                if (value < min) { inputElem[0].value = min; }
+                if (value > max) { inputElem[0].value = max; }
+            }
+        },
     });
-    inputElem[0].value = entry[entryKey] ?? (clamp ? min : '');
-    inputElem[0].dispatchEvent(new CustomEvent('input', { detail: { noSave: true } }));
 }
 
 /**
