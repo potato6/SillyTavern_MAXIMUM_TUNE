@@ -28,40 +28,52 @@ import { t } from './i18n.js';
 import { accountStorage } from './util/AccountStorage.js';
 import { getOrCreatePersonaDescriptor, setPersonaDescription, user_avatar } from './personas.js';
 
-export const world_info_insertion_strategy = {
-    evenly: 0,
-    character_first: 1,
-    global_first: 2,
-};
+// ── Re-exported types & constants ──
+export type {
+    WIGlobalScanData,
+    WIScanEntry,
+    WITimedEffect,
+    TimedEffectType,
+    WIPromptResult,
+    WIActivated,
+    WIEntryFieldDefinition,
+    WorldInfoSettings,
+    WorldInfoEntryData,
+    WorldInfoBook,
+} from './world-info/types.js';
 
-export const world_info_logic = {
-    AND_ANY: 0,
-    NOT_ALL: 1,
-    NOT_ANY: 2,
-    AND_ALL: 3,
-};
-
-/**
- * @enum {number} Possible states of the WI evaluation
- */
-export const scan_state = {
-    /**
-     * The scan will be stopped.
-     */
-    NONE: 0,
-    /**
-     * Initial state.
-     */
-    INITIAL: 1,
-    /**
-     * The scan is triggered by a recursion step.
-     */
-    RECURSION: 2,
-    /**
-     * The scan is triggered by a min activations depth skew.
-     */
-    MIN_ACTIVATIONS: 3,
-};
+import {
+    world_info_insertion_strategy,
+    world_info_logic,
+    scan_state,
+    world_info_position,
+    wi_anchor_position,
+    DEFAULT_DEPTH,
+    DEFAULT_WEIGHT,
+    MAX_SCAN_DEPTH,
+    MAX_COMMENT_LENGTH,
+    SORT_ORDER_KEY,
+    METADATA_KEY,
+    KNOWN_DECORATORS,
+    defaultGlobalScanData,
+    originalWIDataKeyMap,
+} from './world-info/constants.js';
+export {
+    world_info_insertion_strategy,
+    world_info_logic,
+    scan_state,
+    world_info_position,
+    wi_anchor_position,
+    DEFAULT_DEPTH,
+    DEFAULT_WEIGHT,
+    MAX_SCAN_DEPTH,
+    MAX_COMMENT_LENGTH,
+    SORT_ORDER_KEY,
+    METADATA_KEY,
+    KNOWN_DECORATORS,
+    defaultGlobalScanData,
+    originalWIDataKeyMap,
+} from './world-info/constants.js';
 
 // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
 const WI_ENTRY_HEADER_TEMPLATE = /** @type {HTMLElement} */ (document.querySelector('#entry_edit_template .world_entry'));
@@ -101,14 +113,6 @@ let updateEditor = (navigation, flashOnNav = true) => { console.debug('Triggered
 // Do not optimize. updateEditor is a function that is updated by the displayWorldEntries with new data.
 // @ts-expect-error TS(2554) FIXME: Expected 1-2 arguments, but got 0.
 export const worldInfoFilter = new FilterHelper(() => updateEditor());
-export const SORT_ORDER_KEY = 'world_info_sort_order';
-export const METADATA_KEY = 'world_info';
-
-export const DEFAULT_DEPTH = 4;
-export const DEFAULT_WEIGHT = 100;
-export const MAX_SCAN_DEPTH = 1000;
-const MAX_COMMENT_LENGTH = 100;
-const KNOWN_DECORATORS = ['@@activate', '@@dont_activate'];
 
 // Typedef area
 /**
@@ -194,15 +198,7 @@ const KNOWN_DECORATORS = ['@@activate', '@@dont_activate'];
 // End typedef area
 
 /** @type {Readonly<WIGlobalScanData>} */
-const defaultGlobalScanData = Object.freeze({
-    trigger: 'normal',
-    personaDescription: '',
-    characterDescription: '',
-    characterPersonality: '',
-    characterDepthPrompt: '',
-    scenario: '',
-    creatorNotes: '',
-});
+// defaultGlobalScanData is imported from ./world-info/constants.js
 
 /**
  * Represents a scanning buffer for one evaluation of World Info.
@@ -927,22 +923,6 @@ export function updateWorldInfoSettings(settings, activeWorldInfo) {
 
     saveSettingsDebounced();
 }
-
-export const world_info_position = {
-    before: 0,
-    after: 1,
-    ANTop: 2,
-    ANBottom: 3,
-    atDepth: 4,
-    EMTop: 5,
-    EMBottom: 6,
-    outlet: 7,
-};
-
-export const wi_anchor_position = {
-    before: 0,
-    after: 1,
-};
 
 /**
  * The cache of all world info data that was loaded from the backend.
@@ -3006,45 +2986,6 @@ async function displayWorldEntries(name, data, navigation = navigation_option.no
 
     //$("#world_popup_entries_list").disableSelection();
 }
-
-export const originalWIDataKeyMap = {
-    'displayIndex': 'extensions.display_index',
-    'excludeRecursion': 'extensions.exclude_recursion',
-    'preventRecursion': 'extensions.prevent_recursion',
-    'delayUntilRecursion': 'extensions.delay_until_recursion',
-    'selectiveLogic': 'selectiveLogic',
-    'comment': 'comment',
-    'constant': 'constant',
-    'order': 'insertion_order',
-    'depth': 'extensions.depth',
-    'probability': 'extensions.probability',
-    'position': 'extensions.position',
-    'role': 'extensions.role',
-    'content': 'content',
-    'enabled': 'enabled',
-    'key': 'keys',
-    'keysecondary': 'secondary_keys',
-    'selective': 'selective',
-    'matchWholeWords': 'extensions.match_whole_words',
-    'useGroupScoring': 'extensions.use_group_scoring',
-    'caseSensitive': 'extensions.case_sensitive',
-    'matchPersonaDescription': 'extensions.match_persona_description',
-    'matchCharacterDescription': 'extensions.match_character_description',
-    'matchCharacterPersonality': 'extensions.match_character_personality',
-    'matchCharacterDepthPrompt': 'extensions.match_character_depth_prompt',
-    'matchScenario': 'extensions.match_scenario',
-    'matchCreatorNotes': 'extensions.match_creator_notes',
-    'scanDepth': 'extensions.scan_depth',
-    'automationId': 'extensions.automation_id',
-    'vectorized': 'extensions.vectorized',
-    'groupOverride': 'extensions.group_override',
-    'groupWeight': 'extensions.group_weight',
-    'sticky': 'extensions.sticky',
-    'cooldown': 'extensions.cooldown',
-    'delay': 'extensions.delay',
-    'triggers': 'extensions.triggers',
-    'ignoreBudget': 'extensions.ignore_budget',
-};
 
 /** Checks the state of the current search, and adds/removes the search sorting option accordingly */
 function verifyWorldInfoSearchSortRule() {
