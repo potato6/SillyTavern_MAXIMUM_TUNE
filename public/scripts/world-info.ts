@@ -407,38 +407,32 @@ export function setWorldInfoSettings(settings, data) {
 
     wiManager.info = settings.world_info ?? {};
 
-    const worldInfoDepthCounter = document.getElementById('world_info_depth_counter');
-    if (worldInfoDepthCounter) worldInfoDepthCounter.value = String(wiManager.depth);
-    const worldInfoDepth = document.getElementById('world_info_depth');
-    if (worldInfoDepth) worldInfoDepth.value = String(wiManager.depth);
+    /** Syncs an input or checkbox from the manager — collapses 11 nearly-identical blocks */
+    function sync(id: string, value: string | boolean) {
+        const el = document.getElementById(id) as HTMLInputElement | null;
+        if (!el) return;
+        if (typeof value === 'boolean') el.checked = value;
+        else el.value = value;
+    }
 
-    const worldInfoMinActCounter = document.getElementById('world_info_min_activations_counter');
-    if (worldInfoMinActCounter) worldInfoMinActCounter.value = String(wiManager.minActivations);
-    const worldInfoMinAct = document.getElementById('world_info_min_activations');
-    if (worldInfoMinAct) worldInfoMinAct.value = String(wiManager.minActivations);
-
-    const worldInfoMinActDepthMaxCounter = document.getElementById('world_info_min_activations_depth_max_counter');
-    if (worldInfoMinActDepthMaxCounter) worldInfoMinActDepthMaxCounter.value = String(wiManager.minActivationsDepthMax);
-    const worldInfoMinActDepthMax = document.getElementById('world_info_min_activations_depth_max');
-    if (worldInfoMinActDepthMax) worldInfoMinActDepthMax.value = String(wiManager.minActivationsDepthMax);
-
-    const worldInfoBudgetCounter = document.getElementById('world_info_budget_counter');
-    if (worldInfoBudgetCounter) worldInfoBudgetCounter.value = String(wiManager.budget);
-    const worldInfoBudget = document.getElementById('world_info_budget');
-    if (worldInfoBudget) worldInfoBudget.value = String(wiManager.budget);
-
-    const worldInfoIncludeNames = document.getElementById('world_info_include_names');
-    if (worldInfoIncludeNames) worldInfoIncludeNames.checked = wiManager.includeNames;
-    const worldInfoRecursive = document.getElementById('world_info_recursive');
-    if (worldInfoRecursive) worldInfoRecursive.checked = wiManager.recursive;
-    const worldInfoOverflowAlert = document.getElementById('world_info_overflow_alert');
-    if (worldInfoOverflowAlert) worldInfoOverflowAlert.checked = wiManager.overflowAlert;
-    const worldInfoCaseSensitive = document.getElementById('world_info_case_sensitive');
-    if (worldInfoCaseSensitive) worldInfoCaseSensitive.checked = wiManager.caseSensitive;
-    const worldInfoMatchWholeWords = document.getElementById('world_info_match_whole_words');
-    if (worldInfoMatchWholeWords) worldInfoMatchWholeWords.checked = wiManager.matchWholeWords;
-    const worldInfoUseGroupScoring = document.getElementById('world_info_use_group_scoring');
-    if (worldInfoUseGroupScoring) worldInfoUseGroupScoring.checked = wiManager.useGroupScoring;
+    sync('world_info_depth_counter', String(wiManager.depth));
+    sync('world_info_depth', String(wiManager.depth));
+    sync('world_info_min_activations_counter', String(wiManager.minActivations));
+    sync('world_info_min_activations', String(wiManager.minActivations));
+    sync('world_info_min_activations_depth_max_counter', String(wiManager.minActivationsDepthMax));
+    sync('world_info_min_activations_depth_max', String(wiManager.minActivationsDepthMax));
+    sync('world_info_budget_counter', String(wiManager.budget));
+    sync('world_info_budget', String(wiManager.budget));
+    sync('world_info_include_names', wiManager.includeNames);
+    sync('world_info_recursive', wiManager.recursive);
+    sync('world_info_overflow_alert', wiManager.overflowAlert);
+    sync('world_info_case_sensitive', wiManager.caseSensitive);
+    sync('world_info_match_whole_words', wiManager.matchWholeWords);
+    sync('world_info_use_group_scoring', wiManager.useGroupScoring);
+    sync('world_info_budget_cap', String(wiManager.budgetCap));
+    sync('world_info_budget_cap_counter', String(wiManager.budgetCap));
+    sync('world_info_max_recursion_steps', String(wiManager.maxRecursionSteps));
+    sync('world_info_max_recursion_steps_counter', String(wiManager.maxRecursionSteps));
 
     const worldInfoCharStrategy = document.getElementById('world_info_character_strategy');
     const strategyOption = worldInfoCharStrategy?.querySelector(`option[value='${wiManager.characterStrategy}']`);
