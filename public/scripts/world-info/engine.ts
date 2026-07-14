@@ -1,24 +1,35 @@
 /**
- * World Info scanning engine — core classes.
- *
- * DOM-free core: knows nothing about Popup, templates, jQuery, or UI state.
- * The big scanning pipeline (checkWorldInfo) lives in world-info.ts and
- * will be migrated here in a follow-up pass once the class dependencies
- * are verified stable.
+ * World Info scanning engine — core classes & scanning pipeline.
  */
 
-import { escapeRegex } from '../utils.js';
-import { chat_metadata } from '../../script.js';
+import { escapeRegex, getCharaFilename, getStringHash } from '../utils.js';
+import { chat_metadata, characters, eventSource, event_types, extension_prompt_roles, getExtensionPromptByName, getRequestHeaders, substituteParams, this_chid } from '../../script.js';
+import { extension_settings, getContext } from '../extensions.js';
+import { shouldWIAddPrompt, NOTE_MODULE_NAME, metadata_keys } from '../authors-note.js';
+import { getTokenCountAsync } from '../tokenizers.js';
+import { power_user } from '../power-user.js';
+import { getTagKeyForEntity } from '../tags.js';
+import { GENERATION_TYPE_TRIGGERS, debounce_timeout } from '../constants.js';
+import { getRegexedString, regex_placement } from '../extensions/regex/engine.js';
+import { StructuredCloneMap } from '../util/StructuredCloneMap.js';
 
 import {
+    wi_anchor_position,
+    world_info_insertion_strategy,
     world_info_logic,
+    world_info_position,
     scan_state,
     MAX_SCAN_DEPTH,
+    DEFAULT_DEPTH,
     DEFAULT_WEIGHT,
     KNOWN_DECORATORS,
+    METADATA_KEY,
+    defaultGlobalScanData,
 } from './constants.js';
 
-import type { WIGlobalScanData, WIScanEntry, WITimedEffect, TimedEffectType } from './types.js';
+import { wiManager } from './manager.js';
+
+import type { WIActivated, WIGlobalScanData, WIPromptResult, WIScanEntry, WITimedEffect, TimedEffectType } from './types.js';
 
 // ═══════════════════════════════════════════════════════════════
 //  Regex helpers
@@ -328,4 +339,974 @@ export function filterByInclusionGroups(
         }
         if (winner) removeAllBut(grp, winner);
     }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  Scanning pipeline
+// ═══════════════════════════════════════════════════════════════
+
+/**
+ * The cache of all world info data that was loaded from the backend.
+ *
+ * Calling `loadWorldInfo` will fill this cache and utilize this cache, so should be the preferred way to load any world info data.
+ * Only use the cache directly if you need synchronous access.
+ *
+ * This will return a deep clone of the data, so no way to modify the data without actually saving it.
+ * Should generally be only used for readonly access.
+ * @type {StructuredCloneMap<string,object>}
+ */
+export const worldInfoCache = new StructuredCloneMap({ cloneOnGet: true, cloneOnSet: false });
+
+/**
+ * Gets the world info based on chat messages.
+ * @param {string[]} chat - The chat messages to scan, in reverse order.
+ * @param {number} maxContext - The maximum context size of the generation.
+ * @param {boolean} isDryRun - If true, the function will not emit any events.
+ * @param {WIGlobalScanData} globalScanData Chat independent context to be scanned
+ * @returns {Promise<WIPromptResult>} The world info string and depth.
+ */
+// @ts-expect-error TS(7006) FIXME: Parameter 'chat' implicitly has an 'any' type.
+export async function getWorldInfoPrompt(chat, maxContext, isDryRun, globalScanData) {
+    let worldInfoString = '', worldInfoBefore = '', worldInfoAfter = '';
+
+    const activatedWorldInfo = await checkWorldInfo(chat, maxContext, isDryRun, globalScanData);
+    worldInfoBefore = activatedWorldInfo.worldInfoBefore;
+    worldInfoAfter = activatedWorldInfo.worldInfoAfter;
+    worldInfoString = worldInfoBefore + worldInfoAfter;
+
+    if (!isDryRun && activatedWorldInfo.allActivatedEntries && activatedWorldInfo.allActivatedEntries.size > 0) {
+        const arg = Array.from(activatedWorldInfo.allActivatedEntries.values());
+        await eventSource.emit(event_types.WORLD_INFO_ACTIVATED, arg);
+    }
+
+    return {
+        worldInfoString,
+        worldInfoBefore,
+        worldInfoAfter,
+        worldInfoExamples: activatedWorldInfo.EMEntries ?? [],
+        worldInfoDepth: activatedWorldInfo.WIDepthEntries ?? [],
+        anBefore: activatedWorldInfo.ANBeforeEntries ?? [],
+        anAfter: activatedWorldInfo.ANAfterEntries ?? [],
+        outletEntries: activatedWorldInfo.outletEntries ?? {},
+    };
+}
+
+/**
+ * Loads world info from the backend.
+ *
+ * This function will return from `worldInfoCache` if it has already been loaded before.
+ * @param {string} name - The name of the world to load
+ * @returns {Promise<object | null>} A promise that resolves to the loaded world information, or null if the request fails.
+ */
+// @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
+export async function loadWorldInfo(name) {
+    if (!name) {
+        return;
+    }
+
+    if (worldInfoCache.has(name)) {
+        return worldInfoCache.get(name);
+    }
+
+    const response = await fetch('/api/worldinfo/get', {
+        method: 'POST',
+        headers: getRequestHeaders(),
+        body: JSON.stringify({ name: name }),
+        cache: 'no-cache',
+    });
+
+    if (response.ok) {
+        const data = await response.json();
+        worldInfoCache.set(name, data);
+        return data;
+    }
+
+    return null;
+}
+
+/**
+ * Shared helper: loads entries from one or more lorebook files and annotates
+ * each with its source world name.  This is the core mapping that all four
+ * lore-source functions (global, character, chat, persona) previously duplicated.
+ */
+async function loadLoreEntries(worldNames: string[]): Promise<object[]> {
+    const entries: object[] = [];
+    for (const worldName of worldNames) {
+        const data = await loadWorldInfo(worldName);
+        if (data?.entries) {
+            for (const [uid, entry] of Object.entries(data.entries)) {
+                entries.push({ uid: Number(uid), world: worldName, ...entry as object });
+            }
+        }
+    }
+    return entries;
+}
+
+/**
+ * @returns {Promise<object[]>} Array of character lore entries
+ */
+async function getCharacterLore() {
+    const character = characters[this_chid];
+    const name = character?.name;
+    /** @type {Set<string>} */
+    let worldsToSearch = new Set();
+
+    const baseWorldName = character?.data?.extensions?.world;
+    if (baseWorldName) {
+        worldsToSearch.add(baseWorldName);
+    }
+
+    // TODO: Maybe make the utility function not use the window context?
+    const fileName = getCharaFilename(this_chid);
+    // @ts-expect-error TS(2339) FIXME: Property 'charLore' does not exist on type '{}'.
+    const extraCharLore = wiManager.info.charLore?.find((e) => e.name === fileName);
+    if (extraCharLore) {
+        worldsToSearch = new Set([...worldsToSearch, ...extraCharLore.extraBooks]);
+    }
+
+    if (!worldsToSearch.size) {
+        return [];
+    }
+
+    // @ts-expect-error TS(7034) FIXME: Variable 'entries' implicitly has type 'any[]' in ...
+    let entries = [];
+    for (const worldName of worldsToSearch) {
+        // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown' is not assignable to pa...
+        if (wiManager.selectedWorlds.includes(worldName)) {
+            console.debug(`[WI] Character ${name}'s world ${worldName} is already activated in global world info! Skipping...`);
+            continue;
+        }
+
+        if (chat_metadata[METADATA_KEY] === worldName) {
+            console.debug(`[WI] Character ${name}'s world ${worldName} is already activated in chat lore! Skipping...`);
+            continue;
+        }
+
+        if (power_user.persona_description_lorebook === worldName) {
+            console.debug(`[WI] Character ${name}'s world ${worldName} is already activated in persona lore! Skipping...`);
+            continue;
+        }
+
+        // @ts-expect-error TS(7005) FIXME: Variable 'entries' implicitly has an 'any[]' type.
+        entries = entries.concat(await loadLoreEntries([worldName]));
+
+        // @ts-expect-error TS(7005) FIXME: Variable 'entries' implicitly has an 'any[]' type.
+        if (!entries.length) {
+            console.debug(`[WI] Character ${name}'s world ${worldName} could not be found or is empty`);
+        }
+    }
+
+    console.debug(`[WI] Character ${name}'s lore has ${entries.length} world info entries`, [...worldsToSearch]);
+    return entries;
+}
+
+/**
+ * @returns {Promise<object[]>} Array of global lore entries
+ */
+async function getGlobalLore() {
+    if (!wiManager.selectedWorlds?.length) {
+        return [];
+    }
+
+    const entries = await loadLoreEntries(wiManager.selectedWorlds);
+
+    console.debug(`[WI] Global world info has ${entries.length} entries`, wiManager.selectedWorlds);
+
+    return entries;
+}
+
+/**
+ * @returns {Promise<object[]>} Array of chat lore entries
+ */
+async function getChatLore() {
+    const chatWorld = chat_metadata[METADATA_KEY];
+
+    if (!chatWorld) {
+        return [];
+    }
+
+    // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame...
+    if (wiManager.selectedWorlds.includes(chatWorld)) {
+        console.debug(`[WI] Chat world ${chatWorld} is already activated in global world info! Skipping...`);
+        return [];
+    }
+
+    const entries = await loadLoreEntries([chatWorld]);
+
+    console.debug(`[WI] Chat lore has ${entries.length} entries`, [chatWorld]);
+
+    return entries;
+}
+
+/**
+ * @returns {Promise<object[]>} Array of persona lore entries
+ */
+async function getPersonaLore() {
+    const chatWorld = chat_metadata[METADATA_KEY];
+    const personaWorld = power_user.persona_description_lorebook;
+
+    if (!personaWorld) {
+        return [];
+    }
+
+    if (chatWorld === personaWorld) {
+        console.debug(`[WI] Persona world ${personaWorld} is already activated in chat world! Skipping...`);
+        return [];
+    }
+
+    // @ts-expect-error TS(2345) FIXME: Argument of type 'string' is not assignable to par...
+    if (wiManager.selectedWorlds.includes(personaWorld)) {
+        console.debug(`[WI] Persona world ${personaWorld} is already activated in global world info! Skipping...`);
+        return [];
+    }
+
+    const entries = await loadLoreEntries([personaWorld]);
+
+    console.debug(`[WI] Persona lore has ${entries.length} entries`, [personaWorld]);
+
+    return entries;
+}
+
+/**
+ * @returns {Promise<object[]>} Sorted array of all lore entries
+ */
+export async function getSortedEntries() {
+    try {
+        const [
+            globalLore,
+            characterLore,
+            chatLore,
+            personaLore,
+        ] = await Promise.all([
+            getGlobalLore(),
+            getCharacterLore(),
+            getChatLore(),
+            getPersonaLore(),
+        ]);
+
+        await eventSource.emit(event_types.WORLDINFO_ENTRIES_LOADED, { globalLore, characterLore, chatLore, personaLore });
+
+        let entries;
+
+        switch (Number(wiManager.characterStrategy)) {
+            case world_info_insertion_strategy.evenly:
+                entries = [...globalLore, ...characterLore].sort(wiManager.sortFn);
+                break;
+            case world_info_insertion_strategy.character_first:
+                entries = [...characterLore.sort(wiManager.sortFn), ...globalLore.sort(wiManager.sortFn)];
+                break;
+            case world_info_insertion_strategy.global_first:
+                entries = [...globalLore.sort(wiManager.sortFn), ...characterLore.sort(wiManager.sortFn)];
+                break;
+            default:
+                console.error('[WI] Unknown WI insertion strategy:', wiManager.characterStrategy, 'defaulting to evenly');
+                entries = [...globalLore, ...characterLore].sort(wiManager.sortFn);
+                break;
+        }
+
+        // Chat lore always goes first, then persona lore, then the rest
+        entries = [...chatLore.sort(wiManager.sortFn), ...personaLore.sort(wiManager.sortFn), ...entries];
+
+        // Calculate hash and parse decorators. Split maps to preserve old hashes.
+        entries = entries.map((entry) => {
+            const [decorators, content] = parseDecorators(entry.content || '');
+            return { ...entry, decorators, content };
+        }).map((entry) => {
+            const hash = getStringHash(JSON.stringify(entry));
+            return { ...entry, hash };
+        });
+
+        console.debug(`[WI] Found ${entries.length} world lore entries. Sorted by strategy`, Object.entries(world_info_insertion_strategy).find((x) => x[1] === wiManager.characterStrategy));
+
+        // Need to deep clone the entries to avoid modifying the cached data
+        return structuredClone(entries);
+    } catch (e) {
+        console.error(e);
+        return [];
+    }
+}
+
+
+/**
+ * Parse decorators from worldinfo content
+ * @param {string} content The content to parse
+ * @returns {[string[],string]} The decorators found in the content and the content without decorators
+ */
+// @ts-expect-error TS(7006) FIXME: Parameter 'content' implicitly has an 'any' type.
+function parseDecorators(content) {
+    /**
+     * Check if the decorator is known
+     * @param {string} data string to check
+     * @returns {boolean} true if the decorator is known
+     */
+    // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
+    const isKnownDecorator = (data) => {
+        if (data.startsWith('@@@')) {
+            data = data.substring(1);
+        }
+
+        for (let i = 0; i < KNOWN_DECORATORS.length; i++) {
+            if (data.startsWith(KNOWN_DECORATORS[i])) {
+                return true;
+            }
+        }
+        return false;
+    };
+
+    if (content.startsWith('@@')) {
+        let newContent = content;
+        const splited = content.split('\n');
+        const decorators = [];
+        let fallbacked = false;
+
+        for (let i = 0; i < splited.length; i++) {
+            if (splited[i].startsWith('@@')) {
+                if (splited[i].startsWith('@@@') && !fallbacked) {
+                    continue;
+                }
+
+                if (isKnownDecorator(splited[i])) {
+                    decorators.push(splited[i].startsWith('@@@') ? splited[i].substring(1) : splited[i]);
+                    fallbacked = false;
+                } else {
+                    fallbacked = true;
+                }
+            } else {
+                newContent = splited.slice(i).join('\n');
+                break;
+            }
+        }
+        return [decorators, newContent];
+    }
+
+    return [[], content];
+}
+
+/**
+ * Performs a scan on the chat and returns the world info activated.
+ * @param {string[]} chat The chat messages to scan, in reverse order.
+ * @param {number} maxContext The maximum context size of the generation.
+ * @param {boolean} isDryRun Whether to perform a dry run.
+ * @param {WIGlobalScanData} globalScanData Chat independent context to be scanned
+ * @returns {Promise<WIActivated>} The world info activated.
+ */
+//MARK: checkWorldInfo
+// @ts-expect-error TS(7006) FIXME: Parameter 'chat' implicitly has an 'any' type.
+export async function checkWorldInfo(chat, maxContext, isDryRun, globalScanData = defaultGlobalScanData) {
+    const context = getContext();
+    const buffer = new WorldInfoBuffer(chat, globalScanData);
+
+    console.debug(`[WI] --- START WI SCAN (on ${chat.length} messages, trigger = ${globalScanData.trigger})${isDryRun ? ' (DRY RUN)' : ''} ---`);
+
+    // Combine the chat
+
+    // Add the depth or AN if enabled
+    // Put this code here since otherwise, the chat reference is modified
+    for (const key of Object.keys(context.extensionPrompts)) {
+        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
+        if (context.extensionPrompts[key]?.scan) {
+            const prompt = await getExtensionPromptByName(key);
+            if (prompt) {
+                buffer.addInject(prompt);
+            }
+        }
+    }
+
+    /** @type {scan_state} */
+    let scanState = scan_state.INITIAL;
+    let token_budget_overflowed = false;
+    let count = 0;
+    const allActivatedEntries = new Map();
+    const failedProbabilityChecks = new Set();
+    let allActivatedText = '';
+
+    let budget = Math.round(wiManager.budget * maxContext / 100) || 1;
+
+    if (wiManager.budgetCap > 0 && budget > wiManager.budgetCap) {
+        console.debug(`[WI] Budget ${budget} exceeds cap ${wiManager.budgetCap}, using cap`);
+        budget = wiManager.budgetCap;
+    }
+
+    console.debug(`[WI] Context size: ${maxContext}; WI budget: ${budget} (max% = ${wiManager.budget}%, cap = ${wiManager.budgetCap})`);
+    const sortedEntries = await getSortedEntries();
+    const timedEffects = new WorldInfoTimedEffects(chat, sortedEntries, isDryRun);
+
+    timedEffects.checkTimedEffects();
+
+    if (sortedEntries.length === 0) {
+        return { worldInfoBefore: '', worldInfoAfter: '', WIDepthEntries: [], EMEntries: [], ANBeforeEntries: [], ANAfterEntries: [], outletEntries: {}, allActivatedEntries: new Set() };
+    }
+
+    /** @type {number[]} Represents the delay levels for entries that are delayed until recursion */
+    const availableRecursionDelayLevels = [...new Set(sortedEntries
+        .filter(entry => entry.delayUntilRecursion)
+        .map(entry => entry.delayUntilRecursion === true ? 1 : entry.delayUntilRecursion),
+    )].sort((a, b) => a - b);
+    // Already preset with the first level
+    let currentRecursionDelayLevel = availableRecursionDelayLevels.shift() ?? 0;
+    if (currentRecursionDelayLevel > 0 && availableRecursionDelayLevels.length) {
+        console.debug('[WI] Preparing first delayed recursion level', currentRecursionDelayLevel, '. Still delayed:', availableRecursionDelayLevels);
+    }
+
+    console.debug(`[WI] --- SEARCHING ENTRIES (on ${sortedEntries.length} entries) ---`);
+
+    while (scanState) {
+        //if world_info_max_recursion_steps is non-zero min activations are disabled, and vice versa
+        if (wiManager.maxRecursionSteps && wiManager.maxRecursionSteps <= count) {
+            console.debug('[WI] Search stopped by reaching max recursion steps', wiManager.maxRecursionSteps);
+            break;
+        }
+
+        // Track how many times the loop has run. May be useful for debugging.
+        count++;
+
+        console.debug(`[WI] --- LOOP #${count} START ---`);
+        console.debug('[WI] Scan state', Object.entries(scan_state).find(x => x[1] === scanState));
+
+        // Until decided otherwise, we set the loop to stop scanning after this
+        let nextScanState = scan_state.NONE;
+
+        // Loop and find all entries that can activate here
+        const activatedNow = new Set();
+
+        for (const entry of sortedEntries) {
+            // Logging preparation
+            let headerLogged = false;
+            /**
+             * @param {...unknown} args - Arguments to log
+             * @returns {void}
+             */
+            // @ts-expect-error TS(7019) FIXME: Rest parameter 'args' implicitly has an 'any[]' ty... Remove this comment to see the full error message
+            function log(...args) {
+                if (!headerLogged) {
+                    console.debug(`[WI] Entry ${entry.uid}`, `from '${entry.world}' processing`, entry);
+                    headerLogged = true;
+                }
+                console.debug(`[WI] Entry ${entry.uid}`, ...args);
+            }
+
+            // Already processed, considered and then skipped entries should still be skipped
+            if (failedProbabilityChecks.has(entry) || allActivatedEntries.has(`${entry.world}.${entry.uid}`)) {
+                continue;
+            }
+
+            if (entry.disable == true) {
+                log('disabled');
+                continue;
+            }
+
+            // Check for generation type trigger filter
+            if (Array.isArray(entry.triggers) && entry.triggers.length > 0) {
+                const isTriggered = entry.triggers.includes(globalScanData.trigger);
+                if (!isTriggered) {
+                    log(`skipped by generation type trigger filter (${globalScanData.trigger} ∉ ${entry.triggers})`);
+                    continue;
+                }
+            }
+
+            // Check if this entry applies to the character or if it's excluded
+            if (entry.characterFilter && entry.characterFilter?.names?.length > 0) {
+                const nameIncluded = entry.characterFilter.names.includes(getCharaFilename());
+                const filtered = entry.characterFilter.isExclude ? nameIncluded : !nameIncluded;
+
+                if (filtered) {
+                    log('filtered out by character');
+                    continue;
+                }
+            }
+
+            if (entry.characterFilter && entry.characterFilter?.tags?.length > 0) {
+                const tagKey = getTagKeyForEntity(this_chid);
+
+                if (tagKey) {
+                    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
+                    const tagMapEntry = context.tagMap[tagKey];
+
+                    if (Array.isArray(tagMapEntry)) {
+                        // If tag map intersects with the tag exclusion list, skip
+                        const includesTag = tagMapEntry.some((tag) => entry.characterFilter.tags.includes(tag));
+                        const filtered = entry.characterFilter.isExclude ? includesTag : !includesTag;
+
+                        if (filtered) {
+                            log('filtered out by tag');
+                            continue;
+                        }
+                    }
+                }
+            }
+
+            const isSticky = timedEffects.isEffectActive('sticky', entry);
+            const isCooldown = timedEffects.isEffectActive('cooldown', entry);
+            const isDelay = timedEffects.isEffectActive('delay', entry);
+
+            if (isDelay) {
+                log('suppressed by delay');
+                continue;
+            }
+
+            if (isCooldown && !isSticky) {
+                log('suppressed by cooldown');
+                continue;
+            }
+
+            // Only use checks for recursion flags if the scan step was activated by recursion
+            if (scanState !== scan_state.RECURSION && entry.delayUntilRecursion && !isSticky) {
+                log('suppressed by delay until recursion');
+                continue;
+            }
+
+            if (scanState === scan_state.RECURSION && entry.delayUntilRecursion && entry.delayUntilRecursion > currentRecursionDelayLevel && !isSticky) {
+                log('suppressed by delay until recursion level', entry.delayUntilRecursion, '. Currently', currentRecursionDelayLevel);
+                continue;
+            }
+
+            if (scanState === scan_state.RECURSION && wiManager.recursive && entry.excludeRecursion && !isSticky) {
+                log('suppressed by exclude recursion');
+                continue;
+            }
+
+            if (entry.decorators.includes('@@activate')) {
+                log('activated by @@activate decorator');
+                activatedNow.add(entry);
+                continue;
+            }
+
+            if (entry.decorators.includes('@@dont_activate')) {
+                log('suppressed by @@dont_activate decorator');
+                continue;
+            }
+
+            if (buffer.getExternallyActivated(entry)) {
+                log('externally activated');
+                activatedNow.add(buffer.getExternallyActivated(entry));
+                continue;
+            }
+
+            // Now do checks for immediate activations
+            if (entry.constant) {
+                log('activated because of constant');
+                activatedNow.add(entry);
+                continue;
+            }
+
+            if (isSticky) {
+                log('activated because active sticky');
+                activatedNow.add(entry);
+                continue;
+            }
+
+            if (!Array.isArray(entry.key) || !entry.key.length) {
+                log('has no keys defined, skipped');
+                continue;
+            }
+
+            // Cache the text to scan before the loop, it won't change its content
+            const textToScan = buffer.get(entry, scanState);
+
+            // PRIMARY KEYWORDS
+            // @ts-expect-error TS(7006) FIXME: Parameter 'key' implicitly has an 'any' type.
+            const primaryKeyMatch = entry.key.find(key => {
+                const substituted = substituteParams(key);
+                return substituted && buffer.matchKeys(textToScan, substituted.trim(), entry);
+            });
+
+            if (!primaryKeyMatch) {
+                // Don't write logs for simple no-matches
+                continue;
+            }
+
+            const hasSecondaryKeywords = (
+                entry.selective && //all entries are selective now
+                Array.isArray(entry.keysecondary) && //always true
+                entry.keysecondary.length //ignore empties
+            );
+
+            if (!hasSecondaryKeywords) {
+                // Handle cases where secondary is empty
+                log('activated by primary key match', primaryKeyMatch);
+                activatedNow.add(entry);
+                continue;
+            }
+
+
+            // SECONDARY KEYWORDS
+            const selectiveLogic = entry.selectiveLogic ?? 0; // If selectiveLogic isn't found, assume it's AND, only do this once per entry
+            log('Entry with primary key match', primaryKeyMatch, 'has secondary keywords. Checking with logic logic', Object.entries(world_info_logic).find(x => x[1] === entry.selectiveLogic));
+
+            /** @type {() => boolean} */
+            function matchSecondaryKeys() {
+                let hasAnyMatch = false;
+                let hasAllMatch = true;
+                for (const keysecondary of entry.keysecondary) {
+                    const secondarySubstituted = substituteParams(keysecondary);
+                    const hasSecondaryMatch = secondarySubstituted && buffer.matchKeys(textToScan, secondarySubstituted.trim(), entry);
+
+                    if (hasSecondaryMatch) hasAnyMatch = true;
+                    if (!hasSecondaryMatch) hasAllMatch = false;
+
+                    // Simplified AND ANY / NOT ALL if statement. (Proper fix for PR#1356 by Bronya)
+                    // If AND ANY logic and the main checks pass OR if NOT ALL logic and the main checks do not pass
+                    if (selectiveLogic === world_info_logic.AND_ANY && hasSecondaryMatch) {
+                        log('activated. (AND ANY) Found match secondary keyword', secondarySubstituted);
+                        return true;
+                    }
+                    if (selectiveLogic === world_info_logic.NOT_ALL && !hasSecondaryMatch) {
+                        log('activated. (NOT ALL) Found not matching secondary keyword', secondarySubstituted);
+                        return true;
+                    }
+                }
+
+                // Handle NOT ANY logic
+                if (selectiveLogic === world_info_logic.NOT_ANY && !hasAnyMatch) {
+                    log('activated. (NOT ANY) No secondary keywords found', entry.keysecondary);
+                    return true;
+                }
+
+                // Handle AND ALL logic
+                if (selectiveLogic === world_info_logic.AND_ALL && hasAllMatch) {
+                    log('activated. (AND ALL) All secondary keywords found', entry.keysecondary);
+                    return true;
+                }
+
+                return false;
+            }
+
+            const matched = matchSecondaryKeys();
+            if (!matched) {
+                log('skipped. Secondary keywords not satisfied', entry.keysecondary);
+                continue;
+            }
+
+            // Success logging was already done inside the function, so just add the entry
+            activatedNow.add(entry);
+            continue;
+        }
+
+        console.debug(`[WI] Search done. Found ${activatedNow.size} possible entries.`);
+
+        // Sort the entries for the probability and the budget limit checks
+        const newEntries = [...activatedNow]
+            .sort((a, b) => {
+                const isASticky = timedEffects.isEffectActive('sticky', a) ? 1 : 0;
+                const isBSticky = timedEffects.isEffectActive('sticky', b) ? 1 : 0;
+                return isBSticky - isASticky || sortedEntries.indexOf(a) - sortedEntries.indexOf(b);
+            });
+
+
+        let newContent = '';
+        const textToScanTokens = await getTokenCountAsync(allActivatedText);
+
+        filterByInclusionGroups(newEntries, allActivatedEntries, buffer, scanState, timedEffects);
+
+        console.debug('[WI] --- PROBABILITY CHECKS ---');
+        if (!newEntries.length) console.debug('[WI] No probability checks to do');
+
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
+        let ignoresBudget = newEntries.filter(e => e.ignoreBudget).length;
+
+        for (const entry of newEntries) {
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
+            ignoresBudget -= (entry.ignoreBudget ? 1 : 0);
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
+            if (token_budget_overflowed && !entry.ignoreBudget) {
+                if (ignoresBudget > 0) {
+                    continue;
+                }
+                break;
+            }
+
+            /**
+             * @returns {boolean} Whether the probability check passes
+             */
+            function verifyProbability() {
+                // If we don't need to roll, it's always true
+                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
+                if (!entry.useProbability || entry.probability === 100) {
+                    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
+                    console.debug(`WI entry ${entry.uid} does not use probability`);
+                    return true;
+                }
+
+                const isSticky = timedEffects.isEffectActive('sticky', entry);
+                if (isSticky) {
+                    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
+                    console.debug(`WI entry ${entry.uid} is sticky, does not need to re-roll probability`);
+                    return true;
+                }
+
+                const rollValue = Math.random() * 100;
+                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
+                if (rollValue <= entry.probability) {
+                    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
+                    console.debug(`WI entry ${entry.uid} passed probability check of ${entry.probability}%`);
+                    return true;
+                }
+
+                failedProbabilityChecks.add(entry);
+                return false;
+            }
+
+            const success = verifyProbability();
+            if (!success) {
+                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
+                console.debug(`WI entry ${entry.uid} failed probability check, removing from activated entries`, entry);
+                continue;
+            }
+
+            // Substitute macros inline, for both this checking and also future processing
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
+            entry.content = substituteParams(entry.content);
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
+            newContent += `${entry.content}\n`;
+
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
+            if (!entry.ignoreBudget && (textToScanTokens + (await getTokenCountAsync(newContent))) >= budget) {
+                if (!token_budget_overflowed) {
+                    console.debug('[WI] --- BUDGET OVERFLOW CHECK ---');
+                    if (wiManager.overflowAlert) {
+                        console.warn(`[WI] budget of ${budget} reached, stopping after ${allActivatedEntries.size} entries`);
+                        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
+                        notyf.warning(`World info budget reached after ${allActivatedEntries.size} entries.`, 'World Info');
+                    } else {
+                        console.debug(`[WI] budget of ${budget} reached, stopping after ${allActivatedEntries.size} entries`);
+                    }
+                    token_budget_overflowed = true;
+                }
+                continue;
+            }
+
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
+            allActivatedEntries.set(`${entry.world}.${entry.uid}`, entry);
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
+            console.debug(`[WI] Entry ${entry.uid} activation successful, adding to prompt`, entry);
+        }
+
+        const successfulNewEntries = newEntries.filter(x => !failedProbabilityChecks.has(x));
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
+        const successfulNewEntriesForRecursion = successfulNewEntries.filter(x => !x.preventRecursion);
+
+        console.debug(`[WI] --- LOOP #${count} RESULT ---`);
+        if (!newEntries.length) {
+            console.debug('[WI] No new entries activated.');
+        } else if (!successfulNewEntries.length) {
+            console.debug('[WI] Probability checks failed for all activated entries. No new entries activated.');
+        } else {
+            console.debug(`[WI] Successfully activated ${successfulNewEntries.length} new entries to prompt. ${allActivatedEntries.size} total entries activated.`, successfulNewEntries);
+        }
+
+        /**
+         * @param {...unknown} args - Arguments to log
+         * @returns {void}
+         */
+        // @ts-expect-error TS(7019) FIXME: Rest parameter 'args' implicitly has an 'any[]' ty... Remove this comment to see the full error message
+        function logNextState(...args) {
+            if (args.length) console.debug(args.shift(), ...args);
+            console.debug('[WI] Setting scan state', Object.entries(scan_state).find(x => x[1] === scanState));
+        }
+
+        // After processing and rolling entries is done, see if we should continue with normal recursion
+        if (wiManager.recursive && !token_budget_overflowed && successfulNewEntriesForRecursion.length) {
+            nextScanState = scan_state.RECURSION;
+            logNextState('[WI] Found', successfulNewEntriesForRecursion.length, 'new entries for recursion');
+        }
+
+        // If we are inside min activations scan, and we have recursive buffer, we should do a recursive scan before increasing the buffer again
+        // There might be recurse-trigger-able entries that match the buffer, so we need to check that
+        if (wiManager.recursive && !token_budget_overflowed && scanState === scan_state.MIN_ACTIVATIONS && buffer.hasRecurse()) {
+            nextScanState = scan_state.RECURSION;
+            logNextState('[WI] Min Activations run done, whill will always be followed by a recursive scan');
+        }
+
+        // If scanning is planned to stop, but min activations is set and not satisfied, check if we should continue
+        const minActivationsNotSatisfied = wiManager.minActivations > 0 && (allActivatedEntries.size < wiManager.minActivations);
+        if (!nextScanState && !token_budget_overflowed && minActivationsNotSatisfied) {
+            console.debug('[WI] --- MIN ACTIVATIONS CHECK ---');
+
+            const over_max = (
+                wiManager.minActivationsDepthMax > 0 &&
+                buffer.getDepth() > wiManager.minActivationsDepthMax
+            ) || (buffer.getDepth() > chat.length);
+
+            if (!over_max) {
+                nextScanState = scan_state.MIN_ACTIVATIONS; // loop
+                logNextState(`[WI] Min activations not reached (${allActivatedEntries.size}/${wiManager.minActivations}), advancing depth to ${buffer.getDepth() + 1}, starting another scan`);
+                buffer.advanceScan();
+            } else {
+                console.debug(`[WI] Min activations not reached (${allActivatedEntries.size}/${wiManager.minActivations}), but reached on of depth. Stopping`);
+            }
+        }
+
+        // If the scan is done, but we still have open \"delay until recursion\" levels, we should continue with the next one
+        if (nextScanState === scan_state.NONE && availableRecursionDelayLevels.length) {
+            nextScanState = scan_state.RECURSION;
+            currentRecursionDelayLevel = availableRecursionDelayLevels.shift();
+            logNextState('[WI] Open delayed recursion levels left. Preparing next delayed recursion level', currentRecursionDelayLevel, '. Still delayed:', availableRecursionDelayLevels);
+        }
+
+        // Final check if we should really continue scan, and extend the current WI recurse buffer
+        const curScanState = scanState;
+        scanState = nextScanState;
+        if (scanState) {
+            const text = successfulNewEntriesForRecursion
+                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
+                .map(x => x.content).join('\n');
+            if (text) {
+                buffer.addRecurse(text);
+                allActivatedText = (text + '\n' + allActivatedText);
+            }
+        } else {
+            logNextState('[WI] Scan done. No new entries to prompt. Stopping.');
+        }
+
+        // Fire an event after each scan loop, so extensions can hook into the current scanning state
+        // @ts-expect-error TS(7022) FIXME: 'args' implicitly has type 'any' because it does n... Remove this comment to see the full error message
+        const args = {
+            state: {
+                current: curScanState,
+                next: scanState,
+                loopCount: count,
+            },
+            new: {
+                all: newEntries,
+                successful: successfulNewEntries,
+            },
+            activated: {
+                entries: allActivatedEntries,
+                text: allActivatedText,
+            },
+            sortedEntries,
+            recursionDelay: {
+                availableLevels: availableRecursionDelayLevels,
+                currentLevel: currentRecursionDelayLevel,
+            },
+            budget: {
+                current: budget,
+                overflowed: token_budget_overflowed,
+            },
+            timedEffects,
+        };
+        await eventSource.emit(event_types.WORLDINFO_SCAN_DONE, args);
+
+        // Some fields are allowed to be changed by listeners, those will be handled here manually. They can be updated via changed the args from the listeners.
+        // Any array provided directly can be modified by updating it's elements, adding or removing elements. This has to be done consistently.
+        if (args.state.next !== scanState) {
+            logNextState('[WI] Scan state changed from', scanState, 'to', args.state.next);
+            scanState = args.state.next;
+        }
+        allActivatedText = args.activated.text;
+        currentRecursionDelayLevel = args.recursionDelay.currentLevel;
+        budget = args.budget.current;
+        token_budget_overflowed = args.budget.overflowed;
+    }
+
+    console.debug('[WI] --- BUILDING PROMPT ---');
+
+    // Forward-sorted list of entries for joining
+    // @ts-expect-error TS(7034) FIXME: Variable 'WIBeforeEntries' implicitly has type 'an... Remove this comment to see the full error message
+    const WIBeforeEntries = [];
+    // @ts-expect-error TS(7034) FIXME: Variable 'WIAfterEntries' implicitly has type 'any... Remove this comment to see the full error message
+    const WIAfterEntries = [];
+    // @ts-expect-error TS(7034) FIXME: Variable 'EMEntries' implicitly has type 'any[]' i... Remove this comment to see the full error message
+    const EMEntries = [];
+    // @ts-expect-error TS(7034) FIXME: Variable 'ANTopEntries' implicitly has type 'any[]... Remove this comment to see the full error message
+    const ANTopEntries = [];
+    // @ts-expect-error TS(7034) FIXME: Variable 'ANBottomEntries' implicitly has type 'an... Remove this comment to see the full error message
+    const ANBottomEntries = [];
+    // @ts-expect-error TS(7034) FIXME: Variable 'WIDepthEntries' implicitly has type 'any... Remove this comment to see the full error message
+    const WIDepthEntries = [];
+    /** @type {{[key: string]: string[]}} */
+    const WIOutletEntries = {};
+
+    // Appends from insertion order 999 to 1. Use unshift for this purpose
+    // TODO (kingbri): Change to use WI Anchor positioning instead of separate top/bottom arrays
+    [...allActivatedEntries.values()].sort(wiManager.sortFn).forEach((entry) => {
+        const regexDepth = entry.position === world_info_position.atDepth ? (entry.depth ?? DEFAULT_DEPTH) : null;
+        const content = getRegexedString(entry.content, regex_placement.WORLD_INFO, { depth: regexDepth, isMarkdown: false, isPrompt: true });
+
+        if (!content) {
+            console.debug(`[WI] Entry ${entry.uid}`, 'skipped adding to prompt due to empty content', entry);
+            return;
+        }
+
+        switch (entry.position) {
+            case world_info_position.before:
+                WIBeforeEntries.unshift(content);
+                break;
+            case world_info_position.after:
+                WIAfterEntries.unshift(content);
+                break;
+            case world_info_position.EMTop:
+                EMEntries.unshift(
+                    { position: wi_anchor_position.before, content: content },
+                );
+                break;
+            case world_info_position.EMBottom:
+                EMEntries.unshift(
+                    { position: wi_anchor_position.after, content: content },
+                );
+                break;
+            case world_info_position.ANTop:
+                ANTopEntries.unshift(content);
+                break;
+            case world_info_position.ANBottom:
+                ANBottomEntries.unshift(content);
+                break;
+            case world_info_position.atDepth: {
+                // @ts-expect-error TS(7005) FIXME: Variable 'WIDepthEntries' implicitly has an 'any[]... Remove this comment to see the full error message
+                const existingDepthIndex = WIDepthEntries.findIndex((e) => e.depth === (entry.depth ?? DEFAULT_DEPTH) && e.role === (entry.role ?? extension_prompt_roles.SYSTEM));
+                if (existingDepthIndex !== -1) {
+                    // @ts-expect-error TS(7005) FIXME: Variable 'WIDepthEntries' implicitly has an 'any[]... Remove this comment to see the full error message
+                    WIDepthEntries[existingDepthIndex].entries.unshift(content);
+                } else {
+                    WIDepthEntries.push({
+                        depth: entry.depth,
+                        entries: [content],
+                        role: entry.role ?? extension_prompt_roles.SYSTEM,
+                    });
+                }
+                break;
+            }
+            case world_info_position.outlet: {
+                if (!entry.outletName) {
+                    console.warn(`[WI] Entry ${entry.uid} has position 'outlet' but no outlet name. Skipping.`);
+                    break;
+                }
+                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
+                if (Array.isArray(WIOutletEntries[entry.outletName])) {
+                    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
+                    WIOutletEntries[entry.outletName].push(content);
+                } else {
+                    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
+                    WIOutletEntries[entry.outletName] = [content];
+                }
+                break;
+            }
+            default:
+                break;
+        }
+    });
+
+    // @ts-expect-error TS(7005) FIXME: Variable 'WIBeforeEntries' implicitly has an 'any[... Remove this comment to see the full error message
+    const worldInfoBefore = WIBeforeEntries.length ? WIBeforeEntries.join('\n') : '';
+    // @ts-expect-error TS(7005) FIXME: Variable 'WIAfterEntries' implicitly has an 'any[]... Remove this comment to see the full error message
+    const worldInfoAfter = WIAfterEntries.length ? WIAfterEntries.join('\n') : '';
+
+    if (shouldWIAddPrompt) {
+        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
+        const originalAN = context.extensionPrompts[NOTE_MODULE_NAME].value;
+        // @ts-expect-error TS(7005) FIXME: Variable 'ANTopEntries' implicitly has an 'any[]' ... Remove this comment to see the full error message
+        const ANWithWI = `${ANTopEntries.join('\n')}\n${originalAN}\n${ANBottomEntries.join('\n')}`.replace(/(^\n)|(\n$)/g, '');
+        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
+        context.setExtensionPrompt(NOTE_MODULE_NAME, ANWithWI, chat_metadata[metadata_keys.position], chat_metadata[metadata_keys.depth], extension_settings.note.allowWIScan, chat_metadata[metadata_keys.role]);
+    }
+
+    timedEffects.setTimedEffects(Array.from(allActivatedEntries.values()));
+    buffer.resetExternalEffects();
+    timedEffects.cleanUp();
+
+    console.log(`[WI] ${isDryRun ? 'Hypothetically adding' : 'Adding'} ${allActivatedEntries.size} entries to prompt`, Array.from(allActivatedEntries.values()));
+    console.debug(`[WI] --- DONE${isDryRun ? ' (DRY RUN)' : ''} ---`);
+
+    // @ts-expect-error TS(7005) FIXME: Variable 'EMEntries' implicitly has an 'any[]' typ... Remove this comment to see the full error message
+    return { worldInfoBefore, worldInfoAfter, EMEntries, WIDepthEntries, ANBeforeEntries: ANTopEntries, ANAfterEntries: ANBottomEntries, outletEntries: WIOutletEntries, allActivatedEntries: new Set(allActivatedEntries.values()) };
 }
