@@ -17,19 +17,19 @@ import type { WorldInfoEntryData, WorldInfoBook } from './types.js';
  */
 class WorldInfoManager {
     // ── Settings ──
-    depth = 2;
-    minActivations = 0;
-    minActivationsDepthMax = 0;
-    budget = 25;
-    includeNames = true;
-    recursive = false;
-    overflowAlert = false;
-    caseSensitive = false;
-    matchWholeWords = false;
-    useGroupScoring = false;
+    depth: number = 2;
+    minActivations: number = 0;
+    minActivationsDepthMax: number = 0;
+    budget: number = 25;
+    includeNames: boolean = true;
+    recursive: boolean = false;
+    overflowAlert: boolean = false;
+    caseSensitive: boolean = false;
+    matchWholeWords: boolean = false;
+    useGroupScoring: boolean = false;
     characterStrategy: number = world_info_insertion_strategy.character_first;
-    budgetCap = 0;
-    maxRecursionSteps = 0;
+    budgetCap: number = 0;
+    maxRecursionSteps: number = 0;
 
     // ── Data ──
     /** Raw world_info settings blob from the server */

@@ -226,20 +226,20 @@ export const worldInfoFilter = new FilterHelper(() => updateEditor());
  */
 export function getWorldInfoSettings() {
     return {
-        world_info,
-        world_info_depth,
-        world_info_min_activations,
-        world_info_min_activations_depth_max,
-        world_info_budget,
-        world_info_include_names,
-        world_info_recursive,
-        world_info_overflow_alert,
-        world_info_case_sensitive,
-        world_info_match_whole_words,
-        world_info_character_strategy,
-        world_info_budget_cap,
-        world_info_use_group_scoring,
-        world_info_max_recursion_steps,
+        world_info: wiManager.info,
+        world_info_depth: wiManager.depth,
+        world_info_min_activations: wiManager.minActivations,
+        world_info_min_activations_depth_max: wiManager.minActivationsDepthMax,
+        world_info_budget: wiManager.budget,
+        world_info_include_names: wiManager.includeNames,
+        world_info_recursive: wiManager.recursive,
+        world_info_overflow_alert: wiManager.overflowAlert,
+        world_info_case_sensitive: wiManager.caseSensitive,
+        world_info_match_whole_words: wiManager.matchWholeWords,
+        world_info_character_strategy: wiManager.characterStrategy,
+        world_info_budget_cap: wiManager.budgetCap,
+        world_info_use_group_scoring: wiManager.useGroupScoring,
+        world_info_max_recursion_steps: wiManager.maxRecursionSteps,
     };
 }
 
@@ -255,31 +255,31 @@ export function updateWorldInfoSettings(settings, activeWorldInfo) {
     /** @type {Record<keyof WorldInfoSettings, (value: unknown) => void>} */
     const fields = {
         // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
-        world_info_depth: (value) => world_info_depth = Number(value),
+        world_info_depth: (value) => wiManager.depth = Number(value),
         // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
-        world_info_min_activations: (value) => world_info_min_activations = Number(value),
+        world_info_min_activations: (value) => wiManager.minActivations = Number(value),
         // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
-        world_info_min_activations_depth_max: (value) => world_info_min_activations_depth_max = Number(value),
+        world_info_min_activations_depth_max: (value) => wiManager.minActivationsDepthMax = Number(value),
         // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
-        world_info_budget: (value) => world_info_budget = Number(value),
+        world_info_budget: (value) => wiManager.budget = Number(value),
         // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
-        world_info_include_names: (value) => world_info_include_names = Boolean(value),
+        world_info_include_names: (value) => wiManager.includeNames = Boolean(value),
         // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
-        world_info_recursive: (value) => world_info_recursive = Boolean(value),
+        world_info_recursive: (value) => wiManager.recursive = Boolean(value),
         // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
-        world_info_overflow_alert: (value) => world_info_overflow_alert = Boolean(value),
+        world_info_overflow_alert: (value) => wiManager.overflowAlert = Boolean(value),
         // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
-        world_info_case_sensitive: (value) => world_info_case_sensitive = Boolean(value),
+        world_info_case_sensitive: (value) => wiManager.caseSensitive = Boolean(value),
         // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
-        world_info_match_whole_words: (value) => world_info_match_whole_words = Boolean(value),
+        world_info_match_whole_words: (value) => wiManager.matchWholeWords = Boolean(value),
         // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
-        world_info_character_strategy: (value) => world_info_character_strategy = Number(value),
+        world_info_character_strategy: (value) => wiManager.characterStrategy = Number(value),
         // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
-        world_info_budget_cap: (value) => world_info_budget_cap = Number(value),
+        world_info_budget_cap: (value) => wiManager.budgetCap = Number(value),
         // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
-        world_info_use_group_scoring: (value) => world_info_use_group_scoring = Boolean(value),
+        world_info_use_group_scoring: (value) => wiManager.useGroupScoring = Boolean(value),
         // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
-        world_info_max_recursion_steps: (value) => world_info_max_recursion_steps = Number(value),
+        world_info_max_recursion_steps: (value) => wiManager.maxRecursionSteps = Number(value),
         // Unused
         // @ts-expect-error TS(7006) FIXME: Parameter '_value' implicitly has an 'any' type.
         world_info: (_value) => { },
@@ -294,7 +294,7 @@ export function updateWorldInfoSettings(settings, activeWorldInfo) {
     if (Array.isArray(activeWorldInfo)) {
         delete settings.world_info;
         // @ts-expect-error TS(2322) FIXME: Type 'any[]' is not assignable to type 'never[]'.
-        selected_world_info = activeWorldInfo;
+        wiManager.selectedWorlds = activeWorldInfo;
     }
 
     saveSettingsDebounced();
@@ -354,39 +354,39 @@ export async function getWorldInfoPrompt(chat, maxContext, isDryRun, globalScanD
 // @ts-expect-error TS(7006) FIXME: Parameter 'settings' implicitly has an 'any' type.
 export function setWorldInfoSettings(settings, data) {
     if (settings.world_info_depth !== undefined)
-        world_info_depth = Number(settings.world_info_depth);
+        wiManager.depth = Number(settings.world_info_depth);
     if (settings.world_info_min_activations !== undefined)
-        world_info_min_activations = Number(settings.world_info_min_activations);
+        wiManager.minActivations = Number(settings.world_info_min_activations);
     if (settings.world_info_min_activations_depth_max !== undefined)
-        world_info_min_activations_depth_max = Number(settings.world_info_min_activations_depth_max);
+        wiManager.minActivationsDepthMax = Number(settings.world_info_min_activations_depth_max);
     if (settings.world_info_budget !== undefined)
-        world_info_budget = Number(settings.world_info_budget);
+        wiManager.budget = Number(settings.world_info_budget);
     if (settings.world_info_include_names !== undefined)
-        world_info_include_names = Boolean(settings.world_info_include_names);
+        wiManager.includeNames = Boolean(settings.world_info_include_names);
     if (settings.world_info_recursive !== undefined)
-        world_info_recursive = Boolean(settings.world_info_recursive);
+        wiManager.recursive = Boolean(settings.world_info_recursive);
     if (settings.world_info_overflow_alert !== undefined)
-        world_info_overflow_alert = Boolean(settings.world_info_overflow_alert);
+        wiManager.overflowAlert = Boolean(settings.world_info_overflow_alert);
     if (settings.world_info_case_sensitive !== undefined)
-        world_info_case_sensitive = Boolean(settings.world_info_case_sensitive);
+        wiManager.caseSensitive = Boolean(settings.world_info_case_sensitive);
     if (settings.world_info_match_whole_words !== undefined)
-        world_info_match_whole_words = Boolean(settings.world_info_match_whole_words);
+        wiManager.matchWholeWords = Boolean(settings.world_info_match_whole_words);
     if (settings.world_info_character_strategy !== undefined)
-        world_info_character_strategy = Number(settings.world_info_character_strategy);
+        wiManager.characterStrategy = Number(settings.world_info_character_strategy);
     if (settings.world_info_budget_cap !== undefined)
-        world_info_budget_cap = Number(settings.world_info_budget_cap);
+        wiManager.budgetCap = Number(settings.world_info_budget_cap);
     if (settings.world_info_use_group_scoring !== undefined)
-        world_info_use_group_scoring = Boolean(settings.world_info_use_group_scoring);
+        wiManager.useGroupScoring = Boolean(settings.world_info_use_group_scoring);
     if (settings.world_info_max_recursion_steps !== undefined)
-        world_info_max_recursion_steps = Number(settings.world_info_max_recursion_steps);
+        wiManager.maxRecursionSteps = Number(settings.world_info_max_recursion_steps);
 
     // Migrate old settings
-    if (world_info_budget > 100) {
-        world_info_budget = 25;
+    if (wiManager.budget > 100) {
+        wiManager.budget = 25;
     }
 
-    if (world_info_use_group_scoring === undefined) {
-        world_info_use_group_scoring = false;
+    if (wiManager.useGroupScoring === undefined) {
+        wiManager.useGroupScoring = false;
     }
 
     // Reset selected world from old string and delete old keys
@@ -395,78 +395,78 @@ export function setWorldInfoSettings(settings, data) {
     if (typeof existingWorldInfo === 'string') {
         delete settings.world_info;
         // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'never'.
-        selected_world_info = [existingWorldInfo];
+        wiManager.selectedWorlds = [existingWorldInfo];
     } else if (Array.isArray(existingWorldInfo)) {
         delete settings.world_info;
         // @ts-expect-error TS(2322) FIXME: Type 'any[]' is not assignable to type 'never[]'.
-        selected_world_info = existingWorldInfo;
+        wiManager.selectedWorlds = existingWorldInfo;
     }
 
-    world_info = settings.world_info ?? {};
+    wiManager.info = settings.world_info ?? {};
 
     const worldInfoDepthCounter = document.getElementById('world_info_depth_counter');
-    if (worldInfoDepthCounter) worldInfoDepthCounter.value = String(world_info_depth);
+    if (worldInfoDepthCounter) worldInfoDepthCounter.value = String(wiManager.depth);
     const worldInfoDepth = document.getElementById('world_info_depth');
-    if (worldInfoDepth) worldInfoDepth.value = String(world_info_depth);
+    if (worldInfoDepth) worldInfoDepth.value = String(wiManager.depth);
 
     const worldInfoMinActCounter = document.getElementById('world_info_min_activations_counter');
-    if (worldInfoMinActCounter) worldInfoMinActCounter.value = String(world_info_min_activations);
+    if (worldInfoMinActCounter) worldInfoMinActCounter.value = String(wiManager.minActivations);
     const worldInfoMinAct = document.getElementById('world_info_min_activations');
-    if (worldInfoMinAct) worldInfoMinAct.value = String(world_info_min_activations);
+    if (worldInfoMinAct) worldInfoMinAct.value = String(wiManager.minActivations);
 
     const worldInfoMinActDepthMaxCounter = document.getElementById('world_info_min_activations_depth_max_counter');
-    if (worldInfoMinActDepthMaxCounter) worldInfoMinActDepthMaxCounter.value = String(world_info_min_activations_depth_max);
+    if (worldInfoMinActDepthMaxCounter) worldInfoMinActDepthMaxCounter.value = String(wiManager.minActivationsDepthMax);
     const worldInfoMinActDepthMax = document.getElementById('world_info_min_activations_depth_max');
-    if (worldInfoMinActDepthMax) worldInfoMinActDepthMax.value = String(world_info_min_activations_depth_max);
+    if (worldInfoMinActDepthMax) worldInfoMinActDepthMax.value = String(wiManager.minActivationsDepthMax);
 
     const worldInfoBudgetCounter = document.getElementById('world_info_budget_counter');
-    if (worldInfoBudgetCounter) worldInfoBudgetCounter.value = String(world_info_budget);
+    if (worldInfoBudgetCounter) worldInfoBudgetCounter.value = String(wiManager.budget);
     const worldInfoBudget = document.getElementById('world_info_budget');
-    if (worldInfoBudget) worldInfoBudget.value = String(world_info_budget);
+    if (worldInfoBudget) worldInfoBudget.value = String(wiManager.budget);
 
     const worldInfoIncludeNames = document.getElementById('world_info_include_names');
-    if (worldInfoIncludeNames) worldInfoIncludeNames.checked = world_info_include_names;
+    if (worldInfoIncludeNames) worldInfoIncludeNames.checked = wiManager.includeNames;
     const worldInfoRecursive = document.getElementById('world_info_recursive');
-    if (worldInfoRecursive) worldInfoRecursive.checked = world_info_recursive;
+    if (worldInfoRecursive) worldInfoRecursive.checked = wiManager.recursive;
     const worldInfoOverflowAlert = document.getElementById('world_info_overflow_alert');
-    if (worldInfoOverflowAlert) worldInfoOverflowAlert.checked = world_info_overflow_alert;
+    if (worldInfoOverflowAlert) worldInfoOverflowAlert.checked = wiManager.overflowAlert;
     const worldInfoCaseSensitive = document.getElementById('world_info_case_sensitive');
-    if (worldInfoCaseSensitive) worldInfoCaseSensitive.checked = world_info_case_sensitive;
+    if (worldInfoCaseSensitive) worldInfoCaseSensitive.checked = wiManager.caseSensitive;
     const worldInfoMatchWholeWords = document.getElementById('world_info_match_whole_words');
-    if (worldInfoMatchWholeWords) worldInfoMatchWholeWords.checked = world_info_match_whole_words;
+    if (worldInfoMatchWholeWords) worldInfoMatchWholeWords.checked = wiManager.matchWholeWords;
     const worldInfoUseGroupScoring = document.getElementById('world_info_use_group_scoring');
-    if (worldInfoUseGroupScoring) worldInfoUseGroupScoring.checked = world_info_use_group_scoring;
+    if (worldInfoUseGroupScoring) worldInfoUseGroupScoring.checked = wiManager.useGroupScoring;
 
     const worldInfoCharStrategy = document.getElementById('world_info_character_strategy');
-    const strategyOption = worldInfoCharStrategy?.querySelector(`option[value='${world_info_character_strategy}']`);
+    const strategyOption = worldInfoCharStrategy?.querySelector(`option[value='${wiManager.characterStrategy}']`);
     if (strategyOption) strategyOption.selected = true;
-    if (worldInfoCharStrategy) worldInfoCharStrategy.value = String(world_info_character_strategy);
+    if (worldInfoCharStrategy) worldInfoCharStrategy.value = String(wiManager.characterStrategy);
 
     const worldInfoBudgetCap = document.getElementById('world_info_budget_cap');
-    if (worldInfoBudgetCap) worldInfoBudgetCap.value = String(world_info_budget_cap);
+    if (worldInfoBudgetCap) worldInfoBudgetCap.value = String(wiManager.budgetCap);
     const worldInfoBudgetCapCounter = document.getElementById('world_info_budget_cap_counter');
-    if (worldInfoBudgetCapCounter) worldInfoBudgetCapCounter.value = String(world_info_budget_cap);
+    if (worldInfoBudgetCapCounter) worldInfoBudgetCapCounter.value = String(wiManager.budgetCap);
 
     const worldInfoMaxRecursionSteps = document.getElementById('world_info_max_recursion_steps');
-    if (worldInfoMaxRecursionSteps) worldInfoMaxRecursionSteps.value = String(world_info_max_recursion_steps);
+    if (worldInfoMaxRecursionSteps) worldInfoMaxRecursionSteps.value = String(wiManager.maxRecursionSteps);
     const worldInfoMaxRecursionStepsCounter = document.getElementById('world_info_max_recursion_steps_counter');
-    if (worldInfoMaxRecursionStepsCounter) worldInfoMaxRecursionStepsCounter.value = String(world_info_max_recursion_steps);
+    if (worldInfoMaxRecursionStepsCounter) worldInfoMaxRecursionStepsCounter.value = String(wiManager.maxRecursionSteps);
 
-    world_names = data.world_names?.length ? data.world_names : [];
+    wiManager.worldNames = data.world_names?.length ? data.world_names : [];
 
     // Add to existing selected WI if it exists
     // @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
-    selected_world_info = selected_world_info.concat(settings.world_info?.globalSelect?.filter((e) => world_names.includes(e)) ?? []);
+    wiManager.selectedWorlds = wiManager.selectedWorlds.concat(settings.world_info?.globalSelect?.filter((e) => wiManager.worldNames.includes(e)) ?? []);
 
-    if (world_names.length > 0) {
+    if (wiManager.worldNames.length > 0) {
         const worldInfoEl = document.getElementById('world_info');
         if (worldInfoEl) worldInfoEl.innerHTML = '';
     }
 
     // @ts-expect-error TS(7006) FIXME: Parameter 'item' implicitly has an 'any' type.
-    world_names.forEach((item, i) => {
+    wiManager.worldNames.forEach((item, i) => {
         const worldInfoEl = document.getElementById('world_info');
-        if (worldInfoEl) worldInfoEl.insertAdjacentHTML('beforeend', `<option value='${i}'${selected_world_info.includes(item) ? ' selected' : ''}>${item}</option>`);
+        if (worldInfoEl) worldInfoEl.insertAdjacentHTML('beforeend', `<option value='${i}'${wiManager.selectedWorlds.includes(item) ? ' selected' : ''}>${item}</option>`);
         const worldEditorSelect = document.getElementById('world_editor_select');
         if (worldEditorSelect) worldEditorSelect.insertAdjacentHTML('beforeend', `<option value='${i}'>${item}</option>`);
     });
@@ -477,7 +477,7 @@ export function setWorldInfoSettings(settings, data) {
     document.getElementById('world_editor_select')!.dispatchEvent(new Event('change'));
 
     eventSource.on(event_types.CHAT_CHANGED, async () => {
-        const hasWorldInfo = !!chat_metadata[METADATA_KEY] && world_names.includes(chat_metadata[METADATA_KEY]);
+        const hasWorldInfo = !!chat_metadata[METADATA_KEY] && wiManager.worldNames.includes(chat_metadata[METADATA_KEY]);
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         document.querySelector('.chat_lorebook_button').classList.toggle('world_set', hasWorldInfo);
         // Pre-cache the world info data for the chat for quicker first prompt generation
@@ -509,7 +509,7 @@ export function setWorldInfoSettings(settings, data) {
 export function reloadEditor(file, loadIfNotSelected = false) {
     const worldEditorSelect = document.getElementById('world_editor_select');
     const currentIndex = Number(worldEditorSelect?.value);
-    const selectedIndex = world_names.indexOf(file);
+    const selectedIndex = wiManager.worldNames.indexOf(file);
     if (selectedIndex !== -1 && (loadIfNotSelected || currentIndex === selectedIndex)) {
         if (worldEditorSelect) worldEditorSelect.value = String(selectedIndex);
         document.getElementById('world_editor_select')!.dispatchEvent(new Event('change'));
@@ -542,7 +542,7 @@ function registerWorldInfoSlashCommands() {
      */
     // @ts-expect-error TS(7006) FIXME: Parameter 'file' implicitly has an 'any' type.
     async function getEntriesFromFile(file, { args = {}, unnamed = null, callbackName = 'getEntriesFromFile' } = {}) {
-        if (!file || !world_names.includes(file)) {
+        if (!file || !wiManager.worldNames.includes(file)) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.warning(t`Valid World Info file name is required`);
             logSlashCommandWarn(`${callbackName}: Valid World Info file name is required`, args, unnamed);
@@ -623,7 +623,7 @@ function registerWorldInfoSlashCommands() {
             // @ts-expect-error TS(2345) FIXME: Argument of type 'number' is not assignable to par... Remove this comment to see the full error message
             const fileName = getCharaFilename(context.characters.indexOf(character));
             // @ts-expect-error TS(2339) FIXME: Property 'charLore' does not exist on type '{}'.
-            const extraCharLore = world_info.charLore?.find((e) => e.name === fileName);
+            const extraCharLore = wiManager.info.charLore?.find((e) => e.name === fileName);
             if (extraCharLore && Array.isArray(extraCharLore.extraBooks)) {
                 books.push(...extraCharLore.extraBooks.filter(onlyUnique).filter(Boolean));
             }
@@ -662,7 +662,7 @@ function registerWorldInfoSlashCommands() {
             return '';
         }
 
-        if (chat_metadata[METADATA_KEY] && world_names.includes(chat_metadata[METADATA_KEY])) {
+        if (chat_metadata[METADATA_KEY] && wiManager.worldNames.includes(chat_metadata[METADATA_KEY])) {
             return chat_metadata[METADATA_KEY];
         }
 
@@ -690,7 +690,7 @@ function registerWorldInfoSlashCommands() {
             // Use the provided name if it's not in use
             if (typeof possibleName === 'string') {
                 const name = String(possibleName);
-                if (world_names.includes(name)) {
+                if (wiManager.worldNames.includes(name)) {
                     throw new Error('This World Info file name is already in use');
                 }
                 return name;
@@ -701,7 +701,7 @@ function registerWorldInfoSlashCommands() {
         })();
 
         // Make sure the name is unique
-        newName = getUniqueName(newName, world_names.includes.bind(world_names));
+        newName = getUniqueName(newName, wiManager.worldNames.includes.bind(wiManager.worldNames));
 
         await createNewWorldInfo(newName);
         return newName;
@@ -1228,9 +1228,9 @@ function registerWorldInfoSlashCommands() {
             return JSON.stringify([]);
         }
 
-        const entries = selected_world_info.slice();
+        const entries = wiManager.selectedWorlds.slice();
 
-        console.debug(`[WI] Selected global world info has ${entries.length} entries`, selected_world_info);
+        console.debug(`[WI] Selected global world info has ${entries.length} entries`, wiManager.selectedWorlds);
 
         return JSON.stringify(entries);
     }
@@ -1696,17 +1696,17 @@ export async function updateWorldInfoList() {
         const editorSelect = document.getElementById('world_editor_select') as HTMLSelectElement | null;
         const editorOption = editorSelect?.options[editorSelect.selectedIndex];
         const editorSelected = editorOption ? String(editorOption.text) : '';
-        world_names = data.world_names?.length ? data.world_names : [];
+        wiManager.worldNames = data.world_names?.length ? data.world_names : [];
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         document.getElementById('world_info').querySelectorAll('option:not([value=""])').forEach(el => el.remove());
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         document.getElementById('world_editor_select').querySelectorAll('option:not([value=""])').forEach(el => el.remove());
 
         // @ts-expect-error TS(7006) FIXME: Parameter 'item' implicitly has an 'any' type.
-        world_names.forEach((item, i) => {
+        wiManager.worldNames.forEach((item, i) => {
             const globalListOption = new Option(item, i.toString());
             // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
-            globalListOption.selected = selected_world_info.includes(item);
+            globalListOption.selected = wiManager.selectedWorlds.includes(item);
             const editorListOption = new Option(item, i.toString());
             editorListOption.selected = editorSelected === item;
             const worldInfoEl = document.getElementById('world_info');
@@ -1945,15 +1945,15 @@ async function displayWorldEntries(name, data, navigation = navigation_option.no
         }
 
         // @ts-expect-error TS(2339) FIXME: Property 'charLore' does not exist on type '{}'.
-        if (world_info.charLore) {
+        if (wiManager.info.charLore) {
             // @ts-expect-error TS(2339) FIXME: Property 'charLore' does not exist on type '{}'.
-            world_info.charLore.forEach((charLore, index) => {
+            wiManager.info.charLore.forEach((charLore, index) => {
                 if (charLore.extraBooks?.includes(name)) {
                     // @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
                     const tempCharLore = charLore.extraBooks.filter((e) => e !== name);
                     if (tempCharLore.length === 0) {
                         // @ts-expect-error TS(2339) FIXME: Property 'charLore' does not exist on type '{}'.
-                        world_info.charLore.splice(index, 1);
+                        wiManager.info.charLore.splice(index, 1);
                     } else {
                         charLore.extraBooks = tempCharLore;
                     }
@@ -2197,7 +2197,7 @@ async function displayWorldEntries(name, data, navigation = navigation_option.no
         // Find current name for the world selected
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         const selectedIndex = String(document.getElementById('world_editor_select').options[document.getElementById('world_editor_select').selectedIndex].value);
-        const worldName = world_names[selectedIndex] || null;
+        const worldName = wiManager.worldNames[selectedIndex] || null;
 
         // Use the current name as default input, then ask user for the name
         const tempName = getFreeWorldName(worldName);
@@ -2207,7 +2207,7 @@ async function displayWorldEntries(name, data, navigation = navigation_option.no
             await saveWorldInfo(finalName, data, true);
             await updateWorldInfoList();
 
-            const selectedIndex = world_names.indexOf(finalName);
+            const selectedIndex = wiManager.worldNames.indexOf(finalName);
             const worldEditorSelect = document.getElementById('world_editor_select') as HTMLSelectElement | null;
             if (worldEditorSelect) {
                 worldEditorSelect.value = String(selectedIndex);
@@ -2747,11 +2747,11 @@ function handleCharacterFilterChangeHelper({ characterFilter, data, entry, name 
     }
 
     characterFilter.addEventListener('mousedown', async function (this: any, e: Event) {
-        if (world_names.length === 0) { e.preventDefault(); return; }
+        if (wiManager.worldNames.length === 0) { e.preventDefault(); return; }
         await saveFilterSelection(this.dataset.uid, this.selectedOptions);
     });
     characterFilter.addEventListener('change', async function (this: any) {
-        if (world_names.length === 0) return;
+        if (wiManager.worldNames.length === 0) return;
         await saveFilterSelection(this.dataset.uid, this.selectedOptions);
     });
 }
@@ -3119,10 +3119,10 @@ export async function getWorldEntry(name, data, entry) {
         select.appendChild(defaultOption);
         let selectableWorldCount = 0;
         // @ts-expect-error TS(7006) FIXME: Parameter 'worldName' implicitly has an 'any' type... Remove this comment to see the full error message
-        world_names.forEach(worldName => {
+        wiManager.worldNames.forEach(worldName => {
             if (worldName !== sourceWorld) {
                 const option = document.createElement('option');
-                option.value = world_names.indexOf(worldName).toString();
+                option.value = wiManager.worldNames.indexOf(worldName).toString();
                 option.textContent = worldName;
                 select.appendChild(option);
                 selectableWorldCount++;
@@ -3154,7 +3154,7 @@ export async function getWorldEntry(name, data, entry) {
         const popupConfirm = await popup.show();
         if (!popupConfirm) return;
         if (selectedWorldIndex === -1) return;
-        const selectedValue = world_names[selectedWorldIndex];
+        const selectedValue = wiManager.worldNames[selectedWorldIndex];
         if (!selectedValue) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.warning(t`Please select a target lorebook.`);
@@ -3988,7 +3988,7 @@ async function renameWorldInfo(name, data) {
         return;
     }
 
-    const entryPreviouslySelected = selected_world_info.findIndex((e) => e === oldName);
+    const entryPreviouslySelected = wiManager.selectedWorlds.findIndex((e) => e === oldName);
 
     await saveWorldInfo(newName, data, true);
     await deleteWorldInfo(oldName);
@@ -4002,7 +4002,7 @@ async function renameWorldInfo(name, data) {
         document.getElementById('world_info')?.dispatchEvent(new Event('change', {bubbles: true}));
     }
 
-    const selectedIndex = world_names.indexOf(newName);
+    const selectedIndex = wiManager.worldNames.indexOf(newName);
     if (selectedIndex !== -1) {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         document.getElementById('world_editor_select').value = String(selectedIndex);
@@ -4019,7 +4019,7 @@ async function renameWorldInfo(name, data) {
 // @ts-expect-error TS(7006) FIXME: Parameter 'oldName' implicitly has an 'any' type.
 async function updateWorldInfoLinks(oldName, newName) {
     // @ts-expect-error TS(2339) FIXME: Property 'charLore' does not exist on type '{}'.
-    const existingCharLores = world_info.charLore?.filter((e) => e.extraBooks.includes(oldName));
+    const existingCharLores = wiManager.info.charLore?.filter((e) => e.extraBooks.includes(oldName));
     if (existingCharLores && existingCharLores.length > 0) {
         // @ts-expect-error TS(7006) FIXME: Parameter 'charLore' implicitly has an 'any' type.
         existingCharLores.forEach((charLore) => {
@@ -4110,7 +4110,7 @@ async function updateWorldInfoLinks(oldName, newName) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'worldInfoName' implicitly has an 'any' ... Remove this comment to see the full error message
 export async function deleteWorldInfo(worldInfoName) {
-    if (!world_names.includes(worldInfoName)) {
+    if (!wiManager.worldNames.includes(worldInfoName)) {
         return false;
     }
 
@@ -4128,9 +4128,9 @@ export async function deleteWorldInfo(worldInfoName) {
         worldInfoCache.delete(worldInfoName);
     }
 
-    const existingWorldIndex = selected_world_info.findIndex((e) => e === worldInfoName);
+    const existingWorldIndex = wiManager.selectedWorlds.findIndex((e) => e === worldInfoName);
     if (existingWorldIndex !== -1) {
-        selected_world_info.splice(existingWorldIndex, 1);
+        wiManager.selectedWorlds.splice(existingWorldIndex, 1);
         saveSettingsDebounced();
     }
 
@@ -4205,7 +4205,7 @@ export function getFreeWorldName(worldName = null, { stripIndex = true } = {}) {
     const MAX_FREE_NAME = 100_000;
     for (let index = 1; index < MAX_FREE_NAME; index++) {
         const newName = `${worldName} (${index})`;
-        if (world_names.includes(newName)) {
+        if (wiManager.worldNames.includes(newName)) {
             continue;
         }
         return newName;
@@ -4241,7 +4241,7 @@ export async function createNewWorldInfo(worldName, { interactive = false } = {}
     await saveWorldInfo(worldName, worldInfoTemplate, true);
     await updateWorldInfoList();
 
-    const selectedIndex = world_names.indexOf(worldName);
+    const selectedIndex = wiManager.worldNames.indexOf(worldName);
     if (selectedIndex !== -1) {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         document.getElementById('world_editor_select').value = String(selectedIndex);
@@ -4291,7 +4291,7 @@ async function getCharacterLore() {
     // TODO: Maybe make the utility function not use the window context?
     const fileName = getCharaFilename(this_chid);
     // @ts-expect-error TS(2339) FIXME: Property 'charLore' does not exist on type '{}'.
-    const extraCharLore = world_info.charLore?.find((e) => e.name === fileName);
+    const extraCharLore = wiManager.info.charLore?.find((e) => e.name === fileName);
     if (extraCharLore) {
         worldsToSearch = new Set([...worldsToSearch, ...extraCharLore.extraBooks]);
     }
@@ -4304,7 +4304,7 @@ async function getCharacterLore() {
     let entries = [];
     for (const worldName of worldsToSearch) {
         // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown' is not assignable to pa...
-        if (selected_world_info.includes(worldName)) {
+        if (wiManager.selectedWorlds.includes(worldName)) {
             console.debug(`[WI] Character ${name}'s world ${worldName} is already activated in global world info! Skipping...`);
             continue;
         }
@@ -4340,9 +4340,9 @@ async function getGlobalLore() {
         return [];
     }
 
-    const entries = await loadLoreEntries(selected_world_info);
+    const entries = await loadLoreEntries(wiManager.selectedWorlds);
 
-    console.debug(`[WI] Global world info has ${entries.length} entries`, selected_world_info);
+    console.debug(`[WI] Global world info has ${entries.length} entries`, wiManager.selectedWorlds);
 
     return entries;
 }
@@ -4358,7 +4358,7 @@ async function getChatLore() {
     }
 
     // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame...
-    if (selected_world_info.includes(chatWorld)) {
+    if (wiManager.selectedWorlds.includes(chatWorld)) {
         console.debug(`[WI] Chat world ${chatWorld} is already activated in global world info! Skipping...`);
         return [];
     }
@@ -4387,7 +4387,7 @@ async function getPersonaLore() {
     }
 
     // @ts-expect-error TS(2345) FIXME: Argument of type 'string' is not assignable to par...
-    if (selected_world_info.includes(personaWorld)) {
+    if (wiManager.selectedWorlds.includes(personaWorld)) {
         console.debug(`[WI] Persona world ${personaWorld} is already activated in global world info! Skipping...`);
         return [];
     }
@@ -4420,7 +4420,7 @@ export async function getSortedEntries() {
 
         let entries;
 
-        switch (Number(world_info_character_strategy)) {
+        switch (Number(wiManager.characterStrategy)) {
             case world_info_insertion_strategy.evenly:
                 entries = [...globalLore, ...characterLore].sort(sortFn);
                 break;
@@ -4431,7 +4431,7 @@ export async function getSortedEntries() {
                 entries = [...globalLore.sort(sortFn), ...characterLore.sort(sortFn)];
                 break;
             default:
-                console.error('[WI] Unknown WI insertion strategy:', world_info_character_strategy, 'defaulting to evenly');
+                console.error('[WI] Unknown WI insertion strategy:', wiManager.characterStrategy, 'defaulting to evenly');
                 entries = [...globalLore, ...characterLore].sort(sortFn);
                 break;
         }
@@ -4448,7 +4448,7 @@ export async function getSortedEntries() {
             return { ...entry, hash };
         });
 
-        console.debug(`[WI] Found ${entries.length} world lore entries. Sorted by strategy`, Object.entries(world_info_insertion_strategy).find((x) => x[1] === world_info_character_strategy));
+        console.debug(`[WI] Found ${entries.length} world lore entries. Sorted by strategy`, Object.entries(world_info_insertion_strategy).find((x) => x[1] === wiManager.characterStrategy));
 
         // Need to deep clone the entries to avoid modifying the cached data
         return structuredClone(entries);
@@ -4552,14 +4552,14 @@ export async function checkWorldInfo(chat, maxContext, isDryRun, globalScanData 
     const failedProbabilityChecks = new Set();
     let allActivatedText = '';
 
-    let budget = Math.round(world_info_budget * maxContext / 100) || 1;
+    let budget = Math.round(wiManager.budget * maxContext / 100) || 1;
 
-    if (world_info_budget_cap > 0 && budget > world_info_budget_cap) {
-        console.debug(`[WI] Budget ${budget} exceeds cap ${world_info_budget_cap}, using cap`);
-        budget = world_info_budget_cap;
+    if (wiManager.budgetCap > 0 && budget > wiManager.budgetCap) {
+        console.debug(`[WI] Budget ${budget} exceeds cap ${wiManager.budgetCap}, using cap`);
+        budget = wiManager.budgetCap;
     }
 
-    console.debug(`[WI] Context size: ${maxContext}; WI budget: ${budget} (max% = ${world_info_budget}%, cap = ${world_info_budget_cap})`);
+    console.debug(`[WI] Context size: ${maxContext}; WI budget: ${budget} (max% = ${wiManager.budget}%, cap = ${wiManager.budgetCap})`);
     const sortedEntries = await getSortedEntries();
     const timedEffects = new WorldInfoTimedEffects(chat, sortedEntries, isDryRun);
 
@@ -4584,8 +4584,8 @@ export async function checkWorldInfo(chat, maxContext, isDryRun, globalScanData 
 
     while (scanState) {
         //if world_info_max_recursion_steps is non-zero min activations are disabled, and vice versa
-        if (world_info_max_recursion_steps && world_info_max_recursion_steps <= count) {
-            console.debug('[WI] Search stopped by reaching max recursion steps', world_info_max_recursion_steps);
+        if (wiManager.maxRecursionSteps && wiManager.maxRecursionSteps <= count) {
+            console.debug('[WI] Search stopped by reaching max recursion steps', wiManager.maxRecursionSteps);
             break;
         }
 
@@ -4692,7 +4692,7 @@ export async function checkWorldInfo(chat, maxContext, isDryRun, globalScanData 
                 continue;
             }
 
-            if (scanState === scan_state.RECURSION && world_info_recursive && entry.excludeRecursion && !isSticky) {
+            if (scanState === scan_state.RECURSION && wiManager.recursive && entry.excludeRecursion && !isSticky) {
                 log('suppressed by exclude recursion');
                 continue;
             }
@@ -4895,7 +4895,7 @@ export async function checkWorldInfo(chat, maxContext, isDryRun, globalScanData 
             if (!entry.ignoreBudget && (textToScanTokens + (await getTokenCountAsync(newContent))) >= budget) {
                 if (!token_budget_overflowed) {
                     console.debug('[WI] --- BUDGET OVERFLOW CHECK ---');
-                    if (world_info_overflow_alert) {
+                    if (wiManager.overflowAlert) {
                         console.warn(`[WI] budget of ${budget} reached, stopping after ${allActivatedEntries.size} entries`);
                         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                         notyf.warning(`World info budget reached after ${allActivatedEntries.size} entries.`, 'World Info');
@@ -4937,34 +4937,34 @@ export async function checkWorldInfo(chat, maxContext, isDryRun, globalScanData 
         }
 
         // After processing and rolling entries is done, see if we should continue with normal recursion
-        if (world_info_recursive && !token_budget_overflowed && successfulNewEntriesForRecursion.length) {
+        if (wiManager.recursive && !token_budget_overflowed && successfulNewEntriesForRecursion.length) {
             nextScanState = scan_state.RECURSION;
             logNextState('[WI] Found', successfulNewEntriesForRecursion.length, 'new entries for recursion');
         }
 
         // If we are inside min activations scan, and we have recursive buffer, we should do a recursive scan before increasing the buffer again
         // There might be recurse-trigger-able entries that match the buffer, so we need to check that
-        if (world_info_recursive && !token_budget_overflowed && scanState === scan_state.MIN_ACTIVATIONS && buffer.hasRecurse()) {
+        if (wiManager.recursive && !token_budget_overflowed && scanState === scan_state.MIN_ACTIVATIONS && buffer.hasRecurse()) {
             nextScanState = scan_state.RECURSION;
             logNextState('[WI] Min Activations run done, whill will always be followed by a recursive scan');
         }
 
         // If scanning is planned to stop, but min activations is set and not satisfied, check if we should continue
-        const minActivationsNotSatisfied = world_info_min_activations > 0 && (allActivatedEntries.size < world_info_min_activations);
+        const minActivationsNotSatisfied = wiManager.minActivations > 0 && (allActivatedEntries.size < wiManager.minActivations);
         if (!nextScanState && !token_budget_overflowed && minActivationsNotSatisfied) {
             console.debug('[WI] --- MIN ACTIVATIONS CHECK ---');
 
             const over_max = (
-                world_info_min_activations_depth_max > 0 &&
-                buffer.getDepth() > world_info_min_activations_depth_max
+                wiManager.minActivationsDepthMax > 0 &&
+                buffer.getDepth() > wiManager.minActivationsDepthMax
             ) || (buffer.getDepth() > chat.length);
 
             if (!over_max) {
                 nextScanState = scan_state.MIN_ACTIVATIONS; // loop
-                logNextState(`[WI] Min activations not reached (${allActivatedEntries.size}/${world_info_min_activations}), advancing depth to ${buffer.getDepth() + 1}, starting another scan`);
+                logNextState(`[WI] Min activations not reached (${allActivatedEntries.size}/${wiManager.minActivations}), advancing depth to ${buffer.getDepth() + 1}, starting another scan`);
                 buffer.advanceScan();
             } else {
-                console.debug(`[WI] Min activations not reached (${allActivatedEntries.size}/${world_info_min_activations}), but reached on of depth. Stopping`);
+                console.debug(`[WI] Min activations not reached (${allActivatedEntries.size}/${wiManager.minActivations}), but reached on of depth. Stopping`);
             }
         }
 
@@ -5394,7 +5394,7 @@ export function setWorldInfoButtonClass(chid, forceValue = undefined) {
     }
 
     const world = characters[chid]?.data?.extensions?.world;
-    const worldSet = Boolean(world && world_names.includes(world));
+    const worldSet = Boolean(world && wiManager.worldNames.includes(world));
     document.querySelectorAll('#set_character_world, #world_button').forEach(el => el.classList.toggle('world_set', worldSet));
 }
 
@@ -5420,7 +5420,7 @@ export function checkEmbeddedWorld(chid) {
         // Only show the alert once per character
         const checkKey = `AlertWI_${characters[chid].avatar}`;
         const worldName = characters[chid]?.data?.extensions?.world;
-        if (!accountStorage.getItem(checkKey) && (!worldName || !world_names.includes(worldName))) {
+        if (!accountStorage.getItem(checkKey) && (!worldName || !wiManager.worldNames.includes(worldName))) {
             accountStorage.setItem(checkKey, 'true');
 
             if (power_user.world_import_dialog) {
@@ -5470,7 +5470,7 @@ export async function importEmbeddedWorldInfo(skipPopup = false) {
     const bookName = characters[chid]?.data?.character_book?.name || `${characters[chid]?.name}'s Lorebook`;
 
     if (!skipPopup) {
-        const confirmation = await Popup.show.confirm(t`Are you sure you want to import '${bookName}'?`, world_names.includes(bookName) ? t`It will overwrite the World/Lorebook with the same name.` : '');
+        const confirmation = await Popup.show.confirm(t`Are you sure you want to import '${bookName}'?`, wiManager.worldNames.includes(bookName) ? t`It will overwrite the World/Lorebook with the same name.` : '');
         if (!confirmation) {
             return;
         }
@@ -5487,7 +5487,7 @@ export async function importEmbeddedWorldInfo(skipPopup = false) {
     // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
     notyf.success(t`The world '${bookName}' has been imported and linked to the character successfully.`, t`World/Lorebook imported`);
 
-    const newIndex = world_names.indexOf(bookName);
+    const newIndex = wiManager.worldNames.indexOf(bookName);
     if (newIndex >= 0) {
         //show&draw the WI panel before..
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
@@ -5522,9 +5522,9 @@ export function onWorldInfoChange(args, text) {
                     switch (args.state) {
                         case 'off': {
                             // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
-                            if (selected_world_info.includes(name)) {
+                            if (wiManager.selectedWorlds.includes(name)) {
                                 // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
-                                selected_world_info.splice(selected_world_info.indexOf(name), 1);
+                                wiManager.selectedWorlds.splice(wiManager.selectedWorlds.indexOf(name), 1);
                                 wiElement.selected = false;
                                 // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                                 if (!silent) notyf.success(t`Deactivated world: ${name}`);
@@ -5536,15 +5536,15 @@ export function onWorldInfoChange(args, text) {
                         }
                         case 'toggle': {
                             // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
-                            if (selected_world_info.includes(name)) {
+                            if (wiManager.selectedWorlds.includes(name)) {
                                 // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
-                                selected_world_info.splice(selected_world_info.indexOf(name), 1);
+                                wiManager.selectedWorlds.splice(wiManager.selectedWorlds.indexOf(name), 1);
                                 wiElement.selected = false;
                                 // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                                 if (!silent) notyf.success(t`Deactivated world: ${name}`);
                             } else {
                                 // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
-                                selected_world_info.push(name);
+                                wiManager.selectedWorlds.push(name);
                                 wiElement.selected = true;
                                 // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                                 if (!silent) notyf.success(t`Activated world: ${name}`);
@@ -5554,7 +5554,7 @@ export function onWorldInfoChange(args, text) {
                         case 'on':
                         default: {
                             // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
-                            selected_world_info.push(name);
+                            wiManager.selectedWorlds.push(name);
                             wiElement.selected = true;
                             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                             if (!silent) notyf.success(t`Activated world: ${name}`);
@@ -5570,7 +5570,7 @@ export function onWorldInfoChange(args, text) {
         } else { // if no args, unset all worlds
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             if (!silent) notyf.success(t`Deactivated all worlds`);
-            selected_world_info = [];
+            wiManager.selectedWorlds = [];
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             document.getElementById('world_info').value = null.dispatchEvent(new Event('change', { bubbles: true }));
         }
@@ -5596,7 +5596,7 @@ export function onWorldInfoChange(args, text) {
             });
         }
         // @ts-expect-error TS(2322) FIXME: Type 'any[]' is not assignable to type 'never[]'.
-        selected_world_info = tempWorldInfo;
+        wiManager.selectedWorlds = tempWorldInfo;
     }
 
     saveSettingsDebounced();
@@ -5684,7 +5684,7 @@ export async function importWorldInfo(file) {
         if (data.name) {
             await updateWorldInfoList();
 
-            const newIndex = world_names.indexOf(data.name);
+            const newIndex = wiManager.worldNames.indexOf(data.name);
             if (newIndex >= 0) {
                 // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 document.getElementById('world_editor_select').value = String(newIndex);
@@ -5716,7 +5716,7 @@ export function openWorldInfoEditor(worldName) {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         document.getElementById('WIDrawerIcon').dispatchEvent(new Event('click', { bubbles: true }));
     }
-    const index = world_names.indexOf(worldName);
+    const index = wiManager.worldNames.indexOf(worldName);
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     document.getElementById('world_editor_select').value = String(index);
     // Sync the TomSelect display with the programmatic value change
@@ -5789,14 +5789,14 @@ export async function moveWorldInfoEntry(sourceName, targetName, uid, { deleteOr
         return false;
     }
 
-    if (!world_names.includes(sourceName)) {
+    if (!wiManager.worldNames.includes(sourceName)) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.error(t`Source lorebook '${sourceName}' not found.`);
         console.error(`[WI Move] Source lorebook '${sourceName}' does not exist.`);
         return false;
     }
 
-    if (!world_names.includes(targetName)) {
+    if (!wiManager.worldNames.includes(targetName)) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.error(t`Target lorebook '${targetName}' not found.`);
         console.error(`[WI Move] Target lorebook '${targetName}' does not exist.`);
@@ -5972,7 +5972,7 @@ function updateAuxBooks(fileName, computeNext) {
     }
 
     // @ts-expect-error TS(2339) FIXME: Property 'charLore' does not exist on type '{}'.
-    const charLore = world_info.charLore ?? [];
+    const charLore = wiManager.info.charLore ?? [];
     // @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
     const idx = charLore.findIndex(e => e.name === fileName);
     const current = idx !== -1 ? (charLore[idx].extraBooks ?? []) : [];
@@ -5996,7 +5996,7 @@ function updateAuxBooks(fileName, computeNext) {
 export function initWorldInfo() {
     (document.getElementById('world_info') as HTMLSelectElement).addEventListener('mousedown', async function (e) {
         // If there's no world names, don't do anything
-        if (world_names.length === 0) {
+        if (wiManager.worldNames.length === 0) {
             e.preventDefault();
             return;
         }
@@ -6006,7 +6006,7 @@ export function initWorldInfo() {
     });
     (document.getElementById('world_info') as HTMLSelectElement).addEventListener('change', async function () {
         // If there's no world names, don't do anything
-        if (world_names.length === 0) {
+        if (wiManager.worldNames.length === 0) {
             return;
         }
 
@@ -6067,18 +6067,18 @@ export function initWorldInfo() {
     };
 
     (document.getElementById('world_info_depth') as HTMLInputElement).addEventListener('input', function () {
-        world_info_depth = Number(this.value);
+        wiManager.depth = Number(this.value);
         const counter = document.getElementById('world_info_depth_counter') as HTMLInputElement | null;
         if (counter) counter.value = this.value;
         saveSettings();
     });
 
     (document.getElementById('world_info_min_activations') as HTMLInputElement).addEventListener('input', function () {
-        world_info_min_activations = Number(this.value);
+        wiManager.minActivations = Number(this.value);
         const counter = document.getElementById('world_info_min_activations_counter') as HTMLInputElement | null;
-        if (counter) counter.value = String(world_info_min_activations);
+        if (counter) counter.value = String(wiManager.minActivations);
 
-        if (world_info_min_activations !== 0 && world_info_max_recursion_steps !== 0) {
+        if (wiManager.minActivations !== 0 && wiManager.maxRecursionSteps !== 0) {
             const maxRecursionEl = document.getElementById('world_info_max_recursion_steps') as HTMLInputElement | null;
             if (maxRecursionEl) {
                 maxRecursionEl.value = '0';
@@ -6086,73 +6086,73 @@ export function initWorldInfo() {
             }
             const minActEl = document.getElementById('world_info_min_activations') as HTMLInputElement | null;
             flashHighlight(minActEl?.parentElement);
-            console.info('[WI] Max recursion steps set to 0, as min activations is set to', world_info_min_activations);
+            console.info('[WI] Max recursion steps set to 0, as min activations is set to', wiManager.minActivations);
         } else {
             saveSettings();
         }
     });
 
     (document.getElementById('world_info_min_activations_depth_max') as HTMLInputElement).addEventListener('input', function () {
-        world_info_min_activations_depth_max = Number(this.value);
+        wiManager.minActivationsDepthMax = Number(this.value);
         const counter = document.getElementById('world_info_min_activations_depth_max_counter') as HTMLInputElement | null;
         if (counter) counter.value = this.value;
         saveSettings();
     });
 
     (document.getElementById('world_info_budget') as HTMLInputElement).addEventListener('input', function () {
-        world_info_budget = Number(this.value);
+        wiManager.budget = Number(this.value);
         const counter = document.getElementById('world_info_budget_counter') as HTMLInputElement | null;
         if (counter) counter.value = this.value;
         saveSettings();
     });
 
     (document.getElementById('world_info_include_names') as HTMLInputElement).addEventListener('input', function () {
-        world_info_include_names = !!this.checked;
+        wiManager.includeNames = !!this.checked;
         saveSettings();
     });
 
     (document.getElementById('world_info_recursive') as HTMLInputElement).addEventListener('input', function () {
-        world_info_recursive = !!this.checked;
+        wiManager.recursive = !!this.checked;
         saveSettings();
     });
 
     (document.getElementById('world_info_case_sensitive') as HTMLInputElement).addEventListener('input', function () {
-        world_info_case_sensitive = !!this.checked;
+        wiManager.caseSensitive = !!this.checked;
         saveSettings();
     });
 
     (document.getElementById('world_info_match_whole_words') as HTMLInputElement).addEventListener('input', function () {
-        world_info_match_whole_words = !!this.checked;
+        wiManager.matchWholeWords = !!this.checked;
         saveSettings();
     });
 
     (document.getElementById('world_info_character_strategy') as HTMLSelectElement).addEventListener('change', function () {
-        world_info_character_strategy = Number(this.value);
+        wiManager.characterStrategy = Number(this.value);
         saveSettings();
     });
 
     (document.getElementById('world_info_overflow_alert') as HTMLInputElement).addEventListener('change', function () {
-        world_info_overflow_alert = !!this.checked;
+        wiManager.overflowAlert = !!this.checked;
         saveSettingsDebounced();
     });
 
     (document.getElementById('world_info_use_group_scoring') as HTMLInputElement).addEventListener('change', function () {
-        world_info_use_group_scoring = !!this.checked;
+        wiManager.useGroupScoring = !!this.checked;
         saveSettingsDebounced();
     });
 
     (document.getElementById('world_info_budget_cap') as HTMLInputElement).addEventListener('input', function () {
-        world_info_budget_cap = Number(this.value);
+        wiManager.budgetCap = Number(this.value);
         const counter = document.getElementById('world_info_budget_cap_counter') as HTMLInputElement | null;
-        if (counter) counter.value = String(world_info_budget_cap);
+        if (counter) counter.value = String(wiManager.budgetCap);
         saveSettings();
     });
 
     (document.getElementById('world_info_max_recursion_steps') as HTMLInputElement).addEventListener('input', function () {
-        world_info_max_recursion_steps = Number(this.value);
+        wiManager.maxRecursionSteps = Number(this.value);
         const counter = document.getElementById('world_info_max_recursion_steps_counter') as HTMLInputElement | null;
-        if (counter) counter.value = String(world_info_max_recursion_steps);
-        if (world_info_max_recursion_steps !== 0 && world_info_min_activations !== 0) {
+        if (counter) counter.value = String(wiManager.maxRecursionSteps);
+        if (wiManager.maxRecursionSteps !== 0 && wiManager.minActivations !== 0) {
             const minActivationsEl = document.getElementById('world_info_min_activations') as HTMLInputElement | null;
             if (minActivationsEl) {
                 minActivationsEl.value = '0';
@@ -6160,7 +6160,7 @@ export function initWorldInfo() {
             }
             const maxRecEl = document.getElementById('world_info_max_recursion_steps') as HTMLInputElement | null;
             flashHighlight(maxRecEl?.parentElement); // flash the other control to show it has changed
-            console.info('[WI] Min activations set to 0, as max recursion steps is set to', world_info_max_recursion_steps);
+            console.info('[WI] Min activations set to 0, as max recursion steps is set to', wiManager.maxRecursionSteps);
         } else {
             saveSettings();
         }
@@ -6185,7 +6185,7 @@ export function initWorldInfo() {
 
         const worldName = characters[chid]?.data?.extensions?.world;
         const hasEmbed = checkEmbeddedWorld(chid);
-        if (worldName && world_names.includes(worldName) && !event.shiftKey && !event.altKey) {
+        if (worldName && wiManager.worldNames.includes(worldName) && !event.shiftKey && !event.altKey) {
             openWorldInfoEditor(worldName);
         } else if (hasEmbed && !event.shiftKey && !event.altKey) {
             await importEmbeddedWorldInfo();
@@ -6252,7 +6252,7 @@ export function initWorldInfo() {
         select2ChoiceClickSubscribe(document.getElementById('world_info'), target => {
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const name = target.textContent;
-            const selectedIndex = world_names.indexOf(name);
+            const selectedIndex = wiManager.worldNames.indexOf(name);
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const alreadySelectedInEditor = document.querySelector('#world_editor_select option:checked')?.textContent === name;
             if (selectedIndex !== -1 && !alreadySelectedInEditor) {
