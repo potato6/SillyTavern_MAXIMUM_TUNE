@@ -8253,6 +8253,35 @@
             if (opts && typeof opts.complete === 'function') opts.complete();
             return this;
         };
+        $.fn.transition = $.fn.transition || function(opts) {
+            const duration = (opts && opts.duration) || 0;
+            const easing = (opts && opts.easing) || 'ease';
+            const props = Object.assign({}, opts);
+            delete props.duration;
+            delete props.easing;
+            delete props.complete;
+            const complete = opts && opts.complete;
+            this.each(function() {
+                const el = this;
+                if (duration > 0) {
+                    el.style.transition = `all ${duration}ms ${easing}`;
+                }
+                for (const [key, value] of Object.entries(props)) {
+                    (el.style)[key] = value;
+                }
+                if (duration > 0) {
+                    const handler = () => {
+                        el.style.transition = '';
+                        el.removeEventListener('transitionend', handler);
+                        if (typeof complete === 'function') complete.call(el);
+                    };
+                    el.addEventListener('transitionend', handler);
+                } else if (typeof complete === 'function') {
+                    complete.call(el);
+                }
+            });
+            return this;
+        };
                 $.fn.stop = $.fn.stop || function() { return this; };
         // Fix .is() to handle jQuery pseudo-selectors cash-dom doesn't support
         var _is = $.fn.is;
