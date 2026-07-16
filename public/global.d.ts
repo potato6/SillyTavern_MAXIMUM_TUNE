@@ -4,7 +4,7 @@ import { power_user, getThemeObject } from './scripts/power-user';
 import { QuickReplyApi } from './scripts/extensions/quick-reply/api/QuickReplyApi';
 import { oai_settings } from './scripts/openai';
 import { textgenerationwebui_settings } from './scripts/textgen-settings';
-import { FileAttachment } from './scripts/chats';
+import type { FileAttachment } from './scripts/chats';
 import { ReasoningMessageExtra } from './scripts/reasoning';
 import { IGNORE_SYMBOL, OVERSWIPE_BEHAVIOR } from './scripts/constants';
 import { ToolInvocation } from './scripts/tool-calling';
