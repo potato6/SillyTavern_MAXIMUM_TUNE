@@ -7,7 +7,7 @@ import { characters, this_chid, menu_type } from '../../../script.js';
 import { groups, selected_group } from '../../group-chats.js';
 import { equalsIgnoreCaseAndAccents, includesIgnoreCaseAndAccents, findChar } from '../../utils.js';
 import { compareTagsForSort } from './sorting.js';
-import { tags, getTagKeyForEntity } from '../store/tagStore.js';
+import { tags, getTagKeyForEntity, getTagIdsFromDOM } from '../store/tagStore.js';
 
 /**
  * @param request
@@ -17,7 +17,7 @@ import { tags, getTagKeyForEntity } from '../store/tagStore.js';
 // @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
 export function findTag(request, resolve, listSelector) {
     const $listEl = typeof listSelector === 'string' ? document.querySelector(listSelector) : listSelector;
-    const skipIds = Array.from($listEl?.querySelectorAll('.tag') ?? [], el => el.getAttribute('id'));
+    const skipIds = getTagIdsFromDOM($listEl);
     // @ts-expect-error TS(7005) FIXME: Variable 'tags' implicitly has an 'any[]' type.
     const haystack = tags.filter(t => !skipIds.includes(t.id)).sort(compareTagsForSort).map(t => t.name);
     const needle = request.term;

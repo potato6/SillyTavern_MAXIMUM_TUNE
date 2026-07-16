@@ -16,6 +16,7 @@ export { tags, tag_map, loadTagsSettings, renameTagKey, createTagMapFromList } f
 export { getTagsList, getTagKeyForEntity, getTagKeyForEntityElement } from './store/tagStore.js';
 export { removeTagFromMap, getTag, createNewTag, newTag, getExistingTags, getInlineListSelector, getTagKey, copyTags } from './store/tagStore.js';
 export { getTagById, getTagIdsForKey, resolveElement, tagStoreEvents, markDirty } from './store/tagStore.js';
+export { getTagIdsFromDOM, getTagFromEvent, getFolderType } from './store/tagStore.js';
 export { sortTags, compareTagsForSort } from './utils/sorting.js';
 
 // Orchestrator (addTagsToEntity, removeTagFromEntity)
@@ -47,7 +48,7 @@ export { initTags, applyTagsOnCharacterSelect, applyTagsOnGroupSelect, createTag
 import { entitiesFilter } from '../../script.js';
 import { TAG_FOLDER_TYPES } from './types.js';
 import { FILTER_TYPES } from '../filters.js';
-import { getTag, createNewTag } from './store/tagStore.js';
+import { getTag, createNewTag, getFolderType } from './store/tagStore.js';
 import { applyCharacterTagsToMessageDivs } from './messageTags.js';
 import { addTagsToEntity } from './orchestrator.js';
 
@@ -79,7 +80,7 @@ export function filterByTagState(entities, { globalDisplayFilters = false, subFo
 
     if (globalDisplayFilters) {
         // @ts-expect-error TS(7006)
-        const closedFolders = entities.filter(x => x.type === 'tag' && TAG_FOLDER_TYPES[x.item.folder_type] === TAG_FOLDER_TYPES.CLOSED);
+        const closedFolders = entities.filter(x => x.type === 'tag' && getFolderType(x.item).class === TAG_FOLDER_TYPES.CLOSED.class);
 
         // @ts-expect-error TS(7006)
         entities = entities.filter(entity => {
@@ -111,7 +112,7 @@ function filterTagSubEntities(tag, entities, { filterHidden = true } = {}) {
     const filterData = structuredClone(entitiesFilter.getFilterData(FILTER_TYPES.TAG));
 
     // @ts-expect-error TS(7006)
-    const closedFolders = entities.filter(x => x.type === 'tag' && TAG_FOLDER_TYPES[x.item.folder_type] === TAG_FOLDER_TYPES.CLOSED);
+    const closedFolders = entities.filter(x => x.type === 'tag' && getFolderType(x.item).class === TAG_FOLDER_TYPES.CLOSED.class);
 
     // @ts-expect-error TS(7006)
     entities = entities.filter(sub => {
@@ -119,7 +120,7 @@ function filterTagSubEntities(tag, entities, { filterHidden = true } = {}) {
             return false;
         }
         // @ts-expect-error TS(7053)
-        if (filterHidden && sub.type !== 'tag' && TAG_FOLDER_TYPES[tag.folder_type] !== TAG_FOLDER_TYPES.CLOSED && closedFolders.some(f => entitiesFilter.isElementTagged(sub, f.id) && !filterData.selected.includes(f.id))) {
+        if (filterHidden && sub.type !== 'tag' && getFolderType(tag).class !== TAG_FOLDER_TYPES.CLOSED.class && closedFolders.some(f => entitiesFilter.isElementTagged(sub, f.id) && !filterData.selected.includes(f.id))) {
             return false;
         }
         return true;

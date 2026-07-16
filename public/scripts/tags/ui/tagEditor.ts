@@ -6,7 +6,7 @@
 declare const TomSelect: any;
 declare const Sortable: any;
 
-import { tags as _rawTags, tag_map, createNewTag, getTag, getTagById, markDirty } from '../store/tagStore.js';
+import { tags as _rawTags, tag_map, createNewTag, getTag, getTagById, markDirty, getTagFromEvent, getFolderType } from '../store/tagStore.js';
 import { TAG_FOLDER_TYPES, TAG_FOLDER_DEFAULT_TYPE } from '../types.js';
 import { tag_sort_mode } from '../types.js';
 import { printTagList, appendTagToList } from './tagList.js';
@@ -236,8 +236,9 @@ export function makeTagListDraggable(tagContainer: Element): void {
  * Uses `this` context — intended to be called as an event handler or via .call().
  */
 export async function onTagDeleteClick(this: HTMLElement): Promise<void> {
-    const id = this.closest('.tag_view_item')?.getAttribute('id');
-    const tag = getTagById(id) as any;
+    const tagResult = getTagFromEvent(this);
+    const tag = tagResult?.tag;
+    const id = tagResult?.id;
     const otherTags = sortTags(tags.filter((x: any) => x.id !== id).map((x: any) => ({ id: x.id, name: x.name })));
 
     const popupContent = document.createElement('div');
@@ -314,9 +315,10 @@ export function onTagCreateClick(): void {
  * Uses `this` context — intended to be called as an event handler or via .call().
  */
 export function onTagAsFolderClick(this: HTMLElement): void {
+    const result = getTagFromEvent(this);
+    const tag = result?.tag;
+    const id = result?.id;
     const element = this.closest('.tag_view_item');
-    const id = element?.getAttribute('id');
-    const tag = getTagById(id) as any;
 
     // Cycle through folder types
     const types = Object.keys(TAG_FOLDER_TYPES);
@@ -336,8 +338,7 @@ export function onTagAsFolderClick(this: HTMLElement): void {
  * @param {object} tag - The tag object with folder_type
  */
 export function updateDrawTagFolder(element: Element | null, tag: any): void {
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expression...
-    const tagFolder = TAG_FOLDER_TYPES[tag.folder_type] || TAG_FOLDER_TYPES[TAG_FOLDER_DEFAULT_TYPE];
+    const tagFolder = getFolderType(tag);
     const folderElement = element?.querySelector('.tag_as_folder');
 
     // Update css class and remove all others
@@ -361,9 +362,10 @@ export function updateDrawTagFolder(element: Element | null, tag: any): void {
  * Uses `this` context — intended to be called as an event handler or via .call().
  */
 export function onTagRenameInput(this: HTMLElement): void {
-    const id = this.closest('.tag_view_item')?.getAttribute('id');
+    const result = getTagFromEvent(this);
+    const tag = result?.tag;
+    const id = result?.id;
     const newName = this.textContent;
-    const tag = getTagById(id) as any;
     if (tag) tag.name = newName;
     this.setAttribute('dirty', '');
     document.querySelectorAll(`.tag[id="${id}"] .tag_name`).forEach(el => el.textContent = newName);
@@ -386,13 +388,14 @@ export function onTagColorize(evt: any, setColor: (tag: any, color: string) => v
     if (linkIcon) linkIcon.style.display = isDefaultColor ? 'none' : '';
 
     const tagViewItem = evt.target.closest('.tag_view_item');
-    const id = tagViewItem?.getAttribute('id');
+    const result = getTagFromEvent(evt.target);
+    const tag = result?.tag;
+    const id = result?.id;
     let newColor = evt.detail.rgba;
     if (isDefaultColor) newColor = '';
 
     const tagViewName = tagViewItem?.querySelector('.tag_view_name') as HTMLElement | null;
     if (tagViewName) tagViewName.style.setProperty(cssProperty, newColor);
-    const tag = getTagById(id) as any;
     if (tag) setColor(tag, newColor);
     markDirty();
 

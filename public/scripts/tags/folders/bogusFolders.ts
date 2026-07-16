@@ -7,6 +7,7 @@ import { TAG_FOLDER_TYPES, TAG_FOLDER_DEFAULT_TYPE } from '../types.js';
 import { FILTER_STATES, FILTER_TYPES, DEFAULT_FILTER_STATE } from '../../filters.js';
 import { entitiesFilter, buildAvatarList } from '../../../script.js';
 import { getTagById } from '../store/tagStore.js';
+import { getFolderType } from '../store/tagStore.js';
 import { toggleTagThreeState } from '../filters/filterState.js';
 import { t } from '../../i18n.js';
 
@@ -81,8 +82,7 @@ export function chooseBogusFolder(source, tagId, remove = false) {
 export function getTagBlock(tag, entities, hidden = 0, isUseless = false) {
     const count = entities.length;
 
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-    const tagFolder = TAG_FOLDER_TYPES[tag.folder_type];
+    const tagFolder = getFolderType(tag);
 
     const template = FOLDER_TEMPLATE.cloneNode(true);
     template.classList.add(tagFolder.class);

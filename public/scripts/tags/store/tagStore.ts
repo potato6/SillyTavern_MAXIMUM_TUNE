@@ -11,7 +11,7 @@ import {
 } from '../../../script.js';
 import { groups, selected_group } from '../../group-chats.js';
 import { onlyUnique, uuidv4, equalsIgnoreCaseAndAccents, escapeHtml } from '../../utils.js';
-import { TAG_FOLDER_DEFAULT_TYPE } from '../types.js';
+import { TAG_FOLDER_TYPES, TAG_FOLDER_DEFAULT_TYPE } from '../types.js';
 import { FILTER_STATES } from '../../filters.js';
 import { compareTagsForSort } from '../utils/sorting.js';
 
@@ -68,7 +68,7 @@ export function renameTagKey(oldKey, newKey) {
 // @ts-expect-error TS(7006) FIXME: Parameter 'listElement' implicitly has an 'any' ty...
 export function createTagMapFromList(listElement, key) {
     const $listEl = typeof listElement === 'string' ? document.querySelector(listElement) : listElement;
-    const tagIds = Array.from($listEl?.querySelectorAll('.tag') ?? [], el => el.getAttribute('id'));
+    const tagIds = getTagIdsFromDOM($listEl);
     // @ts-expect-error TS(7053)
     tag_map[key] = tagIds;
     markDirty();
@@ -336,6 +336,46 @@ export const tagStoreEvents = {
         });
     },
 };
+
+// ──────────────────────────────────────────────
+// DOM Helpers (reduce repeated query patterns)
+// ──────────────────────────────────────────────
+
+/**
+ * Extract tag IDs from DOM elements. Replaces 6× Array.from(querySelectorAll(...), el => el.getAttribute('id')) patterns.
+ * @param {HTMLElement|string} container - Container element or selector
+* @param {string} selector - CSS selector for tag elements
+ * @returns {string[]} Array of tag ID strings
+ */
+export function getTagIdsFromDOM(container, selector = '.tag') {
+    const el = resolveElement(container);
+    return Array.from(el?.querySelectorAll(selector) ?? [], x => x.getAttribute('id')).filter(Boolean);
+}
+
+/**
+ * Get tag ID and tag object from a DOM event's closest ancestor. Replaces 6× closest('.tag_view_item') + getTagById patterns.
+ * @param {Event|HTMLElement} eventOrElement - The event or element to search from
+ * @param {string} ancestorSelector - CSS selector for the ancestor (default: '.tag_view_item')
+ * @returns {{id: string, tag: Tag}|null} The tag ID and tag object, or null
+ */
+export function getTagFromEvent(eventOrElement: any, ancestorSelector = '.tag_view_item'): { id: string, tag: any } | null {
+    const el = eventOrElement instanceof Event ? eventOrElement.target : eventOrElement;
+    const ancestor = el?.closest?.(ancestorSelector);
+    const id = ancestor?.getAttribute?.('id');
+    if (!id) return null;
+    const tag = getTagById(id) as any;
+    return tag ? { id, tag } : null;
+}
+
+/**
+ * Get the folder type config for a tag. Replaces 6× TAG_FOLDER_TYPES[tag.folder_type] patterns.
+ * @param {object} tag - Tag with folder_type property
+ * @returns {object} The folder type config
+ */
+export function getFolderType(tag) {
+    // @ts-expect-error TS(7053)
+    return TAG_FOLDER_TYPES[tag?.folder_type] || TAG_FOLDER_TYPES[TAG_FOLDER_DEFAULT_TYPE];
+}
 
 /**
  * Mark the store as dirty (needs save). Call after mutations.

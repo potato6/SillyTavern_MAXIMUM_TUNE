@@ -25,7 +25,7 @@ import {
 } from '../../group-chats.js';
 
 import { tag_filter_type } from '../types.js';
-import { tags, tag_map } from '../store/tagStore.js';
+import { tags, tag_map, getTagIdsFromDOM } from '../store/tagStore.js';
 import { accountStorage } from '../../util/AccountStorage.js';
 import { power_user } from '../../power-user.js';
 import { flashHighlight, onlyUnique } from '../../utils.js';
@@ -370,8 +370,8 @@ function filterByFolder(filterHelper) {
 // @ts-expect-error TS(7006) FIXME: Parameter 'listElement' implicitly has an 'any' ty... Remove this comment to see the full error message
 function runTagFilters(listElement) {
     const $listEl = typeof listElement === 'string' ? document.querySelector(listElement) : listElement;
-    const tagIds = Array.from($listEl?.querySelectorAll('.tag.selected:not(.actionable)') ?? [], (el: Element) => el.getAttribute('id'));
-    const excludedTagIds = Array.from($listEl?.querySelectorAll('.tag.excluded:not(.actionable)') ?? [], (el: Element) => el.getAttribute('id'));
+    const tagIds = getTagIdsFromDOM($listEl, '.tag.selected:not(.actionable)');
+    const excludedTagIds = getTagIdsFromDOM($listEl, '.tag.excluded:not(.actionable)');
     const filterHelper = getFilterHelper(listElement);
     filterHelper.setFilterData(FILTER_TYPES.TAG, { excluded: excludedTagIds, selected: tagIds });
 }

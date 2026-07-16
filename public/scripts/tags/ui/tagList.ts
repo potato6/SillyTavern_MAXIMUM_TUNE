@@ -14,6 +14,7 @@ import {
     getTagById,
     resolveElement,
     markDirty,
+    getTagIdsFromDOM,
 } from '../store/tagStore.js';
 import { isBogusFolder } from '../folders/bogusFolders.js';
 import { getFilterHelper, isMainCharacterList, getFilterStorageKey } from '../filters/filterContext.js';
@@ -55,8 +56,8 @@ const expanded_tags_cache = [];
 // @ts-expect-error TS(7006) FIXME: Parameter 'listElement' implicitly has an 'any' ty... Remove this comment to see the full error message
 function runTagFilters(listElement) {
     const $listEl = resolveElement(listElement);
-    const tagIds = Array.from($listEl?.querySelectorAll('.tag.selected:not(.actionable)') ?? [], el => el.getAttribute('id'));
-    const excludedTagIds = Array.from($listEl?.querySelectorAll('.tag.excluded:not(.actionable)') ?? [], el => el.getAttribute('id'));
+    const tagIds = getTagIdsFromDOM($listEl, '.tag.selected:not(.actionable)');
+    const excludedTagIds = getTagIdsFromDOM($listEl, '.tag.excluded:not(.actionable)');
     const filterHelper = getFilterHelper(listElement);
     filterHelper.setFilterData(FILTER_TYPES.TAG, { excluded: excludedTagIds, selected: tagIds });
 }
