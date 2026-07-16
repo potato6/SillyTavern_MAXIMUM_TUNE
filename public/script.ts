@@ -208,6 +208,7 @@ import {
     tag_filter_type,
     compareTagsForSort,
     initTags,
+    tagToEntity,
     applyTagsOnCharacterSelect,
     applyTagsOnGroupSelect,
     tag_import_setting,
@@ -1257,9 +1258,6 @@ export function groupToEntity(group) {
  * @returns {Entity} The entity for this tag
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'tag' implicitly has an 'any' type.
-export function tagToEntity(tag) {
-    return { item: structuredClone(tag), id: tag.id, type: 'tag', entities: [] };
-}
 
 /**
  * Builds the full list of all entities available

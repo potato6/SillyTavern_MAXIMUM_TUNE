@@ -204,7 +204,7 @@ export function makeTagListDraggable(tagContainer: Element): void {
     const onTagsSort = () => {
         tagContainer?.querySelectorAll('.tag_view_item').forEach(function (tagElement: Element, i: number) {
             const id = tagElement.getAttribute('id');
-            const tag = getTagById(id);
+            const tag = getTagById(id) as any;
             if (tag) tag.sort_order = i;
         });
 
@@ -237,7 +237,7 @@ export function makeTagListDraggable(tagContainer: Element): void {
  */
 export async function onTagDeleteClick(this: HTMLElement): Promise<void> {
     const id = this.closest('.tag_view_item')?.getAttribute('id');
-    const tag = getTagById(id);
+    const tag = getTagById(id) as any;
     const otherTags = sortTags(tags.filter((x: any) => x.id !== id).map((x: any) => ({ id: x.id, name: x.name })));
 
     const popupContent = document.createElement('div');
@@ -278,12 +278,12 @@ export async function onTagDeleteClick(this: HTMLElement): Promise<void> {
         }
     }
 
-    const index = tags.indexOf(getTagById(id));
+    const index = tags.indexOf(getTagById(id) as any);
     tags.splice(index, 1);
     document.querySelectorAll(`.tag[id="${id}"]`).forEach(el => el.remove());
     document.querySelectorAll(`.tag_view_item[id="${id}"]`).forEach(el => el.remove());
 
-    notyf.success(`'${tag?.name}' deleted${mergeTagId ? ` and merged into '${getTagById(mergeTagId)?.name}'` : ''}`, 'Delete Tag');
+    notyf.success(`'${tag?.name}' deleted${mergeTagId ? ` and merged into '${(getTagById(mergeTagId) as any)?.name}'` : ''}`, 'Delete Tag');
 
     markDirty();
 
@@ -316,7 +316,7 @@ export function onTagCreateClick(): void {
 export function onTagAsFolderClick(this: HTMLElement): void {
     const element = this.closest('.tag_view_item');
     const id = element?.getAttribute('id');
-    const tag = getTagById(id);
+    const tag = getTagById(id) as any;
 
     // Cycle through folder types
     const types = Object.keys(TAG_FOLDER_TYPES);
@@ -363,7 +363,7 @@ export function updateDrawTagFolder(element: Element | null, tag: any): void {
 export function onTagRenameInput(this: HTMLElement): void {
     const id = this.closest('.tag_view_item')?.getAttribute('id');
     const newName = this.textContent;
-    const tag = getTagById(id);
+    const tag = getTagById(id) as any;
     if (tag) tag.name = newName;
     this.setAttribute('dirty', '');
     document.querySelectorAll(`.tag[id="${id}"] .tag_name`).forEach(el => el.textContent = newName);
@@ -392,7 +392,7 @@ export function onTagColorize(evt: any, setColor: (tag: any, color: string) => v
 
     const tagViewName = tagViewItem?.querySelector('.tag_view_name') as HTMLElement | null;
     if (tagViewName) tagViewName.style.setProperty(cssProperty, newColor);
-    const tag = getTagById(id);
+    const tag = getTagById(id) as any;
     if (tag) setColor(tag, newColor);
     markDirty();
 

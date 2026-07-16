@@ -158,3 +158,14 @@ export function selectTag(event, ui, listSelector, { tagListOptions = {} } = {})
 
     return false;
 }
+
+// ──────────────────────────────────────────────
+// Entity helpers (moved from script.ts)
+// ──────────────────────────────────────────────
+
+/**
+ * Converts a tag to an entity format used by the entity list system.
+ */
+export function tagToEntity(tag) {
+    return { item: structuredClone(tag), id: tag.id, type: 'tag', entities: [] };
+}

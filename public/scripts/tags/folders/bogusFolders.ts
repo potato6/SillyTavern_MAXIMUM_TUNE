@@ -29,6 +29,7 @@ export function isBogusFolder(tag) {
 export function getOpenBogusFolders() {
     // @ts-expect-error TS(2339) FIXME: Property 'selected' does not exist on type 'string... Remove this comment to see the full error message
     return entitiesFilter.getFilterData(FILTER_TYPES.TAG)?.selected
+        // @ts-expect-error TS(7006) FIXME: Parameter 'tagId' implicitly has an 'any' type.
         .map(tagId => getTagById(tagId))
         .filter(isBogusFolder) ?? [];
 }

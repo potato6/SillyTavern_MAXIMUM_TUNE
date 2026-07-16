@@ -345,7 +345,7 @@ let _dirtyTimeout = null;
 export function markDirty() {
     if (_dirtyTimeout) clearTimeout(_dirtyTimeout);
     _dirtyTimeout = setTimeout(() => {
-        markDirty();
+        saveSettingsDebounced();
         tagStoreEvents.emit('changed', null);
     }, 100);
 }
