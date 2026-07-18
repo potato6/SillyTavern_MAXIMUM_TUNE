@@ -21,8 +21,6 @@ import {
     select_selected_character,
 } from '../../script.js';
 import {
-    cancelDebounce,
-    debounce,
     escapeHtml,
     equalsIgnoreCaseAndAccents,
     getSanitizedFilename,
@@ -31,7 +29,7 @@ import {
     parseJsonFile,
     extractDataFromPng,
 } from '../utils.js';
-import { debounce_timeout, GENERATION_TYPE_TRIGGERS } from '../constants.js';
+import { GENERATION_TYPE_TRIGGERS } from '../constants.js';
 import { t } from '../i18n.js';
 import { Popup } from '../popup.js';
 
@@ -69,9 +67,6 @@ import {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
 async function _save(name, data) {
-    // Prevent double saving if both immediate and debounced save are called
-    cancelDebounce(saveWorldDebounced);
-
     await fetch('/api/worldinfo/edit', {
         method: 'POST',
         headers: getRequestHeaders(),
@@ -80,13 +75,6 @@ async function _save(name, data) {
     await eventSource.emit(event_types.WORLDINFO_UPDATED, name, data);
 }
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
-const saveWorldDebounced = debounce(async (name, data) => await _save(name, data), debounce_timeout.relaxed);
-
-export const saveSettingsDebounced = debounce(() => {
-    Object.assign(wiManager.info, { globalSelect: wiManager.selectedWorlds });
-    saveSettings();
-}, debounce_timeout.relaxed);
 
 /** Immediately syncs the current selection to wiManager.info and saves all settings. */
 export function saveSettingsNow() {
@@ -651,7 +639,7 @@ export async function deleteWorldInfo(worldInfoName) {
     const existingWorldIndex = wiManager.selectedWorlds.findIndex((e) => e === worldInfoName);
     if (existingWorldIndex !== -1) {
         wiManager.selectedWorlds.splice(existingWorldIndex, 1);
-        saveSettingsDebounced();
+        saveSettingsNow();
     }
 
     await updateWorldInfoList();
@@ -679,7 +667,7 @@ export async function deleteWorldInfo(worldInfoName) {
         }
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         document.getElementById('persona_lore_button').classList.toggle('world_set', false);
-        saveSettingsDebounced();
+        saveSettingsNow();
     }
 
     return true;

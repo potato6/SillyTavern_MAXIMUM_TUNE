@@ -55,7 +55,7 @@ import {
     saveWorldInfo,
     createWorldInfoEntry,
     getFreeWorldName,
-    saveSettingsDebounced,
+    saveSettingsNow,
     duplicateWorldInfoEntry,
     deleteWorldInfoEntry,
     getFreeWorldEntryUid,
@@ -154,7 +154,7 @@ export function registerWorldInfoSlashCommands() {
             const newName = await createWorldWithName(name, `Persona Book ${name1}`.replace(/[^a-z0-9 -]/gi, '_').replace(/_{2,}/g, '_').substring(0, 64));
             power_user.persona_description_lorebook = newName;
             setPersonaDescription();
-            saveSettingsDebounced();
+            saveSettingsNow();
             return newName;
         }
 

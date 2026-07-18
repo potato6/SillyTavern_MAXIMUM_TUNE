@@ -1,6 +1,4 @@
 import { saveSettings } from '../../script.js';
-import { debounce } from '../utils.js';
-import { debounce_timeout } from '../constants.js';
 import { world_info_insertion_strategy, originalWIDataKeyMap } from './constants.js';
 import { FilterHelper } from '../filters.js';
 import { FILTER_TYPES } from '../filters.js';
@@ -58,13 +56,12 @@ class WorldInfoManager {
     filter: FilterHelper;
 
     /**
-     * Debounced save helpers.
+     * Save helpers.
      * Kept as arrow-properties so `this` is always the manager instance.
      */
-    saveWorldDebounced = debounce(
-        async (name: string, data: WorldInfoBook) => await this._saveWorld(name, data),
-        debounce_timeout.relaxed,
-    );
+    saveWorldNow = async (name: string, data: WorldInfoBook) => {
+        return await this._saveWorld(name, data);
+    };
 
     saveSettingsNow = () => {
         Object.assign(this.info, { globalSelect: this.selectedWorlds });
@@ -193,14 +190,11 @@ class WorldInfoManager {
         this.saveSettingsNow();
     }
 
-    /** Mark a world-info file save */
-    async saveWorld(name: string, data: WorldInfoBook, immediately = false) {
+    /** Mark a world-info file save (saves immediately, no debounce) */
+    async saveWorld(name: string, data: WorldInfoBook) {
         if (!name || !data) return;
         this.cache.set(name, data);
-        if (immediately) {
-            return await this._saveWorld(name, data);
-        }
-        this.saveWorldDebounced(name, data);
+        return await this._saveWorld(name, data);
     }
 
     /** Load a WI book, using cache if available */
