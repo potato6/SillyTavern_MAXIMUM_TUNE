@@ -1,52 +1,64 @@
 // ──────────────────────────────────────────────
-// Types
+// Types & Interfaces
 // ──────────────────────────────────────────────
 
 export type StoreEvent = 'added' | 'removed' | 'changed' | 'cleared' | 'loaded';
 
 export interface QueryOptions<T> {
+    /** Custom filter function. Warning: requires iterating via cursor. */
     where?: (item: T) => boolean;
+    /** Sorting function applied after filtering. */
     sort?: (a: T, b: T) => number;
+    /** Maximum number of results to return. */
     limit?: number;
 }
 
 export interface IndexConfig {
     name: string;
-    keyPath: string;
+    keyPath: string | string[];
     options?: IDBIndexParameters;
 }
 
-interface HistoryAction<T> {
+export interface HistoryAction<T> {
     type: 'add' | 'remove' | 'update';
+    /** The state of the item AFTER an add/update, or BEFORE a remove. */
     item: T;
+    /** The state of the item BEFORE an update. */
     oldItem?: T;
 }
 
-interface HistoryEntry<T> {
+export interface HistoryEntry<T> {
     actions: HistoryAction<T>[];
 }
 
 // ──────────────────────────────────────────────
-// EntityStore
+// EntityStore Class
 // ──────────────────────────────────────────────
 
+/**
+ * A highly optimized, atomic, and transactional IndexedDB wrapper.
+ * Provides advanced history tracking (undo/redo), event observation,
+ * and high-performance querying capabilities.
+ */
 export class EntityStore<T extends { id: string | number }> {
     protected db: IDBDatabase | null = null;
     protected currentTxn: IDBTransaction | null = null;
+
     protected pendingEvents: Array<{ event: StoreEvent; data: unknown }> = [];
-    protected currentHistoryEntry: HistoryEntry<T> | null = null;
+    protected listeners = new Map<StoreEvent, Set<(data: unknown) => void>>();
 
     protected undoStack: HistoryEntry<T>[] = [];
     protected redoStack: HistoryEntry<T>[] = [];
+    protected currentHistoryEntry: HistoryEntry<T> | null = null;
+
+    /** History limit to prevent memory bloat. */
     protected maxHistory = 50;
 
-    // Guard to prevent undo/redo from recording their own history
+    /** Guard to prevent undo/redo operations from recording their own history. */
     protected isUndoRedoInProgress = false;
 
-    /** Hook for subclasses to run after a transaction completes (e.g. auto-save). */
-    protected onTransactionComplete?: () => void;
-
-    protected listeners = new Map<StoreEvent, Set<(data: unknown) => void>>();
+    /** Hook for subclasses to execute logic after a transaction successfully commits. */
+    public onTransactionComplete?: () => void;
 
     constructor(
         protected dbName: string,
@@ -54,13 +66,13 @@ export class EntityStore<T extends { id: string | number }> {
         protected dbVersion: number = 1
     ) {}
 
-    // ── IndexedDB Setup ───────────────────────
+    // ── Database Initialization ──────────────────────────────────────────
 
     /**
-     * Initializes the DB and creates native indexes.
-     * @param indexes Define native IDB indexes for efficient lookups.
+     * Initializes the DB connection and applies schema upgrades if necessary.
+     * @param indexes Configuration for native IndexedDB indices to optimize lookups.
      */
-    async init(indexes: IndexConfig[] = []): Promise<void> {
+    public async init(indexes: IndexConfig[] = []): Promise<void> {
         if (this.db) return;
 
         this.db = await new Promise<IDBDatabase>((resolve, reject) => {
@@ -68,28 +80,40 @@ export class EntityStore<T extends { id: string | number }> {
 
             request.onupgradeneeded = (event) => {
                 const db = (event.target as IDBOpenDBRequest).result;
+                let store: IDBObjectStore;
+
                 if (!db.objectStoreNames.contains(this.storeName)) {
-                    const store = db.createObjectStore(this.storeName, { keyPath: 'id' });
-                    for (const idx of indexes) {
+                    store = db.createObjectStore(this.storeName, { keyPath: 'id' });
+                } else {
+                    store = (request.transaction as IDBTransaction).objectStore(this.storeName);
+                }
+
+                // Synchronize indexes
+                for (const idx of indexes) {
+                    if (!store.indexNames.contains(idx.name)) {
                         store.createIndex(idx.name, idx.keyPath, idx.options);
                     }
                 }
             };
 
             request.onsuccess = (event) => resolve((event.target as IDBOpenDBRequest).result);
-            request.onerror = (event) => reject((event.target as IDBOpenDBRequest).error);
+            request.onerror = (event) => reject(new Error(`IndexedDB Init Error: ${(event.target as IDBOpenDBRequest).error?.message}`));
         });
 
         this.emit('loaded', null);
     }
 
-    /** Helper to execute requests either in the current transaction or a new isolated one */
+    /**
+     * Core execution engine. Reuses active transactions if present to maintain atomicity.
+     * OPTIMIZATION: Resolves readonly queries immediately on success rather than waiting for txn completion.
+     */
     protected async execute<R>(
         mode: IDBTransactionMode,
         fn: (store: IDBObjectStore) => IDBRequest<R>
     ): Promise<R> {
-        if (!this.db) throw new Error("DB not initialized. Call init() first.");
+        if (!this.db) throw new Error(`[EntityStore:${this.storeName}] Database not initialized. Call init() first.`);
 
+        // 1. Utilize existing transaction if available
         if (this.currentTxn) {
             const store = this.currentTxn.objectStore(this.storeName);
             return new Promise<R>((resolve, reject) => {
@@ -99,48 +123,55 @@ export class EntityStore<T extends { id: string | number }> {
             });
         }
 
-        // Isolated transaction
-        const txn = this.db.transaction(this.storeName, mode);
-        const store = txn.objectStore(this.storeName);
-        const req = fn(store);
+        // 2. Create isolated transaction
+        return new Promise<R>((resolve, reject) => {
+            const txn = this.db!.transaction(this.storeName, mode);
+            const store = txn.objectStore(this.storeName);
+            const req = fn(store);
 
-        const result = await new Promise<R>((resolve, reject) => {
-            req.onsuccess = () => resolve(req.result);
+            let result: R;
+
+            req.onsuccess = () => {
+                result = req.result;
+                // Opt: Reads are safe to resolve immediately without waiting for transaction closure.
+                if (mode === 'readonly') resolve(result);
+            };
             req.onerror = () => reject(req.error);
-        });
 
-        // Wait for isolated transaction to commit before resolving
-        await new Promise<void>((resolve, reject) => {
-            txn.oncomplete = () => resolve();
+            txn.oncomplete = () => {
+                // Ensure writes fully commit before resolving
+                if (mode === 'readwrite') resolve(result);
+            };
             txn.onerror = () => reject(txn.error);
             txn.onabort = () => reject(txn.error);
         });
-
-        return result;
     }
 
-    // ── CRUD ──────────────────────────────────
+    // ── CRUD Operations ──────────────────────────────────────────────────
 
-    async get(id: string | number): Promise<T | undefined> {
-        return this.execute<T>('readonly', store => store.get(id));
+    public async get(id: string | number): Promise<T | undefined> {
+        return this.execute<T | undefined>('readonly', store => store.get(id));
     }
 
-    async has(id: string | number): Promise<boolean> {
+    /** Uses store.count() which avoids deserializing the object, making it exceptionally fast. */
+    public async has(id: string | number): Promise<boolean> {
         const count = await this.execute<number>('readonly', store => store.count(id));
         return count > 0;
     }
 
-    async getAll(): Promise<T[]> {
+    public async getAll(): Promise<T[]> {
         return this.execute<T[]>('readonly', store => store.getAll());
     }
 
-    async add(item: T): Promise<void> {
+    public async add(item: T): Promise<void> {
+        if (item.id == null) throw new Error("Entity must contain a valid 'id' property.");
+
         await this.execute('readwrite', store => store.add(item));
         this.recordHistory({ type: 'add', item });
         this.emit('added', item);
     }
 
-    async remove(id: string | number): Promise<boolean> {
+    public async remove(id: string | number): Promise<boolean> {
         const item = await this.get(id);
         if (!item) return false;
 
@@ -150,11 +181,11 @@ export class EntityStore<T extends { id: string | number }> {
         return true;
     }
 
-    async update(id: string | number, patch: Partial<T>): Promise<boolean> {
+    public async update(id: string | number, patch: Partial<T>): Promise<boolean> {
         const oldItem = await this.get(id);
         if (!oldItem) return false;
 
-        const newItem = { ...oldItem, ...patch };
+        const newItem = { ...oldItem, ...patch, id }; // ensure ID is never overwritten maliciously
         await this.execute('readwrite', store => store.put(newItem));
 
         this.recordHistory({ type: 'update', item: newItem, oldItem });
@@ -162,182 +193,179 @@ export class EntityStore<T extends { id: string | number }> {
         return true;
     }
 
-    async clear(): Promise<void> {
+    public async clear(): Promise<void> {
         await this.execute('readwrite', store => store.clear());
 
-        // Clearing breaks undo/redo continuity
+        // Complete data annihilation breaks undo continuity
         this.undoStack = [];
         this.redoStack = [];
         this.emit('cleared', null);
     }
 
-    // ── Bulk Operations ─────────────────────
+    // ── High Performance Bulk Operations ─────────────────────────────────
 
     /**
-     * Replace all items at once (e.g. after load from settings).
-     * Wraps in a transaction and emits 'loaded'.
+     * Bypasses individual promises to flood the transaction synchronously.
+     * Exponentially faster than looping 'await this.add(item)'.
      */
-    async replaceAll(items: T[]): Promise<void> {
-        await this.transaction(async () => {
-            await this.execute('readwrite', store => store.clear());
+    public async bulkAdd(items: T[]): Promise<void> {
+        if (!items.length) return;
+
+        await this.transaction(() => {
+            const store = this.currentTxn!.objectStore(this.storeName);
             for (const item of items) {
-                await this.execute('readwrite', store => store.add(item));
+                store.add(item);
+                this.recordHistory({ type: 'add', item });
+                this.emit('added', item);
             }
         });
+    }
+
+    /**
+     * Replaces the entire store contents. Optimized for importing state.
+     */
+    public async replaceAll(items: T[]): Promise<void> {
+        await this.transaction(() => {
+            const store = this.currentTxn!.objectStore(this.storeName);
+            store.clear();
+            for (const item of items) {
+                store.add(item);
+            }
+        });
+
+        // Wiping out the store invalidates history context
+        this.undoStack = [];
+        this.redoStack = [];
         this.emit('loaded', items);
     }
 
-    // ── Size ─────────────────────────────────
+    // ── Indexing & Highly Optimized Querying ─────────────────────────────
 
-    async size(): Promise<number> {
+    public async size(): Promise<number> {
         return this.execute<number>('readonly', store => store.count());
     }
 
-    // ── Indexing & Querying ───────────────────
-
     /**
-     * O(log n) lookup using a native IndexedDB index.
-     * @example store.by("name", "foo")
+     * O(log n) lookup utilizing native IndexedDB B-Tree indices.
      */
-    async by(indexName: string, value: string | number): Promise<T[]> {
-        return this.execute<T[]>('readonly', store => {
-            const index = store.index(indexName);
-            return index.getAll(value);
-        });
+    public async by(indexName: string, value: string | number): Promise<T[]> {
+        return this.execute<T[]>('readonly', store => store.index(indexName).getAll(value));
     }
 
     /**
-     * Flexible query. Uses IDB Cursors for memory efficiency.
-     * If `sort` is omitted and `limit` is provided, it stops fetching early.
+     * Flexible querying engine with built-in fast paths.
      */
-    async query(opts: QueryOptions<T> = {}): Promise<T[]> {
-        if (!this.db) throw new Error("DB not initialized");
+    public async query(opts: QueryOptions<T> = {}): Promise<T[]> {
+        if (!this.db) throw new Error("Database not initialized");
 
+        // FAST-PATH: If there are no JS-level filters or sorting, rely purely on native IDB implementation
+        if (!opts.where && !opts.sort) {
+            return this.execute<T[]>('readonly', store => store.getAll(undefined, opts.limit));
+        }
+
+        // SLOW-PATH: Need iteration to evaluate custom 'where' functions and full sorting
         return new Promise((resolve, reject) => {
-            const txn = (this.currentTxn ?? this.db!.transaction(this.storeName, 'readonly'));
+            const txn = this.currentTxn ?? this.db!.transaction(this.storeName, 'readonly');
             const store = txn.objectStore(this.storeName);
             const request = store.openCursor();
 
             const results: T[] = [];
             const limit = opts.limit ?? Infinity;
+            const requiresSort = typeof opts.sort === 'function';
 
             request.onsuccess = () => {
                 const cursor = request.result;
-                if (!cursor || results.length >= limit) {
-                    // Done fetching
-                    if (opts.sort) results.sort(opts.sort);
-                    if (opts.limit !== undefined) {
-                        resolve(results.slice(0, opts.limit));
-                    } else {
-                        resolve(results);
-                    }
-                    return;
-                }
+
+                if (!cursor) return completeRequest(); // End of DB
 
                 const item = cursor.value as T;
                 if (!opts.where || opts.where(item)) {
                     results.push(item);
                 }
 
-                // If no sorting is requested, we can optimize by breaking early if limit is hit.
-                // If sorting IS requested, we must fetch all matching items anyway.
-                if (opts.limit !== undefined && !opts.sort && results.length >= limit) {
-                    // Break early
-                } else {
-                    cursor.continue();
+                // Break early OPTIMIZATION: Only safe if NO custom sorting is applied
+                if (!requiresSort && results.length >= limit) {
+                    return completeRequest();
                 }
+
+                cursor.continue();
             };
 
             request.onerror = () => reject(request.error);
+
+            function completeRequest() {
+                if (requiresSort && opts.sort) {
+                    results.sort(opts.sort);
+                }
+                // Finally slice down to limit (in case sort forced us to grab the entire matching dataset)
+                resolve(results.slice(0, limit));
+            }
         });
     }
 
-    // ── Events ────────────────────────────────
-
-    on(event: StoreEvent, callback: (data: unknown) => void): void {
-        let set = this.listeners.get(event);
-        if (!set) {
-            set = new Set();
-            this.listeners.set(event, set);
-        }
-        set.add(callback);
-    }
-
-    off(event: StoreEvent, callback: (data: unknown) => void): void {
-        this.listeners.get(event)?.delete(callback);
-    }
-
-    protected emit(event: StoreEvent, data: unknown): void {
-        if (this.currentTxn) {
-            this.pendingEvents.push({ event, data });
-            return;
-        }
-        this.dispatchEvent(event, data);
-    }
-
-    protected dispatchEvent(event: StoreEvent, data: unknown): void {
-        this.listeners.get(event)?.forEach(cb => {
-            try { cb(data); } catch (e) { console.error(`EntityStore event "${event}" handler error:`, e); }
-        });
-    }
-
-    private flushPendingEvents(): void {
-        const events = this.pendingEvents.splice(0);
-        for (const { event, data } of events) {
-            this.dispatchEvent(event, data);
-        }
-    }
-
-    // ── Transactions ──────────────────────────
+    // ── Transaction Management ───────────────────────────────────────────
 
     /**
-     * Batches operations into a single native IndexedDB transaction.
-     * If any operation fails, the entire transaction aborts.
+     * Enforces atomicity. Batches multiple interactions into one native transaction.
+     * Automatically rolls back memory state and aborts IDB on failure.
      */
-    async transaction(fn: () => Promise<void> | void): Promise<void> {
-        if (!this.db) throw new Error("DB not initialized");
+    public async transaction(fn: () => Promise<void> | void): Promise<void> {
+        if (!this.db) throw new Error("Database not initialized");
+
+        // Support nested transaction boundaries transparently
         if (this.currentTxn) {
-            // Nested transaction call; just run the function.
-            // IDB handles isolation via the same transaction instance.
-            return fn();
-        }
-
-        const txn = this.db.transaction(this.storeName, 'readwrite');
-        this.currentTxn = txn;
-        this.currentHistoryEntry = { actions: [] };
-
-        try {
             await fn();
-
-            await new Promise<void>((resolve, reject) => {
-                txn.oncomplete = () => resolve();
-                txn.onerror = () => reject(txn.error);
-                txn.onabort = () => reject(txn.error);
-            });
-
-            // Transaction committed successfully
-            if (this.currentHistoryEntry.actions.length > 0) {
-                this.undoStack.push(this.currentHistoryEntry);
-                if (this.undoStack.length > this.maxHistory) this.undoStack.shift();
-                this.redoStack = []; // New action invalidates redo history
-            }
-            this.flushPendingEvents();
-            this.onTransactionComplete?.();
-
-        } catch (error) {
-            // Transaction aborted or failed
-            console.error("Transaction failed, rolling back memory state:", error);
-            this.pendingEvents = [];
-        } finally {
-            this.currentTxn = null;
-            this.currentHistoryEntry = null;
+            return;
         }
+
+        return new Promise<void>(async (resolve, reject) => {
+            const txn = this.db!.transaction(this.storeName, 'readwrite');
+            this.currentTxn = txn;
+            this.currentHistoryEntry = { actions: [] };
+
+            let executionFailed = false;
+
+            txn.oncomplete = () => {
+                if (this.currentHistoryEntry && this.currentHistoryEntry.actions.length > 0) {
+                    this.undoStack.push(this.currentHistoryEntry);
+                    if (this.undoStack.length > this.maxHistory) this.undoStack.shift();
+                    this.redoStack = []; // Break future redo continuity
+                }
+
+                this.flushPendingEvents();
+                this.cleanupTransactionContext();
+                this.onTransactionComplete?.();
+                resolve();
+            };
+
+            txn.onerror = () => rejectTransaction(txn.error);
+            txn.onabort = () => rejectTransaction(new Error("Transaction aborted"));
+
+            const rejectTransaction = (error: any) => {
+                console.error(`[EntityStore:${this.storeName}] Transaction Failed:`, error);
+                this.pendingEvents = []; // Dump events; state rolled back
+                this.cleanupTransactionContext();
+                reject(error);
+            };
+
+            try {
+                await fn();
+            } catch (error) {
+                executionFailed = true;
+                txn.abort(); // Native rollback
+                rejectTransaction(error);
+            }
+        });
     }
 
-    // ── History (Undo/Redo) ───────────────────
+    private cleanupTransactionContext(): void {
+        this.currentTxn = null;
+        this.currentHistoryEntry = null;
+    }
+
+    // ── History Tracking (Undo / Redo) ───────────────────────────────────
 
     protected recordHistory(action: HistoryAction<T>): void {
-        // Don't record history during undo/redo — that would create infinite loops
         if (this.isUndoRedoInProgress) return;
 
         if (this.currentHistoryEntry) {
@@ -349,40 +377,44 @@ export class EntityStore<T extends { id: string | number }> {
         }
     }
 
-    async undo(): Promise<boolean> {
-        if (this.undoStack.length === 0) return false;
-        const entry = this.undoStack.pop()!;
+    public async undo(): Promise<boolean> {
+        if (!this.canUndo) return false;
 
+        const entry = this.undoStack.pop()!;
         this.isUndoRedoInProgress = true;
+
         try {
-        // Reverse operations in reverse order
-        for (let i = entry.actions.length - 1; i >= 0; i--) {
-            const action = entry.actions[i]!;
-            await this.reverseAction(action);
-        }
+            // Apply undo atomically within a transaction
+            await this.transaction(async () => {
+                // Must reverse actions in inverted order they were applied
+                for (let i = entry.actions.length - 1; i >= 0; i--) {
+                    await this.reverseAction(entry.actions[i]!);
+                }
+            });
+            this.redoStack.push(entry);
+            return true;
         } finally {
             this.isUndoRedoInProgress = false;
         }
-
-        this.redoStack.push(entry);
-        return true;
     }
 
-    async redo(): Promise<boolean> {
-        if (this.redoStack.length === 0) return false;
-        const entry = this.redoStack.pop()!;
+    public async redo(): Promise<boolean> {
+        if (!this.canRedo) return false;
 
+        const entry = this.redoStack.pop()!;
         this.isUndoRedoInProgress = true;
+
         try {
-        for (const action of entry.actions) {
-            await this.applyAction(action);
-        }
+            await this.transaction(async () => {
+                for (const action of entry.actions) {
+                    await this.applyAction(action);
+                }
+            });
+            this.undoStack.push(entry);
+            return true;
         } finally {
             this.isUndoRedoInProgress = false;
         }
-
-        this.undoStack.push(entry);
-        return true;
     }
 
     private async applyAction(action: HistoryAction<T>): Promise<void> {
@@ -394,7 +426,8 @@ export class EntityStore<T extends { id: string | number }> {
                 await this.remove(action.item.id);
                 break;
             case 'update':
-                if (action.oldItem) await this.update(action.item.id, action.oldItem);
+                // Redo needs the NEW state, which is stored in action.item
+                await this.update(action.item.id, action.item);
                 break;
         }
     }
@@ -408,16 +441,63 @@ export class EntityStore<T extends { id: string | number }> {
                 await this.add(action.item);
                 break;
             case 'update':
-                if (action.oldItem) await this.update(action.item.id, action.oldItem);
+                // Undo requires reverting to the PREVIOUS state
+                if (action.oldItem) {
+                    await this.update(action.item.id, action.oldItem);
+                }
                 break;
         }
     }
 
-    get canUndo(): boolean {
+    public get canUndo(): boolean {
         return this.undoStack.length > 0;
     }
 
-    get canRedo(): boolean {
+    public get canRedo(): boolean {
         return this.redoStack.length > 0;
+    }
+
+    // ── Event Emitter ────────────────────────────────────────────────────
+
+    public on(event: StoreEvent, callback: (data: unknown) => void): void {
+        if (!this.listeners.has(event)) {
+            this.listeners.set(event, new Set());
+        }
+        this.listeners.get(event)!.add(callback);
+    }
+
+    public off(event: StoreEvent, callback: (data: unknown) => void): void {
+        this.listeners.get(event)?.delete(callback);
+    }
+
+    protected emit(event: StoreEvent, data: unknown): void {
+        // If in transaction, defer events until commit is fully verified
+        if (this.currentTxn) {
+            this.pendingEvents.push({ event, data });
+            return;
+        }
+        this.dispatchEvent(event, data);
+    }
+
+    protected dispatchEvent(event: StoreEvent, data: unknown): void {
+        const cbs = this.listeners.get(event);
+        if (!cbs) return;
+
+        for (const cb of cbs) {
+            try {
+                cb(data);
+            } catch (error) {
+                console.error(`[EntityStore:${this.storeName}] Event "${event}" handler crashed:`, error);
+            }
+        }
+    }
+
+    private flushPendingEvents(): void {
+        if (!this.pendingEvents.length) return;
+
+        const events = this.pendingEvents.splice(0, this.pendingEvents.length);
+        for (const { event, data } of events) {
+            this.dispatchEvent(event, data);
+        }
     }
 }
