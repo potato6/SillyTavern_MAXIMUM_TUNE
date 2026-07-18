@@ -5,6 +5,7 @@ import { world_info_insertion_strategy, originalWIDataKeyMap } from './constants
 import { FilterHelper } from '../filters.js';
 import { FILTER_TYPES } from '../filters.js';
 import { StructuredCloneMap } from '../util/StructuredCloneMap.js';
+import { WorldInfoStore } from './store.js';
 import type { WorldInfoEntryData, WorldInfoBook } from './types.js';
 
 /**
@@ -49,6 +50,10 @@ class WorldInfoManager {
     /** Metadata key stored in chat_metadata */
     metadataKey = 'world_info';
 
+    // ── EntityStore instances (one per book) ──
+    /** Lazy-initialized per-book WorldInfoStore instances */
+    private stores = new Map<string, WorldInfoStore>();
+
     /** Filter helper that re-filters on every editor navigation */
     filter: FilterHelper;
 
@@ -61,13 +66,10 @@ class WorldInfoManager {
         debounce_timeout.relaxed,
     );
 
-    saveSettingsDebounced = debounce(
-        () => {
-            Object.assign(this.info, { globalSelect: this.selectedWorlds });
-            saveSettings();
-        },
-        debounce_timeout.relaxed,
-    );
+    saveSettingsNow = () => {
+        Object.assign(this.info, { globalSelect: this.selectedWorlds });
+        saveSettings();
+    };
 
     // Sort helper — used by the scanner
     sortFn = (a: any, b: any) => b.order - a.order;
@@ -128,6 +130,53 @@ class WorldInfoManager {
         }
     }
 
+    // ── Store management ──
+
+    /**
+     * Get or create a WorldInfoStore for the given book.
+     * Stores are lazily initialized on first access.
+     */
+    getStore(bookName: string): WorldInfoStore {
+        if (!this.stores.has(bookName)) {
+            this.stores.set(bookName, new WorldInfoStore(bookName));
+        }
+        return this.stores.get(bookName)!;
+    }
+
+    /**
+     * Load a book's entries from the server into its store.
+     * Replaces all existing entries in the store.
+     */
+    async loadBookIntoStore(name: string): Promise<WorldInfoBook | null> {
+        const book = await this.loadWorld(name);
+        if (book) {
+            const store = this.getStore(name);
+            await store.init();
+            const entries = Object.values(book.entries ?? {});
+            if (entries.length > 0) {
+                await store.replaceAllEntries(entries);
+            }
+        }
+        return book;
+    }
+
+    /**
+     * Serialize a store's entries back into a book object and persist to server.
+     */
+    async saveStoreToServer(name: string, metadata: Partial<WorldInfoBook> = {}): Promise<void> {
+        const store = this.getStore(name);
+        const entries = await store.toObject();
+        const book: WorldInfoBook = { ...metadata, entries };
+        await this.saveWorld(name, book, true);
+    }
+
+    /**
+     * Release a store (e.g. when a book is deleted).
+     */
+    releaseStore(name: string): void {
+        this.stores.delete(name);
+    }
+
     // ── Persistence ──
 
     private async _saveWorld(name: string, data: WorldInfoBook) {
@@ -139,17 +188,17 @@ class WorldInfoManager {
         });
     }
 
-    /** Mark settings as needing persistence */
+    /** Mark settings as needing persistence (immediate, not debounced) */
     saveSettings() {
-        this.saveSettingsDebounced();
+        this.saveSettingsNow();
     }
 
     /** Mark a world-info file save */
-    saveWorld(name: string, data: WorldInfoBook, immediately = false) {
+    async saveWorld(name: string, data: WorldInfoBook, immediately = false) {
         if (!name || !data) return;
         this.cache.set(name, data);
         if (immediately) {
-            return this._saveWorld(name, data);
+            return await this._saveWorld(name, data);
         }
         this.saveWorldDebounced(name, data);
     }

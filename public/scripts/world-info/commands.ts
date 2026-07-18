@@ -418,35 +418,37 @@ export function registerWorldInfoSlashCommands() {
         const file = args.file;
         const key = args.key;
 
-        const data = await loadWorldInfo(file);
-
-        if (!data || !('entries' in data)) {
+        // Load book from server into the store
+        const book = await wiManager.loadBookIntoStore(file);
+        if (!book || !book.entries) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.warning('Valid World Info file name is required');
             logSlashCommandWarn('createEntryCallback: Valid World Info file name is required', args);
             return '';
         }
 
-        const entry = createWorldInfoEntry(file, data);
+        const store = wiManager.getStore(file);
+
+        const entry = await createWorldInfoEntry(store);
+
+        if (!entry) return '';
 
         if (key) {
-            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             entry.key.push(key);
-            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             entry.addMemo = true;
-            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             entry.comment = key;
         }
 
         if (content) {
-            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             entry.content = content;
         }
 
-        await saveWorldInfo(file, data);
+        // Sync modified entry back to store and persist
+        await store.updateEntry(entry.uid, entry);
+        book.entries[entry.uid] = entry;
+        await saveWorldInfo(file, book);
         reloadEditor(file);
 
-        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         return String(entry.uid);
     }
 
@@ -573,16 +575,13 @@ export function registerWorldInfoSlashCommands() {
                 }
         }
 
+        // Sync the mutated entry to the store and persist
+        const store = wiManager.getStore(file);
+        await store.updateEntry(Number(uid), entry);
         await saveWorldInfo(file, data);
         reloadEditor(file);
         return '';
     }
-
-    /**
-     * @param {object} args - Arguments object containing file and effect
-     * @param {string} value - Entry UID
-     * @returns {Promise<string>} Timed effect data or empty string
-     */
     // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
     async function getTimedEffectCallback(args, value) {
         if (!getCurrentChatId()) {

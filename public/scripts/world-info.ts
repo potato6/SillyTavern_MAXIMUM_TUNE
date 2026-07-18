@@ -95,7 +95,7 @@ import { registerWorldInfoSlashCommands } from './world-info/commands.js';
 // ── Data layer imports ──
 import {
     saveWorldInfo,
-    saveSettingsDebounced,
+    saveSettingsNow,
     getFreeWorldEntryUid,
     getFreeWorldName,
     newWorldInfoEntryDefinition,
@@ -118,7 +118,7 @@ import {
 // Re-export data layer for backward compatibility
 export {
     saveWorldInfo,
-    saveSettingsDebounced,
+    saveSettingsNow,
     getFreeWorldEntryUid,
     getFreeWorldName,
     newWorldInfoEntryDefinition,
@@ -346,7 +346,7 @@ export function updateWorldInfoSettings(settings, activeWorldInfo) {
         wiManager.selectedWorlds = activeWorldInfo;
     }
 
-    saveSettingsDebounced();
+    saveSettingsNow();
 }
 
 /**
@@ -785,6 +785,22 @@ async function displayWorldEntries(name, data, navigation = navigation_option.no
         return;
     }
 
+    // Initialize the store for this book
+    const store = wiManager.getStore(name);
+    await store.init();
+
+    // Hydrate the store from the loaded book data if it's empty
+    // (store is not populated until the first save or explicit load)
+    if (data.entries) {
+        const count = await store.entryCount();
+        if (count === 0) {
+            const entryList = Object.values(data.entries).filter(Boolean);
+            if (entryList.length > 0) {
+                await store.replaceAllEntries(entryList);
+            }
+        }
+    }
+
     // Regardless of whether success is displayed or not. Make sure the delete button is available.
     // Do not put this code behind.
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
@@ -810,7 +826,7 @@ async function displayWorldEntries(name, data, navigation = navigation_option.no
                 }
             });
 
-            saveSettingsDebounced();
+            saveSettingsNow();
         }
 
         // Selected world_info automatically refreshes
@@ -952,9 +968,13 @@ async function displayWorldEntries(name, data, navigation = navigation_option.no
     }
 
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('world_popup_new').addEventListener('click', () => {
-        const entry = createWorldInfoEntry(name, data);
-        if (entry) updateEditor(entry.uid);
+    document.getElementById('world_popup_new').addEventListener('click', async () => {
+        const entry = await createWorldInfoEntry(store);
+        if (entry) {
+            data.entries[entry.uid] = entry;
+            await saveWorldInfo(name, data);
+            updateEditor(entry.uid);
+        }
     });
 
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
@@ -1817,6 +1837,21 @@ function setCommentPlaceholder(keys, commentInput) {
 export async function getWorldEntry(name, data, entry) {
     if (!data.entries[entry.uid]) return;
 
+    // Initialize store for this book
+    const store = wiManager.getStore(name);
+    await store.init();
+
+    // Hydrate store if empty (covers standalone usage outside displayWorldEntries)
+    if (data.entries) {
+        const count = await store.entryCount();
+        if (count === 0) {
+            const entryList = Object.values(data.entries).filter(Boolean);
+            if (entryList.length > 0) {
+                await store.replaceAllEntries(entryList);
+            }
+        }
+    }
+
     const headerTemplate = WI_ENTRY_HEADER_TEMPLATE?.cloneNode(true) as HTMLElement | null;
     if (headerTemplate) {
         headerTemplate.dataset.uid = String(entry.uid);
@@ -1931,8 +1966,9 @@ export async function getWorldEntry(name, data, entry) {
     duplicateBtn[0].addEventListener('click', async function () {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const uid = this.dataset.uid;
-        const entryDup = duplicateWorldInfoEntry(data, uid);
+        const entryDup = await duplicateWorldInfoEntry(store, Number(uid));
         if (entryDup) {
+            data.entries[entryDup.uid] = entryDup;
             await saveWorldInfo(name, data);
             updateEditor(entryDup.uid);
         }
@@ -1943,8 +1979,9 @@ export async function getWorldEntry(name, data, entry) {
         e.stopPropagation();
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const uid = this.dataset.uid;
-        const deleted = await deleteWorldInfoEntry(data, uid);
+        const deleted = await deleteWorldInfoEntry(store, Number(uid));
         if (!deleted) return;
+        delete data.entries[uid];
         deleteWIOriginalDataValue(data, uid);
         await saveWorldInfo(name, data);
         updateEditor(navigation_option.previous);
@@ -2061,7 +2098,7 @@ export async function getWorldEntry(name, data, entry) {
         editTemplate.querySelectorAll('.switch_input_type_icon').forEach(el => el.addEventListener('click', function () {
             // @ts-expect-error TS(2339) FIXME: Property 'wi_key_input_plaintext' does not exist o... Remove this comment to see the full error message
             power_user.wi_key_input_plaintext = !power_user.wi_key_input_plaintext;
-            saveSettingsDebounced();
+            saveSettingsNow();
             const uid = this.closest('.world_entry').dataset.uid;
             updateEditor(uid, false);
             const inlineDrawerIcon = document.querySelector(`.world_entry[uid="${uid}"] .inline-drawer-icon`);
@@ -2649,7 +2686,7 @@ export async function updateWorldInfoLinks(oldName, newName) {
             tempCharLore.push(newName);
             charLore.extraBooks = tempCharLore;
         });
-        saveSettingsDebounced();
+        saveSettingsNow();
     }
 
     // find all characters using the old lorebook name as their primary world
@@ -2896,12 +2933,15 @@ export function onWorldInfoChange(args, text) {
             });
         }
         // @ts-expect-error TS(2322) FIXME: Type 'any[]' is not assignable to type 'never[]'.
-        wiManager.selectedWorlds = tempWorldInfo;
-    }
+            wiManager.selectedWorlds = tempWorldInfo;
+        }
 
-    saveSettingsDebounced();
-    eventSource.emit(event_types.WORLDINFO_SETTINGS_UPDATED);
-    return '';
+        // Save immediately — not debounced — so toggling a book's active state
+        // survives an immediate page refresh.
+        Object.assign(wiManager.info, { globalSelect: wiManager.selectedWorlds });
+        saveSettings();
+        eventSource.emit(event_types.WORLDINFO_SETTINGS_UPDATED);
+        return '';
 }
 
 /**
@@ -3084,10 +3124,11 @@ function updateAuxBooks(fileName, computeNext) {
     }
 
     Object.assign(world_info, { charLore });
-    saveSettingsDebounced();
+    saveSettingsNow();
 }
 
 /**
+ * Initializes the world info module.
  *
  */
 export function initWorldInfo() {
@@ -3159,7 +3200,7 @@ export function initWorldInfo() {
     });
 
     const saveSettings = () => {
-        saveSettingsDebounced();
+        saveSettingsNow();
         eventSource.emit(event_types.WORLDINFO_SETTINGS_UPDATED);
     };
 
@@ -3230,12 +3271,12 @@ export function initWorldInfo() {
 
     (document.getElementById('world_info_overflow_alert') as HTMLInputElement).addEventListener('change', function () {
         wiManager.overflowAlert = !!this.checked;
-        saveSettingsDebounced();
+        saveSettings();
     });
 
     (document.getElementById('world_info_use_group_scoring') as HTMLInputElement).addEventListener('change', function () {
         wiManager.useGroupScoring = !!this.checked;
-        saveSettingsDebounced();
+        saveSettings();
     });
 
     (document.getElementById('world_info_budget_cap') as HTMLInputElement).addEventListener('input', function () {

@@ -88,6 +88,12 @@ export const saveSettingsDebounced = debounce(() => {
     saveSettings();
 }, debounce_timeout.relaxed);
 
+/** Immediately syncs the current selection to wiManager.info and saves all settings. */
+export function saveSettingsNow() {
+    Object.assign(wiManager.info, { globalSelect: wiManager.selectedWorlds });
+    saveSettings();
+}
+
 // ═══════════════════════════════════════════════════════════════
 //  Entry templates / definitions
 // ═══════════════════════════════════════════════════════════════
@@ -154,14 +160,12 @@ export const newWorldInfoEntryTemplate = Object.fromEntries(
 // ═══════════════════════════════════════════════════════════════
 
 /**
- * Creates a new world info entry from template.
- * @param {string} _name Name of the WI (unused)
- * @param {object} data WI data
- * @returns {object | undefined} New entry object or undefined if failed
+ * Creates a new world info entry via the EntityStore.
+ * @param {import('./store.js').WorldInfoStore} store - The store for the target book
+ * @returns {Promise<object|undefined>} New entry object or undefined if failed
  */
-// @ts-expect-error TS(7006) FIXME: Parameter '_name' implicitly has an 'any' type.
-export function createWorldInfoEntry(_name, data) {
-    const newUid = getFreeWorldEntryUid(data);
+export async function createWorldInfoEntry(store) {
+    const newUid = await store.getFreeUid();
 
     if (!Number.isInteger(newUid)) {
         console.error('Couldn\'t assign UID to a new entry');
@@ -169,60 +173,53 @@ export function createWorldInfoEntry(_name, data) {
     }
 
     const newEntry = { uid: newUid, ...structuredClone(newWorldInfoEntryTemplate) };
-    // @ts-expect-error TS(2538) FIXME: Type 'null' cannot be used as an index type.
-    data.entries[newUid] = newEntry;
+    await store.addEntry(newEntry);
 
     return newEntry;
 }
 
 /**
- * Duplicates a WI entry
- * @param {object} data - The data of the book
- * @param {number} uid - The uid of the entry to copy in this book
- * @returns {object|undefined} The duplicated entry
+ * Duplicates a WI entry via the EntityStore.
+ * @param {import('./store.js').WorldInfoStore} store - The store for the target book
+ * @param {number} uid - The uid of the entry to copy
+ * @returns {Promise<object|undefined>} The duplicated entry
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
-export function duplicateWorldInfoEntry(data, uid) {
-    if (!data || !('entries' in data) || !data.entries[uid]) {
+export async function duplicateWorldInfoEntry(store, uid) {
+    const original = await store.getEntry(uid);
+    if (!original) return;
+
+    // Clone and strip identifiers so createWorldInfoEntry assigns new ones
+    const clone = structuredClone(original);
+    delete clone.id;
+    delete clone.uid;
+
+    const newUid = await store.getFreeUid();
+    if (!Number.isInteger(newUid)) {
+        console.error('Couldn\'t assign UID to duplicated entry');
         return;
     }
 
-    // Exclude uid and gather the rest of the properties
-    const originalData = structuredClone(data.entries[uid]);
-    delete originalData.uid;
-
-    // Create new entry and copy over data
-    const entry = createWorldInfoEntry(data.name, data);
-    // @ts-expect-error TS(2769) FIXME: No overload matches this call.
-    Object.assign(entry, originalData);
-
-    return entry;
+    clone.uid = newUid;
+    await store.addEntry(clone);
+    return clone;
 }
 
 /**
- * Deletes a WI entry, with a user confirmation dialog
- * @param {object} data - The data of the book
- * @param {number} uid - The uid of the entry to copy in this book
+ * Deletes a WI entry from the store, with a user confirmation dialog.
+ * @param {import('./store.js').WorldInfoStore} store - The store for the target book
+ * @param {number} uid - The uid of the entry to delete
  * @param {object} [options] - Optional arguments
  * @param {boolean} [options.silent] - Whether to prompt the user for deletion or just do it
  * @returns {Promise<boolean>} Whether the entry deletion was successful
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
-export async function deleteWorldInfoEntry(data, uid, { silent = false } = {}) {
-    if (!data || !('entries' in data)) {
-        return;
-    }
-
-    const entry = data.entries[uid];
-    if (!entry) {
-        return false;
-    }
+export async function deleteWorldInfoEntry(store, uid, { silent = false } = {}) {
+    const entry = await store.getEntry(uid);
+    if (!entry) return false;
 
     let previewText = '';
     if (entry.comment && entry.comment.trim()) {
         previewText = entry.comment.trim();
     } else if (entry.content) {
-        // @ts-expect-error TS(7006) FIXME: Parameter 'line' implicitly has an 'any' type.
         const lines = entry.content.split(/\r?\n/).filter(line => line.trim());
         previewText = lines.slice(0, 2).join('\n');
     }
@@ -233,12 +230,9 @@ export async function deleteWorldInfoEntry(data, uid, { silent = false } = {}) {
         : t`This action is irreversible!`;
 
     const confirmation = silent || (await Popup.show.confirm(popupHeader, popupText));
-    if (!confirmation) {
-        return false;
-    }
+    if (!confirmation) return false;
 
-    delete data.entries[uid];
-    return true;
+    return store.removeEntry(uid);
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -246,31 +240,44 @@ export async function deleteWorldInfoEntry(data, uid, { silent = false } = {}) {
 // ═══════════════════════════════════════════════════════════════
 
 /**
- * Saves the world info
+ * Saves the world info by serializing from the EntityStore.
  *
- * This will also refresh the `worldInfoCache`.
- * Note, for performance reasons the saved cache will not make a deep clone of the data.
- * It is your responsibility to not modify the saved data object after calling this function, or there will be data inconsistencies.
- * Call `loadWorldInfoData` or query directly from cache if you need the object again.
+ * The store is the authoritative source for entries.
+ * `bookData` is additional book metadata (originalData, etc.) merged into the payload.
+ * Updates `worldInfoCache` with the full book object after serializing.
+ *
  * @param {string} name - The name of the world info
- * @param {object} data - The data to be saved
+ * @param {object} [bookData] - Additional book metadata (originalData, etc.)
  * @param {boolean} [immediately] - Whether to save immediately or use debouncing
- * @returns {Promise<void>} A promise that resolves when the world info is saved
+ * @returns {Promise<void>}
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
-export async function saveWorldInfo(name, data, immediately = false) {
-    if (!name || !data) {
-        return;
+export async function saveWorldInfo(name, bookData = {}, immediately = false) {
+    if (!name) return;
+
+    const store = wiManager.getStore(name);
+    await store.init();
+
+    // Sync in-memory entries to the store before serializing.
+    // This ensures edits made to data.entries (by inline editors like
+    // bindEntryField) are captured, even though the store was already
+    // populated when the book was opened.
+    if (bookData && typeof bookData === 'object' && 'entries' in bookData) {
+        // @ts-expect-error TS(2571) entries is dynamic at runtime
+        const entryList = Object.values(bookData.entries).filter(Boolean);
+        if (entryList.length > 0) {
+            await store.replaceAllEntries(entryList);
+        }
     }
 
-    // Update cache immediately, so any future call can pull from this
+    const entries = await store.toObject();
+    const data = { ...bookData, entries };
+
+    // Update cache
     worldInfoCache.set(name, data);
 
-    if (immediately) {
-        return await _save(name, data);
-    }
-
-    saveWorldDebounced(name, data);
+    // Always save immediately. Debouncing caused data loss when the page
+    // was refreshed before the debounced fetch could fire.
+    return await _save(name, data);
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -278,24 +285,12 @@ export async function saveWorldInfo(name, data, immediately = false) {
 // ═══════════════════════════════════════════════════════════════
 
 /**
- * @param {object} data - World info data containing entries
- * @returns {number|null} A free UID or null if none available
+ * Finds the smallest unused UID from the store.
+ * @param {import('./store.js').WorldInfoStore} store - The store for the target book
+ * @returns {Promise<number|null>} A free UID or null if none available
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
-export function getFreeWorldEntryUid(data) {
-    if (!data || !('entries' in data)) {
-        return null;
-    }
-
-    const MAX_UID = 1_000_000; // <- should be safe enough :)
-    for (let uid = 0; uid < MAX_UID; uid++) {
-        if (uid in data.entries) {
-            continue;
-        }
-        return uid;
-    }
-
-    return null;
+export async function getFreeWorldEntryUid(store) {
+    return store.getFreeUid();
 }
 
 /**
@@ -584,8 +579,23 @@ export async function renameWorldInfo(name, data) {
 
     const entryPreviouslySelected = wiManager.selectedWorlds.findIndex((e) => e === oldName);
 
+    // Migrate entries from old store to new store
+    const oldStore = wiManager.getStore(oldName);
+    await oldStore.init();
+    const allEntries = await oldStore.getAllEntries();
+
+    const newStore = wiManager.getStore(newName);
+    await newStore.init();
+    if (allEntries.length > 0) {
+        await newStore.replaceAllEntries(allEntries);
+    }
+
+    // Save under new name and delete old
     await saveWorldInfo(newName, data, true);
     await deleteWorldInfo(oldName);
+
+    // Release old store
+    wiManager.releaseStore(oldName);
 
     await updateWorldInfoLinks(oldName, newName);
 
@@ -628,6 +638,15 @@ export async function deleteWorldInfo(worldInfoName) {
     if (worldInfoCache.has(worldInfoName)) {
         worldInfoCache.delete(worldInfoName);
     }
+
+    // Delete the IndexedDB database for this book, then release the store
+    try {
+        const store = wiManager.getStore(worldInfoName);
+        await store.deleteDatabase();
+    } catch (e) {
+        console.debug('[WI] Failed to delete IndexedDB database for', worldInfoName, e);
+    }
+    wiManager.releaseStore(worldInfoName);
 
     const existingWorldIndex = wiManager.selectedWorlds.findIndex((e) => e === worldInfoName);
     if (existingWorldIndex !== -1) {
@@ -676,8 +695,6 @@ export async function deleteWorldInfo(worldInfoName) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'worldName' implicitly has an 'any' type... Remove this comment to see the full error message
 export async function createNewWorldInfo(worldName, { interactive = false } = {}) {
-    const worldInfoTemplate = { entries: {} };
-
     if (!worldName) {
         return false;
     }
@@ -690,7 +707,10 @@ export async function createNewWorldInfo(worldName, { interactive = false } = {}
         return false;
     }
 
-    await saveWorldInfo(worldName, worldInfoTemplate, true);
+    // Save directly to server — no IndexedDB needed for an empty book.
+    // The store will be lazily created on first edit.
+    await _save(worldName, { entries: {} });
+    worldInfoCache.set(worldName, { entries: {} });
     await updateWorldInfoList();
 
     const selectedIndex = wiManager.worldNames.indexOf(worldName);
@@ -737,6 +757,13 @@ export async function importEmbeddedWorldInfo(skipPopup = false) {
 
     const convertedBook = convertCharacterBook(characters[chid].data.character_book);
 
+    // Populate store with the imported entries
+    const store = wiManager.getStore(bookName);
+    await store.init();
+    const entryList = Object.values(convertedBook.entries ?? {});
+    if (entryList.length > 0) {
+        await store.replaceAllEntries(entryList);
+    }
     await saveWorldInfo(bookName, convertedBook, true);
     await updateWorldInfoList();
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
@@ -892,32 +919,37 @@ export async function moveWorldInfoEntry(sourceName, targetName, uid, { deleteOr
     const entryUidString = String(uid);
 
     try {
-        const sourceData = await loadWorldInfo(sourceName);
-        const targetData = await loadWorldInfo(targetName);
+        // Load both books into their stores
+        const sourceBook = await wiManager.loadBookIntoStore(sourceName);
+        const targetBook = await wiManager.loadBookIntoStore(targetName);
 
-        if (!sourceData || !sourceData.entries) {
+        if (!sourceBook || !sourceBook.entries) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.error(t`Failed to load data for source lorebook '${sourceName}'.`);
             console.error(`[WI Move] Could not load source data for '${sourceName}'.`);
             return false;
         }
-        if (!targetData || !targetData.entries) {
+        if (!targetBook || !targetBook.entries) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.error(t`Failed to load data for target lorebook '${targetName}'.`);
             console.error(`[WI Move] Could not load target data for '${targetName}'.`);
             return false;
         }
 
-        if (!sourceData.entries[entryUidString]) {
+        const sourceStore = wiManager.getStore(sourceName);
+        const targetStore = wiManager.getStore(targetName);
+
+        const sourceEntry = await sourceStore.getEntry(Number(uid));
+        if (!sourceEntry) {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.error(t`Entry not found in source lorebook '${sourceName}'.`);
             console.error(`[WI Move] Entry UID ${entryUidString} not found in '${sourceName}'.`);
             return false;
         }
 
-        const entryToMove = structuredClone(sourceData.entries[entryUidString]);
+        const entryToMove = structuredClone(sourceEntry);
 
-        const newUid = getFreeWorldEntryUid(targetData);
+        const newUid = await targetStore.getFreeUid();
         if (newUid === null) {
             console.error(`[WI Move] Failed to get a free UID in '${targetName}'.`);
             return false;
@@ -925,24 +957,25 @@ export async function moveWorldInfoEntry(sourceName, targetName, uid, { deleteOr
 
         entryToMove.uid = newUid;
         // Place the entry at the end of the target lorebook
-        // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
-        const maxDisplayIndex = Object.values(targetData.entries).reduce((max, entry) => Math.max(max, entry.displayIndex ?? -1), -1);
-        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
+        const allTarget = await targetStore.getAllEntries();
+        const maxDisplayIndex = allTarget.reduce((max, entry) => Math.max(max, entry.displayIndex ?? -1), -1);
         entryToMove.displayIndex = maxDisplayIndex + 1;
 
-        targetData.entries[newUid] = entryToMove;
+        await targetStore.addEntry(entryToMove);
+        targetBook.entries[newUid] = entryToMove;
 
         if (deleteOriginal) {
-            delete sourceData.entries[entryUidString];
+            await sourceStore.removeEntry(Number(uid));
+            delete sourceBook.entries[entryUidString];
             // Remove from originalData if it exists
-            deleteWIOriginalDataValue(sourceData, entryUidString);
-            // TODO: setWIOriginalDataValue
+            deleteWIOriginalDataValue(sourceBook, entryUidString);
             console.debug(`[WI Move] Removed entry UID ${entryUidString} from source '${sourceName}'.`);
         }
 
-        await saveWorldInfo(targetName, targetData, true);
+        // Persist both books via their stores
+        await saveWorldInfo(targetName, targetBook, true);
         console.debug(`[WI Move] Saved target lorebook '${targetName}'.`);
-        await saveWorldInfo(sourceName, sourceData, true);
+        await saveWorldInfo(sourceName, sourceBook, true);
         console.debug(`[WI Move] Saved source lorebook '${sourceName}'.`);
 
         console.log(`[WI Move] ${entryToMove.comment} ${deleteOriginal ? 'moved' : 'copied'} successfully to '${targetName}'.`);
