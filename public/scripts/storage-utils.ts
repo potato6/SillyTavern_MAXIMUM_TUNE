@@ -323,8 +323,6 @@ export class EntityStore<T extends { id: string | number }> {
             this.currentTxn = txn;
             this.currentHistoryEntry = { actions: [] };
 
-            let executionFailed = false;
-
             txn.oncomplete = () => {
                 if (this.currentHistoryEntry && this.currentHistoryEntry.actions.length > 0) {
                     this.undoStack.push(this.currentHistoryEntry);
@@ -341,7 +339,7 @@ export class EntityStore<T extends { id: string | number }> {
             txn.onerror = () => rejectTransaction(txn.error);
             txn.onabort = () => rejectTransaction(new Error("Transaction aborted"));
 
-            const rejectTransaction = (error: any) => {
+            const rejectTransaction = (error: unknown) => {
                 console.error(`[EntityStore:${this.storeName}] Transaction Failed:`, error);
                 this.pendingEvents = []; // Dump events; state rolled back
                 this.cleanupTransactionContext();
@@ -351,7 +349,6 @@ export class EntityStore<T extends { id: string | number }> {
             try {
                 await fn();
             } catch (error) {
-                executionFailed = true;
                 txn.abort(); // Native rollback
                 rejectTransaction(error);
             }

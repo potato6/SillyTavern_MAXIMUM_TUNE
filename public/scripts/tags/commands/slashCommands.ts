@@ -26,7 +26,7 @@ import { tag_import_setting } from '../types.js';
 import { findChar } from '../../utils.js';
 import { t } from '../../i18n.js';
 
-declare const notyf: any;
+declare const notyf: unknown;
 
 /**
  * Registers all tag-related slash commands.

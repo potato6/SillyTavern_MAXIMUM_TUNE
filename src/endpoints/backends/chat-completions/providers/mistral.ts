@@ -1,5 +1,5 @@
 import { CHAT_COMPLETION_SOURCES } from '../../../../constants.js';
-import { forwardFetchResponse, tryParse } from '../../../../util.js';
+
 import { convertMistralMessages, getPromptNames } from '../../../../prompt-converters.js';
 import { readSecret, SECRET_KEYS } from '../../../secrets.js';
 import { proxyRequest } from '../../common/proxy.js';
@@ -18,7 +18,7 @@ const provider: ChatProvider = {
         supportsReasoning: false,
     },
 
-    async chat(req, res): Promise<any> {
+    async chat(req, res): Promise<void> {
         const apiUrl = new URL(req.body.reverse_proxy || API_MISTRAL).toString();
         const apiKey = req.body.reverse_proxy
             ? req.body.proxy_password
@@ -89,8 +89,8 @@ const provider: ChatProvider = {
             headers: { 'Authorization': 'Bearer ' + apiKey },
         });
         if (!response.ok) return [];
-        const data = await response.json() as any;
-        return data.data || [];
+        const data = await response.json() as Record<string, unknown>;
+        return (data.data || []) as ModelEntry[];
     },
 };
 

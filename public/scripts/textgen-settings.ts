@@ -24,7 +24,7 @@ import { getActiveManualApiSamplers, loadApiSelectedSamplers, isSamplerManualPri
 import { SECRET_KEYS, writeSecret } from './secrets.js';
 import { getEventSourceStream } from './sse-stream.js';
 import { getCurrentDreamGenModelTokenizer, getCurrentOpenRouterModelTokenizer, loadAphroditeModels, loadDreamGenModels, loadFeatherlessModels, loadGenericModels, loadInfermaticAIModels, loadLlamaCppModels, loadMancerModels, loadOllamaModels, loadOpenRouterModels, loadTabbyModels, loadTogetherAIModels, loadVllmModels, updateOpenRouterProvidersWarning } from './textgen-models.js';
-declare const Sortable: any;
+declare const Sortable: new (el: HTMLElement | null, options: Record<string, unknown>) => unknown;
 import { ENCODE_TOKENIZERS, TEXTGEN_TOKENIZERS, TOKENIZER_SUPPORTED_KEY, getTextTokens, getTokenizerBestMatch, tokenizers } from './tokenizers.js';
 import { AbortReason } from './util/AbortReason.js';
 import { getSortableDelay, onlyUnique, arraysEqual, isObject } from './utils.js';
@@ -621,9 +621,9 @@ export async function loadTextGenSettings(data, loadedSettings) {
     for (const [type, selector] of Object.entries(SERVER_INPUTS)) {
         const control = document.querySelector(selector);
         if (control) {
-            (control as HTMLInputElement).value = (textgenerationwebui_settings as any).server_urls[type] ?? '';
-            control.addEventListener('input', function (this: any) {
-                (textgenerationwebui_settings as any).server_urls[type] = String((this as HTMLInputElement).value).trim();
+            (control as HTMLInputElement).value = (textgenerationwebui_settings.server_urls as Record<string, string>)[type] ?? '';
+                        control.addEventListener('input', function (this: HTMLInputElement) {
+                            (textgenerationwebui_settings.server_urls as Record<string, string>)[type] = String(this.value).trim();
                 saveSettingsDebounced();
             });
         }

@@ -2,7 +2,6 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 import express from 'express';
-import mime from 'mime-types';
 import sanitize from 'sanitize-filename';
 import { sync as writeFileAtomicSync } from 'write-file-atomic';
 

@@ -252,7 +252,7 @@ import { appendFileContent, hasPendingFileAttachment, populateFileAttachment, de
 import { getPresetManager, initPresetManager } from './scripts/preset-manager.js';
 import { evaluateMacros, getLastMessageId, initMacros } from './scripts/macros.js';
 import { currentUser, setUserControls } from './scripts/user.js';
-import { POPUP_RESULT, POPUP_TYPE, Popup, callGenericPopup, fixToastrForDialogs } from './scripts/popup.js';
+import { POPUP_RESULT, POPUP_TYPE, Popup, callGenericPopup } from './scripts/popup.js';
 import { renderTemplate, renderTemplateAsync } from './scripts/templates.js';
 import { initScrapers } from './scripts/scrapers.js';
 import { initCustomSelectedSamplers, validateDisabledSamplers } from './scripts/samplerSelect.js';
@@ -409,8 +409,7 @@ declare module 'notyf' {
 // @ts-expect-error TS(2304) FIXME: Cannot find name 'window'.
 window.notyf = notyf;
 
-// notyf options accessors for slash commands / tags that read defaults
-const notyfDefaults = { timeOut: 4000, extendedTimeOut: 10000 };
+
 
 export const characterGroupOverlay = new BulkEditOverlay();
 
@@ -14138,7 +14137,7 @@ function initCharacterSearch() {
                 drawerContent.style.display = 'block';
                 drawerContent.style.height = '';
                 // Force reflow then animate height
-                var h = drawerContent.scrollHeight;
+                const h = drawerContent.scrollHeight;
                 drawerContent.style.height = '0px';
                 drawerContent.animate([
                     { height: '0px' },

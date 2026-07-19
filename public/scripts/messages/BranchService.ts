@@ -14,7 +14,6 @@
 
 import { chatSession } from '../chats/ChatSession.js';
 import { messageService } from './MessageService.js';
-import { saveChatConditional } from '../../script.js';
 
 export interface BranchPoint {
     /** The message index where the branch was created. */

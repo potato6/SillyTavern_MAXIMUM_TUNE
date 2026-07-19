@@ -3,6 +3,7 @@ import type { Request, Response, NextFunction } from 'express';
 
 // Augment Express Request to include our session
 declare global {
+    // eslint-disable-next-line @typescript-eslint/no-namespace
     namespace Express {
         interface Request {
             session?: Record<string, unknown> | null;
@@ -132,12 +133,11 @@ export default function bunSessionMiddleware(opts: {
 
         // Store reference to the original end to avoid issues
         const originalEnd = res.end.bind(res);
-        const originalJson = res.json?.bind(res);
-        const originalSend = res.send?.bind(res);
+
 
         const setSessionCookie = () => {
             // Read current session value through the proxy
-            const currentProxy = (req as any).session;
+            const currentProxy = req.session;
             if (currentProxy === null || currentProxy === undefined) {
                 res.setHeader('Set-Cookie',
                     `${name}=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; SameSite=${sameSite}`);
@@ -170,12 +170,12 @@ export default function bunSessionMiddleware(opts: {
             res.setHeader('Set-Cookie', cookie.toString());
         };
 
-        const finish = (...args: any[]) => {
+        const finish = (...args: unknown[]) => {
             if (dirty) setSessionCookie();
             return originalEnd(args[0], args[1]);
         };
 
-        res.end = finish as any;
+        res.end = finish as unknown as typeof res.end;
 
         next();
     };

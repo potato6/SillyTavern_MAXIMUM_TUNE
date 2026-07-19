@@ -178,7 +178,7 @@ export class ChatService {
         event: K,
         callback: (data: ChatServiceEventMap[K]) => void,
     ): void {
-        chatStore.on(event as any, callback as any);
+        chatStore.on(event as never, callback as never);
     }
 
     /**
@@ -188,7 +188,7 @@ export class ChatService {
         event: K,
         callback: (data: ChatServiceEventMap[K]) => void,
     ): void {
-        chatStore.off(event as any, callback as any);
+        chatStore.off(event as never, callback as never);
     }
 
     // ── Undo / Redo ────────────────────────────────────────────

@@ -14,7 +14,7 @@ const provider: ChatProvider = {
         supportsReasoning: true,
     },
 
-    async chat(req, res): Promise<any> {
+    async chat(req, res): Promise<void> {
         const apiUrl = req.body.custom_url;
         const apiKey = readSecret(req.user.directories, SECRET_KEYS.CUSTOM, req.body.secret_id);
 
@@ -58,22 +58,21 @@ const provider: ChatProvider = {
         if (req.body.reasoning_effort) {
             if (OPENAI_REASONING_EFFORT_MODELS.includes(req.body.model)) {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                bodyParams['reasoning_effort'] = (OPENAI_FIXED_REASONING_EFFORT as any)[req.body.model]
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    ?? (OPENAI_REASONING_EFFORT_MAP as any)[req.body.reasoning_effort]
+                bodyParams.reasoning_effort = (OPENAI_FIXED_REASONING_EFFORT as Record<string, string | undefined>)[req.body.model]
+                    ?? (OPENAI_REASONING_EFFORT_MAP as Record<string, string | undefined>)[req.body.reasoning_effort]
                     ?? req.body.reasoning_effort;
             }
             if (/^koboldcpp\/(.+)$/.test(req.body.model)) {
-                bodyParams['reasoning_effort'] = req.body.reasoning_effort;
+                bodyParams.reasoning_effort = req.body.reasoning_effort;
             }
         }
 
         if (req.body.verbosity && OPENAI_VERBOSITY_MODELS.test(req.body.model)) {
-            bodyParams['verbosity'] = req.body.verbosity;
+            bodyParams.verbosity = req.body.verbosity;
         }
 
         if (Array.isArray(req.body.stop) && req.body.stop.length > 0) {
-            bodyParams['stop'] = req.body.stop;
+            bodyParams.stop = req.body.stop;
         }
 
         const textPrompt = isTextCompletion
@@ -135,8 +134,8 @@ const provider: ChatProvider = {
             headers: { ...(apiKey ? { 'Authorization': 'Bearer ' + apiKey } : {}) },
         });
         if (!response.ok) return [];
-        const data = await response.json() as any;
-        return data.data || [];
+        const data = await response.json() as Record<string, unknown>;
+        return (data.data as Array<Record<string, unknown>>) || [];
     },
 };
 

@@ -38,7 +38,7 @@ export async function hideChatMessageRange(
  * Hides a single message.
  * @param messageId Message ID
  */
-export async function hideChatMessage(messageId: number, _messageBlock?: any): Promise<void> {
+export async function hideChatMessage(messageId: number, _messageBlock?: unknown): Promise<void> {
     return hideChatMessageRange(messageId, messageId, false);
 }
 
@@ -46,6 +46,6 @@ export async function hideChatMessage(messageId: number, _messageBlock?: any): P
  * Unhides a single message.
  * @param messageId Message ID
  */
-export async function unhideChatMessage(messageId: number, _messageBlock?: any): Promise<void> {
+export async function unhideChatMessage(messageId: number, _messageBlock?: unknown): Promise<void> {
     return hideChatMessageRange(messageId, messageId, true);
 }

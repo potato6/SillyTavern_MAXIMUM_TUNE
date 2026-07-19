@@ -13,7 +13,7 @@ const provider: ChatProvider = {
         supportsReasoning: true,
     },
 
-    async chat(req, res): Promise<any> {
+    async chat(req, res): Promise<void> {
         const { azure_base_url, azure_deployment_name, azure_api_version } = req.body;
         const apiKey = readSecret(req.user.directories, SECRET_KEYS.AZURE_OPENAI, req.body.secret_id);
         if (!azure_base_url || !azure_deployment_name || !azure_api_version || !apiKey) {
@@ -33,7 +33,7 @@ const provider: ChatProvider = {
         }
 
         if (req.body.json_schema) {
-            apiRequestBody['response_format'] = {
+            apiRequestBody.response_format = {
                 type: 'json_schema',
                 json_schema: {
                     name: req.body.json_schema.name,
@@ -48,7 +48,7 @@ const provider: ChatProvider = {
             apiRequestBody.logprobs = true;
         }
 
-        apiRequestBody['reasoning_effort'] = OPENAI_REASONING_EFFORT_MODELS.includes(req.body.model)
+        apiRequestBody.reasoning_effort = OPENAI_REASONING_EFFORT_MODELS.includes(req.body.model)
             ? OPENAI_FIXED_REASONING_EFFORT[req.body.model as keyof typeof OPENAI_FIXED_REASONING_EFFORT]
                 ?? OPENAI_REASONING_EFFORT_MAP[req.body.reasoning_effort as keyof typeof OPENAI_REASONING_EFFORT_MAP]
                 ?? req.body.reasoning_effort
@@ -85,7 +85,7 @@ const provider: ChatProvider = {
             const text = await fetchResponse.text();
             const data = tryParse(text) || { error: { message: fetchResponse.statusText || 'Unknown error' } };
             return res.status(500).send(data);
-        } catch (error: any) {
+        } catch (error: unknown) {
             const message = error.name === 'AbortError'
                 ? 'Request was aborted by the client.'
                 : (error.message || 'An unknown network error occurred.');
@@ -136,8 +136,8 @@ const provider: ChatProvider = {
                 body: JSON.stringify(modelPayload),
             });
 
-            let modelResponse: any;
-            try { modelResponse = await modelRequest.json(); } catch { modelResponse = {}; }
+            let modelResponse: Record<string, unknown>;
+                try { modelResponse = await modelRequest.json() as Record<string, unknown>; } catch { modelResponse = {}; }
 
             const modelId = modelResponse?.model as string;
             if (!modelId) {

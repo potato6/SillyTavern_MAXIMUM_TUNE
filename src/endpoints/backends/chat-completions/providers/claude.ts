@@ -60,7 +60,6 @@ const provider: ChatProvider = {
             const useWebSearch = /^claude-(3-5|3-7|opus-4|sonnet-4|haiku-4-5|opus-4-5|opus-4-6|sonnet-4-6|opus-4-7)/.test(req.body.model) && Boolean(req.body.enable_web_search);
             const isLimitedSampling = /^claude-(opus-4-1|sonnet-4-5|haiku-4-5|opus-4-5|opus-4-6|sonnet-4-6)/.test(req.body.model);
             const useVerbosity = /^claude-(opus-4-5|opus-4-6|sonnet-4-6|opus-4-7)/.test(req.body.model);
-            const noPrefillModel = /^claude-(opus-4-6|sonnet-4-6|opus-4-7)/.test(req.body.model);
             const isAdaptiveModel = /^claude-(opus-4-7)/.test(req.body.model) || (enableAdaptiveThinking && /^claude-(opus-4-6|sonnet-4-6)/.test(req.body.model));
             const noSamplingModel = /^claude-(opus-4-7)/.test(req.body.model);
 

@@ -1,4 +1,4 @@
-declare const TomSelect: any;
+declare const TomSelect: unknown;
 
 import {
     amount_gen,

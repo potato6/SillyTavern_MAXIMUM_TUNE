@@ -10,7 +10,7 @@
  */
 
 import { chatSession } from '../chats/ChatSession.js';
-import { saveChatConditional, eventSource, event_types } from '../../script.js';
+import { saveChatConditional } from '../../script.js';
 
 export interface AddMessageOptions {
     /** Insert after this message index (default: append to end). */

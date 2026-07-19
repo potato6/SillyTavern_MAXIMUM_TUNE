@@ -3,7 +3,7 @@
  * Functions for finding tags by name and character lookup.
  */
 
-import { characters, this_chid, menu_type } from '../../../script.js';
+import { characters, this_chid } from '../../../script.js';
 import { groups, selected_group } from '../../group-chats.js';
 import { equalsIgnoreCaseAndAccents, includesIgnoreCaseAndAccents, findChar } from '../../utils.js';
 import { compareTagsForSort } from './sorting.js';

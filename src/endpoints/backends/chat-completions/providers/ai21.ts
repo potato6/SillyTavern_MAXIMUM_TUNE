@@ -17,7 +17,7 @@ const provider: ChatProvider = {
         supportsReasoning: false,
     },
 
-    async chat(req, res): Promise<any> {
+    async chat(req, res): Promise<void> {
         if (!req.body) { res.sendStatus(400); return; }
 
         const apiKey = readSecret(req.user.directories, SECRET_KEYS.AI21, req.body.secret_id);
@@ -96,8 +96,8 @@ const provider: ChatProvider = {
             headers: { Authorization: `Bearer ${apiKey}` },
         });
         if (!response.ok) return [];
-        const data = await response.json() as any;
-        return data.data || [];
+        const data = await response.json() as Record<string, unknown>;
+        return (data.data as ModelEntry[]) || [];
     },
 };
 

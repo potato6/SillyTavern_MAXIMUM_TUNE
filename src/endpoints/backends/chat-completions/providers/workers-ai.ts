@@ -1,20 +1,10 @@
 import { CHAT_COMPLETION_SOURCES } from '../../../../constants.js';
 import { readSecret, SECRET_KEYS } from '../../../secrets.js';
-import { createOAIChatProvider } from '../../common/openai-provider-base.js';
 import { proxyRequest } from '../../common/proxy.js';
 import { createSocketAbortController } from '../../common/abort-controller.js';
 import type { ChatProvider, ModelEntry } from '../types.js';
 
 const API_WORKERS_AI = 'https://api.cloudflare.com/client/v4/accounts';
-
-const base = createOAIChatProvider({
-    source: CHAT_COMPLETION_SOURCES.WORKERS_AI,
-    defaultBase: API_WORKERS_AI,
-    secretKey: SECRET_KEYS.WORKERS_AI,
-    supportsReverseProxy: false,
-    supportsVision: true,
-    supportsTools: false,
-});
 
 /**
  * Cloudflare Workers AI uses a custom URL pattern where the account ID
@@ -107,9 +97,9 @@ const provider: ChatProvider = {
 
         if (!response.ok) return [];
 
-        const data = await response.json() as any;
+        const data = await response.json() as Record<string, unknown>;
         if (Array.isArray(data?.result)) {
-            return data.result.map((m: any) => ({ id: m.name, ...m }));
+            return data.result.map((m: Record<string, unknown>) => ({ id: m.name as string, ...m })) as ModelEntry[];
         }
 
         return [];

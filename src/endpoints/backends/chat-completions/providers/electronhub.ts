@@ -10,14 +10,14 @@ export default createOAIChatProvider({
     extraBodyParams: (req) => {
         const params: Record<string, unknown> = {};
         if (req.body.enable_web_search) {
-            params['web_search'] = true;
+            params.web_search = true;
         }
         if (Array.isArray(req.body.tools) && req.body.tools.length > 0) {
-            params['tools'] = req.body.tools;
-            params['tool_choice'] = req.body.tool_choice;
+            params.tools = req.body.tools;
+            params.tool_choice = req.body.tool_choice;
         }
         if (req.body.reasoning_effort) {
-            params['reasoning_effort'] = req.body.reasoning_effort;
+            params.reasoning_effort = req.body.reasoning_effort;
         }
         return params;
     },

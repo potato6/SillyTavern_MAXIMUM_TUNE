@@ -19,30 +19,23 @@ import {
     event_types,
     getCurrentChatId,
     printCharactersDebounced,
-    setCharacterId,
-    setEditedMessageId,
     chat,
     getFirstDisplayedMessageId,
-    showMoreMessages,
     saveSettings,
     saveChatConditional,
     setAnimationDuration,
     ANIMATION_DURATION_DEFAULT,
-    setActiveGroup,
-    setActiveCharacter,
     entitiesFilter,
 
     online_status,
     messageFormatting,
     extension_prompt_types,
     extension_prompt_roles,
-    deleteMessage,
     settingsReady,
 } from '../script.js';
 import { isMobile, initMovingUI, favsToHotswap } from './RossAscends-mods.js';
 import {
     groups,
-    resetSelectedGroup,
 } from './group-chats.js';
 import {
     instruct_presets,
@@ -52,7 +45,7 @@ import {
     updateBindModelTemplatesState,
 } from './instruct-mode.js';
 
-import { getTagsList, tag_import_setting, tag_map, tag_sort_mode, tags } from './tags.js';
+import { getTagsList, tag_import_setting, tag_sort_mode, tags } from './tags.js';
 import { tokenizers } from './tokenizers.js';
 import { BIAS_CACHE } from './logit-bias.js';
 import { renderTemplateAsync } from './templates.js';
@@ -60,7 +53,7 @@ import { renderTemplateAsync } from './templates.js';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any
 declare const TomSelect: any;
 
-import { countOccurrences, debounce, delay, download, getFileText, getSanitizedFilename, getStringHash, isOdd, isTrueBoolean, onlyUnique, resetScrollHeight, shuffle, sortMoments, stringToRange, timestampToMoment } from './utils.js';
+import { countOccurrences, debounce, delay, download, getFileText, getSanitizedFilename, getStringHash, isOdd, onlyUnique, resetScrollHeight, shuffle, sortMoments, timestampToMoment } from './utils.js';
 import { FILTER_TYPES } from './filters.js';
 import { PARSER_FLAG } from './slash-commands/SlashCommandParser.js';
 import { AUTOCOMPLETE_SELECT_KEY, AUTOCOMPLETE_STATE, AUTOCOMPLETE_WIDTH } from './autocomplete/AutoComplete.js';
@@ -68,12 +61,12 @@ import { POPUP_TYPE, callGenericPopup } from './popup.js';
 import { loadSystemPrompts } from './sysprompt.js';
 import { fuzzySearchCategories } from './filters.js';
 import { accountStorage } from './util/AccountStorage.js';
-import { extractDominantColor, generateThemePalette, deriveBackgroundName } from './util/ThemeGenerator.js';
+
 import { DEFAULT_REASONING_TEMPLATE, loadReasoningTemplates } from './reasoning.js';
 import { bindModelTemplates } from './chat-templates.js';
 import { IMAGE_OVERSWIPE, MEDIA_DISPLAY } from './constants.js';
 import { t } from './i18n.js';
-import { getBackgroundPath, isCustomBackgroundUrl } from './backgrounds.js';
+
 import { persona_description_positions as _persona_description_positions } from './personas.js';
 
 export const toastPositionClasses = [
@@ -997,15 +990,6 @@ function switchUiMode() {
         const bsEl = document.getElementById('blur_strength') as HTMLInputElement | null;
         if (bsEl) bsEl.disabled = false;
     }
-}
-
-/**
- *
- */
-function toggleWaifu() {
-    const waifuEl = document.getElementById('waifuMode');
-    if (waifuEl) waifuEl.dispatchEvent(new Event('click', { bubbles: true }));
-    return '';
 }
 
 /**
@@ -3054,314 +3038,11 @@ async function resetMovablePanels(type) {
  * @param {string} name
  * @returns {string} The ID of the tag with the given name.
  */
-function findTagIdByName(name) {
-    const matchTypes = [
-        (a, b) => a === b,
-        (a, b) => a.startsWith(b),
-        (a, b) => a.includes(b),
-    ];
-
-    // Only get tags that contain at least one record in the tag_map
-    const liveTagIds = new Set(Object.values(tag_map).flat());
-    const liveTags = tags.filter(x => liveTagIds.has(x.id));
-
-    const exactNameMatchIndex = liveTags.map(x => x.name.toLowerCase()).indexOf(name.toLowerCase());
-
-    if (exactNameMatchIndex !== -1) {
-        return liveTags[exactNameMatchIndex].id;
-    }
-
-    for (const matchType of matchTypes) {
-        const index = liveTags.findIndex(x => matchType(x.name.toLowerCase(), name.toLowerCase()));
-        if (index !== -1) {
-            return liveTags[index].id;
-        }
-    }
-}
-
-/**
- *
- * @param _
- * @param tagName
- */
-async function doRandomChat(_, tagName) {
-    /**
-     * Gets the ID of a random character.
-     * @returns {string} The order index of the randomly selected character.
-     */
-    function getRandomCharacterId() {
-        if (!tagName) {
-            return Math.floor(Math.random() * characters.length).toString();
-        }
-
-        const tagId = findTagIdByName(tagName);
-        const taggedCharacters = Object.entries(tag_map)
-            .filter(x => x[1].includes(tagId)) // Get only records that include the tag
-            .map(x => x[0]) // Map the character avatar
-            .filter(x => characters.find(y => y.avatar === x)); // Filter out characters that don't exist
-        const randomCharacter = taggedCharacters[Math.floor(Math.random() * taggedCharacters.length)];
-        const randomIndex = characters.findIndex(x => x.avatar === randomCharacter);
-        if (randomIndex === -1) {
-            return;
-        }
-        return randomIndex.toString();
-    }
-
-    resetSelectedGroup();
-    const characterId = getRandomCharacterId();
-    if (!characterId) {
-        notyf.error('No characters found');
-        return;
-    }
-    setCharacterId(characterId);
-    setActiveCharacter(characters[characterId]?.avatar);
-    setActiveGroup(null);
-    await delay(1);
-    await reloadCurrentChat();
-    return characters[characterId]?.name;
-}
-
 /**
  * Loads the chat until the given message ID is displayed.
  * @param {number} mesId
  * @returns JQuery<HTMLElement>
  */
-async function loadUntilMesId(mesId) {
-    let target;
-
-    while (getFirstDisplayedMessageId() > mesId && getFirstDisplayedMessageId() !== 0) {
-        await showMoreMessages();
-        await delay(1);
-        target = document.querySelector(`#chat .mes[mesid="${mesId}"]`);
-
-        if (target) {
-            break;
-        }
-    }
-
-    if (!target) {
-        notyf.error(`Could not find message with ID: ${mesId}`);
-        return target;
-    }
-
-    return target;
-}
-
-/**
- *
- * @param _
- * @param text
- */
-async function doMesCut(_, text) {
-    console.debug(`was asked to cut message id #${text}`);
-    const range = stringToRange(text, 0, chat.length - 1);
-
-    //reject invalid args or no args
-    if (!range) {
-        notyf.warning('Must provide a Message ID or a range to cut.');
-        return;
-    }
-
-    const totalMesToCut = (range.end - range.start) + 1;
-    const mesIDToCut = range.start;
-    let cutText = '';
-
-    for (let i = 0; i < totalMesToCut; i++) {
-        cutText += (chat[mesIDToCut]?.mes || '') + '\n';
-        let mesToCut = document.querySelector(`#chat .mes[mesid="${mesIDToCut}"]`);
-
-        if (!mesToCut) {
-            mesToCut = await loadUntilMesId(mesIDToCut);
-
-            if (!mesToCut) {
-                return;
-            }
-        }
-
-        setEditedMessageId(mesIDToCut);
-        await deleteMessage(mesIDToCut, null, false);
-    }
-
-    await saveChatConditional();
-
-    return cutText;
-}
-
-/**
- *
- * @param _
- * @param text
- */
-async function doDelMode(_, text) {
-    //reject invalid args
-    if (text && isNaN(text)) {
-        notyf.warning('Must enter a number or nothing.');
-        return '';
-    }
-
-    // Just enter the delete mode.
-    if (!text) {
-        const el = document.getElementById('option_delete_mes');
-        if (el) el.dispatchEvent(new Event('click', { bubbles: true, ...{ fromSlashCommand: true } }));
-        return '';
-    }
-
-    const count = Number(text);
-
-    // Nothing to delete.
-    if (count < 1) {
-        return '';
-    }
-
-    if (count > chat.length) {
-        notyf.warning(`Cannot delete more than ${chat.length} messages.`);
-        return '';
-    }
-
-    const range = `${chat.length - count}-${chat.length - 1}`;
-    return doMesCut(_, range);
-}
-
-/**
- *
- */
-function doResetPanels() {
-    const el = document.getElementById('movingUIreset');
-    if (el) el.dispatchEvent(new Event('click', { bubbles: true }));
-    return '';
-}
-
-/**
- *
- * @param args
- */
-async function setAvgBG(args) {
-    const nameOverride = args?.name ? String(args.name).trim() : '';
-    const bgOverride = args?.bg ? String(args.bg).trim() : '';
-    const force = isTrueBoolean(args?.force?.toString());
-
-    let bgUrl;
-
-    if (bgOverride) {
-        // Use the specified background file
-        const isCustom = isCustomBackgroundUrl(bgOverride);
-        bgUrl = isCustom ? bgOverride : getBackgroundPath(bgOverride);
-    } else {
-        // Use the currently active background
-        bgUrl = (() => {
-            const bg1 = document.getElementById('bg1');
-            if (!bg1) return '';
-            const style = getComputedStyle(bg1);
-            return style.backgroundImage.replace(/^url\(['"]?/, '').replace(/['"]?\)$/, '');
-        })();
-    }
-
-    if (!bgUrl || bgUrl === 'none') {
-        notyf.warning('No background image set.');
-        return '';
-    }
-
-    // Build theme name from background filename or use override
-    const bgName = deriveBackgroundName(bgUrl);
-    const themeName = nameOverride || `bgcol - ${bgName}`;
-
-    // Check if a theme with the same name already exists
-    if (themes.some(t => t.name === themeName) && !force) {
-        notyf.warning('Pass "force=true" to overwrite.', `A theme named "${themeName}" already exists.`);
-        return '';
-    }
-
-    const bgimg = new Image();
-    bgimg.crossOrigin = 'anonymous';
-    bgimg.src = bgUrl;
-
-    await new Promise((resolve, reject) => {
-        bgimg.onload = resolve;
-        bgimg.onerror = () => reject(new Error('Failed to load background image'));
-    });
-
-    // Extract dominant vivid color using Oklch-weighted sampling
-    const dominantRgb = extractDominantColor(bgimg);
-
-    // Generate a full theme palette from the dominant color
-    const palette = generateThemePalette(dominantRgb);
-
-    // Create theme object from current settings, then override colors
-    const theme = getThemeObject(themeName);
-    Object.assign(theme, palette);
-
-    // Save as a new theme
-    await saveTheme(themeName, theme);
-    applyTheme(themeName);
-
-    notyf.success(`Theme "${themeName}" generated and applied.`);
-    return '';
-}
-
-/**
- *
- * @param _
- * @param themeName
- */
-async function setThemeCallback(_, themeName) {
-    if (!themeName) {
-        // allow reporting of the theme name if called without args
-        // for use in ST Scripts via pipe
-        return power_user.theme;
-    }
-
-    const fuse = new Fuse(themes, {
-        keys: [
-            { name: 'name', weight: 1 },
-        ],
-    });
-
-    const results = fuse.search(themeName);
-    console.debug('Theme fuzzy search results for ' + themeName, results);
-    const theme = results[0]?.item;
-
-    if (!theme) {
-        notyf.warning(`Could not find theme with name: ${themeName}`);
-        return;
-    }
-
-    power_user.theme = theme.name;
-    applyTheme(theme.name);
-    const themesEl = document.getElementById('themes') as HTMLSelectElement | null;
-    if (themesEl) themesEl.value = theme.name;
-    saveSettingsDebounced();
-    return '';
-}
-
-/**
- *
- * @param _
- * @param text
- */
-async function setmovingUIPreset(_, text) {
-    const fuse = new Fuse(movingUIPresets, {
-        keys: [
-            { name: 'name', weight: 1 },
-        ],
-    });
-
-    const results = fuse.search(text);
-    console.debug('movingUI preset fuzzy search results for ' + text, results);
-    const preset = results[0]?.item;
-
-    if (!preset) {
-        notyf.warning(`Could not find preset with name: ${text}`);
-        return;
-    }
-
-    power_user.movingUIPreset = preset.name;
-    applyMovingUIPreset(preset.name);
-    const muiEl = document.getElementById('movingUIPresets') as HTMLSelectElement | null;
-    if (muiEl) muiEl.value = preset.name;
-    saveSettingsDebounced();
-    return '';
-}
-
 const EPHEMERAL_STOPPING_STRINGS = [];
 
 /**

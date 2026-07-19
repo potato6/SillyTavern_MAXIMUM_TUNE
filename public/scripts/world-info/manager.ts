@@ -116,7 +116,7 @@ class WorldInfoManager {
 
     /** Get a resolved entry setting, falling back to the global default */
     getEntrySetting(entry: WorldInfoEntryData, key: string): unknown {
-        const entryVal = (entry as any)[key];
+        const entryVal = (entry as Record<string, unknown>)[key];
         if (entryVal !== null && entryVal !== undefined) return entryVal;
         switch (key) {
             case 'caseSensitive': return this.caseSensitive;

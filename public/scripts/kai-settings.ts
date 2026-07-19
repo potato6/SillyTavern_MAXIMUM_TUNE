@@ -22,7 +22,10 @@ import {
 import { getEventSourceStream } from './sse-stream.js';
 import { getSortableDelay, versionCompare } from './utils.js';
 
-declare const Sortable: any;
+interface SortableInstance {
+    option(key: string, value: boolean): void;
+}
+declare const Sortable: new (el: HTMLElement | null, options: Record<string, unknown>) => SortableInstance;
 
 // @ts-expect-error TS(7005) FIXME: Variable 'koboldai_settings' implicitly has an 'an... Remove this comment to see the full error message
 export let koboldai_settings;
@@ -592,7 +595,7 @@ export function initKoboldSettings() {
         saveSettingsDebounced();
     });
 
-    const koboldOrderEl = document.getElementById('kobold_order') as any;
+    const koboldOrderEl = document.getElementById('kobold_order') as (HTMLElement & { sortableInstance?: SortableInstance }) | null;
     if (koboldOrderEl) {
         koboldOrderEl.sortableInstance = new Sortable(koboldOrderEl, {
             delay: getSortableDelay(),

@@ -49,7 +49,7 @@ export interface ChatProvider {
     /**
      * Send a chat completion request and write the response.
      */
-    chat(req: express.Request, res: express.Response): Promise<any>;
+    chat(req: express.Request, res: express.Response): Promise<void>;
 
     /**
      * List available models.
@@ -94,7 +94,7 @@ export interface ChatProvider {
      * Custom streaming handler for providers whose stream format differs
      * from standard SSE (e.g. Ollama's NDJSON).
      */
-    stream?(fetchResponse: any, req: express.Request, res: express.Response): Promise<void>;
+    stream?(fetchResponse: unknown, req: express.Request, res: express.Response): Promise<void>;
 }
 
 // ── Default endpoint map ───────────────────────────────────────────────────────

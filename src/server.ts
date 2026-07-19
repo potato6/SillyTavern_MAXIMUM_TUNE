@@ -1,12 +1,12 @@
 // ── Server directory ──────────────────────────────────────────────────────────
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import EventEmitter from 'node:events';
 import https from 'node:https';
 import http from 'node:http';
 import fs from 'node:fs';
 import net from 'node:net';
 import dns from 'node:dns';
+import crypto from 'node:crypto';
 import util from 'node:util';
 
 import cors from 'cors';
@@ -486,11 +486,10 @@ app.use(setUserDataMiddleware);
 
 // CSRF Protection
 if (!cliArgs.disableCsrf) {
-    const nodeCrypto = require('node:crypto');
-    const CSRF_SECRET = process.env['CSRF_SECRET'] || nodeCrypto.randomBytes(64).toString('hex');
+    const CSRF_SECRET = process.env['CSRF_SECRET'] || crypto.randomBytes(64).toString('hex');
     app.get('/csrf-token', (req, res) => {
         const sessionId = req.ip || 'anonymous';
-        const token = Bun.CSRF.generate(CSRF_SECRET, { sessionId, expiresIn: 24 * 60 * 60 * 1000 } as any);
+        const token = Bun.CSRF.generate(CSRF_SECRET, { sessionId, expiresIn: 24 * 60 * 60 * 1000 });
         res.json({ token });
     });
     app.use((req, res, next) => {
@@ -498,7 +497,7 @@ if (!cliArgs.disableCsrf) {
         if (cliArgs.enableCorsProxy && /^\/proxy\//.test(req.path)) return next();
         const token = req.headers['x-csrf-token']?.toString();
         const sessionId = req.ip || 'anonymous';
-        if (!token || !Bun.CSRF.verify(token, { secret: CSRF_SECRET, sessionId } as any)) {
+        if (!token || !Bun.CSRF.verify(token, { secret: CSRF_SECRET, sessionId })) {
             console.error(color.red('Invalid CSRF token. Please refresh the page and try again.'));
             res.status(403).json({ error: 'Invalid CSRF token. Please refresh the page and try again.' });
             return;

@@ -12,7 +12,6 @@
  * This factory eliminates ~200 lines of nearly identical code.
  */
 
-import { getConfigValue, forwardFetchResponse } from '../../../util.js';
 import type { ChatProvider, ModelEntry } from '../chat-completions/types.js';
 import { proxyRequest } from './proxy.js';
 
@@ -30,7 +29,7 @@ export interface OAIConfig {
     /** Function to derive extra body params from the Express request. */
     extraBodyParams?: (req: import('express').Request) => Record<string, unknown>;
     /** Custom transform for the model list response. */
-    transformModelList?: (data: any) => ModelEntry[];
+    transformModelList?: (data: unknown) => ModelEntry[];
     /** Whether this provider has a non-standard models endpoint. */
     modelsPath?: string;
     /** Whether streaming is supported. */
@@ -145,10 +144,10 @@ export function createOAIChatProvider(cfg: OAIConfig): ChatProvider {
             });
             if (!response.ok) return [];
 
-            const data = await response.json() as any;
+            const data = await response.json() as Record<string, unknown>;
             if (transformModelList) return transformModelList(data);
-            if (Array.isArray(data?.data)) return data.data;
-            if (Array.isArray(data?.models)) return data.models.map((m: any) => ({ id: m.name, ...m }));
+            if (Array.isArray(data?.data)) return data.data as ModelEntry[];
+            if (Array.isArray(data?.models)) return data.models.map((m: Record<string, unknown>) => ({ id: m.name as string, ...m })) as ModelEntry[];
             return [];
         },
     };

@@ -13,7 +13,6 @@ import readline from 'node:readline';
 import yaml from 'yaml';
 import { get } from 'es-toolkit/compat';
 import * as fflate from 'fflate';
-import mime from 'mime-types';
 import { default as simpleGit } from 'simple-git';
 import chalk from 'chalk';
 import bytes from 'bytes';
@@ -648,9 +647,9 @@ export async function forwardFetchResponse(from: Response, to: import('express')
     if (from.body && to.socket) {
         // Bun: Response.body is a Web ReadableStream without .pipe().
         // Convert to Node.js Readable for cross-runtime compatibility.
-        const stream: Readable = typeof (from.body as any).pipe === 'function'
+        const stream: Readable = typeof (from.body as unknown as { pipe?: unknown }).pipe === 'function'
             ? from.body as unknown as Readable
-            : Readable.fromWeb(from.body as any);
+            : Readable.fromWeb(from.body as unknown as ReadableStream<Uint8Array>);
 
         stream.pipe(to);
 

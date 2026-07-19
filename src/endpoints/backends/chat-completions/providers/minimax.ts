@@ -18,7 +18,7 @@ const provider: ChatProvider = {
         supportsReasoning: false,
     },
 
-    async chat(req, res): Promise<any> {
+    async chat(req, res): Promise<void> {
         const apiUrl = req.body.minimax_endpoint === MINIMAX_ENDPOINT.CN ? API_MINIMAX_CN : API_MINIMAX;
         const apiKey = readSecret(req.user.directories, SECRET_KEYS.MINIMAX, req.body.secret_id);
         if (!apiKey) {
@@ -91,8 +91,8 @@ const provider: ChatProvider = {
             headers: { 'Authorization': 'Bearer ' + apiKey },
         });
         if (!response.ok) return [];
-        const data = await response.json() as any;
-        return data.data || [];
+        const data = await response.json() as Record<string, unknown>;
+        return (data.data as ModelEntry[]) || [];
     },
 };
 

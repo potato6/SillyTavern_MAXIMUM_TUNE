@@ -60,7 +60,7 @@ export function qs(parent: ParentNode, selector: string): Element | null {
 export function qsAs<T extends Element>(
     parent: ParentNode,
     selector: string,
-    ctor: new (...args: any[]) => T,
+    ctor: new (...args: unknown[]) => T,
 ): T | null {
     const el = parent.querySelector(selector);
     return el instanceof ctor ? el : null;
@@ -71,7 +71,7 @@ export function qsAs<T extends Element>(
  */
 export function assertEl<T extends Element>(
     el: Element | null,
-    ctor: new (...args: any[]) => T,
+    ctor: new (...args: unknown[]) => T,
     name: string,
 ): T {
     if (!(el instanceof ctor)) {
@@ -88,7 +88,7 @@ import { getRequestHeaders, eventSource } from '../../script.js';
  * Perform a JSON POST request to a server endpoint.
  * Throws on non-OK responses.
  */
-export async function apiPost<T = any>(
+export async function apiPost<T = unknown>(
     url: string,
     body: Record<string, unknown>,
 ): Promise<T> {

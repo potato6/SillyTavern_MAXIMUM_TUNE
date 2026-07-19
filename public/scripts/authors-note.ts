@@ -9,7 +9,6 @@ import {
     saveSettingsDebounced,
     this_chid,
 } from '../script.js';
-declare const toastr: any;
 import { selected_group } from './group-chats.js';
 import { extension_settings, getContext, saveMetadataDebounced } from './extensions.js';
 import { getCharaFilename, debounce, delay } from './utils.js';

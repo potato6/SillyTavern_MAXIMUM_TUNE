@@ -81,8 +81,8 @@ async function openSwipePicker(messageId) {
     listContainer.classList.add('swipe_picker_div', 'flex1', 'marginTop10');
     wrapper.appendChild(listContainer);
 
-    let popup!: Popup;
-    let swipeIdInput!: HTMLInputElement;
+    const popup: Popup = null!;
+    const swipeIdInput: HTMLInputElement = null!;
     /** @type {number|null} */
     let branchActionSwipeId = null;
 

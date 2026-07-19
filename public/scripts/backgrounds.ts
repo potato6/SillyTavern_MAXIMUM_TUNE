@@ -2078,10 +2078,10 @@ export function initBackgrounds() {
 
         switch (action) {
             case 'lock':
-                onLockBackgroundClick.call(el, event as any);
+                onLockBackgroundClick.call(el, event as Event);
                 break;
             case 'unlock':
-                onUnlockBackgroundClick.call(el, event as any);
+                onUnlockBackgroundClick.call(el, event as Event);
                 break;
             case 'edit':
                 onRenameBackgroundClick.call(el, event);

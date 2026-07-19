@@ -10,21 +10,21 @@ export default createOAIChatProvider({
     extraBodyParams: (req) => {
         const params: Record<string, unknown> = {};
         if (req.body.nanogpt_payg_override) {
-            params['billing_mode'] = 'paygo';
+            params.billing_mode = 'paygo';
         }
         if (req.body.min_p !== undefined) {
-            params['min_p'] = req.body.min_p;
+            params.min_p = req.body.min_p;
         }
         if (req.body.top_a !== undefined) {
-            params['top_a'] = req.body.top_a;
+            params.top_a = req.body.top_a;
         }
         if (req.body.repetition_penalty !== undefined) {
-            params['repetition_penalty'] = req.body.repetition_penalty;
+            params.repetition_penalty = req.body.repetition_penalty;
         }
         if (req.body.reasoning_effort) {
             const effort = NANOGPT_REASONING_EFFORT_MAP[req.body.reasoning_effort as keyof typeof NANOGPT_REASONING_EFFORT_MAP];
             if (effort) {
-                params['reasoning'] = { effort };
+                params.reasoning = { effort };
             }
         }
         return params;

@@ -87,13 +87,13 @@ const provider: ChatProvider = {
 
         // Provider routing / ordering + quantization — shared impl.
         const providerConfig = buildProviderConfig(req.body);
-        if (providerConfig) bodyParams['provider'] = providerConfig;
-        if (req.body.use_fallback) bodyParams['route'] = 'fallback';
-        if (req.body.reasoning_effort) (bodyParams['reasoning'] as any).effort = req.body.reasoning_effort;
-        if (req.body.verbosity) bodyParams['verbosity'] = req.body.verbosity;
+        if (providerConfig) bodyParams.provider = providerConfig;
+        if (req.body.use_fallback) bodyParams.route = 'fallback';
+        if (req.body.reasoning_effort) (bodyParams.reasoning as any).effort = req.body.reasoning_effort;
+        if (req.body.verbosity) bodyParams.verbosity = req.body.verbosity;
 
         if (req.body.json_schema) {
-            bodyParams['response_format'] = {
+            bodyParams.response_format = {
                 type: 'json_schema',
                 json_schema: {
                     name: req.body.json_schema.name,
@@ -123,7 +123,7 @@ const provider: ChatProvider = {
             }
         }
 
-        if (isGemini) bodyParams['safety_settings'] = GEMINI_SAFETY;
+        if (isGemini) bodyParams.safety_settings = GEMINI_SAFETY;
 
         const requestBody: Record<string, unknown> = {
             messages: req.body.messages,

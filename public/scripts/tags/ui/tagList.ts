@@ -10,7 +10,6 @@ import {
     getTagKey,
     getTagKeyForEntity,
     getTagKeyForEntityElement,
-    newTag,
     getTagById,
     resolveElement,
     markDirty,
@@ -19,7 +18,7 @@ import {
 import { isBogusFolder } from '../folders/bogusFolders.js';
 import { getFilterHelper, isMainCharacterList, getFilterStorageKey } from '../filters/filterContext.js';
 import { determineTagFilterState, toggleTagThreeState } from '../filters/filterState.js';
-import { FILTER_TYPES, FILTER_STATES, DEFAULT_FILTER_STATE, isFilterState } from '../../filters.js';
+import { FILTER_TYPES, FILTER_STATES, isFilterState } from '../../filters.js';
 import { uuidv4, debounce } from '../../utils.js';
 import { t, translate } from '../../i18n.js';
 import { INTERACTABLE_CONTROL_CLASS } from '../../keyboard.js';

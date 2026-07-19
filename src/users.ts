@@ -9,7 +9,6 @@ import { Buffer } from 'node:buffer';
 // Express and other dependencies
 import storage from 'node-persist';
 import express from 'express';
-import mime from 'mime-types';
 import { Archiver } from 'archiver';
 import { sync as writeFileAtomicSync } from 'write-file-atomic';
 import sanitize from 'sanitize-filename';

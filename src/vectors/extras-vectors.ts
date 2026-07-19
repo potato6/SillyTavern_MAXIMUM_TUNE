@@ -18,7 +18,8 @@ export async function getBatchVector(texts: string[], apiUrl: string, apiKey: st
  * @returns {Promise<number[]>} - The vector for the text
  */
 export async function getVector(text: string, apiUrl: string, apiKey: string): Promise<number[]> {
-    return getExtrasVectorImpl(text, apiUrl, apiKey) as Promise<number[]>;
+    const vectors = await getBatchVector([text], apiUrl, apiKey);
+    return vectors[0]!;
 }
 
 /**

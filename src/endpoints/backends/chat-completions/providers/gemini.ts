@@ -1,7 +1,6 @@
-import process from 'node:process';
 import util from 'node:util';
 import { CHAT_COMPLETION_SOURCES, GEMINI_SAFETY, VERTEX_SAFETY } from '../../../../constants.js';
-import { getConfigValue, forwardFetchResponse, color, tryParse } from '../../../../util.js';
+import { getConfigValue, forwardFetchResponse, tryParse } from '../../../../util.js';
 import { convertGooglePrompt, getPromptNames, calculateGoogleBudgetTokens } from '../../../../prompt-converters.js';
 import { readSecret, SECRET_KEYS } from '../../../secrets.js';
 import { getVertexAIAuth, getProjectIdFromServiceAccount } from '../../../google.js';
@@ -278,21 +277,19 @@ const provider: ChatProvider = {
 
     async listModels(req): Promise<ModelEntry[]> {
         const useVertexAi = req.body.chat_completion_source === CHAT_COMPLETION_SOURCES.VERTEXAI;
-        let apiKey: string | undefined;
-        let apiUrl: string;
 
         if (useVertexAi) {
             // Vertex AI model listing is not standard; return empty.
             return [];
         }
 
-        apiKey = req.body.reverse_proxy
+        const apiKey = req.body.reverse_proxy
             ? req.body.proxy_password
             : readSecret(req.user.directories, SECRET_KEYS.MAKERSUITE, req.body.secret_id);
 
         if (!apiKey && !req.body.reverse_proxy) return [];
 
-        apiUrl = req.body.reverse_proxy || API_MAKERSUITE;
+        const apiUrl = req.body.reverse_proxy || API_MAKERSUITE;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const apiVersion: any = getConfigValue('gemini.apiVersion', 'v1beta' as any, 'string' as any);
         const modelsUrl = !apiKey && req.body.reverse_proxy

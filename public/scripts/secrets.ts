@@ -1418,7 +1418,7 @@ export async function initSecrets() {
             const infoBtn = document.createElement('i');
             infoBtn.className = 'fa-solid fa-circle-info cursor-pointer nanogpt_info_btn';
             infoBtn.title = t`View details`;
-            (infoBtn as any).__creditsData = {
+            (infoBtn as unknown as Record<string, unknown>).__creditsData = {
                 usdBalance,
                 nanoBalance,
                 subscription: data.subscription,
@@ -1435,7 +1435,7 @@ export async function initSecrets() {
     document.addEventListener('click', async function (e: Event) {
         const target = e.target instanceof Element ? e.target.closest('.nanogpt_info_btn') : null;
         if (!target) return;
-        const credits = (target as any).__creditsData;
+        const credits = (target as unknown as Record<string, unknown>).__creditsData;
         if (credits) {
             await callGenericPopup(createNanoGptCreditsPopup(credits), POPUP_TYPE.TEXT);
         }

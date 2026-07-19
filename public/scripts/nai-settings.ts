@@ -19,7 +19,7 @@ import {
     onlyUnique,
 } from './utils.js';
 
-declare const Sortable: any;
+declare const Sortable: new (el: HTMLElement, options: Record<string, unknown>) => unknown;
 import { BIAS_CACHE, createNewLogitBiasEntry, displayLogitBias, getLogitBiasListResult } from './logit-bias.js';
 import { SECRET_KEYS, secret_state, writeSecret } from './secrets.js';
 
@@ -217,7 +217,38 @@ export async function loadNovelSubscriptionData() {
  *
  * @param preset
  */
-export function loadNovelPreset(preset: any) {
+interface NovelAIPreset {
+    genamt?: unknown;
+    max_context?: number;
+    max_length?: number;
+    temperature?: number;
+    repetition_penalty?: number;
+    repetition_penalty_range?: number;
+    repetition_penalty_slope?: number;
+    repetition_penalty_frequency?: number;
+    repetition_penalty_presence?: number;
+    tail_free_sampling?: unknown;
+    top_k?: number;
+    top_p?: number;
+    top_a?: number;
+    typical_p?: number;
+    min_length?: number;
+    phrase_rep_pen?: unknown;
+    mirostat_lr?: unknown;
+    mirostat_tau?: unknown;
+    prefix?: string;
+    banned_tokens?: string;
+    order?: unknown[];
+    logit_bias?: unknown[];
+    preamble?: string;
+    min_p?: number;
+    math1_temp?: number;
+    math1_quad?: number;
+    math1_quad_entropy_scale?: number;
+    extensions?: Record<string, unknown>;
+}
+
+export function loadNovelPreset(preset: NovelAIPreset) {
     if (preset.genamt === undefined) {
         const needsUnlock = preset.max_context > MAX_CONTEXT_DEFAULT || preset.max_length > MAX_RESPONSE_DEFAULT;
         const amountGen = document.getElementById('amount_gen') as HTMLInputElement | null;
@@ -1164,7 +1195,7 @@ export function initNovelAISettings() {
         // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         const default_preset = default_presets[nai_settings.model_novel];
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        document.getElementById('settings_preset_novel').value = novelai_setting_names[default_preset] as any;
+        document.getElementById('settings_preset_novel').value = novelai_setting_names[default_preset];
         document.querySelector(`#settings_preset_novel option[value="${novelai_setting_names[default_preset]}"]`)?.setAttribute('selected', 'true');
         document.getElementById('settings_preset_novel')?.dispatchEvent(new Event('change'));
     });
@@ -1181,7 +1212,7 @@ export function initNovelAISettings() {
         saveSettingsDebounced();
     });
 
-    const novelOrderEl = document.getElementById('novel_order') as any;
+    const novelOrderEl = document.getElementById('novel_order') as HTMLElement & { sortableInstance?: unknown };
     if (novelOrderEl) {
         novelOrderEl.sortableInstance = new Sortable(novelOrderEl, {
             delay: getSortableDelay(),

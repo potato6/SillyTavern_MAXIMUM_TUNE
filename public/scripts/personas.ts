@@ -97,7 +97,7 @@ export const persona_description_positions = {
 
 const USER_AVATAR_PATH = 'User Avatars/';
 
-let savePersonasPage = 0;
+const savePersonasPage = 0;
 // @ts-expect-error TS(7034) FIXME: Variable 'personaPaginator' implicitly has type 'any'.
 let personaPaginator;
 const GRID_STORAGE_KEY = 'Personas_GridView';

@@ -80,7 +80,7 @@ export function expandMessageMedia(messageId: number, mediaIndex: number): HTMLE
     mediaContainer.appendChild(mediaHolder);
 
     const shouldZoom = mediaAttachment.type === 'image';
-    const popup = callGenericPopup(mediaContainer, POPUP_TYPE.TEXT, '', {
+    callGenericPopup(mediaContainer, POPUP_TYPE.TEXT, '', {
         large: true,
         transparent: shouldZoom,
     });
@@ -116,7 +116,7 @@ export async function deleteMessageMedia(messageId: number, mediaIndex: number, 
         customInputs: [
             { type: 'checkbox', label: t`Also delete files from server`, id: deleteFromServerId, defaultState: true },
         ],
-        onClose: (popup: any) => {
+        onClose: (popup: Record<string, unknown>) => {
             deleteFromServer = Boolean(popup.inputResults.get(deleteFromServerId) ?? false);
         },
     });

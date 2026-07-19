@@ -17,7 +17,7 @@ const provider: ChatProvider = {
         supportsReasoning: false,
     },
 
-    async chat(req, res): Promise<any> {
+    async chat(req, res): Promise<void> {
         const apiKey = readSecret(req.user.directories, SECRET_KEYS.COHERE, req.body.secret_id);
         if (!apiKey) {
             console.warn('Cohere API key is missing.');
@@ -32,6 +32,7 @@ const provider: ChatProvider = {
         const tools: any[] = [];
         if (Array.isArray(req.body.tools) && req.body.tools.length > 0) {
             tools.push(...req.body.tools);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             tools.forEach((tool: any) => {
                 if (tool?.function?.parameters?.$schema) delete tool.function.parameters.$schema;
             });
@@ -106,9 +107,9 @@ const provider: ChatProvider = {
             headers: { 'Authorization': 'Bearer ' + apiKey },
         });
         if (!response.ok) return [];
-        const data = await response.json() as any;
+        const data = await response.json() as Record<string, unknown>;
         if (Array.isArray(data?.models)) {
-            return data.models.map((m: any) => ({ id: m.name, ...m }));
+            return data.models.map((m: Record<string, unknown>) => ({ id: m.name as string, ...m })) as ModelEntry[];
         }
         return [];
     },

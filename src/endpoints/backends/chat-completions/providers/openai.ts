@@ -27,7 +27,7 @@ const provider: ChatProvider = {
         supportsReasoning: true,
     },
 
-    async chat(req, res): Promise<any> {
+    async chat(req, res): Promise<void> {
         const apiUrl = new URL(req.body.reverse_proxy || API_OPENAI).toString();
         const apiKey = req.body.reverse_proxy
             ? req.body.proxy_password
@@ -59,20 +59,20 @@ const provider: ChatProvider = {
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if (getConfigValue('openai.randomizeUserId', false as any, 'boolean' as any)) {
-            bodyParams['user'] = uuidv4();
+            bodyParams.user = uuidv4();
         }
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         embedOpenRouterMedia(req.body.messages, { audio: true, video: false } as any);
 
         if (req.body.reasoning_effort && OPENAI_REASONING_EFFORT_MODELS.includes(req.body.model)) {
-            bodyParams['reasoning_effort'] = OPENAI_FIXED_REASONING_EFFORT[req.body.model as keyof typeof OPENAI_FIXED_REASONING_EFFORT]
+            bodyParams.reasoning_effort = OPENAI_FIXED_REASONING_EFFORT[req.body.model as keyof typeof OPENAI_FIXED_REASONING_EFFORT]
                 ?? OPENAI_REASONING_EFFORT_MAP[req.body.reasoning_effort as keyof typeof OPENAI_REASONING_EFFORT_MAP]
                 ?? req.body.reasoning_effort;
         }
 
         if (req.body.verbosity && OPENAI_VERBOSITY_MODELS.test(req.body.model)) {
-            bodyParams['verbosity'] = req.body.verbosity;
+            bodyParams.verbosity = req.body.verbosity;
         }
 
         const requestBody: Record<string, unknown> = {
@@ -95,12 +95,12 @@ const provider: ChatProvider = {
         };
 
         if (!isTextCompletion && Array.isArray(req.body.tools) && req.body.tools.length > 0) {
-            requestBody['tools'] = req.body.tools;
-            requestBody['tool_choice'] = req.body.tool_choice;
+            requestBody.tools = req.body.tools;
+            requestBody.tool_choice = req.body.tool_choice;
         }
 
-        if (req.body.json_schema && !bodyParams['response_format']) {
-            requestBody['response_format'] = {
+        if (req.body.json_schema && !bodyParams.response_format) {
+            requestBody.response_format = {
                 type: 'json_schema',
                 json_schema: {
                     name: req.body.json_schema.name,
@@ -134,8 +134,8 @@ const provider: ChatProvider = {
             headers: { 'Authorization': `Bearer ${apiKey}` },
         });
         if (!response.ok) return [];
-        const data = await response.json() as any;
-        return data.data || [];
+        const data = await response.json() as Record<string, unknown>;
+        return (data.data as Array<Record<string, unknown>>) || [];
     },
 };
 

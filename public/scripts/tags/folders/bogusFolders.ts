@@ -3,7 +3,7 @@
  * Handles bogus folder detection, open state, drill-down navigation, and rendering.
  */
 
-import { TAG_FOLDER_TYPES, TAG_FOLDER_DEFAULT_TYPE } from '../types.js';
+import { TAG_FOLDER_DEFAULT_TYPE } from '../types.js';
 import { FILTER_STATES, FILTER_TYPES, DEFAULT_FILTER_STATE } from '../../filters.js';
 import { entitiesFilter, buildAvatarList } from '../../../script.js';
 import { getTagById } from '../store/tagStore.js';

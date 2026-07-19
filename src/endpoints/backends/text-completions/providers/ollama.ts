@@ -62,9 +62,9 @@ export async function parseOllamaStream(
         }
 
         // Bun: Response.body is a Web ReadableStream without .on('data').
-        const body: Readable = typeof (jsonStream.body as any).on === 'function'
+        const body: Readable = typeof (jsonStream.body as { on: unknown }).on === 'function'
             ? jsonStream.body as unknown as Readable
-            : (Readable.fromWeb as any)(jsonStream.body);
+            : (Readable.fromWeb as unknown as (s: ReadableStream) => Readable)(jsonStream.body as ReadableStream);
 
         let partialData = '';
         body.on('data', (data: Buffer) => {

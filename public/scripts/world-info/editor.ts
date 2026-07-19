@@ -7,7 +7,7 @@
  */
 
 import { getSelect2OptionId } from '../utils.js';
-import type { WorldInfoBook, WorldInfoEntryData } from './types.js';
+import type { WorldInfoBook } from './types.js';
 
 import { setValueByPath } from '../utils.js';
 
@@ -43,7 +43,7 @@ export function updateWorldEntryKeyOptionsCache(
     const options = keyOptions.map(x => typeof x === 'string' ? { id: getSelect2OptionId(x), text: x } : { ...x, count: 0 });
     if (reset) worldEntryKeyOptionsCache.length = 0;
     options.forEach(option => {
-        let cachedEntry = worldEntryKeyOptionsCache.find(x => x.id == option.id);
+        const cachedEntry = worldEntryKeyOptionsCache.find(x => x.id == option.id);
         if (cachedEntry) {
             cachedEntry.count += !remove ? 1 : -1;
         } else if (!remove) {
