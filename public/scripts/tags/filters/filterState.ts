@@ -12,7 +12,7 @@ import {
 
 import {
     entitiesFilter,
-    saveSettingsDebounced,
+    saveSettings,
     characters,
     DEFAULT_PRINT_TIMEOUT,
 } from '../../../script.js';
@@ -185,7 +185,7 @@ function setTagFilterVisibility(type, visible) {
     const settingKey = getTagFilterVisibilitySetting(type);
     // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     power_user[settingKey] = visible;
-    saveSettingsDebounced();
+    saveSettings();
 }
 
 // ──────────────────────────────────────────────

@@ -5,7 +5,7 @@
 
 import {
     characters,
-    saveSettingsDebounced,
+    saveSettings,
     this_chid,
     menu_type,
 } from '../../../script.js';
@@ -379,13 +379,9 @@ export function getFolderType(tag) {
 
 /**
  * Mark the store as dirty (needs save). Call after mutations.
- * Debounced — multiple rapid calls only trigger one save.
+ * Saves immediately (not debounced) so changes survive page refresh.
  */
-let _dirtyTimeout = null;
 export function markDirty() {
-    if (_dirtyTimeout) clearTimeout(_dirtyTimeout);
-    _dirtyTimeout = setTimeout(() => {
-        saveSettingsDebounced();
-        tagStoreEvents.emit('changed', null);
-    }, 100);
+    saveSettings();
+    tagStoreEvents.emit('changed', null);
 }
